@@ -149,15 +149,19 @@ describe('chat/send', () => {
     expect(await messages(owner, roomId)).toHaveLength(1);
   });
 
-  it('allows one message per second per person', async () => {
+  it('allows one message per half second per person', async () => {
     const { owner, guest, roomId } = await roomWithGuest();
     expect((await send(owner, roomId, 'bir')).status).toBe(200);
+    // The last message just now (later than the clock: no timing in the test).
+    await sql`update public.messages set created_at = now() + interval '1 hour'
+              where room_id = ${roomId} and body = 'bir'`;
     expect(await send(owner, roomId, 'iki')).toEqual({
       status: 429,
       body: errorBody('rate_limited'),
     });
     expect((await send(guest, roomId, 'misafir')).status).toBe(200);
-    await sleep(1100);
+    await sql`update public.messages set created_at = now() - interval '1 second'
+              where room_id = ${roomId} and body = 'bir'`;
     expect((await send(owner, roomId, 'üç')).status).toBe(200);
   });
 

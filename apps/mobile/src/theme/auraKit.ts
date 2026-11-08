@@ -496,8 +496,20 @@ export const KIT = {
     body: '#FF4F8B',
     bodySoft: 0.55,
   },
-  // Who the viewer writes as (`.strip`): a glass pill 22 round.
-  venueChatStripRadius: 22,
+  // Who the viewer writes as, in the chat's top bar (the owner's call, 8 Kasım: the strip over the
+  // message bar went): two 30 slots 2 apart in a sunk track 2 in, the chosen one white and raised in
+  // a 2 accent ring, the other dimmed; a spent change locks it (a 14 badge, its icon 10).
+  // While the change is on its way the whole toggle at `busy`.
+  identityToggle: {
+    slot: 30,
+    pad: 2,
+    gap: 2,
+    ring: 2,
+    dim: 0.45,
+    busy: 0.6,
+    lock: 14,
+    lockIcon: 10,
+  },
   // U25 (MasaSohbeti `.veil`): the table chat's curtain over its wall, darker at the top and the
   // foot, clear between 22 % and 70 %; the board's header pill 20 in at its left.
   chatVeil: {

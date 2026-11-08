@@ -428,7 +428,7 @@ Gerekçeler `docs/arsiv/DECISIONS.md` → "Tabu modları (v3 adım 4)".
 - **`venue-chat/send { venueId, body, profiled }`:**
   1. Aktif masayı doğrular.
   2. `profanity.ts` ile süzer; küfürlü mesaj reddedilir, maskelenmez (kural 7'ye mekan sohbeti eklenir).
-  3. Hız sınırı: hesap başına 3 sn'de 1 ve 10 dakikada 20 mesaj. Değerler `pure/venueChat.ts`'te tek kaynaktır.
+  3. Hız sınırı (proje sahibinin kararı, 8 Kasım: hissedilmez; yalnız taşma koruması): hesap başına yarım saniyede 1 ve 10 saniyede 20 mesaj; masa sohbetinde yarım saniyede 1. Takılan mesajı telefon hata göstermeden kendiliğinden yeniden gönderir. Değerler `pure/venueChat.ts` ve `pure/chat.ts`'te tek kaynaktır; semt sohbeti mekan sohbetinin değerlerini kullanır.
   4. Mesajı yazar ve `venue_chat:{venue_id}` kanalına veri içermeyen `venue_chat` yayını yapar.
 - **Push yoktur.**
 - **Şikayet:** `safety/report { target: 'venue_chat', messageId, reason }`.

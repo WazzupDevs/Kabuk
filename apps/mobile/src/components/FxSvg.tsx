@@ -12,25 +12,29 @@ import { CachedSvg } from './CachedSvg';
 // blink, LayeredLook), so nothing is drawn again while it moves. One clock for each length of cycle
 // serves every drawing on the screen; it runs while one of them is on a screen on top with the app
 // in front (useLoopActive). With reduce motion the drawing is still, as the boards draw it.
-type Clock = { value: Animated.Value; users: number; loop: Animated.CompositeAnimation | null };
-const clocks = new Map<number, Clock>();
+// A lane is a set of clocks of its own (the set balloons': paused while their stream scrolls, the
+// faces elsewhere on the screen moving on); `phase`: where a stopped clock stood, to go on from.
+type Clock = {
+  value: Animated.Value;
+  users: number;
+  loop: Animated.CompositeAnimation | null;
+  phase: number;
+};
+const clocks = new Map<string, Clock>();
 
-function clockOf(ms: number): Clock {
-  let c = clocks.get(ms);
+function clockOf(ms: number, lane: string): Clock {
+  const id = `${lane}:${ms}`;
+  let c = clocks.get(id);
   if (!c) {
-    c = { value: new Animated.Value(0), users: 0, loop: null };
-    clocks.set(ms, c);
+    c = { value: new Animated.Value(0), users: 0, loop: null, phase: 0 };
+    clocks.set(id, c);
   }
   return c;
 }
 
-// A drawing on the screen holds its clock; the last to let go stops it.
-function hold(ms: number): void {
-  const clock = clockOf(ms);
-  clock.users += 1;
-  if (clock.loop) return;
+function cycle(clock: Clock, ms: number): void {
   clock.value.setValue(0);
-  clock.loop = Animated.loop(
+  const loop = Animated.loop(
     Animated.timing(clock.value, {
       toValue: 1,
       duration: ms,
@@ -38,25 +42,55 @@ function hold(ms: number): void {
       useNativeDriver: true,
     }),
   );
-  clock.loop.start();
+  clock.loop = loop;
+  loop.start();
 }
 
-function release(ms: number): void {
-  const clock = clockOf(ms);
+// A drawing on the screen holds its clock; the last to let go stops it. A clock stopped part way
+// first runs to the end of its cycle, so nothing jumps when it starts again.
+function hold(ms: number, lane: string): void {
+  const clock = clockOf(ms, lane);
+  clock.users += 1;
+  if (clock.loop) return;
+  const from = clock.phase;
+  clock.phase = 0;
+  if (from <= 0 || from >= 1) {
+    cycle(clock, ms);
+    return;
+  }
+  clock.value.setValue(from);
+  const lead = Animated.timing(clock.value, {
+    toValue: 1,
+    duration: ms * (1 - from),
+    easing: Easing.linear,
+    useNativeDriver: true,
+  });
+  clock.loop = lead;
+  lead.start(({ finished }) => {
+    if (finished && clock.loop === lead) cycle(clock, ms);
+  });
+}
+
+function release(ms: number, lane: string): void {
+  const clock = clockOf(ms, lane);
   clock.users -= 1;
   if (clock.users === 0 && clock.loop) {
-    clock.loop.stop();
+    const loop = clock.loop;
     clock.loop = null;
+    loop.stop();
+    clock.value.stopAnimation((v) => {
+      if (clock.loop === null) clock.phase = v;
+    });
   }
 }
 
-function useClock(ms: number, on: boolean): Animated.Value {
+function useClock(ms: number, on: boolean, lane: string): Animated.Value {
   useEffect(() => {
     if (!on) return undefined;
-    hold(ms);
-    return () => release(ms);
-  }, [ms, on]);
-  return clockOf(ms).value;
+    hold(ms, lane);
+    return () => release(ms, lane);
+  }, [ms, on, lane]);
+  return clockOf(ms, lane).value;
 }
 
 type Place = { unit: number; dx: number; dy: number; bx: number; by: number };
@@ -70,10 +104,26 @@ export function FxMoves({ children, on = true }: { children: ReactNode; on?: boo
   return <FxMotion.Provider value={on}>{children}</FxMotion.Provider>;
 }
 
-export function FxSvg({ xml, width, height }: { xml: string; width: number; height: number }) {
+// `still`: drawn still here (a set balloon past the newest few); `paused`: its motion held where it
+// stands (a set balloon while its stream scrolls), on the clocks of its `lane`.
+export function FxSvg({
+  xml,
+  width,
+  height,
+  still = false,
+  paused = false,
+  lane = 'main',
+}: {
+  xml: string;
+  width: number;
+  height: number;
+  still?: boolean;
+  paused?: boolean;
+  lane?: string;
+}) {
   const moves = useContext(FxMotion);
   const reduceMotion = useReduceMotion();
-  const reduce = !moves || reduceMotion;
+  const reduce = !moves || reduceMotion || still;
   const active = useLoopActive();
   const tree = useMemo(() => (reduce ? null : fxTree(xml)), [xml, reduce]);
   if (!tree) return <CachedSvg xml={reduce ? stillSvg(xml) : xml} width={width} height={height} />;
@@ -89,7 +139,14 @@ export function FxSvg({ xml, width, height }: { xml: string; width: number; heig
   };
   return (
     <View style={{ width, height }}>
-      <Layers layers={tree.layers} width={width} height={height} place={place} on={active} />
+      <Layers
+        layers={tree.layers}
+        width={width}
+        height={height}
+        place={place}
+        on={active && !paused}
+        lane={lane}
+      />
     </View>
   );
 }
@@ -100,12 +157,14 @@ function Layers({
   height,
   place,
   on,
+  lane,
 }: {
   layers: FxLayer[];
   width: number;
   height: number;
   place: Place;
   on: boolean;
+  lane: string;
 }) {
   return layers.map((l, i) =>
     l.kind === 'still' ? (
@@ -113,9 +172,9 @@ function Layers({
         <CachedSvg xml={l.xml} width={width} height={height} />
       </View>
     ) : l.kind === 'frames' ? (
-      <Frames key={i} layer={l} width={width} height={height} on={on} />
+      <Frames key={i} layer={l} width={width} height={height} on={on} lane={lane} />
     ) : (
-      <Move key={i} layer={l} width={width} height={height} place={place} on={on} />
+      <Move key={i} layer={l} width={width} height={height} place={place} on={on} lane={lane} />
     ),
   );
 }
@@ -128,15 +187,17 @@ function Move({
   height,
   place,
   on,
+  lane,
 }: {
   layer: Extract<FxLayer, { kind: 'move' }>;
   width: number;
   height: number;
   place: Place;
   on: boolean;
+  lane: string;
 }) {
   const motion = FX[layer.fx];
-  const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined);
+  const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined, lane);
   const style = useMemo(() => {
     if (!motion) return null;
     // A translate is in the group's own units: `k` of the drawing's, `unit` pixels each.
@@ -185,7 +246,14 @@ function Move({
       pointerEvents="none"
       style={[StyleSheet.absoluteFill, style as Animated.WithAnimatedObject<object>]}
     >
-      <Layers layers={layer.layers} width={width} height={height} place={place} on={on} />
+      <Layers
+        layers={layer.layers}
+        width={width}
+        height={height}
+        place={place}
+        on={on}
+        lane={lane}
+      />
     </Animated.View>
   );
 }
@@ -196,14 +264,16 @@ function Frames({
   width,
   height,
   on,
+  lane,
 }: {
   layer: Extract<FxLayer, { kind: 'frames' }>;
   width: number;
   height: number;
   on: boolean;
+  lane: string;
 }) {
   const motion = FX[layer.fx];
-  const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined);
+  const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined, lane);
   const [shown] = useState(() =>
     layer.frames.map((f) => {
       const e = 1e-4;

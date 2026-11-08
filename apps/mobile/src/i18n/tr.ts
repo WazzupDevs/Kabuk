@@ -807,10 +807,6 @@ export const tr = {
     send: 'Gönder',
     // skall tuvali (Mekan sohbeti panoları, docs/SPEC_V4.md §4.D).
     options: 'Mekan sohbeti seçenekleri',
-    writingAs: 'olarak yazıyorsun',
-    change: 'Değiştir',
-    changeLabel: 'Kimliğini değiştir',
-    changed: 'Bu girişte değişti',
     emptyTitle: 'Mekandaki herkes okur',
     emptyProfiled: 'Mesajların adınla ve fotoğrafınla görünür. 24 saat sonra silinir.',
     emptyAnonymous: (nick: string) =>
@@ -925,8 +921,6 @@ export const tr = {
       title: (name: string) => `${name} sohbeti`,
       placeholder: (name: string) => `${inflectTr(name, 'dative')} yaz…`,
       options: 'Semt sohbeti seçenekleri',
-      writingAnonymous: 'Kapsülünle yazıyorsun',
-      writingProfiled: 'Profilinle yazıyorsun',
       identityLabel: 'Hangi kimlikle yazıyorsun',
       anonymous: 'Anonim',
       profiled: 'Profilim',

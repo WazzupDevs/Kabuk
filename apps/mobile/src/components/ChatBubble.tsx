@@ -37,6 +37,7 @@ import { Text } from './Text';
 import { AppIcon } from './AppIcon';
 import { useChatKind } from './chatKind';
 import { useChatMetaRef } from './chatMeta';
+import { useChatScrolling } from './chatScrolling';
 import { usePopHost } from './popHost';
 import { CachedSvg } from './CachedSvg';
 import { FxSvg } from './FxSvg';
@@ -92,6 +93,8 @@ type Props = {
   testID?: string;
   // A full set's balloon (the venue chat, anonymous, the set worn whole: theme/setBalloons.ts).
   skin?: SetBalloon | null;
+  // The balloon's ornaments move (one of the newest few, skinMovers); otherwise they are still.
+  skinMoves?: boolean;
 };
 
 // 'sending': on its way, a clock in the ticks' place (Telegram Android: only the mark changes when
@@ -157,6 +160,7 @@ export function ChatBubble({
   actions = [],
   testID,
   skin = null,
+  skinMoves = true,
 }: Props) {
   const { shape } = useTheme();
   // A long press lifts the message over a scrim with the faces and its actions (MessagePop), from
@@ -356,10 +360,12 @@ export function ChatBubble({
                 borderBottomLeftRadius: radii[3],
                 opacity: state === 'sending' ? 0.6 : 1,
               },
-          skin && skinned ? skinFace(skin, mine, scheme) : null,
+          skin && skinned ? skinFace(skin, mine, scheme, first, last) : null,
         ]}
       >
-        {skin && skinned ? <SkinFrame skin={skin} mine={mine} /> : null}
+        {skin && skinned ? (
+          <SkinFrame skin={skin} mine={mine} first={first} last={last} moves={skinMoves} />
+        ) : null}
         {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
         {big || skinned ? null : bubbleShadow.node}
         {skinned ? null : shaped ? (
@@ -697,29 +703,80 @@ export function ChatBubble({
 // towards the author 6; its padding and the room round it for the ornaments.
 const SKIN_MARK = 10;
 
-function skinRadii(skin: SetBalloon, mine: boolean): readonly [number, number, number, number] {
+// A run of set balloons from one sender reads as one (every set's rule, docs/SPEC_V4.md §4.U): the
+// top ornaments and the top strip only on the run's first, the foot's only on its last, the room
+// round them outside the run only, the corners on the author's side tight inside it and the wide
+// glow on the first and the last (the middle ones keep the ring). A lone balloon is first and last.
+function skinRadii(
+  skin: SetBalloon,
+  mine: boolean,
+  first: boolean,
+): readonly [number, number, number, number] {
   const { round, tight } = skin.radius;
-  return mine ? [round, round, tight, round] : [round, round, round, tight];
+  const top = first ? round : tight;
+  return mine ? [round, top, tight, round] : [top, round, round, tight];
 }
 
-function skinFace(skin: SetBalloon, mine: boolean, scheme: 'light' | 'dark'): ViewStyle {
-  const [tl, tr, br, bl] = skinRadii(skin, mine);
+function skinFace(
+  skin: SetBalloon,
+  mine: boolean,
+  scheme: 'light' | 'dark',
+  first: boolean,
+  last: boolean,
+): ViewStyle {
+  const [tl, tr, br, bl] = skinRadii(skin, mine, first);
+  const shadow = skin.shadow[scheme];
   return {
     paddingTop: skin.pad.top,
     paddingRight: skin.pad.right,
     paddingBottom: skin.pad.bottom,
     paddingLeft: skin.pad.left,
-    marginTop: skin.margin.top,
+    marginTop: first ? skin.margin.top : 0,
     marginRight: skin.margin.right,
-    marginBottom: skin.margin.bottom,
+    marginBottom: last ? skin.margin.bottom : 0,
     marginLeft: skin.margin.left,
     borderTopLeftRadius: tl,
     borderTopRightRadius: tr,
     borderBottomRightRadius: br,
     borderBottomLeftRadius: bl,
-    boxShadow: skin.shadow[scheme],
+    boxShadow: first || last ? `${shadow.ring}, ${shadow.glow}` : shadow.ring,
   };
 }
+
+// At most this many set balloons' ornaments move at a time: the newest (older ones are still).
+export const SKIN_MOVERS = 6;
+
+// The keys of the rows whose balloon moves: the newest SKIN_MOVERS balloons with ornaments (a run's
+// first or last). `rows` newest first, as the chat lists hold them.
+export function skinMovers<R extends { key: string; first: boolean; last: boolean }>(
+  rows: readonly R[],
+  skinned: (row: R) => boolean,
+): ReadonlySet<string> {
+  const keys = new Set<string>();
+  for (const row of rows) {
+    if (keys.size >= SKIN_MOVERS) break;
+    if ((row.first || row.last) && skinned(row)) keys.add(row.key);
+  }
+  return keys;
+}
+
+// A strip's tiles as one SVG (one picture, shared by every strip of its set and length: svgKey):
+// the tile's drawing repeated side by side.
+const strips = new Map<string, string>();
+function stripSvg(strip: SetBalloon['strip'], tiles: number): string {
+  const id = `${tiles}:${strip.svg}`;
+  const hit = strips.get(id);
+  if (hit !== undefined) return hit;
+  const inner = strip.svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+  const w = strip.w * tiles;
+  let body = '';
+  for (let i = 0; i < tiles; i++) body += `<g transform="translate(${i * strip.w} 0)">${inner}</g>`;
+  const xml = `<svg viewBox="0 0 ${w} ${strip.h}" width="100%" height="100%" aria-hidden="true">${body}</svg>`;
+  if (strips.size >= STRIP_KEEP) strips.clear();
+  strips.set(id, xml);
+  return xml;
+}
+const STRIP_KEEP = 64;
 
 // The name's chip over a set's balloon (`.e2nm`, `.n2nm`): the set's mark, its colours.
 function skinName(skin: SetBalloon): ViewStyle {
@@ -738,9 +795,23 @@ function skinName(skin: SetBalloon): ViewStyle {
 }
 
 // The balloon's ground under its words: the border's colours, the fill 2 in with its glows, the
-// vine or rope along the top and the foot, the ornaments at the corners (mirrored for the own).
-function SkinFrame({ skin, mine }: { skin: SetBalloon; mine: boolean }) {
-  const radii = skinRadii(skin, mine);
+// vine or rope along the top (a run's first) and the foot (its last), the ornaments at those
+// corners (mirrored for the own). The ornaments stand still while the stream scrolls.
+function SkinFrame({
+  skin,
+  mine,
+  first,
+  last,
+  moves,
+}: {
+  skin: SetBalloon;
+  mine: boolean;
+  first: boolean;
+  last: boolean;
+  moves: boolean;
+}) {
+  const radii = skinRadii(skin, mine, first);
+  const scrolling = useChatScrolling();
   const [w, setW] = useState(0);
   const round = (r: readonly [number, number, number, number], less: number): ViewStyle => ({
     borderTopLeftRadius: Math.max(r[0] - less, 0),
@@ -750,25 +821,24 @@ function SkinFrame({ skin, mine }: { skin: SetBalloon; mine: boolean }) {
   });
   const s = skin.strip;
   const tiles = w > 0 ? Math.ceil(Math.max(w - s.left - s.right, 0) / s.w) : 0;
-  const strip = (top: boolean) => (
-    <View
-      style={{
-        position: 'absolute',
-        left: mine ? s.right : s.left,
-        right: mine ? s.left : s.right,
-        height: s.h,
-        overflow: 'hidden',
-        flexDirection: 'row',
-        ...(top ? { top: s.out } : { bottom: s.out, transform: [{ scaleY: -1 }] }),
-      }}
-    >
-      {Array.from({ length: tiles }, (_, i) => (
-        <View key={i} style={{ width: s.w, height: s.h }}>
-          <CachedSvg xml={s.svg} width={s.w} height={s.h} />
+  const xml = tiles > 0 ? stripSvg(s, tiles) : null;
+  const strip = (top: boolean) =>
+    xml ? (
+      <View
+        style={{
+          position: 'absolute',
+          left: mine ? s.right : s.left,
+          right: mine ? s.left : s.right,
+          height: s.h,
+          overflow: 'hidden',
+          ...(top ? { top: s.out } : { bottom: s.out, transform: [{ scaleY: -1 }] }),
+        }}
+      >
+        <View style={{ width: s.w * tiles, height: s.h }}>
+          <CachedSvg xml={xml} width={s.w * tiles} height={s.h} />
         </View>
-      ))}
-    </View>
-  );
+      </View>
+    ) : null;
   const corner = (k: BalloonCorner) => {
     const c = skin.corners[k];
     const left = k === 'tl' || k === 'bl';
@@ -788,15 +858,26 @@ function SkinFrame({ skin, mine }: { skin: SetBalloon; mine: boolean }) {
           transform: [...turn, ...flip],
         }}
       >
-        <FxSvg xml={c.svg} width={c.w} height={c.h} />
+        <FxSvg
+          xml={c.svg}
+          width={c.w}
+          height={c.h}
+          still={!moves}
+          paused={scrolling}
+          lane={SKIN_LANE}
+        />
       </View>
     );
   };
+  const corners: BalloonCorner[] = [
+    ...(first ? (['tl', 'tr'] as const) : []),
+    ...(last ? (['bl', 'br'] as const) : []),
+  ];
   return (
     <View
       pointerEvents="none"
       style={StyleSheet.absoluteFill}
-      onLayout={(e) => setW(Math.round(e.nativeEvent.layout.width))}
+      onLayout={first || last ? (e) => setW(Math.round(e.nativeEvent.layout.width)) : undefined}
     >
       <View style={[StyleSheet.absoluteFill, round(radii, 0), gradientStyle(skin.border)]} />
       <View
@@ -808,12 +889,15 @@ function SkinFrame({ skin, mine }: { skin: SetBalloon; mine: boolean }) {
       >
         <View style={[StyleSheet.absoluteFill, gradientStyle(skin.aurora)]} />
       </View>
-      {strip(true)}
-      {strip(false)}
-      {(['tl', 'tr', 'bl', 'br'] as const).map(corner)}
+      {first ? strip(true) : null}
+      {last ? strip(false) : null}
+      {corners.map(corner)}
     </View>
   );
 }
+// The balloons' ornaments keep their own clocks: paused while the stream scrolls, apart from the
+// faces that move elsewhere on the screen.
+const SKIN_LANE = 'balloon';
 
 // A run's last bubble and its tail as one outline, filled and lined once (Telegram Android's
 // bubble; the owner's report, 6 Kasım: the tail laid beside the box did not look part of it). The

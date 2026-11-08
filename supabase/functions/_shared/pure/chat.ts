@@ -1,6 +1,7 @@
 // Chat rules (MVP_SPEC §7).
 export const MAX_MESSAGE_LENGTH = 200;
-export const MIN_MESSAGE_INTERVAL_MS = 1000;
+// A flood guard no person reaches (the owner's call, 8 Kasım): one message per half second.
+export const MIN_MESSAGE_INTERVAL_MS = 500;
 
 // Trimmed message, or null when empty or longer than 200 characters (code points, like the
 // database's char_length).

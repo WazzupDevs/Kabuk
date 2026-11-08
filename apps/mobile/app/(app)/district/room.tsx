@@ -1,6 +1,13 @@
 import type { DistrictSession } from '@shared/api/district.ts';
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { canRetry, mergeOutbox, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
+import {
+  canRetry,
+  mergeOutbox,
+  type OutboxMessage,
+  outboxReducer,
+  QUIET_RETRY_MS,
+  retriesQuietly,
+} from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
 import {
   DISTRICT_CHAT_REACTION_BROADCAST,
@@ -17,19 +24,20 @@ import {
 } from '@shared/venueChat.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { Animated, Easing, View } from 'react-native';
 
-import { Btn, Glass, Seg, T, useKit } from '@/aura/kit';
+import { Btn, T, useKit } from '@/aura/kit';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
-import { ChatBubble } from '@/components/ChatBubble';
+import { ChatBubble, skinMovers } from '@/components/ChatBubble';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
 import { IconButton, MoreDots } from '@/components/IconButton';
+import { IdentityToggle } from '@/components/IdentityToggle';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Menu, MenuItem } from '@/components/Menu';
@@ -50,8 +58,6 @@ import {
   useDistrictChatReactions,
   useDistrictState,
 } from '@/features/district/queries';
-import { useOwnLook } from '@/features/profile/useOwnLook';
-import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -91,8 +97,6 @@ function DistrictRoomBody() {
   const roomId = session?.roomId;
   const name = state.data?.district?.name ?? '';
   const page = useDistrictChat(roomId);
-  const photo = useOwnPhoto();
-  const look = useOwnLook();
   const [note, flash] = useFlash();
   const reply = useReplyTarget();
   const reactions = useDistrictChatReactions(roomId);
@@ -158,7 +162,7 @@ function DistrictRoomBody() {
       clientId: string;
     }) => districtChatApi.send(text, identity, replyTo, clientId),
   });
-  const deliver = (m: { localId: string; body: string; replyTo?: string }) => {
+  const deliver = (m: { localId: string; body: string; replyTo?: string }, attempt = 0) => {
     send
       .mutateAsync({
         text: m.body,
@@ -171,6 +175,11 @@ function DistrictRoomBody() {
       })
       .catch((err: unknown) => {
         const errorCode = err instanceof ApiError ? err.code : null;
+        // The flood guard: sent again by itself, nothing shown (docs/SPEC_V3.md §7).
+        if (retriesQuietly(errorCode, attempt)) {
+          setTimeout(() => deliver(m, attempt + 1), QUIET_RETRY_MS);
+          return;
+        }
         dispatch({ type: 'failed', localId: m.localId, errorCode });
         if (errorCode === 'identity_mismatch' || errorCode === 'no_session') {
           void queryClient.invalidateQueries({ queryKey: districtKeys.state });
@@ -309,7 +318,8 @@ function DistrictRoomBody() {
     }))
     .reverse();
   const newest = rows[0];
-  const renderRow = ({ m, out, first, last, day }: (typeof rows)[number]) =>
+  const movers = skinMovers(rows, (r) => !!r.m && balloonOf(r.m) !== null);
+  const renderRow = ({ key, m, out, first, last, day }: (typeof rows)[number]) =>
     out ? (
       <ChatRow id={out.localId} first={first} mine>
         {() => (
@@ -350,6 +360,7 @@ function DistrictRoomBody() {
             <ChatBubble
               testID={m.fromMe ? 'district-chat-mine' : 'district-chat-theirs'}
               skin={balloonOf(m)}
+              skinMoves={movers.has(key)}
               text={m.body}
               mine={m.fromMe}
               quote={quoteOf(m.replyTo)}
@@ -420,14 +431,6 @@ function DistrictRoomBody() {
       <View />
     );
 
-  const profiled = identity === 'profiled';
-  const ownFace = profiled ? (
-    <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
-  ) : look ? (
-    <LookAvatar look={look} size={SEMT.identity.face} />
-  ) : (
-    <Avatar kind="default" size="sm" />
-  );
   const leftH = session
     ? Math.floor(Math.ceil(secondsUntil(session.endsAt, new Date(at)) / 60) / 60)
     : 0;
@@ -474,9 +477,23 @@ function DistrictRoomBody() {
         <View style={{ gap: SEMT.timeChip.top }}>
           <ChatTopBar
             onBack={() => router.back()}
-            split
             title={tr.district.room.title(name)}
             titleLines={1}
+            toggle={
+              session ? (
+                <IdentityToggle
+                  testID="district-chat-mode"
+                  mode={identity}
+                  locked={session.identitySwitchUsed}
+                  busy={setIdentity.isPending}
+                  onPick={(mode) => {
+                    if (mode === identity || setIdentity.isPending) return;
+                    setIdentity.mutate(mode);
+                  }}
+                  onLocked={() => flash(tr.errors.identity_switch_used)}
+                />
+              ) : null
+            }
             actions={
               <IconButton
                 icon="ellipsis-vertical"
@@ -519,26 +536,7 @@ function DistrictRoomBody() {
           onSend={submit}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
-          above={
-            <View style={{ gap: SPACING[1.5] }}>
-              {note ? <Banner tone="info" body={note} testID="district-chat-note" /> : null}
-              {session ? (
-                <IdentityStrip
-                  face={ownFace}
-                  mode={identity}
-                  busy={setIdentity.isPending}
-                  onChange={(mode) => {
-                    if (mode === identity || setIdentity.isPending) return;
-                    if (session.identitySwitchUsed) {
-                      flash(tr.errors.identity_switch_used);
-                      return;
-                    }
-                    setIdentity.mutate(mode);
-                  }}
-                />
-              ) : null}
-            </View>
-          }
+          above={note ? <Banner tone="info" body={note} testID="district-chat-note" /> : undefined}
         />
       }
     >
@@ -658,75 +656,6 @@ function FirstHere() {
     </View>
   );
 }
-
-// `.idst`: who the viewer writes as, and Anonim | Profilim (one change per session; the seg wraps
-// under the words at 320 dp).
-function IdentityStrip({
-  face,
-  mode,
-  busy,
-  onChange,
-}: {
-  face: ReactNode;
-  mode: VenueChatMode;
-  busy: boolean;
-  onChange: (mode: VenueChatMode) => void;
-}) {
-  const s = SEMT.identity;
-  return (
-    <Glass
-      sm
-      testID="district-chat-mode"
-      radius={s.radius}
-      style={{
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        columnGap: s.gap,
-        rowGap: s.rowGap,
-        padding: s.pad,
-        borderRadius: s.radius,
-        opacity: busy ? BUSY_OPACITY : 1,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: s.labelGap,
-          flexShrink: 1,
-        }}
-      >
-        {face}
-        <T v="fine" style={{ flexShrink: 1 }}>
-          {mode === 'profiled'
-            ? tr.district.room.writingProfiled
-            : tr.district.room.writingAnonymous}
-        </T>
-      </View>
-      <View style={{ marginLeft: 'auto' }}>
-        <Seg
-          value={mode}
-          onChange={onChange}
-          accessibilityLabel={tr.district.room.identityLabel}
-          options={[
-            {
-              value: 'anonymous',
-              label: tr.district.room.anonymous,
-              testID: 'district-mode-anonymous',
-            },
-            {
-              value: 'profiled',
-              label: tr.district.room.profiled,
-              testID: 'district-mode-profiled',
-            },
-          ]}
-        />
-      </View>
-    </Glass>
-  );
-}
-const BUSY_OPACITY = 0.6;
 
 // SemtDevam: the session's 2 hours are over; Evet gives 2 more in the same room, Hayır closes it.
 // Out of the sheet (a tap outside, back) is no answer: the extra time runs on (§8.3).

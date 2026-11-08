@@ -1,5 +1,12 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { canRetry, mergeOutbox, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
+import {
+  canRetry,
+  mergeOutbox,
+  type OutboxMessage,
+  outboxReducer,
+  QUIET_RETRY_MS,
+  retriesQuietly,
+} from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
 import { setBalloonOf } from '@shared/gifts.ts';
 import {
@@ -12,18 +19,19 @@ import {
 } from '@shared/venueChat.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useMemo, useReducer, useState } from 'react';
+import { View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
-import { ChatBubble } from '@/components/ChatBubble';
+import { ChatBubble, skinMovers } from '@/components/ChatBubble';
 import { SET_BALLOONS, type SetBalloon } from '@/theme/setBalloons';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, MoreDots } from '@/components/IconButton';
+import { IdentityToggle } from '@/components/IdentityToggle';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Menu, MenuItem } from '@/components/Menu';
@@ -39,7 +47,6 @@ import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { refreshFriends } from '@/features/friends/queries';
-import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
@@ -67,7 +74,7 @@ import { FxMoves } from '@/components/FxSvg';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
 // live table at the venue reads and writes, with the check-in's identity (docs/SPEC_V4.md §4.D):
-// the capsule and its nick, or the name and the photo. The line over the message bar says which,
+// the capsule and its nick, or the name and the photo. The toggle in the top bar says which,
 // and changes it once per check-in. A sender's face opens their card (profile, mute, report,
 // block); a held message its faces and actions (reply; report, or delete one's own).
 // The accessories move here (the owner's call, 7 Kasım; components/FxSvg.tsx → FxMoves).
@@ -95,7 +102,6 @@ function VenueChatScreenBody() {
   const currentRoom = useCurrentRoom(sessionId);
   const identity = page.data?.identity ?? table.data?.identity ?? null;
   const photo = useOwnPhoto();
-  const look = useOwnLook();
   const [sheet, setSheet] = useState<'options' | 'identity' | null>(null);
   const [person, setPerson] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
@@ -146,7 +152,7 @@ function VenueChatScreenBody() {
     }) =>
       venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', replyTo, clientId),
   });
-  const deliver = (m: { localId: string; body: string; replyTo?: string }) => {
+  const deliver = (m: { localId: string; body: string; replyTo?: string }, attempt = 0) => {
     send
       .mutateAsync({
         text: m.body,
@@ -160,6 +166,11 @@ function VenueChatScreenBody() {
       })
       .catch((err: unknown) => {
         const errorCode = err instanceof ApiError ? err.code : null;
+        // The flood guard: sent again by itself, nothing shown (docs/SPEC_V3.md §7).
+        if (retriesQuietly(errorCode, attempt)) {
+          setTimeout(() => deliver(m, attempt + 1), QUIET_RETRY_MS);
+          return;
+        }
         dispatch({ type: 'failed', localId: m.localId, errorCode });
         // The identity changed elsewhere (or the photo went): nothing was sent; the line over the
         // bar shows the identity again, the bubble says why.
@@ -296,14 +307,6 @@ function VenueChatScreenBody() {
     (e) => e.at,
   );
   const profiled = identity?.mode === 'profiled';
-  const ownName = profiled ? photo.name : photo.nick;
-  const ownFace = profiled ? (
-    <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
-  ) : look ? (
-    <LookAvatar look={look} size={AVATAR_SIZE.sm} />
-  ) : (
-    <Avatar kind="default" size="sm" />
-  );
 
   // Newest first: the stream is drawn from the bottom up, as the DM's (Telegram Android's chat; the
   // owner's call, 30 Ekim). Runs and day lines worked out oldest first.
@@ -319,7 +322,8 @@ function VenueChatScreenBody() {
     }))
     .reverse();
   const newest = rows[0];
-  const renderRow = ({ m, out, first, last, day }: (typeof rows)[number]) =>
+  const movers = skinMovers(rows, (r) => !!r.m && balloonOf(r.m) !== null);
+  const renderRow = ({ key, m, out, first, last, day }: (typeof rows)[number]) =>
     out ? (
       <ChatRow id={out.localId} first={first} mine>
         {() => (
@@ -362,6 +366,7 @@ function VenueChatScreenBody() {
             <ChatBubble
               testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
               skin={balloonOf(m)}
+              skinMoves={movers.has(key)}
               text={m.body}
               mine={m.fromMe}
               quote={quoteOf(m.replyTo)}
@@ -489,23 +494,31 @@ function VenueChatScreenBody() {
       top={
         <ChatTopBar
           onBack={() => router.back()}
-          split
           // One line and the live dot, never taller or narrower as writers come (the owner's call,
           // 6 Kasım).
           title={tr.venueChat.open}
           titleLines={1}
           live
-          actions={
-            <View className="flex-row items-center" style={{ gap: SPACING[1] }}>
-              <Writers messages={messages ?? []} />
-              <IconButton
-                icon="ellipsis-vertical"
-                glyph={<MoreDots />}
-                label={tr.venueChat.options}
-                testID="venue-chat-options"
-                onPress={() => setSheet('options')}
+          stack={<Writers messages={messages ?? []} />}
+          toggle={
+            identity ? (
+              <IdentityToggle
+                testID="venue-chat-mode"
+                mode={identity.mode}
+                locked={identity.switchUsed}
+                onPick={() => setSheet('identity')}
+                onLocked={() => flash(tr.identity.used)}
               />
-            </View>
+            ) : null
+          }
+          actions={
+            <IconButton
+              icon="ellipsis-vertical"
+              glyph={<MoreDots />}
+              label={tr.venueChat.options}
+              testID="venue-chat-options"
+              onPress={() => setSheet('options')}
+            />
           }
         />
       }
@@ -521,19 +534,7 @@ function VenueChatScreenBody() {
           onSend={submit}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
-          above={
-            <View className="gap-1.5">
-              {note ? <Banner tone="info" body={note} testID="venue-chat-note" /> : null}
-              {identity ? (
-                <IdentityRow
-                  face={ownFace}
-                  name={ownName}
-                  used={identity.switchUsed}
-                  onChange={() => setSheet('identity')}
-                />
-              ) : null}
-            </View>
-          }
+          above={note ? <Banner tone="info" body={note} testID="venue-chat-note" /> : undefined}
         />
       }
     >
@@ -634,62 +635,6 @@ function VenueChatScreenBody() {
 }
 
 const MUTES_KEY = ['venueChatMutes'] as const;
-
-// docs/design/aura → Mekan sohbeti: who the viewer writes as, a glass pill over the message bar,
-// and the one change of the check-in (spent: "Bu girişte değişti").
-function IdentityRow({
-  face,
-  name,
-  used,
-  onChange,
-}: {
-  face: ReactNode;
-  name: string;
-  used: boolean;
-  onChange: () => void;
-}) {
-  return (
-    <View style={{ flexDirection: 'row' }}>
-      <Glass
-        sm
-        testID="venue-chat-mode"
-        style={{
-          flexShrink: 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: SPACING[2.5],
-          paddingVertical: SPACING[1.5],
-          paddingLeft: SPACING[1.5],
-          paddingRight: SPACING[3],
-          borderRadius: KIT.venueChatStripRadius,
-        }}
-      >
-        {face}
-        <T v="fine" style={{ flexShrink: 1 }}>
-          <T v="fine" strong>
-            {name}
-          </T>{' '}
-          {tr.venueChat.writingAs}
-        </T>
-        {used ? (
-          <T v="fine">{tr.venueChat.changed}</T>
-        ) : (
-          <Pressable
-            testID="venue-chat-change"
-            accessibilityRole="button"
-            accessibilityLabel={tr.venueChat.changeLabel}
-            onPress={onChange}
-            hitSlop={SPACING[3]}
-          >
-            <T v="fine" strong color={KIT.primary}>
-              {tr.venueChat.change}
-            </T>
-          </Pressable>
-        )}
-      </Glass>
-    </View>
-  );
-}
 
 // skall tuvali (MekanSohbetiSecenekler): the people the viewer muted, each with "Sesi aç".
 function OptionsSheet({

@@ -30,7 +30,6 @@ export function SemtSheetFixture({ sheet }: { sheet: 'options' | 'end' }) {
         top={
           <ChatTopBar
             onBack={noop}
-            split
             title={tr.district.room.title(NAME)}
             titleLines={1}
             actions={
