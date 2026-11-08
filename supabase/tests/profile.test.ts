@@ -442,6 +442,7 @@ describe('profile/get', () => {
         displayName: 'Ayşe',
         bio: null,
         photoUrl: null,
+        coverUrl: null,
         badges: [],
         age: TEST_AGE,
         photoHidden: false,

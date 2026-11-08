@@ -370,7 +370,14 @@ describe('venue chat: profile through the message', () => {
     const res = await invoke(b, 'profile', { action: 'get', venueChatMessageId: messageId });
     expect(res).toEqual({
       status: 200,
-      body: { displayName: 'Ayşe', bio: 'Kampüsteyim', photoUrl: null, badges: [], age: TEST_AGE },
+      body: {
+        displayName: 'Ayşe',
+        bio: 'Kampüsteyim',
+        photoUrl: null,
+        coverUrl: null,
+        badges: [],
+        age: TEST_AGE,
+      },
     });
   });
 
