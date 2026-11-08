@@ -123,6 +123,14 @@ describe('finding the district (rule 6)', () => {
     expect(outside.state).toMatchObject({ district: null, located: 'outside' });
   });
 
+  it('refuses a mock location app’s position (as at check-in)', async () => {
+    const a = await onboarded(TABLE_PHONES[0]);
+    // The local stack takes the phone's mock flag as the emulator's (refusesMockedPosition): the
+    // refusal itself is pure (devProject.test.ts); here the field is accepted.
+    const res = await district(a, { action: 'locate', ...AVCILAR, mocked: true });
+    expect(res.status).toBe(200);
+  });
+
   it('closes the open session when the district changes or is outside', async () => {
     const { c } = await inRoom(0);
     expect((await at(c, AVCILAR)).state.session).not.toBeNull();
@@ -371,7 +379,8 @@ describe('the room chat', () => {
     const [m] = await sql`select hidden_at from public.district_chat_messages where id = ${id}`;
     expect(m?.hidden_at).not.toBeNull();
     const [rep] = await sql`
-      select count(*)::int as n from public.reports where target_type = 'district_chat'
+      select count(*)::int as n from public.reports
+      where target_type = 'district_chat' and district_chat_message_id = ${id}
     `;
     expect(rep?.n).toBe(3);
   });
@@ -390,13 +399,50 @@ describe('Realtime (rule 9)', () => {
 
     const outsider = await onboarded(TABLE_PHONES[2] as string);
     const refused = waitForBroadcast(outsider, topic, DISTRICT_CHAT_BROADCAST, 3000);
+    // Nothing arrives on a refused channel: its timeout is expected.
+    const nothing = refused.received.catch(() => {});
     await expect(refused.subscribed).rejects.toThrow();
-    await refused.received.catch(() => {});
+    await nothing;
     await refused.close();
   });
 });
 
 describe('locks (rule 10)', () => {
+  // Rooms come before sessions: entering locks the room first, and only then the old open session.
+  it('locks the room before the old session', async () => {
+    const x = await inRoom(0);
+    const y = await inRoom(1);
+    expect(y.roomId).toBe(x.roomId);
+    // y's session is over but not closed yet (the job has not run).
+    const [old] = await sql`
+      update public.district_sessions
+      set ends_at = now() - interval '20 minutes', grace_ends_at = now() - interval '1 minute'
+      where user_id = ${y.userId} and status = 'open'
+      returning id
+    `;
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const entering = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let entered: Promise<unknown> = Promise.resolve();
+      await holder.begin(async (tx) => {
+        await tx`select id from public.district_rooms where id = ${x.roomId} for update`;
+        entered = entering`select room_id from public.district_enter(${y.userId}, 15, 120, 10)`
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('district_enter');
+        // While it waits on the room, the old session is not locked.
+        await tx`set local lock_timeout = '1s'`;
+        await tx`select id from public.district_sessions where id = ${old?.id as string} for update`;
+      });
+      expect(await entered).toEqual([{ room_id: x.roomId }]);
+      const [closed] =
+        await sql`select status from public.district_sessions where id = ${old?.id as string}`;
+      expect(closed?.status).toBe('closed');
+    } finally {
+      await Promise.all([holder.end(), entering.end()]);
+    }
+  });
+
   // Two people going for the last seat at the same time: one gets it, the other the next room.
   it('places one at a time under the district-day lock', async () => {
     const ids: string[] = [];

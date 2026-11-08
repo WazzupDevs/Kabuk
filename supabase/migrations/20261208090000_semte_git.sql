@@ -373,14 +373,13 @@ begin
 
   perform private.lock_district_day(ud.district_id, today);
 
+  -- The open session is read without a lock here (rooms come before sessions, rule 10); it is
+  -- locked and closed after the room, below.
   select * into s from public.district_sessions
-  where user_id = target_user_id and status = 'open'
-  for no key update;
-  if s.id is not null then
-    if s.district_id = ud.district_id and s.day = today and s.grace_ends_at > now() then
-      return s;
-    end if;
-    update public.district_sessions set status = 'closed', closed_at = now() where id = s.id;
+  where user_id = target_user_id and status = 'open';
+  if s.id is not null and s.district_id = ud.district_id and s.day = today
+     and s.grace_ends_at > now() then
+    return s;
   end if;
 
   -- Back to today's last room, if it has a seat.
@@ -392,7 +391,7 @@ begin
     select r.id into target_room from public.district_rooms r
     where r.id = last_s.room_id
       and (select count(*) from public.district_sessions o
-           where o.room_id = r.id and o.status = 'open') < capacity
+           where o.room_id = r.id and o.status = 'open' and o.grace_ends_at > now()) < capacity
     for no key update;
     if target_room is not null then
       select min(o.joined_at) into joined from public.district_sessions o
@@ -404,7 +403,7 @@ begin
     select r.id into target_room from public.district_rooms r
     left join lateral (
       select count(*) as n from public.district_sessions o
-      where o.room_id = r.id and o.status = 'open'
+      where o.room_id = r.id and o.status = 'open' and o.grace_ends_at > now()
     ) c on true
     where r.district_id = ud.district_id and r.day = today and c.n < capacity
     order by c.n desc, r.created_at, r.id
@@ -417,6 +416,18 @@ begin
     insert into public.district_rooms (district_id, day) values (ud.district_id, today)
     returning id into target_room;
     joined := now();
+  end if;
+
+  -- After the room: an old open session (another district, a past day, its extra time over) is
+  -- locked, read again and closed before the new one (one open session per person).
+  select * into s from public.district_sessions
+  where user_id = target_user_id and status = 'open'
+  for no key update;
+  if s.id is not null then
+    if s.district_id = ud.district_id and s.day = today and s.grace_ends_at > now() then
+      return s;
+    end if;
+    update public.district_sessions set status = 'closed', closed_at = now() where id = s.id;
   end if;
 
   new_ends := least(now() + make_interval(mins => session_minutes), midnight);
@@ -968,9 +979,18 @@ begin
   delete from public.district_rooms
   where id in (select id from public.district_rooms where day < today for update skip locked);
   delete from public.gecit_answers where day < today;
-  delete from public.district_chat_rate where last_sent_at < now() - interval '1 day';
+  delete from public.district_chat_rate
+  where user_id in (
+    select user_id from public.district_chat_rate
+    where last_sent_at < now() - interval '1 day'
+    for update skip locked
+  );
   delete from public.district_chat_reaction_rate
-  where window_started_at < now() - interval '1 day';
+  where user_id in (
+    select user_id from public.district_chat_reaction_rate
+    where window_started_at < now() - interval '1 day'
+    for update skip locked
+  );
 end;
 $$;
 

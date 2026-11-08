@@ -19,15 +19,16 @@ async function locateOnLaunch(queryClient: ReturnType<typeof useQueryClient>): P
     queryFn: readDistrictState,
   });
   if (state.located === 'never') return;
-  const { coords } = await Location.getCurrentPositionAsync({
+  const { coords, mocked } = await Location.getCurrentPositionAsync({
     accuracy: Location.Accuracy.Balanced,
   });
-  const found = await districtApi.locate(coords.latitude, coords.longitude);
+  const fake = mocked === true;
+  const found = await districtApi.locate(coords.latitude, coords.longitude, undefined, fake);
   // Near a shared border: the district found last stays if it is one of the two (the person chose
   // it before); otherwise the card asks again when it is pressed.
   const kept = state.district?.ref;
   if (found.candidates && kept && found.candidates.some((c) => c.ref === kept)) {
-    const again = await districtApi.locate(coords.latitude, coords.longitude, kept);
+    const again = await districtApi.locate(coords.latitude, coords.longitude, kept, fake);
     putDistrictState(queryClient, again.state);
     return;
   }

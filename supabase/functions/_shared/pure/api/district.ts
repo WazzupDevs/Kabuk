@@ -44,7 +44,7 @@ export type DistrictRequest =
   | { action: 'state' }
   // The coordinate is used once and kept nowhere (rule 6). choice: one of the candidates a previous
   // call returned for the same place. ref: the dev project's hand pick (pickByHand only).
-  | { action: 'locate'; lat: number; lng: number; choice?: string }
+  | { action: 'locate'; lat: number; lng: number; choice?: string; mocked?: boolean }
   | { action: 'pick'; ref: string }
   | { action: 'answer'; day: string; choice: number }
   | { action: 'enter' }

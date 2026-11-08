@@ -447,12 +447,14 @@ export const venueChatApi = {
 export const districtApi = {
   state: () => invoke<DistrictState>('district', { action: 'state' }),
   // `choice`: one of the districts a previous call offered for the same place (a shared border).
-  locate: (lat: number, lng: number, choice?: string) =>
+  // `mocked`: the phone says a mock location app gave the position; the server refuses it.
+  locate: (lat: number, lng: number, choice?: string, mocked?: boolean) =>
     invoke<DistrictLocateResponse>('district', {
       action: 'locate',
       lat,
       lng,
       ...(choice ? { choice } : {}),
+      ...(mocked ? { mocked: true } : {}),
     }),
   // The dev project's hand pick (state.pickByHand only).
   pick: (ref: string) => invoke<DistrictState>('district', { action: 'pick', ref }),

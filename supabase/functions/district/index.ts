@@ -17,7 +17,11 @@ import type {
   DistrictState,
   GecitStatus,
 } from '../_shared/pure/api/district.ts';
-import { locationCheck, testQuestionsAllowed } from '../_shared/pure/devProject.ts';
+import {
+  locationCheck,
+  refusesMockedPosition,
+  testQuestionsAllowed,
+} from '../_shared/pure/devProject.ts';
 import {
   DISTRICT,
   type DistrictShape,
@@ -39,6 +43,7 @@ const Body: z.ZodType<DistrictRequest> = z.discriminatedUnion('action', [
     lat: z.number().min(-90).max(90),
     lng: z.number().min(-180).max(180),
     choice: z.string().max(40).optional(),
+    mocked: z.boolean().optional(),
   }),
   z.strictObject({ action: z.literal('pick'), ref: z.string().max(40) }),
   z.strictObject({
@@ -177,6 +182,14 @@ Deno.serve(
 
       if (body.action === 'locate') {
         // The coordinate stays in this call: it is not logged, stored or answered (rule 6).
+        // A mock location app's position is refused, as at check-in (audit SRV-1).
+        const check = locationCheck(
+          Deno.env.get('CHECKIN_SKIP_LOCATION'),
+          Deno.env.get('SUPABASE_URL'),
+        );
+        if (refusesMockedPosition(body.mocked, check, Deno.env.get('SUPABASE_URL'))) {
+          throw new AppError('location_mocked', 'The position comes from a mock location app.');
+        }
         const districts = await activeDistricts();
         const found = locate(
           [body.lng, body.lat],

@@ -35,7 +35,7 @@ export default function DistrictLocateScreen() {
   const state = useDistrictState();
   const [status, setStatus] = useState<Status>('finding');
   const [candidates, setCandidates] = useState<DistrictRef[]>([]);
-  const here = useRef<{ lat: number; lng: number } | null>(null);
+  const here = useRef<{ lat: number; lng: number; mocked: boolean } | null>(null);
   const enter = useEnterDistrict();
 
   const settle = useCallback(
@@ -55,8 +55,17 @@ export default function DistrictLocateScreen() {
 
   const locate = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ lat, lng, choice }: { lat: number; lng: number; choice?: string }) =>
-      districtApi.locate(lat, lng, choice),
+    mutationFn: ({
+      lat,
+      lng,
+      choice,
+      mocked,
+    }: {
+      lat: number;
+      lng: number;
+      choice?: string;
+      mocked: boolean;
+    }) => districtApi.locate(lat, lng, choice, mocked),
     onSuccess: (answer) => {
       if (answer.candidates && answer.candidates.length > 1) {
         setCandidates(answer.candidates);
@@ -80,10 +89,10 @@ export default function DistrictLocateScreen() {
     mutationFn: async () => {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (!permission.granted) throw new Error(DENIED);
-      const { coords } = await Location.getCurrentPositionAsync({
+      const { coords, mocked } = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-      return { lat: coords.latitude, lng: coords.longitude };
+      return { lat: coords.latitude, lng: coords.longitude, mocked: mocked === true };
     },
     onSuccess: (p) => {
       here.current = p;
