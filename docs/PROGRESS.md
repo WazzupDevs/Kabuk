@@ -10,7 +10,7 @@
 
 Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür.
 
-- Profil sekmesi kapağı (8 Kasım, önizleme gönderildi, onay bekliyor): kapak daha kısa (`PROFILE_COVER.height` 190 → öneri 140). Yukarı kaydırınca fotoğraf (112 → 32) ve isim kayarak üstteki şeride gider (sol üstte fotoğraf, yanında isim); aşağı kaydırınca aynı yoldan geri inip büyür. Bugünkü şeridin belirmesi yerine bu hareket; yarıda bırakılırsa en yakın uca yerleşir. Taslak sohbette gönderildi (kişisel fotoğraf içerdiği için repoya girmez).
+- Profil sekmesi kapağı (8 Kasım, önizleme onaylandı): kapak daha kısa, `PROFILE_COVER.height` 190 → 120 (durum çubuğunun altında). Yukarı kaydırınca fotoğraf (112 → 32) küçülerek kayıp şeridin soluna, isim (34 → 17) küçülüp yanına gider; şeridin zemini son %30'da belirir. Aşağı kaydırınca aynı yoldan geri inip büyür. Bugünkü şeridin yalnızca belirmesi yerine bu hareket; yarıda bırakılırsa en yakın uca (açık ya da şerit) yerleşir. Hareket aralığı: kapağın şeridin altına girmesi + 60, yumuşak giriş-çıkış. Önizleme sohbette onaylandı (kişisel fotoğraf içerdiği için repoya girmez).
 
 ## Sıradaki build'de toplananlar
 
