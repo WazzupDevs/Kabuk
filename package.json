@@ -26,6 +26,7 @@
     "admin:ban": "pnpm --filter scripts admin:ban",
     "admin:delete": "pnpm --filter scripts admin:delete",
     "admin:event": "pnpm --filter scripts admin:event",
+    "admin:reports": "pnpm --filter scripts admin:reports",
     "admin:remove-photo": "pnpm --filter scripts admin:remove-photo",
     "admin:move-photos": "pnpm --filter scripts admin:move-photos",
     "admin:set-birth-date": "pnpm --filter scripts admin:set-birth-date",
