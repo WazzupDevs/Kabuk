@@ -1,5 +1,11 @@
 import { MAX_MESSAGE_LENGTH, prepareMessage, type ReportReason } from '@shared/chat.ts';
-import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
+import {
+  canRetry,
+  type OutboxMessage,
+  outboxReducer,
+  QUIET_RETRY_MS,
+  retriesQuietly,
+} from '@shared/chatOutbox.ts';
 import { parseQuote, parseReactionCounts } from '@shared/messageExtras.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -96,7 +102,7 @@ export function useRoomChat(roomId: string) {
     },
   });
 
-  const deliver = (localId: string, text: string, replyTo?: string) => {
+  const deliver = (localId: string, text: string, replyTo?: string, attempt = 0) => {
     chatApi
       .send(roomId, text, replyTo)
       .then(async () => {
@@ -104,11 +110,13 @@ export function useRoomChat(roomId: string) {
         dispatch({ type: 'sent', localId });
       })
       .catch((err: unknown) => {
-        dispatch({
-          type: 'failed',
-          localId,
-          errorCode: err instanceof ApiError ? err.code : null,
-        });
+        const errorCode = err instanceof ApiError ? err.code : null;
+        // The flood guard: sent again by itself, nothing shown (docs/SPEC_V3.md §7).
+        if (retriesQuietly(errorCode, attempt)) {
+          setTimeout(() => deliver(localId, text, replyTo, attempt + 1), QUIET_RETRY_MS);
+          return;
+        }
+        dispatch({ type: 'failed', localId, errorCode });
       });
   };
 

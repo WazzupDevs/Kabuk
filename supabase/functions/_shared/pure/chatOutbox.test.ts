@@ -4,9 +4,11 @@ import { toRuns } from './chatRuns.ts';
 import {
   canRetry,
   mergeOutbox,
+  outboxReducer,
+  QUIET_RETRY_MAX,
+  retriesQuietly,
   type Outbox,
   type OutboxMessage,
-  outboxReducer,
 } from './chatOutbox.ts';
 import type { ErrorCode } from './errors.ts';
 
@@ -180,5 +182,15 @@ describe('canRetry, the venue chat (Grup 3, P5)', () => {
     };
     expect(canRetry(m)).toBe(false);
     expect(canRetry({ ...m, errorCode: 'client_id_reused' })).toBe(false);
+  });
+});
+
+describe('retriesQuietly', () => {
+  it('sends a flood-guarded message again a few times, nothing else', () => {
+    expect(retriesQuietly('rate_limited', 0)).toBe(true);
+    expect(retriesQuietly('too_soon', QUIET_RETRY_MAX - 1)).toBe(true);
+    expect(retriesQuietly('rate_limited', QUIET_RETRY_MAX)).toBe(false);
+    expect(retriesQuietly('internal', 0)).toBe(false);
+    expect(retriesQuietly(null, 0)).toBe(false);
   });
 });

@@ -31,6 +31,16 @@ export type OutboxAction =
 // Errors worth retrying: no answer at all, the rate limit, or a server fault.
 const RETRYABLE: readonly (ErrorCode | null)[] = [null, 'rate_limited', 'internal'];
 
+// The flood guard's answers (docs/SPEC_V3.md §7: no felt limit): the phone sends the message again
+// by itself after a moment, a few times, showing nothing; only after that it fails as usual.
+const QUIET_RETRY: readonly (ErrorCode | null)[] = ['rate_limited', 'too_soon'];
+export const QUIET_RETRY_MS = 1000;
+export const QUIET_RETRY_MAX = 5;
+
+export function retriesQuietly(errorCode: ErrorCode | null, attempt: number): boolean {
+  return QUIET_RETRY.includes(errorCode) && attempt < QUIET_RETRY_MAX;
+}
+
 export function canRetry(message: OutboxMessage): boolean {
   return message.status === 'failed' && RETRYABLE.includes(message.errorCode);
 }

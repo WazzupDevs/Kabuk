@@ -1,5 +1,12 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { canRetry, mergeOutbox, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
+import {
+  canRetry,
+  mergeOutbox,
+  type OutboxMessage,
+  outboxReducer,
+  QUIET_RETRY_MS,
+  retriesQuietly,
+} from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
 import { setBalloonOf } from '@shared/gifts.ts';
 import {
@@ -145,7 +152,7 @@ function VenueChatScreenBody() {
     }) =>
       venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', replyTo, clientId),
   });
-  const deliver = (m: { localId: string; body: string; replyTo?: string }) => {
+  const deliver = (m: { localId: string; body: string; replyTo?: string }, attempt = 0) => {
     send
       .mutateAsync({
         text: m.body,
@@ -159,6 +166,11 @@ function VenueChatScreenBody() {
       })
       .catch((err: unknown) => {
         const errorCode = err instanceof ApiError ? err.code : null;
+        // The flood guard: sent again by itself, nothing shown (docs/SPEC_V3.md §7).
+        if (retriesQuietly(errorCode, attempt)) {
+          setTimeout(() => deliver(m, attempt + 1), QUIET_RETRY_MS);
+          return;
+        }
         dispatch({ type: 'failed', localId: m.localId, errorCode });
         // The identity changed elsewhere (or the photo went): nothing was sent; the line over the
         // bar shows the identity again, the bubble says why.
