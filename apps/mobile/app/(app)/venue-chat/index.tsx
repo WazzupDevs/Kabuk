@@ -494,12 +494,12 @@ function VenueChatScreenBody() {
       top={
         <ChatTopBar
           onBack={() => router.back()}
-          // One line and the live dot, never taller or narrower as writers come (the owner's call,
-          // 6 Kasım).
+          // The title at its full size; under it the live dot and the last writers' small faces,
+          // never taller or narrower as writers come (the owner's calls, 6 and 8 Kasım).
           title={tr.venueChat.open}
           titleLines={1}
           live
-          stack={<Writers messages={messages ?? []} />}
+          under={<Writers messages={messages ?? []} />}
           toggle={
             identity ? (
               <IdentityToggle
@@ -713,29 +713,24 @@ function Writers({ messages }: { messages: readonly VenueChatMessage[] }) {
     last.push(m);
   }
   return (
-    // In the actions' pill: clear of its round edge. Always as wide as three faces, so the title's
-    // pill keeps its size whoever writes.
+    // Under the title after the live dot; as tall as a face with no writers yet, so the bar keeps
+    // its height whoever writes.
     <View
       className="flex-row"
-      style={{
-        paddingLeft: SPACING[2],
-        width:
-          SPACING[2] + KIT.size.av.sm + (WRITERS - 1) * (KIT.size.av.sm - KIT.size.stackOverlap),
-        justifyContent: 'flex-end',
-      }}
+      style={{ height: FACE }}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
       {last.map((m, i) => (
-        <View key={m.id} style={{ marginLeft: i === 0 ? 0 : -KIT.size.stackOverlap }}>
+        <View key={m.id} style={{ marginLeft: i === 0 ? 0 : -FACE_OVERLAP }}>
           {m.profiled ? (
-            <Av size="sm" name={senderLabel(m)} photoUrl={m.photoUrl} />
+            <Av size="xs" name={senderLabel(m)} photoUrl={m.photoUrl} />
           ) : m.senderLook ? (
-            <Av size="sm" name={senderLabel(m)}>
-              <LookAvatar look={m.senderLook} size={KIT.size.av.sm} />
+            <Av size="xs" name={senderLabel(m)}>
+              <LookAvatar look={m.senderLook} size={FACE} />
             </Av>
           ) : (
-            <Av size="sm" name={senderLabel(m)} />
+            <Av size="xs" name={senderLabel(m)} />
           )}
         </View>
       ))}
@@ -743,3 +738,5 @@ function Writers({ messages }: { messages: readonly VenueChatMessage[] }) {
   );
 }
 const WRITERS = 3;
+const FACE = KIT.size.av.xs;
+const FACE_OVERLAP = 5;

@@ -3,6 +3,7 @@ import { explorePlace, todayEvents } from '@shared/explore.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
+import { runOnJS, useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
 
 import { Btn, Glass, Li, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
@@ -30,10 +31,19 @@ import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
 import { useNarrow } from '@/lib/useNarrow';
+import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 type Tab = 'events' | 'history';
+
+// The page starts 20 under the title (Screen's TOP_FADE); the tabs 20 under the gift card, and
+// pinned 8 under the title with 8 under them.
+const PAGE_TOP = SPACING[5];
+const TABS_TOP = SPACING[5];
+const PIN_PAD = SPACING[2];
+const GIFT_OVERHANG = SPACING[3];
 
 // U16: a record's picture 52, 16 round, on the raised shadow.
 const THUMB = KIT.size.historyThumb;
@@ -51,10 +61,53 @@ export default function ActivitiesScreen() {
   const now = useNow(60_000);
   const city = useCity();
   const narrow = useNarrow();
+  const { scheme, shape } = useTheme();
+  const { c } = useKit();
+  // Scrolled up, the tabs pin under the title once they reach it; the list scrolls under them
+  // (the owner's call, 8 Kasım).
+  const scrollY = useSharedValue(0);
+  const [giftH, setGiftH] = useState(0);
+  const [pinned, setPinned] = useState(false);
+  const pinAt = PAGE_TOP + giftH + TABS_TOP - PIN_PAD;
+  useAnimatedReaction(
+    () => giftH > 0 && scrollY.value >= pinAt,
+    (now, before) => {
+      if (now !== before) runOnJS(setPinned)(now);
+    },
+    [pinAt, giftH],
+  );
+  const tabs = (
+    <Seg<Tab>
+      narrow={narrow}
+      value={tab}
+      onChange={setTab}
+      accessibilityLabel={tr.activities.tabs}
+      options={[
+        { value: 'events', label: tr.activities.events, testID: 'activities-tab-events' },
+        { value: 'history', label: tr.activities.history, testID: 'activities-tab-history' },
+      ]}
+    />
+  );
   return (
     <Screen
       edges={['top']}
       refreshable
+      scrollY={scrollY}
+      pinned={
+        pinned ? (
+          <View
+            style={{
+              paddingHorizontal: shape.screenPadding,
+              paddingVertical: PIN_PAD,
+              backgroundColor: AURA[scheme].ground,
+              borderBottomWidth: KIT.size.hair,
+              borderBottomColor: c.hair,
+            }}
+          >
+            {tabs}
+          </View>
+        ) : null
+      }
       // U15: the place as an eyebrow over the title (both tabs), 4 apart. The title stays on top;
       // the content scrolls under it (the owner's call, 8 Kasım: titles never scroll).
       top={
@@ -66,23 +119,17 @@ export default function ActivitiesScreen() {
         </View>
       }
     >
-      {/* Hediye paketleri (§4.U, AktivitelerHediye): the gift card over the tabs. */}
-      <View>
+      {/* Hediye paketleri (§4.U, AktivitelerHediye): the gift card over the tabs. The packs and
+          the number over the bronze one stand out over the card's top: room for them, or the
+          list's top edge cuts them (the owner's report, 8 Kasım). */}
+      <View
+        style={{ paddingTop: GIFT_OVERHANG }}
+        onLayout={(e) => setGiftH(e.nativeEvent.layout.height)}
+      >
         <GiftCard />
       </View>
-      <View style={{ marginTop: SPACING[5] }}>
-        {/* U15: the glass seg, 44 high. */}
-        <Seg<Tab>
-          narrow={narrow}
-          value={tab}
-          onChange={setTab}
-          accessibilityLabel={tr.activities.tabs}
-          options={[
-            { value: 'events', label: tr.activities.events, testID: 'activities-tab-events' },
-            { value: 'history', label: tr.activities.history, testID: 'activities-tab-history' },
-          ]}
-        />
-      </View>
+      {/* U15: the glass seg, 44 high; hidden while its pinned copy is over it. */}
+      <View style={{ marginTop: TABS_TOP, opacity: pinned ? 0 : 1 }}>{tabs}</View>
       {tab === 'events' ? <Events now={now} city={city} /> : <History now={now} />}
     </Screen>
   );

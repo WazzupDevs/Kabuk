@@ -108,6 +108,7 @@ export const KIT_TYPE = {
   member: t(600, 11, 14),
   wordmark: t(800, 26, 30, -0.04),
   av: {
+    xs: t(700, 9, 11),
     md: t(700, 15, 19),
     sm: t(700, 12, 16),
     member: t(700, 12, 16),
@@ -581,6 +582,8 @@ export const KIT = {
     // `seat`: Masa's card when its people fit one row (58).
     // member: Masa's people (U22); list: Masadakiler's rows (U24).
     av: {
+      // The venue chat's last writers under its title (the owner's call, 8 Kasım).
+      xs: 18,
       sm: 32,
       member: 36,
       list: 40,
@@ -641,6 +644,7 @@ export const KIT = {
     boxRingGap: 2,
     chipIconPadLeft: 10,
     avRing: 2,
+    avRingXs: 1.5,
     avRingXl: 3,
     avRingHero: 4,
     thumb: 60,
@@ -673,8 +677,9 @@ export const KIT = {
     // Mesajlar's bell (52) and its new message button (70, 26 from the right).
     // U27: the bell 44 (round soft).
     bell: 44,
-    // U27 (`.fab`): the new chat button 56, 20 from the right.
-    newChat: 56,
+    // U27 (`.fab`): the new chat button, 20 from the right; the round buttons' size (44, as the
+    // bell), riso (the owner's call, 8 Kasım).
+    newChat: 44,
     newChatRight: 20,
     // Mesajlar's rows: a 58 face, 12 above and under.
     // U27 (`.list .li`): a conversation 72 high, 12 / 16 in; the hairline from 72.

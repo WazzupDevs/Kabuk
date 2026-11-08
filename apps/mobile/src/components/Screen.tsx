@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { ScrollView, View } from 'react-native';
 import { type Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { SharedValue } from 'react-native-reanimated';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { useTabOpenings } from '@/aura/motion';
@@ -49,6 +50,10 @@ type Props = {
   // above the tab bar, and 12 above the keyboard while it is up (the screen's own keyboard padding
   // lifts it; no second offset). What does not fit scrolls above it and fades into its top edge.
   footer?: ReactNode;
+  // A refreshing list's offset (PullScroll), and what is drawn over the list's top edge: a part
+  // pinned once it reaches the top (Aktiviteler's tabs, the owner's call, 8 Kasım).
+  scrollY?: SharedValue<number>;
+  pinned?: ReactNode;
   // Drawn on the ground behind the page, placed against the whole screen (Aura v71: a riso buddy
   // standing in a corner of Gizlilik, Engellenenler).
   backdrop?: ReactNode;
@@ -79,6 +84,8 @@ export function Screen({
   list,
   footer,
   backdrop,
+  scrollY,
+  pinned,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -127,6 +134,7 @@ export function Screen({
         ) : refresh && !scrollRef && !stickyHeaderIndices ? (
           <PullScroll
             onRefresh={refresh}
+            scrollY={scrollY}
             contentContainerStyle={content}
             keyboardShouldPersistTaps="handled"
           >
@@ -144,6 +152,14 @@ export function Screen({
             {cascade(children, openings)}
           </ScrollView>
         )}
+        {pinned ? (
+          <View
+            pointerEvents="box-none"
+            style={{ position: 'absolute', left: 0, right: 0, top: 0 }}
+          >
+            {pinned}
+          </View>
+        ) : null}
         {footer ? (
           <View
             style={{

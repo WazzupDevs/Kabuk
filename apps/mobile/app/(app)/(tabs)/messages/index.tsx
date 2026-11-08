@@ -2,14 +2,13 @@ import { inboxStamp } from '@shared/dmInbox.ts';
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { Animated, Easing, Image, Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { PopIn } from '@/aura/PopIn';
-import { Av, Badge, Glass, Li, RowList, Seg, T, useKit, usePress } from '@/aura/kit';
+import { Av, Badge, Glass, Li, RISO_TEXTURE, RowList, Seg, T, useKit } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
-import { shadowParts } from '@/components/NativeShadow';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
@@ -25,7 +24,6 @@ import { useDmTyping } from '@/features/friends/useDmTyping';
 import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
 import { KIT } from '@/theme/auraKit';
 
@@ -86,18 +84,22 @@ export default function MessagesScreen() {
   );
 }
 
-// The round "+" at the bottom right (70, the primary's), over the list and above the tab bar; it
-// pops in (docs/design/aura → Mesajlar).
+// The round "+" at the bottom right, over the list and above the tab bar; it pops in (docs/design/
+// aura → Mesajlar). A riso round as the other buttons, the size of the other round buttons (the
+// bell's): the ink flat, the pink printed a little off under it, the texture over it; pressed, the
+// print settles onto the pink (the owner's call, 8 Kasım).
 function NewMessageButton({ onPress }: { onPress: () => void }) {
   const barSpace = useTabBarSpace();
-  const press = usePress();
-  const { c } = useKit();
-  const shadow = shadowParts(
-    useLabOff('golge'),
-    c.primaryShadow,
-    c.primaryInset,
-    KIT.size.newChat / 2,
-  );
+  const R = KIT.riso;
+  const [sink] = useState(() => new Animated.Value(0));
+  const settle = (to: number) =>
+    Animated.timing(sink, {
+      toValue: to,
+      duration: R.pressMs,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  const travel = sink.interpolate({ inputRange: [0, 1], outputRange: [0, R.shift - 1] });
   return (
     <View style={{ position: 'absolute', right: KIT.size.newChatRight, bottom: barSpace }}>
       <PopIn rise={NEW_CHAT_RISE}>
@@ -106,29 +108,47 @@ function NewMessageButton({ onPress }: { onPress: () => void }) {
           accessibilityRole="button"
           accessibilityLabel={tr.messages.newMessage}
           onPress={onPress}
-          onPressIn={press.onPressIn}
-          onPressOut={press.onPressOut}
+          onPressIn={() => settle(1)}
+          onPressOut={() => settle(0)}
         >
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: R.shift,
+              left: R.shift,
+              width: NEW_CHAT,
+              height: NEW_CHAT,
+              borderRadius: NEW_CHAT / 2,
+              backgroundColor: R.offset,
+            }}
+          />
           <Animated.View
             style={{
-              width: KIT.size.newChat,
-              height: KIT.size.newChat,
-              borderRadius: KIT.size.newChat / 2,
+              width: NEW_CHAT,
+              height: NEW_CHAT,
+              borderRadius: NEW_CHAT / 2,
+              overflow: 'hidden',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: KIT.primary,
-              boxShadow: shadow.boxShadow,
-              transform: [{ scale: press.scale }],
+              backgroundColor: R.ink,
+              transform: [{ translateX: travel }, { translateY: travel }],
             }}
           >
-            {shadow.node}
-            <CapIcon name="plus" color={KIT.onPrimary} soft={NEW_CHAT_SOFT} />
+            <Image
+              source={RISO_TEXTURE.light}
+              resizeMode="repeat"
+              accessibilityIgnoresInvertColors
+              style={{ position: 'absolute', left: 0, top: 0, width: NEW_CHAT, height: NEW_CHAT }}
+            />
+            <CapIcon name="plus" color={R.onInk} soft={NEW_CHAT_SOFT} />
           </Animated.View>
         </Pressable>
       </PopIn>
     </View>
   );
 }
+const NEW_CHAT = KIT.size.newChat;
 const NEW_CHAT_RISE = 12;
 // The plus's second stroke on the primary (the board: .62).
 const NEW_CHAT_SOFT = 0.62;
@@ -232,7 +252,7 @@ function Chats({ now }: { now: Date }) {
     );
   }
   return (
-    <View style={{ paddingBottom: KIT.size.newChat }}>
+    <View style={{ paddingBottom: NEW_CHAT }}>
       {/* The room under the last row for the "+" over it. */}
       {/* U27: the conversations on glass sm, a hairline from 72 to 16 short of the right. */}
       <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>

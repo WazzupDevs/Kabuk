@@ -1,21 +1,15 @@
 # İlerleme
 
-## Devir notu (8 Kasım 2026, revize paketi)
+## Devir notu (8 Kasım 2026, telefon revizeleri)
 
-- #524, #525 ve son PR main'de: Oturumu kapat, başlıklar kaymaz, Keşfet anahtarı, paket ekranı (Aç kutusu, kare gölge, Atla yok, kademe ortada); sohbet tek kapsül çubuk, kimlik anahtarı üstte, birleşik ve hafif set balonları, hissedilmeyen hız sınırı; riso düğmeler; Kapsülünü süsle yeni düzen (şerit, Hepsini gör); Profil kapak ve bilet, kapak yükleme (kural 4'e kapak, §4.W, guvenlik denetlendi).
-- Telefonda doğrulanacak (hiçbiri cihazda görülmedi): riso doku ve kayma, Süsle şeridinin yavaş bırakmada uygulanması ve Hepsini gör'deki paket atlama, profil kaydırma şeridi, kapak yükleme, set balonu grubunda gönderilmekte olan mesajın alt süsü.
-- Açık: gece E2E 6–8 Kasım'dır kırmızı (bu paketten önce); görsel kapı görüntüleri bu ortamdan indirilemiyor (blob adresi ağ dışı).
+- Bu PR: profil kapağı 120 ve şeride kayan fotoğraf ve ad (`profile/index.tsx`, §4.W), Aktiviteler'de paket sayısı tam görünür ve Etkinlikler / Geçmiş başlığın altında sabitlenir (`Screen` → `scrollY`, `pinned`), riso düğme dokusu düğmeyi kaplar (`kit.tsx` → `TEXTURE_FILL`), yeni mesaj düğmesi riso 44, mekan sohbeti çubuğunda başlık tam boy ve yazanlar altta (`ChatTopBar` → `under`), sohbet çubuklarında kapsüller hareketsiz (`FxMoves on={false}`).
+- Önceki paketten (#524–#526) telefonda doğrulanacak: riso doku ve kayma, Süsle şeridi ve Hepsini gör'deki paket atlama, kapak yükleme, set balonu grubunda gönderilmekte olan mesajın alt süsü.
+- Telefonda doğrulanacak: kapakta kaymanın yumuşaklığı ve yarıda bırakınca yerleşme, sabitlenen anahtarın geçişi, 18'lik yazan yüzleri.
+- Açık: gece E2E 6–8 Kasım'dır kırmızı; görsel kapı görüntüleri bu ortamdan indirilemiyor.
 
 ## Sıradaki toplu OTA'da toplananlar
 
-Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür.
-
-- Profil sekmesi kapağı (8 Kasım, önizleme onaylandı): kapak daha kısa, `PROFILE_COVER.height` 190 → 120 (durum çubuğunun altında). Yukarı kaydırınca fotoğraf (112 → 32) küçülerek kayıp şeridin soluna, isim (34 → 17) küçülüp yanına gider; şeridin zemini son %30'da belirir. Aşağı kaydırınca aynı yoldan geri inip büyür. Bugünkü şeridin yalnızca belirmesi yerine bu hareket; yarıda bırakılırsa en yakın uca (açık ya da şerit) yerleşir. Hareket aralığı: kapağın şeridin altına girmesi + 60, yumuşak giriş-çıkış. Önizleme sohbette onaylandı (kişisel fotoğraf içerdiği için repoya girmez).
-- Aktiviteler hediye kartı (8 Kasım, hata): paketin sağ üstteki sayısı (`CanOpenBadge`) kesik görünüyor; kart listenin en üstünde olduğundan Bronz paketin ve sayının karttan taşan üst kısmını kaydırma alanının üst kenarı kesiyor. Düzeltme: kartın üstüne taşan pay kadar boşluk (`GiftCard` ya da `activities.tsx`'te kartın sarmalayıcısı), sayı tam görünür.
-- Aktiviteler sabit anahtar (8 Kasım, önizleme onaylandı): yukarı kaydırınca hediye kartı başlığın altından geçer; Etkinlikler / Geçmiş anahtarı başlığın hemen altına gelince orada sabitlenir, arkasına zemin ve ince çizgi gelir, liste altından kayar. Aşağı kaydırınca kart geri gelir, anahtar yerine döner (`Screen` → `stickyHeaderIndices` ya da kaydırmaya bağlı kopya).
-- Riso düğmelerin dokusu kesik (8 Kasım, hata): nokta dokusu düğmenin tamamını kaplamıyor, sağda bir yerde düz kesiliyor (Profili düzenle'de yaklaşık dörtte üç, Kapsülünü süsle'de daha geride). Bilerek değil; doku bütün düğmeyi kaplamalı. `src/aura/kit.tsx` → `TEXTURE_FILL`: Android'de `resizeMode="repeat"`'li `Image` yüzde genişlikle döşemeyi ilk ölçülen boyda bırakıyor gibi. Düzeltme: dokuyu düğmenin `onLayout` boyuyla ya da düğmeden geniş sabit bir döşemeyle çizip düğmenin köşesiyle kırpmak; bütün riso düğmelerde (ana, küçük, kağıt) denetlenir.
-- Mesajlar yeni mesaj düğmesi (8 Kasım, revize; önizleme onaylandı, B): bugünkü düz yeşil 60'lık yuvarlak düğme riso olur (düz yeşil, altında pembe baskı, nokta dokusu, basınca baskıya oturur) ve bugünkü yerinde (sağ alt) kalır. Boyu öteki yuvarlak ikon düğmeleriyle (zil dahil) aynı: 44 (`KIT.size.round` kuralı; `KIT.size.newChat` 56 → 44 ya da kaldırılıp ortak boy).
-- Mekan sohbeti üst çubuğu (8 Kasım, revize; önizleme onaylandı, C): çubuk sıkışık; son yazanların yüzleri ve kimlik anahtarı yer kaplayınca "Mekan sohbeti" (`titleLines={1}`, `fit`) okunmayacak kadar küçülüyor. Yeni hâl: başlık tam boyda (h3, küçülmez), altında ikinci satırda canlı nokta ve son yazanların küçük yüzleri (18, üst üste); sağda kimlik anahtarı ve menü; dar ekranda (320 dp, en büyük yazı) yüzler yine ilk gider. Çubuktaki hiçbir kapsül hareketli değildir: yazanların yüzlerinde ve kimlik anahtarındaki kapsülde aksesuar hareketi (`capsuleFx`, `FxSvg`) çizilmez, durağan çizilir; bütün sohbet üst çubuklarında (`ChatTopBar`: mekan, semt, masa, DM). Semt sohbetinde de aynı düzen (8 Kasım, proje sahibi): başlık tam boyda ve küçülmez, sağda kimlik anahtarı ve menü, kapsüller hareketsiz; ancak semt sohbetinde son yazanların yüzleri ve kişi sayısı gösterilmez (kural 4: presence ve son yazanlar yok), ikinci satır yüzsüz kalır. `src/components/ChatTopBar.tsx`, `app/(app)/venue-chat/index.tsx`, `app/(app)/district/room.tsx`.
+Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür. Boş.
 
 ## Sıradaki build'de toplananlar
 
