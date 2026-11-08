@@ -1408,6 +1408,8 @@ export type Database = {
           capsule_look: string | null;
           capsule_nick: string | null;
           capsule_nick_changed_at: string | null;
+          cover_path: string | null;
+          cover_pending_path: string | null;
           created_at: string;
           default_participation: string;
           display_name: string | null;
@@ -1438,6 +1440,8 @@ export type Database = {
           capsule_look?: string | null;
           capsule_nick?: string | null;
           capsule_nick_changed_at?: string | null;
+          cover_path?: string | null;
+          cover_pending_path?: string | null;
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
@@ -1468,6 +1472,8 @@ export type Database = {
           capsule_look?: string | null;
           capsule_nick?: string | null;
           capsule_nick_changed_at?: string | null;
+          cover_path?: string | null;
+          cover_pending_path?: string | null;
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
@@ -3454,6 +3460,8 @@ export type Database = {
           capsule_look: string | null;
           capsule_nick: string | null;
           capsule_nick_changed_at: string | null;
+          cover_path: string | null;
+          cover_pending_path: string | null;
           created_at: string;
           default_participation: string;
           display_name: string | null;
