@@ -14,7 +14,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { choosePhoto, PhotoError, type PhotoSource } from './photo';
 import { profileViewKeys } from './queries';
 
-function photoErrorMessage(err: unknown): string {
+export function photoErrorMessage(err: unknown): string {
   if (err instanceof PhotoError) {
     return err.reason === 'permission' ? tr.profile.photoPermission : tr.profile.photoInvalid;
   }

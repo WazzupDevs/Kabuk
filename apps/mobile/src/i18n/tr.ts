@@ -661,6 +661,15 @@ export const tr = {
       'Fotoğrafın şikayetler nedeniyle gizlendi; kimse göremiyor. Yeni bir fotoğraf yükleyebilirsin.',
     photoPermission: 'Fotoğraf seçmek için izin gerekiyor. İzni ayarlardan verebilirsin.',
     photoInvalid: 'Bu fotoğraf kullanılamadı. Başka bir fotoğraf dene.',
+    // docs/SPEC_V4.md §4.W: the profile's cover and the anonymous identity's ticket.
+    cover: 'Kapak',
+    coverChange: 'Kapağı değiştir',
+    coverRemove: 'Kapağı kaldır',
+    coverNeedsName: 'Kapak eklemek için önce bir ad seç.',
+    coverDefault: 'Kapağın yok; profilinde varsayılan sahne görünür.',
+    ticketKicker: 'Anonim kimliğin',
+    ticketNo: (tail: string) => `No. ${tail}`,
+    nickRenewIn: (days: number) => `Yenile · ${days} gün sonra`,
     badges: {
       first_game: 'İlk oyun',
       ten_games: '10 oyun',
