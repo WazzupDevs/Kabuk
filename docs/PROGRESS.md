@@ -9,7 +9,9 @@
 
 ## Sıradaki toplu OTA'da toplananlar
 
-Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür. Boş.
+Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür.
+
+- Aktiviteler sabit anahtarın arkası (8 Kasım, hata, #527'den): sabitlenince Etkinlikler / Geçmiş'in arkasında kart gibi düz bir şerit çıkıyor. Şerit düz zemin rengiyle (`AURA[scheme].ground`) ve alt çizgiyle çizildi; ekranın arkası ise renk bulutlu resim, bu yüzden ayrı bir kart gibi duruyor. Düzeltme: şeridin arkası başlığın arkası gibi aynı renk bulutlu zeminin o hizadaki parçası (`AuraBand`, `src/aura/AuraBackground.tsx`), alt çizgi yok; liste yine altından kayar ve görünmez.
 
 ## Sıradaki build'de toplananlar
 
