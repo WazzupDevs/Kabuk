@@ -367,7 +367,6 @@ export const tr = {
       `%${(Math.round((parts / total) * 100 * 1000) / 1000).toString().replace('.', ',')}`,
     close: 'Kapat',
     ripHint: 'Yırtmak için şeridi sağa kaydır',
-    skip: 'Atla',
     tiltHint: 'Kartı sağa sola sürükleyerek çevir',
     later: 'Sonra',
     wear: 'Aksesuarı tak',

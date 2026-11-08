@@ -777,14 +777,26 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
       radius={h / 2}
       style={{
         height: h,
+        // Two rounds 2 apart, the padding and the edge each side: sized here, since the rounds sit
+        // over the capsule's middle (the owner's report, 8 Kasım: the chosen one leaned down).
+        width: 2 * round + SWITCH_GAP + 2 * (pad + KIT.size.edge),
         borderRadius: h / 2,
-        padding: pad,
       }}
     >
       <View
         accessibilityRole="tablist"
         accessibilityLabel={tr.explore.viewSwitch}
-        style={{ flexDirection: 'row', gap: 2 }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SWITCH_GAP,
+        }}
       >
         {(['list', 'map'] as const).map((mode) => {
           const on = value === mode;
@@ -823,5 +835,7 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
 
 // skall.css `.ci.md` (20).
 const ICON_MD = 20;
+// The list/map rounds' gap.
+const SWITCH_GAP = 2;
 // Kesfet `.dark .segx span.on .ci`: the light scheme's accent on the white part.
 const THEME_LIGHT_ACCENT = THEME.palettes.light.accent;

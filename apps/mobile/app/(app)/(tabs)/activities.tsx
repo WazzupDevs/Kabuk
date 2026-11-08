@@ -52,16 +52,22 @@ export default function ActivitiesScreen() {
   const city = useCity();
   const narrow = useNarrow();
   return (
-    <Screen edges={['top']} refreshable>
-      {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; 24 to the tabs. */}
-      <View style={{ gap: SPACING[1] }}>
-        {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}
-        <T v="display" accessibilityRole="header">
-          {tr.tabs.activities}
-        </T>
-      </View>
-      {/* Hediye paketleri (§4.U, AktivitelerHediye): the gift card over the tabs, 20 apart. */}
-      <View style={{ marginTop: SPACING[5] }}>
+    <Screen
+      edges={['top']}
+      refreshable
+      // U15: the place as an eyebrow over the title (both tabs), 4 apart. The title stays on top;
+      // the content scrolls under it (the owner's call, 8 Kasım: titles never scroll).
+      top={
+        <View style={{ gap: SPACING[1] }}>
+          {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}
+          <T v="display" accessibilityRole="header">
+            {tr.tabs.activities}
+          </T>
+        </View>
+      }
+    >
+      {/* Hediye paketleri (§4.U, AktivitelerHediye): the gift card over the tabs. */}
+      <View>
         <GiftCard />
       </View>
       <View style={{ marginTop: SPACING[5] }}>

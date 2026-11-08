@@ -359,7 +359,14 @@ export function Btn({
       onPress={onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
-      style={[{ alignSelf: block ? 'stretch' : inRow ? 'center' : 'flex-start' }, style]}
+      // Round like the button: a shadow a screen gives it (Paketler's Aç) drew a box round it.
+      style={[
+        {
+          alignSelf: block ? 'stretch' : inRow ? 'center' : 'flex-start',
+          borderRadius: KIT.size.btn,
+        },
+        style,
+      ]}
     >
       <Animated.View
         style={[

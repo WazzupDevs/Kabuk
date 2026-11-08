@@ -23,7 +23,7 @@ import Svg, {
 } from 'react-native-svg';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, T } from '@/aura/kit';
+import { T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { svgKey } from '@/lib/svgKey';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -39,7 +39,7 @@ import { Glow, type Rect, type Stage, centerOf } from './stage';
 // middle; its strip, above a jagged line at 8.5 % of its height, is torn left to right by the
 // finger. The torn part lifts at the tear's end; the gap shows a shade and a white edge. Let go
 // under 70 % it springs back; past it the strip flies off, the card rises out of the pack and the
-// pack falls away. Atla is a rip past the line.
+// pack falls away. A screen reader rips it with the hint's action.
 const PACK = { left: 65, top: 190, w: 260 };
 const CARD_IN_PACK = { left: 30, top: 20, w: 200, radius: 12 };
 const GLOWS = [
@@ -60,7 +60,6 @@ const START_BELOW = 80;
 const P_FILL_MS = 150;
 const FINGER_SIZE = 44;
 const HINT_FROM_FOOT = 96;
-const SKIP_FROM_FOOT = 44;
 
 export function ripRects(stage: Stage): { pack: Rect; card: Rect } {
   const w = PACK.w * stage.s;
@@ -372,8 +371,16 @@ export function Rip({
           chromeStyle,
         ]}
       >
+        {/* No Atla (the owner's call, 8 Kasım): the finger rips the strip. A screen reader, which
+            cannot drag, rips it with the hint's action. */}
         <View
-          pointerEvents="none"
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={tr.gifts.ripHint}
+          accessibilityActions={[{ name: 'activate' }]}
+          onAccessibilityAction={() => {
+            if (!skipping) skip();
+          }}
           style={{
             position: 'absolute',
             left: 20 * s,
@@ -384,18 +391,6 @@ export function Rip({
           <T v="fine" center>
             {tr.gifts.ripHint}
           </T>
-        </View>
-        <View
-          pointerEvents="box-none"
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: stage.foot(SKIP_FROM_FOOT),
-            alignItems: 'center',
-          }}
-        >
-          <Btn variant="glassy" sm label={tr.gifts.skip} onPress={skip} disabled={skipping} />
         </View>
       </Reanimated.View>
     </View>

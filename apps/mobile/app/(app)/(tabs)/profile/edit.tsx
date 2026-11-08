@@ -184,9 +184,15 @@ function EditForm({
       // U34: back 44 round soft on the bar; it stays while the page scrolls (the owner's report,
       // 2 Kasım, 12.1).
       top={
-        <View style={{ height: KIT.size.btnRow, justifyContent: 'center' }}>
-          <Round glassy icon="back" label={tr.common.back} onPress={leave} />
-        </View>
+        <>
+          <View style={{ height: KIT.size.btnRow, justifyContent: 'center' }}>
+            <Round glassy icon="back" label={tr.common.back} onPress={leave} />
+          </View>
+          {/* The title stays with the bar (the owner's call, 8 Kasım: titles never scroll). */}
+          <T v="display" accessibilityRole="header">
+            {tr.profile.editTitle}
+          </T>
+        </>
       }
       footer={
         // aura v50 (ProfilDuzenle): Kaydet stays at the foot, the save error right above it.
@@ -206,11 +212,7 @@ function EditForm({
         </>
       }
     >
-      <T v="display" accessibilityRole="header">
-        {tr.profile.editTitle}
-      </T>
-
-      <View style={{ marginTop: SPACING[5] }}>
+      <View style={{ marginTop: SPACING[3] }}>
         <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
       </View>
       {/* U34: the fields on one glass sm card 20 under the photo, 16 inside; a field's label,

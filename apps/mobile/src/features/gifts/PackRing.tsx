@@ -34,6 +34,8 @@ import type { Rect, Stage } from './stage';
 
 // The ring's board lies from 128 (under the top bar and the page's first gap) to the dots at 506.
 export const RING_FROM = 128;
+// Room round a pack for its shadow (PACK_DROP: 10 down, blur up to 7: about 3 × 7 past it).
+const SHADOW_ROOM = 32;
 const RING_TO = 500;
 const DOTS_AT = 506;
 export const INFO_AT = 532;
@@ -342,7 +344,22 @@ function RingPack({
           importantForAccessibility="no-hide-descendants"
           style={{ flex: 1 }}
         >
-          <Reanimated.View style={[{ flex: 1 }, lightStyle]}>
+          {/* The light's layer reaches past the pack by the shadow's room: a filter cuts what lies
+              past its view, and the shadow under the pack was cut square (the owner's report,
+              8 Kasım). */}
+          <Reanimated.View
+            style={[
+              {
+                position: 'absolute',
+                left: -SHADOW_ROOM,
+                right: -SHADOW_ROOM,
+                top: -SHADOW_ROOM,
+                bottom: -SHADOW_ROOM,
+                padding: SHADOW_ROOM,
+              },
+              lightStyle,
+            ]}
+          >
             <View style={{ flex: 1, filter: [PACK_DROP[scheme]] }}>
               <Image
                 source={PACK_ART[view.id]}
