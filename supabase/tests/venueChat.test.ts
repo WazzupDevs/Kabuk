@@ -184,6 +184,8 @@ describe('venue chat: who reads and writes', () => {
       identity: 'anonymous',
     });
     expect(first.status).toBe(200);
+    // The last message just now (later than the clock: no timing in the test).
+    await sql`update public.venue_chat_rate set last_sent_at = now() + interval '1 hour'`;
     expect(
       await invoke(a, 'venue-chat', {
         action: 'send',
@@ -193,9 +195,10 @@ describe('venue chat: who reads and writes', () => {
       }),
     ).toEqual({ status: 429, body: errorBody('too_soon') });
 
-    // At most 20 in 10 minutes.
+    // At most 20 in 10 seconds.
     await sql`update public.venue_chat_rate
-              set count = ${VENUE_CHAT.windowMax}, last_sent_at = '-infinity'`;
+              set count = ${VENUE_CHAT.windowMax}, last_sent_at = '-infinity',
+                  window_started_at = now()`;
     expect(
       await invoke(a, 'venue-chat', {
         action: 'send',
@@ -204,7 +207,7 @@ describe('venue chat: who reads and writes', () => {
         identity: 'anonymous',
       }),
     ).toEqual({ status: 429, body: errorBody('rate_limited') });
-    await sql`update public.venue_chat_rate set window_started_at = now() - interval '11 minutes'`;
+    await sql`update public.venue_chat_rate set window_started_at = now() - interval '11 seconds'`;
     expect((await send(a, 'dört')).status).toBe(200);
   });
 });

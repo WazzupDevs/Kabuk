@@ -5,9 +5,10 @@ import type { Quote, ReactionCount } from './messageExtras.ts';
 
 export const VENUE_CHAT = {
   maxLength: MAX_MESSAGE_LENGTH,
-  // Per account: one message per 3 seconds, and at most 20 in 10 minutes.
-  minIntervalMs: 3000,
-  windowSeconds: 600,
+  // Per account, a flood guard no person reaches (the owner's call, 8 Kasım: no felt limit): one
+  // message per half second, at most 20 in 10 seconds. The phone sends a held one again by itself.
+  minIntervalMs: 500,
+  windowSeconds: 10,
   windowMax: 20,
   // A message reported by this many different accounts is hidden from everyone but its sender.
   hideAfterReports: 3,

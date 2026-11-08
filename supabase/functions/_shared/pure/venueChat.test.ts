@@ -15,8 +15,8 @@ describe('VENUE_CHAT rules', () => {
   it('match the spec', () => {
     expect(VENUE_CHAT).toMatchObject({
       maxLength: 200,
-      minIntervalMs: 3000,
-      windowSeconds: 600,
+      minIntervalMs: 500,
+      windowSeconds: 10,
       windowMax: 20,
       hideAfterReports: 3,
       reportSnapshotSize: 50,
@@ -38,23 +38,23 @@ describe('prepareVenueMessage', () => {
 describe('venueChatRate', () => {
   const t0 = 1_000_000;
 
-  it('allows the first message and one every 3 seconds', () => {
+  it('allows the first message and one every half second', () => {
     const first = venueChatRate(null, t0);
     expect(first).toEqual({ ok: true, next: { windowStartedAt: t0, count: 1, lastSentAt: t0 } });
     const prev = { windowStartedAt: t0, count: 1, lastSentAt: t0 };
-    expect(venueChatRate(prev, t0 + 2999)).toEqual({ ok: false, reason: 'too_soon' });
-    expect(venueChatRate(prev, t0 + 3000)).toEqual({
+    expect(venueChatRate(prev, t0 + 499)).toEqual({ ok: false, reason: 'too_soon' });
+    expect(venueChatRate(prev, t0 + 500)).toEqual({
       ok: true,
-      next: { windowStartedAt: t0, count: 2, lastSentAt: t0 + 3000 },
+      next: { windowStartedAt: t0, count: 2, lastSentAt: t0 + 500 },
     });
   });
 
-  it('stops at 20 in 10 minutes and starts a new window after', () => {
-    const full = { windowStartedAt: t0, count: 20, lastSentAt: t0 + 60_000 };
-    expect(venueChatRate(full, t0 + 120_000)).toEqual({ ok: false, reason: 'rate_limited' });
-    expect(venueChatRate(full, t0 + 600_000)).toEqual({
+  it('stops at 20 in 10 seconds and starts a new window after', () => {
+    const full = { windowStartedAt: t0, count: 20, lastSentAt: t0 + 6_000 };
+    expect(venueChatRate(full, t0 + 8_000)).toEqual({ ok: false, reason: 'rate_limited' });
+    expect(venueChatRate(full, t0 + 10_000)).toEqual({
       ok: true,
-      next: { windowStartedAt: t0 + 600_000, count: 1, lastSentAt: t0 + 600_000 },
+      next: { windowStartedAt: t0 + 10_000, count: 1, lastSentAt: t0 + 10_000 },
     });
   });
 });

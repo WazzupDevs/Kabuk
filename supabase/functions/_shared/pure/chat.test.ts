@@ -5,7 +5,7 @@ import { MAX_MESSAGE_LENGTH, MIN_MESSAGE_INTERVAL_MS, prepareMessage } from './c
 describe('prepareMessage', () => {
   it('matches the spec limits', () => {
     expect(MAX_MESSAGE_LENGTH).toBe(200);
-    expect(MIN_MESSAGE_INTERVAL_MS).toBe(1000);
+    expect(MIN_MESSAGE_INTERVAL_MS).toBe(500);
   });
 
   it('trims and accepts 1 to 200 characters', () => {
