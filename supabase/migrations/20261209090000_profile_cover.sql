@@ -6,18 +6,21 @@ alter table public.profiles
   add column cover_path text,
   add column cover_pending_path text;
 
--- The cover's own moderation (as the photo's, docs/arsiv/SPEC_V2.md §5.3): a profile or history
--- report keeps the cover's path in its snapshot (and the edge function its copy, cover_copy); two
--- different accounts reporting the same cover hide it until a new cover is committed. Both closed
--- to the client (no column grant; reports have no client access at all).
+-- The cover's own moderation (as the photo's, docs/arsiv/SPEC_V2.md §5.3): a profile report keeps
+-- the cover's path in its snapshot (and the edge function its copy, cover_copy); two different
+-- accounts reporting the same cover hide it until a new cover is committed. Only profile reports:
+-- a history report may concern an anonymous encounter, which must never point at the account's
+-- cover (rule 4), and it does not hold the profile first (rule 10). Both closed to the client (no
+-- column grant; reports have no client access at all).
 alter table public.profiles
   add column cover_hidden_at timestamptz;
 
 alter table public.reports
   add column cover_copy bytea;
 
--- Lock order (rule 10): the reporting functions already hold the reported profile; this one locks
--- the same row again in the same transaction.
+-- Lock order (rule 10): safety_report_profile, the only path that reaches this, holds the reported
+-- profile (for update) before its report insert; this locks the same row again in the same
+-- transaction.
 create function private.hide_cover_if_reported(target_user_id uuid)
 returns void
 language plpgsql
@@ -34,7 +37,7 @@ begin
   end if;
   select count(distinct reporter_id) into reporters
   from public.reports
-  where target_type in ('profile', 'history')
+  where target_type = 'profile'
     and reported_user_id = p.id
     and profile_snapshot ->> 'cover_path' = p.cover_path;
   if reporters >= 2 then
@@ -45,7 +48,7 @@ $$;
 
 revoke all on function private.hide_cover_if_reported(uuid) from public, anon, authenticated;
 
--- Every profile or history report records the reported person's cover at that moment.
+-- Every profile report records the reported person's cover at that moment.
 create function private.report_cover_snapshot()
 returns trigger
 language plpgsql
@@ -69,7 +72,7 @@ revoke all on function private.report_cover_snapshot() from public, anon, authen
 create trigger reports_cover_snapshot
   before insert on public.reports
   for each row
-  when (new.target_type in ('profile', 'history') and new.reported_user_id is not null)
+  when (new.target_type = 'profile' and new.reported_user_id is not null)
   execute function private.report_cover_snapshot();
 
 create function private.report_hide_cover()
@@ -89,7 +92,7 @@ revoke all on function private.report_hide_cover() from public, anon, authentica
 create trigger reports_hide_cover
   after insert on public.reports
   for each row
-  when (new.target_type in ('profile', 'history') and new.reported_user_id is not null)
+  when (new.target_type = 'profile' and new.reported_user_id is not null)
   execute function private.report_hide_cover();
 
 -- The reported cover's copy (the edge function reads the file): on the reporter's latest profile
