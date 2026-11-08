@@ -1,9 +1,15 @@
 import { containsContact } from '@shared/profanity.ts';
-import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
+import {
+  BIO_MAX,
+  COVER_HEIGHT_PX,
+  COVER_WIDTH_PX,
+  DISPLAY_NAME_MAX,
+  DISPLAY_NAME_MIN,
+} from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { BackHandler, Pressable, View } from 'react-native';
+import { BackHandler, Linking, Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Btn, Glass, Round, T, useKit } from '@/aura/kit';
@@ -12,7 +18,10 @@ import { Screen } from '@/components/Screen';
 import { useHideTabBar } from '@/components/TabBar';
 import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
-import { PhotoSheet } from '@/features/profile/PhotoSheet';
+import { PhotoSheet, photoErrorMessage } from '@/features/profile/PhotoSheet';
+import { chooseCover, PhotoError } from '@/features/profile/photo';
+import { ProfileCover } from '@/features/profile/ProfileCover';
+import { PROFILE_COVER } from '@/theme/profileCover';
 import { Sheet } from '@/components/Sheet';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -110,6 +119,89 @@ function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean
 const CAMERA = 36;
 const CAMERA_OUT = 4;
 const CAMERA_DOWN = 2;
+
+// The profile cover (docs/SPEC_V4.md §4.W): its small preview (or the riso scene) with "Kapağı
+// değiştir" and, with one, "Kapağı kaldır". Like the photo, it needs a saved name first.
+function CoverEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
+  const queryClient = useQueryClient();
+  const view = useProfileView(publicId);
+  const coverUrl = view.data?.coverUrl ?? null;
+  const refresh = () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all });
+  const setCover = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: chooseCover,
+    onSettled: refresh,
+  });
+  const removeCover = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: () => profileApi.coverRemove(),
+    onSettled: refresh,
+  });
+  const busy = setCover.isPending || removeCover.isPending;
+  const failed = setCover.isError ? setCover.error : removeCover.isError ? removeCover.error : null;
+
+  return (
+    <Glass sm style={{ marginTop: SPACING[5], padding: SPACING[4], gap: SPACING[3] }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[3] }}>
+        <View style={{ width: PROFILE_COVER.previewWidth }}>
+          <ProfileCover
+            url={coverUrl}
+            height={(PROFILE_COVER.previewWidth * COVER_HEIGHT_PX) / COVER_WIDTH_PX}
+            radius={PROFILE_COVER.previewRadius}
+            accessibilityLabel={tr.profile.cover}
+          />
+        </View>
+        <View style={{ flex: 1, gap: SPACING[2], alignItems: 'flex-start' }}>
+          <T v="h3">{tr.profile.cover}</T>
+          {!coverUrl && view.data ? <T v="fine">{tr.profile.coverDefault}</T> : null}
+        </View>
+      </View>
+      {!hasName ? <T v="fine">{tr.profile.coverNeedsName}</T> : null}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[2] }}>
+        <Btn
+          sm
+          variant="glassy"
+          testID="cover-change"
+          label={tr.profile.coverChange}
+          disabled={!hasName || (busy && !setCover.isPending)}
+          loading={setCover.isPending}
+          onPress={() => !busy && setCover.mutate()}
+        />
+        {coverUrl ? (
+          <Btn
+            sm
+            variant="glassy"
+            testID="cover-remove"
+            label={tr.profile.coverRemove}
+            disabled={busy && !removeCover.isPending}
+            loading={removeCover.isPending}
+            onPress={() => !busy && removeCover.mutate()}
+          />
+        ) : null}
+      </View>
+      {view.isError ? (
+        <T v="fine" color={KIT.danger}>
+          {errorMessage(view.error)}
+        </T>
+      ) : null}
+      {failed ? (
+        <View style={{ gap: SPACING[2] }}>
+          <T v="fine" color={KIT.danger}>
+            {photoErrorMessage(failed)}
+          </T>
+          {failed instanceof PhotoError && failed.reason === 'permission' ? (
+            <Btn
+              sm
+              variant="glassy"
+              label={tr.checkin.openSettings}
+              onPress={() => void Linking.openSettings()}
+            />
+          ) : null}
+        </View>
+      ) : null}
+    </Glass>
+  );
+}
 
 function EditForm({
   publicId,
@@ -215,6 +307,7 @@ function EditForm({
       <View style={{ marginTop: SPACING[3] }}>
         <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
       </View>
+      <CoverEditor publicId={publicId} hasName={initialName !== ''} />
       {/* U34: the fields on one glass sm card 20 under the photo, 16 inside; a field's label,
           the field and its note 8 apart, the groups 12 more. */}
       <Glass sm style={{ marginTop: SPACING[5], padding: SPACING[4], gap: SPACING[5] }}>

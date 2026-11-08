@@ -315,6 +315,10 @@ describe('profile/update', () => {
     const { error } = await client.from('profiles').select('photo_path').single();
     expect(error).not.toBeNull();
     expect((await client.from('profiles').select('photo_hidden_at').single()).error).not.toBeNull();
+    // The cover's columns too (docs/SPEC_V4.md §4.W).
+    for (const column of ['cover_path', 'cover_pending_path', 'cover_hidden_at']) {
+      expect((await client.from('profiles').select(column).single()).error).not.toBeNull();
+    }
   });
 });
 
@@ -438,6 +442,7 @@ describe('profile/get', () => {
         displayName: 'Ayşe',
         bio: null,
         photoUrl: null,
+        coverUrl: null,
         badges: [],
         age: TEST_AGE,
         photoHidden: false,
@@ -645,6 +650,111 @@ describe('profile photos', () => {
     expect(await objectExists(pathB)).toBe(false);
     await deleteAccount(admin, await userIdOf(c));
     expect(await objectExists(pathC)).toBe(false);
+  });
+});
+
+// The profile cover (docs/SPEC_V4.md §4.W; rule 4): the photo's upload path, its own folder, seen
+// where the photo is, hidden with it, gone with the account.
+describe('profile cover', () => {
+  async function uploadCover(client: Client, bytes: Uint8Array): Promise<string> {
+    const res = await profile(client, { action: 'cover-upload-url' });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    const { path, token } = res.body as ProfileUploadUrl;
+    const { error } = await client.storage
+      .from(PHOTO_BUCKET)
+      .uploadToSignedUrl(path, token, bytes, { contentType: 'image/jpeg' });
+    expect(error).toBeNull();
+    return path;
+  }
+
+  it('commits a clean JPEG at a random path, signs it for the table, removes it', async () => {
+    const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
+    const idA = await publicIdOf(a);
+    expect(((await get(a, idA)).body as ProfileView).coverUrl).toBeNull();
+    const path = await uploadCover(a, CLEAN);
+    expect(path).toMatch(/^c\/[0-9a-f-]{36}\.jpg$/);
+    expect(path).not.toContain(idA);
+    expect(await profile(a, { action: 'cover-commit', path })).toEqual({
+      status: 200,
+      body: { ok: true },
+    });
+    expect(((await get(a, idA)).body as ProfileView).coverUrl).toEqual(expect.any(String));
+
+    await room(a, b, 'profile', 'anonymous');
+    const seen = (await get(b, idA)).body as ProfileView;
+    expect(seen.coverUrl).toEqual(expect.any(String));
+    const signed = new URL(seen.coverUrl ?? '');
+    const fetched = await fetch(`${apiUrl}${signed.pathname}${signed.search}`);
+    expect(fetched.status).toBe(200);
+
+    // A photo path is no cover; a cover path is no photo.
+    expect(
+      await profile(a, { action: 'cover-commit', path: 'p/' + randomUUID() + '.jpg' }),
+    ).toEqual({ status: 422, body: errorBody('photo_invalid') });
+
+    expect(await profile(a, { action: 'cover-remove' })).toEqual({
+      status: 200,
+      body: { ok: true },
+    });
+    expect(await objectExists(path)).toBe(false);
+    expect(((await get(a, idA)).body as ProfileView).coverUrl).toBeNull();
+  });
+
+  it('rejects a cover with metadata and deletes it', async () => {
+    const a = await named(PHONES[0], 'Ayşe');
+    const path = await uploadCover(a, jpeg(JFIF_APP0, EXIF_APP1, DQT));
+    expect(await profile(a, { action: 'cover-commit', path })).toEqual({
+      status: 422,
+      body: errorBody('photo_invalid'),
+    });
+    expect(await objectExists(path)).toBe(false);
+  });
+
+  it('hides the cover after reports from 2 accounts and keeps its copy', async () => {
+    const [a, b, c] = await Promise.all([
+      named(PHONES[0], 'Ayşe'),
+      named(PHONES[1], 'Burak'),
+      named(PHONES[2], 'Cem'),
+    ]);
+    const idA = await publicIdOf(a);
+    const path = await uploadCover(a, CLEAN);
+    expect((await profile(a, { action: 'cover-commit', path })).status).toBe(200);
+    const report = (client: Client) =>
+      invoke(client, 'safety', {
+        action: 'report',
+        target: 'profile',
+        publicId: idA,
+        reason: 'inappropriate',
+      });
+    const roomId = await room(a, b, 'profile', 'anonymous');
+    expect(await report(b)).toEqual({ status: 200, body: { ok: true } });
+    expect(await report(b)).toEqual({ status: 200, body: { ok: true } });
+    expect(((await get(b, idA)).body as ProfileView).coverUrl).toEqual(expect.any(String));
+    await invoke(b, 'checkin', { action: 'leave' });
+    await checkInAt(c, venue, V);
+    await join(a, c, roomId, false);
+    expect(await report(c)).toEqual({ status: 200, body: { ok: true } });
+    expect(((await get(c, idA)).body as ProfileView).coverUrl).toBeNull();
+
+    const [first] = await sql`
+      select profile_snapshot, cover_copy from public.reports
+      where reported_user_id = ${await userIdOf(a)} order by created_at limit 1
+    `;
+    expect(first?.profile_snapshot).toMatchObject({ cover_path: path });
+    expect(new Uint8Array(first?.cover_copy)).toEqual(CLEAN);
+
+    // A new cover is visible again.
+    const next = await uploadCover(a, jpeg(DQT));
+    expect((await profile(a, { action: 'cover-commit', path: next })).status).toBe(200);
+    expect(((await get(c, idA)).body as ProfileView).coverUrl).toEqual(expect.any(String));
+  });
+
+  it('goes with the account', async () => {
+    const a = await named(PHONES[0], 'Ayşe');
+    const path = await uploadCover(a, CLEAN);
+    expect((await profile(a, { action: 'cover-commit', path })).status).toBe(200);
+    expect((await invoke(a, 'account', { action: 'delete' })).status).toBe(200);
+    expect(await objectExists(path)).toBe(false);
   });
 });
 

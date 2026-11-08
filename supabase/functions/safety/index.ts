@@ -140,6 +140,19 @@ async function reportProfile(userId: string, publicId: string, why: ReportReason
   });
   if (error) throw dbError('safety_report_profile', error);
   if (!data) throw new AppError('not_found', 'Profile not found.');
+  // The report recorded the cover's path (a trigger); its copy stays with the report as evidence.
+  const cover = await db.from('profiles').select('cover_path').eq('public_id', publicId).single();
+  if (cover.error) throw dbError('profiles', cover.error);
+  const copy = await photoCopyHex(db, cover.data.cover_path);
+  if (cover.data.cover_path && copy) {
+    const attached = await db.rpc('safety_attach_cover_copy', {
+      target_user_id: userId,
+      target_public_id: publicId,
+      reported_cover_path: cover.data.cover_path,
+      cover: copy,
+    });
+    if (attached.error) throw dbError('safety_attach_cover_copy', attached.error);
+  }
 }
 
 // The other table's current photo, only if it joined that encounter with its profile.

@@ -372,6 +372,10 @@ export const profileApi = {
   photoUploadUrl: () => invoke<ProfileUploadUrl>('profile', { action: 'photo-upload-url' }),
   photoCommit: (path: string) => invoke<{ ok: true }>('profile', { action: 'photo-commit', path }),
   photoRemove: () => invoke<{ ok: true }>('profile', { action: 'photo-remove' }),
+  // The profile cover (docs/SPEC_V4.md §4.W): the photo's upload path.
+  coverUploadUrl: () => invoke<ProfileUploadUrl>('profile', { action: 'cover-upload-url' }),
+  coverCommit: (path: string) => invoke<{ ok: true }>('profile', { action: 'cover-commit', path }),
+  coverRemove: () => invoke<{ ok: true }>('profile', { action: 'cover-remove' }),
   // K-9: a new anonymous nick once in 30 days.
   refreshNick: () => invoke<RefreshNickResponse>('profile', { action: 'refresh-nick' }),
   // K-46: the capsule's look; unknown parts are dropped on the server.

@@ -280,56 +280,17 @@ export function Btn({
   style?: StyleProp<ViewStyle>;
 }) {
   const { c } = useKit();
-  const press = usePress();
   const inRow = useContext(InRow);
-  const inSheet = useContext(FlatGlass);
-  const shadowOff = useLabOff('golge');
-  const frost = useFrost();
-  const frosted = frost && variant === 'glassy';
-  // Disabled (U10, Aura v65 `.btn.off`): the neutral fill and its label, not a faded role; a step
-  // lighter on a dark card (no frost: inside a card or a sheet).
+  // Riso (the owner's call, 8 Kasım; docs/decisions/riso-dugme.md): the ink flat, a second ink
+  // printed a little off under it, halftone and paper grain over it, no soft shadow. Disabled is
+  // the same print faded. "dark" (a chip-like button) stays as it was.
   const off = disabled && !loading;
-  const fg = off
-    ? c.onDisabled
-    : (tint ??
-      (variant === 'primary'
-        ? KIT.onPrimary
-        : variant === 'danger'
-          ? c.onDangerSoft
-          : variant === 'dark'
-            ? c.onChipOn
-            : c.ink));
-  const shadow =
-    off || fill
-      ? null
-      : variant === 'primary'
-        ? shadowParts(shadowOff, c.primaryShadow, c.primaryInset, KIT.size.btn)
-        : variant === 'dark' || variant === 'danger'
-          ? null
-          : shadowParts(
-              shadowOff,
-              c.raisedShadow || undefined,
-              undefined,
-              KIT.size.btn,
-              true,
-              KIT.size.edge,
-            );
-  const ground: ViewStyle = off
-    ? { backgroundColor: frost ? c.disabled : c.disabledOnCard }
-    : fill
-      ? { backgroundColor: fill }
-      : variant === 'primary'
-        ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
-        : variant === 'danger'
-          ? { backgroundColor: c.dangerSoft }
-          : variant === 'dark'
-            ? { backgroundColor: c.chipOn }
-            : {
-                backgroundColor: frosted ? undefined : inSheet ? c.raisedInSheet : c.raised,
-                borderWidth: KIT.size.edge,
-                borderColor: inSheet ? c.glassInSheetEdge : c.raisedEdge,
-                boxShadow: shadow?.boxShadow,
-              };
+  const riso = variant !== 'dark';
+  const R = KIT.riso;
+  const paper = variant === 'glassy';
+  const ink = fill ?? (variant === 'danger' ? R.danger : paper ? R.paper : R.ink);
+  const fg =
+    tint ?? (variant === 'dark' ? (off ? c.onDisabled : c.onChipOn) : paper ? R.paperInk : R.onInk);
   const height = bar
     ? bar
     : sm
@@ -341,6 +302,8 @@ export function Btn({
           : KIT.size.btn;
   const big = bar ? bar >= KIT.size.roundLg : false;
   const small = sm || (!!bar && !big);
+  // The second ink only on the full buttons; a small one keeps its edge and texture.
+  const shift = riso && !small ? R.shift : 0;
   const padX = snug
     ? KIT.size.btnPadXSnug
     : big || mid
@@ -349,6 +312,16 @@ export function Btn({
         ? KIT.size.btnPadXSm
         : KIT.size.btnPadX;
   const labelType = mid ? KIT_TYPE.btnMid : small ? KIT_TYPE.btnSm : KIT_TYPE.btn;
+  // Pressed, the print settles onto its second ink.
+  const [sink] = useState(() => new Animated.Value(0));
+  const settle = (to: number) =>
+    Animated.timing(sink, {
+      toValue: to,
+      duration: R.pressMs,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  const travel = sink.interpolate({ inputRange: [0, 1], outputRange: [0, Math.max(shift - 1, 1)] });
   return (
     <Pressable
       testID={testID}
@@ -357,20 +330,42 @@ export function Btn({
       accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       disabled={disabled || loading}
       onPress={onPress}
-      onPressIn={press.onPressIn}
-      onPressOut={press.onPressOut}
+      onPressIn={() => settle(1)}
+      onPressOut={() => settle(0)}
       // Round like the button: a shadow a screen gives it (Paketler's Aç) drew a box round it.
       style={[
         {
           alignSelf: block ? 'stretch' : inRow ? 'center' : 'flex-start',
           borderRadius: KIT.size.btn,
+          opacity: off && riso ? R.offOpacity : 1,
         },
         style,
       ]}
     >
+      {shift > 0 ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: shift,
+            left: shift,
+            right: -shift,
+            bottom: -shift,
+            borderRadius: KIT.size.btn,
+            backgroundColor: variant === 'danger' ? R.dangerOffset : R.offset,
+          }}
+        />
+      ) : null}
       <Animated.View
         style={[
-          ground,
+          riso
+            ? {
+                backgroundColor: ink,
+                borderWidth: paper ? R.edge : 0,
+                borderColor: R.paperInk,
+                overflow: 'hidden',
+              }
+            : { backgroundColor: off ? c.disabledOnCard : c.chipOn },
           {
             height,
             paddingHorizontal: padX,
@@ -379,12 +374,18 @@ export function Btn({
             alignItems: 'center',
             justifyContent: 'center',
             gap: KIT.size.btnGap,
-            transform: [{ scale: press.scale }],
+            transform: [{ translateX: travel }, { translateY: travel }],
           },
         ]}
       >
-        {shadow?.node}
-        {variant === 'glassy' && !off && !fill ? <FrostOf height={height} fill={c.raised} /> : null}
+        {riso ? (
+          <Image
+            source={paper ? RISO_TEXTURE.dark : RISO_TEXTURE.light}
+            resizeMode="repeat"
+            accessibilityIgnoresInvertColors
+            style={TEXTURE_FILL}
+          />
+        ) : null}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
         ) : icon && !off ? (
@@ -392,7 +393,7 @@ export function Btn({
           <CapIcon
             name={icon}
             color={fg}
-            soft={variant === 'primary' && !off ? PRIMARY_SOFT : 0.5}
+            soft={paper ? 0.5 : PRIMARY_SOFT}
             size={sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon}
           />
         ) : null}
@@ -410,6 +411,21 @@ export function Btn({
     </Pressable>
   );
 }
+// The texture fills the button (not absoluteFill: an Image keeps its pixel size there,
+// styleGuard.test.ts).
+const TEXTURE_FILL = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  width: '100%',
+  height: '100%',
+} as const;
+// The riso print's texture tiles (scripts/icon/risoButton.ts): light marks on the dark inks, dark
+// marks on the paper.
+const RISO_TEXTURE = {
+  light: require('../../assets/riso/button/texture-light.png') as ImageSourcePropType,
+  dark: require('../../assets/riso/button/texture-dark.png') as ImageSourcePropType,
+};
 const PRIMARY_SOFT = 0.62;
 // A disabled switch (not a button: U10 is for buttons) still fades.
 const DISABLED = 0.45;

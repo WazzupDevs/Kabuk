@@ -1408,6 +1408,9 @@ export type Database = {
           capsule_look: string | null;
           capsule_nick: string | null;
           capsule_nick_changed_at: string | null;
+          cover_hidden_at: string | null;
+          cover_path: string | null;
+          cover_pending_path: string | null;
           created_at: string;
           default_participation: string;
           display_name: string | null;
@@ -1438,6 +1441,9 @@ export type Database = {
           capsule_look?: string | null;
           capsule_nick?: string | null;
           capsule_nick_changed_at?: string | null;
+          cover_hidden_at?: string | null;
+          cover_path?: string | null;
+          cover_pending_path?: string | null;
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
@@ -1468,6 +1474,9 @@ export type Database = {
           capsule_look?: string | null;
           capsule_nick?: string | null;
           capsule_nick_changed_at?: string | null;
+          cover_hidden_at?: string | null;
+          cover_path?: string | null;
+          cover_pending_path?: string | null;
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
@@ -1496,6 +1505,7 @@ export type Database = {
       reports: {
         Row: {
           context: Json | null;
+          cover_copy: string | null;
           created_at: string;
           district_chat_message_id: string | null;
           dm_thread_id: string | null;
@@ -1515,6 +1525,7 @@ export type Database = {
         };
         Insert: {
           context?: Json | null;
+          cover_copy?: string | null;
           created_at?: string;
           district_chat_message_id?: string | null;
           dm_thread_id?: string | null;
@@ -1534,6 +1545,7 @@ export type Database = {
         };
         Update: {
           context?: Json | null;
+          cover_copy?: string | null;
           created_at?: string;
           district_chat_message_id?: string | null;
           dm_thread_id?: string | null;
@@ -3454,6 +3466,9 @@ export type Database = {
           capsule_look: string | null;
           capsule_nick: string | null;
           capsule_nick_changed_at: string | null;
+          cover_hidden_at: string | null;
+          cover_path: string | null;
+          cover_pending_path: string | null;
           created_at: string;
           default_participation: string;
           display_name: string | null;
@@ -4026,6 +4041,15 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      safety_attach_cover_copy: {
+        Args: {
+          cover: string;
+          reported_cover_path: string;
+          target_public_id: string;
+          target_user_id: string;
+        };
+        Returns: undefined;
       };
       safety_block: {
         Args: {

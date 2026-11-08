@@ -8,6 +8,9 @@ export type ProfileView = {
   bio: string | null;
   // Signed URL valid for an hour; null without a photo or when it is hidden.
   photoUrl: string | null;
+  // The profile cover (rule 4: part of the profile), signed like the photo; null without one or
+  // while the photo is hidden after reports.
+  coverUrl: string | null;
   badges: BadgeId[];
   // Completed years (Istanbul day); the birth date itself goes to nobody else (rule 11).
   age: number | null;
@@ -59,6 +62,10 @@ export type ProfileRequest =
   | { action: 'photo-upload-url' }
   | { action: 'photo-commit'; path: string }
   | { action: 'photo-remove' }
+  // The profile cover: the same upload path as the photo (rules 1 and 6).
+  | { action: 'cover-upload-url' }
+  | { action: 'cover-commit'; path: string }
+  | { action: 'cover-remove' }
   // K-9: a new nick once in 30 days (nick_refresh_too_soon before); the old one is never given
   // again, and old messages keep it.
   | { action: 'refresh-nick' }

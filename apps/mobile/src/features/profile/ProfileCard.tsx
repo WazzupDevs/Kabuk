@@ -11,10 +11,15 @@ import { SPACING } from '@/theme/tokens';
 import { PhotoPreview } from '@/components/PhotoPreview';
 
 import { LivePencil, LivingLook } from './LivingLook';
+import { ProfileCover } from './ProfileCover';
+import { PROFILE_COVER } from '@/theme/profileCover';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
-type Profile = Pick<ProfileView, 'photoUrl' | 'displayName' | 'age' | 'bio' | 'badges'>;
+type Profile = Pick<ProfileView, 'photoUrl' | 'displayName' | 'age' | 'bio' | 'badges'> & {
+  // The profile cover (docs/SPEC_V4.md §4.W): a band over another person's profile when there is one.
+  coverUrl?: string | null;
+};
 
 // A profile's head (v45: .phero), the own one and another person's: the photo in its ring, the name
 // with the age in the quiet colour (never the birth date, rule 11) and the bio, centred; then the
@@ -68,7 +73,25 @@ function OtherHead({ profile, children }: { profile: Profile; children?: ReactNo
   const side = KIT.size.av.hero;
   return (
     <View>
-      <View style={{ marginTop: SPACING[6], width: side, height: side }}>
+      {/* The cover as a band, the face over its foot (docs/SPEC_V4.md §4.W); none without one. */}
+      {profile.coverUrl ? (
+        <View style={{ marginTop: SPACING[4] }}>
+          <ProfileCover
+            url={profile.coverUrl}
+            height={PROFILE_COVER.height}
+            radius={PROFILE_COVER.bandRadius}
+            accessibilityLabel={tr.profile.cover}
+          />
+        </View>
+      ) : null}
+      <View
+        style={{
+          marginTop: profile.coverUrl ? -side / 2 : SPACING[6],
+          marginLeft: profile.coverUrl ? SPACING[4] : 0,
+          width: side,
+          height: side,
+        }}
+      >
         {peek ? (
           <Image
             source={peek.source}

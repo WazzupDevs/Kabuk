@@ -66,6 +66,23 @@ export function isPhotoPath(path: string): boolean {
   return PHOTO_PATH.test(path);
 }
 
+// The profile cover (the owner's call, 8 Kasım; rule 4: part of the profile, seen where the photo is):
+// a wide JPEG without metadata, the same bucket in its own folder, the same pending-path rule.
+export const COVER_MAX_BYTES = 300 * 1024;
+export const COVER_WIDTH_PX = 1170;
+export const COVER_HEIGHT_PX = 618;
+const COVER_FOLDER = 'c';
+const COVER_PATH = new RegExp(`^${COVER_FOLDER}/${UUID}\\.jpg$`);
+
+export function newCoverPath(uuid: string): string {
+  if (!new RegExp(`^${UUID}$`).test(uuid)) throw new Error('not a uuid');
+  return `${COVER_FOLDER}/${uuid}.jpg`;
+}
+
+export function isCoverPath(path: string): boolean {
+  return COVER_PATH.test(path);
+}
+
 // {public_id}/{uuid}.jpg: a photo uploaded before random paths.
 export function isLegacyPhotoPath(path: string): boolean {
   return LEGACY_PHOTO_PATH.test(path);

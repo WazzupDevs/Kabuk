@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedRef } from 'react-native-reanimated';
+import Animated, { type AnimatedRef, useAnimatedRef } from 'react-native-reanimated';
 
 import { useKit } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
@@ -28,6 +28,7 @@ export function SheetCard({
   fill,
   footer,
   footerFade,
+  scrollRef,
   children,
 }: {
   // Unset: it cannot be pulled away (the join request).
@@ -40,10 +41,13 @@ export function SheetCard({
   // Buttons that stay under the scrolling content.
   footer?: ReactNode;
   footerFade?: boolean;
+  // The content's scroll, for a sheet that moves it itself (Kapsülünü süsle's pack chips).
+  scrollRef?: AnimatedRef<Animated.ScrollView>;
   children: ReactNode;
 }) {
   const k = useKit();
-  const scroller = useAnimatedRef<Animated.ScrollView>();
+  const ownScroller = useAnimatedRef<Animated.ScrollView>();
+  const scroller = scrollRef ?? ownScroller;
   const { pan, native, onScroll, style } = useSheetDrag(onClose, scroller);
   const head = KIT.size.sheetPadTop + KIT.size.grabH + KIT.size.sheetGap;
   // The sheet's soft shadow natively (NativeShadow.tsx): it slides in, and React Native would blur

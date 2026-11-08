@@ -1,5 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import type Reanimated from 'react-native-reanimated';
+import type { AnimatedRef } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -52,6 +54,8 @@ type Props = {
   // Buttons and notes that stay at the sheet's foot under the scrolling content (Masa kur, aura v47):
   // what scrolls fades into them only while it does not fit.
   footer?: ReactNode;
+  // The content's scroll, for a sheet that moves it itself (Kapsülünü süsle's pack chips).
+  scrollRef?: AnimatedRef<Reanimated.ScrollView>;
   children: ReactNode;
 };
 
@@ -71,6 +75,7 @@ export function Sheet({
   titleLarge,
   top,
   footer,
+  scrollRef,
   children,
 }: Props) {
   const { colors, shape } = useTheme();
@@ -142,6 +147,7 @@ export function Sheet({
             bottomInset={insets.bottom}
             above={peek ? <Peek kind={peek} /> : null}
             fill={top !== undefined}
+            scrollRef={scrollRef}
             footer={
               footer ? (
                 <InSheet>

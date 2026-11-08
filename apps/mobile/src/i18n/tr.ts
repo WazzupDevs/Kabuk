@@ -583,13 +583,16 @@ export const tr = {
     title: 'Kapsülün',
     shuffle: 'Karıştır',
     tapHead: 'Kafama dokun',
-    remove: (name: string) => `${name} çıkar`,
     empty: (slot: string) => `${slot} boş`,
     pack: (name: string) => `${name} paketi`,
-    // The pack's parts in every slot and the ones of this slot shown under it (11.3).
-    packCount: (all: number, here: number) =>
-      all === here ? `${here} parça` : `Pakette ${all} parça · burada ${here}`,
     wearPack: 'Paketi tak',
+    // The slot's options all at once, grouped by pack, in a sheet (the owner's call, 8 Kasım).
+    seeAll: 'Hepsini gör',
+    allTitle: (slot: string) => `${slot} seçenekleri`,
+    allPacks: 'Tümü',
+    // A slot's button: its name, what is in it, and whether it differs from the saved look.
+    slotLabel: (slot: string, value: string, changed: boolean) =>
+      changed ? `${slot}: ${value}, değişti` : `${slot}: ${value}`,
     clearAll: 'Hepsini çıkar',
     save: 'Kaydet',
     unsavedTitle: 'Değişiklikler kaydedilmedi',
@@ -658,6 +661,15 @@ export const tr = {
       'Fotoğrafın şikayetler nedeniyle gizlendi; kimse göremiyor. Yeni bir fotoğraf yükleyebilirsin.',
     photoPermission: 'Fotoğraf seçmek için izin gerekiyor. İzni ayarlardan verebilirsin.',
     photoInvalid: 'Bu fotoğraf kullanılamadı. Başka bir fotoğraf dene.',
+    // docs/SPEC_V4.md §4.W: the profile's cover and the anonymous identity's ticket.
+    cover: 'Kapak',
+    coverChange: 'Kapağı değiştir',
+    coverRemove: 'Kapağı kaldır',
+    coverNeedsName: 'Kapak eklemek için önce bir ad seç.',
+    coverDefault: 'Kapağın yok; profilinde varsayılan sahne görünür.',
+    ticketKicker: 'Anonim kimliğin',
+    ticketNo: (tail: string) => `No. ${tail}`,
+    nickRenewIn: (days: number) => `Yenile · ${days} gün sonra`,
     badges: {
       first_game: 'İlk oyun',
       ten_games: '10 oyun',

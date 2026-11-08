@@ -27,7 +27,10 @@ import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
 import {
   checkBio,
   checkDisplayName,
+  COVER_MAX_BYTES,
+  isCoverPath,
   isPhotoPath,
+  newCoverPath,
   newPhotoPath,
   PHOTO_BUCKET,
   PHOTO_MAX_BYTES,
@@ -50,6 +53,9 @@ const Body: z.ZodType<ProfileRequest> = z.union([
   z.object({ action: z.literal('photo-upload-url') }),
   z.object({ action: z.literal('photo-commit'), path: z.string().max(200) }),
   z.object({ action: z.literal('photo-remove') }),
+  z.object({ action: z.literal('cover-upload-url') }),
+  z.object({ action: z.literal('cover-commit'), path: z.string().max(200) }),
+  z.object({ action: z.literal('cover-remove') }),
   z.object({ action: z.literal('refresh-nick') }),
   // Only the look: no account and no emotion goes with it (K-47, K-52).
   z.strictObject({ action: z.literal('set-look'), look: z.string().max(LOOK_MAX_LENGTH) }),
@@ -66,11 +72,22 @@ function contactError(): AppError {
 async function ownProfile(userId: string) {
   const { data, error } = await db
     .from('profiles')
-    .select('public_id, display_name, bio, photo_path, photo_pending_path')
+    .select(
+      'public_id, display_name, bio, photo_path, photo_pending_path, cover_path, cover_pending_path',
+    )
     .eq('id', userId)
     .single();
   if (error) throw dbError('profiles', error);
   return data;
+}
+
+// The cover's signed URL; none while it is hidden after reports (its own count, as the photo's:
+// two accounts reporting the same cover, cover_hidden_at).
+async function coverUrlOf(path: string | null, hidden: boolean): Promise<string | null> {
+  if (!path || hidden) return null;
+  const signed = await photos().createSignedUrl(path, PHOTO_URL_SECONDS);
+  if (signed.error) throw new Error(`storage sign failed (${signed.error.message})`);
+  return reachablePhotoUrl(signed.data.signedUrl);
 }
 
 function requireName(displayName: string | null): void {
@@ -115,7 +132,9 @@ async function getChatProfile(
   const [{ data, error }, friendship] = await Promise.all([
     db
       .from('profiles')
-      .select('public_id, display_name, bio, photo_path, photo_hidden_at')
+      .select(
+        'public_id, display_name, bio, photo_path, photo_hidden_at, cover_path, cover_hidden_at',
+      )
       .eq('id', owner.data)
       .single(),
     db.from('friendships').select('user_a').eq('user_a', a).eq('user_b', b).maybeSingle(),
@@ -132,6 +151,7 @@ async function getChatProfile(
     displayName: data.display_name,
     bio: data.bio,
     photoUrl,
+    coverUrl: await coverUrlOf(data.cover_path, !!data.cover_hidden_at),
     ...(await ageAndBadges(owner.data)),
     // A friend's profile kimliği goes to the friend (rule 4): the screen offers the DM, not a
     // request (the owner's report, 29 Ekim).
@@ -155,7 +175,9 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
     db.rpc('user_stats', { target_user_id: row.user_id }),
     db
       .from('profiles')
-      .select('birth_date, gender, capsule_nick, capsule_look, capsule_nick_changed_at')
+      .select(
+        'birth_date, gender, capsule_nick, capsule_look, capsule_nick_changed_at, cover_path, cover_hidden_at',
+      )
       .eq('id', row.user_id)
       .single(),
   ]);
@@ -176,6 +198,7 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
     displayName: row.display_name,
     bio: row.bio,
     photoUrl,
+    coverUrl: await coverUrlOf(birth.data.cover_path, !!birth.data.cover_hidden_at),
     badges: earnedBadges({
       games: counts?.games ?? 0,
       voiceTabuWins: counts?.voice_tabu_wins ?? 0,
@@ -341,6 +364,65 @@ Deno.serve(
           .eq('id', user.id);
         if (error) throw dbError('profiles', error);
         if (me.photo_path && me.photo_path !== body.path) await photos().remove([me.photo_path]);
+        return { ok: true };
+      }
+
+      case 'cover-upload-url': {
+        const me = await ownProfile(user.id);
+        requireName(me.display_name);
+        const path = newCoverPath(crypto.randomUUID());
+        const { data, error } = await photos().createSignedUploadUrl(path);
+        if (error) throw new Error(`storage upload url failed (${error.message})`);
+        const pending = await db
+          .from('profiles')
+          .update({ cover_pending_path: path })
+          .eq('id', user.id);
+        if (pending.error) throw dbError('profiles', pending.error);
+        if (me.cover_pending_path) await photos().remove([me.cover_pending_path]);
+        return { path, token: data.token };
+      }
+
+      case 'cover-commit': {
+        const me = await ownProfile(user.id);
+        requireName(me.display_name);
+        if (
+          !isCoverPath(body.path) ||
+          body.path !== me.cover_pending_path ||
+          body.path === me.cover_path
+        ) {
+          throw new AppError('photo_invalid', 'Not a new cover of yours.');
+        }
+        const file = await photos().download(body.path);
+        if (file.error) throw new AppError('photo_invalid', 'Cover not uploaded.');
+        const bytes = new Uint8Array(await file.data.arrayBuffer());
+        if (bytes.length > COVER_MAX_BYTES || !inspectJpeg(bytes).ok) {
+          await photos().remove([body.path]);
+          const cleared = await db
+            .from('profiles')
+            .update({ cover_pending_path: null })
+            .eq('id', user.id)
+            .eq('cover_pending_path', body.path);
+          if (cleared.error) throw dbError('profiles', cleared.error);
+          throw new AppError('photo_invalid', 'Only JPEG without metadata is accepted.');
+        }
+        const { error } = await db
+          .from('profiles')
+          .update({ cover_path: body.path, cover_hidden_at: null, cover_pending_path: null })
+          .eq('id', user.id);
+        if (error) throw dbError('profiles', error);
+        if (me.cover_path && me.cover_path !== body.path) await photos().remove([me.cover_path]);
+        return { ok: true };
+      }
+
+      case 'cover-remove': {
+        const me = await ownProfile(user.id);
+        const files = [me.cover_path, me.cover_pending_path].filter((p): p is string => !!p);
+        if (files.length > 0) await photos().remove(files);
+        const { error } = await db
+          .from('profiles')
+          .update({ cover_path: null, cover_hidden_at: null, cover_pending_path: null })
+          .eq('id', user.id);
+        if (error) throw dbError('profiles', error);
         return { ok: true };
       }
 
