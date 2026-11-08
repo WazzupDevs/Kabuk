@@ -1,10 +1,10 @@
-// Forced update gate (x-app-build vs MIN_APP_BUILD). The normal suite runs with the gate open
+// Forced update gate (x-app-build vs MIN_APP_BUILD; iOS, x-app-platform: ios, vs MIN_APP_BUILD_IOS). The normal suite runs with the gate open
 // (MIN_APP_BUILD unset). The closed-gate cases need a function server started with a minimum:
 //   echo MIN_APP_BUILD=5 > /tmp/gate.env && pnpm supabase functions serve --env-file /tmp/gate.env
 //   GATE_MIN_APP_BUILD=5 pnpm vitest run -c vitest.integration.config.ts supabase/tests/updateGate.test.ts
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { APP_BUILD_HEADER } from '../functions/_shared/pure/appVersion.ts';
+import { APP_BUILD_HEADER, APP_PLATFORM_HEADER } from '../functions/_shared/pure/appVersion.ts';
 import { anonKey, apiUrl, sql } from './local.ts';
 
 const gateMin = Number(process.env.GATE_MIN_APP_BUILD ?? '0');
@@ -15,7 +15,7 @@ afterAll(async () => {
 
 // A raw call, so the header is exactly what the test sets. account/complete-onboarding without a
 // user token answers 401 once past the gate.
-async function call(build: string | null, method = 'POST', fn = 'account') {
+async function call(build: string | null, method = 'POST', fn = 'account', platform?: string) {
   const res = await fetch(`${apiUrl}/functions/v1/${fn}`, {
     method,
     headers: {
@@ -23,6 +23,7 @@ async function call(build: string | null, method = 'POST', fn = 'account') {
       authorization: `Bearer ${anonKey}`,
       'content-type': 'application/json',
       ...(build === null ? {} : { [APP_BUILD_HEADER]: build }),
+      ...(platform === undefined ? {} : { [APP_PLATFORM_HEADER]: platform }),
     },
     body: method === 'POST' ? JSON.stringify({ action: 'complete-onboarding' }) : undefined,
   });
@@ -65,6 +66,17 @@ describe.runIf(gateMin > 0)('update gate, closed (MIN_APP_BUILD set)', () => {
       status: 200,
       body: { ok: true },
     });
+  });
+
+  it("keeps iOS open: Android's minimum does not apply to iOS builds", async () => {
+    for (const build of ['1', String(gateMin - 1)]) {
+      expect(await call(build, 'POST', 'ping', 'ios'), build).toEqual({
+        status: 200,
+        body: { ok: true },
+      });
+    }
+    // Android named explicitly is gated like a call without the header.
+    expect((await call('1', 'POST', 'ping', 'android')).body.error?.code).toBe('update_required');
   });
 
   it('lets the minimum build and newer ones through', async () => {
