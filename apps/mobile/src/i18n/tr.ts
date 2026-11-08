@@ -937,6 +937,13 @@ export const tr = {
       friendRequest: 'Arkadaşlık isteği',
       leave: 'Sohbetten çık',
     },
+    // "Oturumu kapat" in the room's options (§4.V).
+    end: {
+      action: 'Oturumu kapat',
+      title: 'Oturumu kapatmak istiyor musun?',
+      body: 'Bugün yeniden girersen soru sorulmaz, yeni 2 saat başlar.',
+      yes: 'Oturumu kapat',
+    },
     cont: {
       title: 'Sohbete devam etmek istiyor musun?',
       body: 'İki saatin doldu. Evet dersen iki saat daha bu odadasın.',

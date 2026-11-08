@@ -15,7 +15,7 @@ import {
   type VenueChatMessage,
   type VenueChatMode,
 } from '@shared/venueChat.ts';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
 import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { Animated, Easing, View } from 'react-native';
@@ -41,6 +41,7 @@ import { OlderFoot } from '@/features/chat/OlderFoot';
 import { useOlderPages } from '@/features/chat/useOlderPages';
 import { asksToContinue } from '@/features/district/continueNotice';
 import { BenchScene, Foot, TimeChip, WarnRow } from '@/features/district/parts';
+import { DISTRICT_MUTES_KEY, EndSheet, OptionsSheet } from '@/features/district/RoomSheets';
 import {
   districtKeys,
   putDistrictState,
@@ -55,7 +56,7 @@ import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { ApiError, districtApi, districtChatApi, friendsApi, venueChatApi } from '@/lib/api';
+import { ApiError, districtApi, districtChatApi, friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { requestKey } from '@/lib/requestKey';
 import { useFlash } from '@/lib/useFlash';
@@ -80,7 +81,7 @@ export default function DistrictRoomScreen() {
   );
 }
 
-const MUTES_KEY = ['venueChatMutes'] as const;
+const MUTES_KEY = DISTRICT_MUTES_KEY;
 
 function DistrictRoomBody() {
   const { colors, scheme } = useTheme();
@@ -99,6 +100,7 @@ function DistrictRoomBody() {
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
   const [asking, setAsking] = useState<VenueChatMessage | null>(null);
   const [options, setOptions] = useState(false);
+  const [closing, setClosing] = useState(false);
   const older = useOlderPages({
     key: roomId ?? '',
     newest: page.data?.messages,
@@ -547,7 +549,16 @@ function DistrictRoomBody() {
           onClose={() => setDismissed(session.endsAt)}
         />
       ) : null}
-      <OptionsSheet visible={options} onClose={() => setOptions(false)} onChanged={refresh} />
+      <OptionsSheet
+        visible={options}
+        onClose={() => setOptions(false)}
+        onChanged={refresh}
+        onEnd={() => {
+          setOptions(false);
+          setClosing(true);
+        }}
+      />
+      <EndSheet visible={closing} onClose={() => setClosing(false)} />
       <Sheet visible={person !== null} onClose={() => setPerson(null)}>
         {person ? (
           <>
@@ -826,68 +837,6 @@ function GraceBar({ graceEndsAt }: { graceEndsAt: string }) {
         {tr.district.cont.closesIn(clock)}
       </T>
     </View>
-  );
-}
-
-// The muted list is the venue chat's (§4.V: one list for both chats).
-function OptionsSheet({
-  visible,
-  onClose,
-  onChanged,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  onChanged: () => void;
-}) {
-  const queryClient = useQueryClient();
-  const mutes = useQuery({
-    queryKey: MUTES_KEY,
-    queryFn: () => venueChatApi.mutes(),
-    enabled: visible,
-  });
-  const unmute = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: (id: string) => venueChatApi.unmute(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: MUTES_KEY });
-      onChanged();
-    },
-  });
-  const list = mutes.data?.mutes ?? [];
-  return (
-    <Sheet visible={visible} onClose={onClose} title={tr.district.room.options}>
-      <View style={{ gap: SPACING[1.5] }}>
-        <T v="fine" ink>
-          {tr.venueChat.mutedTitle}
-        </T>
-        {mutes.isPending ? (
-          <Loader />
-        ) : mutes.isError ? (
-          <EmptyState
-            kind="error"
-            compact
-            body={errorMessage(mutes.error)}
-            action={{ label: tr.common.retry, onPress: () => void mutes.refetch() }}
-          />
-        ) : list.length === 0 ? (
-          <T v="fine">{tr.venueChat.mutedNone}</T>
-        ) : (
-          <Menu>
-            {list.map((m) => (
-              <MenuItem
-                key={m.id}
-                label={m.label}
-                note={tr.venueChat.unmute}
-                icon={m.profiled ? 'person-outline' : 'happy-outline'}
-                loading={unmute.isPending && unmute.variables === m.id}
-                onPress={() => unmute.mutate(m.id)}
-              />
-            ))}
-          </Menu>
-        )}
-      </View>
-      <Btn block variant="glassy" label={tr.venueChat.done} onPress={onClose} />
-    </Sheet>
   );
 }
 

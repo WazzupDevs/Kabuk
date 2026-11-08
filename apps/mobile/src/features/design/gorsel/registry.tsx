@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PREVIEW_SETS } from '../previews';
 
 import { DmFixture } from './dmFixture';
+import { SemtSheetFixture } from './semtFixture';
 
 // `full`: the state draws the whole screen itself (a game's stage), one page, no side padding.
 export type GateEntry = { render: () => ReactNode; full?: boolean };
@@ -18,4 +19,6 @@ export const GATE_STATES: Record<string, GateEntry> = {
   ...Object.fromEntries(PREVIEW_SETS.map((s) => [`galeri/${s.key}`, { render: s.render }])),
   // The screens rebuilt from the skall tuvali, with its sample data.
   'ekran/dm': { full: true, render: () => <DmFixture /> },
+  'ekran/semt/secenekler': { full: true, render: () => <SemtSheetFixture sheet="options" /> },
+  'ekran/semt/oturum-kapat': { full: true, render: () => <SemtSheetFixture sheet="end" /> },
 };
