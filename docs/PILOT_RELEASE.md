@@ -125,20 +125,15 @@ pnpm supabase secrets list
 
 ## 4. Production build
 
-**Önce `version` 0.4.0.** Pilotun native modülleri (Firebase push, expo-audio, expo-haptics) bu build'le gelir; `runtimeVersion` `app.json` → `version` olduğu için sürüm build'den önce artar. Artmazsa 0.3.0 test APK'larına bu native kodu çağıran OTA'lar gider ve uygulama açılışta çöker. Test telefonları 0.3.0'da kaldığı sürece main 0.3.0'da durur; bu adım pilot build'inden hemen önce yapılır.
+**Önce `version`.** `runtimeVersion` = `app.json` → `version` (bugün `0.9.6`). Son build'den beri native bir değişiklik olduysa (native bağımlılık, config plugin, `app.json`/`app.config.ts`'te native alan; liste `.claude/skills/yayin` → "Neyi ne zaman yayınlamalı") `version` önce ayrı bir PR'la artırılır, sonra build alınır; yoksa aynı kalır. Kontrol (repo kökünde, main güncel):
 
-1. `apps\mobile\app.json` → `"version": "0.3.0"` satırını `"version": "0.4.0"` yap.
-2. Ayrı bir PR'la main'e birleştir (`ci` yeşil). Sonra repo kökünde:
+```
+git checkout main
+git pull
+findstr /C:"\"version\"" apps\mobile\app.json
+```
 
-   ```
-   git checkout main
-   git pull
-   findstr /C:"\"version\"" apps\mobile\app.json
-   ```
-
-   Çıktıda `"version": "0.4.0"` görünmeli. Görünmüyorsa build alma.
-
-3. Bundan sonra main'den alınan `preview` OTA'ları 0.3.0 test APK'larına gitmez; test telefonlarına 0.4.0 `preview` APK'sı kurulur (`CLAUDE.md` → "Test APK'sı").
+Build numarası ayrıdır ve EAS'ta platform başına tutulur (Android `versionCode`, iOS `buildNumber`; `autoIncrement`); elle değiştirilmez.
 
 `apps\mobile` (EAS `production` ortamı; değerler bir kez, değişince tekrar):
 

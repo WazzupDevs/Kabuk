@@ -13,6 +13,7 @@
     "admin:ban": "node --experimental-strip-types admin-ban.ts",
     "admin:delete": "node --experimental-strip-types admin-delete.ts",
     "admin:event": "node --experimental-strip-types admin-event.ts",
+    "admin:reports": "node --experimental-strip-types admin-reports.ts",
     "admin:remove-photo": "node --experimental-strip-types admin-remove-photo.ts",
     "admin:move-photos": "node --experimental-strip-types admin-move-photos.ts",
     "admin:set-birth-date": "node --experimental-strip-types admin-set-birth-date.ts",
