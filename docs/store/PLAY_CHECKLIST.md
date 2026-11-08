@@ -46,7 +46,7 @@ Kullanıcı hesabı olan her uygulama için iki şey gerekir: uygulama içinden 
 
 **İnceleme hesabı:** üretim projesinde tek, kalıcı bir test numarası ve tahmin edilemez 6 haneli kod. Kod yalnızca Play Console → Uygulama erişimi alanına yazılır; repoda, CLAUDE.md'de ya da bir sohbette durmaz. Değiştirme adımları CLAUDE.md → "Üretim Supabase projesi" → "İnceleme hesabı".
 
-**Konum:** check-in mekanın 300 m içinde olmayı ister; inceleme ekibi İstanbul'da değildir. Şimdilik giriş bilgisi, açıklama ve check-in'den sonraki akışı gösteren bir video verilir. Ret gelirse incelemeye özel istisna ayrı bir PR'da ele alınır.
+**Konum:** check-in kampüsün sınırı içinde olmayı ister (50 m tolerans; sınırı olmayan mekanda 300 m); inceleme ekibi kampüste değildir. Bugün açık yerler: Sakarya Üniversitesi Esentepe Kampüsü ve İstanbul Gelişim Üniversitesi (Tower); pilot kafeler kapalı (`content/venues-*.json`). Şimdilik giriş bilgisi, açıklama ve check-in'den sonraki akışı gösteren bir video verilir. Ret gelirse incelemeye özel istisna ayrı bir PR'da ele alınır.
 
 - [ ] "Tüm işlevler ya da bazıları özel erişim gerektiriyor" seçilir, bir talimat eklenir:
   - Ad: `İnceleme hesabı / Review account`
@@ -62,15 +62,16 @@ code above on the next screen. Then enter any name ("Devam"), a birth date of 18
 or older (for example 01 01 1995, "Devam"), any gender ("Devam") and tap
 "Fotoğrafsız bitir".
 
-Location: the core feature works only inside a partner venue in Istanbul
-(Beylikdüzü). Checking in to a venue needs the phone to be within 300 m of it;
-the location is used once at check-in and is never stored. Outside a venue you
+Location: the core feature works only on a partner campus (Sakarya University
+Esentepe Campus, Sakarya; Istanbul Gelisim University, Istanbul). Checking in
+needs the phone to be inside the campus boundary; the location is used once at
+check-in and is never stored. Outside a venue you
 can still use: Keşfet (venue list and map), a venue's page, Profil (name, photo,
 bio), Ayarlar (legal texts, blocked tables, account deletion: Profil → gear icon
 → "Hesabımı sil") and Arkadaşlar.
 
 The in-venue flow (check-in, opening the table to the lobby, another table
-joining, a Kapsül Anlat turn at the merged table, ending the table, "Arkadaş
+joining, a Sahtekar round at the merged table, ending the table, "Arkadaş
 ekle", a direct message, blocking and reporting) is shown in this video:
 [video link]
 
@@ -78,18 +79,18 @@ TR
 Giriş: ilk ekranda "Başla"ya dokunun, iki onayı işaretleyip "Onayla ve devam
 et"e dokunun. Yukarıdaki numarayı girip "Kod gönder"e dokunun. Bu numaraya SMS
 gitmez; sonraki ekranda yukarıdaki 6 haneli kodu yazın. Ardından bir ad, 18 yaş
-ve üzeri bir doğum tarihi ve bir cinsiyet girip "Fotoğrafsız bitir"e dokunun. Mekan içi akış yalnızca İstanbul'daki bir mekanın
-300 m içinde çalışır; konum yalnızca check-in anında bir kez kullanılır ve
+ve üzeri bir doğum tarihi ve bir cinsiyet girip "Fotoğrafsız bitir"e dokunun. Mekan içi akış yalnızca ortak bir kampüsün (Sakarya
+Üniversitesi Esentepe, İstanbul Gelişim Üniversitesi) sınırı içinde çalışır; konum yalnızca check-in anında bir kez kullanılır ve
 saklanmaz. Mekan dışında Keşfet, mekan sayfası, Profil, Ayarlar (hesap silme
 dahil) ve Arkadaşlar kullanılabilir. Mekan içi akış videoda: [video bağlantısı]
 ```
 
 - [ ] **Video çekim senaryosu** (3–4 dk, telefon ekran kaydı; Android'de Hızlı ayarlar → Ekran kaydı, sesli):
-  1. Pilot mekanlardan birinde, mekanın içinde. İkinci masa için ikinci bir telefon ve gerçek bir numarayla açılmış ikinci bir hesap gerekir (karşı masa botu üretim projesini reddeder).
+  1. Açık kampüslerden birinde, sınırın içinde. Oyun için en az **üç telefon** gerekir (açık oyunların en azı 3 kişi: Sahtekar, Kibrit); diğer telefonlar gerçek numaralarla açılmış hesaplardır (karşı masa botu üretim projesini reddeder).
   2. Uygulamayı aç, inceleme hesabıyla giriş yap. Kod ekranında kodu yazarken kaydı durdur ya da sonra kodu buzla; kod videoda görünmemeli.
   3. Başla → onaylar → telefon ve kod → ad, doğum tarihi, cinsiyet → "Fotoğrafsız bitir" → Keşfet (liste ve harita) → mekanın sayfası → "Buraya giriş yap" → konum rızası ve izin → kişi sayısı → "Masayı aç" → masa takma adı.
   4. Masa kartında "Lobiye aç" → alt sayfada "Lobiye aç". İkinci telefondan "Katıl" isteği gelir → "Kabul". Masa kartında "… geliyor" satırı; ikinci telefonun kartında "Kabul edildi, … masasının yanına git". İkinci telefon masaya gelir → iki telefonda kartın başına (masa adı) dokunulur.
-  5. Birleşik masa: Oyun Seç → "Kapsül Anlat öner" → ikinci telefonda "Oynayalım" → kartı aç → bir Doğru, bir Pas; ikinci telefon hakem olarak "Yasak!" basar. Tur geçişini göster.
+  5. Birleşik masa (üçüncü telefon da katılmış): masa sahibi Sahtekar'ı başlatır → her telefon kendi kelimesini görür → ipuçları ve oylama → sonuç ekranı.
   6. "Masayı bitir" → iki telefonda "Masa bitti" ve karşı taraf satırında "Arkadaş ekle".
   7. "Arkadaş ekle" (iki taraf) → "Arkadaş oldunuz" → "Mesajlaş" → DM gönder ve al.
   8. Arkadaşlar → Geçmiş ve istekler → Diğer → "Şikayet et" ve "Engelle" pencerelerini göster (vazgeç).
@@ -150,19 +151,19 @@ Tanım: cihazdan çıkan her veri "toplanan" sayılır; hizmet sağlayıcıya (S
   - Kullanıcı verilerinin silinmesini isteyebilir mi: **Evet** (uygulama içi ve §3.2'deki web bağlantısı).
 - [ ] Veri türleri (hepsinde "Paylaşılıyor: Hayır"):
 
-| Play kategorisi → tür                                             | Neyimiz                                               | Zorunlu mu            | Anlık işlenip atılıyor mu | Amaç                                                         |
-| ----------------------------------------------------------------- | ----------------------------------------------------- | --------------------- | ------------------------- | ------------------------------------------------------------ |
-| Konum → Kesin konum                                               | Check-in anındaki koordinat                           | Evet (check-in)       | **Evet**, saklanmaz       | Uygulama işlevi                                              |
-| Kişisel bilgiler → Telefon numarası                               | Giriş numarası                                        | Evet                  | Hayır                     | Hesap yönetimi, uygulama işlevi, dolandırıcılık önleme (ban) |
-| Kişisel bilgiler → Ad                                             | Görünen ad                                            | Hayır (isteğe bağlı)  | Hayır                     | Uygulama işlevi                                              |
-| Kişisel bilgiler → Kullanıcı kimlikleri                           | Hesap kimliği (analitik ve hata kayıtları)            | Evet                  | Hayır                     | Uygulama işlevi, analitik                                    |
-| Fotoğraflar ve videolar → Fotoğraflar                             | Profil fotoğrafı (metadata silinir)                   | Hayır                 | Hayır                     | Uygulama işlevi                                              |
-| Mesajlar → Diğer uygulama içi mesajlar                            | Oda sohbeti, arkadaşlar arası DM                      | Hayır                 | Hayır                     | Uygulama işlevi, güvenlik (şikayet kopyası)                  |
-| Uygulama etkinliği → Uygulama etkileşimleri                       | Analitik olayları (PostHog)                           | Evet                  | Hayır                     | Analitik                                                     |
-| Uygulama etkinliği → Diğer kullanıcı içeriği                      | Biyografi                                             | Hayır                 | Hayır                     | Uygulama işlevi                                              |
-| Uygulama etkinliği → Diğer işlemler                               | Oyun geçmişi, arkadaşlık, tanışma cevabı, masa daveti | Evet                  | Hayır                     | Uygulama işlevi                                              |
-| Uygulama bilgileri ve performansı → Kilitlenme günlükleri, Teşhis | Sentry hata raporları (telefon, konum, metin silinir) | Evet                  | Hayır                     | Analitik (hata giderme)                                      |
-| Cihaz ya da diğer kimlikler                                       | Push token                                            | Hayır (bildirim izni) | Hayır                     | Uygulama işlevi                                              |
+| Play kategorisi → tür                                             | Neyimiz                                               | Zorunlu mu             | Anlık işlenip atılıyor mu | Amaç                                                         |
+| ----------------------------------------------------------------- | ----------------------------------------------------- | ---------------------- | ------------------------- | ------------------------------------------------------------ |
+| Konum → Kesin konum                                               | Check-in anındaki koordinat                           | Evet (check-in)        | **Evet**, saklanmaz       | Uygulama işlevi                                              |
+| Kişisel bilgiler → Telefon numarası                               | Giriş numarası                                        | Evet                   | Hayır                     | Hesap yönetimi, uygulama işlevi, dolandırıcılık önleme (ban) |
+| Kişisel bilgiler → Ad                                             | Görünen ad                                            | Evet (kayıtta zorunlu) | Hayır                     | Uygulama işlevi                                              |
+| Kişisel bilgiler → Kullanıcı kimlikleri                           | Hesap kimliği (analitik ve hata kayıtları)            | Evet                   | Hayır                     | Uygulama işlevi, analitik                                    |
+| Fotoğraflar ve videolar → Fotoğraflar                             | Profil fotoğrafı (metadata silinir)                   | Hayır                  | Hayır                     | Uygulama işlevi                                              |
+| Mesajlar → Diğer uygulama içi mesajlar                            | Oda sohbeti, arkadaşlar arası DM                      | Hayır                  | Hayır                     | Uygulama işlevi, güvenlik (şikayet kopyası)                  |
+| Uygulama etkinliği → Uygulama etkileşimleri                       | Analitik olayları (PostHog)                           | Evet                   | Hayır                     | Analitik                                                     |
+| Uygulama etkinliği → Diğer kullanıcı içeriği                      | Biyografi                                             | Hayır                  | Hayır                     | Uygulama işlevi                                              |
+| Uygulama etkinliği → Diğer işlemler                               | Oyun geçmişi, arkadaşlık, tanışma cevabı, masa daveti | Evet                   | Hayır                     | Uygulama işlevi                                              |
+| Uygulama bilgileri ve performansı → Kilitlenme günlükleri, Teşhis | Sentry hata raporları (telefon, konum, metin silinir) | Evet                   | Hayır                     | Analitik (hata giderme)                                      |
+| Cihaz ya da diğer kimlikler                                       | Push token                                            | Hayır (bildirim izni)  | Hayır                     | Uygulama işlevi                                              |
 
 - **Düzeltme:** önceki taslakta konum "toplanmıyor" yazıyordu. Play tanımında cihazdan sunucuya giden koordinat toplanmış sayılır; doğru yanıt "Toplanıyor, anlık işleniyor (ephemeral), saklanmıyor"dur. `listing-tr.md` de düzeltildi.
 - Takip (tracking) ve reklam: yok.
