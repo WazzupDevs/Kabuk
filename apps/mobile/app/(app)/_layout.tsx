@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import { ConnectionBanner } from '@/components/ConnectionBanner';
+import { useDistrictLaunchLocate } from '@/features/district/launchLocate';
 import { useGiftLogin } from '@/features/gifts/queries';
 import { usePushNavigation, useSilentPushRegistration } from '@/features/push/push';
 import { IncomingRequestHost } from '@/features/rooms/IncomingRequest';
@@ -23,6 +24,7 @@ export default function GroupLayout() {
   usePushNavigation();
   useSilentPushRegistration();
   useGiftLogin();
+  useDistrictLaunchLocate();
   return (
     <>
       <Stack screenOptions={stackOptions}>

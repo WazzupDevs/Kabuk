@@ -43,6 +43,8 @@ export type ProfileRequest =
   // No live table at the venue, an anonymous, hidden or deleted message, a block either way and an
   // unknown id all answer not_found alike.
   | { action: 'get'; venueChatMessageId: string }
+  // A profiled district chat message's sender (docs/SPEC_V4.md §4.V).
+  | { action: 'get'; districtChatMessageId: string }
   | {
       action: 'update';
       displayName?: string;

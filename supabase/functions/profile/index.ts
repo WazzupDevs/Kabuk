@@ -37,6 +37,7 @@ import {
 const Body: z.ZodType<ProfileRequest> = z.union([
   z.strictObject({ action: z.literal('get'), publicId: z.uuid() }),
   z.strictObject({ action: z.literal('get'), venueChatMessageId: z.uuid() }),
+  z.strictObject({ action: z.literal('get'), districtChatMessageId: z.uuid() }),
   z.object({
     action: z.literal('update'),
     displayName: z.string().max(200).optional(),
@@ -97,12 +98,18 @@ async function ageAndBadges(userId: string) {
 
 // The sender of a profiled venue chat message, opened through the message (docs/SPEC_V3.md §7.5):
 // name, age, photo unless hidden, bio and badges. No public_id, no table alias.
-async function getChatProfile(viewer: string, messageId: string): Promise<ChatProfileView> {
-  const owner = await db.rpc('venue_chat_profile_owner', {
+// The district chat's the same way (docs/SPEC_V4.md §4.V): only to the room's people now.
+async function getChatProfile(
+  viewer: string,
+  messageId: string,
+  chat: 'venue' | 'district' = 'venue',
+): Promise<ChatProfileView> {
+  const fn = chat === 'district' ? 'district_chat_profile_owner' : 'venue_chat_profile_owner';
+  const owner = await db.rpc(fn, {
     target_user_id: viewer,
     target_message_id: messageId,
   });
-  if (owner.error) throw dbError('venue_chat_profile_owner', owner.error);
+  if (owner.error) throw dbError(fn, owner.error);
   if (!owner.data) throw new AppError('not_found', 'Profile not found.');
   const [a, b] = viewer < owner.data ? [viewer, owner.data] : [owner.data, viewer];
   const [{ data, error }, friendship] = await Promise.all([
@@ -197,6 +204,9 @@ Deno.serve(
 
     switch (body.action) {
       case 'get':
+        if ('districtChatMessageId' in body) {
+          return await getChatProfile(user.id, body.districtChatMessageId, 'district');
+        }
         return 'venueChatMessageId' in body
           ? await getChatProfile(user.id, body.venueChatMessageId)
           : await getProfile(user.id, body.publicId);

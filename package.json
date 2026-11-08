@@ -30,6 +30,7 @@
     "admin:move-photos": "pnpm --filter scripts admin:move-photos",
     "admin:set-birth-date": "pnpm --filter scripts admin:set-birth-date",
     "admin:set-gender": "pnpm --filter scripts admin:set-gender",
+    "admin:gecit-import": "pnpm --filter scripts admin:gecit-import",
     "admin:kaupholl-import": "pnpm --filter scripts admin:kaupholl-import",
     "admin:kaupholl-stats": "pnpm --filter scripts admin:kaupholl-stats",
     "kaupholl:export-check": "pnpm --filter scripts kaupholl:export-check",

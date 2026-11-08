@@ -840,6 +840,114 @@ export const tr = {
     incoming: (venue: string, name: string, age: number | null) =>
       `${venue} sohbetinden ${age !== null ? `${name} (${age})` : name} arkadaşın olmak istiyor`,
   },
+  // Semte Git and Geçit (docs/SPEC_V4.md §4.V; Aura v146, aktarim-semte-git.md §8.2, §9). The
+  // district is the person's own; it goes to nobody else.
+  district: {
+    eyebrow: 'Semte Git',
+    card: {
+      title: (name: string | null) =>
+        name ? `Evdesin ama sohbet ${inflectTr(name, 'locative')}` : 'Evdesin ama sohbet semtinde',
+      note: 'Günün sorusunu bil, semtinin sohbetine gir.',
+      go: 'Semte Git',
+      closedTitle: 'Geçit bugün kapalı',
+      closedNote: 'Yarın yeni soru gelir.',
+      opensIn: (h: number, m: number) => `Açılmasına ${h} sa ${m} dk`,
+      inRoom: (name: string) => `${name} sohbetindesin`,
+      backToRoom: 'Odaya dön',
+      outsideTitle: 'Geçit henüz senin semtinde yok',
+      outsideNote: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",
+      errorTitle: 'Geçit şu an yüklenemedi',
+      errorNote: 'Bağlantını kontrol et.',
+      loading: 'Semte Git yükleniyor',
+    },
+    // The time left of a session: "1 sa 12 dk kaldı", "9 dk kaldı"; in the extra time "Devam?".
+    left: (h: number, m: number) => (h > 0 ? `${h} sa ${m} dk kaldı` : `${m} dk kaldı`),
+    leftLabel: (h: number, m: number) =>
+      h > 0 ? `${h} saat ${m} dakika kaldı` : `${m} dakika kaldı`,
+    continueChip: 'Devam?',
+    continueChipLabel: 'Devam etmek istiyor musun? Cevap ver',
+    locate: {
+      title: 'Semtini öğrenelim',
+      body: 'Konumun yalnızca hangi semtte olduğunu bulmak için alınır. Konumun saklanmaz, yalnızca semtin kaydedilir.',
+      finding: 'Semtin bulunuyor',
+      found: (name: string) => `Semtin: ${name}`,
+      choose: 'Semtini seç',
+      denied: 'Konum izni kapalı. Semtini bulmak için izin ver.',
+      failed: 'Konum alınamadı.',
+      openSettings: 'Ayarlara git',
+      retry: 'Tekrar dene',
+      next: 'Devam',
+      // The dev project only (state.pickByHand).
+      byHand: 'Test: semti elle seç',
+      sceneLabel: 'Anten kanki açık bir haritanın yanında, iğne semtin üstünde',
+    },
+    // Hand-picked districts on the dev project; their names as the content file writes them.
+    names: { beylikduzu: 'Beylikdüzü', esenyurt: 'Esenyurt', avcilar: 'Avcılar' },
+    gate: {
+      title: 'Günün sorusu',
+      paper: 'Geçidin sorusu · tek hak',
+      options: 'Seçenekler',
+      letters: ['A', 'B', 'C', 'D'],
+      send: 'Geçide söyle',
+      sendError: 'Bağlantı yok, tekrar dene',
+      loadError: 'Soru yüklenemedi.',
+      retry: 'Tekrar dene',
+      loading: 'Soru yükleniyor',
+      sceneLabel: 'Tuğla duvarda kemerli kapı, üstünde GEÇİT tabelası, yanında şapkalı bekçi kanki',
+    },
+    open: {
+      title: 'Geçit açıldı!',
+      body: (name: string) =>
+        `Doğru bildin. ${name} sohbeti seni bekliyor; iki saatin girdiğin an başlar.`,
+      enter: 'İçeri gir',
+      sceneLabel: 'Kapı kanadı açık, içeriden sarı ışık, el sallayan kankiler',
+    },
+    closed: {
+      title: 'Geçit bugün kapalı',
+      body: 'Kankin seninle gurur duyuyor.',
+      until: 'Geçidin açılmasına',
+      timerLabel: (h: number, m: number, s: number) => `${h} saat ${m} dakika ${s} saniye`,
+      sceneLabel: 'Kapıda asma kilit, basamakta oturan üzgün kanki, tepesinde yağmur bulutu',
+    },
+    outside: {
+      title: 'Geçit henüz senin semtinde yok',
+      body: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",
+      sceneLabel: 'Valizli kanki bir yol tabelasının dibinde, oklar Beylikdüzü, Esenyurt, Avcılar',
+    },
+    ended: {
+      title: 'Oturumun kapandı',
+      body: 'Bugün tekrar girersen soru sorulmaz.',
+      again: 'Yeniden gir',
+      sceneLabel: 'Kapalı Geçit kapısı ve bekçi kanki',
+    },
+    backToExplore: "Keşfet'e dön",
+    close: 'Kapat',
+    room: {
+      title: (name: string) => `${name} sohbeti`,
+      placeholder: (name: string) => `${inflectTr(name, 'dative')} yaz…`,
+      options: 'Semt sohbeti seçenekleri',
+      writingAnonymous: 'Kapsülünle yazıyorsun',
+      writingProfiled: 'Profilinle yazıyorsun',
+      identityLabel: 'Hangi kimlikle yazıyorsun',
+      anonymous: 'Anonim',
+      profiled: 'Profilim',
+      emptyTitle: 'Bugün ilk sen geldin',
+      emptyBody: 'Odaya henüz kimse yazmadı. İlk mesajı sen yaz; gelenler görür.',
+      emptyLabel: 'Bankta oturan, yazmayı bekleyen kanki',
+      friendRequest: 'Arkadaşlık isteği',
+      leave: 'Sohbetten çık',
+    },
+    cont: {
+      title: 'Sohbete devam etmek istiyor musun?',
+      body: 'İki saatin doldu. Evet dersen iki saat daha bu odadasın.',
+      closesIn: (clock: string) => `Cevap vermezsen ${clock} sonra oturum kapanır.`,
+      yes: 'Evet, 2 saat daha',
+      no: 'Hayır, çık',
+      // The local notification at the session's end (the server sends no push).
+      notice: (name: string) =>
+        `${name} sohbetinde süren doldu. Devam etmek istiyor musun? 10 dakika içinde cevap vermezsen oturum kapanır.`,
+    },
+  },
   safety: {
     report: 'Şikayet et',
     reportTitle: 'Neden şikayet ediyorsun?',
@@ -2333,6 +2441,12 @@ export const tr = {
     client_id_reused: 'Bu mesaj gönderilemedi. Yeniden yaz.',
     identity_switch_used:
       'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
+    district_required: 'Önce semtini bulalım.',
+    gate_closed: "Geçit bugün kapalı. Yeni soru 00:00'da.",
+    question_expired: 'Günün sorusu değişti. Yeniden dene.',
+    no_question: 'Bugün soru yok, Geçit açık.',
+    no_session: 'Semt oturumun kapandı.',
+    not_due: 'Süren henüz dolmadı.',
     nick_refresh_too_soon: 'Anonim adını 30 günde bir yenileyebilirsin.',
     icon_taken: 'Bu simge mekandaki başka bir masada. Başka bir simge seç.',
     already_in_table: 'Zaten bir masadasın.',

@@ -1,3 +1,4 @@
+import { cancelContinueNotice } from '@/features/district/continueNotice';
 import { unregisterPush } from '@/features/push/push';
 import { callLeave } from '@/lib/api';
 import { queryClient } from '@/lib/queryClient';
@@ -9,6 +10,8 @@ import { supabase } from '@/lib/supabase';
 export async function signOutOfApp(): Promise<void> {
   await callLeave().catch(() => undefined);
   await unregisterPush();
+  // The phone's own "Devam?" notice of the district room (§4.V) goes with the account.
+  await cancelContinueNotice();
   await supabase.auth.signOut();
   queryClient.clear();
 }

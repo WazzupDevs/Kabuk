@@ -70,6 +70,12 @@ export type AnalyticsEventProps = {
   // Venue chat (docs/SPEC_V3.md §15): never the venue, the text or the other side.
   venue_chat_sent: { profiled: boolean };
   venue_chat_reported: Record<string, never>;
+  // Semte Git (docs/SPEC_V4.md §4.V): the names only; never the district, a coordinate, the question
+  // or the option.
+  district_located: Record<string, never>;
+  gecit_answered: { correct: boolean };
+  district_entered: Record<string, never>;
+  district_extended: Record<string, never>;
 };
 
 export type AnalyticsEvent = keyof AnalyticsEventProps;
@@ -115,6 +121,10 @@ const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[
   dm_sent: [],
   venue_chat_sent: ['profiled'],
   venue_chat_reported: [],
+  district_located: [],
+  gecit_answered: ['correct'],
+  district_entered: [],
+  district_extended: [],
 };
 
 export const ANALYTICS_EVENTS = Object.keys(ALLOWED) as AnalyticsEvent[];

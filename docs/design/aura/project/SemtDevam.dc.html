@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Süre doldu: devam alt sayfası · açık | koyu | uygulama kapalıyken bildirim</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+<link rel="stylesheet" href="semt.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.dark.pA .btn.primary{box-shadow:none}
+.lab{font:600 13px/17px var(--font);color:var(--muted);margin:0}
+
+body{margin:0}
+.phone{--tx:var(--text)}
+.phone.night{--tx:var(--text);background:#0D1823}
+.tx{color:var(--tx)}
+.wall{position:absolute;left:0;top:0;width:390px;height:844px;background-image:url(/_blob/c9ce5a041cc17708f198bb44857b3739);background-size:390px 845px;background-position:center top}
+.night .wall{background-image:url(/_blob/aee42dec9eb0b0309792448a05621428)}
+.band{position:absolute;left:0;right:0;top:0;height:132px;overflow:hidden;z-index:2;pointer-events:none;-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 12px),rgba(0,0,0,0));mask-image:linear-gradient(180deg,#000 calc(100% - 12px),rgba(0,0,0,0))}
+.hdr{position:absolute;left:20px;right:20px;top:60px;z-index:3}
+.stream{position:absolute;left:20px;right:20px;top:0;display:flex;flex-direction:column;justify-content:flex-end;gap:12px;overflow:hidden;z-index:1}
+.stream>*{flex-shrink:0}
+.cmp{position:absolute;left:16px;right:16px;gap:8px;z-index:3}
+.strip{padding:6px 12px 6px 6px;gap:10px;border-radius:22px;align-self:flex-start}
+.chg{color:var(--primary-pressed);text-decoration:none}
+.night .chg{color:#80CE96}
+.tst{margin-left:6px}
+.mst{font-size:11px;font-weight:600;margin-left:6px;color:rgba(255,255,255,.90)}
+.clk{color:#FFFFFF;vertical-align:-3px}
+.mine{display:flex;flex-direction:column;align-items:flex-end;align-self:flex-end;max-width:84%}
+.mine .msg.me{max-width:100%}
+.srow{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;column-gap:12px}
+.srow .fine{min-height:44px;display:inline-flex;align-items:center}
+.dg{color:var(--danger)}
+.night .dg{color:var(--danger)}
+.acts{display:inline-flex;gap:12px}
+.lk{min-height:44px;border:0;background:none;padding:0 2px;font:600 14px/18px 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer}
+.lk.ac{color:var(--primary-pressed)}
+.lk.mu{color:var(--muted)}
+.night .lk.ac{color:#80CE96}
+.night .lk.mu{color:var(--muted)}
+.frs{color:#B0124F}
+.night .frs{color:#FFD0E0}
+.nm-sn19{color:#9A4A00}.nm-zeynep{color:#B0124F}.nm-nj08{color:#096934}.nm-ak33{color:#0F6B3A}
+.night .nm-sn19{color:#DBB9A5}.night .nm-zeynep{color:#E9ADB8}.night .nm-nj08{color:#91CCA0}.night .nm-ak33{color:#A9C5B0}
+.night .msg.them{color:var(--text)}
+.night .hdr .round{color:var(--text)}
+.nmc{align-self:flex-start;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.56)}
+.night .nmc{background:rgba(0,0,0,.64)}
+.night .strip .strong{color:var(--text)}
+.night .stamp{color:var(--muted)}
+.night .day{background:rgba(255,255,255,.10);color:var(--muted)}
+.night .field{color:var(--muted)}
+.night .field.tx{color:var(--text)}
+.night .send{background:var(--feature)}
+.ecard{align-items:center;gap:8px;padding:18px 20px}
+.disc{width:48px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;background:rgba(18,152,79,.12);--ci-a:var(--accent);--ci-b:#FF4F8B;--ci-bo:.55}
+.kb{position:absolute;left:0;right:0;bottom:0;height:300px;z-index:4;background:rgba(17,23,20,.10);display:flex;align-items:center;justify-content:center}
+.kb p{color:var(--muted)}
+
+.idst .strong{color:var(--text)}
+.night .idst .strong{color:var(--text)}
+.scr{position:absolute;inset:0;background:var(--scrim-bg);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hold{position:absolute;left:20px;right:20px;display:flex;flex-direction:column;gap:8px}
+.bar{display:flex;gap:2px;padding:4px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow-sheet)}
+.f{width:42px;height:40px;border-radius:20px;border:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.menu{min-width:220px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-sheet);padding:6px 0;display:flex;flex-direction:column}
+.mi{height:44px;border:0;background:none;text-align:left;padding:0 16px;font:600 15px/22px var(--font);color:var(--text);cursor:pointer}
+.mi.neg{color:var(--danger)}
+.e2{position:relative;isolation:isolate;overflow:visible;color:#FFFFFF !important;padding:12px 18px 12px 20px !important;
+ border:2px solid transparent !important;border-radius:22px 22px 22px 6px !important;
+ background:linear-gradient(160deg,#07391D 0%,#0B5A2D 50%,#0E6E4A 100%) padding-box,linear-gradient(110deg,#C99A1A,#F2C230,#9FFFCB,#F2C230,#8FB82E,#F2C230,#C99A1A) border-box !important;
+ background-size:100% 100%,300% 100% !important;animation:e2Border 5s linear infinite;
+ box-shadow:0 0 0 4px rgba(61,220,132,.10),0 0 22px rgba(61,220,132,.28),0 8px 18px rgba(4,40,20,.35) !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;
+ margin:14px 10px 6px 8px}
+.e2.me{border-radius:22px 22px 6px 22px !important}
+.e2 .e2au{position:absolute;inset:0;border-radius:inherit;z-index:-1;overflow:hidden;pointer-events:none;
+ background:radial-gradient(60% 120% at 20% 0%,rgba(127,245,216,.30),transparent 60%),radial-gradient(50% 100% at 85% 100%,rgba(180,140,255,.26),transparent 60%),
+ repeating-linear-gradient(115deg,rgba(255,255,255,0) 0 18px,rgba(159,255,203,.05) 18px 19px);background-size:200% 100%,200% 100%,auto;animation:e2Aur 7s ease-in-out infinite alternate}
+.e2 .e2vt,.e2 .e2vb{position:absolute;left:30px;right:26px;height:12px;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2728%27%20height%3D%2712%27%3E%3Cpath%20d%3D%27M0%206Q7%202.6%2014%206T28%206%27%20stroke%3D%27%23F2C230%27%20stroke-width%3D%271.3%27%20fill%3D%27none%27/%3E%3Cpath%20d%3D%27M8%205.4C5%201.6%208.6-.4%2011.6.6C11.6%203.6%2010%205.4%208%205.4Z%27%20fill%3D%27%233CC47C%27/%3E%3Cpath%20d%3D%27M21%206.6C24%2010.4%2020.4%2012.4%2017.4%2011.4C17.4%208.4%2019%206.6%2021%206.6Z%27%20fill%3D%27%238FB82E%27/%3E%3C/svg%3E") repeat-x;background-size:28px 12px;pointer-events:none;animation:e2Vine 9s linear infinite}
+.e2 .e2vt{top:-7px}.e2 .e2vb{bottom:-7px;transform:scaleY(-1);animation-direction:reverse}
+.e2 .e2tl{position:absolute;left:-24px;top:-31px}
+.e2 .e2tr{position:absolute;right:-17px;top:-19px}
+.e2 .e2bl{position:absolute;left:-16px;bottom:-14px}
+.e2 .e2br{position:absolute;right:-9px;bottom:-9px}
+.e2.me .e2tl{left:auto;right:-24px;transform:scaleX(-1)}.e2.me .e2tr{right:auto;left:-17px;transform:scaleX(-1)}
+.e2.me .e2bl{left:auto;right:-16px;transform:scaleX(-1)}.e2.me .e2br{right:auto;left:-9px;transform:scaleX(-1)}
+.e2 .e2fall{position:absolute;right:10px;top:-6px;animation:e2Fall 4.8s ease-in infinite;opacity:0}
+.e2 .ff{position:absolute;width:5px;height:5px;border-radius:50%;background:#E9FF8A;box-shadow:0 0 6px 2px rgba(233,255,138,.75);animation:e2FF 3.2s ease-in-out infinite;pointer-events:none}
+.e2 .f1{right:-16px;top:40%}.e2 .f2{left:42%;top:-15px;animation-delay:-1.1s}.e2 .f3{right:28%;bottom:-15px;animation-delay:-2.2s}
+.e2 .tst,.e2 .stamp,.e2 .mst{color:rgba(255,255,255,.80) !important}
+.e2nm{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;padding:1px 8px 1px 5px;border-radius:999px;background:linear-gradient(90deg,#0B5A2D,#0E6E4A);color:#F2C230 !important;box-shadow:inset 0 0 0 1px rgba(242,194,48,.55),0 0 10px rgba(61,220,132,.30)}
+.e2av{box-shadow:0 0 0 2px #F2C230,0 0 0 4px rgba(61,220,132,.35),0 0 12px rgba(61,220,132,.55) !important;animation:e2Ring 2.4s ease-in-out infinite}
+@keyframes e2Border{to{background-position:0 0,300% 0}}
+@keyframes e2Aur{to{background-position:100% 0,0% 0,0 0}}
+@keyframes e2Vine{to{background-position:280px 0}}
+@keyframes e2Fall{0%{transform:translate(0,0) rotate(0);opacity:0}12%{opacity:1}100%{transform:translate(-34px,58px) rotate(140deg);opacity:0}}
+@keyframes e2FF{0%,100%{transform:translate(0,0);opacity:.35}30%{transform:translate(5px,-7px);opacity:1}60%{transform:translate(-4px,-3px);opacity:.6}}
+@keyframes e2Ring{0%,100%{box-shadow:0 0 0 2px #F2C230,0 0 0 4px rgba(61,220,132,.25),0 0 8px rgba(61,220,132,.40)}50%{box-shadow:0 0 0 2px #FFF4C2,0 0 0 4px rgba(61,220,132,.45),0 0 16px rgba(61,220,132,.70)}}
+@media (prefers-reduced-motion:reduce){.e2,.e2 *,.e2av{animation:none !important}.e2 .e2fall{display:none}}
+.dark.pA .e2,.night .e2{box-shadow:0 0 0 4px rgba(61,220,132,.14),0 0 26px rgba(61,220,132,.36),0 6px 14px rgba(0,0,0,.45) !important}
+.spec2 .lab{font:600 13px/18px var(--font);color:var(--muted)}.night .lab{color:var(--muted)}[class*="fx-"]{transform-box:fill-box}
+.cap g,.cap path,.cap circle{transform-box:fill-box}
+@keyframes fxHalo{0%,100%{transform:scale(.9);opacity:.75}50%{transform:scale(1.04);opacity:1}}
+@keyframes fxSpin{to{transform:rotate(360deg)}}
+@keyframes fxBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+@keyframes fxHue{to{filter:hue-rotate(360deg)}}
+@keyframes fxTw{0%,100%{transform:scale(.3);opacity:.2}50%{transform:scale(1.15);opacity:1}}
+@keyframes fxFlick{0%,100%{transform:scaleY(1) skewX(0)}30%{transform:scaleY(1.18) skewX(-4deg)}65%{transform:scaleY(.9) skewX(3deg)}}
+@keyframes fxRise{0%{transform:translateY(8px);opacity:0}25%{opacity:1}100%{transform:translateY(-14px);opacity:0}}
+@keyframes fxWob{0%,100%{transform:scale(.9,1)}25%{transform:scale(1.06,.94)}50%{transform:scale(.96,1.05)}75%{transform:scale(1.04,.97)}}
+@keyframes fxOrbit{to{transform:rotate(360deg)}}
+@keyframes fxRain{0%{transform:translateY(-6px);opacity:0}30%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+@keyframes fxFlash{0%,40%,48%,56%,100%{opacity:0}44%,52%,60%,90%{opacity:1}}
+@keyframes fxFlapL{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.55)}}
+@keyframes fxWave{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes fxShift{to{transform:translateX(36px)}}
+@keyframes fxScan{0%{transform:translateY(0)}100%{transform:translateY(26px)}}
+@keyframes fxGlow{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes fxHr{0%{transform:translateY(16px) scale(.4);opacity:0}20%{opacity:1}100%{transform:translateY(-40px) scale(1);opacity:0}}
+@keyframes fxLava{0%,100%{stop-color:#C51F62}50%{stop-color:#7B5CFF}}
+@keyframes fxGlint{0%,55%{transform:translateX(-70px)}100%{transform:translateX(90px)}}
+.fx-halo{transform-origin:center;animation:fxHalo 2.4s ease-in-out infinite}
+.fx-spin{transform-origin:50% 0%;transform-box:view-box;animation:fxSpin 14s linear infinite}
+.fx-spin{transform-origin:50px 14px}
+.fx-bob{animation:fxBob 2.4s ease-in-out infinite}
+.fx-hue{animation:fxHue 5s linear infinite}
+.fx-tw1,.fx-tw2,.fx-tw3{transform-origin:center;animation:fxTw 1.6s ease-in-out infinite}.fx-tw2{animation-delay:.5s}.fx-tw3{animation-delay:1s}
+.fx-flick,.fx-flick2{transform-origin:50% 100%;animation:fxFlick .9s ease-in-out infinite}.fx-flick2{animation-delay:.3s}
+.fx-fl1,.fx-fl2,.fx-fl3{transform-origin:50% 100%;animation:fxFlick 1.1s ease-in-out infinite}.fx-fl2{animation-duration:.85s;animation-delay:.2s}.fx-fl3{animation-duration:.7s;animation-delay:.1s}
+.fx-rise{animation:fxRise 1.8s ease-out infinite}
+.fx-wobble{transform-origin:50% 20%;animation:fxWob 2.4s ease-in-out infinite}
+.fx-orbit{transform-box:view-box;transform-origin:50px 70px;animation:fxOrbit 6s linear infinite}
+.fx-rain{animation:fxRain .9s linear infinite}
+.fx-flash{animation:fxFlash 3s linear infinite}
+.fx-wingL{transform-origin:100% 50%;animation:fxFlapL .7s ease-in-out infinite}.fx-wingR{transform-origin:0% 50%;animation:fxFlapL .7s ease-in-out infinite}
+.fx-wave,.fx-wave2{transform-origin:50% 0%;animation:fxWave 1.6s ease-in-out infinite}.fx-wave2{animation-delay:-.8s}
+.fx-shift{animation:fxShift 3s linear infinite}
+@keyframes fxEll{0%,100%{transform:translate(44px,0)}25%{transform:translate(0,11px) scale(1.25)}50%{transform:translate(-44px,0)}75%{transform:translate(0,-11px) scale(.7)}}
+.fx-orb1,.fx-orb2,.fx-orb3{animation:fxEll 4s linear infinite}.fx-orb2{animation-delay:-1.33s}.fx-orb3{animation-delay:-2.66s}
+.fx-scan{animation:fxScan 1.6s ease-in-out infinite alternate}
+.fx-glow{animation:fxGlow 1.2s ease-in-out infinite}
+.fx-hr0,.fx-hr1,.fx-hr2,.fx-hr3{transform-origin:center;animation:fxHr 2.4s ease-out infinite}.fx-hr1{animation-delay:.6s}.fx-hr2{animation-delay:1.2s}.fx-hr3{animation-delay:1.8s}
+.lv2,.fa0,.cl1{animation:fxLava 3s ease-in-out infinite}
+.fx-glint{animation:fxGlint 3s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.cap *{animation:none!important}}
+
+@keyframes fxSway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes fxFF{0%,100%{transform:translate(0,0);opacity:.3}25%{transform:translate(4px,-5px);opacity:1}50%{transform:translate(-3px,-9px);opacity:.6}75%{transform:translate(-5px,-3px);opacity:1}}
+@keyframes fxTwitch{0%,80%,100%{transform:rotate(0)}85%{transform:rotate(-8deg)}90%{transform:rotate(4deg)}}
+@keyframes fxPulse{0%,100%{transform:scale(.85);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+.fx-sway0,.fx-sway1,.fx-sway2{transform-origin:50% 0%;animation:fxSway 2.2s ease-in-out infinite}.fx-sway1{animation-delay:-.7s}.fx-sway2{animation-delay:-1.4s}
+.fx-ff0,.fx-ff1,.fx-ff2{animation:fxFF 3.2s ease-in-out infinite}.fx-ff1{animation-delay:-1s}.fx-ff2{animation-delay:-2s}
+.fx-twitch0{transform-origin:100% 100%;animation:fxTwitch 3.6s ease-in-out infinite}.fx-twitch1{transform-origin:0% 100%;animation:fxTwitch 3.6s ease-in-out infinite;animation-delay:-.2s}
+.fx-pulse{transform-origin:center;animation:fxPulse 1.8s ease-in-out infinite}
+
+
+</style>
+</helmet>
+<div style="width: 1250px; height: 844px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 40px; background: var(--surface2)">
+<div class="phone " style="width:390px;height:844px;flex:none"><div class="wall"></div><div class="band" aria-hidden="true"><div class="wall"></div></div><div class="glass topbar hdr" style="padding: 8px; border-radius: 30px; gap: 10px"><button class="round" type="button" aria-label="Geri" style="background: transparent"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="5.45" y="6.9" width="13.1" height="3.2" rx="1.6" transform="rotate(135 12 8.5)"/><rect class="b" x="5.45" y="13.9" width="13.1" height="3.2" rx="1.6" transform="rotate(45 12 15.5)"/></svg></button><div class="col grow"><p class="h3 tx">Avcılar sohbeti</p></div><button class="round" type="button" aria-label="Menü" style="background: transparent"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="9.6" width="4.8" height="4.8" rx="2.4" class="a"/><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="2.4" class="b"/><rect x="16.6" y="9.6" width="4.8" height="4.8" rx="2.4" class="a"/></svg></button></div><div style="position:absolute;left:0;right:0;top:132px;display:flex;justify-content:center;z-index:3"><span class="glass tchip"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="b"/><rect x="10.7" y="6.2" width="2.6" height="7.1" rx="1.3" class="a"/><rect x="10.7" y="10.7" width="6.4" height="2.6" rx="1.3" class="a"/></svg>0 dk kaldı</span></div><div class="stream" style="top: 176px; bottom: 164px"><div class="row" style="align-items: flex-end; gap: 8px"><span class="av sm capsule" style="width: 32px; height: 32px"><img src="/_blob/5c0423e57135c520f3a5cda13e424e4a" alt=""></span><div class="col" style="gap: 3px; max-width: 76%"><span class="fine strong nmc nm-sn19">kapsul-k3a9</span><div class="glass msg them" style="max-width: 100%">Günaydın Avcılar <span class="stamp tst">09:12</span></div></div></div><div class="row" style="align-items: flex-end; gap: 8px"><span class="av sm c2" style="width: 32px; height: 32px">Z</span><div class="col" style="gap: 3px; max-width: 76%"><span class="fine strong nmc nm-zeynep">Zeynep</span><div class="glass msg them" style="max-width: 100%">Sahil yolu bugün çok güzel <span class="stamp tst">09:20</span></div></div></div><div class="row" style="gap: 10px; align-items: center"><span class="sep grow" style="background: rgba(255,79,139,.4)"></span><span class="fine strong frs">Okunmamış mesajlar</span><span class="sep grow" style="background: rgba(255,79,139,.4)"></span></div><div class="row" style="align-items: flex-end; gap: 8px"><span class="av sm capsule" style="width: 32px; height: 32px"><img src="/_blob/3572541ebfb8b27864b6d7d739624855" alt=""></span><div class="col" style="gap: 3px; max-width: 76%"><span class="fine strong nmc nm-nj08">kapsul-nj08</span><div class="glass msg them" style="max-width: 100%">Akşam Kinshi oynamak isteyen var mı? <span class="stamp tst">09:31</span></div></div></div><div class="mine"><div class="msg me">Ben varım <span class="mst">09:34</span></div></div></div><div class="col cmp" style="bottom: 24px"><div class="glass idst"><span class="lbl"><span class="av sm capsule" style="width: 30px; height: 30px; border-width: 1px"><img src="/_blob/341343f7873d17c5e6e7ac5768bfbdd5" alt=""></span><span class="fine strong">Kapsülünle yazıyorsun</span></span><div class="seg" role="radiogroup" aria-label="Kimlik"><span class="on" role="radio" aria-checked="true">Anonim</span><span class="" role="radio" aria-checked="false">Profilim</span></div></div><div class="row" style="gap: 10px"><div class="glass field">Avcılar'a yaz…</div><button class="send" type="button" aria-label="Gönder"><svg class="ci" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M3.8 4.3c-.5-.2-1 .3-.8.8L6 12l-3 6.9c-.2.5.3 1 .8.8l16.6-7.1c.5-.2.5-1 0-1.2Z" class="b"/><rect x="5" y="10.7" width="9.4" height="2.6" rx="1.3" class="a"/></svg></button></div></div><div class="scrim"></div><div class="glass sheet" role="dialog" aria-label="Sohbete devam etmek istiyor musun?" style="z-index:5"><span class="grab"></span>
+  <h2 class="title">Sohbete devam etmek istiyor musun?</h2>
+  <p class="body">İki saatin doldu. Evet dersen iki saat daha bu odadasın.</p>
+  <div class="col" style="gap:8px"><div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="600" aria-valuenow="372" aria-label="Kalan cevap süresi"><i style="width:62%"></i></div><p class="fine">Cevap vermezsen 6:12 sonra oturum kapanır.</p></div>
+  <div class="col" style="gap:8px;margin-top:4px"><button class="btn primary block " type="button">Evet, 2 saat daha</button><button class="btn soft block " type="button">Hayır, çık</button></div></div></div><div class="phone night dark pA" style="width:390px;height:844px;flex:none"><div class="wall"></div><div class="band" aria-hidden="true"><div class="wall"></div></div><div class="glass topbar hdr" style="padding: 8px; border-radius: 30px; gap: 10px"><button class="round" type="button" aria-label="Geri" style="background: transparent"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="5.45" y="6.9" width="13.1" height="3.2" rx="1.6" transform="rotate(135 12 8.5)"/><rect class="b" x="5.45" y="13.9" width="13.1" height="3.2" rx="1.6" transform="rotate(45 12 15.5)"/></svg></button><div class="col grow"><p class="h3 tx">Avcılar sohbeti</p></div><button class="round" type="button" aria-label="Menü" style="background: transparent"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="9.6" width="4.8" height="4.8" rx="2.4" class="a"/><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="2.4" class="b"/><rect x="16.6" y="9.6" width="4.8" height="4.8" rx="2.4" class="a"/></svg></button></div><div style="position:absolute;left:0;right:0;top:132px;display:flex;justify-content:center;z-index:3"><span class="glass tchip"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="b"/><rect x="10.7" y="6.2" width="2.6" height="7.1" rx="1.3" class="a"/><rect x="10.7" y="10.7" width="6.4" height="2.6" rx="1.3" class="a"/></svg>0 dk kaldı</span></div><div class="stream" style="top: 176px; bottom: 164px"><div class="row" style="align-items: flex-end; gap: 8px"><span class="av sm capsule" style="width: 32px; height: 32px"><img src="/_blob/5c0423e57135c520f3a5cda13e424e4a" alt=""></span><div class="col" style="gap: 3px; max-width: 76%"><span class="fine strong nmc nm-sn19">kapsul-k3a9</span><div class="glass msg them" style="max-width: 100%">Günaydın Avcılar <span class="stamp tst">09:12</span></div></div></div><div class="row" style="align-items: flex-end; gap: 8px"><span class="av sm c2" style="width: 32px; height: 32px">Z</span><div class="col" style="gap: 3px; max-width: 76%"><span class="fine strong nmc nm-zeynep">Zeynep</span><div class="glass msg them" style="max-width: 100%">Sahil yolu bugün çok güzel <span class="stamp tst">09:20</span></div></div></div><div class="row" style="gap: 10px; align-items: center"><span class="sep grow" style="background: rgba(255,79,139,.4)"></span><span class="fine strong frs">Okunmamış mesajlar</span><span class="sep grow" style="background: rgba(255,79,139,.4)"></span></div><div class="row" style="align-items: flex-end; gap: 8px"><span class="av sm capsule" style="width: 32px; height: 32px"><img src="/_blob/3572541ebfb8b27864b6d7d739624855" alt=""></span><div class="col" style="gap: 3px; max-width: 76%"><span class="fine strong nmc nm-nj08">kapsul-nj08</span><div class="glass msg them" style="max-width: 100%">Akşam Kinshi oynamak isteyen var mı? <span class="stamp tst">09:31</span></div></div></div><div class="mine"><div class="msg me">Ben varım <span class="mst">09:34</span></div></div></div><div class="col cmp" style="bottom: 24px"><div class="glass idst"><span class="lbl"><span class="av sm capsule" style="width: 30px; height: 30px; border-width: 1px"><img src="/_blob/341343f7873d17c5e6e7ac5768bfbdd5" alt=""></span><span class="fine strong">Kapsülünle yazıyorsun</span></span><div class="seg" role="radiogroup" aria-label="Kimlik"><span class="on" role="radio" aria-checked="true">Anonim</span><span class="" role="radio" aria-checked="false">Profilim</span></div></div><div class="row" style="gap: 10px"><div class="glass field">Avcılar'a yaz…</div><button class="send" type="button" aria-label="Gönder"><svg class="ci" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M3.8 4.3c-.5-.2-1 .3-.8.8L6 12l-3 6.9c-.2.5.3 1 .8.8l16.6-7.1c.5-.2.5-1 0-1.2Z" class="b"/><rect x="5" y="10.7" width="9.4" height="2.6" rx="1.3" class="a"/></svg></button></div></div><div class="scrim"></div><div class="glass sheet" role="dialog" aria-label="Sohbete devam etmek istiyor musun?" style="z-index:5"><span class="grab"></span>
+  <h2 class="title">Sohbete devam etmek istiyor musun?</h2>
+  <p class="body">İki saatin doldu. Evet dersen iki saat daha bu odadasın.</p>
+  <div class="col" style="gap:8px"><div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="600" aria-valuenow="372" aria-label="Kalan cevap süresi"><i style="width:62%"></i></div><p class="fine">Cevap vermezsen 6:12 sonra oturum kapanır.</p></div>
+  <div class="col" style="gap:8px;margin-top:4px"><button class="btn primary block " type="button">Evet, 2 saat daha</button><button class="btn soft block " type="button">Hayır, çık</button></div></div></div><div class="phone " style="width:390px;height:844px;flex:none"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div><div class="content" style="padding-top:60px;gap:0px;padding-bottom:0px"><p class="lab">Bildirim · açık</p><div style="height:8px"></div><div style="border-radius:22px;padding:14px 16px;background:#FFFFFF;color:#031B0B;display:flex;gap:12px;box-shadow:var(--shadow-card)"><img src="/_blob/73899f7980e4f8492ccf98345f085e22" alt="" style="width:36px;height:36px;border-radius:9px;flex:none"><div class="col grow" style="gap:2px"><div class="row" style="gap:6px"><span style="font:600 13px/17px var(--font)">skall</span><span style="font:500 12px/16px var(--font);color:#4A6550;margin-left:auto">şimdi</span></div><p style="font:500 14px/20px var(--font)">Avcılar sohbetinde süren doldu. Devam etmek istiyor musun? 10 dakika içinde cevap vermezsen oturum kapanır.</p></div></div><div style="height:24px"></div><p class="lab">Bildirim · koyu</p><div style="height:8px"></div><div style="border-radius:22px;padding:14px 16px;background:#151A18;color:#EEF3F0;display:flex;gap:12px;box-shadow:none"><img src="/_blob/73899f7980e4f8492ccf98345f085e22" alt="" style="width:36px;height:36px;border-radius:9px;flex:none"><div class="col grow" style="gap:2px"><div class="row" style="gap:6px"><span style="font:600 13px/17px var(--font)">skall</span><span style="font:500 12px/16px var(--font);color:#A3AEA8;margin-left:auto">şimdi</span></div><p style="font:500 14px/20px var(--font)">Avcılar sohbetinde süren doldu. Devam etmek istiyor musun? 10 dakika içinde cevap vermezsen oturum kapanır.</p></div></div></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1250,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

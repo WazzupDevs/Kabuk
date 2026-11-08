@@ -115,6 +115,292 @@ export type Database = {
         };
         Relationships: [];
       };
+      district_chat_messages: {
+        Row: {
+          body: string;
+          client_id: string | null;
+          created_at: string;
+          deleted_at: string | null;
+          hidden_at: string | null;
+          id: string;
+          profiled: boolean;
+          replied: boolean;
+          reply_to_id: string | null;
+          room_id: string;
+          sender_alias: string;
+          sender_look: string | null;
+          sender_user_id: string;
+          session_id: string;
+        };
+        Insert: {
+          body: string;
+          client_id?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          hidden_at?: string | null;
+          id?: string;
+          profiled: boolean;
+          replied?: boolean;
+          reply_to_id?: string | null;
+          room_id: string;
+          sender_alias: string;
+          sender_look?: string | null;
+          sender_user_id: string;
+          session_id: string;
+        };
+        Update: {
+          body?: string;
+          client_id?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          hidden_at?: string | null;
+          id?: string;
+          profiled?: boolean;
+          replied?: boolean;
+          reply_to_id?: string | null;
+          room_id?: string;
+          sender_alias?: string;
+          sender_look?: string | null;
+          sender_user_id?: string;
+          session_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'district_chat_messages_reply_to_id_fkey';
+            columns: ['reply_to_id'];
+            isOneToOne: false;
+            referencedRelation: 'district_chat_messages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'district_chat_messages_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'district_rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'district_chat_messages_session_id_fkey';
+            columns: ['session_id'];
+            isOneToOne: false;
+            referencedRelation: 'district_sessions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      district_chat_rate: {
+        Row: {
+          count: number;
+          last_sent_at: string;
+          user_id: string;
+          window_started_at: string;
+        };
+        Insert: {
+          count: number;
+          last_sent_at: string;
+          user_id: string;
+          window_started_at: string;
+        };
+        Update: {
+          count?: number;
+          last_sent_at?: string;
+          user_id?: string;
+          window_started_at?: string;
+        };
+        Relationships: [];
+      };
+      district_chat_reaction_rate: {
+        Row: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Insert: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Update: {
+          count?: number;
+          user_id?: string;
+          window_started_at?: string;
+        };
+        Relationships: [];
+      };
+      district_chat_reactions: {
+        Row: {
+          created_at: string;
+          emoji: string;
+          message_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          emoji: string;
+          message_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          emoji?: string;
+          message_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'district_chat_reactions_message_id_fkey';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'district_chat_messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      district_chat_reports: {
+        Row: {
+          created_at: string;
+          message_id: string;
+          reporter_user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          message_id: string;
+          reporter_user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          message_id?: string;
+          reporter_user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'district_chat_reports_message_id_fkey';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'district_chat_messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      district_rooms: {
+        Row: {
+          created_at: string;
+          day: string;
+          district_id: string;
+          id: string;
+        };
+        Insert: {
+          created_at?: string;
+          day: string;
+          district_id: string;
+          id?: string;
+        };
+        Update: {
+          created_at?: string;
+          day?: string;
+          district_id?: string;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'district_rooms_district_id_fkey';
+            columns: ['district_id'];
+            isOneToOne: false;
+            referencedRelation: 'districts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      district_sessions: {
+        Row: {
+          closed_at: string | null;
+          created_at: string;
+          day: string;
+          district_id: string;
+          ends_at: string;
+          grace_ends_at: string;
+          id: string;
+          identity_mode: string;
+          identity_switches: number;
+          joined_at: string;
+          room_id: string;
+          status: string;
+          user_id: string;
+        };
+        Insert: {
+          closed_at?: string | null;
+          created_at?: string;
+          day: string;
+          district_id: string;
+          ends_at: string;
+          grace_ends_at: string;
+          id?: string;
+          identity_mode?: string;
+          identity_switches?: number;
+          joined_at?: string;
+          room_id: string;
+          status?: string;
+          user_id: string;
+        };
+        Update: {
+          closed_at?: string | null;
+          created_at?: string;
+          day?: string;
+          district_id?: string;
+          ends_at?: string;
+          grace_ends_at?: string;
+          id?: string;
+          identity_mode?: string;
+          identity_switches?: number;
+          joined_at?: string;
+          room_id?: string;
+          status?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'district_sessions_district_id_fkey';
+            columns: ['district_id'];
+            isOneToOne: false;
+            referencedRelation: 'districts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'district_sessions_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'district_rooms';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      districts: {
+        Row: {
+          id: string;
+          is_active: boolean;
+          name: string;
+          ref: string;
+          ring: Json;
+          sort: number;
+        };
+        Insert: {
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          ref: string;
+          ring: Json;
+          sort?: number;
+        };
+        Update: {
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          ref?: string;
+          ring?: Json;
+          sort?: number;
+        };
+        Relationships: [];
+      };
       dm_messages: {
         Row: {
           body: string;
@@ -510,6 +796,51 @@ export type Database = {
           pregame?: boolean;
           sort_order?: number;
           teams?: boolean;
+        };
+        Relationships: [];
+      };
+      gecit_answers: {
+        Row: {
+          correct: boolean;
+          created_at: string;
+          day: string;
+          user_id: string;
+        };
+        Insert: {
+          correct: boolean;
+          created_at?: string;
+          day: string;
+          user_id: string;
+        };
+        Update: {
+          correct?: boolean;
+          created_at?: string;
+          day?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      gecit_questions: {
+        Row: {
+          answer: number;
+          created_at: string;
+          day: string;
+          options: string[];
+          prompt: string;
+        };
+        Insert: {
+          answer: number;
+          created_at?: string;
+          day: string;
+          options: string[];
+          prompt: string;
+        };
+        Update: {
+          answer?: number;
+          created_at?: string;
+          day?: string;
+          options?: string[];
+          prompt?: string;
         };
         Relationships: [];
       };
@@ -1166,6 +1497,7 @@ export type Database = {
         Row: {
           context: Json | null;
           created_at: string;
+          district_chat_message_id: string | null;
           dm_thread_id: string | null;
           history_id: string | null;
           id: string;
@@ -1184,6 +1516,7 @@ export type Database = {
         Insert: {
           context?: Json | null;
           created_at?: string;
+          district_chat_message_id?: string | null;
           dm_thread_id?: string | null;
           history_id?: string | null;
           id?: string;
@@ -1202,6 +1535,7 @@ export type Database = {
         Update: {
           context?: Json | null;
           created_at?: string;
+          district_chat_message_id?: string | null;
           dm_thread_id?: string | null;
           history_id?: string | null;
           id?: string;
@@ -1218,6 +1552,13 @@ export type Database = {
           venue_chat_message_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: 'reports_district_chat_message_id_fkey';
+            columns: ['district_chat_message_id'];
+            isOneToOne: false;
+            referencedRelation: 'district_chat_messages';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'reports_room_id_fkey';
             columns: ['room_id'];
@@ -1746,6 +2087,32 @@ export type Database = {
           },
         ];
       };
+      user_districts: {
+        Row: {
+          district_id: string | null;
+          located_at: string;
+          user_id: string;
+        };
+        Insert: {
+          district_id?: string | null;
+          located_at?: string;
+          user_id: string;
+        };
+        Update: {
+          district_id?: string | null;
+          located_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_districts_district_id_fkey';
+            columns: ['district_id'];
+            isOneToOne: false;
+            referencedRelation: 'districts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       venue_activity: {
         Row: {
           bucket: string;
@@ -2209,6 +2576,155 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      district_chat_delete: {
+        Args: { target_message_id: string; target_user_id: string };
+        Returns: string;
+      };
+      district_chat_mute: {
+        Args: { target_message_id: string; target_user_id: string };
+        Returns: string;
+      };
+      district_chat_page_for: {
+        Args: { before?: string; page_size?: number; target_user_id: string };
+        Returns: {
+          body: string;
+          created_at: string;
+          display_name: string;
+          from_me: boolean;
+          id: string;
+          photo_path: string;
+          profiled: boolean;
+          reactions: Json;
+          reply_to: Json;
+          sender_alias: string;
+          sender_key: string;
+          sender_look: string;
+        }[];
+      };
+      district_chat_profile_owner: {
+        Args: { target_message_id: string; target_user_id: string };
+        Returns: string;
+      };
+      district_chat_react: {
+        Args: {
+          new_emoji: string;
+          target_message_id: string;
+          target_user_id: string;
+          window_max: number;
+          window_seconds: number;
+        };
+        Returns: {
+          changed: boolean;
+          room_id: string;
+        }[];
+      };
+      district_chat_send_once: {
+        Args: {
+          expected_identity: string;
+          min_interval_ms: number;
+          new_body: string;
+          new_client_id?: string;
+          reply_to?: string;
+          target_user_id: string;
+          window_max: number;
+          window_seconds: number;
+        };
+        Returns: {
+          message_id: string;
+          replayed: boolean;
+          room_id: string;
+        }[];
+      };
+      district_enter: {
+        Args: {
+          capacity: number;
+          grace_minutes: number;
+          session_minutes: number;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          created_at: string;
+          day: string;
+          district_id: string;
+          ends_at: string;
+          grace_ends_at: string;
+          id: string;
+          identity_mode: string;
+          identity_switches: number;
+          joined_at: string;
+          room_id: string;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'district_sessions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      district_extend: {
+        Args: {
+          grace_minutes: number;
+          session_minutes: number;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          created_at: string;
+          day: string;
+          district_id: string;
+          ends_at: string;
+          grace_ends_at: string;
+          id: string;
+          identity_mode: string;
+          identity_switches: number;
+          joined_at: string;
+          room_id: string;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'district_sessions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      district_leave: { Args: { target_user_id: string }; Returns: undefined };
+      district_open_session_room: {
+        Args: { target_user_id: string };
+        Returns: string;
+      };
+      district_set: {
+        Args: { target_district_id: string; target_user_id: string };
+        Returns: undefined;
+      };
+      district_set_identity: {
+        Args: { anonymous: boolean; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          created_at: string;
+          day: string;
+          district_id: string;
+          ends_at: string;
+          grace_ends_at: string;
+          id: string;
+          identity_mode: string;
+          identity_switches: number;
+          joined_at: string;
+          room_id: string;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'district_sessions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       dm_inbox: {
         Args: { viewer: string };
         Returns: {
@@ -2339,6 +2855,17 @@ export type Database = {
           outcome: string;
         }[];
       };
+      friends_request_district_chat: {
+        Args: {
+          daily_max: number;
+          target_message_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          other_user_id: string;
+          outcome: string;
+        }[];
+      };
       friends_request_venue_chat: {
         Args: {
           daily_max: number;
@@ -2364,6 +2891,12 @@ export type Database = {
       friends_withdraw_add: {
         Args: { target_history_id: string; target_user_id: string };
         Returns: string;
+      };
+      gecit_answer: {
+        Args: { choice: number; target_day: string; target_user_id: string };
+        Returns: {
+          correct: boolean;
+        }[];
       };
       gifts_equip: {
         Args: { target_accessory_id: string; target_user_id: string };
@@ -3559,6 +4092,16 @@ export type Database = {
           new_reason: string;
           target_room_id: string;
           target_session_id?: string;
+          target_user_id: string;
+        };
+        Returns: string;
+      };
+      safety_report_district_chat: {
+        Args: {
+          hide_after: number;
+          new_reason: string;
+          snapshot_size: number;
+          target_message_id: string;
           target_user_id: string;
         };
         Returns: string;
