@@ -367,7 +367,6 @@ export const tr = {
       `%${(Math.round((parts / total) * 100 * 1000) / 1000).toString().replace('.', ',')}`,
     close: 'Kapat',
     ripHint: 'Yırtmak için şeridi sağa kaydır',
-    skip: 'Atla',
     tiltHint: 'Kartı sağa sola sürükleyerek çevir',
     later: 'Sonra',
     wear: 'Aksesuarı tak',
@@ -936,6 +935,13 @@ export const tr = {
       emptyLabel: 'Bankta oturan, yazmayı bekleyen kanki',
       friendRequest: 'Arkadaşlık isteği',
       leave: 'Sohbetten çık',
+    },
+    // "Oturumu kapat" in the room's options (§4.V).
+    end: {
+      action: 'Oturumu kapat',
+      title: 'Oturumu kapatmak istiyor musun?',
+      body: 'Bugün yeniden girersen soru sorulmaz, yeni 2 saat başlar.',
+      yes: 'Oturumu kapat',
     },
     cont: {
       title: 'Sohbete devam etmek istiyor musun?',

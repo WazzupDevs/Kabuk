@@ -7,6 +7,12 @@ description: Onaylı bir tasarım (aktarım) raporunu koda aktarırken izlenecek
 
 Proje sahibinin kararı (1 Kasım): her onaylı tasarım aktarımı bu yordamla yapılır (CLAUDE.md → Çalışma şekli → "Tuval aktarımı"). Amaç aktarımın doğruluğudur: raporun her maddesi uygulanır, var olan zorunlu davranış kaybolmaz, hiçbir değer tahmin edilmez.
 
+## 0. Tuval mi, uygulama mı (8 Kasım)
+
+- Uygulamada var olan ekranın görünüşünün kaynağı uygulamanın kendisidir; tuval revize turlarının gerisinde kalabilir (`docs/decisions/tuval-kaynak.md`). Var olan ekrana yalnızca raporun istediği parça girer; panonun ekranın geri kalanında çizdiği eski hâl (cam, bulanıklık, eski boşluk, eski düzen) koda geri taşınmaz.
+- Pano ile telefondaki hâl, raporun istemediği bir yerde ayrışıyorsa telefondaki hâl korunur ve `K` listesine yazılır; raporun istediği yerde ayrışıyorsa açık soru olur.
+- Yeni ekran panodan temiz sayfa kurulur.
+
 ## 1. Yalnızca gerekeni oku
 
 - Okunan: aktarım raporu; raporda belirtilen sürümün ilgili panoları (`docs/design/aura/project/<Pano>.dc.html`); raporun atıf yaptığı karar dosyaları (`docs/decisions/…`); değişiklik için gereken kod ve test dosyaları.
@@ -25,7 +31,7 @@ Proje sahibinin kararı (1 Kasım): her onaylı tasarım aktarımı bu yordamla 
 | Konu                                                   | Kaynak                                                                                                                                                          |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Ürün mantığı, gizlilik, var olan zorunlu davranış      | CLAUDE.md (değişmez kurallar, ekran davranışı), ürün belgesi (`docs/SPEC_V4.md`, değiştirmediği yerde `SPEC_V3.md`), onaylı kararlar (`docs/decisions/`)        |
-| Görünüş                                                | onaylı rapor ve panoları                                                                                                                                        |
+| Görünüş                                                | yeni ekran ve raporun istediği parça: onaylı rapor ve panoları; var olan ekranın geri kalanı: uygulamanın bugünkü hâli                                          |
 | Görsel değerler (renk, font, boşluk, köşe, gölge, cam) | tema token'ları (`apps/mobile/src/theme/`; gradyan `theme/gradient.ts` → `gradientStyle`) ve aura kit (`src/aura/`, `src/aura/kit.tsx`, `src/theme/auraKit.ts`) |
 | Hareket                                                | `docs/design/aura/project/hareket.json` ve raporun hareket tablosu; kodda `src/theme/aura.ts` → `MOTION` (`aura.test.ts` eşitliği denetler)                     |
 | Titreşim                                               | var olan sistem: `src/lib/haptics.ts` → `haptic(an)`, anlar `hapticMoments.ts`                                                                                  |

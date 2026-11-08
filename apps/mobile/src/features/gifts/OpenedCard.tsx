@@ -261,7 +261,11 @@ export function OpenedCard({
           <T v="title" center>
             {name}
           </T>
-          <TierTag tier={tier} />
+          {/* The tag sets itself to the start; in its own box it sits in the middle (the owner's
+              report, 8 Kasım). */}
+          <View style={{ alignItems: 'center' }}>
+            <TierTag tier={tier} />
+          </View>
         </Reanimated.View>
       </View>
       <Reanimated.View

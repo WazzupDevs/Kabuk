@@ -30,6 +30,16 @@
         "adimlar": [],
         "kirp": ".phone"
       }
+    },
+    {
+      "id": "ekran-semt-secenekler",
+      "app": "ekran/semt/secenekler",
+      "baz": false
+    },
+    {
+      "id": "ekran-semt-oturum-kapat",
+      "app": "ekran/semt/oturum-kapat",
+      "baz": false
     }
   ]
 }
