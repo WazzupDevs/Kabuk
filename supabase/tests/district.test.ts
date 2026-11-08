@@ -256,10 +256,13 @@ describe('time', () => {
     expect(s?.phase).toBe('active');
     // Two hours, but never past Istanbul midnight (the room is the day's): late in the evening the
     // session ends at midnight.
-    const [{ midnight }] = await sql<{ midnight: Date }[]>`
+    const [row] = await sql<{ midnight: Date }[]>`
       select private.istanbul_midnight() as midnight
     `;
-    const expected = Math.min(Date.now() + 120 * 60 * 1000, midnight.getTime());
+    const expected = Math.min(
+      Date.now() + 120 * 60 * 1000,
+      (row as { midnight: Date }).midnight.getTime(),
+    );
     expect(Math.abs(Date.parse(s?.endsAt as string) - expected)).toBeLessThan(60 * 1000);
   });
 
