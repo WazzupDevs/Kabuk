@@ -6,6 +6,12 @@
 - Telefonda doğrulanacak (hiçbiri cihazda görülmedi): riso doku ve kayma, Süsle şeridinin yavaş bırakmada uygulanması ve Hepsini gör'deki paket atlama, profil kaydırma şeridi, kapak yükleme, set balonu grubunda gönderilmekte olan mesajın alt süsü.
 - Açık: gece E2E 6–8 Kasım'dır kırmızı (bu paketten önce); görsel kapı görüntüleri bu ortamdan indirilemiyor (blob adresi ağ dışı).
 
+## Sıradaki toplu OTA'da toplananlar
+
+Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür.
+
+- Profil sekmesi kapağı (8 Kasım, önizleme gönderildi, onay bekliyor): kapak daha kısa (`PROFILE_COVER.height` 190 → öneri 140). Yukarı kaydırınca fotoğraf (112 → 32) ve isim kayarak üstteki şeride gider (sol üstte fotoğraf, yanında isim); aşağı kaydırınca aynı yoldan geri inip büyür. Bugünkü şeridin belirmesi yerine bu hareket; yarıda bırakılırsa en yakın uca yerleşir. Taslak: repo kökünde `profil-kapak-onizleme.html` (commit edilmez).
+
 ## Sıradaki build'de toplananlar
 
 Native değişiklik isteyen, onaylanmış ama yeni build beklediği için yapılmamış işler. Build alınacağı zaman hepsi tek PR'da yapılır (`app.json` → `version` artar, `.claude/skills/yayin`), yapılan madde buradan silinir.
