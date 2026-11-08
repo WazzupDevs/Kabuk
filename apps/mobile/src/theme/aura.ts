@@ -289,6 +289,23 @@ export const MOTION = {
   },
   press: { scale: 0.96, downMs: 100 },
   idle: { floatPx: 4, floatMs: 1300, blinkMs: 160, blinkEveryMs: [4000, 6000], blinkClosed: 0.12 },
+  // Semte Git and Geçit (hareket.json → semteGit, the canvas's motionSemteGit). Places in the 350 ×
+  // 240 scene's dp; with reduce motion the full riso pictures stand still.
+  semteGit: {
+    gecitOpen: {
+      totalMs: 880,
+      leaf: { hingeX: 119, rotateYDeg: [0, -78], perspective: 600, ms: [0, 420] },
+      light: { opacity: [0, 1], scale: [0.85, 1], origin: [175, 130], ms: [120, 520] },
+      buddies: { startMs: [360, 440, 520], fromScale: 0.3, fadeMs: 120 },
+    },
+    gecitClosed: {
+      lock: { pivot: [175, 116], rotateDeg: 4, periodMs: 1600 },
+      drops: { count: 4, fallPx: 18, ms: 1200, staggerMs: 300 },
+    },
+    typingDots: { count: 3, opacity: [0.3, 1], periodMs: 1200, staggerMs: 200 },
+    waitSpinner: { msPerTurn: 800 },
+    continueBar: { durationS: 600 },
+  },
 } as const;
 
 export type Bezier = readonly [number, number, number, number];

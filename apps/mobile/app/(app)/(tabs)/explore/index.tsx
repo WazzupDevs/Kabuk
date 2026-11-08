@@ -39,6 +39,7 @@ import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { DistrictCard } from '@/features/district/DistrictCard';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { EventTag } from '@/features/explore/EventTag';
@@ -358,6 +359,9 @@ function VenueList({
         gap: SPACING[3],
       }}
     >
+      {/* Semte Git (docs/SPEC_V4.md §4.V): under the chips, over "Şu an buradasın" or the list,
+          12 apart (the list's gap). */}
+      <DistrictCard />
       {here ? <HereNow here={here} /> : null}
       {/* The city and district, and how many venues (K-38): a section's head. */}
       <Reveal index={SECTION_AT} replay={replay} openings={openings}>

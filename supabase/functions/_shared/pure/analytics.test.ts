@@ -42,6 +42,11 @@ describe('analytics events', () => {
         'dm_sent',
         'venue_chat_sent',
         'venue_chat_reported',
+        // SPEC_V4 §4.V.
+        'district_located',
+        'gecit_answered',
+        'district_entered',
+        'district_extended',
       ].sort(),
     );
   });
