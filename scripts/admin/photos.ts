@@ -16,7 +16,7 @@ type Admin = SupabaseClient<Database>;
 export async function deleteProfilePhotos(admin: Admin, userId: string): Promise<void> {
   const { data: p, error } = await admin
     .from('profiles')
-    .select('public_id, photo_path, photo_pending_path')
+    .select('public_id, photo_path, photo_pending_path, cover_path, cover_pending_path')
     .eq('id', userId)
     .maybeSingle();
   if (error) throw error;
@@ -27,6 +27,8 @@ export async function deleteProfilePhotos(admin: Admin, userId: string): Promise
   const files = [
     p.photo_path,
     p.photo_pending_path,
+    p.cover_path,
+    p.cover_pending_path,
     ...legacy.data.map((f) => `${p.public_id}/${f.name}`),
   ].filter((f): f is string => !!f);
   if (files.length === 0) return;
