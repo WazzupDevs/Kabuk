@@ -32,6 +32,8 @@ const Body: z.ZodType<FriendsRequest> = z.union([
   z.object({ action: z.literal('list') }),
   z.strictObject({ action: z.literal('request'), historyId: z.uuid() }),
   z.strictObject({ action: z.literal('request'), venueChatMessageId: z.uuid() }),
+  // The district chat's (docs/SPEC_V4.md §4.V): the same kind of request, named after the district.
+  z.strictObject({ action: z.literal('request'), districtChatMessageId: z.uuid() }),
   z.object({ action: z.literal('incoming') }),
   z.object({ action: z.literal('respond'), requestId: z.uuid(), accept: z.boolean() }),
   z.object({ action: z.literal('add-from-room'), historyId: z.uuid() }),
@@ -215,7 +217,13 @@ Deno.serve(
                   target_message_id: body.venueChatMessageId,
                   daily_max: VENUE_CHAT.dailyFriendRequests,
                 })
-              : await db.rpc('friends_request', {
+              : 'districtChatMessageId' in body
+                ? await db.rpc('friends_request_district_chat', {
+                    target_user_id: user.id,
+                    target_message_id: body.districtChatMessageId,
+                    daily_max: VENUE_CHAT.dailyFriendRequests,
+                  })
+                : await db.rpc('friends_request', {
                   target_user_id: user.id,
                   target_history_id: body.historyId,
                 });

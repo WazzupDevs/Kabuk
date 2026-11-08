@@ -80,3 +80,11 @@ export function deviceReachableUrl(
   if (!signedUrl.startsWith(`${from}/`)) return signedUrl;
   return localDeviceUrl.replace(/\/+$/, '') + signedUrl.slice(from.length);
 }
+
+// Semte Git (the owner's call, 8 Kasım): the dev project's test accounts try the question flow
+// without real questions (those never enter the repo): a day with no loaded question gets one of the
+// sample questions (pure/gecitSamples.ts). Not on the local stack, whose tests load their own; never
+// on the pilot.
+export function testQuestionsAllowed(supabaseUrl: string | undefined): boolean {
+  return isDevProjectUrl(supabaseUrl ?? '');
+}

@@ -1,0 +1,39 @@
+{
+  "_comment": "Semte Git semtleri (docs/SPEC_V4.md §4.V). Sınırlar hazır veriden kopyalanmadan kendi çizimimizdir, kabadır; ortak sınıra 500 m yakın olana iki semt sunulur. ring: [boylam, enlem] noktaları, sırayla.",
+  "districts": [
+    {
+      "ref": "beylikduzu",
+      "name": "Beylikdüzü",
+      "ring": [
+        [28.585, 40.955],
+        [28.675, 40.955],
+        [28.675, 41.005],
+        [28.585, 41.01]
+      ]
+    },
+    {
+      "ref": "esenyurt",
+      "name": "Esenyurt",
+      "ring": [
+        [28.585, 41.01],
+        [28.675, 41.005],
+        [28.69, 41.005],
+        [28.705, 41.035],
+        [28.7, 41.085],
+        [28.6, 41.085]
+      ]
+    },
+    {
+      "ref": "avcilar",
+      "name": "Avcılar",
+      "ring": [
+        [28.675, 40.955],
+        [28.775, 40.955],
+        [28.775, 41.035],
+        [28.705, 41.035],
+        [28.69, 41.005],
+        [28.675, 41.005]
+      ]
+    }
+  ]
+}

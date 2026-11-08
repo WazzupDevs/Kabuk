@@ -32,6 +32,7 @@ import {
   testSpotsSql,
   venuesSql,
 } from './sections.ts';
+import { districtsSql, parseDistricts } from './districts.ts';
 import { gamesSql, parseGames } from './games.ts';
 import { giftsSql, readGiftCatalog } from './gifts.ts';
 import { readSignumWords } from './signum.ts';
@@ -96,6 +97,7 @@ export function buildSeed(root: string): SeedBuild {
     tableIconsSql(parseTableIcons(readJson('content/table-icons.json'))),
     gamesSql(parseGames(readJson('content/games.json'))),
     giftsSql(readGiftCatalog(root)),
+    districtsSql(parseDistricts(readJson('content/districts.json'))),
     cardsSql(
       parseTabuCards(readJson('content/tabu-cards.json')),
       parseSohbetCards(readJson('content/sohbet-cards.json')),

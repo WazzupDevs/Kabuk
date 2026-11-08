@@ -11,6 +11,8 @@ export type FriendsRequest =
   // the recipient their name, age and photo; the answer is { ok: true } whatever happens, except
   // already_friends.
   | { action: 'request'; venueChatMessageId: string }
+  // From a profiled district chat message (docs/SPEC_V4.md §4.V).
+  | { action: 'request'; districtChatMessageId: string }
   // Requests from the venue chat waiting for the caller: the sender's name, age and photo.
   | { action: 'incoming' }
   | { action: 'respond'; requestId: string; accept: boolean }

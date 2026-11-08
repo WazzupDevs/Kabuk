@@ -55,6 +55,12 @@ export type ErrorCode =
   | 'gender_required'
   | 'identity_mismatch'
   | 'identity_switch_used'
+  | 'district_required'
+  | 'gate_closed'
+  | 'question_expired'
+  | 'no_question'
+  | 'no_session'
+  | 'not_due'
   | 'nick_refresh_too_soon'
   | 'client_id_reused'
   | 'icon_taken'
@@ -179,6 +185,13 @@ const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   // stale identity is not written. The nick is refreshed once in 30 days (K-9).
   'identity_mismatch',
   'identity_switch_used',
+  // Semte Git (docs/SPEC_V4.md §4.V).
+  'district_required',
+  'gate_closed',
+  'question_expired',
+  'no_question',
+  'no_session',
+  'not_due',
   'nick_refresh_too_soon',
   // A venue chat message's client id used again for another message (venue_chat_send_once).
   'client_id_reused',

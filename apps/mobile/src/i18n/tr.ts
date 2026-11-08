@@ -2333,6 +2333,12 @@ export const tr = {
     client_id_reused: 'Bu mesaj gönderilemedi. Yeniden yaz.',
     identity_switch_used:
       'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
+    district_required: 'Önce semtini bulalım.',
+    gate_closed: "Geçit bugün kapalı. Yeni soru 00:00'da.",
+    question_expired: 'Günün sorusu değişti. Yeniden dene.',
+    no_question: 'Bugün soru yok, Geçit açık.',
+    no_session: 'Semt oturumun kapandı.',
+    not_due: 'Süren henüz dolmadı.',
     nick_refresh_too_soon: 'Anonim adını 30 günde bir yenileyebilirsin.',
     icon_taken: 'Bu simge mekandaki başka bir masada. Başka bir simge seç.',
     already_in_table: 'Zaten bir masadasın.',

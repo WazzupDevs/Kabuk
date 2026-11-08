@@ -460,6 +460,14 @@ on conflict (id) do update set
   slots = excluded.slots, pack = excluded.pack;
 update public.gift_accessories set in_packs = false where in_packs and id <> all (array['filiz', 'percem', 'altigengozluk', 'baklagoz', 'artigoz', 'yarabandi', 'kurdan', 'guzellikbeni', 'anahtarkolye', 'ipkravat', 'pervanelisapka', 'balikcisapkasi', 'cilekgozluk', 'panjurgozluk', 'sarmalgoz', 'kedibiyiklari', 'distegul', 'yildizcikartma', 'pusulakolye', 'kopekbaligidisi', 'kistakimi', 'buyucutakimi', 'yildiztakimi', 'korsantakimi', 'dalgictakimi', 'seftakimi', 'doktortakimi', 'rocktakimi', 'astronottakimi', 'hawaiitakimi', 'kuzeyisigi', 'ejderboynuzu', 'ejdernefesi', 'alevsac', 'simsekbulutu', 'kelebekgozluk', 'gokkusagiatki', 'yildiztozu', 'neongozluk', 'kalpbaloncuk', 'yapraktaci', 'aydiademi', 'elfkulaklari', 'ormanrunleri', 'yaprakmaske', 'ayisigigozleri', 'sihirliflut', 'yaprakyakasi', 'hayatagaci', 'ormanteni', 'golgebasligi', 'shurikentokasi', 'tilkimaskesi', 'simsekgozler', 'dumanpecesi', 'klanisareti', 'gecepelerini', 'sirtkatanasi', 'kunaikolyesi', 'geceteni', 'bere', 'yuvarlakgozluk', 'kasket', 'kulaklik', 'buyucusapkasi', 'yildizgozluk', 'tac']::text[]);
 
+-- content/districts.json: districts
+insert into public.districts (ref, name, ring, sort) values
+  ('beylikduzu', 'Beylikdüzü', '[[28.585,40.955],[28.675,40.955],[28.675,41.005],[28.585,41.01]]'::jsonb, 0),
+  ('esenyurt', 'Esenyurt', '[[28.585,41.01],[28.675,41.005],[28.69,41.005],[28.705,41.035],[28.7,41.085],[28.6,41.085]]'::jsonb, 1),
+  ('avcilar', 'Avcılar', '[[28.675,40.955],[28.775,40.955],[28.775,41.035],[28.705,41.035],[28.69,41.005],[28.675,41.005]]'::jsonb, 2)
+on conflict (ref) do update set
+  name = excluded.name, ring = excluded.ring, sort = excluded.sort;
+
 -- content/tabu-cards.json, content/sohbet-cards.json, content/sahtekar-words.json, content/harf-categories.json, content/sarki-words.json, content/ibre-scales.json, content/sprengja-letter-groups.json, content/signum-words.json
 insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values
   ('tabu', 'Buzdolabı', 'Buzdolabı', array['soğuk', 'mutfak', 'yiyecek', 'kapak', 'elektrik']::text[], null, null),
