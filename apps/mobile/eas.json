@@ -33,6 +33,10 @@
       "channel": "preview",
       "node": "22.20.0"
     },
+    "testflight": {
+      "extends": "preview",
+      "distribution": "store"
+    },
     "production": {
       "autoIncrement": true,
       "android": {
@@ -52,6 +56,9 @@
       "android": {
         "track": "internal"
       },
+      "ios": {}
+    },
+    "testflight": {
       "ios": {}
     }
   }

@@ -1,5 +1,11 @@
 import { z } from './deps.ts';
-import { APP_BUILD_HEADER, minBuildFrom, needsUpdate } from './pure/appVersion.ts';
+import {
+  APP_BUILD_HEADER,
+  APP_PLATFORM_HEADER,
+  minBuildFor,
+  needsUpdate,
+  platformFrom,
+} from './pure/appVersion.ts';
 import { AppError, type ErrorCode, toErrorBody } from './pure/errors.ts';
 
 const STATUS: Record<ErrorCode, number> = {
@@ -118,13 +124,15 @@ function errorResponse(code: ErrorCode, message: string): Response {
 }
 
 // Wraps a handler: POST + JSON only, and every failure leaves as `{ error: { code, message } }`.
-// Every function refuses builds older than MIN_APP_BUILD before doing anything (forced update gate;
+// Every function refuses builds older than its platform's minimum (MIN_APP_BUILD, MIN_APP_BUILD_IOS) before doing anything (forced update gate;
 // pure/appVersion.ts). Read per request, so a new minimum applies without a redeploy.
 export function handle(fn: (req: Request, body: unknown) => Promise<unknown>) {
   return async (req: Request): Promise<Response> => {
-    if (
-      needsUpdate(req.headers.get(APP_BUILD_HEADER), minBuildFrom(Deno.env.get('MIN_APP_BUILD')))
-    ) {
+    const minBuild = minBuildFor(platformFrom(req.headers.get(APP_PLATFORM_HEADER)), {
+      android: Deno.env.get('MIN_APP_BUILD'),
+      ios: Deno.env.get('MIN_APP_BUILD_IOS'),
+    });
+    if (needsUpdate(req.headers.get(APP_BUILD_HEADER), minBuild)) {
       return errorResponse('update_required', 'This version of the app is too old. Update it.');
     }
     if (req.method !== 'POST') {
