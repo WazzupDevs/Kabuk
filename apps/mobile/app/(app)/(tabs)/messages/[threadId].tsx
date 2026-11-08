@@ -427,7 +427,6 @@ export default function DmScreen() {
       top={
         <ChatTopBar
           onBack={backToInbox}
-          split
           title={name}
           leading={<Av size="member" name={name} photoUrl={photoUrl} />}
           onPressTitle={openProfile}

@@ -102,8 +102,6 @@ export const SEMT = {
     light: { fill: '#0E8745', track: '#E0EDE2' },
     dark: { fill: '#3DDC84', track: '#1B211F' },
   },
-  // The identity strip (`.idst`): 6 inside, 22 round, a 30 face.
-  identity: { pad: 6, radius: 22, gap: 10, rowGap: 6, labelGap: 8, face: 30 },
   // The skeleton's ground (`.sk`).
   skeleton: {
     light: { ground: 'rgba(255, 255, 255, 0.74)', edge: '#FFFFFF' },

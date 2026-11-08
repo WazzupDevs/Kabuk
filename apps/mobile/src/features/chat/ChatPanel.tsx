@@ -10,7 +10,7 @@ import { toRuns } from '@shared/chatRuns.ts';
 
 import { Avatar } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
-import { ChatBubble } from '@/components/ChatBubble';
+import { ChatBubble, skinMovers } from '@/components/ChatBubble';
 import { SET_BALLOONS } from '@/theme/setBalloons';
 import { setBalloonOf } from '@shared/gifts.ts';
 import {
@@ -235,6 +235,7 @@ export function useRoomChatList(
       at: Date.parse(o.at ?? lastAt ?? ''),
     })),
   ].reverse();
+  const movers = skinMovers(rows, (r) => !!r.m && balloonOf(r.m.session_id) !== null);
   const renderItem = (row: RoomRow) => {
     const { m, out, first, last, day } = row;
     if (out) {
@@ -280,6 +281,7 @@ export function useRoomChatList(
               text={m.body}
               mine={mine}
               skin={balloonOf(m.session_id)}
+              skinMoves={movers.has(row.key)}
               quote={toChatQuote(quote)}
               onPressQuote={quoteJump(quote, jumpTo)}
               reactions={chat.reactions.view(m.id, counts)}

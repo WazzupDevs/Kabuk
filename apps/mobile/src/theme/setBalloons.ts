@@ -29,7 +29,9 @@ export type SetBalloon = {
   fill: string;
   border: string;
   aurora: string;
-  shadow: Record<Scheme, string>;
+  // `ring`: the 4 px ring every balloon keeps; `glow`: the wide glow and the drop, only on a run's
+  // first and last balloon (ChatBubble → skinFace).
+  shadow: Record<Scheme, { ring: string; glow: string }>;
   // Another's: [top left, top right, bottom right, bottom left]; the own one mirrored.
   radius: { round: number; tight: number };
   pad: { top: number; right: number; bottom: number; left: number };
@@ -55,9 +57,14 @@ export const SET_BALLOONS: Readonly<Record<'elf' | 'ninja', SetBalloon>> = {
     aurora:
       'radial-gradient(60% 120% at 20% 0%, rgba(127,245,216,0.30), transparent 60%), radial-gradient(50% 100% at 85% 100%, rgba(180,140,255,0.26), transparent 60%)',
     shadow: {
-      light:
-        '0 0 0 4px rgba(61,220,132,0.10), 0 0 22px rgba(61,220,132,0.28), 0 8px 18px rgba(4,40,20,0.35)',
-      dark: '0 0 0 4px rgba(61,220,132,0.14), 0 0 26px rgba(61,220,132,0.36), 0 6px 14px rgba(0,0,0,0.45)',
+      light: {
+        ring: '0 0 0 4px rgba(61,220,132,0.10)',
+        glow: '0 0 22px rgba(61,220,132,0.28), 0 8px 18px rgba(4,40,20,0.35)',
+      },
+      dark: {
+        ring: '0 0 0 4px rgba(61,220,132,0.14)',
+        glow: '0 0 26px rgba(61,220,132,0.36), 0 6px 14px rgba(0,0,0,0.45)',
+      },
     },
     radius: { round: 22, tight: 6 },
     pad: { top: 12, right: 18, bottom: 12, left: 20 },
@@ -95,9 +102,14 @@ export const SET_BALLOONS: Readonly<Record<'elf' | 'ninja', SetBalloon>> = {
     aurora:
       'radial-gradient(55% 120% at 15% 100%, rgba(185,179,217,0.22), transparent 60%), radial-gradient(45% 110% at 90% 0%, rgba(232,69,90,0.24), transparent 60%)',
     shadow: {
-      light:
-        '0 0 0 4px rgba(232,69,90,0.10), 0 0 22px rgba(232,69,90,0.28), 0 8px 18px rgba(14,11,32,0.40)',
-      dark: '0 0 0 4px rgba(232,69,90,0.14), 0 0 26px rgba(232,69,90,0.36), 0 6px 14px rgba(0,0,0,0.50)',
+      light: {
+        ring: '0 0 0 4px rgba(232,69,90,0.10)',
+        glow: '0 0 22px rgba(232,69,90,0.28), 0 8px 18px rgba(14,11,32,0.40)',
+      },
+      dark: {
+        ring: '0 0 0 4px rgba(232,69,90,0.14)',
+        glow: '0 0 26px rgba(232,69,90,0.36), 0 6px 14px rgba(0,0,0,0.50)',
+      },
     },
     radius: { round: 22, tight: 6 },
     pad: { top: 12, right: 18, bottom: 12, left: 20 },

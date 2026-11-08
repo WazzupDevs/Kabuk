@@ -84,7 +84,6 @@ function RoomChatScreenBody() {
       top={
         <ChatTopBar
           onBack={() => router.back()}
-          split
           compact
           title={tr.table.chatTitle}
           subtitle={room.data.name ?? undefined}

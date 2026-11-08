@@ -21,7 +21,6 @@ export function DmFixture() {
       top={
         <ChatTopBar
           onBack={noop}
-          split
           title={NAME}
           leading={<Avatar kind="profile" name={NAME} size="md" photoUrl={null} />}
           actions={
