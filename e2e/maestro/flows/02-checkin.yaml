@@ -28,11 +28,17 @@ appId: app.kabuk.mobile
 - tapOn:
     id: explore-search
 - inputText: iki
-- extendedWaitUntil:
-    visible: E2E Kafe İki
+# The Semte Git card (dev and local only) sits over the list: on the 320x640 emulator the one
+# result lands under the keyboard. Close it and scroll to the row.
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: E2E Kafe İki
     timeout: 10000
 - assertNotVisible: E2E Kafe
 - takeScreenshot: 05e-explore-search
+- tapOn:
+    id: explore-search
 - eraseText: 10
 - hideKeyboard
 - assertVisible:
