@@ -6,6 +6,12 @@ Native değişiklik isteyen, onaylanmış ama yeni build beklediği için yapıl
 
 - SVG önbelleği (8 Kasım, proje sahibinin onayı): `patches/react-native-svg@15.15.4.patch` → `SHARED` sabit 24 MB yerine uygulama belleğinin payı (1/8 ile 1/4 arası, Fresco gibi); bellek sıkışınca boşalır (`onTrimMemory`; bugün yok). Gerekçe: Kapsülünü süsle kasması; sabit 128 MB ucuz telefonlarda arka planda kapanmaya yol açar. Kasmanın kaynağı ilk çizimse sade seçenek görünüşü ayrıca gerekir.
 
+## Sıradaki toplu OTA'da toplananlar
+
+Onaylanmış, native değişiklik istemeyen işler. Proje sahibi toplu, büyük bir OTA'yla göndermek istiyor; hepsi o OTA'da gider, yapılan madde buradan silinir.
+
+- Kapsülünü süsle'de sade seçenek görünüşü (8 Kasım, proje sahibinin onayı, önizlemesi sohbette): her seçenek kişinin renginde düz kapsül, klasik göz ve yalnız o parça (`app/(app)/(tabs)/profile/capsule.tsx` → `Box`'un `look`'u `code(wear(look, …))` yerine yalnız renk + parça). Bugün her parça seçimi bütün seçeneklerin çizimini değiştirip yeniden çizdiriyor (kasmanın asıl kaynağı); sade hâlde seçenek yalnız renk değişince yeniden çizilir. Göz ve Renk sekmeleri de aynı sade kapsülle; `readLookAhead` döngüsü buna göre sadeleşir. Göz: klasik (öneri; proje sahibi kendi gözünü isterse değişir).
+
 ## Devir notu (8 Kasım 2026, Semte Git)
 
 - #522 main'de: §4.V, K-90; `district`, `district-chat`, migration `…_semte_git.sql`, ekranlar (Aura v146). Kart yalnız yerel ve dev projesinde görünür (`DISTRICT_VISIBLE`); dev'de örnek soru ve elle semt seçimi var.
