@@ -1,5 +1,5 @@
 {
-  "source": "docs/SPEC_V4.md §4.U (K-89, \"Genişleyen katalog ve yuvalar\"); Aura panoları PaketOranlar, AksesuarSiradan, AksesuarNadir, AksesuarDestansi, AksesuarEfsanevi, BalonElf, BalonNinja. Ağırlıklar tamsayı: paket başına kademe ağırlıklarının toplamı 100000 (%0,001 hassasiyet). Bronz oranları tuvaldeki değerler, pilot için geçici; kilitli paketlerin oranları açılmadan önce proje sahibine sorulur. Aksesuarın ağırlığı kendi kademesi (ve paketi) içindeki payıdır. slots: aksesuarın takıldığı yuvalar (kapsülün yuva kodları: c Renk, e Göz, h Baş, f Yüz, m Ağız, n Boyun); Destansı takımlar iki yuvalı. set: aksesuarın ait olduğu skin seti (Elf, Ninja); set parçaları Efsanevi'dir, dört paketten öteki Efsanevi parçalarla aynı ağırlıkta çıkar; sets: setler ve tam setleri (hepsi takılınca mekan sohbetinde setin balonu). Sonra gelecek skin setleri de böyle gelir (proje sahibinin kararı, 7 Kasım). retired: yeni katalogda yok, paketten çıkmaz, sahibi olan takmaya devam eder (7 Kasım). replacesPart: bu aksesuar olan kapsül parçası Kapsülünü süsle'den kalktı (7 Kasım); takmış olan kalır, yeniden seçilemez.",
+  "source": "docs/SPEC_V4.md §4.U (K-89, \"Genişleyen katalog ve yuvalar\"); Aura panoları PaketOranlar, AksesuarSiradan, AksesuarNadir, AksesuarDestansi, AksesuarEfsanevi, BalonElf, BalonNinja. Ağırlıklar tamsayı: paket başına kademe ağırlıklarının toplamı 100000 (%0,001 hassasiyet). Bronz oranları tuvaldeki değerler, pilot için geçici; kilitli paketlerin oranları açılmadan önce proje sahibine sorulur. Aksesuarın ağırlığı kendi kademesi (ve paketi) içindeki payıdır. slots: aksesuarın takıldığı yuvalar (kapsülün yuva kodları: c Renk, e Göz, h Baş, f Yüz, m Ağız, n Boyun); Destansı takımlar iki yuvalı. set: aksesuarın ait olduğu skin seti (Elf, Ninja); set parçaları Efsanevi'dir, dört paketten öteki Efsanevi parçalarla aynı ağırlıkta çıkar; sets: skin setleri; bir setin kapsülün üç bölgesine (Baş: baş; Yüz: göz, yüz, ağız; Gövde: boyun, renk) birer parçası takılınca anonim yazılan her yerde setin balonu (proje sahibinin kararı, 8 Kasım; tam set kuralının yerine). Sonra gelecek skin setleri de böyle gelir (proje sahibinin kararı, 7 Kasım). retired: yeni katalogda yok, paketten çıkmaz, sahibi olan takmaya devam eder (7 Kasım). replacesPart: bu aksesuar olan kapsül parçası Kapsülünü süsle'den kalktı (7 Kasım); takmış olan kalır, yeniden seçilemez.",
   "loginsPerPack": 3,
   "tiers": [
     {
@@ -68,20 +68,11 @@
   "sets": [
     {
       "id": "elf",
-      "name": "Elf",
-      "fullSet": [
-        "yapraktaci",
-        "ayisigigozleri",
-        "yaprakmaske",
-        "sihirliflut",
-        "hayatagaci",
-        "ormanteni"
-      ]
+      "name": "Elf"
     },
     {
       "id": "ninja",
-      "name": "Ninja",
-      "fullSet": ["golgebasligi", "simsekgozler", "dumanpecesi", "gecepelerini", "geceteni"]
+      "name": "Ninja"
     }
   ],
   "accessories": [

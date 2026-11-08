@@ -12,6 +12,7 @@ import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { FxMoves } from '@/components/FxSvg';
+import { SetCard } from '@/features/gifts/SetCard';
 import { LivingLook } from '@/features/profile/LivingLook';
 import { lookGround } from '@/theme/capsuleLook';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
@@ -84,9 +85,16 @@ export default function ProfileScreen() {
             {/* The photo opens large; the capsule lives (blinks, looks at the photo, rolls its
                 eyes, answers a tap). Editing is the two buttons under the name (the owner's call,
                 28 Ekim). */}
+            {/* Under the photo only the name and age; under the capsule only its nick (the owner's
+                call, 8 Kasım). */}
             <FaceCard
-              label={tr.profile.ownPhoto}
-              note={tr.profile.ownPhotoNote}
+              label={
+                view.data.displayName
+                  ? view.data.age
+                    ? tr.profile.nameWithAge(view.data.displayName, view.data.age)
+                    : view.data.displayName
+                  : tr.profile.noName
+              }
               onPress={
                 view.data.photoUrl && !view.data.photoHidden ? () => setPreview(true) : undefined
               }
@@ -99,8 +107,7 @@ export default function ProfileScreen() {
               />
             </FaceCard>
             <FaceCard
-              label={tr.profile.ownCapsule}
-              note={tr.profile.ownCapsuleNote}
+              label={view.data.capsuleNick ?? tr.profile.ownCapsule}
               testID="profile-capsule"
             >
               {/* The ring holds the capsule's ground; the capsule stands over it, its head and
@@ -139,21 +146,15 @@ export default function ProfileScreen() {
             onClose={() => setPreview(false)}
           />
 
-          {/* U32: the name and age display 20 under the cards, the bio 2 under it in the ink. */}
-          <View style={{ gap: SPACING[0.5], marginTop: SPACING[5] }}>
-            <T v="display" accessibilityRole="header">
-              {view.data.displayName
-                ? view.data.age
-                  ? tr.profile.nameWithAge(view.data.displayName, view.data.age)
-                  : view.data.displayName
-                : tr.profile.noName}
-            </T>
-            {view.data.bio ? (
-              <T v="body" ink>
+          {/* The bio in the middle under the cards (the owner's call, 8 Kasım: the name and age are
+              under the photo now). */}
+          {view.data.bio ? (
+            <View style={{ marginTop: SPACING[4] }}>
+              <T v="body" ink center>
                 {view.data.bio}
               </T>
-            ) : null}
-          </View>
+            </View>
+          ) : null}
 
           {/* aura v50 (ProfilDar): side by side at 390 dp; under 360 dp or with larger text one
               under the other, 58 high, so the words never shrink. */}
@@ -220,6 +221,8 @@ export default function ProfileScreen() {
               <CapIcon name="chevron" color={c.muted} size={ICON.md} />
             </Li>
           </Glass>
+          {/* Set balonu under Arkadaşlar (the owner's call, 8 Kasım). */}
+          <SetCard />
         </View>
       )}
     </Screen>
@@ -250,7 +253,7 @@ function FaceCard({
   children,
 }: {
   label: string;
-  note: string;
+  note?: string;
   // Without it the card is still and its face takes the taps (the living capsule).
   onPress?: () => void;
   testID?: string;
@@ -272,9 +275,11 @@ function FaceCard({
         <T v="h3" center>
           {label}
         </T>
-        <T v="fine" center>
-          {note}
-        </T>
+        {note ? (
+          <T v="fine" center>
+            {note}
+          </T>
+        ) : null}
       </View>
     </Glass>
   );
@@ -288,7 +293,7 @@ function FaceCard({
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      accessibilityLabel={`${label}, ${note}`}
+      accessibilityLabel={note ? `${label}, ${note}` : label}
       onPress={onPress}
       style={{ flex: 1 }}
     >

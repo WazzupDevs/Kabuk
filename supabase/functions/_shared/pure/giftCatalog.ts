@@ -37,23 +37,8 @@ export const GIFT_CATALOG: GiftCatalog = {
     },
   ],
   sets: [
-    {
-      id: 'elf',
-      name: 'Elf',
-      fullSet: [
-        'yapraktaci',
-        'ayisigigozleri',
-        'yaprakmaske',
-        'sihirliflut',
-        'hayatagaci',
-        'ormanteni',
-      ],
-    },
-    {
-      id: 'ninja',
-      name: 'Ninja',
-      fullSet: ['golgebasligi', 'simsekgozler', 'dumanpecesi', 'gecepelerini', 'geceteni'],
-    },
+    { id: 'elf', name: 'Elf' },
+    { id: 'ninja', name: 'Ninja' },
   ],
   accessories: [
     { id: 'filiz', name: 'Filiz', tier: 'siradan', slots: ['h'], weight: 1 },

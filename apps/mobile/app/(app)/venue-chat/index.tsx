@@ -1,7 +1,7 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { canRetry, mergeOutbox, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
-import { fullSetOf } from '@shared/gifts.ts';
+import { setBalloonOf } from '@shared/gifts.ts';
 import {
   prepareVenueMessage,
   senderLabel,
@@ -746,11 +746,11 @@ function OptionsSheet({
   );
 }
 
-// A full set worn whole, written anonymously: the set's balloon (§4.U; BalonElf, BalonNinja).
-// Written with the name, the plain one.
+// A set worn in all three regions, written anonymously: the set's balloon (§4.U; BalonElf,
+// BalonNinja). Written with the name, the plain one.
 function balloonOf(m: VenueChatMessage): SetBalloon | null {
   if (m.profiled || !m.senderLook) return null;
-  const set = fullSetOf(m.senderLook);
+  const set = setBalloonOf(m.senderLook);
   return set === 'elf' || set === 'ninja' ? SET_BALLOONS[set] : null;
 }
 
