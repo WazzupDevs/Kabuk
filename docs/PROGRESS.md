@@ -10,7 +10,7 @@
 
 Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür.
 
-- Profil sekmesi kapağı (8 Kasım, önizleme gönderildi, onay bekliyor): kapak daha kısa (`PROFILE_COVER.height` 190 → öneri 140). Yukarı kaydırınca fotoğraf (112 → 32) ve isim kayarak üstteki şeride gider (sol üstte fotoğraf, yanında isim); aşağı kaydırınca aynı yoldan geri inip büyür. Bugünkü şeridin belirmesi yerine bu hareket; yarıda bırakılırsa en yakın uca yerleşir. Taslak: repo kökünde `profil-kapak-onizleme.html` (commit edilmez).
+- Profil sekmesi kapağı (8 Kasım, önizleme gönderildi, onay bekliyor): kapak daha kısa (`PROFILE_COVER.height` 190 → öneri 140). Yukarı kaydırınca fotoğraf (112 → 32) ve isim kayarak üstteki şeride gider (sol üstte fotoğraf, yanında isim); aşağı kaydırınca aynı yoldan geri inip büyür. Bugünkü şeridin belirmesi yerine bu hareket; yarıda bırakılırsa en yakın uca yerleşir. Taslak sohbette gönderildi (kişisel fotoğraf içerdiği için repoya girmez).
 
 ## Sıradaki build'de toplananlar
 
