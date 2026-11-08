@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (8 Kasım 2026, Semte Git)
+
+- #522 main'de: §4.V, K-90; `district`, `district-chat`, migration `…_semte_git.sql`, ekranlar (Aura v146). Kart yalnız yerel ve dev projesinde görünür (`DISTRICT_VISIBLE`); dev'de örnek soru ve elle semt seçimi var.
+- Üretime açmadan önce: gerçek sorular `pnpm admin:gecit-import` ile yüklenir, `DISTRICT_VISIBLE` üretimde açılır, sınırlar (`content/districts.json`, kaba çizim) sahada denenir.
+- Açık aktarım maddeleri: bilet çentikleri, kart→Geçit morph geçişi, odanın iskelet yüklenişi; `words.test.ts`'te "oda" için üç metin istisnası.
+- Bekleyen ayrı konu: Kapsülünü süsle kasması (önbelleği büyüten build ya da sade seçenek görünüşü), karar proje sahibinde.
+
 ## Devir notu (7 Kasım 2026, otomatik aksesuar paketi sistemi)
 
 - İstek (proje sahibi): yeni aksesuar paketi gelince paketten çıkma, Süsle, Aksesuarlarım, Paketler kendiliğinden kurulsun. Bugün elle olanlar: paket kimlikleri (`pure/gifts.ts` → `GIFT_PACKS`, migration'lardaki `pack in (...)` check'leri, `gifts_in_pool`), çizimler (`capsuleAccessories.ts`, `setBalloons.ts` panodan elle), görseller (`features/gifts/art.ts` statik require), `PACK_GLOW`.
