@@ -3,6 +3,7 @@ import { Animated, Pressable, useWindowDimensions, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Glass, PulseDot, T, useKit, usePress } from '@/aura/kit';
+import { FxMoves } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { isNarrow } from '@/lib/narrow';
 import { KIT } from '@/theme/auraKit';
@@ -25,6 +26,9 @@ type Props = {
   titleAccessibilityLabel?: string;
   // The last writers' faces: the first thing to go when the bar is narrow (320 dp, the largest text).
   stack?: ReactNode;
+  // Small faces on a second line under the title, after the live dot (the venue chat's last
+  // writers, the owner's call, 8 Kasım): the title keeps its full size. Gone when narrow, as `stack`.
+  under?: ReactNode;
   // Who the viewer writes as (IdentityToggle), just left of the actions.
   toggle?: ReactNode;
   // Bare icon buttons at the capsule's right end (⋯).
@@ -36,7 +40,8 @@ type Props = {
 // The top of every chat (the owner's call, 8 Kasım; Telegram Android's chat top): the back button a
 // frosted round of its own, then one frosted capsule: the avatar and the name (with its live dot) on
 // the left, the writers' faces, the identity toggle and the menu on the right. Narrow, the faces go
-// first and then the name shrinks; the back, the toggle and the menu never move.
+// first and then the name shrinks; the back, the toggle and the menu never move. No capsule in the
+// bar moves (its accessories drawn still, the owner's call, 8 Kasım).
 export function ChatTopBar({
   title,
   titleLines,
@@ -47,6 +52,7 @@ export function ChatTopBar({
   onPressTitle,
   titleAccessibilityLabel,
   stack,
+  under,
   toggle,
   actions,
   compact = false,
@@ -54,7 +60,9 @@ export function ChatTopBar({
   const { c } = useKit();
   const press = usePress();
   const { width, fontScale } = useWindowDimensions();
-  const faces = isNarrow(width, fontScale) ? null : (stack ?? null);
+  const narrow = isNarrow(width, fontScale);
+  const faces = narrow ? null : (stack ?? null);
+  const below = narrow ? null : (under ?? null);
   const who = (
     <>
       {leading}
@@ -72,8 +80,14 @@ export function ChatTopBar({
           >
             {title}
           </T>
-          {live && !subtitle ? <PulseDot /> : null}
+          {live && !subtitle && !below ? <PulseDot /> : null}
         </View>
+        {below && !subtitle ? (
+          <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
+            {live ? <PulseDot /> : null}
+            {below}
+          </View>
+        ) : null}
         {subtitle ? (
           <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
             {live ? <PulseDot /> : null}
@@ -97,72 +111,74 @@ export function ChatTopBar({
   };
   const right = faces !== null || !!toggle || !!actions;
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: SPACING[2],
-        paddingHorizontal: KIT.size.side,
-        paddingVertical: SPACING[1.5],
-      }}
-    >
-      {onBack ? (
-        // The whole circle is the button and sinks as one.
-        <Pressable
-          testID="chat-back"
-          accessibilityRole="button"
-          accessibilityLabel={tr.common.back}
-          onPress={onBack}
-          onPressIn={press.onPressIn}
-          onPressOut={press.onPressOut}
-        >
-          <Animated.View style={{ transform: [{ scale: press.scale }] }}>
-            <Glass
-              frost
-              radius={ROUND / 2}
-              style={{
-                width: ROUND,
-                height: ROUND,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <CapIcon name="back" color={c.ink} />
-            </Glass>
-          </Animated.View>
-        </Pressable>
-      ) : null}
-      <Glass
-        frost
-        radius={PILL / 2}
+    <FxMoves on={false}>
+      <View
         style={{
-          flex: 1,
           flexDirection: 'row',
           alignItems: 'center',
-          minHeight: PILL,
-          paddingLeft: compact ? KIT.chatPillPadX : leading ? PILL_INSET : SPACING[4],
-          paddingRight: right ? 0 : PILL_PAD_RIGHT,
-          gap: SPACING[1],
+          gap: SPACING[2],
+          paddingHorizontal: KIT.size.side,
+          paddingVertical: SPACING[1.5],
         }}
       >
-        {onPressTitle ? (
+        {onBack ? (
+          // The whole circle is the button and sinks as one.
           <Pressable
-            testID="chat-title"
+            testID="chat-back"
             accessibilityRole="button"
-            accessibilityLabel={titleAccessibilityLabel}
-            onPress={onPressTitle}
-            style={whoStyle}
+            accessibilityLabel={tr.common.back}
+            onPress={onBack}
+            onPressIn={press.onPressIn}
+            onPressOut={press.onPressOut}
           >
-            {who}
+            <Animated.View style={{ transform: [{ scale: press.scale }] }}>
+              <Glass
+                frost
+                radius={ROUND / 2}
+                style={{
+                  width: ROUND,
+                  height: ROUND,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <CapIcon name="back" color={c.ink} />
+              </Glass>
+            </Animated.View>
           </Pressable>
-        ) : (
-          <View style={whoStyle}>{who}</View>
-        )}
-        {faces}
-        {toggle}
-        {actions}
-      </Glass>
-    </View>
+        ) : null}
+        <Glass
+          frost
+          radius={PILL / 2}
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            minHeight: PILL,
+            paddingLeft: compact ? KIT.chatPillPadX : leading ? PILL_INSET : SPACING[4],
+            paddingRight: right ? 0 : PILL_PAD_RIGHT,
+            gap: SPACING[1],
+          }}
+        >
+          {onPressTitle ? (
+            <Pressable
+              testID="chat-title"
+              accessibilityRole="button"
+              accessibilityLabel={titleAccessibilityLabel}
+              onPress={onPressTitle}
+              style={whoStyle}
+            >
+              {who}
+            </Pressable>
+          ) : (
+            <View style={whoStyle}>{who}</View>
+          )}
+          {faces}
+          {toggle}
+          {actions}
+        </Glass>
+      </View>
+    </FxMoves>
   );
 }
 

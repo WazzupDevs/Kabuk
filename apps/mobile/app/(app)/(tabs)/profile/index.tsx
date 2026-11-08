@@ -1,9 +1,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, {
+  Easing,
   Extrapolation,
   interpolate,
+  scrollTo,
+  useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -34,8 +37,9 @@ import { ICON, SPACING } from '@/theme/tokens';
 // The own profile (docs/SPEC_V4.md §4.W, "C · kapak ve bilet"): the cover at the top (the person's
 // own or the riso scene), the photo over its foot, the name and age, the bio and "Profili düzenle";
 // the anonymous identity on a ticket; the friends and today's Set balonu. The capsule and the nick
-// show on the own profile only (rule 4). Scrolled, the cover goes and a thin bar stays at the top
-// (the small photo, the name); the settings never move with the content.
+// show on the own profile only (rule 4). Scrolled up, the photo shrinks and glides into a thin bar
+// at the top with the name beside it; scrolled back, both glide down the same way (the owner's
+// call, 8 Kasım). Let go part way, the page settles at the nearer end. The settings never move.
 export default function ProfileScreen() {
   const { c } = useKit();
   const { scheme, shape } = useTheme();
@@ -51,21 +55,78 @@ export default function ProfileScreen() {
   const friendList = friends.data ?? [];
   const [preview, setPreview] = useState(false);
 
-  const coverHeight = insets.top + PROFILE_COVER.height;
+  const { width } = useWindowDimensions();
+  const coverHeight = insets.top + PROFILE_COVER.ownHeight;
   const barHeight = insets.top + KIT.size.bell + SPACING[2] * 2;
+  const glide = coverHeight - barHeight + PROFILE_COVER.glideExtra;
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler((e) => {
-    scrollY.value = e.contentOffset.y;
+  const nameW = useSharedValue(0);
+  const nameH = useSharedValue(0);
+  // Let go between the ends, the page settles at the nearer one.
+  const settle = (y: number) => {
+    'worklet';
+    if (y > 0 && y < glide) scrollTo(scrollRef, 0, y < glide / 2 ? 0 : glide, true);
+  };
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+    onEndDrag: (e) => {
+      if (Math.abs(e.velocity?.y ?? 0) < SETTLE_VELOCITY) settle(e.contentOffset.y);
+    },
+    onMomentumEnd: (e) => settle(e.contentOffset.y),
   });
-  const barShown = coverHeight - barHeight;
+  const progress = (y: number) => {
+    'worklet';
+    return EASE(interpolate(y, [0, glide], [0, 1], Extrapolation.CLAMP));
+  };
+  const barMid = insets.top + (barHeight - insets.top) / 2;
   const barStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
       scrollY.value,
-      [barShown - BAR_FADE, barShown],
+      [glide * PROFILE_COVER.barFadeFrom, glide],
       [0, 1],
       Extrapolation.CLAMP,
     ),
   }));
+  // The photo: from the cover's foot (112, centred) to the bar's left (32).
+  const faceStyle = useAnimatedStyle(() => {
+    const y = scrollY.value;
+    const e = progress(y);
+    const k = 1 + (FACE_SMALL / FACE_BIG - 1) * e;
+    const cx = width / 2 + (shape.screenPadding + FACE_SMALL / 2 - width / 2) * e;
+    const cy = coverHeight - Math.max(y, 0) * (1 - e) + (barMid - coverHeight) * e;
+    return {
+      transform: [
+        { translateX: cx - FACE_BIG / 2 },
+        { translateY: cy - FACE_BIG / 2 },
+        { scale: k },
+      ],
+    };
+  });
+  // The name: from under the photo (centred, display) to beside the small photo (h3).
+  const nameStyle = useAnimatedStyle(() => {
+    const y = scrollY.value;
+    const e = progress(y);
+    const k = 1 + (NAME_SCALE - 1) * e;
+    const w = nameW.value;
+    const h = nameH.value;
+    const x0 = width / 2 - w / 2;
+    const y0 =
+      coverHeight + PROFILE_COVER.faceOverlap + PROFILE_COVER.nameTop - Math.max(y, 0) * (1 - e);
+    // Scaled about its centre: its left edge lands beside the small photo.
+    const x1 = shape.screenPadding + FACE_SMALL + PROFILE_COVER.barGap - (w * (1 - k)) / 2;
+    const y1 = barMid - h / 2;
+    return {
+      opacity: w > 0 ? 1 : 0,
+      transform: [
+        { translateX: x0 + (x1 - x0) * e },
+        { translateY: y0 + (y1 - y0) * e },
+        { scale: k },
+      ],
+    };
+  });
 
   const data = view.data;
   const name = data?.displayName
@@ -79,6 +140,7 @@ export default function ProfileScreen() {
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
       <Animated.ScrollView
+        ref={scrollRef}
         onScroll={onScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
@@ -121,7 +183,9 @@ export default function ProfileScreen() {
                   disabled={!photoUrl}
                   onPress={() => setPreview(true)}
                 >
-                  <Av size="big" name={data.displayName ?? tr.profile.noName} photoUrl={photoUrl} />
+                  {/* The gliding copy over the page draws the photo; this one keeps its place
+                      and its touch. */}
+                  <View style={{ width: FACE_BIG, height: FACE_BIG }} />
                 </Pressable>
               </View>
               <PhotoPreview url={photoUrl} visible={preview} onClose={() => setPreview(false)} />
@@ -132,7 +196,14 @@ export default function ProfileScreen() {
                   marginTop: PROFILE_COVER.nameTop,
                 }}
               >
-                <T v="display" style={KIT_TYPE.displaySm} center accessibilityRole="header">
+                <T
+                  v="display"
+                  style={[KIT_TYPE.displaySm, { opacity: 0 }]}
+                  lines={1}
+                  fit
+                  center
+                  accessibilityRole="header"
+                >
                   {name}
                 </T>
                 {data.bio ? (
@@ -224,16 +295,36 @@ export default function ProfileScreen() {
           },
           barStyle,
         ]}
-      >
-        {data ? (
-          <>
-            <Av size="sm" name={data.displayName ?? tr.profile.noName} photoUrl={photoUrl} />
-            <View style={{ flex: 1 }}>
-              <T v="h3">{name}</T>
-            </View>
-          </>
-        ) : null}
-      </Animated.View>
+      ></Animated.View>
+
+      {/* The photo and the name, gliding between the cover's foot and the bar. */}
+      {data && !(view.isPending || loading) ? (
+        <>
+          <Animated.View
+            pointerEvents="none"
+            importantForAccessibility="no-hide-descendants"
+            style={[{ position: 'absolute', left: 0, top: 0 }, faceStyle]}
+          >
+            <Av size="big" name={data.displayName ?? tr.profile.noName} photoUrl={photoUrl} />
+          </Animated.View>
+          <Animated.View
+            pointerEvents="none"
+            importantForAccessibility="no-hide-descendants"
+            onLayout={(e) => {
+              nameW.value = e.nativeEvent.layout.width;
+              nameH.value = e.nativeEvent.layout.height;
+            }}
+            style={[
+              { position: 'absolute', left: 0, top: 0, maxWidth: width - 2 * shape.screenPadding },
+              nameStyle,
+            ]}
+          >
+            <T v="display" style={KIT_TYPE.displaySm} lines={1} fit>
+              {name}
+            </T>
+          </Animated.View>
+        </>
+      ) : null}
 
       {/* The settings over the cover's top right; they stay while the page scrolls (the owner's
           report, 2 Kasım, B2). */}
@@ -263,5 +354,9 @@ const ROW_INNER = 72 - 2 * ROW_PAD_Y;
 const STACK = 3;
 // Under the tabs the last row ends 90 over the safe area (Screen's SCROLL_PAD).
 const SCROLL_PAD = 90;
-// The bar fades in over the cover's last 24.
-const BAR_FADE = 24;
+const FACE_BIG = KIT.size.av.big;
+const FACE_SMALL = PROFILE_COVER.barFace;
+const NAME_SCALE = (KIT_TYPE.h3.fontSize ?? 16) / (KIT_TYPE.displaySm.fontSize ?? 34);
+// Slower than this when the finger lifts, no fling follows: the page settles at once.
+const SETTLE_VELOCITY = 0.05;
+const EASE = Easing.inOut(Easing.quad);

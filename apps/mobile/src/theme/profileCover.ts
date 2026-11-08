@@ -5,8 +5,15 @@ import type { ColorScheme } from './tokens';
 // a little off in pink, layered hills with small trees and halftone dots; at night a navy sky, a
 // moon-coloured sun and dark hills.
 export const PROFILE_COVER = {
-  // The cover's height under the status bar (the own profile and another person's band).
+  // The cover's height under the status bar: another person's band, and the own profile's
+  // (shorter, the owner's call, 8 Kasım).
   height: 190,
+  ownHeight: 120,
+  // The own profile scrolled: the photo and the name glide into the bar over this much past the
+  // cover's foot (the owner's call, 8 Kasım); let go part way, the page settles at the nearer end.
+  glideExtra: 60,
+  // The bar's ground shows over the glide's last 30%.
+  barFadeFrom: 0.7,
   // Another person's profile: the band 22 round within the page's sides.
   bandRadius: 22,
   // The face 112 overlapping the cover's foot by half; the name 12 under it.

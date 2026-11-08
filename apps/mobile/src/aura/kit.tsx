@@ -411,18 +411,20 @@ export function Btn({
     </Pressable>
   );
 }
-// The texture fills the button (not absoluteFill: an Image keeps its pixel size there,
-// styleGuard.test.ts).
+// The texture covers the button: a fixed span wider and taller than any button, cut by the
+// button's round edge. A percentage size left the tiles at the size first measured on Android and
+// the print stopped part way along the button (the owner's report, 8 Kasım). Not absoluteFill: an
+// Image keeps its pixel size there (styleGuard.test.ts).
 const TEXTURE_FILL = {
   position: 'absolute',
   left: 0,
   top: 0,
-  width: '100%',
-  height: '100%',
+  width: 1200,
+  height: 160,
 } as const;
 // The riso print's texture tiles (scripts/icon/risoButton.ts): light marks on the dark inks, dark
 // marks on the paper.
-const RISO_TEXTURE = {
+export const RISO_TEXTURE = {
   light: require('../../assets/riso/button/texture-light.png') as ImageSourcePropType,
   dark: require('../../assets/riso/button/texture-dark.png') as ImageSourcePropType,
 };
@@ -1120,18 +1122,21 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'hero' | 'edit';
+  size?:
+    'xs' | 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'hero' | 'edit';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
   const { scheme } = useTheme();
   const side = KIT.size.av[size];
   const ring =
-    size === 'hero'
-      ? KIT.size.avRingHero
-      : size === 'xl' || size === 'big' || size === 'edit'
-        ? KIT.size.avRingXl
-        : KIT.size.avRing;
+    size === 'xs'
+      ? KIT.size.avRingXs
+      : size === 'hero'
+        ? KIT.size.avRingHero
+        : size === 'xl' || size === 'big' || size === 'edit'
+          ? KIT.size.avRingXl
+          : KIT.size.avRing;
   // U31: the profile's face in the dark sits in a ring of the dark card (#121614).
   const ringColor = size === 'hero' && scheme === 'dark' ? KIT.dark.raised : KIT.white;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];

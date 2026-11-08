@@ -1,10 +1,15 @@
 # İlerleme
 
-## Devir notu (8 Kasım 2026, revize paketi)
+## Devir notu (8 Kasım 2026, telefon revizeleri)
 
-- #524, #525 ve son PR main'de: Oturumu kapat, başlıklar kaymaz, Keşfet anahtarı, paket ekranı (Aç kutusu, kare gölge, Atla yok, kademe ortada); sohbet tek kapsül çubuk, kimlik anahtarı üstte, birleşik ve hafif set balonları, hissedilmeyen hız sınırı; riso düğmeler; Kapsülünü süsle yeni düzen (şerit, Hepsini gör); Profil kapak ve bilet, kapak yükleme (kural 4'e kapak, §4.W, guvenlik denetlendi).
-- Telefonda doğrulanacak (hiçbiri cihazda görülmedi): riso doku ve kayma, Süsle şeridinin yavaş bırakmada uygulanması ve Hepsini gör'deki paket atlama, profil kaydırma şeridi, kapak yükleme, set balonu grubunda gönderilmekte olan mesajın alt süsü.
-- Açık: gece E2E 6–8 Kasım'dır kırmızı (bu paketten önce); görsel kapı görüntüleri bu ortamdan indirilemiyor (blob adresi ağ dışı).
+- Bu PR: profil kapağı 120 ve şeride kayan fotoğraf ve ad (`profile/index.tsx`, §4.W), Aktiviteler'de paket sayısı tam görünür ve Etkinlikler / Geçmiş başlığın altında sabitlenir (`Screen` → `scrollY`, `pinned`), riso düğme dokusu düğmeyi kaplar (`kit.tsx` → `TEXTURE_FILL`), yeni mesaj düğmesi riso 44, mekan sohbeti çubuğunda başlık tam boy ve yazanlar altta (`ChatTopBar` → `under`), sohbet çubuklarında kapsüller hareketsiz (`FxMoves on={false}`).
+- Önceki paketten (#524–#526) telefonda doğrulanacak: riso doku ve kayma, Süsle şeridi ve Hepsini gör'deki paket atlama, kapak yükleme, set balonu grubunda gönderilmekte olan mesajın alt süsü.
+- Telefonda doğrulanacak: kapakta kaymanın yumuşaklığı ve yarıda bırakınca yerleşme, sabitlenen anahtarın geçişi, 18'lik yazan yüzleri.
+- Açık: gece E2E 6–8 Kasım'dır kırmızı; görsel kapı görüntüleri bu ortamdan indirilemiyor.
+
+## Sıradaki toplu OTA'da toplananlar
+
+Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketlere bölünür. Boş.
 
 ## Sıradaki build'de toplananlar
 

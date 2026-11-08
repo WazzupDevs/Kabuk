@@ -28,6 +28,8 @@ type Props = Pick<
   // stays, LOADER_MIN_VISIBLE_MS).
   onRefresh: () => Promise<unknown>;
   children: ReactNode;
+  // The list's offset, for a part that pins once it reaches the top (Aktiviteler's tabs).
+  scrollY?: SharedValue<number>;
 };
 
 const p = PULL;
@@ -41,7 +43,13 @@ const START = 6;
 // mark turns (Dönüş, the loader). Let go earlier and the list settles back. The list settles with
 // v46's transition (none with reduce motion); the indicator follows the finger and goes at once,
 // as in v46. Only the list view has it (v46: `vm === 'list'`).
-export function PullScroll({ onRefresh, children, contentContainerStyle, ...scroll }: Props) {
+export function PullScroll({
+  onRefresh,
+  children,
+  contentContainerStyle,
+  scrollY,
+  ...scroll
+}: Props) {
   const reduce = useReduceMotion();
   const scroller = useAnimatedRef<Animated.ScrollView>();
   const atTop = useSharedValue(true);
@@ -83,6 +91,7 @@ export function PullScroll({ onRefresh, children, contentContainerStyle, ...scro
 
   const onScroll = useAnimatedScrollHandler((e) => {
     atTop.set(e.contentOffset.y <= 0);
+    scrollY?.set(e.contentOffset.y);
   });
 
   const native = Gesture.Native();
