@@ -186,3 +186,14 @@ describe('readableOn', () => {
     expect(readableOn('#14100C', ['#FFFFFF', '#14100C'])).toBe('#FFFFFF');
   });
 });
+
+// The riso buttons' words on their inks (theme/auraKit.ts → KIT.riso), body text size.
+describe('riso buttons', () => {
+  it('read on every ink', async () => {
+    const { KIT } = await import('./auraKit');
+    const r = KIT.riso;
+    expect(contrastRatio(r.onInk, r.ink)).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio(r.onInk, r.danger)).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio(r.paperInk, r.paper)).toBeGreaterThanOrEqual(AA_TEXT);
+  });
+});
