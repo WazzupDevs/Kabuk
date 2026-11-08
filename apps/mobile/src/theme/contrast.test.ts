@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BUTTON_VARIANTS, buttonFill } from './buttonFill';
 import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
+import { RISO_BUTTON } from './risoButton';
 import { THEME } from './theme';
 import { type Palette, type PaletteKey } from './tokens';
 
@@ -187,11 +188,10 @@ describe('readableOn', () => {
   });
 });
 
-// The riso buttons' words on their inks (theme/auraKit.ts → KIT.riso), body text size.
+// The riso buttons' words on their inks (theme/risoButton.ts), body text size.
 describe('riso buttons', () => {
-  it('read on every ink', async () => {
-    const { KIT } = await import('./auraKit');
-    const r = KIT.riso;
+  it('read on every ink', () => {
+    const r = RISO_BUTTON;
     expect(contrastRatio(r.onInk, r.ink)).toBeGreaterThanOrEqual(AA_TEXT);
     expect(contrastRatio(r.onInk, r.danger)).toBeGreaterThanOrEqual(AA_TEXT);
     expect(contrastRatio(r.paperInk, r.paper)).toBeGreaterThanOrEqual(AA_TEXT);

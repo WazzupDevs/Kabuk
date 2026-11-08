@@ -3,6 +3,7 @@
 // .live). Light from `:root`, dark from `.night` (the canvas's dark side). Components in
 // src/aura/kit/ read only these.
 import type { TextStyle } from 'react-native';
+import { RISO_BUTTON } from './risoButton';
 
 const F = {
   500: 'PlusJakartaSans_500Medium',
@@ -156,22 +157,8 @@ export const VENUE_THUMB = {
 } as const;
 
 export const KIT = {
-  // Riso buttons (the owner's call, 8 Kasım; docs/decisions/riso-dugme.md): the inks, the second
-  // ink printed `shift` off under a full button, the paper's edge, a disabled print's fade and the
-  // press's settle.
-  riso: {
-    ink: '#1B7F45',
-    onInk: '#FFFFFF',
-    offset: '#FF4F8B',
-    paper: '#FBF7EE',
-    paperInk: '#0B5A2D',
-    danger: '#C8331F',
-    dangerOffset: '#3B2F78',
-    shift: 3,
-    edge: 2,
-    offOpacity: 0.5,
-    pressMs: 70,
-  },
+  // Riso buttons (theme/risoButton.ts).
+  riso: RISO_BUTTON,
   light: {
     ink: '#031B0B',
     muted: '#4A6550',

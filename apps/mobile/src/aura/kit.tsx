@@ -383,12 +383,13 @@ export function Btn({
             source={paper ? RISO_TEXTURE.dark : RISO_TEXTURE.light}
             resizeMode="repeat"
             accessibilityIgnoresInvertColors
-            style={StyleSheet.absoluteFill}
+            style={TEXTURE_FILL}
           />
         ) : null}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
-        ) : icon ? (
+        ) : icon && !off ? (
+          // Disabled, no icon (Aura v65 `.btn.off`; the owner's report, 2 Kasım, 10.1).
           <CapIcon
             name={icon}
             color={fg}
@@ -410,6 +411,15 @@ export function Btn({
     </Pressable>
   );
 }
+// The texture fills the button (not absoluteFill: an Image keeps its pixel size there,
+// styleGuard.test.ts).
+const TEXTURE_FILL = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  width: '100%',
+  height: '100%',
+} as const;
 // The riso print's texture tiles (scripts/icon/risoButton.ts): light marks on the dark inks, dark
 // marks on the paper.
 const RISO_TEXTURE = {
