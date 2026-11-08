@@ -583,13 +583,16 @@ export const tr = {
     title: 'Kapsülün',
     shuffle: 'Karıştır',
     tapHead: 'Kafama dokun',
-    remove: (name: string) => `${name} çıkar`,
     empty: (slot: string) => `${slot} boş`,
     pack: (name: string) => `${name} paketi`,
-    // The pack's parts in every slot and the ones of this slot shown under it (11.3).
-    packCount: (all: number, here: number) =>
-      all === here ? `${here} parça` : `Pakette ${all} parça · burada ${here}`,
     wearPack: 'Paketi tak',
+    // The slot's options all at once, grouped by pack, in a sheet (the owner's call, 8 Kasım).
+    seeAll: 'Hepsini gör',
+    allTitle: (slot: string) => `${slot} seçenekleri`,
+    allPacks: 'Tümü',
+    // A slot's button: its name, what is in it, and whether it differs from the saved look.
+    slotLabel: (slot: string, value: string, changed: boolean) =>
+      changed ? `${slot}: ${value}, değişti` : `${slot}: ${value}`,
     clearAll: 'Hepsini çıkar',
     save: 'Kaydet',
     unsavedTitle: 'Değişiklikler kaydedilmedi',

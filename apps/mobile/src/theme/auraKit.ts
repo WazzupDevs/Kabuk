@@ -174,6 +174,8 @@ export const KIT = {
     infoRow: '#E6F0E8',
     glassEdge: 'rgba(255, 255, 255, 0.86)',
     glassShadow: SHADOW.glass,
+    // Kapsülünü süsle: the capsule's floor shadow.
+    capsuleFloor: 'rgba(3, 27, 11, 0.12)',
     // The light top edge of glass and of the primary (none in the dark: a white line on every
     // object, the owner's call, 28 Ekim).
     glassInset: 'inset 0px 1px 0px #FFFFFF',
@@ -245,6 +247,7 @@ export const KIT = {
     infoRow: '#1B211F',
     glassEdge: 'rgba(255, 255, 255, 0.09)',
     glassShadow: '',
+    capsuleFloor: 'rgba(0, 0, 0, 0.40)',
     glassInset: '',
     primaryInset: '',
     raised: '#121614',
@@ -616,25 +619,27 @@ export const KIT = {
     stateLoadGap: 10,
     // Aktiviteler's history rows (U16): a 52 picture.
     historyThumb: 52,
-    // Kapsülün: the empty part's tile (104, its capsule 70), a pack's tiles 70 high with the capsule
-    // 10 down in them, the chosen one's ring (3) and a pack's block (16 inside, 12 apart).
-    // U35 (Kapsul, bölüm 4): the capsule 160 with a 4 ring; an option's room 96 (its capsule 76) and a
-    // part's 64 (its capsule 60), no box round them (ui 8.1), 12 and 8 apart; the chosen one's 2
-    // ring 2 out round the capsule; a worn part's chip icon 18 and the categories' fade over the last fifth.
-    capsuleHero: 160,
+    // Kapsülün (U35): the capsule's 4 ring; the chosen option's 2 ring 2 out round its capsule; a
+    // chip's close icon 10 in.
     capsuleRing: 4,
-    optionBox: 96,
-    optionImage: 76,
-    optionGap: 12,
-    partBox: 64,
-    partImage: 60,
-    partBoxGap: 8,
+    // Kapsülünü süsle (the owner's call, 8 Kasım): the capsule 220 on a soft floor shadow (60 %
+    // of its width, 14 high); the slot's options in a snapping row, the centred one 92 ringed in the
+    // accent and its neighbours 70, 56 and 44, 90 apart; the sheet's tiles up to 52; the six slots'
+    // buttons 36 with a 8 dot.
+    capsuleStage: 220,
+    capsuleFloorW: 0.6,
+    capsuleFloorH: 14,
+    capsuleFloorBlur: 10,
+    carouselItem: 92,
+    carouselSizes: [92, 70, 56, 44],
+    carouselFades: [1, 0.8, 0.55, 0.3],
+    carouselStep: 90,
+    sheetTile: 52,
+    slotButton: 36,
+    slotDot: 8,
     boxRing: 2,
     boxRingGap: 2,
     chipIconPadLeft: 10,
-    catsFade: 0.2,
-    packPad: 16,
-    packGap: 12,
     avRing: 2,
     avRingXl: 3,
     avRingHero: 4,
