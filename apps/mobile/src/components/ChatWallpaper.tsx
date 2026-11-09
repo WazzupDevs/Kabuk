@@ -74,7 +74,9 @@ const FADE_STEPS = 8;
 
 // A strip of the same picture over what scrolls under the system bars (the status bar's words, the
 // navigation bar's buttons), lined up with the one behind; `fade` more of it fades out below
-// (`down`) or above (`up`) it. `top` and `height` on the chat's area.
+// (`down`) or above (`up`) it. `top` and `height` on the chat's area. Each strip only clips; its
+// faintness is the picture's own (opacity on the Image draws it with a fainter paint), so no strip
+// is composed off screen first (canlı öncesi denetim E6). The decoded picture is the wall's one.
 export function WallBand({
   kind,
   canvas,
@@ -115,7 +117,6 @@ export function WallBand({
               top: s.top,
               height: s.height,
               overflow: 'hidden',
-              opacity: s.opacity,
             }}
           >
             <Image
@@ -129,6 +130,7 @@ export function WallBand({
                 top: -s.top,
                 width: canvas.w,
                 height: canvas.h,
+                opacity: s.opacity,
               }}
             />
           </View>
