@@ -1,0 +1,10 @@
+// skall.world on Cloudflare (docs/OPS.md → "Yasal sayfalar (skall.world)"): the static output of
+// `pnpm site:build`, no server code. `name` is the Cloudflare project's name.
+{
+  "name": "skall",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./site",
+    "not_found_handling": "404-page",
+  },
+}

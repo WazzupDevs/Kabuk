@@ -27,18 +27,18 @@ skall'ı Google Play'de **kapalı test** kanalına çıkarmak için Play Console
 
 ## 3. Uygulama içeriği (Console → Politika → Uygulama içeriği)
 
-Herkese açık sayfalar GitHub Pages'te (CLAUDE.md → "Yasal sayfalar"): `https://wazzupdevs.github.io/Kabuk/`. Sayfalar taslaktır ve üstlerinde "Taslak, hukuki kontrol bekliyor" notu vardır; hukuki kontrol bitmeden Console'a girilmez.
+Herkese açık sayfalar skall.world'de (`docs/OPS.md` → "Yasal sayfalar (skall.world)"): `https://skall.world/`. Sayfalar taslaktır ve üstlerinde "Taslak, hukuki kontrol bekliyor" notu vardır; hukuki kontrol bitmeden Console'a girilmez.
 
 ### 3.1 Gizlilik politikası
 
-- [ ] URL: `https://wazzupdevs.github.io/Kabuk/gizlilik-politikasi.html`. Aynı URL EAS `production` ortamında `EXPO_PUBLIC_PRIVACY_URL` olur (uygulama içi bağlantı).
+- [ ] URL: `https://skall.world/gizlilik-politikasi.html`. Aynı URL EAS `production` ortamında `EXPO_PUBLIC_PRIVACY_URL` olur (uygulama içi bağlantı).
 
 ### 3.2 Hesap silme (Play şartı)
 
 Kullanıcı hesabı olan her uygulama için iki şey gerekir: uygulama içinden silme ve **uygulamayı kurmadan kullanılabilen bir web bağlantısı**. Web sayfası uygulamanın adını anmalı, silme adımlarını anlatmalı, hangi verinin silinip hangisinin ne kadar saklandığını söylemelidir.
 
 - [ ] Uygulama içi yol: Profil → Ayarlar (dişli) → Hesabımı sil → Sil. Hemen siler (`account/delete`: fotoğraflar, hesap ve bağlı bütün satırlar, PostHog kişi kaydı).
-- [ ] Web bağlantısı: `https://wazzupdevs.github.io/Kabuk/hesap-silme.html`. Uygulama içi adımlar, e-postayla talep (support@skall.world, en geç 30 gün), silinen veriler, saklananlar (şikayet kaydı 30 gün, banlanan numaranın özeti, hata kayıtları, yedekler).
+- [ ] Web bağlantısı: `https://skall.world/hesap-silme.html`. Uygulama içi adımlar, e-postayla talep (support@skall.world, en geç 30 gün), silinen veriler, saklananlar (şikayet kaydı 30 gün, banlanan numaranın özeti, hata kayıtları, yedekler).
 - [ ] Console → Veri güvenliği → "Hesap silme" alanına bu URL girilir.
 - E-postayla gelen talep: `pnpm admin:delete <userId>`. Uygulama içi silmeyle aynı sonuç: fotoğraflar, hesap ve bağlı bütün satırlar, PostHog kişi kaydı; ban yapmaz. Kullanıcı kimliği panelde Authentication → Users'ta numarayla bulunur.
 
@@ -204,12 +204,12 @@ Tanım: cihazdan çıkan her veri "toplanan" sayılır; hizmet sağlayıcıya (S
 
 ## 7. Durum
 
-| Adım                                     | Durum                                                                                                                 |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| AAB profili                              | Hazır (`eas.json`)                                                                                                    |
-| Gizlilik politikası ve web silme sayfası | Taslak sayfalar hazır (GitHub Pages); iletişim support@skall.world; veri sorumlusu bilgisi ve hukuki kontrol bekliyor |
-| E-postayla silme talebini işleme         | `admin:delete`                                                                                                        |
-| İnceleme erişimi                         | Kalıcı inceleme hesabı ve video (§3.3); video çekilecek                                                               |
-| Veri güvenliği, IARC, hedef kitle        | Yanıtlar hazır (§3.5–3.7); Console'da doldurulacak                                                                    |
-| Telefon ekran görüntüleri                | Script hazır; tasarım ve ad sonrası yüksek çözünürlükle yeniden                                                       |
-| Test kullanıcıları (12+)                 | Proje sahibi                                                                                                          |
+| Adım                                     | Durum                                                                                                                                  |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| AAB profili                              | Hazır (`eas.json`)                                                                                                                     |
+| Gizlilik politikası ve web silme sayfası | Taslak sayfalar hazır (skall.world, Cloudflare Pages); iletişim support@skall.world; veri sorumlusu bilgisi ve hukuki kontrol bekliyor |
+| E-postayla silme talebini işleme         | `admin:delete`                                                                                                                         |
+| İnceleme erişimi                         | Kalıcı inceleme hesabı ve video (§3.3); video çekilecek                                                                                |
+| Veri güvenliği, IARC, hedef kitle        | Yanıtlar hazır (§3.5–3.7); Console'da doldurulacak                                                                                     |
+| Telefon ekran görüntüleri                | Script hazır; tasarım ve ad sonrası yüksek çözünürlükle yeniden                                                                        |
+| Test kullanıcıları (12+)                 | Proje sahibi                                                                                                                           |

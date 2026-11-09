@@ -1,5 +1,7 @@
 pnpm-lock.yaml
 supabase/.temp/
+# The website (skall.world), kept as its design delivered it; built by `pnpm site:build`.
+web/
 # Hand-maintained product docs.
 CLAUDE.md
 # Archived docs, kept as they were (docs/arsiv/).

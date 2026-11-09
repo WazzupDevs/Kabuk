@@ -143,7 +143,7 @@ npx eas-cli env:create --environment production --name EXPO_PUBLIC_SUPABASE_URL 
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value <üretim publishable key> --visibility plaintext
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_POSTHOG_KEY --value <üretim PostHog key> --visibility plaintext
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_SENTRY_DSN --value <DSN> --visibility plaintext
-npx eas-cli env:create --environment production --name EXPO_PUBLIC_PRIVACY_URL --value https://wazzupdevs.github.io/Kabuk/gizlilik-politikasi.html --visibility plaintext
+npx eas-cli env:create --environment production --name EXPO_PUBLIC_PRIVACY_URL --value https://skall.world/gizlilik-politikasi.html --visibility plaintext
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_CONTACT_EMAIL --value <e-posta> --visibility plaintext
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_APP_ENV --value production --visibility plaintext
 npx eas-cli env:list --environment production
