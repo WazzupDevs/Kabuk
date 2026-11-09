@@ -49,8 +49,9 @@ adb shell dumpsys activity exit-info app.kabuk.mobile > "$OUT/exit-info.txt" 2>&
 # not always the step, and the artifact is not always at hand.
 if [ "$status" -ne 0 ]; then
   echo "::group::Failed step (Maestro debug output)"
-  # Maestro writes them into a dated folder under its debug output.
-  find "$OUT/maestro" -name 'commands-*.json' | while read -r f; do
+  # Maestro writes them into a dated folder under its debug output, or under the test output
+  # directory when one is given (the 8 Kasım runs printed nothing here): both are under $OUT.
+  find "$OUT" -name 'commands-*.json' | while read -r f; do
     jq -r --arg f "$(basename "$f")" '
       [.[] | {c: (.command | to_entries[0] | "\(.key) \(.value | tostring | .[0:160])"),
               s: .metadata.status, e: (.metadata.error.message // "")}] as $all

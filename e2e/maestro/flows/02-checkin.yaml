@@ -122,14 +122,24 @@ appId: app.kabuk.mobile
       id: explore-map-ready
     timeout: 30000
 - tapOn: Liste
+# Checkpoints: the 8 Kasım runs ended on Mesajlar before the venue page; each says where.
+- extendedWaitUntil:
+    visible:
+      id: explore-count
+    timeout: 10000
+    label: back on the list
 - scrollUntilVisible:
     element:
       text: E2E Kafe
     timeout: 30000
+- assertVisible:
+    id: explore-search
+    label: still on Keşfet before the venue row
 - tapOn: E2E Kafe
 - extendedWaitUntil:
     visible: Buraya giriş yap
     timeout: 10000
+    label: venue page from the list
 - takeScreenshot: 06-venue-detail
 - back
 # One active venue: Keşfet is still the list (aura 31); the venue page carries the week's events.
