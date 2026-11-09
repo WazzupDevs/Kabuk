@@ -21,6 +21,4 @@ for (const page of LEGAL_PAGES) {
 // The legal pages' list: the website's footer links to yasal.html; index.html is the home page.
 if (existsSync(resolve(out, 'yasal.html'))) throw new Error('web/yasal.html would be overwritten');
 writeFileSync(resolve(out, 'yasal.html'), renderIndex(APP_NAME));
-// GitHub Pages serves files as they are (no Jekyll processing).
-writeFileSync(resolve(out, '.nojekyll'), '');
 console.log(`Built ${LEGAL_PAGES.length + 1} pages into site/`);
