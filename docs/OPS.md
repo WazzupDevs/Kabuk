@@ -47,7 +47,7 @@ Node 22, pnpm 10, Docker (yerel Supabase için). Supabase CLI ve Deno root devDe
 4. EAS `preview` ve `production` ortamlarında `EXPO_PUBLIC_PRIVACY_URL` = `https://skall.world/gizlilik-politikasi.html`, sonra `eas update`.
 5. Yerelde bakmak için `pnpm site:build` ve `site/index.html`'i tarayıcıda aç. Site değişikliği: dosyalar `web/`'e, PR, birleşince Cloudflare kendisi yayınlar.
 
-- Eski adres (`https://wazzupdevs.github.io/Kabuk/`, `.github/workflows/pages.yml`) repo gizliye çevrilince kapanır. skall.world açılınca `pages.yml` silinir (yayın yapan workflow: proje sahibinin onayıyla) ve repo Settings → Pages kapatılır.
+- Eski GitHub Pages yayını (`wazzupdevs.github.io/Kabuk`) kaldırıldı (9 Kasım); repo Settings → Pages kapalı tutulur.
 
 ## Üretim Supabase projesi (tek seferlik)
 
