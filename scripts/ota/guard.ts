@@ -6,7 +6,17 @@
 
 // The env files Expo loads (@expo/env: .env, .env.local, .env.<mode>, .env.<mode>.local).
 export function blockingEnvFiles(names: readonly string[]): string[] {
-  return names.filter((n) => /^\.env(\..+)?$/.test(n) && n !== '.env.example').sort();
+  // Case-blind: Windows reads `.ENV` as `.env`.
+  return names
+    .filter((n) => /^\.env(\..+)?$/i.test(n) && n.toLowerCase() !== '.env.example')
+    .sort();
+}
+
+// EXPO_PUBLIC_* set in the developer's shell win over every file and would go into the bundle too.
+export function blockingShellVars(env: Readonly<Record<string, string | undefined>>): string[] {
+  return Object.keys(env)
+    .filter((k) => k.startsWith('EXPO_PUBLIC_'))
+    .sort();
 }
 
 // The update's message: required, so the release history says what each update was.

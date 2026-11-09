@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { blockingEnvFiles, updateArgs } from './guard.ts';
+import { blockingEnvFiles, blockingShellVars, updateArgs } from './guard.ts';
 
 describe('production OTA guard', () => {
   it('stops on every env file Expo would read, not on the example', () => {
@@ -15,6 +15,17 @@ describe('production OTA guard', () => {
       ]),
     ).toEqual(['.env', '.env.local', '.env.production']);
     expect(blockingEnvFiles(['.env.example', 'package.json'])).toEqual([]);
+    expect(blockingEnvFiles(['.ENV', '.Env.local', '.ENV.EXAMPLE'])).toEqual([
+      '.ENV',
+      '.Env.local',
+    ]);
+  });
+
+  it('stops on EXPO_PUBLIC_* values in the shell', () => {
+    expect(blockingShellVars({ PATH: '/bin', EXPO_PUBLIC_APP_ENV: 'e2e' })).toEqual([
+      'EXPO_PUBLIC_APP_ENV',
+    ]);
+    expect(blockingShellVars({ PATH: '/bin', EXPO_TOKEN: 'x' })).toEqual([]);
   });
 
   it('asks for a message and targets only the production channel and environment', () => {
