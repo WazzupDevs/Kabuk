@@ -1,6 +1,6 @@
 import type { Db } from './auth.ts';
 import { inBackground } from './background.ts';
-import { broadcast } from './broadcast.ts';
+import { broadcastMany } from './broadcast.ts';
 import { dbError } from './db.ts';
 import { AppError } from './pure/errors.ts';
 import type { PushMessage, PushPreference } from './pure/push.ts';
@@ -9,7 +9,7 @@ import { sendPush } from './push.ts';
 
 // Data-free inbox events (docs/arsiv/SPEC_V2.md §7), sent after the response so timing tells nothing.
 export function notifyInbox(userIds: string[], event: string): void {
-  for (const id of userIds) inBackground(broadcast(inboxChannel(id), event));
+  inBackground(broadcastMany(userIds.map((id) => ({ topic: inboxChannel(id), event }))));
 }
 
 // A push to an account that allows it (pure/push.ts → PUSH_PREFERENCE), read before it goes.

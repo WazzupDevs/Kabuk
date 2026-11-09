@@ -100,6 +100,21 @@ describe('chat/send', () => {
     expect(forOwner.map((m) => m.sender_alias)).toEqual([names.owner, names.guest]);
   });
 
+  // D4: the table's last activity moves at most once a minute.
+  it("moves the table's last activity at most once a minute", async () => {
+    const { owner, roomId } = await roomWithGuest();
+    await sql`update public.rooms set last_activity_at = now() - interval '2 minutes'
+      where id = ${roomId}`;
+    await send(owner, roomId, 'bir');
+    const [first] = await sql`select last_activity_at as at from public.rooms where id = ${roomId}`;
+    expect(Date.now() - new Date(first?.at as string).getTime()).toBeLessThan(30_000);
+    await sleep(1100);
+    await send(owner, roomId, 'iki');
+    const [second] =
+      await sql`select last_activity_at as at from public.rooms where id = ${roomId}`;
+    expect(second?.at).toEqual(first?.at);
+  });
+
   it('streams new messages to the other table through Postgres Changes', async () => {
     const { owner, guest, roomId } = await roomWithGuest();
     const received = new Promise<string>((resolve, reject) => {
@@ -629,6 +644,9 @@ describe('cleanup jobs', () => {
     expect(await sql`select 1 from public.messages where room_id = ${roomId}`).toHaveLength(1);
 
     await sql`update public.rooms set closed_at = now() - interval '25 hours' where id = ${roomId}`;
+    // A message is written before its table closes (delete_old_messages starts from the messages).
+    await sql`update public.messages set created_at = now() - interval '26 hours'
+      where room_id = ${roomId}`;
     await sql`select private.delete_old_messages()`;
     expect(await sql`select 1 from public.messages where room_id = ${roomId}`).toHaveLength(0);
     // The report keeps its copy after the messages are gone.
