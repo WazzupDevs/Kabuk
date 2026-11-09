@@ -1,5 +1,24 @@
 # İlerleme
 
+## Canlı öncesi denetim (9 Kasım 2026)
+
+Kaynak: `guvenlik` (A: migration ve Realtime, B: Edge Function'lar, C: sırlar, workflow, mobil), `performans` (D: sunucu, E: mobil), ana oturum (F: canlı yapılandırma). Yeni oturum bu tablodan sürer.
+
+| #   | Önem   | Bulgu                                                                                                                       | Durum                                                 |
+| --- | ------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| A1  | YÜKSEK | Oda kanallarına (`room:`, `messages:`, `game:`, `presence:`) masadaki her kişi yayın ve presence gönderebiliyordu (kural 9) | Düzeltildi, S1 PR                                     |
+| A2  | ORTA   | Lobi kanalı (`venue:`) süresi geçmiş check-in'e açıktı                                                                      | Düzeltildi, S1 PR                                     |
+| A3  | ORTA   | `session:` kanalı bitmiş check-in'e de açık                                                                                 | Gerekmez: konu yalnız o hesabın kendi check-in'i      |
+| B1  | YÜKSEK | Bildirimde hız sınırı yok; profil bildirimi her seferinde fotoğraf ve kapak kopyası yazar                                   | Düzeltildi, S1 PR (saatte 30, günde 100)              |
+| B2  | ORTA   | Yeni yükleme URL'i alınınca eski imzalı URL 2 saat geçerli; sahipsiz `p/` dosyası kalabilir, hesap silmede silinmez         | Açık (S2)                                             |
+| B3  | ORTA   | Hesap silmede PostHog kişi silme bir kez dener, hata olursa kalır                                                           | Açık (S2)                                             |
+| B4  | ORTA   | Oda ve DM tepkilerinde hız sınırı yok (mekan ve semt sohbetinde var)                                                        | Açık (S2)                                             |
+| C1  | ORTA   | `docs/OPS.md`'de numara=kod biçiminde örnek çift; kapı bu biçimi yakalamıyordu                                              | Düzeltildi, S1 PR (`test-otp-pair` kuralı); panel işi |
+| C2  | ORTA   | Üretim OTA'sı yerel `.env`'deki `EXPO_PUBLIC_*` değerlerini pakete taşıyabilir                                              | Belgelendi, S1 PR (`PILOT_RELEASE.md`); panel işi     |
+| C3  | ORTA   | `dev-live.yml` sır taşıyan işte action'lar SHA'ya sabit değil                                                               | Onay bekliyor (workflow sırrı)                        |
+| C4  | ORTA   | Android `blockedPermissions` yok (SYSTEM_ALERT_WINDOW, depolama, arka plan konumu, mikrofon)                                | Build bekliyor                                        |
+| C5  | ORTA   | PostHog istemci IP'si ve Sentry IP saklama                                                                                  | Panel işi (`PILOT_RELEASE.md`'ye yazıldı)             |
+
 ## Devir notu (8 Kasım 2026, telefon revizeleri)
 
 - Bu PR: profil kapağı 120 ve şeride kayan fotoğraf ve ad (`profile/index.tsx`, §4.W), Aktiviteler'de paket sayısı tam görünür ve Etkinlikler / Geçmiş başlığın altında sabitlenir (`Screen` → `scrollY`, `pinned`), riso düğme dokusu düğmeyi kaplar (`kit.tsx` → `TEXTURE_FILL`), yeni mesaj düğmesi riso 44, mekan sohbeti çubuğunda başlık tam boy ve yazanlar altta (`ChatTopBar` → `under`), sohbet çubuklarında kapsüller hareketsiz (`FxMoves on={false}`).
@@ -15,6 +34,7 @@ Proje sahibinin "bitti"sine kadar toplanan hata ve revizeler; "bitti"de paketler
 
 Native değişiklik isteyen, onaylanmış ama yeni build beklediği için yapılmamış işler. Build alınacağı zaman hepsi tek PR'da yapılır (`app.json` → `version` artar, `.claude/skills/yayin`), yapılan madde buradan silinir.
 
+- Android `blockedPermissions` (canlı öncesi denetim C4): `app.json` → `android.blockedPermissions` SYSTEM_ALERT_WINDOW, RECORD_AUDIO, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, ACCESS_BACKGROUND_LOCATION, FOREGROUND_SERVICE_LOCATION; build'den sonra `aapt dump permissions` ile denetlenir.
 - SVG önbelleği (8 Kasım, proje sahibinin onayı): `patches/react-native-svg@15.15.4.patch` → `SHARED` sabit 24 MB yerine uygulama belleğinin payı (1/8 ile 1/4 arası, Fresco gibi); bellek sıkışınca boşalır (`onTrimMemory`; bugün yok). Gerekçe: Kapsülünü süsle kasması; sabit 128 MB ucuz telefonlarda arka planda kapanmaya yol açar.
 
 ## Devir notu (8 Kasım 2026, Semte Git)

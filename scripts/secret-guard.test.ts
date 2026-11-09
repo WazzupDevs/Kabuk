@@ -26,6 +26,7 @@ import {
 // Fake keys are built at run time from parts, so this file itself never holds a matching value
 // (the repository scan below would stop it otherwise).
 const fake = {
+  phone: '90' + '5321234567',
   supabase: ['sb', 'secret', 'x'.repeat(24)].join('_'),
   github: 'gh' + 'p_' + 'A1'.repeat(18),
   github2: 'gh' + 'p_' + 'K7'.repeat(18),
@@ -123,6 +124,8 @@ describe('secret gate: access keys', () => {
       [fake.serviceEnv, 'service-role-env'],
       [fake.secretEnv, 'service-role-env'],
       [fake.expo, 'expo-token'],
+      [`${fake.phone}=482915,${fake.phone}=730264`, 'test-otp-pair'],
+      [`${fake.phone} = "482915"`, 'test-otp-pair'],
       [
         `Authorization: Bearer ${jwt({ role: 'service_role', iss: 'supabase' })}`,
         'service-role-jwt',
@@ -138,6 +141,8 @@ describe('secret gate: access keys', () => {
       'EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}',
       'SUPABASE_SECRET_KEY=$SUPABASE_SECRET_KEY',
       'SUPABASE_SERVICE_ROLE_KEY=<buraya>',
+      '905550000001 = "123456"',
+      '<numara>=<kod>',
       `anon ${jwt({ role: 'anon', iss: 'supabase' })}`,
       `local ${jwt({ role: 'service_role', iss: 'supabase-demo' })}`,
     ];

@@ -145,6 +145,7 @@ npx eas-cli env:create --environment production --name EXPO_PUBLIC_POSTHOG_KEY -
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_SENTRY_DSN --value <DSN> --visibility plaintext
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_PRIVACY_URL --value https://wazzupdevs.github.io/Kabuk/gizlilik-politikasi.html --visibility plaintext
 npx eas-cli env:create --environment production --name EXPO_PUBLIC_CONTACT_EMAIL --value <e-posta> --visibility plaintext
+npx eas-cli env:create --environment production --name EXPO_PUBLIC_APP_ENV --value production --visibility plaintext
 npx eas-cli env:list --environment production
 npx eas-cli build --platform android --profile production
 npx eas-cli build:version:get --platform android
@@ -152,6 +153,7 @@ cd ..\..
 ```
 
 - Secret key **asla** eklenmez; publishable key gizli değildir.
+- PostHog projesinde **Discard client IP data** açık, Sentry projesinde **Prevent Storing of IP Addresses** açık olur (yalnızca kullanıcı kimliği gider).
 - `build:version:get` bu build'in versionCode'unu verir. 5. adımda kullanılır.
 
 ## 5. Play iç test ve `MIN_APP_BUILD`
@@ -193,6 +195,8 @@ pnpm supabase migration list
   ```
 
   Dev projesindeki test APK'ları için aynı komut `--channel preview --environment preview` ile.
+
+  Üretim OTA'sından önce `apps\mobile\.env` adı değiştirilir ya da kaldırılır: EAS ortamında olmayan `EXPO_PUBLIC_*` değerleri (ör. `EXPO_PUBLIC_APP_ENV=e2e`, `EXPO_PUBLIC_UPDATE_URL`) yerel `.env`'den pakete girer.
 
 - **Native değişiklik** (`app.json` → `version` artar): önce yeni production build (4. adım), Play iç teste yükle, sonra `MIN_APP_BUILD`'i yeni versionCode'a çek. Bu sürüme yazılan OTA yalnızca aynı `version`'daki build'lere gider.
 - **Migration ya da fonksiyon:** 3. adımdaki `db push` ve `functions deploy`, istemciden **önce**.

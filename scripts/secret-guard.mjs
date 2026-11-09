@@ -93,6 +93,8 @@ const TOKEN_RULES = [
     re: new RegExp(String.raw`\b(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY)${VALUE}`, 'g'),
   },
   { rule: 'expo-token', re: new RegExp(String.raw`\bEXPO_TOKEN${VALUE}`, 'g') },
+  // A Turkish test phone with its sign-in code (Supabase test OTPs); only the local `123456` passes.
+  { rule: 'test-otp-pair', re: /\b90\d{10}\s*=\s*['"]?(?!123456)\d{6}\b/g },
 ];
 
 const JWT = /\beyJ[A-Za-z0-9_-]{8,}\.(eyJ[A-Za-z0-9_-]{8,})\.[A-Za-z0-9_-]{8,}/g;

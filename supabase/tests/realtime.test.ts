@@ -104,29 +104,20 @@ describe('private room channels', { timeout: 60_000 }, () => {
     }
   });
 
-  it('shows members each other, and never an outsider pretending to be the guest', async () => {
+  it('lets members only listen: presence and broadcasts from a phone never reach the table', async () => {
+    // Rule 9: on the room's topics only the server sends; dm_typing is the one channel a phone
+    // sends on.
     const { owner, guest, outsider, roomId } = await roomWithGuest(true);
-    const topic = `presence:${roomId}`;
-    const ownerSide = await join(owner, topic, { presenceKey: 'owner' });
-    const seen = ownerSide.seen;
-    await ownerSide.channel.track({});
+    const presenceTopic = `presence:${roomId}`;
+    const ownerPresence = await join(owner, presenceTopic, { presenceKey: 'owner' });
+    const guestPresence = await join(guest, presenceTopic, { presenceKey: 'guest' });
+    await guestPresence.channel.track({});
+    const outsiderPresence = await join(outsider, presenceTopic, {
+      private: false,
+      presenceKey: 'x',
+    });
+    if (outsiderPresence.status === 'SUBSCRIBED') await outsiderPresence.channel.track({});
 
-    // The outsider cannot join the private channel, and a public channel of the same name does
-    // not reach it.
-    const privateTry = await join(outsider, topic, { presenceKey: 'guest' });
-    expect(privateTry.status).toBe('CHANNEL_ERROR');
-    const publicTry = await join(outsider, topic, { private: false, presenceKey: 'guest' });
-    if (publicTry.status === 'SUBSCRIBED') await publicTry.channel.track({});
-    await quiet();
-    expect(seen.presenceKeys.has('guest')).toBe(false);
-
-    const guestSide = await join(guest, topic, { presenceKey: 'guest' });
-    await guestSide.channel.track({});
-    await expect.poll(() => seen.presenceKeys.has('guest'), { timeout: 8000 }).toBe(true);
-  });
-
-  it('delivers member broadcasts, and never an outsider event', async () => {
-    const { owner, guest, outsider, roomId } = await roomWithGuest(true);
     const topic = `room:${roomId}`;
     const ownerSide = await join(owner, topic);
     const seen = ownerSide.seen;
@@ -148,12 +139,15 @@ describe('private room channels', { timeout: 60_000 }, () => {
         messages: [{ topic, event: 'fake_rest', payload: {}, private: true }],
       }),
     });
+
+    // A member of the table cannot send either.
+    const guestSide = await join(guest, topic);
+    expect(guestSide.status).toBe('SUBSCRIBED');
+    await guestSide.channel.send({ type: 'broadcast', event: 'from_guest', payload: {} });
     await quiet();
     expect(seen.events).toEqual([]);
-
-    const guestSide = await join(guest, topic);
-    await guestSide.channel.send({ type: 'broadcast', event: 'from_guest', payload: {} });
-    await expect.poll(() => seen.events, { timeout: 8000 }).toEqual(['from_guest']);
+    expect(ownerPresence.seen.presenceKeys.has('guest')).toBe(false);
+    expect(ownerPresence.seen.presenceKeys.has('x')).toBe(false);
   });
 });
 
