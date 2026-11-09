@@ -18,7 +18,12 @@ export function photoCacheKey(url: string): string {
 function stablePhotoUrl(url: string, now: number = Date.now()): string {
   const key = url.split('?')[0] ?? url;
   const hit = kept.get(key);
-  if (hit && now - hit.at < KEEP_MS) return hit.url;
+  if (hit && now - hit.at < KEEP_MS) {
+    // Seen again: last to go when the list is full.
+    kept.delete(key);
+    kept.set(key, hit);
+    return hit.url;
+  }
   kept.delete(key);
   kept.set(key, { url, at: now });
   // A Map iterates in insertion order: the first ones are the oldest kept.

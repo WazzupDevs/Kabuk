@@ -147,6 +147,8 @@ export function useRoom(roomId: string) {
       queryFn: () => false,
       enabled: false,
       initialData: false,
+      // Forgotten once no screen of the table is open: a table opened again starts as down.
+      gcTime: 0,
     }).data === true;
 
   // Status check (@shared/rooms.ts): while the screen is in front, every few seconds when the
@@ -252,6 +254,8 @@ export function useVenueTables(venueId: string | undefined) {
 
   return useQuery({
     queryKey: roomKeys.venueTables(venueId ?? ''),
+    // Kept fresh by broadcasts; one missed in the background is read again on return.
+    refetchOnWindowFocus: 'always',
     enabled: venueId !== undefined,
     queryFn: async (): Promise<{ open: VenueTable[]; running: VenueTable[] }> => {
       const { data, error } = await supabase.rpc('venue_tables', {
@@ -290,6 +294,8 @@ export function useMyRequest(sessionId: string | undefined, since: string | unde
 
   return useQuery({
     queryKey: roomKeys.myRequest,
+    // Kept fresh by broadcasts; one missed in the background is read again on return.
+    refetchOnWindowFocus: 'always',
     enabled: since !== undefined,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -328,6 +334,8 @@ export function useIncomingRequests(roomId: string, ownerSessionId: string | nul
 
   return useQuery({
     queryKey: roomKeys.incoming(roomId),
+    // Kept fresh by broadcasts; one missed in the background is read again on return.
+    refetchOnWindowFocus: 'always',
     enabled: ownerSessionId !== null,
     queryFn: async () => {
       const { data, error } = await supabase
