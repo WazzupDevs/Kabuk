@@ -34,6 +34,7 @@ appId: app.kabuk.mobile
 - scrollUntilVisible:
     element:
       text: E2E Kafe İki
+    centerElement: true
     timeout: 10000
 - assertNotVisible: E2E Kafe
 - takeScreenshot: 05e-explore-search
@@ -128,9 +129,12 @@ appId: app.kabuk.mobile
       id: explore-count
     timeout: 10000
     label: back on the list
+# Centred: the list runs under the tab bar, and a row scrolled just into view is tapped through
+# the bar (the 8–9 Kasım runs opened Mesajlar instead of the venue).
 - scrollUntilVisible:
     element:
       text: E2E Kafe
+    centerElement: true
     timeout: 30000
 - assertVisible:
     id: explore-search
@@ -159,6 +163,11 @@ appId: app.kabuk.mobile
     timeout: 30000
 - assertVisible: Liste
 - takeScreenshot: 06b-explore-single
+- scrollUntilVisible:
+    element:
+      text: E2E Kafe
+    centerElement: true
+    timeout: 10000
 - tapOn: E2E Kafe
 - extendedWaitUntil:
     visible: Buraya giriş yap
