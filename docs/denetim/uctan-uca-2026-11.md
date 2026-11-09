@@ -6,22 +6,22 @@ Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel 
 
 ## Modüller
 
-| #   | Modül                                                           | Durum                             |
-| --- | --------------------------------------------------------------- | --------------------------------- |
-| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Sonuç raporu hazır, onay bekliyor |
-| M2  | Realtime ve veri eşitleme                                       | Başlamadı                         |
-| M3  | Kapsül ve grafik, hediye paketleri                              | Başlamadı (ön bulgular)           |
-| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Başlamadı                         |
-| M5  | Check-in, konum, mekan, masa ve lobi                            | Başlamadı                         |
-| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Başlamadı                         |
-| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Başlamadı                         |
-| M8  | Keşfet, harita, Semte Git                                       | Başlamadı                         |
-| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Başlamadı                         |
-| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Başlamadı                         |
-| M11 | Veritabanı bütünü                                               | Başlamadı                         |
-| M12 | Güvenlik bütünü                                                 | Başlamadı (ön doğrulama)          |
-| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Başlamadı                         |
-| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Başlamadı                         |
+| #   | Modül                                                           | Durum                                                 |
+| --- | --------------------------------------------------------------- | ----------------------------------------------------- |
+| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Tamamlandı (9 Kasım; ölçüm ve yerel entegrasyon açık) |
+| M2  | Realtime ve veri eşitleme                                       | Sonuç raporu hazır                                    |
+| M3  | Kapsül ve grafik, hediye paketleri                              | Başlamadı (ön bulgular)                               |
+| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Başlamadı                                             |
+| M5  | Check-in, konum, mekan, masa ve lobi                            | Başlamadı                                             |
+| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Başlamadı                                             |
+| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Başlamadı                                             |
+| M8  | Keşfet, harita, Semte Git                                       | Başlamadı                                             |
+| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Başlamadı                                             |
+| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Başlamadı                                             |
+| M11 | Veritabanı bütünü                                               | Başlamadı                                             |
+| M12 | Güvenlik bütünü                                                 | Başlamadı (ön doğrulama)                              |
+| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Başlamadı                                             |
+| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Başlamadı                                             |
 
 Her modülde ayrıca bağımsız UX denetimi yapılır. M6 kapalı oyunları, bağlantı kopmasını, oyuncu ayrılmasını ve yeniden bağlanmayı da kapsar. M14 abonelik, ödeme, reklam ve hediye ekonomisinin bugünkü mimariye nasıl oturacağını kapsar.
 
@@ -177,3 +177,61 @@ Hâlâ yüzeysel: `ChatTopBar.tsx`, `pure/chatRuns.ts`, `dmPages.ts`, `messageEx
 2. Kalıcı giden kutusu ve taslak: hesap ve sohbet başına AsyncStorage kaydı (`dmCache.ts` kalıbı); bağlantı dönünce sırayla, aynı kimlikle kendiliğinden yeniden gönderim; çıkışta ve hesap değişince silinir.
 3. Ortak "mesaj deposu": dört sohbet aynı üç işlemi kullanır: imleçten sonrasını ekle (mesaj), kimliğe göre satırı yamala (tepki), kimliğe göre çıkar (silme). Tepki için sunucuda mesaj satırında "tepkisi en son ne zaman değişti" bilgisi ve yalnız sayıları dönen salt-okur RPC.
 4. Satırlar veriyi kimlikle alır; ekran düzeyindeki bekleyen tepki durumu satıra yalnız kendi değeriyle iner (M1-06, M1-07).
+
+## M2: Realtime ve veri eşitleme (9 Kasım)
+
+### Okunanlar
+
+Tam: `lib/realtime.ts`, `pure/realtimeChannels.ts`, `rooms/useBroadcast.ts`, `lib/queryClient.ts`, `lib/connection.ts`, `components/ConnectionBanner.tsx`, `features/auth/session.ts`, `features/rooms/queries.ts`, `lib/friendRefresh.ts`, `lib/useNow.ts`, `features/explore/useExploreVenues.ts` (yoklama), `Loader.tsx` → `useLoopActive`, `_shared/broadcast.ts`, `venueChatBroadcast.ts`, `lobby.ts`, `inbox.ts`, `background.ts`, `private.realtime_topic_allowed`. Yüzeysel: `lib/tabActivity.ts`, oyunların kendi yoklamaları (M6'da), `app/(app)/_layout.tsx` (yalnız kancalar).
+
+### Canlı deneyler (yerel yığın, üç test hesabı)
+
+| Deney                                                                         | Sonuç                                                                         |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Konuşmanın üyesi olmayan hesap `dm:{thread}` kanalına katılır                 | Reddedildi (`Unauthorized`)                                                   |
+| Üye abone olduktan sonra arkadaşlık ve konuşma silinir, sunucu yayın gönderir | Açık abonelik 1,5 sn, 20 sn ve 66 sn sonra gönderilen yayınların hepsini aldı |
+| Üye, sunucuya ayrılmış `dm:` kanalına kendi yayın gönderir                    | Karşı taraf almadı                                                            |
+| Üye `dm_typing:` kanalına yayın gönderir                                      | Karşı taraf aldı (beklenen)                                                   |
+
+Yerel Realtime sürümünün davranışıdır; barındırılan projede ayrıca denenmedi.
+
+### Kullanıcı başına açık kanal (koddan sayım)
+
+`inbox`, `session`, `venue`, `venue_chat`, masadayken `room` ve `messages`, Signum'da `game_team`, açık DM'de `dm` ve `dm_typing`, Semte Git'te `district_chat`; Mesajlar sekmesi bir kez açıldıysa ek olarak 30 satıra kadar `dm_typing`. Sekmeler bağlı kaldığı için bu 30 kanal oturum boyunca açık kalır.
+
+### Bulgular
+
+| #     | Önc.         | Sınıf                    | Bulgu                                                                                                                                                                                                                                                                                                           | Yer                                                    | Öneri                                                                                 |
+| ----- | ------------ | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| M2-01 | P3           | D (canlı deney)          | Yayın yetkisi kanala katılırken denetlenir; erişimi kalkan açık abonelik yayın almayı sürdürür. Yayınlar veri taşımadığı için içerik sızmaz, yalnız "bir şey oldu" zamanlaması sızar. CLAUDE.md kural 9'daki "erişimi hemen kapanır" yayınlar için doğru değil (Postgres Changes için doğru: satır başına RLS). | `realtime_topic_allowed`                               | Belgeyi düzeltmek; hassas yerde Signum'daki kimlik yenileme                           |
+| M2-02 | P1 (ölçekte) | D (sayım), kota kaynaklı | Kullanıcı başına yaklaşık 8 kanal ve 30'a kadar "yazıyor" kanalı. Toplu yeniden bağlanmada (mekanın ağı kesilip gelince) her telefon hepsine yeniden katılır; her katılma veritabanında bir yetki sorgusudur. Supabase kotası saniyede 100 (Free) ya da 500 (Pro) katılma.                                      | `messages/index.tsx` → `TYPING_ROWS`, `useDmTyping.ts` | "Yazıyor"u yalnız açık DM'de ve gelen kutusunun görünen ilk birkaç satırında dinlemek |
+| M2-03 | P2           | D (yapı), Ö (sayı)       | Her yeniden abone oluşta kanalın bütün dinleyicileri bir kez çalışır; gelen kutusu kanalında dört dinleyici yaklaşık on sorgu başlatır; aynı anda ön plana dönüş de bayat sorguları okur.                                                                                                                       | `useBroadcast.ts`, `friends/queries.ts:505`            | Konu başına tek "yeniden bağlandı" işleyicisi; ön plana dönüşle birleştirmek          |
+| M2-04 | P2 (ölçekte) | D                        | Lobi yayını geldiği anda mekandaki her telefon `venue_tables`'ı okur; mekan sohbeti kartındaki rastgele gecikme burada yok; ekran gizliyken de okunur.                                                                                                                                                          | `rooms/queries.ts:253`                                 | Kısa rastgele gecikme; odakta değilken ertelemek                                      |
+| M2-05 | P3           | D                        | `game_events` Realtime yayınında ve `game:`, `presence:` konu türleri politikada duruyor; istemci hiçbirini kullanmıyor.                                                                                                                                                                                        | Yayın listesi, politika                                | Kaldırmak (M11'de)                                                                    |
+| M2-06 | P3           | D                        | Sunucu yayınları yanıttan sonra tek kez denenir; başarısız olan yutulur. Masa dışında yoklama olmadığı için ekran bir sonraki olaya ya da ön plana dönüşe kadar bayat kalır.                                                                                                                                    | `_shared/background.ts`, `broadcast.ts`                | Bir kez yeniden deneme; uzun vadede veritabanından yayın                              |
+| M2-07 | P2 (ölçekte) | İ                        | `rooms` ve `messages` Postgres Changes ile gider; Supabase ölçekte sunucudan Broadcast önerir. Masa 12 kişiyle sınırlı olduğu için bugün sorun değil.                                                                                                                                                           | `rooms/queries.ts:119`, `useMessages.ts`               | Yük görülünce yayına geçmek                                                           |
+| M2-08 | P3           | D                        | Bağlantı bandı yalnız başarısız bir istekten sonra çıkar; Realtime soketi koparsa ve kullanıcı bir şeye basmazsa kopukluğu görmez.                                                                                                                                                                              | `connection.ts`                                        | Kanal durumunu banda bağlamak                                                         |
+
+### İyi yapılmış, korunacak
+
+- Konu başına tek kanal ve sayaçlı paylaşım; kapanmakta olan kanal bitmeden yenisi açılmaz.
+- Yeniden abone olunca okuma: Realtime kaçan olayı yeniden oynatmadığı için doğru telafi.
+- Varsayılan 20 sn tazelik; masa yoklaması kanal bağlıyken seyrek, ekran gizliyken kapalı.
+- Yetki: yabancı katılamıyor, istemci sunucu yayınını taklit edemiyor (deneyle doğrulandı).
+
+### Kıyas
+
+| Konu          | Kaynak                                                                                                                                                                                                                           | skall                                                              |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Kaçan olaylar | Discord: oturum kimliği ve sıra numarasıyla Resume, olaylar yeniden oynatılır ([docs.discord.com](https://docs.discord.com/developers/events/gateway-events))                                                                    | Yeniden oynatma yok; yeniden okuma. Bu ölçekte doğru ve daha basit |
+| Kotalar       | Supabase Realtime: Free 200 eşzamanlı bağlantı, saniyede 100 katılma, bağlantı başına 100 kanal; Pro 500 ve 500 ([supabase.com/docs/guides/realtime/quotas](https://supabase.com/docs/guides/realtime/quotas))                   | M2-02                                                              |
+| Yetki zamanı  | Supabase: politikalar istemci konuya bağlanırken kullanılır ([supabase.com/docs/guides/realtime/authorization](https://supabase.com/docs/guides/realtime/authorization)); sonradan iptal belgede yazmıyor, yerel deneyle görüldü | M2-01                                                              |
+
+### Ölçülemeyenler
+
+- Ön plana dönüşte ve yeniden bağlanmada atılan istek sayısı (telefonda ağ kaydı ya da yerel yığında sayaç).
+- Barındırılan projede katılma ve mesaj kotasına yakınlık (panel: Realtime raporları).
+
+### Ürün kararı
+
+- M2-01: kural 9'un metni düzeltilsin mi, yoksa masadan çıkarılan kişinin kanalı kimlik yenilemeyle gerçekten kapatılsın mı (Signum'daki yöntem; her çıkışta masadakiler yeniden abone olur).
