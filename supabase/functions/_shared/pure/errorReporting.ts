@@ -48,7 +48,9 @@ export function scrubBreadcrumb<B extends ReportBreadcrumb>(crumb: B): B | null 
 export function scrubEvent<E extends ReportEvent>(event: E): E {
   const scrubbed: E = { ...event };
   const id = event.user?.id;
-  scrubbed.user = typeof id === 'string' ? { id } : undefined;
+  // `ip_address: null` tells Sentry not to take the address the report came from (C5): without it
+  // the server may fill it in from the connection.
+  scrubbed.user = typeof id === 'string' ? { id, ip_address: null } : { ip_address: null };
   delete scrubbed.request;
   delete scrubbed.extra;
   if (event.message !== undefined) scrubbed.message = redact(event.message);
