@@ -28,7 +28,8 @@
     "latency": "node --experimental-strip-types latency/measure.ts",
     "latency:sprengja": "node --experimental-strip-types latency/sprengja.ts",
     "functions:deploy": "node --experimental-strip-types functions/deploy.ts",
-    "visual:accept": "node --experimental-strip-types visual/accept.ts"
+    "visual:accept": "node --experimental-strip-types visual/accept.ts",
+    "ota:production": "node --experimental-strip-types ota-production.ts"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",

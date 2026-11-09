@@ -153,7 +153,7 @@ cd ..\..
 ```
 
 - Secret key **asla** eklenmez; publishable key gizli değildir.
-- PostHog projesinde **Discard client IP data** açık, Sentry projesinde **Prevent Storing of IP Addresses** açık olur (yalnızca kullanıcı kimliği gider).
+- PostHog projesinde **Discard client IP data** açık olur. Sentry'ye IP gitmez: uygulama her raporda adresi reddeder (`ip_address: null`, `_shared/pure/errorReporting.ts`); Sentry projesinde **Prevent Storing of IP Addresses** ayrıca açılabilir.
 - `build:version:get` bu build'in versionCode'unu verir. 5. adımda kullanılır.
 
 ## 5. Play iç test ve `MIN_APP_BUILD`
@@ -188,15 +188,13 @@ pnpm supabase migration list
 
 ## Sonraki güncellemeler
 
-- **Yalnızca JS** (metin, stil, `@shared` kodu): `apps\mobile`'da
+- **Yalnızca JS** (metin, stil, `@shared` kodu): repo kökünde
 
   ```
-  npx eas-cli update --channel production --environment production --message "<açıklama>"
+  pnpm ota:production "<açıklama>"
   ```
 
-  Dev projesindeki test APK'ları için aynı komut `--channel preview --environment preview` ile.
-
-  Üretim OTA'sından önce `apps\mobile\.env` adı değiştirilir ya da kaldırılır: EAS ortamında olmayan `EXPO_PUBLIC_*` değerleri (ör. `EXPO_PUBLIC_APP_ENV=e2e`, `EXPO_PUBLIC_UPDATE_URL`) yerel `.env`'den pakete girer.
+  Komut `apps\mobile`'da bir `.env` dosyası varken durur: EAS ortamında olmayan `EXPO_PUBLIC_*` değerleri (ör. `EXPO_PUBLIC_APP_ENV=e2e`, `EXPO_PUBLIC_UPDATE_URL`) yerel `.env`'den pakete girerdi (`scripts/ota/guard.ts`). Durursa dosyanın adını değiştir, yeniden çalıştır. Dev projesindeki test APK'ları için `apps\mobile`'da `npx eas-cli update --channel preview --environment preview --message "<açıklama>"` (main'e birleşme bunu zaten kendiliğinden yapar).
 
 - **Native değişiklik** (`app.json` → `version` artar): önce yeni production build (4. adım), Play iç teste yükle, sonra `MIN_APP_BUILD`'i yeni versionCode'a çek. Bu sürüme yazılan OTA yalnızca aynı `version`'daki build'lere gider.
 - **Migration ya da fonksiyon:** 3. adımdaki `db push` ve `functions deploy`, istemciden **önce**.

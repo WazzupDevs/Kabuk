@@ -41,7 +41,8 @@
     "latency": "pnpm --filter scripts latency",
     "latency:sprengja": "pnpm --filter scripts latency:sprengja",
     "functions:deploy": "pnpm --filter scripts functions:deploy",
-    "visual:accept": "pnpm --filter scripts visual:accept"
+    "visual:accept": "pnpm --filter scripts visual:accept",
+    "ota:production": "pnpm --filter scripts ota:production"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
