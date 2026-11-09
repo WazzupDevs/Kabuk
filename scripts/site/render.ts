@@ -1,4 +1,4 @@
-// The public legal pages (GitHub Pages): each docs/legal/*.md becomes one HTML page. Pure, so the
+// The public legal pages (skall.world): each docs/legal/*.md becomes one HTML page. Pure, so the
 // placeholder and the draft banner are tested; scripts/build-site.ts does the file work.
 import { marked } from 'marked';
 
