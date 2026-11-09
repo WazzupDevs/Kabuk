@@ -6,9 +6,9 @@ Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel 
 
 ## Devir notu (9 Kasım 2026, M4 sonrası)
 
-- M1, M2, M4 tamamlandı; M3'ün sonuç raporu hazır, proje sahibinin onayı bekleniyor. Sıradaki modül M5 (check-in, konum, mekan, masa ve lobi).
+- M1–M4 tamamlandı. Sıradaki modül M5 (check-in, konum, mekan, masa ve lobi).
 - Bu belge ve kural 9 düzeltmesi `ccr-33a2b831-5ea6i9` dalında (önceki `ccr-df254f82-l9oqbt` buna birleştirildi; ana dalın `193decc` commit'i üstünde); ana dala girmedi, PR açılmadı. Yeni oturum önce bu dalı alır.
-- Açık kararlar: M3 planının onayı, sohbette hareketli avatar sınırı, M1-18 ve M1-23, eski aksesuarların akıbeti; M4'ten: M4-02 (Auth denetim kaydı, panel), M4-05 (silip yeniden açarak engeli sıfırlama), M4-06 (18 yaş altı yeniden deneme), M4-13 (geri dönen kullanıcı yolu), M4-14 (numara değiştirme, çok cihaz, silmede bekleme).
+- Açık kararlar: M1-18 ve M1-23; M4'ten: M4-02 (Auth denetim kaydı, panel), M4-05 (silip yeniden açarak engeli sıfırlama), M4-06 (18 yaş altı yeniden deneme), M4-13 (geri dönen kullanıcı yolu), M4-14 (numara değiştirme, çok cihaz, silmede bekleme). M3 kararları verildi (M3 → Kararlar): hibrit mimari, görünen avatar hareket eder, eski aksesuarlar `retired`; uygulama M1 ve M2 bulgularıyla birlikte, ileride.
 - Devredilenler. M6: süren Kibrit oylamasında hesabı silinen kişiyi hedefleyen oylar `target_session_id` cascade'iyle masa kilidi dışında silinir (`20261201090000_kibrit.sql:80`); doğrulanacak. M11: kapanmış masalar silinmiyor; sahibi hesabını silince `rooms.owner_session_id` cascade'iyle başkalarının satırlarıyla gider.
 - Yerel ortam: `pnpm install --frozen-lockfile`, `dockerd` elle başlar, `pnpm supabase start`, ardından `pnpm --filter scripts apply-local-secrets`. `functions serve` yerelde açılmıyor (vekil sertifikası); entegrasyon sonucu CI'dan okunur. Auth, PostgREST, veritabanı yetkileri ve Realtime doğrudan yerel yığında sınanabilir (test numarası, kod `123456`). Repo kancası, içinde hem ana dalın adı hem "push" geçen kabuk komutunu durdurur: belge metni komutun içine yazılmaz, dosyadan okunur.
 - Çalışma kuralları: uygulama kodu, migration ve yapılandırma değişmez; yalnız bu belge güncellenir. Ajan olarak yalnız `performans` ve `guvenlik`, aynı anda bir tane; bulguları ana oturum koda karşı doğrular. Bağlam ağırlaşınca oturum kendiliğinden bu notu günceller ve proje sahibine yeni oturum promptunu verir (proje sahibinin isteği, 9 Kasım).
@@ -19,7 +19,7 @@ Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel 
 | --- | --------------------------------------------------------------- | ------------------------------------------------------------- |
 | M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Tamamlandı (9 Kasım; ölçüm ve yerel entegrasyon açık)         |
 | M2  | Realtime ve veri eşitleme                                       | Tamamlandı (9 Kasım; M2-01 kararı: kural 9 düzeltildi)        |
-| M3  | Kapsül ve grafik, hediye paketleri                              | Sonuç raporu hazır                                            |
+| M3  | Kapsül ve grafik, hediye paketleri                              | Tamamlandı (9 Kasım; kararlar verildi, telefon ölçümü açık)   |
 | M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Tamamlandı (9 Kasım; panel ayarları ve telefon denemesi açık) |
 | M5  | Check-in, konum, mekan, masa ve lobi                            | Başlamadı                                                     |
 | M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Başlamadı                                                     |
@@ -340,10 +340,21 @@ Kaynaklar: [React Native Skia paket boyutu](https://shopify.github.io/react-nati
 | 3     | Profil bileti, açılan kart; eski kare yolu yalnız geri dönüş için kalır                                                                                                                                     | OTA                  | Telefonda doğrulama                                |
 | 4     | Küçük avatarlar için karar: aşama 1 yetmediyse yalnız görünen ve duran avatarda Skia                                                                                                                        | OTA                  | Ölçüme göre                                        |
 
-### Ürün kararları
+### Kararlar (proje sahibi, 9 Kasım)
 
-- Sohbette aynı anda hareket eden avatar sayısına sınır (balonlardaki "en yeni altı" gibi) konsun mu; "yalnız görünen satır" sınırı görüntüyü değiştirmez, sayı sınırı değiştirir.
-- Eski aksesuarların akıbeti (silme ya da `retired`) ve yeni aksesuar biçimi: önceki oturumdan açık.
+Denetim aşaması tamamlandı sayılır; telefon performans ölçümleri ve gerçek cihaz doğrulamaları açık kalır. Uygulama kodu henüz değişmez. M3'ün uygulama aşamaları ileride M1 ve M2 bulgularıyla birlikte ele alınır: bir modülde alınan performans kararı başka modülde yeni sorun yaratmamalı.
+
+Ürün:
+
+- Sohbet avatarları: ekranda görünen avatarlar hareket eder; ekran dışındakilerin hareketi durur ya da durağan çizilir. "En yeni altı" gibi sayı sınırı yok.
+- Eski aksesuarlar: `retired`. Mevcut sahiplerin aksesuarları korunur ve kullanılabilir; yeni edinim kapatılabilir. Eski çizim desteği geçiş tamamlanmadan kaldırılmaz.
+
+Teknik:
+
+- Hibrit grafik mimarisi (seçenek B). Bütün kapsüller Skia'ya taşınmaz; Skia yalnız karmaşık klip içi hareketlerde. Basit hareketler ve durağan aksesuarlar bugünkü SVG mimarisinde kalır.
+- Skia uygulamasından önce taban ölçüm alınır (aşama 0).
+- Aynı aksesuar, aynı cihaz, aynı koşulda SVG ve Skia karşılaştırılır: Nothing Phone 1, düşük donanımlı bir Android, bir iPhone. Ölçütler: FPS ve kare süresi, bellek, CPU, GPU, pil etkisi.
+- Görsel uyumluluk, özellikle `mask` ve `clipPath` davranışı, yan yana doğrulanır.
 
 ## M4: Kimlik, oturum, kayıt, onboarding, hesap silme (9 Kasım)
 
