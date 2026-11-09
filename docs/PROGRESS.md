@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (9 Kasım 2026, canlı öncesi denetim)
+
+- Faz 0–2 bitti: `performans` ajanı (#531), güvenlik 1 (#532), performans 1 (#533). Bulgular aşağıdaki tabloda; sıradaki paketler: S2 (B2–B4), P2 (D4–D10), M1 (E1–E5, E7), M2 (E6). Güvenlik performanstan önce.
+- Faz 3 (canlı yapılandırma) bulguları F satırlarında; panel işleri ve onay bekleyenler (C3) proje sahibine verildi.
+- Yeni oturum aynı promptla başlar, tablodaki ilk "Açık" paketten sürer.
+
 ## Canlı öncesi denetim (9 Kasım 2026)
 
 Kota tahmini (200 eşzamanlı, günde 2.000 aktif): ücretsiz planda önce eşzamanlı Realtime bağlantısı (200) ilk zirvede, Edge (500 bin/ay) 2–4 günde, 500 MB veritabanı birkaç haftada dolar. Pro'da önce Edge çağrısı (~9M/ay, 2M dahil, aşım ~15 $), sonra Realtime mesajı (~10–15M, 5M dahil, aşım ~25 $); D4–D6 bu yükü kabaca yarıya indirir.
@@ -38,6 +44,11 @@ Kaynak: `guvenlik` (A: migration ve Realtime, B: Edge Function'lar, C: sırlar, 
 | E5  | ORTA   | `usePhoto` → `kept` Map'i sınırsız büyür                                                                                                                                                                                     | Açık (M1, OTA)                                                  |
 | E6  | ORTA   | Sohbet duvar kâğıdı bant başına 9 tam boy `Image` katmanı                                                                                                                                                                    | Açık (M2, OTA; aynı görüntü daha az katmanla)                   |
 | E7  | ORTA   | `LivePencil` gizli profil sekmesinde de zamanlayıcıyla çalışır                                                                                                                                                               | Açık (M1, OTA)                                                  |
+| F1  | ORTA   | `PLAY_CHECKLIST.md` §3.7 veri tablosunda doğum tarihi, cinsiyet, mekan ve semt sohbeti eksik (`listing-tr.md` güncel)                                                                                                        | Açık (belge)                                                    |
+| F2  | ORTA   | Semte Git: semt (yaklaşık konum) saklanıyor; gizlilik politikası, Play formu ve App Store etiketi bunu yazmıyor                                                                                                              | `DISTRICT_VISIBLE` üretimde açılmadan önce (belge, panel)       |
+| F3  | ORTA   | iOS `PrivacyInfo.xcprivacy` (`ios.privacyManifests`) yok; App Store gizlilik etiketi listesi `listing-tr.md`'de                                                                                                              | Build bekliyor (ilk App Store build'inde denetlenir)            |
+| F4  | ORTA   | Üretim build'inde Sentry kaynak haritası yok (`SENTRY_DISABLE_AUTO_UPLOAD`)                                                                                                                                                  | Panel işi (token proje sahibinde)                               |
+| F5  | —      | Yasal metinlerde veri sorumlusu ve hukuki alanlar boş; onay sürümleri `draft-*`                                                                                                                                              | Proje sahibi (hukuk)                                            |
 
 ## Devir notu (8 Kasım 2026, telefon revizeleri)
 
