@@ -127,6 +127,8 @@ export const BROADCAST = {
 // channel (re)subscribes. Only when they differ from the cached row is the full row read again, so a
 // check never overwrites a newer row that arrived over the channel (a Tabu press).
 export const ROOM_CHECK_SECONDS = 4;
+// While the channel is subscribed the changes arrive over it; the check only covers one it missed.
+export const ROOM_CHECK_LIVE_SECONDS = 30;
 // The table's phones, owner and lobby state too (docs/SPEC_V4.md §4.E): a person joining or
 // leaving changes the table's people and the top line's count, a new owner its buttons.
 export const ROOM_CHECK_COLUMNS = 'status, owner_session_id, phones, visibility';

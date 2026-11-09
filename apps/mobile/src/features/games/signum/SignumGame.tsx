@@ -68,6 +68,7 @@ import { SIGNUM as S, SIGNUM_PEEK_PAIRS as PEEK_PAIRS } from '@/theme/signum';
 import { gradientStyle } from '@/theme/gradient';
 import { DarkGameScope } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
   GameLobby,
@@ -298,29 +299,13 @@ function useSignumView(roomId: string, me: string, state: SignumState, seated: b
 // The server's clock: when the phase's time is up any phone moves it on (signum/advance,
 // idempotent); while the phase stays, again every few seconds.
 function useAdvance(roomId: string, state: SignumState) {
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    if (!state.endsAt || state.phase === 'over') return undefined;
-    const ask = () =>
-      void signumApi
-        .advance(roomId, state.step)
-        .catch(() => undefined)
-        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-    let again: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(
-      () => {
-        ask();
-        again = setInterval(ask, ADVANCE_AGAIN_MS);
-      },
-      Math.max(0, Date.parse(state.endsAt) - Date.now()),
-    );
-    return () => {
-      clearTimeout(first);
-      clearInterval(again);
-    };
-  }, [roomId, state.step, state.endsAt, state.phase, queryClient]);
+  useAdvanceClock(
+    roomId,
+    state.phase === 'over' ? null : state.endsAt,
+    `${state.step}:${state.phase}`,
+    () => signumApi.advance(roomId, state.step),
+  );
 }
-const ADVANCE_AGAIN_MS = 2500;
 
 // A game action's answer: the caller's new view goes into its place; the table is read again
 // either way. `applied: false` (stale step, phase ran out, an older mark, busy) is not an error.

@@ -12,6 +12,8 @@ declare module '@tanstack/react-query' {
   }
 }
 
+export const QUERY_STALE_MS = 20_000;
+
 const mutationCache = feelingMutationCache(haptic, stoppedTyping);
 // Every answer and every request that could not go tell the connection banner (lib/connection.ts).
 mutationCache.subscribe((event) => {
@@ -23,6 +25,10 @@ mutationCache.subscribe((event) => {
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({ onError: noteFailure, onSuccess: noteSuccess }),
   mutationCache,
+  // A read stays fresh for a while: coming back to the foreground or online, mounting a screen
+  // again, re-reads only what is older than this. Realtime and presses invalidate (which ignores
+  // staleTime); the table, the check-in and the inbox ask for 'always' on focus themselves.
+  defaultOptions: { queries: { staleTime: QUERY_STALE_MS } },
 });
 
 // React Native has no window focus: without this, queries never refetch when the app comes back to

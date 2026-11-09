@@ -13,6 +13,8 @@ export function useActiveTable() {
   return useQuery({
     queryKey: activeTableQueryKey(userId),
     enabled: userId !== undefined,
+    // The check-in may have ended while the app was away: read again on every return.
+    refetchOnWindowFocus: 'always',
     queryFn: async () => {
       const { data, error } = await supabase
         .from('table_sessions')

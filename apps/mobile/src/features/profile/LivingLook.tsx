@@ -175,21 +175,22 @@ export function LivingLook({
 
 // The capsule's edit badge, alive: the family's pencil scribbles a little every few seconds. Each
 // scribble is a short motion of its own, started by a timer (no Reanimated frame loop between
-// them, loopGuard.test.ts).
+// them, loopGuard.test.ts). Off screen (a hidden Profil tab) and in the background it stops.
 const SCRIBBLE_EVERY_MS = 3200;
 const SCRIBBLE_MS = 140;
 
 export function LivePencil() {
   const reduce = useReduceMotion();
+  const active = useLoopActive();
   const turn = useSharedValue(0);
   useEffect(() => {
-    if (reduce) return undefined;
+    if (reduce || !active) return undefined;
     const step = (to: number) => withTiming(to, { duration: SCRIBBLE_MS });
     const timer = setInterval(() => {
       turn.set(withSequence(step(-1), step(1), step(-0.6), step(0.4), step(0)));
     }, SCRIBBLE_EVERY_MS);
     return () => clearInterval(timer);
-  }, [reduce, turn]);
+  }, [reduce, active, turn]);
   const style = useAnimatedStyle(() => ({
     transform: [{ translateX: turn.value * 1.5 }, { rotate: `${turn.value * 14}deg` }],
   }));

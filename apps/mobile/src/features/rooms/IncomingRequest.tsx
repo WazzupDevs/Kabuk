@@ -50,7 +50,7 @@ export function useMarkTableScreen() {
 export function IncomingRequestHost() {
   const table = useActiveTable();
   const sessionId = table.data?.id;
-  const room = useCurrentRoom(sessionId).data;
+  const room = useCurrentRoom(table.data).data;
   const onTable = useTableScreenOpen((s) => s.open > 0);
   const owns =
     !!room &&

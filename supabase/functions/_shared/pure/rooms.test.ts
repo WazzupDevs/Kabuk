@@ -8,6 +8,7 @@ import {
   proposalView,
   requesterStatus,
   ROOM_CHECK_COLUMNS,
+  ROOM_CHECK_LIVE_SECONDS,
   ROOM_CHECK_SECONDS,
   roomCheckDiffers,
   sessionChannel,
@@ -58,6 +59,8 @@ describe('room status check', () => {
       ['owner_session_id', 'phones', 'status', 'visibility'].sort(),
     );
     expect(ROOM_CHECK_SECONDS).toBeLessThanOrEqual(5);
+    expect(ROOM_CHECK_LIVE_SECONDS).toBeGreaterThan(ROOM_CHECK_SECONDS);
+    expect(ROOM_CHECK_LIVE_SECONDS).toBeLessThanOrEqual(60);
   });
 
   it('sees no difference when nothing the screen shows changed', () => {

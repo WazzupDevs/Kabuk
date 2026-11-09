@@ -44,7 +44,7 @@ function endSession(checkInId: string, startedAt: string) {
 export default function VenueScreen() {
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
-  const currentRoom = useCurrentRoom(checkIn.data?.id);
+  const currentRoom = useCurrentRoom(checkIn.data);
   const spots = useVenueSpots(checkIn.data?.venue_id);
   const tables = useVenueTables(checkIn.data?.venue_id);
   const photo = useOwnPhoto();

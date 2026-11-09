@@ -160,6 +160,8 @@ export function useHistoryFriends(): { data: ReadonlyMap<string, HistoryFriend> 
 export function useDmInbox() {
   return useQuery({
     queryKey: friendKeys.inbox,
+    // Realtime never replays: back in the foreground the inbox is read again however fresh it is.
+    refetchOnWindowFocus: 'always',
     queryFn: async () =>
       (await dmApi.inbox()).threads.map((t) => ({ ...t, photoUrl: stablePhoto(t.photoUrl) })),
   });

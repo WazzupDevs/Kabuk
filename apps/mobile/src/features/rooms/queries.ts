@@ -3,6 +3,7 @@ import {
   BROADCAST,
   type RequesterStatus,
   ROOM_CHECK_COLUMNS,
+  ROOM_CHECK_LIVE_SECONDS,
   ROOM_CHECK_SECONDS,
   roomCheckDiffers,
   sessionChannel,
@@ -10,6 +11,7 @@ import {
 } from '@shared/rooms.ts';
 import { gameTag } from '@shared/tableCard.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useIsFocused } from 'expo-router';
 import { useCallback } from 'react';
 
 import { roomsApi } from '@/lib/api';
@@ -22,11 +24,14 @@ type RoomRow = Database['public']['Tables']['rooms']['Row'];
 
 export const roomKeys = {
   current: ['currentRoom'] as const,
+  currentAt: (venueId: string) => ['currentRoom', venueId] as const,
   venueTables: (venueId: string) => ['venueTables', venueId] as const,
   myRequest: ['myRequest'] as const,
   incoming: (roomId: string) => ['incomingRequests', roomId] as const,
   room: (roomId: string) => ['room', roomId] as const,
   roomCheck: (roomId: string) => ['roomCheck', roomId] as const,
+  // Whether the table's channel is subscribed now (useRoom's status check slows down while it is).
+  roomLive: (roomId: string) => ['roomLive', roomId] as const,
   people: (roomId: string) => ['tablePeople', roomId] as const,
   votes: (roomId: string) => ['tableVotes', roomId] as const,
   requestProfile: (requestId: string) => ['requestProfile', requestId] as const,
@@ -54,17 +59,21 @@ export type TableRoomRow = Pick<
   | 'game_tag'
 >;
 
-// The person's table: RLS lets a person read only the tables it sits at, so no filter on the
-// check-in is needed. A closed table does not hold the person.
-export function useCurrentRoom(sessionId: string | undefined) {
+// The person's table: RLS lets a person read only the tables it sits at; the read is narrowed to
+// the check-in's venue and its open tables (rooms_lobby_open_idx), so the policy is checked on a
+// handful of rows, not on every open table. A closed table does not hold the person.
+export function useCurrentRoom(checkIn: { id: string; venue_id: string } | null | undefined) {
+  const venueId = checkIn?.venue_id;
   return useQuery({
-    queryKey: roomKeys.current,
-    enabled: sessionId !== undefined,
+    queryKey: roomKeys.currentAt(venueId ?? ''),
+    enabled: venueId !== undefined,
+    refetchOnWindowFocus: 'always',
     queryFn: async (): Promise<TableRoomRow | null> => {
       const { data, error } = await supabase
         .from('rooms')
         .select(TABLE_ROOM_COLUMNS)
-        .in('status', ['waiting', 'active'])
+        .eq('venue_id', venueId ?? '')
+        .neq('status', 'closed')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -76,8 +85,10 @@ export function useCurrentRoom(sessionId: string | undefined) {
 
 export function useRoom(roomId: string) {
   const queryClient = useQueryClient();
+  const focused = useIsFocused();
   const query = useQuery({
     queryKey: roomKeys.room(roomId),
+    refetchOnWindowFocus: 'always',
     queryFn: async () => {
       const { data, error } = await supabase
         .from('rooms')
@@ -112,6 +123,7 @@ export function useRoom(roomId: string) {
           emit(payload.new && payload.new.id === roomId ? (payload.new as RoomRow) : null),
       ),
       onStatus: (status) => {
+        queryClient.setQueryData(roomKeys.roomLive(roomId), status === 'SUBSCRIBED');
         if (status === 'SUBSCRIBED') emit(null);
       },
     }),
@@ -129,13 +141,26 @@ export function useRoom(roomId: string) {
     },
   );
 
-  // Status check (@shared/rooms.ts): every few seconds and when the app comes to the foreground,
-  // the few columns that decide what the screen shows; the full row is read again only when they
-  // differ, so a check never overwrites a newer row from the channel.
+  const live =
+    useQuery({
+      queryKey: roomKeys.roomLive(roomId),
+      queryFn: () => false,
+      enabled: false,
+      initialData: false,
+      // Forgotten once no screen of the table is open: a table opened again starts as down.
+      gcTime: 0,
+    }).data === true;
+
+  // Status check (@shared/rooms.ts): while the screen is in front, every few seconds when the
+  // channel is down and seldom while it is subscribed (the channel brings the changes), and when
+  // the app comes to the foreground; the few columns that decide what the screen shows; the full
+  // row is read again only when they differ, so a check never overwrites a newer row from the
+  // channel. A screen behind another (a hidden tab, the table under its chat) does not check.
   useQuery({
     queryKey: roomKeys.roomCheck(roomId),
-    enabled: query.isSuccess,
-    refetchInterval: ROOM_CHECK_SECONDS * 1000,
+    enabled: query.isSuccess && focused,
+    refetchOnWindowFocus: 'always',
+    refetchInterval: (live ? ROOM_CHECK_LIVE_SECONDS : ROOM_CHECK_SECONDS) * 1000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('rooms')
@@ -229,6 +254,8 @@ export function useVenueTables(venueId: string | undefined) {
 
   return useQuery({
     queryKey: roomKeys.venueTables(venueId ?? ''),
+    // Kept fresh by broadcasts; one missed in the background is read again on return.
+    refetchOnWindowFocus: 'always',
     enabled: venueId !== undefined,
     queryFn: async (): Promise<{ open: VenueTable[]; running: VenueTable[] }> => {
       const { data, error } = await supabase.rpc('venue_tables', {
@@ -267,6 +294,8 @@ export function useMyRequest(sessionId: string | undefined, since: string | unde
 
   return useQuery({
     queryKey: roomKeys.myRequest,
+    // Kept fresh by broadcasts; one missed in the background is read again on return.
+    refetchOnWindowFocus: 'always',
     enabled: since !== undefined,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -305,6 +334,8 @@ export function useIncomingRequests(roomId: string, ownerSessionId: string | nul
 
   return useQuery({
     queryKey: roomKeys.incoming(roomId),
+    // Kept fresh by broadcasts; one missed in the background is read again on return.
+    refetchOnWindowFocus: 'always',
     enabled: ownerSessionId !== null,
     queryFn: async () => {
       const { data, error } = await supabase

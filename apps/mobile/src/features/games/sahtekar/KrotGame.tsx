@@ -42,6 +42,7 @@ import { KROT as KR, KROT_TYPE as KTY, krotTimer } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH, risoDeck } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
   Buddy,
@@ -295,28 +296,8 @@ function Page({ children, testID }: { children: ReactNode; testID: string }) {
 // The server's clock: when the phase's time is up any phone moves it on (sahtekar/advance,
 // idempotent; its failure is not felt); while the phase stays, again every few seconds.
 function useAdvance(roomId: string, state: SahtekarGameState) {
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    const ask = () =>
-      void sahtekarApi
-        .advance(roomId)
-        .catch(() => undefined)
-        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-    let again: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(
-      () => {
-        ask();
-        again = setInterval(ask, ADVANCE_AGAIN_MS);
-      },
-      Math.max(0, Date.parse(state.endsAt) - Date.now()),
-    );
-    return () => {
-      clearTimeout(first);
-      clearInterval(again);
-    };
-  }, [roomId, state.step, state.endsAt, queryClient]);
+  useAdvanceClock(roomId, state.endsAt, state.step, () => sahtekarApi.advance(roomId));
 }
-const ADVANCE_AGAIN_MS = 2500;
 
 // What only this phone may know of its role (sahtekar/view, rule 3), kept for the game and this
 // table session: a player's word, an impostor's category, a watcher's word and impostors. Whoever

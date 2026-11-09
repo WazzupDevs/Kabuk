@@ -34,6 +34,7 @@ import { RISO as R } from '@/theme/riso';
 import { SPRENGJA as S, SPRENGJA_TYPE as ST, sprengjaRing } from '@/theme/sprengja';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import { ChatRound, Deck, Face, type Faces, GameTopBar, nameOf } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
@@ -282,30 +283,10 @@ function usePoll(roomId: string, state: SprengjaState, me: string) {
 // Tur sonu's time: when it is up any phone moves it on (sprengja/advance, idempotent; its failure
 // is not felt); while it stays, again every few seconds.
 function useAdvance(roomId: string, state: SprengjaState) {
-  const queryClient = useQueryClient();
-  const endsAt = state.phase === 'summary' ? state.endsAt : null;
-  useEffect(() => {
-    if (!endsAt) return undefined;
-    const ask = () =>
-      void sprengjaApi
-        .advance(roomId)
-        .catch(() => undefined)
-        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-    let again: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(
-      () => {
-        ask();
-        again = setInterval(ask, ADVANCE_AGAIN_MS);
-      },
-      Math.max(0, Date.parse(endsAt) - Date.now()),
-    );
-    return () => {
-      clearTimeout(first);
-      clearInterval(again);
-    };
-  }, [roomId, state.step, endsAt, queryClient]);
+  useAdvanceClock(roomId, state.phase === 'summary' ? state.endsAt : null, state.step, () =>
+    sprengjaApi.advance(roomId),
+  );
 }
-const ADVANCE_AGAIN_MS = 2500;
 
 // Whether the server's `at` has come (the starter's 30 idle seconds, never shown): false until
 // then, true from that moment. The server checks again (too_soon).
