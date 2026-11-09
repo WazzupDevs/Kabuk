@@ -6,7 +6,9 @@ import {
   checkDisplayName,
   isLegacyPhotoPath,
   isPhotoPath,
+  newCoverPath,
   newPhotoPath,
+  uploadPathsOf,
 } from './profile.ts';
 
 const terms = prepareTerms(['siktir', 'göt']);
@@ -76,5 +78,24 @@ describe('photo paths', () => {
     expect(isLegacyPhotoPath(`${publicId}/${uuid}.jpg`)).toBe(true);
     expect(isLegacyPhotoPath(`p/${uuid}.jpg`)).toBe(false);
     expect(isLegacyPhotoPath(`${publicId}/../${uuid}.jpg`)).toBe(false);
+  });
+});
+
+describe('uploadPathsOf', () => {
+  const uuid = '0b0c4f1e-3c1d-4a2b-9e8f-1a2b3c4d5e6f';
+  it('takes only photo and cover paths of the kept entries', () => {
+    const cover = newCoverPath(uuid);
+    expect(
+      uploadPathsOf([
+        { path: `p/${uuid}.jpg`, at: '2026-11-09T10:00:00Z' },
+        { path: cover, at: '2026-11-09T10:00:00Z' },
+        { path: `../${uuid}.jpg` },
+        { path: 3 },
+        null,
+        'p/x.jpg',
+      ]),
+    ).toEqual([`p/${uuid}.jpg`, cover]);
+    expect(uploadPathsOf(null)).toEqual([]);
+    expect(uploadPathsOf({ path: `p/${uuid}.jpg` })).toEqual([]);
   });
 });

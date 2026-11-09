@@ -19,7 +19,7 @@ import type {
 import { MIN_MESSAGE_INTERVAL_MS, prepareMessage } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
-import { toReaction } from '../_shared/pure/reactions.ts';
+import { REACTION_RATE, toReaction } from '../_shared/pure/reactions.ts';
 import { BROADCAST, messagesChannel } from '../_shared/pure/rooms.ts';
 
 // A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
@@ -58,6 +58,13 @@ Deno.serve(
     }
 
     if (body.action === 'react') {
+      // B4: one reaction budget for the table chat and DMs, asked in its own call (reaction_rate).
+      const limited = await db.rpc('reaction_rate_hit', {
+        target_user_id: user.id,
+        window_seconds: REACTION_RATE.windowSeconds,
+        window_max: REACTION_RATE.windowMax,
+      });
+      if (limited.error) throw dbError('reaction_rate_hit', limited.error);
       const { data, error } = await db.rpc('chat_react', {
         target_user_id: user.id,
         target_message_id: body.messageId,

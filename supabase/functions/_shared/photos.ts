@@ -1,16 +1,18 @@
 import type { Db } from './auth.ts';
 import { deviceReachableUrl } from './pure/devProject.ts';
 import { cachedUrl, type PhotoUrlCache, remember, SERVER_REUSE_MS } from './pure/photoUrlCache.ts';
-import { PHOTO_BUCKET, PHOTO_URL_SECONDS } from './pure/profile.ts';
+import { PHOTO_BUCKET, PHOTO_URL_SECONDS, uploadPathsOf } from './pure/profile.ts';
 
-// Deletes every profile photo of an account (account deletion and ban), the cover too: the current one, an
-// upload that was never committed, and anything left in the folder of photos from before random
-// paths ({public_id}/). Storage objects are not removed by foreign keys, so they go explicitly,
+// Deletes every profile photo of an account (account deletion and ban), the cover too: the current
+// one, an upload that was never committed, every path an upload URL was issued for (upload_paths),
+// and anything left in the folder of photos from before random paths ({public_id}/). Storage objects are not removed by foreign keys, so they go explicitly,
 // before the account (the profile row names the files).
 export async function deleteProfilePhotos(db: Db, userId: string): Promise<void> {
   const { data: p, error } = await db
     .from('profiles')
-    .select('public_id, photo_path, photo_pending_path, cover_path, cover_pending_path')
+    .select(
+      'public_id, photo_path, photo_pending_path, cover_path, cover_pending_path, upload_paths',
+    )
     .eq('id', userId)
     .maybeSingle();
   if (error) throw new Error(`profiles read failed (${error.code})`);
@@ -19,11 +21,14 @@ export async function deleteProfilePhotos(db: Db, userId: string): Promise<void>
   const legacy = await bucket.list(p.public_id, { limit: 1000 });
   if (legacy.error) throw new Error(`storage list failed (${legacy.error.message})`);
   const files = [
-    p.photo_path,
-    p.photo_pending_path,
-    p.cover_path,
-    p.cover_pending_path,
-    ...legacy.data.map((f) => `${p.public_id}/${f.name}`),
+    ...new Set([
+      p.photo_path,
+      p.photo_pending_path,
+      p.cover_path,
+      p.cover_pending_path,
+      ...uploadPathsOf(p.upload_paths),
+      ...legacy.data.map((f) => `${p.public_id}/${f.name}`),
+    ]),
   ].filter((f): f is string => !!f);
   if (files.length === 0) return;
   const removed = await bucket.remove(files);

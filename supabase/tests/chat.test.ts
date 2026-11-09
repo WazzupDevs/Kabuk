@@ -328,6 +328,26 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
       await Promise.all([holder.end(), reacting.end()]);
     }
   });
+
+  // B4: ten reactions per ten seconds per person (table chat and DMs together, reaction_rate).
+  it('limits reactions per person', async () => {
+    const { owner, guest, roomId } = await roomWithGuest();
+    const messageId = (
+      (await invoke(owner, 'chat', { action: 'send', roomId, body: 'selam' })).body as {
+        messageId: string;
+      }
+    ).messageId;
+    for (let i = 0; i < 10; i++) {
+      expect(await react(guest, messageId, i % 2 === 0 ? 'begen' : null)).toEqual(OK);
+    }
+    expect(await react(guest, messageId, 'ask')).toEqual({
+      status: 429,
+      body: errorBody('rate_limited'),
+    });
+    expect(await react(owner, messageId, 'ask')).toEqual(OK);
+    await sql`update public.reaction_rate set window_started_at = now() - interval '11 seconds'`;
+    expect(await react(guest, messageId, 'ask')).toEqual(OK);
+  });
 });
 
 describe('safety/report', () => {
@@ -623,6 +643,8 @@ describe('cleanup jobs', () => {
     const jobs =
       await sql`select jobname, schedule from cron.job where jobname like 'delete-old-%' order by jobname`;
     expect(jobs.map((j) => [j.jobname, j.schedule])).toEqual([
+      // The PostHog deletion queue (account.test.ts checks what it deletes).
+      ['delete-old-analytics-deletions', '41 3 * * *'],
       ['delete-old-messages', '0 * * * *'],
       ['delete-old-reports', '0 * * * *'],
       // The venue chat's own job (venueChat.test.ts checks its command).

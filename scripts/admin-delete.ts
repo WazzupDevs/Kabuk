@@ -7,7 +7,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from '../supabase/functions/_shared/pure/database.ts';
-import { deleteAccount } from './admin/account.ts';
+import { deleteAccount, forgetAnalyticsDeletion } from './admin/account.ts';
 import { deletePosthogPerson, isUserId } from './admin/ban.ts';
 
 function env(name: string): string {
@@ -28,4 +28,7 @@ const admin = createClient<Database>(env('SUPABASE_URL'), env('SUPABASE_SECRET_K
 
 await deleteAccount(admin, userId);
 console.log(`Deleted ${userId} on ${env('SUPABASE_URL')}`);
-if (await deletePosthogPerson(userId, process.env)) console.log('Deleted the PostHog person');
+if (await deletePosthogPerson(userId, process.env)) {
+  await forgetAnalyticsDeletion(admin, userId);
+  console.log('Deleted the PostHog person');
+}
