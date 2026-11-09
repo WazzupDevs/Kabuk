@@ -122,9 +122,14 @@ export function venueChatChannel(venueId: string): string {
   return `venue_chat:${venueId}`;
 }
 
+// A new message: the reader reads what came after its newest message (venue-chat/page `after`).
 export const VENUE_CHAT_BROADCAST = 'venue_chat' as const;
 // A reaction moved (§21.3); no data, the reader reads the page again.
 export const VENUE_CHAT_REACTION_BROADCAST = 'venue_chat_reaction' as const;
+// A message went (its sender deleted it, or reports hid it); no data, the reader reads the page
+// again. Sent with VENUE_CHAT_BROADCAST for the apps before `after`, which read the page on it.
+export const VENUE_CHAT_REMOVED_BROADCAST = 'venue_chat_removed' as const;
+export const VENUE_CHAT_REMOVED_EVENTS = [VENUE_CHAT_BROADCAST, VENUE_CHAT_REMOVED_BROADCAST];
 
 // The venue chat card's dot (docs/SPEC_V4.md K-12): it lights only while the chat has a message from
 // the last 10 minutes.

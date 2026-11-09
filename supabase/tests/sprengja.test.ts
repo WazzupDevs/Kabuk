@@ -725,11 +725,12 @@ describe('the clock (§4.6.8)', () => {
     SLOW,
   );
 
-  it('creates the job switched off', async () => {
+  // Switched on by the migrations (D6); the tests pause every job (globalSetup.ts).
+  it('schedules the job every second', async () => {
     const [job] = await sql`
-      select schedule, active, command from cron.job where jobname = 'sprengja-explode'
+      select schedule, command from cron.job where jobname = 'sprengja-explode'
     `;
-    expect(job).toMatchObject({ schedule: '1 seconds', active: false });
+    expect(job).toMatchObject({ schedule: '1 seconds' });
     expect(job?.command).toContain('private.sprengja_explode_due()');
   });
 });

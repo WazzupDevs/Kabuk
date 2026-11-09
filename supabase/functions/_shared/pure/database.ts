@@ -5408,6 +5408,7 @@ export type Database = {
       };
       venue_chat_page_for: {
         Args: {
+          after?: string;
           before?: string;
           page_size?: number;
           target_user_id: string;

@@ -18,7 +18,11 @@ import {
   type ReportReason,
 } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
-import { VENUE_CHAT, VENUE_CHAT_BROADCAST } from '../_shared/pure/venueChat.ts';
+import {
+  VENUE_CHAT,
+  VENUE_CHAT_REMOVED_BROADCAST,
+  VENUE_CHAT_REMOVED_EVENTS,
+} from '../_shared/pure/venueChat.ts';
 
 const reason = z.enum(REPORT_REASONS);
 // A person met in the game flow (a phone in the room, a history row) can also be reported for a
@@ -112,7 +116,7 @@ async function reportVenueChat(userId: string, messageId: string, why: ReportRea
     if (msg.error) throw dbError('venue_chat_messages', msg.error);
     const venueId = msg.data[0]?.venue_id;
     // Every campus of the chat hears it (docs/SPEC_V4.md §4.Q).
-    if (venueId) inBackground(broadcastVenueChat(db, venueId, VENUE_CHAT_BROADCAST));
+    if (venueId) inBackground(broadcastVenueChat(db, venueId, VENUE_CHAT_REMOVED_EVENTS));
   }
 }
 
@@ -252,6 +256,17 @@ Deno.serve(
         target_message_id: body.venueChatMessageId,
       });
       if (error) throw dbError('safety_block_venue_chat', error);
+      // The blocked person's phone drops the blocker's messages it shows (D5: a new message no
+      // longer reads the whole page). Data-free, to the whole venue, whatever the block found.
+      const msg = await db
+        .from('venue_chat_messages')
+        .select('venue_id')
+        .eq('id', body.venueChatMessageId);
+      if (msg.error) throw dbError('venue_chat_messages', msg.error);
+      const venueId = msg.data[0]?.venue_id;
+      if (venueId) {
+        inBackground(broadcastVenueChat(db, venueId, VENUE_CHAT_REMOVED_BROADCAST));
+      }
       return { ok: true };
     }
 
