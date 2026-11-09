@@ -200,7 +200,6 @@ export function useRoomChatList(
     const set = setBalloonOf(seat.look);
     return set ? SET_BALLOONS[set] : null;
   };
-  const { scheme } = useTheme();
   const list = chat.messages.data ? chat.older.rows : [];
   const extras = chat.extras.data;
   // The quote of a message on its way, from the loaded list.
