@@ -37,6 +37,7 @@ import { KROT, krotTimer } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
   Buddy,
@@ -324,29 +325,8 @@ function KauphollScreens({
 // not felt); while the phase stays (an early advance answers `unchanged`), again every few seconds.
 // A time pulled back (the last one waited for left) starts it again (E-5).
 function useAdvance(roomId: string, state: KauphollTable) {
-  const queryClient = useQueryClient();
-  const { step, endsAt } = state;
-  useEffect(() => {
-    const ask = () =>
-      void kauphollApi
-        .advance(roomId, step)
-        .catch(() => undefined)
-        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-    let again: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(
-      () => {
-        ask();
-        again = setInterval(ask, ADVANCE_AGAIN_MS);
-      },
-      Math.max(0, Date.parse(endsAt) - Date.now()),
-    );
-    return () => {
-      clearTimeout(first);
-      clearInterval(again);
-    };
-  }, [roomId, step, endsAt, queryClient]);
+  useAdvanceClock(roomId, state.endsAt, state.step, () => kauphollApi.advance(roomId, state.step));
 }
-const ADVANCE_AGAIN_MS = 2500;
 
 // One scope's sending (kauphollView → Lane): at most one request on its way, the last change
 // waiting behind it. A press waits for the answer of the request that carries it. `seq_conflict`

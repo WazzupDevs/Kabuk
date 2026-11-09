@@ -49,6 +49,7 @@ import { krotTimer } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
   Buddy,
@@ -291,28 +292,8 @@ function Page({ children, testID }: { children: ReactNode; testID: string }) {
 // The server's clock: when the phase's time is up any phone moves it on (kibrit/advance,
 // idempotent; its failure is not felt); while the phase stays, again every few seconds.
 function useAdvance(roomId: string, state: KibritState) {
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    const ask = () =>
-      void kibritApi
-        .advance(roomId)
-        .catch(() => undefined)
-        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-    let again: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(
-      () => {
-        ask();
-        again = setInterval(ask, ADVANCE_AGAIN_MS);
-      },
-      Math.max(0, Date.parse(state.endsAt) - Date.now()),
-    );
-    return () => {
-      clearTimeout(first);
-      clearInterval(again);
-    };
-  }, [roomId, state.step, state.endsAt, queryClient]);
+  useAdvanceClock(roomId, state.endsAt, state.step, () => kibritApi.advance(roomId));
 }
-const ADVANCE_AGAIN_MS = 2500;
 
 // This phone's own paper and vote in the step (kibrit/view), only while it writes or votes and is
 // still in the game. `rev` continues from the server's (paperRev, voteRev): the app reopened or

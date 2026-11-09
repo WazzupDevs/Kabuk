@@ -28,6 +28,7 @@ import { gradientStyle } from '@/theme/gradient';
 import { MOON_SVG, SUN_SVG } from '@/theme/vampir';
 import { type ScenePhase } from '@/theme/vampirScene';
 import { scaleType, TABLE, TABLE_INK as INK, TABLE_SHADOW, TABLE_TYPE } from '@/theme/vampirTable';
+import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import { DialNumber } from './Dial';
 import { PeekRole } from './RoleCard';
@@ -92,28 +93,8 @@ function useView(roomId: string, state: VampirState) {
 // idempotent); while the phase stays, again every few seconds (a phone's clock a little ahead
 // asks before the server's time is up). Nothing on the screen counts, so nothing draws again.
 function useAdvance(roomId: string, state: VampirState) {
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    const ask = () =>
-      void vampirApi
-        .advance(roomId)
-        .catch(() => undefined)
-        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-    let again: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(
-      () => {
-        ask();
-        again = setInterval(ask, ADVANCE_AGAIN_MS);
-      },
-      Math.max(0, Date.parse(state.endsAt) - Date.now()),
-    );
-    return () => {
-      clearTimeout(first);
-      clearInterval(again);
-    };
-  }, [roomId, state.step, state.endsAt, queryClient]);
+  useAdvanceClock(roomId, state.endsAt, state.step, () => vampirApi.advance(roomId));
 }
-const ADVANCE_AGAIN_MS = 2500;
 
 // The game at the capsule table (Aura v83 and v93: VampirRolKarti, VampirRolun, VampirGece,
 // VampirSabah, VampirGunduz, VampirOylama, VampirEleme, VampirOylama12, VampirOylamaDar,

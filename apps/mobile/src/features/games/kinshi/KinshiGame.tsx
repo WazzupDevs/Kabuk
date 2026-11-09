@@ -40,6 +40,7 @@ import {
 } from '@/theme/kinshi';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
   GameLobby,
@@ -297,28 +298,8 @@ function Page({
 // The server's clock: when the phase's time is up any phone moves it on (tabu/advance,
 // idempotent); while the phase stays, again every few seconds. Nothing on the screen counts here.
 function useAdvance(roomId: string, state: TabuState) {
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    const ask = () =>
-      void tabuApi
-        .advance(roomId)
-        .catch(() => undefined)
-        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-    let again: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(
-      () => {
-        ask();
-        again = setInterval(ask, ADVANCE_AGAIN_MS);
-      },
-      Math.max(0, Date.parse(state.endsAt) - Date.now()),
-    );
-    return () => {
-      clearTimeout(first);
-      clearInterval(again);
-    };
-  }, [roomId, state.step, state.endsAt, queryClient]);
+  useAdvanceClock(roomId, state.endsAt, state.step, () => tabuApi.advance(roomId));
 }
-const ADVANCE_AGAIN_MS = 2500;
 
 // The running turn's card list, only on the phones that may see it (rule 3: the describer, the
 // other team, the watchers); kept for the turn.
