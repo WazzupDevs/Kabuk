@@ -6,12 +6,22 @@ function env(name: string): string {
   return value;
 }
 
-export async function broadcast(topic: string, event: string): Promise<void> {
+export function broadcast(topic: string, event: string): Promise<void> {
+  return broadcastMany([{ topic, event }]);
+}
+
+// Several broadcasts in one request (D10: one POST, not one per topic).
+export async function broadcastMany(
+  messages: readonly { topic: string; event: string }[],
+): Promise<void> {
+  if (messages.length === 0) return;
   const key = env('SUPABASE_SERVICE_ROLE_KEY');
   const res = await fetch(`${env('SUPABASE_URL')}/realtime/v1/api/broadcast`, {
     method: 'POST',
     headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ messages: [{ topic, event, payload: {}, private: true }] }),
+    body: JSON.stringify({
+      messages: messages.map(({ topic, event }) => ({ topic, event, payload: {}, private: true })),
+    }),
   });
-  if (!res.ok) throw new Error(`broadcast ${event} failed (${res.status})`);
+  if (!res.ok) throw new Error(`broadcast ${messages[0]?.event} failed (${res.status})`);
 }
