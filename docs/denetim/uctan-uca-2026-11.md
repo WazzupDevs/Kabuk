@@ -4,6 +4,14 @@ Başlangıç: 9 Kasım 2026, main `4655c93`. Bu belge yalnızca denetimin durumu
 
 Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel veritabanından), **Ş** güçlü şüphe, **Ö** ölçüm gerekli, **İ** iyileştirme fırsatı, **K** ürün kararı gerekli.
 
+## Devir notu (9 Kasım 2026, M3 sonrası)
+
+- M1, M2 tamamlandı; M3'ün sonuç raporu hazır, proje sahibinin onayı bekleniyor. Sıradaki modül M4 (kimlik, oturum, kayıt, onboarding, hesap silme).
+- Bu belge ve kural 9 düzeltmesi `ccr-df254f82-l9oqbt` dalında; main'e girmedi, PR açılmadı. Yeni oturum önce bu dalı alır.
+- Açık kararlar: M3 planının onayı, sohbette hareketli avatar sınırı, M1-18 ve M1-23 (DM'de silme, düzenleme, okundu bilgisini kapatma, grup sohbetinde bildirim), eski aksesuarların akıbeti.
+- Yerel ortam: `pnpm install --frozen-lockfile`, `dockerd` elle başlar, `pnpm supabase start` ve `pnpm db:reset` çalışır (imaj adresleri Default ortamda izinli). `functions serve` yerelde açılmıyor (vekil sertifikası); entegrasyon sonucu CI'dan okunur. Veritabanı yetkileri ve Realtime doğrudan yerel yığında sınanabilir.
+- Çalışma kuralları: uygulama kodu, migration ve yapılandırma değişmez; yalnız bu belge güncellenir. Ajan olarak yalnız `performans` ve `guvenlik`, aynı anda bir tane; bulguları ana oturum koda karşı doğrular. Bağlam ağırlaşınca oturum kendiliğinden bu notu günceller ve proje sahibine yeni oturum promptunu verir (proje sahibinin isteği, 9 Kasım).
+
 ## Modüller
 
 | #   | Modül                                                           | Durum                                                  |
