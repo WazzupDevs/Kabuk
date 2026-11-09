@@ -419,6 +419,9 @@ export const venueChatApi = {
       venueId,
       ...(before ? { before } : {}),
     }),
+  // `after`: what came from that moment on, newest first (a new message's broadcast; D5).
+  newer: (venueId: string, after: string) =>
+    invoke<VenueChatPageResponse>('venue-chat', { action: 'page', venueId, after }),
   // docs/SPEC_V4.md §4.D: a message goes with the check-in's identity; another one here is
   // identity_mismatch and nothing is written.
   // clientId (Grup 3, P5): the app's id for this message; "Tekrar dene" sends it again, and the

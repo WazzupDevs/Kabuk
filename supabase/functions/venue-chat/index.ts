@@ -35,6 +35,7 @@ import {
   VENUE_CHAT,
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
+  VENUE_CHAT_REMOVED_EVENTS,
 } from '../_shared/pure/venueChat.ts';
 
 // A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
@@ -62,6 +63,8 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
     action: z.literal('page'),
     venueId: z.uuid(),
     before: z.iso.datetime({ offset: true }).optional(),
+    // What came after the reader's newest message (D5): from that moment on, newest first.
+    after: z.iso.datetime({ offset: true }).optional(),
   }),
   z.object({ action: z.literal('delete'), messageId: z.uuid() }),
   z.object({ action: z.literal('mute'), messageId: z.uuid() }),
@@ -71,7 +74,7 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
 
 const db = serviceClient();
 
-function broadcastChat(venueId: string, event: string): Promise<void> {
+function broadcastChat(venueId: string, event: string | readonly string[]): Promise<void> {
   return broadcastVenueChat(db, venueId, event);
 }
 
@@ -82,6 +85,7 @@ async function page(
   userId: string,
   venueId: string,
   before?: string,
+  after?: string,
 ): Promise<VenueChatPageResponse> {
   const table = await db
     .from('table_sessions')
@@ -96,6 +100,7 @@ async function page(
     target_user_id: userId,
     target_venue_id: venueId,
     ...(before ? { before } : {}),
+    ...(after ? { after } : {}),
     page_size: VENUE_CHAT.pageSize,
   });
   if (error) throw dbError('venue_chat_page_for', error);
@@ -136,15 +141,15 @@ Deno.serve(
     > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
-      if (body.action === 'page') return page(user.id, body.venueId, body.before);
+      if (body.action === 'page') return page(user.id, body.venueId, body.before, body.after);
       if (body.action === 'delete') {
         const { data, error } = await db.rpc('venue_chat_delete', {
           target_user_id: user.id,
           target_message_id: body.messageId,
         });
         if (error) throw dbError('venue_chat_delete', error);
-        // Data-free, like a new message: the others read the page again.
-        inBackground(broadcastChat(data, VENUE_CHAT_BROADCAST));
+        // Data-free: the others read the page again.
+        inBackground(broadcastChat(data, VENUE_CHAT_REMOVED_EVENTS));
         return { ok: true };
       }
       // Nothing goes to the muted person, no broadcast either (rule 5).

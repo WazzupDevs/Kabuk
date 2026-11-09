@@ -10,6 +10,7 @@ import {
   VENUE_CHAT,
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
+  VENUE_CHAT_REMOVED_BROADCAST,
   venueChatChannel,
 } from '../functions/_shared/pure/venueChat.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
@@ -87,11 +88,12 @@ async function page(client: Client) {
 }
 
 // The page as the app reads it (docs/SPEC_V3.md §7.2): through the function, photos signed.
-async function fnPage(client: Client, before?: string) {
+async function fnPage(client: Client, before?: string, after?: string) {
   const res = await invoke(client, 'venue-chat', {
     action: 'page',
     venueId: venue[V],
     ...(before ? { before } : {}),
+    ...(after ? { after } : {}),
   });
   expect(res.status, JSON.stringify(res.body)).toBe(200);
   return (res.body as VenueChatPageResponse).messages;
@@ -342,6 +344,53 @@ describe('venue chat: photos (venue-chat/page)', () => {
     expect(again.map(({ photoUrl, ...m }) => ({ ...m, photo: photoUrl !== null }))).toEqual(
       seen.map(({ photoUrl, ...m }) => ({ ...m, photo: photoUrl !== null })),
     );
+  });
+
+  it('reads only what came from a moment on (after, D5), with the page filters', async () => {
+    const { a, b, c } = await threeAtVenue();
+    await send(a, 'birinci');
+    const [first] = await fnPage(b);
+    await send(c, 'ikinci');
+    await send(a, 'üçüncü');
+    // From the moment of the newest message the reader has: that one too, then the new ones.
+    expect((await fnPage(b, undefined, first?.createdAt)).map((m) => m.body)).toEqual([
+      'üçüncü',
+      'ikinci',
+      'birinci',
+    ]);
+    // The muted stay out of it as of the page.
+    const second = (await fnPage(b)).find((m) => m.body === 'ikinci');
+    expect(await invoke(b, 'venue-chat', { action: 'mute', messageId: second?.id })).toEqual(
+      expect.objectContaining({ status: 200 }),
+    );
+    expect((await fnPage(b, undefined, first?.createdAt)).map((m) => m.body)).toEqual([
+      'üçüncü',
+      'birinci',
+    ]);
+  });
+
+  it('tells the venue a message went with venue_chat_removed, and venue_chat for older apps', async () => {
+    const { a, b } = await threeAtVenue();
+    const messageId = (await send(a, 'silinecek')).body.messageId;
+    const heard = new Set<string>();
+    const channel = b.channel(venueChatChannel(venue[V] ?? ''), { config: { private: true } });
+    await new Promise<void>((resolve, reject) => {
+      channel
+        .on('broadcast', { event: '*' }, (msg: { event: string }) => heard.add(msg.event))
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') resolve();
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') reject(new Error(status));
+        });
+    });
+    try {
+      expect(await invoke(a, 'venue-chat', { action: 'delete', messageId })).toEqual(OK);
+      await expect
+        .poll(() => [...heard].sort(), { timeout: 8000 })
+        .toEqual([VENUE_CHAT_BROADCAST, VENUE_CHAT_REMOVED_BROADCAST]);
+    } finally {
+      await b.removeChannel(channel);
+    }
+    expect(await fnPage(b)).toEqual([]);
   });
 
   it('gives no photo while it is hidden, and nothing without a live table at the venue', async () => {

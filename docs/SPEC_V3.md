@@ -407,7 +407,7 @@ Gerekçeler `docs/arsiv/DECISIONS.md` → "Tabu modları (v3 adım 4)".
   - `id`, `venue_id`, `session_id` (masa oturumu → `table_sessions` on delete cascade), `sender_user_id` (→ `auth.users` on delete cascade; **istemciye kapalı**).
   - `sender_alias`, `profiled boolean`, `body` (1–200), `created_at`, `hidden_at timestamptz null`.
 - **`venue_chat_reports`:** `message_id` → `venue_chat_messages` on delete cascade, `reporter_user_id` (istemciye kapalı), `created_at`; primary key `(message_id, reporter_user_id)`.
-- **Silme:** Mesajlar 24 saatte silinir (saatlik cron). Şikayet kopyası `reports`'ta 30 gün kalır (bugünkü cron).
+- **Silme:** Mesajlar 24 saatte silinir (saatlik cron). Masanın oyun satırları (`game_events`, `game_secrets`, `tabu_turns`, `room_used_cards`) ve `rooms.game_state` masa kapandıktan 24 saat sonra, katılma istekleri ve masa davetleri yazıldıktan 24 saat sonra silinir; oyun geçmişi ve sonuçlar kalır (proje sahibinin kararı, 9 Kasım; canlı öncesi denetim D9). Şikayet kopyası `reports`'ta 30 gün kalır (bugünkü cron).
 - **Okuma:** Tablo okumasıyla değil, `venue-chat/page { venueId, before? }` ile (adım 9, saha testi: profilli mesajda fotoğraf görünmüyordu). Fonksiyon service role'e kapalı `venue_chat_page_for(user, venue_id, before?)` RPC'sini çağırır, profilli mesajların fotoğraflarını imzalar (1 saat, `dm/inbox` gibi) ve yolu değil imzalı URL'i döner. Eski build'ler için `venue_chat_page(venue_id, before?)` (security definer, yalnızca okur, `set search_path = ''`, fotoğrafsız) durur. Her mesaj için döner:
   - `id`, `profiled`, `senderAlias` (**yalnızca anonim mesajda**), `displayName` ve `photoUrl` (yalnızca profilli mesajda; fotoğraf yoksa ya da gizlenmişse `null`), `body`, `createdAt`, `fromMe`.
   - **Fotoğraf:** profilli mesajın görünen adını gören kitleye, yani o an mekanda aktif masası olanlara gider (kural 4: profil mesaj üzerinden aynı kitleye açılır). **Anonim mesajda fotoğraf asla gitmez:** RPC anonim mesajda `photo_path` döndürmez; entegrasyon testi hem RPC'yi hem fonksiyon yanıtını denetler.
@@ -429,7 +429,7 @@ Gerekçeler `docs/arsiv/DECISIONS.md` → "Tabu modları (v3 adım 4)".
   1. Aktif masayı doğrular.
   2. `profanity.ts` ile süzer; küfürlü mesaj reddedilir, maskelenmez (kural 7'ye mekan sohbeti eklenir).
   3. Hız sınırı (proje sahibinin kararı, 8 Kasım: hissedilmez; yalnız taşma koruması): hesap başına yarım saniyede 1 ve 10 saniyede 20 mesaj; masa sohbetinde yarım saniyede 1. Takılan mesajı telefon hata göstermeden kendiliğinden yeniden gönderir. Değerler `pure/venueChat.ts` ve `pure/chat.ts`'te tek kaynaktır; semt sohbeti mekan sohbetinin değerlerini kullanır.
-  4. Mesajı yazar ve `venue_chat:{venue_id}` kanalına veri içermeyen `venue_chat` yayını yapar.
+  4. Mesajı yazar ve `venue_chat:{venue_id}` kanalına veri içermeyen `venue_chat` yayını yapar. Telefon yalnızca elindeki en yeni mesajdan sonrakileri okur (`venue-chat/page { after }`); bir sayfa dolusu yeni mesaj gelirse sayfayı baştan okur (canlı öncesi denetim D5).
 - **Push yoktur.**
 - **Şikayet:** `safety/report { target: 'venue_chat', messageId, reason }`.
   - `reports`'a şikayet edilen mesajla birlikte o mekanın son 50 görünür mesajının kopyası yazılır (`target_type = 'venue_chat'`; `messages_snapshot`). Kopya yalnızca sunucudadır (`reports` istemciye kapalı); gönderen masa adını, profilliyse görünen adı ve zamanı içerir.
@@ -437,7 +437,7 @@ Gerekçeler `docs/arsiv/DECISIONS.md` → "Tabu modları (v3 adım 4)".
 - **Otomatik gizleme:** Bir mesaj **3 ayrı hesaptan** şikayet alınca `hidden_at` dolar ve mesaj hiç kimseye verilmez (gönderen hariç).
   - Aynı hesabın tekrar şikayeti ya da kendi mesajını şikayet etmesi sayılmaz.
   - Kontrol aynı transaction'da yapılır; eşik `pure/venueChat.ts`'te durur.
-  - Gizlenen mesaj için yayın yapılır; istemciler yeniden okur.
+  - Gizlenen ve silinen mesaj için `venue_chat_removed` yayını yapılır (eski uygulamalar için `venue_chat` de); engellemede yalnız `venue_chat_removed`; istemciler sayfayı yeniden okur.
 - **Engelleme:** `safety/block { venueChatMessageId, report?: reason }` gönderenin hesabını engeller. Engellenenler listesinde anonim mesajdan gelen engel masa adıyla, profilli mesajdan gelen engel **görünen adla** durur (`blocked_alias` bu adı taşır; masa adı yazılmaz). Engel iki yönlüdür: iki taraf birbirinin mesajlarını görmez.
 
 ### 7.5 Profil ve arkadaşlık isteği

@@ -1,12 +1,15 @@
 import {
+  VENUE_CHAT,
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
+  VENUE_CHAT_REMOVED_BROADCAST,
   type VenueChatMessage,
   type CheckinIdentity,
   venueChatChannel,
   withVenueChatExtras,
 } from '@shared/venueChat.ts';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { VenueChatPageResponse } from '@shared/api/venueChat.ts';
+import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
@@ -29,21 +32,23 @@ export type VenueChatPage = {
   identity: CheckinIdentity | null;
 };
 
-// The venue chat, oldest first for the screen (venue-chat/page returns newest first, with the
-// photos of profiled messages signed), and this check-in's identity (docs/SPEC_V4.md §4.D).
-// Empty without a live table at the venue.
+// venue-chat/page returns newest first, with the photos of profiled messages signed; the screen
+// draws oldest first.
+function oldestFirst(page: VenueChatPageResponse): VenueChatMessage[] {
+  return page.messages
+    .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
+    .reverse();
+}
+
+// The venue chat, oldest first, and this check-in's identity (docs/SPEC_V4.md §4.D). Empty without
+// a live table at the venue.
 function venueChatPage(venueId: string | undefined, sessionId: string | undefined) {
   return {
     queryKey: venueChatKeys.page(venueId ?? '', sessionId ?? ''),
     enabled: venueId !== undefined && sessionId !== undefined,
     queryFn: async (): Promise<VenueChatPage> => {
       const page = await venueChatApi.page(venueId ?? '');
-      return {
-        messages: page.messages
-          .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
-          .reverse(),
-        identity: page.identity,
-      };
+      return { messages: oldestFirst(page), identity: page.identity };
     },
   };
 }
@@ -53,21 +58,76 @@ export async function readVenueChatOlder(
   venueId: string,
   before: string,
 ): Promise<VenueChatMessage[]> {
-  const page = await venueChatApi.page(venueId, before);
-  return page.messages
-    .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
-    .reverse();
+  return oldestFirst(await venueChatApi.page(venueId, before));
 }
 
-// The venue chat screen's page: read again on the data-free `venue_chat` broadcast and when a
-// reaction moved (docs/SPEC_V3.md §21.3). Only the chat screen does this.
+// A new message (D5): only what came after the page's newest message is read and put after it,
+// not the whole page again. A full page of new ones may leave a gap: then the page is read again.
+// Past LIVE_MAX the page keeps its newest messages; the screen's older pages reach the rest. One
+// read at a time per page; a broadcast heard meanwhile reads once more after it.
+const LIVE_MAX = VENUE_CHAT.pageSize * 4;
+const newerReads = new Map<string, { again: boolean }>();
+
+export function readVenueChatNewer(queryClient: QueryClient, venueId: string, sessionId: string) {
+  const queryKey = venueChatKeys.page(venueId, sessionId);
+  const id = queryKey.join(':');
+  const running = newerReads.get(id);
+  if (running) {
+    running.again = true;
+    return;
+  }
+  const state = { again: false };
+  newerReads.set(id, state);
+  const once = async () => {
+    const last = queryClient.getQueryData<VenueChatPage>(queryKey)?.messages.at(-1);
+    if (!last) {
+      await queryClient.invalidateQueries({ queryKey, exact: true });
+      return;
+    }
+    const page = await venueChatApi.newer(venueId, last.createdAt);
+    // A full answer without the newest message the page had: there may be more between.
+    if (
+      page.messages.length >= VENUE_CHAT.pageSize &&
+      !page.messages.some((m) => m.id === last.id)
+    ) {
+      await queryClient.invalidateQueries({ queryKey, exact: true });
+      return;
+    }
+    const fresh = oldestFirst(page);
+    queryClient.setQueryData<VenueChatPage>(queryKey, (old) => {
+      if (!old) return old;
+      const known = new Set(old.messages.map((m) => m.id));
+      const added = fresh.filter((m) => !known.has(m.id));
+      if (added.length === 0) return { ...old, identity: page.identity };
+      return { messages: [...old.messages, ...added].slice(-LIVE_MAX), identity: page.identity };
+    });
+  };
+  const run = async () => {
+    do {
+      state.again = false;
+      // A failed read waits for the next broadcast.
+      await once().catch(() => undefined);
+    } while (state.again);
+    newerReads.delete(id);
+  };
+  void run();
+}
+
+// The venue chat screen's page: a new message on the data-free `venue_chat` broadcast, the page
+// again when a reaction moved (docs/SPEC_V3.md §21.3) or a message went. Only the chat screen does
+// this.
 export function useVenueChat(venueId: string | undefined, sessionId: string | undefined) {
   const queryClient = useQueryClient();
-  const refetch = useCallback(() => {
+  const reread = useCallback(() => {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
   }, [queryClient, venueId]);
-  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, refetch);
-  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_REACTION_BROADCAST, refetch);
+  const newer = useCallback(() => {
+    if (venueId && sessionId) readVenueChatNewer(queryClient, venueId, sessionId);
+  }, [queryClient, venueId, sessionId]);
+  const channel = venueId ? venueChatChannel(venueId) : null;
+  useBroadcast(channel, VENUE_CHAT_BROADCAST, newer);
+  useBroadcast(channel, VENUE_CHAT_REACTION_BROADCAST, reread);
+  useBroadcast(channel, VENUE_CHAT_REMOVED_BROADCAST, reread);
 
   return useQuery(venueChatPage(venueId, sessionId));
 }
@@ -100,36 +160,52 @@ export function useVenueChatCard(venueId: string | undefined, sessionId: string 
   const queryClient = useQueryClient();
   const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: CARD_STALE_MS });
   const focused = useIsFocused();
-  const missed = useRef(false);
+  const missed = useRef<'new' | 'all' | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const whole = useRef(false);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
     },
     [],
   );
-  const read = useCallback(() => {
-    if (timer.current || !venueId || !sessionId) return;
-    timer.current = setTimeout(
-      () => {
-        timer.current = null;
-        void queryClient.invalidateQueries({
-          queryKey: venueChatKeys.page(venueId, sessionId),
-          exact: true,
-        });
-      },
-      CARD_READ_AFTER_MS + Math.random() * CARD_READ_SPREAD_MS,
-    );
-  }, [queryClient, venueId, sessionId]);
-  const heard = useCallback(() => {
-    if (focused) read();
-    else missed.current = true;
-  }, [focused, read]);
-  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, heard);
+  // 'new': what came after the newest message (D5); 'all': the page again (a message went).
+  const read = useCallback(
+    (what: 'new' | 'all') => {
+      if (what === 'all') whole.current = true;
+      if (timer.current || !venueId || !sessionId) return;
+      timer.current = setTimeout(
+        () => {
+          timer.current = null;
+          const all = whole.current;
+          whole.current = false;
+          if (all) {
+            void queryClient.invalidateQueries({
+              queryKey: venueChatKeys.page(venueId, sessionId),
+              exact: true,
+            });
+          } else readVenueChatNewer(queryClient, venueId, sessionId);
+        },
+        CARD_READ_AFTER_MS + Math.random() * CARD_READ_SPREAD_MS,
+      );
+    },
+    [queryClient, venueId, sessionId],
+  );
+  const heard = useCallback(
+    (what: 'new' | 'all') => {
+      if (focused) read(what);
+      else if (missed.current !== 'all') missed.current = what;
+    },
+    [focused, read],
+  );
+  const channel = venueId ? venueChatChannel(venueId) : null;
+  useBroadcast(channel, VENUE_CHAT_BROADCAST, () => heard('new'));
+  useBroadcast(channel, VENUE_CHAT_REMOVED_BROADCAST, () => heard('all'));
   useEffect(() => {
-    if (!focused || !missed.current) return;
-    missed.current = false;
-    read();
+    const what = missed.current;
+    if (!focused || !what) return;
+    missed.current = null;
+    read(what);
   }, [focused, read]);
 
   const seenAt = useVenueChatSeen((s) => (sessionId ? s.seen[sessionId] : undefined));

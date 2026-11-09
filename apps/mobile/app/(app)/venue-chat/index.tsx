@@ -14,6 +14,7 @@ import {
   senderLabel,
   VENUE_CHAT,
   VENUE_CHAT_REACTION_BROADCAST,
+  VENUE_CHAT_REMOVED_BROADCAST,
   type VenueChatMessage,
   venueChatChannel,
 } from '@shared/venueChat.ts';
@@ -51,6 +52,7 @@ import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import {
+  readVenueChatNewer,
   readVenueChatOlder,
   useVenueChat,
   useVenueChatReactions,
@@ -119,10 +121,16 @@ function VenueChatScreenBody() {
     dated: (m: VenueChatMessage) => ({ id: m.id, at: m.createdAt }),
     read: (before: string) => readVenueChatOlder(venueId ?? '', before),
   });
-  // A reaction moved: on the older pages too (the newest page reads again in useVenueChat).
+  // A reaction moved or a message went: on the older pages too (the newest page reads again in
+  // useVenueChat).
   useBroadcast(
     venueId ? venueChatChannel(venueId) : null,
     VENUE_CHAT_REACTION_BROADCAST,
+    older.reread,
+  );
+  useBroadcast(
+    venueId ? venueChatChannel(venueId) : null,
+    VENUE_CHAT_REMOVED_BROADCAST,
     older.reread,
   );
   const messages = page.data ? older.rows : undefined;
@@ -162,7 +170,7 @@ function VenueChatScreenBody() {
       .then(({ messageId }) => {
         track('venue_chat_sent', { profiled: identity?.mode === 'profiled' });
         setSentIds((ids) => new Map(ids).set(m.localId, messageId));
-        refresh();
+        if (venueId && sessionId) readVenueChatNewer(queryClient, venueId, sessionId);
       })
       .catch((err: unknown) => {
         const errorCode = err instanceof ApiError ? err.code : null;

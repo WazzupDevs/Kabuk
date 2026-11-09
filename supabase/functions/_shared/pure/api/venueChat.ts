@@ -21,7 +21,8 @@ export type VenueChatRequest =
   | { action: 'react'; messageId: string; emoji: Reaction | null }
   // One page, newest first (§7.2): profiled messages carry their sender's photo, signed here. Deleted
   // messages and the identities the caller muted are left out (docs/SPEC_V4.md §4.D).
-  | { action: 'page'; venueId: string; before?: string }
+  // `after`: from that moment on (a new message's broadcast; canlı öncesi denetim D5).
+  | { action: 'page'; venueId: string; before?: string; after?: string }
   // The sender's own message, gone for everyone (§4.D); another's or a gone one is not_found.
   | { action: 'delete'; messageId: string }
   // The identity a visible message was written with: its anonymous or its profiled messages,

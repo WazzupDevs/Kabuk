@@ -663,10 +663,46 @@ describe('cleanup jobs', () => {
     expect(jobs.map((j) => [j.jobname, j.schedule])).toEqual([
       // The PostHog deletion queue (account.test.ts checks what it deletes).
       ['delete-old-analytics-deletions', '41 3 * * *'],
+      // A closed table's game rows, old requests and invites (D9; its own test below).
+      ['delete-old-game-rows', '23 * * * *'],
       ['delete-old-messages', '0 * * * *'],
       ['delete-old-reports', '0 * * * *'],
       // The venue chat's own job (venueChat.test.ts checks its command).
       ['delete-old-venue-chat', '17 * * * *'],
     ]);
+  });
+
+  it('deletes a closed table’s game rows, requests and invites a day on (D9)', async () => {
+    const { owner, roomId, ownerSession } = await roomWithGuest();
+    await invoke(owner, 'rooms', { action: 'end' });
+    await sql`
+      insert into public.game_events (room_id, session_id, type, payload)
+      values (${roomId}, ${ownerSession}, 'game_completed', '{}'::jsonb)
+    `;
+    await sql`
+      insert into public.game_secrets (room_id, game_no, concept, secret)
+      values (${roomId}, 1, 'sahtekar', '{}'::jsonb)
+    `;
+    await sql`update public.rooms set game_state = '{"gameNo": 1}'::jsonb where id = ${roomId}`;
+    const left = async () => {
+      const [row] = await sql`
+        select (select count(*)::int from public.game_events where room_id = ${roomId}) as events,
+               (select count(*)::int from public.game_secrets where room_id = ${roomId}) as secrets,
+               (select count(*)::int from public.join_requests where room_id = ${roomId}) as requests,
+               (select game_state from public.rooms where id = ${roomId}) as state
+      `;
+      return row;
+    };
+    const requests = (await left())?.requests as number;
+
+    await sql`update public.rooms set closed_at = now() - interval '23 hours' where id = ${roomId}`;
+    await sql`select private.delete_old_game_rows()`;
+    expect(await left()).toEqual({ events: 1, secrets: 1, requests, state: { gameNo: 1 } });
+
+    await sql`update public.rooms set closed_at = now() - interval '25 hours' where id = ${roomId}`;
+    await sql`update public.join_requests set created_at = now() - interval '25 hours',
+      expires_at = now() - interval '25 hours' where room_id = ${roomId}`;
+    await sql`select private.delete_old_game_rows()`;
+    expect(await left()).toEqual({ events: 0, secrets: 0, requests: 0, state: {} });
   });
 });
