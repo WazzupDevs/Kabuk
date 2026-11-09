@@ -70,9 +70,10 @@ begin
 end;
 $$;
 
--- 3. Bildirim sınırı: bir hesap saatte en çok 30, günde en çok 100 bildirim yazar (profil bildirimi
---    fotoğraf ve kapak kopyası taşır; sınırsız döngü tabloyu ve depolamayı şişirirdi). Fazlası
---    `rate_limited` alır; satır yazılmaz. Sayım kilitsiz okunur (kural 10'a yeni kilit girmez).
+-- 3. Bildirim sınırı: bir hesap saatte en çok 30, günde en çok 100 bildirim satırı yazar (profil
+--    bildirimi fotoğraf ve kapak kopyası taşır; sınırsız döngü tabloyu ve depolamayı şişirirdi).
+--    Fazlası sessizce yazılmaz: çağrı her zamanki yanıtı alır, aynı işlemdeki engel, arkadaşlıktan
+--    çıkarma, gizleme ve Kibrit işareti yine yapılır. Sayım kilitsiz okunur (kural 10'a kilit girmez).
 create index reports_reporter_created_idx on public.reports (reporter_id, created_at);
 
 create function private.report_rate_limit()
@@ -90,7 +91,7 @@ begin
   from public.reports
   where reporter_id = new.reporter_id and created_at > now() - interval '1 day';
   if last_hour >= 30 or last_day >= 100 then
-    raise exception 'rate_limited';
+    return null;
   end if;
   return new;
 end;
