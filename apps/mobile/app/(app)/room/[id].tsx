@@ -134,7 +134,7 @@ function TableScreenBody() {
 
   // The table joined another one (its owner's "Katıl", §4.E): it closed and the person sits at the
   // other table now, which opens in its place instead of Masa bitti (audit VEN-6).
-  const current = useCurrentRoom(checkIn.data?.id).data;
+  const current = useCurrentRoom(checkIn.data).data;
   const movedTo =
     room.data?.status === 'closed' &&
     current &&

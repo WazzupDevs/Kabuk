@@ -101,7 +101,7 @@ function VenueChatScreenBody() {
     markVenueChatSeen(sessionId);
     return () => markVenueChatSeen(sessionId);
   }, [sessionId]);
-  const currentRoom = useCurrentRoom(sessionId);
+  const currentRoom = useCurrentRoom(table.data);
   const identity = page.data?.identity ?? table.data?.identity ?? null;
   const photo = useOwnPhoto();
   const [sheet, setSheet] = useState<'options' | 'identity' | null>(null);
