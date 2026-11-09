@@ -35,18 +35,17 @@ Node 22, pnpm 10, Docker (yerel Supabase için). Supabase CLI ve Deno root devDe
 
 ## Yasal sayfalar (skall.world)
 
-Gizlilik politikası, KVKK metni, kullanım koşulları ve hesap silme talebi herkese açık statik sayfalardır; Play gizlilik politikası ve hesap silme için web bağlantısı ister. Kaynak `docs/legal/*.md`, çıktı `pnpm site:build` → `site/`. Sayfalar `https://skall.world/` altında Cloudflare Pages'ten yayınlanır (repo gizliyken de ücretsiz çalışır; GitHub Pages gizli repoda ücretli plan ister, `docs/decisions/yasal-sayfalar-skall-world.md`). Sayfalar taslaktır; her sayfada "Taslak, hukuki kontrol bekliyor" notu durur, hukuki kontrol bitince kaldırılır.
+`https://skall.world/` web sitesi ve yasal sayfalar tek yerden yayınlanır. Site `web/` klasöründedir (ana sayfa, 404, betikler, görseller; tasarımından geldiği gibi, Prettier ve ESLint dışında). Gizlilik politikası, KVKK metni, kullanım koşulları ve hesap silme talebi `docs/legal/*.md`'den üretilir; Play gizlilik politikası ve hesap silme için web bağlantısı ister. `pnpm site:build` ikisini `site/`'e koyar; yasal sayfaların listesi `yasal.html`'dir (sitenin altbilgisi ona bağlanır). Yayın Cloudflare'den, repo gizliyken de ücretsiz (`docs/decisions/yasal-sayfalar-skall-world.md`). Sayfalar taslaktır; her sayfada "Taslak, hukuki kontrol bekliyor" notu durur, hukuki kontrol bitince kaldırılır.
 
-1. Tek seferlik, Cloudflare paneli → **Workers & Pages → Create → Pages → Connect to Git**: `WazzupDevs/Kabuk`, dal `main`.
+1. Tek seferlik, Cloudflare paneli → **Workers & Pages → Create → Import a repository**: `WazzupDevs/Kabuk`, dal `main`. Proje adı `wrangler.jsonc` → `name` ile aynı (`skall-site`).
    - Build command: `pnpm install --frozen-lockfile && pnpm site:build`
-   - Build output directory: `site`
+   - Deploy command: `npx wrangler deploy` (ayarlar `wrangler.jsonc`'te: `site/` statik, bulunmayan adres `404.html`)
    - Ortam değişkeni: `NODE_VERSION` = `22`
-   - Yalnızca yasal sayfalar değişince derlesin: Settings → Builds → **Build watch paths** → Include: `docs/legal/*`, `scripts/build-site.ts`, `scripts/site/*`, `supabase/functions/_shared/pure/brand.ts`.
-   - Önizleme dalları kapalı: Settings → Builds → Preview deployments → **None**.
-2. **Custom domains → Set up a custom domain:** `skall.world`. Alan adı Cloudflare DNS'indeyse kayıt kendiliğinden eklenir; başka yerdeyse Cloudflare'in verdiği CNAME kaydını alan adının DNS'ine gir. E-posta (MX) kayıtlarına dokunulmaz.
-3. Adresler: `https://skall.world/` (dizin), `/gizlilik-politikasi.html`, `/kvkk-aydinlatma-metni.html`, `/kullanim-kosullari.html`, `/hesap-silme.html`.
+   - Yalnızca site değişince derlesin: Settings → Build → **Build watch paths** → Include: `web/*`, `docs/legal/*`, `scripts/build-site.ts`, `scripts/site/*`, `supabase/functions/_shared/pure/brand.ts`, `wrangler.jsonc`.
+2. İlk derleme yeşil olunca `….workers.dev` adresinde sitenin ve yasal sayfaların açıldığına bak. Sonra alan adını taşı: eski (elle yüklenmiş) projeden **Custom domains → skall.world → Remove**, hemen ardından yeni projede **Settings → Domains & Routes → Add → Custom domain → skall.world**. Eski projeyi ancak yeni adres açılınca sil. E-posta (MX) kayıtlarına dokunulmaz.
+3. Adresler: `https://skall.world/` (web sitesi), `/yasal.html` (yasal sayfalar), `/gizlilik-politikasi.html`, `/kvkk-aydinlatma-metni.html`, `/kullanim-kosullari.html`, `/hesap-silme.html`.
 4. EAS `preview` ve `production` ortamlarında `EXPO_PUBLIC_PRIVACY_URL` = `https://skall.world/gizlilik-politikasi.html`, sonra `eas update`.
-5. Yerelde bakmak için `pnpm site:build` ve `site/index.html`'i tarayıcıda aç.
+5. Yerelde bakmak için `pnpm site:build` ve `site/index.html`'i tarayıcıda aç. Site değişikliği: dosyalar `web/`'e, PR, birleşince Cloudflare kendisi yayınlar.
 
 - Eski adres (`https://wazzupdevs.github.io/Kabuk/`, `.github/workflows/pages.yml`) repo gizliye çevrilince kapanır. skall.world açılınca `pages.yml` silinir (yayın yapan workflow: proje sahibinin onayıyla) ve repo Settings → Pages kapatılır.
 

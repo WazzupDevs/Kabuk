@@ -16,6 +16,10 @@ export default defineConfig([
     'supabase/functions/_shared/pure/database.ts',
     // Design handoff files, kept exactly as the design session delivered them (as in .prettierignore).
     'docs/design/',
+    // The website (skall.world), as its design delivered it (as in .prettierignore).
+    'web/',
+    // `pnpm site:build`'s output (git-ignored).
+    'site/',
     // A copy of the capsule drawing library (src/theme/capsuleDrawing.test.ts).
     'apps/mobile/src/theme/capsuleDrawing.js',
   ]),
