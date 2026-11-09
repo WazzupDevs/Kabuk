@@ -6,22 +6,22 @@ Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel 
 
 ## Modüller
 
-| #   | Modül                                                           | Durum                                                 |
-| --- | --------------------------------------------------------------- | ----------------------------------------------------- |
-| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Tamamlandı (9 Kasım; ölçüm ve yerel entegrasyon açık) |
-| M2  | Realtime ve veri eşitleme                                       | Sonuç raporu hazır                                    |
-| M3  | Kapsül ve grafik, hediye paketleri                              | Başlamadı (ön bulgular)                               |
-| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Başlamadı                                             |
-| M5  | Check-in, konum, mekan, masa ve lobi                            | Başlamadı                                             |
-| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Başlamadı                                             |
-| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Başlamadı                                             |
-| M8  | Keşfet, harita, Semte Git                                       | Başlamadı                                             |
-| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Başlamadı                                             |
-| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Başlamadı                                             |
-| M11 | Veritabanı bütünü                                               | Başlamadı                                             |
-| M12 | Güvenlik bütünü                                                 | Başlamadı (ön doğrulama)                              |
-| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Başlamadı                                             |
-| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Başlamadı                                             |
+| #   | Modül                                                           | Durum                                                  |
+| --- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Tamamlandı (9 Kasım; ölçüm ve yerel entegrasyon açık)  |
+| M2  | Realtime ve veri eşitleme                                       | Tamamlandı (9 Kasım; M2-01 kararı: kural 9 düzeltildi) |
+| M3  | Kapsül ve grafik, hediye paketleri                              | Sonuç raporu hazır                                     |
+| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Başlamadı                                              |
+| M5  | Check-in, konum, mekan, masa ve lobi                            | Başlamadı                                              |
+| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Başlamadı                                              |
+| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Başlamadı                                              |
+| M8  | Keşfet, harita, Semte Git                                       | Başlamadı                                              |
+| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Başlamadı                                              |
+| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Başlamadı                                              |
+| M11 | Veritabanı bütünü                                               | Başlamadı                                              |
+| M12 | Güvenlik bütünü                                                 | Başlamadı (ön doğrulama)                               |
+| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Başlamadı                                              |
+| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Başlamadı                                              |
 
 Her modülde ayrıca bağımsız UX denetimi yapılır. M6 kapalı oyunları, bağlantı kopmasını, oyuncu ayrılmasını ve yeniden bağlanmayı da kapsar. M14 abonelik, ödeme, reklam ve hediye ekonomisinin bugünkü mimariye nasıl oturacağını kapsar.
 
@@ -235,3 +235,103 @@ Yerel Realtime sürümünün davranışıdır; barındırılan projede ayrıca d
 ### Ürün kararı
 
 - M2-01: kural 9'un metni düzeltilsin mi, yoksa masadan çıkarılan kişinin kanalı kimlik yenilemeyle gerçekten kapatılsın mı (Signum'daki yöntem; her çıkışta masadakiler yeniden abone olur).
+
+## M3: Kapsül ve grafik, hediye paketleri (9 Kasım)
+
+M2-01 kararı (proje sahibi): kanalı kodla kapatan mekanizma eklenmez; CLAUDE.md kural 9 düzeltildi, gerekçe `docs/decisions/realtime-yetki.md`.
+
+### Okunanlar
+
+- Ana oturum, tam: `FxSvg.tsx`, `CachedSvg.tsx`, `LayeredLook.tsx`, `LookAvatar.tsx`, `theme/capsuleFx.ts`, `capsuleLook.ts`, `features/capsule/CapsuleStage.tsx`, `OptionCarousel.tsx`, `features/profile/LivingLook.tsx`, SVG yaması, `supabase/functions/gifts` (açma ve durum), `gifts_open`.
+- `performans` ajanı, tam (ana iddiaları ana oturumda koda karşı doğrulandı): `app/(app)/gifts.tsx`, `features/gifts/*`, `profile/capsule.tsx`, `capsules.tsx`, `features/capsule/*`, `IdentityTicket.tsx`, `RingLook.tsx`, `aura/Buddy.tsx`, `RisoKanki.tsx`, `kit.tsx` döngüleri, `NativeShadow.tsx`, kapsülün kullanıldığı ekranların envanteri.
+- Yüzeysel: `theme/capsuleAccessories.ts` (189 KB çizim verisi; yapısı okundu, çizimler tek tek değil), `capsuleDrawing.js`, `modules/skall-glass` (M13'te), iOS davranışı (okunacak native kod yok).
+
+### Ölçüm (uygulamanın kendi `fxTree`'siyle, vitest; geçici test silindi)
+
+Tek aksesuar takılı kapsül (`lookPop`), 67 aksesuarın hepsi:
+
+| Tür      | Adet | Hareketli | Kare yöntemi kullanan | SVG görünümü (en çok) |
+| -------- | ---- | --------- | --------------------- | --------------------- |
+| Sıradan  | 12   | 0         | 0                     | 1                     |
+| Nadir    | 12   | 0         | 0                     | 1                     |
+| Destansı | 12   | 10        | 10                    | 19                    |
+| Efsanevi | 31   | 30        | 5                     | 79                    |
+
+- Kare yöntemi kullanmayan 25 hareketli aksesuar: 6–17 SVG görünümü, ortanca 9.
+- Kare yöntemi kullanan 15 aksesuar: Destansı takımların onu da 1 durağan ve 18 kare (19 görünüm, 18 hareketli katman); `ormanteni`, `geceteni` 27; `kunaikolyesi` 24; `neongozluk` 31; `gokkusagiatki` 79 (72 kare).
+- Her kare bütün grubu ve bütün tanımları yeniden içerir: `kistakimi` 19 görünümde 1.416 SVG öğesi ve 172 KB metin, `gokkusagiatki` 3.001 öğe ve 229 KB.
+- Avatar (`lookSvg`) ve kart (`lookCard`) çizimlerinde sayılar aynı (avatarda artı bir).
+- `fxTree` aksesuar başına 0,1–2,4 ms (bu makinede); darboğaz değil.
+- Bellek, pil, GPU ve kare süresi ölçülmedi.
+
+### Hareketli kapsülün çizildiği yerler
+
+| Ekran                                                     | Boy      | Aynı anda                      | Hareket                               |
+| --------------------------------------------------------- | -------- | ------------------------------ | ------------------------------------- |
+| Süsle (büyük kapsül)                                      | ~208 dp  | 1 (geçişte 2)                  | Açık                                  |
+| Profil kimlik bileti                                      | 64 dp    | 1                              | Açık (`LayeredLook` iki yarıya böler) |
+| Paketler: açılan kart ve gizli sıcak kart                 | ~232 dp  | 1–2                            | Açık                                  |
+| Masa ve oyunlar                                           | 20–72 dp | en çok 12                      | Açık                                  |
+| Mekan, semt, masa sohbeti                                 | 32–48 dp | pencere kadar, grup başına bir | Açık                                  |
+| Listeler, Süsle karoları, profil kartı, sohbet üst çubuğu | —        | —                              | Kapalı (durağan)                      |
+
+### Bulgular
+
+| #     | Önc. | Sınıf                 | Bulgu                                                                                                                                                                                                                                                | Yer                                                                       |
+| ----- | ---- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| M3-01 | P1   | D (sayım)             | Sorunun kaynağı kare yöntemi: 67 aksesuarın 15'i. Bunlarda görünüm sayısı 19–79, her kare bütün grubu yeniden çizer; ana iş parçacığında tek tek bitmap'e çizilir.                                                                                   | `capsuleFx.ts` → `frames`, `FxSvg.tsx` → `Frames`                         |
+| M3-02 | P2   | D                     | Paketler ekranında kart kapandıktan sonra gizli sıcak kart (hareketli, opaklık 0,01) ekrandan çıkılana kadar çizilmeye ve saatini çalıştırmaya devam eder.                                                                                           | `gifts.tsx:107,143,179`                                                   |
+| M3-03 | P2   | Ö                     | Paket çemberinde her karede `zIndex` ve parlaklık filtresi güncellenir; altta sabit gölge filtresi var; boşta da sürekli kayan öğe yüzünden yeniden hesaplanıyor olabilir.                                                                           | `PackRing.tsx:307–332`                                                    |
+| M3-04 | P2   | Ö                     | Açılan kartta iki karışım katmanı (`overlay`, `screen`), hareketli kapsülü de içeren grubu ekran dışı çizime çevirebilir.                                                                                                                            | `OpenedCard.tsx:233,248`                                                  |
+| M3-05 | P2   | D                     | SVG metin ve avatar önbellekleri 600 kayıtta tamamen boşaltılır (en eskiyi atmaz). Süsle'de renk değişince yaklaşık 270 karo yeniden çözülür; üç renk ya da üç Karıştır önbelleği boşaltır, listelerdeki ve sohbetlerdeki avatarlar yeniden çözülür. | `CachedSvg.tsx:11,16`, `LookAvatar.tsx:13`, `profile/capsule.tsx:188–216` |
+| M3-06 | P2   | D (yapı), Ö (maliyet) | Süsle karo sırası sanal değil: baş yuvasında 100–140 karo bağlanır, her birinin stili her kaydırma karesinde hesaplanır, her seçimde hepsi yeniden çizilir.                                                                                          | `OptionCarousel.tsx`                                                      |
+| M3-07 | P2   | D                     | Kaydet ve "Aksesuarı tak", iki yeniden okuma bitene kadar bekler.                                                                                                                                                                                    | `features/gifts/queries.ts:55`, `capsule.tsx:130`                         |
+| M3-08 | P2   | D                     | `gifts/login` her ön plana dönüşte çağrılır (günde bir sayılır); uçuştaki eski yanıt daha yeni durumu ezebilir.                                                                                                                                      | `features/gifts/queries.ts:23`                                            |
+| M3-09 | P3   | Ş                     | Aç yanıtı ile yırtma başlangıcı arasındaki iki karelik pencerede ikinci dokunuş ikinci paketi açar (iki ve daha çok paket varken).                                                                                                                   | `gifts.tsx:135–159`                                                       |
+| M3-10 | P3   | D                     | Dört `art-*.webp` (~1,2 MB) hiçbir yerde kullanılmıyor, pakete giriyor.                                                                                                                                                                              | `features/gifts/art.ts`                                                   |
+| M3-11 | P2   | D                     | Erişilebilirlik: "Paketi tak" paket adını söylemez; "Hepsini gör"de aksesuarın türü yalnız renk ve işaret sayısıyla verilir; duygu balonu ekran okuyucuya bildirilmez.                                                                               | `OptionsSheet.tsx:130,184`, `CapsuleStage.tsx:195`                        |
+| M3-12 | P2   | D                     | Duran her kapsül de kullanmadığı odak ve uygulama durumu aboneliği taşır (Süsle'de 100'den çok). (M1-11 ile aynı)                                                                                                                                    | `FxSvg.tsx:124–129`                                                       |
+| M3-13 | P3   | D                     | Alt sayfa açıkken arkadaki ekranın döngüleri sürer (odak değişmez).                                                                                                                                                                                  | `useLoopActive`                                                           |
+| M3-14 | P2   | Ö                     | iOS'ta SVG yaması ve paylaşılan bitmap yok; kapsülün iOS'taki maliyeti hiç ölçülmedi.                                                                                                                                                                | —                                                                         |
+
+Hareketi azalt: bütün döngüler ve hareketler `useReduceMotion` ile korunuyor; korumasız döngü bulunmadı. Yaşam döngüsü: bütün döngüler odak kaybında ve arka planda duruyor (M3-02 ve M3-13 hariç).
+
+### Seçeneklerin aynı ölçütlerle karşılaştırması
+
+| Ölçüt                       | A: SVG'yi iyileştirmek                                                                                                | B: Hibrit (SVG ve yalnız gereken yerde Skia)                                                                       | C: Bütün kapsüller Skia                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| Kare hareketli 15 aksesuar  | Kırpma: bellek düşer, görünüm sayısı aynı kalır. Ters örtü: 3 görünüme iner ama kırılgan ve maskede uygulanamayabilir | Tek Canvas, klip bir kez, içerik UI iş parçacığında kayar                                                          | Aynı                                                                 |
+| Diğer 25 hareketli aksesuar | Bugünkü yol (6–17 görünüm) kalır                                                                                      | Bugünkü yol kalır ya da büyük boyda Skia                                                                           | Skia                                                                 |
+| Durağan kapsül, liste       | Paylaşılan bitmap (iyi çalışıyor)                                                                                     | Aynı                                                                                                               | Listede çok sayıda Canvas: her biri ayrı yüzey; düşük donanımda risk |
+| Build                       | Gerekmez (OTA)                                                                                                        | Bir build (Android ve iOS)                                                                                         | Bir build                                                            |
+| Paket boyutu                | Yok                                                                                                                   | Skia belgesine göre AAB'de ~4 MB (arm64), iOS ~6 MB; APK'da 41,3 MB                                                | Aynı                                                                 |
+| Çizim aynılığı riski        | Yok (aynı çizici)                                                                                                     | Yalnız Skia'ya geçen çizimler; SVG okuyucusunun mask ve clipPath desteği belgede açık değil, yan yana doğrulanmalı | 60 çizimin hepsi                                                     |
+| iOS                         | Sorun ölçülmedi                                                                                                       | İki platformda aynı yol                                                                                            | Aynı                                                                 |
+| Bakım                       | Tek çizim yolu                                                                                                        | İki çizim yolu, sınır net: "klip içi hareket"                                                                      | Tek yol, ama liste davranışı yeni risk                               |
+| Geri dönüş                  | —                                                                                                                     | Anahtarla, OTA                                                                                                     | Zor                                                                  |
+
+Değerlendirilip elenenler: yerel Kotlin modülüne klip görünümü (iOS'ta karşılığı yok), önceden üretilmiş animasyonlu görseller (renk ve aksesuar birleşimleri çok, üretim hattı gerekir), Lottie ya da Rive (yeni çizim kaynağı ve 60 çizimin yeniden üretimi).
+
+Kaynaklar: [React Native Skia paket boyutu](https://shopify.github.io/react-native-skia/docs/getting-started/bundle-size), [ImageSVG](https://shopify.github.io/react-native-skia/docs/images-svg), [Margelo: düşük donanımlı Android'de Skia ve Reanimated](https://margelo.com/blog/profiling-skia-reanimated-low-end-android), [Shopify: React Native Skia 2022](https://shopify.engineering/react-native-skia-2022).
+
+### Önerilen ideal mimari
+
+- Durağan her şey (ikon, liste, karo, durağan kapsül): SVG ve paylaşılan bitmap. Değişmez.
+- Basit hareket (dönme, sallanma, parlama, yükselme; 25 aksesuar): bugünkü katman yolu, native sürücüde resim taşıma. Değişmez.
+- Klip ya da maske içi hareket (15 aksesuar): bildirimsel tek katman türü ("klip, içerik, kayma"). Büyük boyda Skia ile, Skia yokken ve küçük boyda bugünkü kare yoluyla ama kırpılmış olarak çizilir.
+- Yeni aksesuar biçimi bu üç türü ayrı tutar; kare yöntemi yeni çizimlerde kullanılmaz.
+
+### Aşamalı geçiş planı
+
+| Aşama | İş                                                                                                                                                                                                          | Yayın                | Çıkış ölçütü                                       |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------- |
+| 0     | Taban ölçüm: Süsle'de düz, Destansı ve `gokkusagiatki` ile `dumpsys meminfo`, Perfetto, GPU çubukları; mekan sohbetinde hareketli avatarlı akış; Nothing Phone 1 ve düşük donanımlı bir Android, bir iPhone | —                    | Sayılar belgede                                    |
+| 1     | Build gerektirmeyenler: M3-02, M3-05, M3-06, M3-12, M3-07, M3-08; sohbette yalnız görünen satırın avatarı hareket eder; kare katmanı klibin kutusuna kırpılır                                               | OTA                  | Aşama 0 ölçümleri tekrarlanır                      |
+| 2     | "Klip içi hareket" katman türü (saf TypeScript, testli) ve Skia çizicisi, anahtarın arkasında; önce Süsle'nin büyük kapsülü                                                                                 | Bir build, sonra OTA | 15 aksesuar yan yana ekranda aynı; ölçüm iyileşmiş |
+| 3     | Profil bileti, açılan kart; eski kare yolu yalnız geri dönüş için kalır                                                                                                                                     | OTA                  | Telefonda doğrulama                                |
+| 4     | Küçük avatarlar için karar: aşama 1 yetmediyse yalnız görünen ve duran avatarda Skia                                                                                                                        | OTA                  | Ölçüme göre                                        |
+
+### Ürün kararları
+
+- Sohbette aynı anda hareket eden avatar sayısına sınır (balonlardaki "en yeni altı" gibi) konsun mu; "yalnız görünen satır" sınırı görüntüyü değiştirmez, sayı sınırı değiştirir.
+- Eski aksesuarların akıbeti (silme ya da `retired`) ve yeni aksesuar biçimi: önceki oturumdan açık.
