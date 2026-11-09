@@ -861,6 +861,65 @@ describe('random photo paths', () => {
     expect(await objectExists(uncommitted)).toBe(false);
   });
 
+  // B2: an upload URL stays valid after the next one replaced it; what it still uploads is deleted
+  // with the account, and with the next upload once its URL has expired.
+  it('deletes what an earlier upload URL still uploads', async () => {
+    const a = await named(PHONES[0], 'Ayşe');
+    const first = await profile(a, { action: 'photo-upload-url' });
+    const { path: older, token } = first.body as ProfileUploadUrl;
+    const newer = await upload(a, CLEAN);
+    expect(newer).not.toBe(older);
+    // The earlier URL still works and puts an untracked file at its path.
+    const late = await a.storage
+      .from(PHOTO_BUCKET)
+      .uploadToSignedUrl(older, token, CLEAN, { contentType: 'image/jpeg' });
+    expect(late.error).toBeNull();
+    expect(await objectExists(older)).toBe(true);
+
+    // Once its URL has expired, the next upload removes it; the current photo stays.
+    const current = await setPhoto(a);
+    await sql`
+      update public.profiles
+      set upload_paths = (
+        select jsonb_agg(jsonb_set(e, '{at}', to_jsonb(now() - interval '3 hours')))
+        from jsonb_array_elements(upload_paths) e
+      )
+      where id = ${await userIdOf(a)}
+    `;
+    await profile(a, { action: 'cover-upload-url' });
+    expect(await objectExists(older)).toBe(false);
+    expect(await objectExists(current)).toBe(true);
+
+    // With the account, every path an upload URL was issued for.
+    const again = await profile(a, { action: 'photo-upload-url' });
+    const second = await profile(a, { action: 'photo-upload-url' });
+    const { path: lost, token: lostToken } = again.body as ProfileUploadUrl;
+    expect(second.status).toBe(200);
+    await a.storage
+      .from(PHOTO_BUCKET)
+      .uploadToSignedUrl(lost, lostToken, CLEAN, { contentType: 'image/jpeg' });
+    expect(await objectExists(lost)).toBe(true);
+    expect((await invoke(a, 'account', { action: 'delete' })).status).toBe(200);
+    expect(await objectExists(lost)).toBe(false);
+    expect(await objectExists(current)).toBe(false);
+  });
+
+  it('opens at most 20 upload URLs in two hours, photo and cover together', async () => {
+    const a = await named(PHONES[0], 'Ayşe');
+    for (let i = 0; i < 20; i++) {
+      const res = await profile(a, {
+        action: i % 2 === 0 ? 'photo-upload-url' : 'cover-upload-url',
+      });
+      expect(res.status).toBe(200);
+    }
+    expect(await profile(a, { action: 'photo-upload-url' })).toEqual({
+      status: 429,
+      body: errorBody('rate_limited'),
+    });
+    const { error } = await a.from('profiles').select('upload_paths').single();
+    expect(error).not.toBeNull();
+  });
+
   it('keeps the random path in a report copy', async () => {
     const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
     const idA = await publicIdOf(a);

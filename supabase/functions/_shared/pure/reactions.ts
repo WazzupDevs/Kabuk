@@ -6,6 +6,10 @@
 export const REACTIONS = ['begen', 'ask', 'kahkaha', 'saskin', 'uzgun', 'kizgin'] as const;
 export type Reaction = (typeof REACTIONS)[number];
 
+// The table chat's and the DM's reaction limit (one budget for both; reaction_rate_hit), as the
+// venue chat's (VENUE_CHAT.reactionWindow*): every changed reaction is a broadcast.
+export const REACTION_RATE = { windowSeconds: 10, windowMax: 10 } as const;
+
 const LEGACY: Readonly<Record<string, Reaction>> = {
   '👍': 'begen',
   '❤️': 'ask',

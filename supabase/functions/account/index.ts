@@ -5,7 +5,11 @@ import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
 import { deleteProfilePhotos } from '../_shared/photos.ts';
-import { deletePosthogPerson } from '../_shared/posthog.ts';
+import {
+  drainAnalyticsDeletions,
+  forgetAnalyticsDeletion,
+  queueAnalyticsDeletion,
+} from '../_shared/posthog.ts';
 import { checkBirthDate, isAdult, istanbulToday } from '../_shared/pure/age.ts';
 import type {
   AccountRequest,
@@ -41,16 +45,22 @@ const Body: z.ZodType<AccountRequest> = z.discriminatedUnion('action', [
 const db = serviceClient();
 
 // "Hesabımı sil", and sign-up under 18: end the table, delete the photos, delete the account (the
-// rest goes by cascade), then the PostHog person.
+// rest goes by cascade), then the PostHog person (and earlier ones that failed: analytics_deletions).
 async function deleteAccount(userId: string): Promise<void> {
   // End the table first so its rooms close or go back to waiting for the other table.
   const ended = await db.rpc('end_table_session', { target_user_id: userId });
   if (ended.error) throw dbError('end_table_session', ended.error);
   // Photos before the account: the profile row names the files.
   await deleteProfilePhotos(db, userId);
+  // The PostHog person goes after the account; queued first so a failure is tried again.
+  await queueAnalyticsDeletion(db, userId);
   const { error } = await db.auth.admin.deleteUser(userId);
-  if (error) throw error;
-  inBackground(deletePosthogPerson(userId));
+  if (error) {
+    // The account is still there: its PostHog person must not go with a later deletion.
+    await forgetAnalyticsDeletion(db, userId);
+    throw error;
+  }
+  inBackground(drainAnalyticsDeletions(db, userId));
 }
 
 // Consents and the profile in one write (docs/SPEC_V3.md §3), then the capsule identity. The age is

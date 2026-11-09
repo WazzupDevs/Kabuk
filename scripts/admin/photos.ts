@@ -5,18 +5,22 @@ import {
   isLegacyPhotoPath,
   newPhotoPath,
   PHOTO_BUCKET,
+  uploadPathsOf,
 } from '../../supabase/functions/_shared/pure/profile.ts';
 
 type Admin = SupabaseClient<Database>;
 
-// Every profile photo of an account: the current one, an upload that was never committed, and
+// Every profile photo of an account: the current one, an upload that was never committed, every
+// path an upload URL was issued for (upload_paths), and
 // anything left in the folder of photos from before random paths ({public_id}/). Storage objects
 // are not removed by foreign keys, so a ban deletes them explicitly (the account function does the
 // same, _shared/photos.ts).
 export async function deleteProfilePhotos(admin: Admin, userId: string): Promise<void> {
   const { data: p, error } = await admin
     .from('profiles')
-    .select('public_id, photo_path, photo_pending_path, cover_path, cover_pending_path')
+    .select(
+      'public_id, photo_path, photo_pending_path, cover_path, cover_pending_path, upload_paths',
+    )
     .eq('id', userId)
     .maybeSingle();
   if (error) throw error;
@@ -25,11 +29,14 @@ export async function deleteProfilePhotos(admin: Admin, userId: string): Promise
   const legacy = await bucket.list(p.public_id, { limit: 1000 });
   if (legacy.error) throw legacy.error;
   const files = [
-    p.photo_path,
-    p.photo_pending_path,
-    p.cover_path,
-    p.cover_pending_path,
-    ...legacy.data.map((f) => `${p.public_id}/${f.name}`),
+    ...new Set([
+      p.photo_path,
+      p.photo_pending_path,
+      p.cover_path,
+      p.cover_pending_path,
+      ...uploadPathsOf(p.upload_paths),
+      ...legacy.data.map((f) => `${p.public_id}/${f.name}`),
+    ]),
   ].filter((f): f is string => !!f);
   if (files.length === 0) return;
   const removed = await bucket.remove(files);

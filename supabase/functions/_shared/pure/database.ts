@@ -43,6 +43,21 @@ export type Database = {
         };
         Relationships: [];
       };
+      analytics_deletions: {
+        Row: {
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       banned_phones: {
         Row: {
           created_at: string;
@@ -1433,6 +1448,7 @@ export type Database = {
           push_token: string | null;
           terms_accepted_at: string;
           terms_version: string;
+          upload_paths: Json;
         };
         Insert: {
           age_confirmed_at: string;
@@ -1466,6 +1482,7 @@ export type Database = {
           push_token?: string | null;
           terms_accepted_at: string;
           terms_version: string;
+          upload_paths?: Json;
         };
         Update: {
           age_confirmed_at?: string;
@@ -1499,6 +1516,25 @@ export type Database = {
           push_token?: string | null;
           terms_accepted_at?: string;
           terms_version?: string;
+          upload_paths?: Json;
+        };
+        Relationships: [];
+      };
+      reaction_rate: {
+        Row: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Insert: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Update: {
+          count?: number;
+          user_id?: string;
+          window_started_at?: string;
         };
         Relationships: [];
       };
@@ -3441,6 +3477,24 @@ export type Database = {
         Args: { new_look: string; read_look: string; target_user_id: string };
         Returns: string;
       };
+      profile_upload_forget: {
+        Args: { gone_paths: string[]; target_user_id: string };
+        Returns: undefined;
+      };
+      profile_upload_issue: {
+        Args: {
+          max_open: number;
+          new_path: string;
+          target_user_id: string;
+          upload_kind: string;
+          url_seconds: number;
+        };
+        Returns: {
+          expired_paths: string[];
+          limited: boolean;
+          previous_path: string;
+        }[];
+      };
       profile_view: {
         Args: { target_public_id: string; viewer: string };
         Returns: {
@@ -3452,6 +3506,14 @@ export type Database = {
           public_id: string;
           user_id: string;
         }[];
+      };
+      reaction_rate_hit: {
+        Args: {
+          target_user_id: string;
+          window_max: number;
+          window_seconds: number;
+        };
+        Returns: undefined;
       };
       record_banned_phone: {
         Args: { target_user_id: string };
@@ -3491,6 +3553,7 @@ export type Database = {
           push_token: string | null;
           terms_accepted_at: string;
           terms_version: string;
+          upload_paths: Json;
         };
         SetofOptions: {
           from: '*';

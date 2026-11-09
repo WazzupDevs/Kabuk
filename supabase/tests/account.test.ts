@@ -290,6 +290,46 @@ describe('account/delete', () => {
     await expectNothingLeftFor(id);
   });
 
+  // B3: the PostHog person is queued before the account goes and leaves the queue once deleted
+  // (locally no PostHog key is set: nothing to do), with earlier ones admin:delete queued.
+  it('queues the PostHog deletion and empties the queue, earlier ones too', async () => {
+    const earlier = await signIn(PHONE_B);
+    await call(earlier, onboarding);
+    const earlierId = await userId(earlier);
+    await deleteAccount(admin, earlierId);
+    expect(
+      await sql`select 1 from public.analytics_deletions where user_id = ${earlierId}`,
+    ).toHaveLength(1);
+
+    const client = await signIn(PHONE_A);
+    await call(client, onboarding);
+    const id = await userId(client);
+    const { error } = await client.from('analytics_deletions' as never).select('*');
+    expect(error).not.toBeNull();
+    expect(await call(client, { action: 'delete' })).toEqual({ status: 200, body: { ok: true } });
+    await expect
+      .poll(
+        async () =>
+          (
+            await sql`select user_id from public.analytics_deletions
+          where user_id in (${id}, ${earlierId})`
+          ).length,
+      )
+      .toBe(0);
+  });
+
+  it('keeps a queued PostHog deletion at most 30 days', async () => {
+    const fresh = '00000000-0000-4000-8000-000000000001';
+    const old = '00000000-0000-4000-8000-000000000002';
+    await sql`insert into public.analytics_deletions (user_id, created_at)
+      values (${fresh}, now() - interval '29 days'), (${old}, now() - interval '31 days')`;
+    await sql`select private.delete_old_analytics_deletions()`;
+    const left = await sql`select user_id from public.analytics_deletions
+      where user_id in (${fresh}, ${old})`;
+    expect(left.map((r) => r.user_id)).toEqual([fresh]);
+    await sql`delete from public.analytics_deletions where user_id = ${fresh}`;
+  });
+
   it('keeps every public foreign key cascading or nulling on delete', async () => {
     // Anything else would block account deletion or leave user data behind.
     const blocking = await sql`

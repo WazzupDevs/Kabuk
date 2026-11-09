@@ -35,6 +35,8 @@ import {
   PHOTO_BUCKET,
   PHOTO_MAX_BYTES,
   PHOTO_URL_SECONDS,
+  UPLOAD_URL_OPEN_SECONDS,
+  UPLOAD_URLS_OPEN_MAX,
 } from '../_shared/pure/profile.ts';
 
 const Body: z.ZodType<ProfileRequest> = z.union([
@@ -83,6 +85,49 @@ async function ownProfile(userId: string) {
 
 // The cover's signed URL; none while it is hidden after reports (its own count, as the photo's:
 // two accounts reporting the same cover, cover_hidden_at).
+// Keeps the new path as the account's pending upload and as an open upload (B2: an earlier URL can
+// still put a file at its path for two hours), before any URL for it exists. Returns what to remove
+// once the new URL is out: the earlier pending upload and the paths whose URL has expired and that
+// the profile no longer names (profile_upload_issue).
+async function issueUpload(
+  userId: string,
+  kind: 'photo' | 'cover',
+  path: string,
+): Promise<{ previous: string | null; expired: string[] }> {
+  const { data, error } = await db.rpc('profile_upload_issue', {
+    target_user_id: userId,
+    upload_kind: kind,
+    new_path: path,
+    url_seconds: UPLOAD_URL_OPEN_SECONDS,
+    max_open: UPLOAD_URLS_OPEN_MAX,
+  });
+  if (error) throw dbError('profile_upload_issue', error);
+  const row = data[0];
+  if (!row || row.limited) throw new AppError('rate_limited', 'Too many uploads.');
+  return { previous: row.previous_path, expired: row.expired_paths ?? [] };
+}
+
+// Removes the files issueUpload named; an expired path leaves upload_paths only once its file is
+// gone (a failed removal keeps it for account deletion).
+async function removeIssued(
+  userId: string,
+  path: string,
+  issued: { previous: string | null; expired: string[] },
+): Promise<void> {
+  const gone = [...new Set([issued.previous, ...issued.expired])].filter(
+    (p): p is string => !!p && p !== path,
+  );
+  if (gone.length === 0) return;
+  const removed = await photos().remove(gone);
+  if (removed.error) throw new Error(`storage remove failed (${removed.error.message})`);
+  if (issued.expired.length === 0) return;
+  const forgot = await db.rpc('profile_upload_forget', {
+    target_user_id: userId,
+    gone_paths: issued.expired,
+  });
+  if (forgot.error) throw dbError('profile_upload_forget', forgot.error);
+}
+
 async function coverUrlOf(path: string | null, hidden: boolean): Promise<string | null> {
   if (!path || hidden) return null;
   const signed = await photos().createSignedUrl(path, PHOTO_URL_SECONDS);
@@ -321,15 +366,10 @@ Deno.serve(
         const me = await ownProfile(user.id);
         requireName(me.display_name);
         const path = newPhotoPath(crypto.randomUUID());
+        const issued = await issueUpload(user.id, 'photo', path);
         const { data, error } = await photos().createSignedUploadUrl(path);
         if (error) throw new Error(`storage upload url failed (${error.message})`);
-        const pending = await db
-          .from('profiles')
-          .update({ photo_pending_path: path })
-          .eq('id', user.id);
-        if (pending.error) throw dbError('profiles', pending.error);
-        // One pending upload per account: an earlier one that was never committed goes.
-        if (me.photo_pending_path) await photos().remove([me.photo_pending_path]);
+        await removeIssued(user.id, path, issued);
         return { path, token: data.token };
       }
 
@@ -371,14 +411,10 @@ Deno.serve(
         const me = await ownProfile(user.id);
         requireName(me.display_name);
         const path = newCoverPath(crypto.randomUUID());
+        const issued = await issueUpload(user.id, 'cover', path);
         const { data, error } = await photos().createSignedUploadUrl(path);
         if (error) throw new Error(`storage upload url failed (${error.message})`);
-        const pending = await db
-          .from('profiles')
-          .update({ cover_pending_path: path })
-          .eq('id', user.id);
-        if (pending.error) throw dbError('profiles', pending.error);
-        if (me.cover_pending_path) await photos().remove([me.cover_pending_path]);
+        await removeIssued(user.id, path, issued);
         return { path, token: data.token };
       }
 

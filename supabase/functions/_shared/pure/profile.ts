@@ -50,6 +50,25 @@ export const PHOTO_SIZE_PX = 512;
 export const PHOTO_JPEG_QUALITY = 0.7;
 export const PHOTO_URL_SECONDS = 3600;
 
+// A signed upload URL (Storage) is valid for two hours; an issued path is kept as open for that
+// long and a few minutes more (migration 20261212090000: profile_upload_issue), and at most this
+// many URLs (photo and cover together) are open per account.
+export const UPLOAD_URL_OPEN_SECONDS = 2 * 60 * 60 + 5 * 60;
+export const UPLOAD_URLS_OPEN_MAX = 20;
+
+// The paths kept in profiles.upload_paths ({ path, at } entries): what account deletion removes
+// besides the current and pending files.
+export function uploadPathsOf(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const paths: string[] = [];
+  for (const entry of value) {
+    if (typeof entry !== 'object' || entry === null) continue;
+    const path = (entry as { path?: unknown }).path;
+    if (typeof path === 'string' && (isPhotoPath(path) || isCoverPath(path))) paths.push(path);
+  }
+  return paths;
+}
+
 const PHOTO_FOLDER = 'p';
 
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
