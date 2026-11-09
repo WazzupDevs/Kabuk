@@ -6,22 +6,22 @@ Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel 
 
 ## Modüller
 
-| #   | Modül                                                           | Durum                    |
-| --- | --------------------------------------------------------------- | ------------------------ |
-| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Sürüyor (eksikler altta) |
-| M2  | Realtime ve veri eşitleme                                       | Başlamadı                |
-| M3  | Kapsül ve grafik, hediye paketleri                              | Başlamadı (ön bulgular)  |
-| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Başlamadı                |
-| M5  | Check-in, konum, mekan, masa ve lobi                            | Başlamadı                |
-| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Başlamadı                |
-| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Başlamadı                |
-| M8  | Keşfet, harita, Semte Git                                       | Başlamadı                |
-| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Başlamadı                |
-| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Başlamadı                |
-| M11 | Veritabanı bütünü                                               | Başlamadı                |
-| M12 | Güvenlik bütünü                                                 | Başlamadı (ön doğrulama) |
-| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Başlamadı                |
-| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Başlamadı                |
+| #   | Modül                                                           | Durum                             |
+| --- | --------------------------------------------------------------- | --------------------------------- |
+| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Sonuç raporu hazır, onay bekliyor |
+| M2  | Realtime ve veri eşitleme                                       | Başlamadı                         |
+| M3  | Kapsül ve grafik, hediye paketleri                              | Başlamadı (ön bulgular)           |
+| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Başlamadı                         |
+| M5  | Check-in, konum, mekan, masa ve lobi                            | Başlamadı                         |
+| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Başlamadı                         |
+| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Başlamadı                         |
+| M8  | Keşfet, harita, Semte Git                                       | Başlamadı                         |
+| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Başlamadı                         |
+| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Başlamadı                         |
+| M11 | Veritabanı bütünü                                               | Başlamadı                         |
+| M12 | Güvenlik bütünü                                                 | Başlamadı (ön doğrulama)          |
+| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Başlamadı                         |
+| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Başlamadı                         |
 
 Her modülde ayrıca bağımsız UX denetimi yapılır. M6 kapalı oyunları, bağlantı kopmasını, oyuncu ayrılmasını ve yeniden bağlanmayı da kapsar. M14 abonelik, ödeme, reklam ve hediye ekonomisinin bugünkü mimariye nasıl oturacağını kapsar.
 
@@ -133,3 +133,47 @@ N1–N15 ve S1–S4 sohbet yanıtlarında verildi; ilgili modül işlenirken bur
 - M1-18: DM'de silme, düzenleme, okundu bilgisini kapatma.
 - Sohbet avatarlarında hareketin kapsamı (M3).
 - Konum doğrulamasında cihaz doğrulaması (S1, M5).
+
+## M1: ikinci tur (9 Kasım)
+
+### Bu turda okunanlar
+
+- `ChatScreen.tsx` 1140–1473 (ekran kabuğu): bulgu yok.
+- `Composer.tsx` (taslak ve gönder), `ConnectionBanner.tsx`, `roomChatSeen.ts`, `venue-chat/index.tsx` giriş ve gönderme, `supabase/functions/district-chat` (tam).
+- SQL: `dm_messages_page`, `dm_react`, `chat_delete`, `venue_chat_send_once`, `venue_chat_delete`, tepki tabloları.
+- Referans kaynak (yalnız yöntem, kopya yok): Telegram Android `SendMessagesHelper`, `MessagesStorage`, `MediaDataController`, `MessagesController`; Mattermost Mobile `app/actions/remote/post.ts`, `app/components/post_list/post_list.tsx`, `app/database/models/server/draft.ts`.
+
+Hâlâ yüzeysel: `ChatTopBar.tsx`, `pure/chatRuns.ts`, `dmPages.ts`, `messageExtras.ts` (birim testleri geçiyor), semt sohbetinin SQL fonksiyonları (`district_chat_*`), `messages/index.tsx` ve `district/room.tsx`'in gönderme ve satır dışındaki kısımları.
+
+### Testler
+
+| Denetim                         | Sonuç                                                                                                                                                                                                                                                                         |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm db:reset` (yerel)         | Geçti                                                                                                                                                                                                                                                                         |
+| `pnpm test:integration` (yerel) | Çalıştırılamadı: `functions serve` konteyneri npm'den bağımlılık çekerken oturumun vekilinin sertifikasına güvenmiyor (`UnknownIssuer`); `--env-file` ile `DENO_CERT` ve `SSL_CERT_FILE` verildi, çalışma anı önyüklemesi bunları okumuyor. Geçici sertifika kopyası silindi. |
+| CI `ci` (birim ve entegrasyon)  | Denetlenen commit `4655c93` için yeşil (koşu 1499); main'in ucu `193decc` de yeşil (1501)                                                                                                                                                                                     |
+
+### Yeni bulgular
+
+| #     | Önc.         | Sınıf | Bulgu                                                                                                                                                                                       | Yer                                                            |
+| ----- | ------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| M1-20 | P2           | D     | Bağlantı dönünce başarısız mesaj kendiliğinden gönderilmez; kullanıcı her birine "Tekrar dene" basar. Çevrimdışılık yalnız bir istek başarısız olunca anlaşılır (takılan bağlantıda 20 sn). | `ConnectionBanner.tsx`, `pure/chatOutbox.ts`                   |
+| M1-21 | P1 (ölçekte) | D     | Mekan sohbetinde tepki ve silme yayını, en yeni sayfaya ek olarak okuyanın yüklediği her eski sayfayı da yeniden okutur (her biri ayrı Edge çağrısı). M1-05'i büyütür.                      | `venue-chat/index.tsx:136–145` → `older.reread`                |
+| M1-22 | P3           | D     | Masa ve mekan sohbetinde "okundu" işareti yalnız uygulama çalışırken bellekte tutulur; uygulama yeniden açılınca okunmamış sayısı sıfırdan başlar.                                          | `roomChatSeen.ts`, `venueChat/queries.ts` → `useVenueChatSeen` |
+| M1-23 | —            | K     | Mekan, semt ve masa sohbetinde yanıt ya da yeni mesaj için bildirim yok (push yalnız DM, arkadaşlık ve davet).                                                                              | `pure/push.ts` → `PUSH_PREFERENCE`                             |
+
+### Kıyas: kaynaktan okunanlar
+
+| Konu        | Telegram Android                                                                                                                                                                                         | Mattermost Mobile                                                                                                | skall için                                                                       |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Giden mesaj | Yerel mesaj tablosunda `send_state` (gönderiliyor, hata, gönderildi); `randoms_v2` istemci kimliğini mesaja bağlar; uygulama açılışında `checkUnsentMessages` gönderilmemişleri okur ve yeniden gönderir | Gönderi yerel veritabanına `pending_post_id` ile yazılır; aynı kimlik sunucuya gider, başarısız olan işaretlenir | M1-01 ve M1-02 birlikte: kimlikli gönderim ve telefonda saklanan giden kutusu    |
+| Taslak      | Hesap başına `drafts` tercih dosyası, sohbet başına kayıt (`saveDraft`)                                                                                                                                  | Veritabanında `draft` modeli                                                                                     | Sohbet başına telefonda taslak                                                   |
+| Tepki       | Sunucu `updateMessageReactions` ile mesaj kimliğini ve yeni tepkileri gönderir; istemci yalnız o mesajı günceller                                                                                        | — (okunmadı)                                                                                                     | Yalnız değişen mesajların sayılarını okumak; yük taşıyan yayın kural 9'a dokunur |
+| Liste       | —                                                                                                                                                                                                        | Ters çevrilmiş `FlatList`, `maintainVisibleContentPosition`, `windowSize` 10                                     | skall'ın listesi aynı yapıda; kütüphane değişikliği gerekmez                     |
+
+### Önerilen mimari (özet; ayrıntı sohbet raporunda)
+
+1. Kimlikli gönderim dört sohbette aynı: istemci mesajı yazarken UUID üretir; `dm_messages` ve `messages`'a `client_id` ve `(gönderen, client_id)` tekil indeksi; aynı kimlik aynı içerikle yanıtı yineler, farklı içerikle `client_id_reused` (mekan sohbetindeki `venue_chat_send_once` kalıbı).
+2. Kalıcı giden kutusu ve taslak: hesap ve sohbet başına AsyncStorage kaydı (`dmCache.ts` kalıbı); bağlantı dönünce sırayla, aynı kimlikle kendiliğinden yeniden gönderim; çıkışta ve hesap değişince silinir.
+3. Ortak "mesaj deposu": dört sohbet aynı üç işlemi kullanır: imleçten sonrasını ekle (mesaj), kimliğe göre satırı yamala (tepki), kimliğe göre çıkar (silme). Tepki için sunucuda mesaj satırında "tepkisi en son ne zaman değişti" bilgisi ve yalnız sayıları dönen salt-okur RPC.
+4. Satırlar veriyi kimlikle alır; ekran düzeyindeki bekleyen tepki durumu satıra yalnız kendi değeriyle iner (M1-06, M1-07).
