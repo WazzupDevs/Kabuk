@@ -1,5 +1,6 @@
 // Usage: pnpm site:build → site/ (git-ignored). The public legal pages from docs/legal/, published by
-// .github/workflows/pages.yml to GitHub Pages. The app name comes from pure/brand.ts.
+// Cloudflare Pages to https://skall.world/ (docs/OPS.md → "Yasal sayfalar (skall.world)"). The app
+// name comes from pure/brand.ts.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
