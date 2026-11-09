@@ -6,6 +6,7 @@ export default defineConfig({
     include: ['supabase/tests/**/*.test.ts'],
     // Pauses pg_cron for the run; tests call the job functions directly.
     globalSetup: ['supabase/tests/globalSetup.ts'],
+    setupFiles: ['supabase/tests/setupFile.ts'],
     fileParallelism: false,
     testTimeout: 30_000,
     hookTimeout: 30_000,

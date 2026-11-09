@@ -127,7 +127,7 @@ Dev client olmadan, tek başına çalışan bir Android APK'sı. Arkadaşa link 
 Dev projesinde girişin tek yolu budur (orada SMS yok): gerçek ya da uydurma numaralarla, SMS gönderilmeden, sabit kodla giriş yapılır.
 
 1. Supabase paneli → **Authentication → Sign In / Providers → Phone**.
-2. **Test Phone Numbers and OTPs** alanına numara=kod çiftlerini virgülle yaz. Numara `+` olmadan, ülke koduyla: `905321234567=482915,905339876543=730264`.
+2. **Test Phone Numbers and OTPs** alanına numara=kod çiftlerini virgülle yaz. Numara `+` olmadan, ülke koduyla: `<numara>=<kod>,<numara>=<kod>` (ör. `90532…=` ve altı haneli kod; gerçek çifti hiçbir dosyaya yazma).
 3. **Test OTPs Valid Until:** testten sonraki güne bir tarih ver; o tarihten sonra bu çiftler çalışmaz.
 4. Kaydet. Uygulamada numarayı her zamanki gibi gir (`5xx xxx xx xx`), SMS gelmez; kodu elle gir.
 
