@@ -9,6 +9,8 @@ import {
 } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
 import { setBalloonOf } from '@shared/gifts.ts';
+import type { ReactionCount } from '@shared/messageExtras.ts';
+import type { Reaction } from '@shared/reactions.ts';
 import {
   prepareVenueMessage,
   senderLabel,
@@ -20,12 +22,12 @@ import {
 } from '@shared/venueChat.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { memo, useEffect, useMemo, useReducer, useState } from 'react';
 import { View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
-import { ChatBubble, skinMovers } from '@/components/ChatBubble';
+import { ChatBubble, type ChatQuote, skinMovers } from '@/components/ChatBubble';
 import { SET_BALLOONS, type SetBalloon } from '@/theme/setBalloons';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
@@ -43,7 +45,13 @@ import { ReportModal } from '@/features/chat/ReportModal';
 import { useFreshLine } from '@/features/chat/fresh';
 import { OlderFoot } from '@/features/chat/OlderFoot';
 import { useOlderPages } from '@/features/chat/useOlderPages';
-import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
+import {
+  quoteJump,
+  reactionsShown,
+  type ReplyTarget,
+  toChatQuote,
+  useReplyTarget,
+} from '@/features/chat/messageExtras';
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
@@ -68,10 +76,12 @@ import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { requestKey } from '@/lib/requestKey';
+import { sameRowProps } from '@/lib/rowEqual';
+import { useLatestCallback } from '@/lib/useLatestCallback';
 import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { type ColorScheme, SPACING } from '@/theme/tokens';
 import { FxMoves } from '@/components/FxSvg';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
@@ -200,6 +210,10 @@ function VenueChatScreenBody() {
     dispatch({ type: 'retry', localId: m.localId });
     deliver(m);
   };
+  const onRetry = useLatestCallback((m: OutboxMessage) => retry(m));
+  const onDiscard = useLatestCallback((m: OutboxMessage) =>
+    dispatch({ type: 'remove', localId: m.localId }),
+  );
   const report = useMutation({
     meta: FEEL_ERROR,
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason }) =>
@@ -243,25 +257,7 @@ function VenueChatScreenBody() {
 
   // Each sender's name keeps one colour, in their bubbles and in quotes of them; the viewer's own
   // name in a quote is in the accent.
-  const inkOf = (sender: string) => nameInk(scheme, sender);
-  const quoteOf = (q: VenueChatMessage['replyTo']) => {
-    const base = toChatQuote(q);
-    if (!base || !q || q.gone) return base;
-    return { ...base, color: q.fromMe ? colors.accent : inkOf(base.name) };
-  };
-  const faceOf = (m: VenueChatMessage, size: number) =>
-    m.profiled ? (
-      <Avatar
-        kind="profile"
-        name={senderLabel(m)}
-        photoUrl={m.photoUrl}
-        size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'}
-      />
-    ) : m.senderLook ? (
-      <LookAvatar look={m.senderLook} size={size} />
-    ) : (
-      <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
-    );
+  const quoteOf = (q: VenueChatMessage['replyTo']) => venueQuote(q, scheme, colors.accent);
 
   // The waiting bubbles whose server copy is on the page leave the outbox (drawn as the copy now).
   const onPage = useMemo(() => new Set((messages ?? []).map((m) => m.id)), [messages]);
@@ -331,99 +327,33 @@ function VenueChatScreenBody() {
     .reverse();
   const newest = rows[0];
   const movers = skinMovers(rows, (r) => !!r.m && balloonOf(r.m) !== null);
+  const { pending } = reactions;
   const renderRow = ({ key, m, out, first, last, day }: (typeof rows)[number]) =>
     out ? (
-      <ChatRow id={out.localId} first={first} mine>
-        {() => (
-          <>
-            {day ? <DayLine label={dayLabel(day)} /> : null}
-            <ChatBubble
-              testID="venue-chat-pending"
-              text={out.body}
-              mine
-              first={first}
-              last={last}
-              quote={outQuote(out.replyTo)}
-              // As in the DM (Telegram Android): on its way, its time and a clock where the ticks
-              // would go; the clock goes with the server's copy (Mekân has no ticks).
-              {...(out.status === 'sending'
-                ? {
-                    time: tr.chat.time(out.at ?? new Date().toISOString()),
-                    delivery: 'sending' as const,
-                  }
-                : { state: 'failed' as const })}
-              failedText={
-                out.status === 'failed' && out.errorCode ? tr.errors[out.errorCode] : undefined
-              }
-              onRetry={out.status === 'failed' && canRetry(out) ? () => retry(out) : undefined}
-              onDiscard={
-                out.status === 'failed'
-                  ? () => dispatch({ type: 'remove', localId: out.localId })
-                  : undefined
-              }
-            />
-          </>
-        )}
-      </ChatRow>
+      <VenueMessageRow
+        out={out}
+        outQuote={outQuote(out.replyTo)}
+        first={first}
+        last={last}
+        day={day ? day.getTime() : null}
+        onRetry={onRetry}
+        onDiscard={onDiscard}
+      />
     ) : m ? (
-      <ChatRow id={m.id} first={first} mine={m.fromMe}>
-        {(jumpTo) => (
-          <>
-            {day ? <DayLine label={dayLabel(day)} /> : null}
-            {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
-            <ChatBubble
-              testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
-              skin={balloonOf(m)}
-              skinMoves={movers.has(key)}
-              text={m.body}
-              mine={m.fromMe}
-              quote={quoteOf(m.replyTo)}
-              onPressQuote={quoteJump(m.replyTo, jumpTo)}
-              reactions={reactions.view(m.id, m.reactions)}
-              onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-              onReact={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-              onReply={() =>
-                reply.setTarget({
-                  id: m.id,
-                  quote: {
-                    name: m.fromMe ? tr.chat.you : senderLabel(m),
-                    text: m.body,
-                    color: m.fromMe ? colors.accent : inkOf(senderLabel(m)),
-                  },
-                })
-              }
-              actions={
-                m.fromMe
-                  ? [
-                      {
-                        label: tr.chat.delete,
-                        icon: 'close',
-                        negative: true,
-                        testID: 'venue-chat-delete',
-                        onPress: () => remove.mutate(m.id),
-                      },
-                    ]
-                  : [
-                      {
-                        label: tr.chat.report,
-                        icon: 'alert',
-                        negative: true,
-                        testID: 'venue-chat-report',
-                        onPress: () => setReporting(m),
-                      },
-                    ]
-              }
-              first={first}
-              last={last}
-              time={tr.chat.time(m.createdAt)}
-              name={m.fromMe ? undefined : senderLabel(m)}
-              avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
-              nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
-              onPressSender={m.fromMe ? undefined : () => setPerson(m)}
-            />
-          </>
-        )}
-      </ChatRow>
+      <VenueMessageRow
+        m={m}
+        first={first}
+        last={last}
+        day={day ? day.getTime() : null}
+        fresh={m.id === fresh}
+        skinMoves={movers.has(key)}
+        pend={m.id in pending ? (pending[m.id] ?? null) : undefined}
+        pick={reactions.pick}
+        onReply={reply.setTarget}
+        onDelete={remove.mutate}
+        onReport={setReporting}
+        onPerson={setPerson}
+      />
     ) : (
       <View />
     );
@@ -698,6 +628,163 @@ function OptionsSheet({
     </Sheet>
   );
 }
+
+function venueQuote(q: VenueChatMessage['replyTo'], scheme: ColorScheme, accent: string) {
+  const base = toChatQuote(q);
+  if (!base || !q || q.gone) return base;
+  return { ...base, color: q.fromMe ? accent : nameInk(scheme, base.name) };
+}
+
+function faceOf(m: VenueChatMessage, size: number) {
+  return m.profiled ? (
+    <Avatar
+      kind="profile"
+      name={senderLabel(m)}
+      photoUrl={m.photoUrl}
+      size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'}
+    />
+  ) : m.senderLook ? (
+    <LookAvatar look={m.senderLook} size={size} />
+  ) : (
+    <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
+  );
+}
+
+type VenueMessageRowProps = {
+  m?: VenueChatMessage;
+  out?: OutboxMessage;
+  outQuote?: ChatQuote;
+  first: boolean;
+  last: boolean;
+  day: number | null;
+  fresh?: boolean;
+  skinMoves?: boolean;
+  pend?: Reaction | null;
+  pick?: (messageId: string, list: readonly ReactionCount[] | undefined, emoji: string) => void;
+  onReply?: (target: ReplyTarget) => void;
+  onDelete?: (id: string) => void;
+  onReport?: (m: VenueChatMessage) => void;
+  onPerson?: (m: VenueChatMessage) => void;
+  onRetry?: (m: OutboxMessage) => void;
+  onDiscard?: (m: OutboxMessage) => void;
+};
+
+// One row of the venue chat. Memoised: a new message, or another message's reaction, leaves the
+// row as it is (data compared by content, functions by identity: sameRowProps).
+const VenueMessageRow = memo(function VenueMessageRow({
+  m,
+  out,
+  outQuote,
+  first,
+  last,
+  day,
+  fresh = false,
+  skinMoves = false,
+  pend,
+  pick,
+  onReply,
+  onDelete,
+  onReport,
+  onPerson,
+  onRetry,
+  onDiscard,
+}: VenueMessageRowProps) {
+  const { colors, scheme } = useTheme();
+  if (out) {
+    return (
+      <ChatRow id={out.localId} first={first} mine>
+        {() => (
+          <>
+            {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
+            <ChatBubble
+              testID="venue-chat-pending"
+              text={out.body}
+              mine
+              first={first}
+              last={last}
+              quote={outQuote}
+              // As in the DM (Telegram Android): on its way, its time and a clock where the ticks
+              // would go; the clock goes with the server's copy (Mekân has no ticks).
+              {...(out.status === 'sending'
+                ? {
+                    time: tr.chat.time(out.at ?? new Date().toISOString()),
+                    delivery: 'sending' as const,
+                  }
+                : { state: 'failed' as const })}
+              failedText={
+                out.status === 'failed' && out.errorCode ? tr.errors[out.errorCode] : undefined
+              }
+              onRetry={out.status === 'failed' && canRetry(out) ? () => onRetry?.(out) : undefined}
+              onDiscard={out.status === 'failed' ? () => onDiscard?.(out) : undefined}
+            />
+          </>
+        )}
+      </ChatRow>
+    );
+  }
+  if (!m) return <View />;
+  const label = senderLabel(m);
+  return (
+    <ChatRow id={m.id} first={first} mine={m.fromMe}>
+      {(jumpTo) => (
+        <>
+          {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
+          {fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
+          <ChatBubble
+            testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
+            skin={balloonOf(m)}
+            skinMoves={skinMoves}
+            text={m.body}
+            mine={m.fromMe}
+            quote={venueQuote(m.replyTo, scheme, colors.accent)}
+            onPressQuote={quoteJump(m.replyTo, jumpTo)}
+            reactions={reactionsShown(m.reactions, pend)}
+            onToggleReaction={(emoji) => pick?.(m.id, m.reactions, emoji)}
+            onReact={(emoji) => pick?.(m.id, m.reactions, emoji)}
+            onReply={() =>
+              onReply?.({
+                id: m.id,
+                quote: {
+                  name: m.fromMe ? tr.chat.you : label,
+                  text: m.body,
+                  color: m.fromMe ? colors.accent : nameInk(scheme, label),
+                },
+              })
+            }
+            actions={
+              m.fromMe
+                ? [
+                    {
+                      label: tr.chat.delete,
+                      icon: 'close',
+                      negative: true,
+                      testID: 'venue-chat-delete',
+                      onPress: () => onDelete?.(m.id),
+                    },
+                  ]
+                : [
+                    {
+                      label: tr.chat.report,
+                      icon: 'alert',
+                      negative: true,
+                      testID: 'venue-chat-report',
+                      onPress: () => onReport?.(m),
+                    },
+                  ]
+            }
+            first={first}
+            last={last}
+            time={tr.chat.time(m.createdAt)}
+            name={m.fromMe ? undefined : label}
+            avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
+            nameInk={m.fromMe ? undefined : nameInk(scheme, label)}
+            onPressSender={m.fromMe ? undefined : () => onPerson?.(m)}
+          />
+        </>
+      )}
+    </ChatRow>
+  );
+}, sameRowProps);
 
 // A set worn in all three regions, written anonymously: the set's balloon (§4.U; BalonElf,
 // BalonNinja). Written with the name, the plain one.

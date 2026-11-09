@@ -10,6 +10,7 @@ import { useCallback, useState } from 'react';
 
 import type { ChatQuote } from '@/components/ChatBubble';
 import { tr } from '@/i18n/tr';
+import { useLatestCallback } from '@/lib/useLatestCallback';
 
 // Replies and reactions (docs/SPEC_V3.md §21), the same in the DM, the room chat and the venue
 // chat.
@@ -45,6 +46,15 @@ export function useReplyTarget() {
 // failed one (the venue chat's limit included) quietly goes back to what the page says. `alias` is
 // the reader's table in the room chat, so its name moves with the reaction. A missing list (a
 // server from before §21) is no reactions.
+export function reactionsShown(
+  list: readonly ReactionCount[] | undefined,
+  // The reader's pick not yet back from the server (`undefined`: none; `null`: taken back).
+  pend: Reaction | null | undefined,
+  alias?: string,
+): readonly ReactionCount[] {
+  return pend === undefined ? (list ?? []) : withMyReaction(list, pend, alias);
+}
+
 export function useReactions(
   send: (messageId: string, emoji: Reaction | null) => Promise<unknown>,
   refresh: () => Promise<unknown>,
@@ -53,22 +63,25 @@ export function useReactions(
   const [pending, setPending] = useState<Record<string, Reaction | null>>({});
   const view = useCallback(
     (messageId: string, list: readonly ReactionCount[] | undefined): readonly ReactionCount[] =>
-      messageId in pending ? withMyReaction(list, pending[messageId] ?? null, alias) : (list ?? []),
+      reactionsShown(list, messageId in pending ? (pending[messageId] ?? null) : undefined, alias),
     [pending, alias],
   );
-  const pick = (messageId: string, list: readonly ReactionCount[] | undefined, emoji: string) => {
-    if (!isReaction(emoji)) return;
-    const next = nextReaction(myReaction(view(messageId, list)), emoji);
-    setPending((p) => ({ ...p, [messageId]: next }));
-    void send(messageId, next)
-      .then(refresh, () => undefined)
-      .finally(() =>
-        setPending((p) => {
-          const rest = { ...p };
-          delete rest[messageId];
-          return rest;
-        }),
-      );
-  };
-  return { view, pick };
+  // One identity for the screen's life (a memoised row takes it as a prop).
+  const pick = useLatestCallback(
+    (messageId: string, list: readonly ReactionCount[] | undefined, emoji: string) => {
+      if (!isReaction(emoji)) return;
+      const next = nextReaction(myReaction(view(messageId, list)), emoji);
+      setPending((p) => ({ ...p, [messageId]: next }));
+      void send(messageId, next)
+        .then(refresh, () => undefined)
+        .finally(() =>
+          setPending((p) => {
+            const rest = { ...p };
+            delete rest[messageId];
+            return rest;
+          }),
+        );
+    },
+  );
+  return { view, pick, pending };
 }

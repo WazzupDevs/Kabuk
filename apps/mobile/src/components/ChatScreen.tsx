@@ -9,8 +9,10 @@ import {
   useLayoutEffect,
   type RefObject,
   useMemo,
+  memo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import {
   BackHandler,
@@ -101,21 +103,38 @@ export function useChatEnd(): (() => void) | null {
 type JumpState = { show: boolean; count: number };
 const JumpSlotContext = createContext<((state: JumpState) => void) | null>(null);
 
-// Whether the stream has settled after opening: a row that comes after it is a new message and
-// rises in (the ones the page opened with stand still).
-const ChatLiveContext = createContext(false);
-// The stream's newest message: the only row that arrives with a slide. Rows put on the screen in a
-// batch (older messages from "Daha eski mesajlar", the rest of the first page) come up above the
-// reader and are not watched arriving; each one animating made the batch stall the screen (the
-// owner's video, 29 Ekim: 0.9 s).
-const ChatNewestContext = createContext<string | undefined>(undefined);
+// What a row reads once, when it is put on the screen (`live`: the stream has settled after opening,
+// so a row that comes after it is a new message and rises in; `newest`: the stream's newest message,
+// the only row that arrives with a slide; rows put on the screen in a batch (older messages from
+// "Daha eski mesajlar", the rest of the first page) come up above the reader and are not watched
+// arriving; each one animating made the batch stall the screen, the owner's video, 29 Ekim: 0.9 s),
+// and the message a quote's tap went to (the owner's call, 30 Ekim: Telegram Android flashes it;
+// `n` counts the jumps, so a second jump flashes again). The store is one stable object, so a new
+// message or a flash does not draw every row again: a row listens only for its own flash.
+type RowHighlight = { id: string | null; n: number };
+type RowStore = {
+  live: boolean;
+  newest: string | undefined;
+  highlight: RowHighlight;
+  listeners: Set<() => void>;
+};
+function createRowStore(): RowStore {
+  return { live: false, newest: undefined, highlight: { id: null, n: 0 }, listeners: new Set() };
+}
+function syncRowStore(store: RowStore, live: boolean, newest: string | undefined) {
+  store.live = live;
+  store.newest = newest;
+}
+function flashRow(store: RowStore, id: string) {
+  store.highlight = { id, n: store.highlight.n + 1 };
+  store.listeners.forEach((l) => l());
+}
+const ChatRowStoreContext = createContext<RowStore | null>(null);
+const NO_STORE = createRowStore();
 const SETTLE_MS = 800;
 // Whether the stream is drawn from the bottom up: a row's arrival then rises from below in its
 // flipped cell.
 const ChatInvertedContext = createContext(false);
-// The message a quote's tap went to (the owner's call, 30 Ekim: Telegram Android flashes it); `n`
-// counts the jumps, so a second jump to the same message flashes it again.
-const ChatHighlightContext = createContext<{ id: string | null; n: number }>({ id: null, n: 0 });
 const FLASH_MS = 1400;
 // A message the reader sent rises from the message bar into its place (Telegram Android; the
 // owner's call, 30 Ekim); another's fades up a little.
@@ -142,7 +161,7 @@ const ARRIVE_MS = 220;
 // One message's row in the stream: reports its place for jumpTo and hands jumpTo to its bubble
 // (a quote's tap). Outside a ChatScroll it is a plain View and jumpTo does nothing. A message that
 // arrives while the chat is open fades up into place (none with reduce motion).
-export function ChatRow({
+export const ChatRow = memo(function ChatRow({
   id,
   first,
   mine,
@@ -156,12 +175,17 @@ export function ChatRow({
   children: (jumpTo: (id: string) => void) => ReactNode;
 }) {
   const jump = useChatJump();
-  const live = useContext(ChatLiveContext);
-  const newest = useContext(ChatNewestContext);
+  const store = useContext(ChatRowStoreContext) ?? NO_STORE;
   const inverted = useContext(ChatInvertedContext);
-  const highlight = useContext(ChatHighlightContext);
+  const flash = useSyncExternalStore(
+    (listener) => {
+      store.listeners.add(listener);
+      return () => void store.listeners.delete(listener);
+    },
+    () => (store.highlight.id === id ? store.highlight.n : 0),
+  );
   const reduce = useReduceMotion();
-  const [arriving] = useState(live && !reduce && id === newest);
+  const [arriving] = useState(store.live && !reduce && id === store.newest);
   // In a list drawn from the bottom up the cell is flipped: a rise from below is a move up in it.
   const entering = !arriving
     ? undefined
@@ -174,11 +198,11 @@ export function ChatRow({
       onLayout={jump?.row(id)}
       style={{ gap: SPACING[2], marginTop: first ? SPACING[2] : 0 }}
     >
-      {highlight.id === id && highlight.n > 0 ? <Flash key={highlight.n} /> : null}
+      {flash > 0 ? <Flash key={flash} /> : null}
       {children((target) => void jump?.jumpTo(target))}
     </Reanimated.View>
   );
-}
+});
 
 // The flash over a message a quote's tap went to: the row's whole width in the accent, fading out.
 function Flash() {
@@ -313,10 +337,8 @@ export function ChatScroll({
     return () => clearTimeout(timer);
   }, []);
   const rows = useRef(new Map<string, number>());
-  const [highlight, setHighlight] = useState<{ id: string | null; n: number }>({
-    id: null,
-    n: 0,
-  });
+  const [store] = useState(createRowStore);
+  syncRowStore(store, live, newestKey);
   const jump = useMemo<ChatJump>(
     () => ({
       row: (id) => (e) => void rows.current.set(id, e.nativeEvent.layout.y),
@@ -325,11 +347,11 @@ export function ChatScroll({
         if (y === undefined) return false;
         pinned.current = false;
         scroll.current?.scrollTo({ y: Math.max(0, y - SPACING[4] - topInset), animated: true });
-        setHighlight((h) => ({ id, n: h.n + 1 }));
+        flashRow(store, id);
         return true;
       },
     }),
-    [topInset],
+    [topInset, store],
   );
 
   // A new message while the reader is up the stream: count it for the button.
@@ -469,13 +491,7 @@ export function ChatScroll({
   const stream = (
     <ChatBarContext.Provider value={bar}>
       <ChatJumpContext.Provider value={jump}>
-        <ChatLiveContext.Provider value={live}>
-          <ChatNewestContext.Provider value={newestKey}>
-            <ChatHighlightContext.Provider value={highlight}>
-              {children}
-            </ChatHighlightContext.Provider>
-          </ChatNewestContext.Provider>
-        </ChatLiveContext.Provider>
+        <ChatRowStoreContext.Provider value={store}>{children}</ChatRowStoreContext.Provider>
       </ChatJumpContext.Provider>
     </ChatBarContext.Provider>
   );
@@ -835,10 +851,8 @@ function ChatList<T extends ChatListItem>({
   useEffect(() => {
     shownItems.current = items;
   });
-  const [highlight, setHighlight] = useState<{ id: string | null; n: number }>({
-    id: null,
-    n: 0,
-  });
+  const [store] = useState(createRowStore);
+  syncRowStore(store, live, newestKey);
   const jump = useMemo<ChatJump>(
     () => ({
       row: () => () => undefined,
@@ -847,11 +861,11 @@ function ChatList<T extends ChatListItem>({
         if (index < 0) return false;
         pinned.current = false;
         list.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
-        setHighlight((h) => ({ id, n: h.n + 1 }));
+        flashRow(store, id);
         return true;
       },
     }),
-    [],
+    [store],
   );
 
   // Opening at the first unread message: once, when it is among the rows, its top under the top
@@ -1006,119 +1020,113 @@ function ChatList<T extends ChatListItem>({
     <View className="flex-1" onTouchStart={outerBar ? undefined : ownBar.onTouchStart}>
       <ChatBarContext.Provider value={bar}>
         <ChatJumpContext.Provider value={jump}>
-          <ChatLiveContext.Provider value={live}>
-            <ChatNewestContext.Provider value={newestKey}>
-              <ChatInvertedContext.Provider value>
-                <ChatHighlightContext.Provider value={highlight}>
-                  <ChatScrollingContext.Provider value={scrolling}>
-                    {items.length === 0 && empty ? (
-                      // Clear of the top bar and the message bar (the list's own padding, unflipped).
-                      <View
-                        style={{
-                          flex: 1,
-                          paddingTop: contentContainerStyle?.paddingBottom,
-                          paddingBottom: contentContainerStyle?.paddingTop,
-                          paddingHorizontal: contentContainerStyle?.paddingHorizontal,
+          <ChatRowStoreContext.Provider value={store}>
+            <ChatInvertedContext.Provider value>
+              <ChatScrollingContext.Provider value={scrolling}>
+                {items.length === 0 && empty ? (
+                  // Clear of the top bar and the message bar (the list's own padding, unflipped).
+                  <View
+                    style={{
+                      flex: 1,
+                      paddingTop: contentContainerStyle?.paddingBottom,
+                      paddingBottom: contentContainerStyle?.paddingTop,
+                      paddingHorizontal: contentContainerStyle?.paddingHorizontal,
+                    }}
+                  >
+                    {empty}
+                  </View>
+                ) : (
+                  <MetaReportContext.Provider value={reportMeta}>
+                    <DayReportContext.Provider value={timeOf ? reportDay : null}>
+                      <FlatList
+                        ref={list}
+                        testID={testID}
+                        data={items}
+                        inverted
+                        keyExtractor={(item) => item.key}
+                        renderItem={({ item }) => renderItem(item)}
+                        renderScrollComponent={renderScroll}
+                        CellRendererComponent={MetaCell}
+                        onLayout={(e) => {
+                          listHeight.current = e.nativeEvent.layout.height;
+                          placeDay();
                         }}
-                      >
-                        {empty}
-                      </View>
-                    ) : (
-                      <MetaReportContext.Provider value={reportMeta}>
-                        <DayReportContext.Provider value={timeOf ? reportDay : null}>
-                          <FlatList
-                            ref={list}
-                            testID={testID}
-                            data={items}
-                            inverted
-                            keyExtractor={(item) => item.key}
-                            renderItem={({ item }) => renderItem(item)}
-                            renderScrollComponent={renderScroll}
-                            CellRendererComponent={MetaCell}
-                            onLayout={(e) => {
-                              listHeight.current = e.nativeEvent.layout.height;
-                              placeDay();
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            showsHorizontalScrollIndicator={false}
-                            // The first screenful at once, from the newest up; the rest as it nears.
-                            initialNumToRender={INITIAL_ROWS}
-                            maxToRenderPerBatch={BATCH_ROWS}
-                            windowSize={WINDOW}
-                            // Rows added under the reader leave what is shown where it is; at the bottom the
-                            // list goes on to the new one.
-                            maintainVisibleContentPosition={FOLLOW}
-                            onEndReached={onReachOld}
-                            onEndReachedThreshold={OLD_THRESHOLD}
-                            ListFooterComponent={older ? <>{older}</> : null}
-                            ListHeaderComponent={
-                              latest ? (
-                                <View
-                                  onLayout={(e) => setLatestHeight(e.nativeEvent.layout.height)}
-                                >
-                                  {latest}
-                                </View>
-                              ) : null
-                            }
-                            // Dragging the messages puts the keyboard away, like any chat app.
-                            keyboardDismissMode="on-drag"
-                            keyboardShouldPersistTaps="handled"
-                            contentContainerStyle={contentContainerStyle}
-                            scrollEventThrottle={64}
-                            onScroll={onScroll}
-                            onScrollBeginDrag={() => {
-                              dragging.current = true;
-                              pinned.current = false;
-                              bar.setOpen(null);
-                              showDay();
-                            }}
-                            onScrollEndDrag={(e) => {
-                              dragging.current = false;
-                              if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
-                                pinned.current = true;
-                              }
-                              hideDaySoon();
-                            }}
-                            onMomentumScrollBegin={showDay}
-                            onMomentumScrollEnd={(e) => {
-                              if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
-                                pinned.current = true;
-                              }
-                              hideDaySoon();
-                            }}
-                            // A row came or grew (a photo, a quote): at the end it stays at the end.
-                            onContentSizeChange={() => {
-                              if (pinned.current && !dragging.current && !popOpenRef.current) {
-                                stayAtEnd();
-                              }
-                            }}
-                            onViewableItemsChanged={onViewable}
-                            viewabilityConfig={VIEWABLE}
-                            onScrollToIndexFailed={(info) => {
-                              // A row not drawn yet: near it first, then to it.
-                              list.current?.scrollToOffset({
-                                offset: info.averageItemLength * info.index,
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                        // The first screenful at once, from the newest up; the rest as it nears.
+                        initialNumToRender={INITIAL_ROWS}
+                        maxToRenderPerBatch={BATCH_ROWS}
+                        windowSize={WINDOW}
+                        // Rows added under the reader leave what is shown where it is; at the bottom the
+                        // list goes on to the new one.
+                        maintainVisibleContentPosition={FOLLOW}
+                        onEndReached={onReachOld}
+                        onEndReachedThreshold={OLD_THRESHOLD}
+                        ListFooterComponent={older ? <>{older}</> : null}
+                        ListHeaderComponent={
+                          latest ? (
+                            <View onLayout={(e) => setLatestHeight(e.nativeEvent.layout.height)}>
+                              {latest}
+                            </View>
+                          ) : null
+                        }
+                        // Dragging the messages puts the keyboard away, like any chat app.
+                        keyboardDismissMode="on-drag"
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={contentContainerStyle}
+                        scrollEventThrottle={64}
+                        onScroll={onScroll}
+                        onScrollBeginDrag={() => {
+                          dragging.current = true;
+                          pinned.current = false;
+                          bar.setOpen(null);
+                          showDay();
+                        }}
+                        onScrollEndDrag={(e) => {
+                          dragging.current = false;
+                          if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
+                            pinned.current = true;
+                          }
+                          hideDaySoon();
+                        }}
+                        onMomentumScrollBegin={showDay}
+                        onMomentumScrollEnd={(e) => {
+                          if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
+                            pinned.current = true;
+                          }
+                          hideDaySoon();
+                        }}
+                        // A row came or grew (a photo, a quote): at the end it stays at the end.
+                        onContentSizeChange={() => {
+                          if (pinned.current && !dragging.current && !popOpenRef.current) {
+                            stayAtEnd();
+                          }
+                        }}
+                        onViewableItemsChanged={onViewable}
+                        viewabilityConfig={VIEWABLE}
+                        onScrollToIndexFailed={(info) => {
+                          // A row not drawn yet: near it first, then to it.
+                          list.current?.scrollToOffset({
+                            offset: info.averageItemLength * info.index,
+                            animated: true,
+                          });
+                          setTimeout(
+                            () =>
+                              list.current?.scrollToIndex({
+                                index: info.index,
                                 animated: true,
-                              });
-                              setTimeout(
-                                () =>
-                                  list.current?.scrollToIndex({
-                                    index: info.index,
-                                    animated: true,
-                                    viewPosition: 0.5,
-                                  }),
-                                JUMP_RETRY_MS,
-                              );
-                            }}
-                          />
-                        </DayReportContext.Provider>
-                      </MetaReportContext.Provider>
-                    )}
-                  </ChatScrollingContext.Provider>
-                </ChatHighlightContext.Provider>
-              </ChatInvertedContext.Provider>
-            </ChatNewestContext.Provider>
-          </ChatLiveContext.Provider>
+                                viewPosition: 0.5,
+                              }),
+                            JUMP_RETRY_MS,
+                          );
+                        }}
+                      />
+                    </DayReportContext.Provider>
+                  </MetaReportContext.Provider>
+                )}
+              </ChatScrollingContext.Provider>
+            </ChatInvertedContext.Provider>
+          </ChatRowStoreContext.Provider>
         </ChatJumpContext.Provider>
       </ChatBarContext.Provider>
       {band}
