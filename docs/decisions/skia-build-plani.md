@@ -83,7 +83,7 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 - Maske yalnız beyazdır (dolgu ve çizgi beyaz ya da yok, gradyan yok; testli). Dört takımın maskesinde `opacity` vardır (`kistakimi` .16 ve .35, `yildiztakimi` .8, `dalgictakimi` .7, `astronottakimi` .88 ve .9): maske takımın kendisinin beyaza boyanmış hâlidir, yarı saydam parçada parıltı o kadar soluktur. P6 maskeyi alfa maskesi olarak çizer (opaklık dahil); değerler testte sabit.
 - P6 için: `kistakimi`, `buyucutakimi` ve `korsantakimi` maskelerinin içinde iç içe `clipPath` var.
 
-## P5'in sonuçları (10 Kasım)
+## P5'in sonuçları (11 Kasım)
 
 - Eklendi: `@shopify/react-native-skia` 2.6.2 (Expo 57.0.26 `bundledNativeModules.json`'daki sürüm, paketten); geçişliler `react-reconciler` 0.31.0 ve `scheduler` 0.25.0 (MIT), `canvaskit-wasm` 0.41.0 ve `@webgpu/types` 0.1.21 (BSD-3), `react-native-skia-android`, `-apple-ios`, `-apple-macos`, `-apple-tvos` 147.1.0 (MIT). `version` 0.11.0.
 - `postinstall` (`install-libs.js`, koddan ve kurulum çıktısından): ağdan indirmez; ön derleme paketlerindeki Apple `xcframework`'lerini ve Android statik kitaplıklarını (dört ABI) paketin `libs/` klasörüne kopyalar (yerelde 713 MB); Android Gradle `libs/android`'i okur. Ön derleme paketlerinin kendi betiği yok.
