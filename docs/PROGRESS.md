@@ -11,8 +11,8 @@ Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başl
 | T0  | Taban ölçüm                                                                  | Telefon      | —        | Tamamlandı, #558 ve #560 (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T0) |
 | P2  | Skia'dan bağımsız düzeltmeler (M3-02, M15-46/1, M3-05, 07, 08, 09, 10, 12)   | OTA          | Sonnet   | Birleşti, #555; M15-46/1 ve M3-09 telefonda bakılacak                         |
 | P3  | "Klip içi hareket" katman türü, kırpılmış kare yolu                          | OTA          | Opus     | Birleşti, #561; telefonda T1'de bakılır                                       |
-| P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri | OTA          | Sonnet   | Açık                                                                          |
-| T1  | Ölçüm tekrarı                                                                | Telefon      | —        | P4'ü bekler                                                                   |
+| P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri | OTA          | Sonnet   | Birleşti, #562; M15-30 ve Süsle karoları telefonda bakılacak                  |
+| T1  | Ölçüm tekrarı                                                                | Telefon      | —        | Açık: proje sahibinin telefon adımı (P3 ve P4'ü içeren OTA ile)               |
 | P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`        | Build        | Opus     | Açık                                                                          |
 | P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri      | 0.11.0'a OTA | Opus     | Açık                                                                          |
 | T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                 | Telefon      | —        | P6'yı bekler                                                                  |
@@ -23,7 +23,7 @@ Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başl
 ### Devir notu (10 Kasım 2026, Skia T0 ve P2 sonrası)
 
 - T0 (Galaxy S23, 0.10.0 build 20): aksesuarsız p95 5 ms; `kistakimi` p95 9 ms, jank %7,5; `gokkusagiatki` saniyede yaklaşık 8,5 kare; 12 `kistakimi` avatarı jank %80, TOTAL PSS 947 MB; 48 avatar Java yığınını doldurup çöker (M3-15). Panel ızgara sahnesinde yanılır; karar `gfxinfo`'ya göre verilir.
-- P3 bitti (`FxInside`, kare başına kırpma; sonuçlar plan belgesinde "P3'ün sonuçları"). Sıradaki: P4 (Sonnet), sonra T1 (proje sahibinin telefon adımı).
+- P3 (#561: `FxInside`, kare başına kırpma; sonuçlar plan belgesinde "P3'ün sonuçları") ve P4 (#562) bitti. Sıradaki T1: proje sahibi T0'ın sahnelerini aynı telefonda yeniden ölçer; sonra P5 (native, Opus).
 - `lookPop` ve `lookCard`'a metin ekleyen her iş `capsuleLook.test.ts`'teki ten testini koşar (M15-26'nın kök nedeni ilk `</g></g>` aramasıydı).
 - Gizli içerik kapısı ana kopyada `.claude/worktrees/` altını okuyamayınca commit'i durdurur: ajan worktree'sinde commit o klasörün içinden atılır; biten worktree `git worktree remove` ile kaldırılır.
 - Telefon ölçümünü proje sahibinin bilgisayarındaki oturum bir dala gönderir; PR'ı orkestra açar, önce kanıt klasörünü kişisel veri ve sır için tarar.
