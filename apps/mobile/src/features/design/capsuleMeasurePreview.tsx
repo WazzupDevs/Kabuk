@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, View } from 'react-native';
+import { View } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
 import { useKit } from '@/aura/kit';
@@ -31,8 +31,9 @@ const LOOKS: Record<Exclude<Scene, 'grid'>, string> = {
 };
 const GRID_LOOK = 'c:pembe e:koyu x:kistakimi';
 const GRID_COLUMNS = 4;
-const GRID_COUNT = 48;
-const GRID_ROWS_SHOWN = 3;
+// The most a table seats (MAX_TABLE_PHONES), all on the screen at once. With 48, four times that,
+// the scene died of a memory error on the first measurement (T0, 10 Kasım).
+const GRID_COUNT = 12;
 const GRID_AVATAR = SPACING[14];
 const GRID_GAP = SPACING[2];
 const GRID_DATA = Array.from({ length: GRID_COUNT }, (_, i) => i);
@@ -125,18 +126,23 @@ function noop() {}
 function Grid() {
   return (
     <FxMoves>
-      <FlatList
+      <View
         testID="capsule-measure-grid"
-        data={GRID_DATA}
-        numColumns={GRID_COLUMNS}
-        keyExtractor={(i) => String(i)}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        nestedScrollEnabled
-        style={{ height: GRID_ROWS_SHOWN * (GRID_AVATAR + GRID_GAP) }}
-        columnWrapperStyle={{ justifyContent: 'space-around', marginBottom: GRID_GAP }}
-        renderItem={() => <LookAvatar look={GRID_LOOK} size={GRID_AVATAR} />}
-      />
+        style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}
+      >
+        {GRID_DATA.map((i) => (
+          <View
+            key={i}
+            style={{
+              width: `${100 / GRID_COLUMNS}%`,
+              alignItems: 'center',
+              marginBottom: GRID_GAP,
+            }}
+          >
+            <LookAvatar look={GRID_LOOK} size={GRID_AVATAR} />
+          </View>
+        ))}
+      </View>
     </FxMoves>
   );
 }
