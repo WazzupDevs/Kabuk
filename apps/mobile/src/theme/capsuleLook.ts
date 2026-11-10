@@ -82,13 +82,13 @@ export function lookPop(code: string, emo = '', edge = 0): string {
   const { parts, layers, eyes } = dressed(code, edge);
   let svg = LOOK.pop(parts, emo).replace(POP_CLIP, POP_CLIP_PATH);
   if (eyes) svg = svg.replace(EYE_SHAPE, '');
-  svg = withSkin(svg, layers.skin);
   const ring = `<clipPath id="${IN_RING}"><circle cx="24" cy="24" r="24"/></clipPath>`;
   const inRing = (part: string) => (part ? `<g clip-path="url(#${IN_RING})">${part}</g>` : '');
   // Inside the clipped group, over the capsule and under a feeling's things around it; before the
-  // halo goes in (its own groups would take the first `</g></g>`).
+  // halo and the skin go in (their own nested groups would take the first `</g></g>`).
   const over = inRing(layers.lowEdge + layers.low) + layers.edge + layers.front;
   if (over) svg = svg.replace('</g></g>', `${over}</g></g>`);
+  svg = withSkin(svg, layers.skin);
   if (layers.back)
     svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${inRing(layers.back)}`);
   if (layers.back || layers.low) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `${ring}$1`);
