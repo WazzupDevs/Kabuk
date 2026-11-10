@@ -2306,6 +2306,23 @@ export const tr = {
             : 'Sıradaki oyun ne olsun?',
       person: 'Masada',
     },
+    // Bileşen önizleme → Kapsül ölçümü (capsuleMeasurePreview.tsx).
+    capsuleMeasure: {
+      set: 'Kapsül ölçümü',
+      scenes: {
+        bare: 'Büyük, aksesuarsız',
+        winter: 'Büyük, kış takımı',
+        rainbow: 'Büyük, gökkuşağı atkı',
+        grid: 'Izgara, 48 avatar',
+      },
+      hint: 'Sahneyi seç, Ölç’e bas, 30 sn dokunmadan bekle.',
+      measure: 'Ölç (30 sn)',
+      measuring: (left: number) => `Ölçülüyor, ${left} sn`,
+      result: (p50: number, p95: number, jankPct: number, jsP95: number) =>
+        `Ekran p50 ${p50} ms · p95 ${p95} ms · takılma %${jankPct} · JS p95 ${jsP95} ms`,
+      none: 'Henüz ölçüm yok.',
+      label: 'Kapsül',
+    },
   },
   // The game screens' parts (src/components/game/).
   gameParts: {

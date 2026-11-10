@@ -4,7 +4,7 @@ import LOOK from './capsuleDrawing';
 import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
 
 import { ACCESSORY_ART, accessoryFigure } from './capsuleAccessories';
-import { fxTree } from './capsuleFx';
+import { fxTree, type FxLayer } from './capsuleFx';
 import { eyeLayers, lookCard, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
 
 describe('capsule look', () => {
@@ -113,6 +113,69 @@ describe('pack accessory', () => {
     expect(inside.indexOf('gokkusagiatki')).toBeGreaterThan(-1);
     const horns = svg.lastIndexOf('ejderboynuzu-gLava');
     expect(svg.slice(horns - 400, horns)).not.toContain('url(#in-ring)');
+  });
+
+  it('keeps the other slots out of a skin, in the pop and the card (M15-26)', () => {
+    const others = ['ayisigigozleri', 'elfkulaklari', 'kunaikolyesi'];
+    const skins = GIFT_CATALOG.accessories.filter((a) => a.slots.includes('c'));
+    expect(skins.length).toBeGreaterThan(1);
+    const descendants = (layers: readonly FxLayer[]): string[] =>
+      layers.flatMap((l) =>
+        l.kind === 'still'
+          ? [l.xml]
+          : l.kind === 'frames'
+            ? l.frames.map((f) => f.xml)
+            : descendants(l.layers),
+      );
+    // A drawing tag of the accessory that stands in no defs (and, `still`, in no motion group).
+    const markOf = (id: string, still = false): string => {
+      const open: string[] = [];
+      for (const t of (ACCESSORY_ART[id]?.art ?? '').match(/<[^>]+>/g) ?? []) {
+        if (t.startsWith('</')) open.pop();
+        else if (t.endsWith('/>')) {
+          if (
+            /^<(path|circle|ellipse|rect)\b/.test(t) &&
+            !open.some((o) => o.startsWith('<defs') || (still && o.includes('data-fx=')))
+          )
+            return t;
+        } else open.push(t);
+      }
+      return '';
+    };
+    // The tags still open where `name` stands (the clips' numbers aside).
+    const openGroups = (svg: string, name: string): string[] => {
+      const at = svg.indexOf(name);
+      expect(at, name).toBeGreaterThan(-1);
+      const open: string[] = [];
+      for (const t of svg.slice(0, at).match(/<[^>]+>/g) ?? []) {
+        if (t.startsWith('</')) open.pop();
+        else if (!t.endsWith('/>')) open.push(t.replace(/cpc\d+/g, 'cpc'));
+      }
+      return open;
+    };
+    for (const skin of skins) {
+      const dressedCode = `c:pembe e:koyu x:${skin.id} ${others.map((o) => `x:${o}`).join(' ')}`;
+      const bareCode = `c:pembe e:koyu ${others.map((o) => `x:${o}`).join(' ')}`;
+      for (const draw of [lookPop, lookCard]) {
+        const svg = draw(dressedCode);
+        // Each other accessory sits under the same open groups with the skin as without it
+        // (the body clip's group).
+        for (const o of others) {
+          const name = markOf(o);
+          expect(name, o).not.toBe('');
+          const withSkin = openGroups(svg, name);
+          expect(withSkin, `${skin.id} ${o}`).toEqual(openGroups(draw(bareCode), name));
+        }
+        for (const top of fxTree(svg)?.layers ?? []) {
+          if (top.kind !== 'move') continue;
+          const inside = descendants(top.layers).join('');
+          for (const o of others) {
+            const mark = markOf(o, true);
+            if (mark) expect(inside, `${skin.id} ${o}`).not.toContain(mark);
+          }
+        }
+      }
+    }
   });
 
   it('draws nothing for an unknown accessory', () => {
