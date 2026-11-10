@@ -114,6 +114,27 @@ Kapsülün çizim yolundaki her değişiklik (T0 taban, T1 OTA düzeltmelerinden
 - **Pil:** ölçülmedi (telefon USB ile bağlıydı).
 - **Sapma:** 2. sahnenin ilk koşusundan birkaç saniye önce başka bir uygulamanın bildirimi düştü (ekran görüntüsü başka uygulamanın bildirim metnini taşıdığı için depoya konmadı); sayıları öteki iki koşudan ayrışmadı. Ölçüm betiği her koşuda Ölç'e de basar, `gfxinfo` penceresi panelin 30 saniyesiyle aynıdır.
 
+### T1: OTA düzeltmelerinden sonra (11 Kasım 2026)
+
+- **Cihaz:** T0'daki Samsung Galaxy S23; öteki cihazlar ölçülmedi.
+- **Build:** 0.10.0 (20), son PR #562 (preview kanalı; uygulama iki kez kapatılıp açıldı, "güncelleme yok" dedi, Süsle'de #562'nin "Rastgele karıştır" etiketi görünüyor).
+- **Koşul:** güç tasarrufu kapalı, animatör 1x, koyu tema, USB bağlı ve şarj oluyor; pil ölçüm boyunca %25'ten %48'e çıktı (T0'da %100), pil sıcaklığı 26,6–28,1 °C. Ham çıktılar `docs/denetim/kanit/kapsul-t1/` (`kapsul-`, `bellek-`, `panel-s23-T1-<sahne>-<n>`; koşudan önce ve sonra ekran görüntüsü). Sayılar üç koşunun ortancası; 4. sahne kaydırmasız.
+
+| Sahne                    | Toplam kare | Kare p50 | Kare p95 | Kare p99 | Jank % | Graphics (MB) | Native Heap (MB) | TOTAL PSS (MB) | Panel UI p95 | Panel JS p95 | Pil (mAh / 5 dk) |
+| ------------------------ | ----------- | -------- | -------- | -------- | ------ | ------------- | ---------------- | -------------- | ------------ | ------------ | ---------------- |
+| 1. Aksesuarsız           | 1610        | 5 ms     | 5 ms     | 13 ms    | 1,6    | 80            | 112              | 353            | 8,3 ms       | 8,9 ms       | ölçülmedi        |
+| 2. `kistakimi`           | 1691        | 5 ms     | 6 ms     | 13 ms    | 1,7    | 92            | 146              | 413            | 8,3 ms       | 8,9 ms       | ölçülmedi        |
+| 3. `gokkusagiatki`       | 3080        | 8 ms     | 10 ms    | 11 ms    | 12,6   | 117           | 203              | 523            | 8,3 ms       | 9,1 ms       | ölçülmedi        |
+| 4. Izgara, 12 avatar     | 1677        | 12 ms    | 15 ms    | 18 ms    | 75,7   | 81            | 352              | 698            | 8,3 ms       | 10 ms        | ölçülmedi        |
+| 5. Paketler, açılan kart | 0           | —        | —        | —        | 0      | 165           | 201              | 535            | —            | —            | ölçülmedi        |
+
+- **T0'a göre:** 1. sahne aynı. 2. sahnede p95 9 → 6 ms, jank %7,5 → %1,7, `Graphics` 128 → 92 MB, TOTAL PSS 508 → 413 MB. 3. sahnede 30 saniyede 254 → 3080 kare, p95 200 → 10 ms, jank %100 → %12,6, `Graphics` 239 → 117 MB, TOTAL PSS 666 → 523 MB; panelde ekran p50 116,8 → 8,3 ms. 4. sahnede p95 21 → 15 ms, `Native Heap` 476 → 352 MB, TOTAL PSS 947 → 698 MB; jank %80,2 → %75,7, karelerin çoğu hâlâ 8,3 ms'lik bütçenin üstünde. 5. sahne aynı (açılan kart dururken kare çizilmiyor).
+- **3. sahne:** üç koşuda 2703, 3094, 3080 kare; jank %22,5, %12,6, %9,6; p95 üçünde de 10 ms. Koşudan koşuya bellek büyümüyor (`Graphics` 117 MB, TOTAL PSS 496–527 MB), sıcaklık artmıyor. Ekran bu sahnede boşa geçmediği için panel sonucu ekran görüntüsünden okundu (`panel-` dosyaları elle yazıldı). Sahnenin alt kenarı koşularda ekranın birkaç piksel dışında kaldı.
+- **4. sahne:** çökme yok; üç koşuda 1672–1685 kare, p95 14–15 ms, jank %72,8–81,6. `Native Heap` koşudan koşuya sabit (350–354 MB; T0'da 325, 476, 494 MB).
+- **5. sahne:** test hesabında üç Bronz paket açıldı; açılan kart dururken üç koşuda 0 kare. Ek pencere, yırtma ve kartın gelişi (yırtmadan sonraki 12 sn, üç koşu): 295–303 kare, p50 6 ms, p95 10–12 ms, p99 12–14 ms, jank %1–2,4 (`kapsul-s23-T1-5-acilis-<n>.txt`); T0'da aynı pencerede 554–555 kare, p95 10–11 ms. Kart çevirme penceresi ölçülmedi.
+- **Pil:** ölçülmedi (telefon USB ile bağlıydı).
+- **Sapma:** 3. sahnenin ilk üç koşusu sayılmadı ve yeniden alındı: birincisine gelen bir arama girdi (görüntüsü depoya konmadı), öteki ikisinde betik Ölç'e basamadı (panel çalışmadan 2264 ve 2283 kare, p95 10 ms, jank %44 ve %42). Tablodaki sayılar ikinci üç koşunundur; ilk koşuların dosyaları üzerine yazıldı.
+
 ## Her değişiklikte
 
 1. **Önce:** değişiklikten önceki build ya da OTA ile bu protokol koşulur ve tablo PR'a yazılır.
