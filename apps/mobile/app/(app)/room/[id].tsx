@@ -43,7 +43,7 @@ import {
 } from '@/features/rooms/queries';
 import { PeopleSheet } from '@/features/rooms/RoomPeople';
 import { TableEnd } from '@/features/rooms/TableEnd';
-import { useTableEndStore } from '@/features/rooms/tableEnd';
+import { useTableEndStore } from '@/features/rooms/tableEndStore';
 import { tableScreenView } from '@/features/rooms/tableScreen';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';

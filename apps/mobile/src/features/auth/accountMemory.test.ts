@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { useTableEndStore } from '../rooms/tableEnd';
+import { useTableEndStore } from '../rooms/tableEndStore';
 import { accountChange, forgetAccountMemory } from './accountMemory';
 
 describe('an account change', () => {
