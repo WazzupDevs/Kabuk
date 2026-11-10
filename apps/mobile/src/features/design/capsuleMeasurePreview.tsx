@@ -162,7 +162,7 @@ function useMeter() {
   }, false);
   useEffect(() => {
     if (!running) return undefined;
-    uiGaps.value = [];
+    uiGaps.set([]);
     frames.setActive(true);
     const jsGaps: number[] = [];
     let at = performance.now();
@@ -179,7 +179,7 @@ function useMeter() {
     const done = setTimeout(() => {
       frames.setActive(false);
       cancelAnimationFrame(raf);
-      setResult({ ui: switchStats([...uiGaps.value]), js: switchStats(jsGaps) });
+      setResult({ ui: switchStats([...uiGaps.get()]), js: switchStats(jsGaps) });
       setRunning(false);
     }, MEASURE_MS);
     return () => {
