@@ -7,3 +7,10 @@ export const ChatScrollingContext = createContext(false);
 export function useChatScrolling(): boolean {
   return useContext(ChatScrollingContext);
 }
+
+// The rows whose face moves (ChatList gives it, lib/faceMovers.ts); a face outside it is drawn still.
+export const ChatMoversContext = createContext<ReadonlySet<string>>(new Set());
+
+export function useChatMovers(): ReadonlySet<string> {
+  return useContext(ChatMoversContext);
+}

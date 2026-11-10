@@ -17,6 +17,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
 import type { IconName } from './Button';
+import { InSheetLoops, useSheetsOpen } from './Loader';
 import { Quiet } from './Quiet';
 import { useSheetCloser } from './sheetCloser';
 import { SheetCard } from './SheetCard';
@@ -84,6 +85,12 @@ export function Sheet({
   const reduce = useReduceMotion();
   const [mounted, setMounted] = useState(visible);
   useLeaveKeyboard(visible);
+  // While the sheet is on the screen the screen behind holds its loops (Loader.tsx → useLoopActive).
+  useEffect(() => {
+    if (!mounted) return undefined;
+    useSheetsOpen.setState((s) => ({ count: s.count + 1 }));
+    return () => useSheetsOpen.setState((s) => ({ count: Math.max(0, s.count - 1) }));
+  }, [mounted]);
   const [progress] = useState(() => new Animated.Value(0));
   if (visible && !mounted) setMounted(true);
   // closeAllSheets: an open sheet closes as if tapped outside.
@@ -120,105 +127,110 @@ export function Sheet({
       onRequestClose={onClose ?? (() => undefined)}
     >
       {/* A Modal is a window of its own: the sheet's pull needs its own gesture root there. */}
-      <GestureHandlerRootView style={{ flex: 1, justifyContent: 'flex-end' }}>
-        <SheetScrim opacity={progress} />
-        <Pressable
-          accessibilityRole={onClose ? 'button' : undefined}
-          accessibilityLabel={onClose ? tr.common.close : undefined}
-          disabled={!onClose}
-          onPress={onClose}
-          className="absolute inset-0"
-        />
-        <Animated.View
-          accessibilityViewIsModal
-          // docs/design/aura (`.sheet`), down to the screen's foot as Telegram Android's sheets (the
-          // owner's call, 30 Ekim). Pulled down, it closes like a tap outside (SheetCard).
-          style={{
-            ...(top !== undefined ? { height: height - top } : { maxHeight: '90%' }),
-            transform: [
-              {
-                translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
-              },
-            ],
-          }}
-        >
-          <SheetCard
-            onClose={onClose}
-            bottomInset={insets.bottom}
-            above={peek ? <Peek kind={peek} /> : null}
-            fill={top !== undefined}
-            scrollRef={scrollRef}
-            footer={
-              footer ? (
-                <InSheet>
-                  <Quiet value>{footer}</Quiet>
-                </InSheet>
-              ) : undefined
-            }
-            footerFade={!!footer}
+      <InSheetLoops.Provider value>
+        <GestureHandlerRootView style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <SheetScrim opacity={progress} />
+          <Pressable
+            accessibilityRole={onClose ? 'button' : undefined}
+            accessibilityLabel={onClose ? tr.common.close : undefined}
+            disabled={!onClose}
+            onPress={onClose}
+            className="absolute inset-0"
+          />
+          <Animated.View
+            accessibilityViewIsModal
+            // docs/design/aura (`.sheet`), down to the screen's foot as Telegram Android's sheets (the
+            // owner's call, 30 Ekim). Pulled down, it closes like a tap outside (SheetCard).
+            style={{
+              ...(top !== undefined ? { height: height - top } : { maxHeight: '90%' }),
+              transform: [
+                {
+                  translateY: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [height, 0],
+                  }),
+                },
+              ],
+            }}
           >
-            <InSheet>
-              <Quiet value>
-                <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
-                  {icon ? (
-                    <View
-                      className="mt-2 items-center justify-center"
-                      style={{
-                        width: ICON_DISC,
-                        height: ICON_DISC,
-                        borderRadius: shape.radius.pill,
-                        backgroundColor: colors.surface2,
-                      }}
-                    >
-                      <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
-                    </View>
-                  ) : null}
-                  {title ? (
-                    <View style={{ gap: SUBTITLE_GAP }}>
+            <SheetCard
+              onClose={onClose}
+              bottomInset={insets.bottom}
+              above={peek ? <Peek kind={peek} /> : null}
+              fill={top !== undefined}
+              scrollRef={scrollRef}
+              footer={
+                footer ? (
+                  <InSheet>
+                    <Quiet value>{footer}</Quiet>
+                  </InSheet>
+                ) : undefined
+              }
+              footerFade={!!footer}
+            >
+              <InSheet>
+                <Quiet value>
+                  <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
+                    {icon ? (
                       <View
-                        className="flex-row items-center"
-                        style={{ gap: KIT.size.titleIconGap }}
+                        className="mt-2 items-center justify-center"
+                        style={{
+                          width: ICON_DISC,
+                          height: ICON_DISC,
+                          borderRadius: shape.radius.pill,
+                          backgroundColor: colors.surface2,
+                        }}
                       >
-                        {titleIcon ? (
-                          <AppIcon
-                            name={titleIcon}
-                            size={KIT.size.titleIcon}
-                            color={colors.accent}
-                          />
-                        ) : null}
-                        <View className="flex-1">
-                          <T
-                            v={titleLarge ? 'sheetTitleLg' : 'title'}
-                            center={centered}
-                            accessibilityRole="header"
-                          >
-                            {title}
-                            {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
-                          </T>
-                        </View>
+                        <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
                       </View>
-                      {subtitle ? (
-                        <T v="fine" center={centered}>
-                          {subtitle}
-                        </T>
-                      ) : null}
-                    </View>
-                  ) : null}
-                </View>
-                <View
-                  style={{
-                    marginTop: title || icon ? KIT.size.sheetGap : 0,
-                    gap: KIT.size.rowGap,
-                    flexGrow: top !== undefined ? 1 : undefined,
-                  }}
-                >
-                  {children}
-                </View>
-              </Quiet>
-            </InSheet>
-          </SheetCard>
-        </Animated.View>
-      </GestureHandlerRootView>
+                    ) : null}
+                    {title ? (
+                      <View style={{ gap: SUBTITLE_GAP }}>
+                        <View
+                          className="flex-row items-center"
+                          style={{ gap: KIT.size.titleIconGap }}
+                        >
+                          {titleIcon ? (
+                            <AppIcon
+                              name={titleIcon}
+                              size={KIT.size.titleIcon}
+                              color={colors.accent}
+                            />
+                          ) : null}
+                          <View className="flex-1">
+                            <T
+                              v={titleLarge ? 'sheetTitleLg' : 'title'}
+                              center={centered}
+                              accessibilityRole="header"
+                            >
+                              {title}
+                              {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                            </T>
+                          </View>
+                        </View>
+                        {subtitle ? (
+                          <T v="fine" center={centered}>
+                            {subtitle}
+                          </T>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </View>
+                  <View
+                    style={{
+                      marginTop: title || icon ? KIT.size.sheetGap : 0,
+                      gap: KIT.size.rowGap,
+                      flexGrow: top !== undefined ? 1 : undefined,
+                    }}
+                  >
+                    {children}
+                  </View>
+                </Quiet>
+              </InSheet>
+            </SheetCard>
+          </Animated.View>
+        </GestureHandlerRootView>
+      </InSheetLoops.Provider>
     </Modal>
   );
 }

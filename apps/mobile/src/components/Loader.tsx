@@ -1,6 +1,7 @@
 import { useIsFocused } from 'expo-router';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, View } from 'react-native';
+import { create } from 'zustand';
 
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
@@ -23,10 +24,17 @@ export type { LoaderKind };
 // (features/design/gorsel/GateState.tsx), so a loader is photographed the same on every run.
 export const LoopsHeld = createContext(false);
 
+// How many sheets are open (Sheet.tsx counts itself while mounted). The screen behind an open sheet
+// keeps no loop going; what is in the sheet (`InSheetLoops`) does.
+export const useSheetsOpen = create<{ count: number }>(() => ({ count: 0 }));
+export const InSheetLoops = createContext(false);
+
 // Whether a looping animation should run: its screen is focused and the app is in the
-// foreground. Loops off screen and in the background stop.
+// foreground. Loops off screen, behind an open sheet and in the background stop.
 export function useLoopActive(): boolean {
   const held = useContext(LoopsHeld);
+  const inSheet = useContext(InSheetLoops);
+  const covered = useSheetsOpen((s) => s.count > 0) && !inSheet;
   const focused = useIsFocused();
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
   useEffect(() => {
@@ -34,7 +42,7 @@ export function useLoopActive(): boolean {
     return () => sub.remove();
   }, []);
   const still = useLabOff('hareket');
-  return !held && focused && foreground && !still;
+  return !held && !covered && focused && foreground && !still;
 }
 
 type Props = {

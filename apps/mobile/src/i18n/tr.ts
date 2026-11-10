@@ -581,7 +581,7 @@ export const tr = {
   capsule: {
     edit: 'Kapsülünü süsle',
     title: 'Kapsülün',
-    shuffle: 'Karıştır',
+    shuffle: 'Rastgele karıştır',
     tapHead: 'Kafama dokun',
     empty: (slot: string) => `${slot} boş`,
     pack: (name: string) => `${name} paketi`,
@@ -623,10 +623,10 @@ export const tr = {
     nickLabel: 'Anonim adın',
     friendsPeople: (n: number) => `${n} kişi`,
     whenProfiled: 'Profilliyken',
-    leaveTitle: 'Kaydetmeden çıkılsın mı?',
-    leaveBody: 'Yaptığın değişiklikler silinir.',
+    leaveTitle: 'Değişiklikler kaydedilmedi',
+    leaveBody: 'Kaydetmeden çıkarsan yaptığın değişiklikler silinir.',
+    saveAndLeave: 'Kaydet ve çık',
     leaveConfirm: 'Kaydetmeden çık',
-    leaveBack: 'Düzenlemeye dön',
     nickRenew: 'Yenile',
     nickWait: (days: number) => `${days} gün sonra yenileyebilirsin.`,
     // A friend's profile (skall tuvali, ProfilBaskasi): the status beside "Mesaj".
