@@ -1195,7 +1195,7 @@ Veri: 2.000 etkin check-in (600'ü tek mekanda), 500 açık masa (100'ü o mekan
 | Yapacak işi olmayan işler: masa kapatma, check-in bitirme, istek süresi, semt kapanışı, Sprengja | Her biri 0,03–0,5 ms; ilk ikisi kısmi indeksle, istek süresi tam taramayla (M11-05)    |
 | `refresh_venue_activity`: 47 mekan, 2.000 check-in                                               | 1,4–2,2 ms                                                                             |
 | `delete_old_messages`: 100.000 eski mesaj                                                        | Çağrı başına 10.000 satır, 145–168 ms (M11-04)                                         |
-| 2.600 hesabın silinmesi (tek deyim)                                                              | 1,4 sn; 500 masa, 700 üyelik, 90.000 mesaj, bütün check-in'ler zincirle gitti (M11-03) |
+| 2.600 hesabın silinmesi (tek deyim)                                                              | 1,4 sn; 500 masa, 700 üyelik, 85.000 mesaj, bütün check-in'ler zincirle gitti (M11-03) |
 | `explore_venues` bu hacimde                                                                      | Sonuçsuz: ilk çağrı 22–24 ms, ikinci 0,7 ms; farkın nedeni incelenmedi                 |
 
 ### Verinin yaşam döngüsü
@@ -1229,7 +1229,7 @@ Veri: 2.000 etkin check-in (600'ü tek mekanda), 500 açık masa (100'ü o mekan
 
 ### İyi yapılmış, korunacak
 
-- 109 yabancı anahtarın hepsinin başında indeks var; zincirleme silme tam taramaya düşmez (2.600 hesap ve 90.000 mesaj 1,4 sn).
+- 109 yabancı anahtarın hepsinin başında indeks var; zincirleme silme tam taramaya düşmez (2.600 hesap ve 85.000 mesaj 1,4 sn).
 - 66 tablonun hepsinde RLS açık; 13 politikanın hepsi ya `(select auth.uid())` biçiminde ya da tek bir yardımcı fonksiyonla (Supabase'in başarım önerisiyle aynı kalıp).
 - Dakikalık işler yapacak iş yokken milisaniyenin altında; seçimleri `skip locked` ile (kural 10); temizlikler parça parça.
 - İş kayıtları için iki ayrı temizlik var; saniyelik işin kaydı ayrıca saatlik silinir.
