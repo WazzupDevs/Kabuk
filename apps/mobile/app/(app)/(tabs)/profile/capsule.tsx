@@ -127,12 +127,11 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       const ids = accessories(look);
       if (ids.join(' ') !== accessories(kept).join(' ')) await giftsApi.wear(ids);
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       haptic('accountReady');
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: profileViewKeys.view(publicId) }),
-        queryClient.invalidateQueries({ queryKey: giftKeys.state }),
-      ]);
+      // The button ends with the answer; the two re-reads run on their own.
+      void queryClient.invalidateQueries({ queryKey: profileViewKeys.view(publicId) });
+      void queryClient.invalidateQueries({ queryKey: giftKeys.state });
     },
   });
   const leave = useCallback(() => {

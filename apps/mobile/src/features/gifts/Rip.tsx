@@ -194,7 +194,11 @@ export function Rip({
   });
   const chromeStyle = useAnimatedStyle(() => ({ opacity: chrome.get() * (1 - done.get()) }));
   const glowStyle = useAnimatedStyle(() => ({ opacity: chrome.get() }));
+  // The card is drawn (and decoded) from the start but not shown before the tear begins: the pack's
+  // picture is nearly clear above its tear, and the card showed there as a faint shade, giving the
+  // prize away.
   const cardStyle = useAnimatedStyle(() => ({
+    opacity: p.get() > 0 || done.get() ? 1 : 0,
     transform: [{ translateY: CARD_RISE * s * rise.get() }],
   }));
   const bodyStyle = useAnimatedStyle(() => ({

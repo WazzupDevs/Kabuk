@@ -2,6 +2,7 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo, useState
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { useLoopActive } from '@/components/Loader';
+import { createLru } from '@/lib/lru';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { FX, type FxLayer, type FxProp, fxTree, sampled, stillSvg } from '@/theme/capsuleFx';
 
@@ -123,10 +124,40 @@ export function FxSvg({
 }) {
   const moves = useContext(FxMotion);
   const reduceMotion = useReduceMotion();
-  const reduce = !moves || reduceMotion || still;
+  // A still drawing holds no focus or app state subscription (useLoopActive); only a moving one.
+  // A drawing with no motion's mark in it (a capsule with no moving accessory) is still as well.
+  if (!moves || reduceMotion || still || !xml.includes(' data-fx="')) {
+    return <CachedSvg xml={stillOf(xml)} width={width} height={height} />;
+  }
+  return <MovingSvg xml={xml} width={width} height={height} paused={paused} lane={lane} />;
+}
+
+// stillSvg's result for a text, made once.
+const stills = createLru<string>(600);
+function stillOf(xml: string): string {
+  const hit = stills.get(xml);
+  if (hit !== undefined) return hit;
+  const made = stillSvg(xml);
+  stills.set(xml, made);
+  return made;
+}
+
+function MovingSvg({
+  xml,
+  width,
+  height,
+  paused,
+  lane,
+}: {
+  xml: string;
+  width: number;
+  height: number;
+  paused: boolean;
+  lane: string;
+}) {
   const active = useLoopActive();
-  const tree = useMemo(() => (reduce ? null : fxTree(xml)), [xml, reduce]);
-  if (!tree) return <CachedSvg xml={reduce ? stillSvg(xml) : xml} width={width} height={height} />;
+  const tree = useMemo(() => fxTree(xml), [xml]);
+  if (!tree) return <CachedSvg xml={xml} width={width} height={height} />;
   // The box drawn as react-native-svg draws it (meet, in the middle).
   const [bx, by, bw, bh] = tree.box;
   const unit = Math.min(width / bw, height / bh);

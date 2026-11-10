@@ -109,6 +109,13 @@ function Packs({
   const rootRef = useRef<View>(null);
   const away = useSharedValue(0);
   const view = packs[front];
+  // Set from Aç to the rip's start: a second tap in that window opens no second pack.
+  const starting = useRef(false);
+  // Closes the rip or the card; the hidden warm card goes with it (its motion stops).
+  const close = () => {
+    setOpening(null);
+    setWarmCard(null);
+  };
 
   useEffect(() => {
     const { otherMs } = GIFT_MOTION.zoom;
@@ -127,18 +134,33 @@ function Packs({
     if (!opening) return undefined;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       setOpening(null);
+      setWarmCard(null);
       return true;
     });
     return () => sub.remove();
   }, [opening]);
 
   const open = () => {
-    if (!view || view.locked || view.unopened === 0 || openPack.isPending || opening) return;
+    if (
+      !view ||
+      view.locked ||
+      view.unopened === 0 ||
+      openPack.isPending ||
+      opening ||
+      starting.current
+    )
+      return;
+    starting.current = true;
     const pack = view.id;
     openPack.mutate(pack, {
+      onError: () => {
+        starting.current = false;
+      },
       onSuccess: (res) => {
-        const begin = (from: Rect | null) =>
+        const begin = (from: Rect | null) => {
+          starting.current = false;
           setOpening({ pack, accessory: res.accessory, from, card: null, phase: 'rip' });
+        };
         // The card is drawn first, hidden; the pack moves two frames later, with it ready.
         setWarmCard(res.accessory);
         requestAnimationFrame(() =>
@@ -244,7 +266,7 @@ function Packs({
             from={opening.card ?? rip}
             stage={stage}
             ready={opening.phase === 'card'}
-            onClose={() => setOpening(null)}
+            onClose={close}
           />
           {opening.phase === 'rip' ? (
             <Rip
@@ -268,7 +290,7 @@ function Packs({
               </T>
             </View>
             <View style={{ position: 'absolute', right: SPACING[5], top: insets.top }}>
-              <Round icon="close" label={tr.gifts.close} onPress={() => setOpening(null)} />
+              <Round icon="close" label={tr.gifts.close} onPress={close} />
             </View>
           </Reanimated.View>
         </View>
