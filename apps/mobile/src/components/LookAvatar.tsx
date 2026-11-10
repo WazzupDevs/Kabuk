@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { View } from 'react-native';
 
+import { createLru } from '@/lib/lru';
 import { stillSvg } from '@/theme/capsuleFx';
 import { lookSvg } from '@/theme/capsuleLook';
 
@@ -9,12 +10,11 @@ import { FxSvg } from './FxSvg';
 
 // A look's avatar drawing, made once (the options of Kapsülünü süsle make the same ones again and
 // again as the person moves between tabs).
-const made = new Map<string, string>();
 const KEEP = 600;
+const made = createLru<string>(KEEP);
 function avatarSvg(look: string): string {
   const hit = made.get(look);
   if (hit !== undefined) return hit;
-  if (made.size >= KEEP) made.clear();
   const xml = lookSvg(look, 'av');
   made.set(look, xml);
   return xml;
