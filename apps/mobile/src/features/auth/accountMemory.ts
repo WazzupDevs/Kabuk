@@ -1,4 +1,4 @@
-import { useTableEndStore } from '../rooms/tableEnd';
+import { useTableEndStore } from '../rooms/tableEndStore';
 
 // What an account change forgets (session.ts → noteUser): the conversations kept on the phone go
 // with the account and with no account; the rest of what was read (the query cache, the photos,
@@ -13,7 +13,7 @@ export function accountChange(
   };
 }
 
-// The app's own memory of the last account: Masa bitti's names and people (rooms/tableEnd.ts).
+// The app's own memory of the last account: Masa bitti's names and people (rooms/tableEndStore.ts).
 export function forgetAccountMemory(): void {
   useTableEndStore.setState({ tables: {} });
 }
