@@ -2392,7 +2392,9 @@ export const tr = {
   // skall tuvali (Haller): no connection, over any screen.
   connection: {
     offlineTitle: 'Bağlantı yok',
-    offlineBody: 'Tekrar bağlanınca liste kendiliğinden güncellenir.',
+    offlineBody: 'Bağlanınca ekran kendiliğinden yenilenir.',
+    // An error state or line while offline (audit M15-21): the connection, not "bir şeyler".
+    offlineError: 'Bağlantı yok. Bağlanınca tekrar dene.',
   },
   errors: {
     bad_request: 'İstek geçersiz.',

@@ -1,4 +1,6 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ConnectionBanner } from '@/components/ConnectionBanner';
 import { useDistrictLaunchLocate } from '@/features/district/launchLocate';
@@ -26,19 +28,23 @@ export default function GroupLayout() {
   useGiftLogin();
   useDistrictLaunchLocate();
   return (
-    <>
-      <Stack screenOptions={stackOptions}>
-        {/* Listed first: a group opened by its guard (after sign-up or sign-in, with no address)
+    <View style={{ flex: 1 }}>
+      {/* "Bağlantı yok" over the screens, in the flow: the screens below it get their own safe
+          area (a nested provider measures it), so their top buttons move down under the band. */}
+      <ConnectionBanner />
+      <SafeAreaProvider style={{ flex: 1 }}>
+        <Stack screenOptions={stackOptions}>
+          {/* Listed first: a group opened by its guard (after sign-up or sign-in, with no address)
             opens on its first listed screen, which was the Ayarlar sheet. */}
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="settings" options={SHEET} />
-        <Stack.Screen name="notifications" options={SHEET} />
-        <Stack.Screen name="checkin/index" options={SHEET} />
-        <Stack.Screen name="spot" options={SHEET} />
-      </Stack>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="settings" options={SHEET} />
+          <Stack.Screen name="notifications" options={SHEET} />
+          <Stack.Screen name="checkin/index" options={SHEET} />
+          <Stack.Screen name="spot" options={SHEET} />
+        </Stack>
+      </SafeAreaProvider>
       {/* A request to the table opens over any screen (docs/SPEC_V3.md §23.C). */}
       <IncomingRequestHost />
-      <ConnectionBanner />
-    </>
+    </View>
   );
 }

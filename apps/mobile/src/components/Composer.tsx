@@ -117,7 +117,11 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             borderRadius: SIZE / 2,
             // A still surface, not live glass: the message passing under it bent its colour into
             // the field (the owner's call, 2 Kasım, 13.3; every chat, 13.5).
-            ...gradientStyle(k.c.glass),
+            // In the light theme a solid white: the half-clear glass let the wallpaper's picture
+            // through under the words (audit M15-20).
+            ...(k.scheme === 'light'
+              ? { backgroundColor: KIT.bubble.light.mine }
+              : gradientStyle(k.c.glass)),
             borderWidth: KIT.size.edge,
             borderColor: k.c.glassEdge,
             boxShadow: fieldShadow.boxShadow,

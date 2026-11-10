@@ -153,6 +153,8 @@ export function EmptyState({
           label={action.label}
           onPress={action.onPress}
           loading={action.loading}
+          // Under the centred words, not at the left edge (audit M15-21).
+          style={{ alignSelf: 'center' }}
         />
       ) : null}
     </View>

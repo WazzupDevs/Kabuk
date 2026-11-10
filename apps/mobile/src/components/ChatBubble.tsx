@@ -540,7 +540,9 @@ export function ChatBubble({
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
         {state ? (
-          // Grup 3, P1b: at 320 dp / 1.3x the actions go to a second line, none cut.
+          // Grup 3, P1b: at 320 dp / 1.3x the actions go to a second line, none cut. On the own
+          // bubble's ground, so the line and its actions read over a picture wallpaper (audit
+          // M15-20).
           <View
             style={{
               flexDirection: 'row',
@@ -548,9 +550,19 @@ export function ChatBubble({
               justifyContent: 'flex-end',
               alignItems: 'center',
               columnGap: SPACING[3],
+              paddingHorizontal: SPACING[3],
+              paddingVertical: state === 'failed' ? 0 : SPACING[1.5],
+              borderRadius: KIT.size.bubbleRadius,
+              backgroundColor: paint.mine,
+              borderWidth: KIT.size.hair,
+              borderColor: paint.mineEdge,
             }}
           >
-            <Text variant="fine" tone={state === 'failed' ? 'danger' : 'muted'}>
+            <Text
+              variant="fine"
+              color={state === 'failed' ? undefined : paint.mineMuted}
+              tone={state === 'failed' ? 'danger' : undefined}
+            >
               {state === 'failed' ? (failedText ?? tr.chat.notSent) : tr.chat.sending}
             </Text>
             {state === 'failed' && onRetry ? (
@@ -570,7 +582,7 @@ export function ChatBubble({
                 onPress={onDiscard}
                 style={{ minHeight: TOUCH.min, justifyContent: 'center' }}
               >
-                <Text variant="label" tone="muted">
+                <Text variant="label" color={paint.mineMuted}>
                   {tr.chat.discard}
                 </Text>
               </Pressable>
