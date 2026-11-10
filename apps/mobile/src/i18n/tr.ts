@@ -2313,7 +2313,7 @@ export const tr = {
         bare: 'Büyük, aksesuarsız',
         winter: 'Büyük, kış takımı',
         rainbow: 'Büyük, gökkuşağı atkı',
-        grid: 'Izgara, 48 avatar',
+        grid: 'Izgara, 12 avatar',
       },
       hint: 'Sahneyi seç, Ölç’e bas, 30 sn dokunmadan bekle.',
       measure: 'Ölç (30 sn)',
