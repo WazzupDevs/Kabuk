@@ -5,9 +5,12 @@
 // how many of the drawing's units one of its own is. The drawing is cut into layers (fxTree) that
 // are each drawn once; a layer moves as a picture on the native driver (components/FxSvg.tsx), as
 // the blink does (LayeredLook). A motion inside a clip or a mask (the shine, the scarf's stripes,
-// the neon scan) moves inside its picture, so it is a few pictures shown in turn (`frames`).
+// the neon scan) moves inside its picture, so it is a few pictures shown in turn (`inside`), each
+// cut to the clip's box (svgBox.ts) so that it is a small picture, not the whole drawing's.
 // The boards' colour flow (hue-rotate, a gradient's colour) has no counterpart in react-native-svg
 // and stays still. With reduce motion every one stays still (the boards: animation none).
+
+import { defBox, IDENTITY, intersect, type Matrix, multiply, parseTransform } from './svgBox';
 
 export type FxProp = 'tx' | 'ty' | 'rotate' | 'scale' | 'sx' | 'sy' | 'skewX' | 'opacity';
 type Keys = readonly (readonly [number, number])[];
@@ -505,12 +508,101 @@ export function framesOf(motion: FxMotion): FxFrame[] {
 
 // --- The drawing cut into layers -------------------------------------------------------------
 
+export type FxBox = [number, number, number, number];
+
+// The clip or mask a motion moves inside: its kind, id and definition (as the drawing has it).
+export type FxClip = { kind: 'clipPath' | 'mask'; id: string; xml: string };
+
+// A motion inside a clip or a mask (the pictures' source, and what a canvas would draw from):
+// `content` is the moving group's inside with no translate, `matrix` takes its units (where the
+// translate applies) to the root viewBox's, `box` is the clip's box in the root viewBox's units
+// (the whole box when there is no clip that can be read; clips further out are left out, so it may
+// be larger than what shows). `root`, `defs` and `outer` (the groups round it opened, the moving
+// group's own tag last) make its pictures (insideSvg).
+export type FxInside = {
+  kind: 'inside';
+  fx: string;
+  clip: FxClip | null;
+  content: string;
+  k: number;
+  // Null when a group's transform is not read (the box is then the whole one).
+  matrix: Matrix | null;
+  box: FxBox;
+  root: string;
+  defs: string;
+  outer: string[];
+};
+
 export type FxLayer =
   | { kind: 'still'; xml: string }
   | { kind: 'move'; fx: string; x: number; y: number; k: number; layers: FxLayer[] }
-  | { kind: 'frames'; fx: string; frames: { from: number; to: number; xml: string }[] };
+  | FxInside;
 
-export type FxTree = { box: [number, number, number, number]; layers: FxLayer[] };
+export type FxTree = { box: FxBox; layers: FxLayer[] };
+
+const fmt = (v: number) => String(Number(v.toFixed(5)));
+
+// A picture of a motion inside its clip, its content moved by (tx, ty) in its own units: with the
+// drawing's whole box when `box` is not given, else the same drawing with that viewBox only.
+export function insideSvg(layer: FxInside, tx: number, ty: number, box?: FxBox): string {
+  const root = box
+    ? layer.root.replace(/viewBox="[^"]*"/, `viewBox="${box.map(fmt).join(' ')}"`)
+    : layer.root;
+  return `${root}${layer.defs}${layer.outer.join('')}<g transform="translate(${tx} ${ty})">${layer.content}</g>${closeAll(layer.outer)}</svg>`;
+}
+
+// What one picture of a motion inside its clip can show, in the root viewBox's units: the clip's box
+// where the moved content's box meets it (a shine is a narrow band of its suit's box). Null when
+// they do not meet: that picture draws nothing. The clip's whole box when the content is not read.
+export function insideBox(layer: FxInside, tx: number, ty: number): FxBox | null {
+  if (!layer.matrix) return layer.box;
+  // The content's shapes with their strokes, as a mask's are measured (svgBox.ts → defBox).
+  const drawn = defBox(
+    `<mask>${layer.content}</mask>`,
+    multiply(layer.matrix, [1, 0, 0, 1, tx, ty]),
+  );
+  if (!drawn) return layer.box;
+  const cut = intersect(drawn, layer.box);
+  return cut ? [...cut] : null;
+}
+
+// Where the root viewBox is drawn in a view (react-native-svg's meet, in the middle): `unit` points
+// a drawing unit, the box's corner (bx, by) at (dx, dy).
+export type FxPlace = { unit: number; dx: number; dy: number; bx: number; by: number };
+
+export function placeOf(box: FxBox, width: number, height: number): FxPlace {
+  const [bx, by, bw, bh] = box;
+  const unit = Math.min(width / bw, height / bh);
+  return { unit, dx: (width - bw * unit) / 2, dy: (height - bh * unit) / 2, bx, by };
+}
+
+// A clip's box on the screen, grown out to whole pixels (`ratio` pixels a point) so that the cut
+// picture stands where the whole one drew it and shows no seam: its view (points) and the viewBox
+// that draws the drawing at the same scale in it.
+export type FxCrop = { left: number; top: number; width: number; height: number; viewBox: FxBox };
+
+export function cropOf(box: FxBox, place: FxPlace, ratio: number): FxCrop {
+  const [x, y, w, h] = box;
+  const px = (v: number, o: number, b: number) => (o + (v - b) * place.unit) * ratio;
+  const e = 1e-6;
+  const l = Math.floor(px(x, place.dx, place.bx) + e);
+  const t = Math.floor(px(y, place.dy, place.by) + e);
+  const r = Math.ceil(px(x + w, place.dx, place.bx) - e);
+  const b = Math.ceil(px(y + h, place.dy, place.by) - e);
+  const back = (p: number, o: number, base: number) => base + (p / ratio - o) / place.unit;
+  return {
+    left: l / ratio,
+    top: t / ratio,
+    width: Math.max(r - l, 0) / ratio,
+    height: Math.max(b - t, 0) / ratio,
+    viewBox: [
+      back(l, place.dx, place.bx),
+      back(t, place.dy, place.by),
+      Math.max(r - l, 0) / ratio / place.unit,
+      Math.max(b - t, 0) / ratio / place.unit,
+    ],
+  };
+}
 
 const MARK = / data-fx="([^"]*)" data-o="(-?[\d.]+) (-?[\d.]+)" data-k="([\d.]+)"/;
 const MARKS = / data-fx="[^"]*" data-o="[^"]*" data-k="[^"]*"/g;
@@ -550,6 +642,45 @@ const closeAll = (stack: readonly string[]) =>
     .reverse()
     .join('');
 
+// The element with this id in a text of definitions, whole.
+function defById(defs: string, id: string): string | null {
+  const tokens = defs.match(/<[^>]+>/g) ?? [];
+  const at = tokens.findIndex((t) => !isClose(t) && t.includes(` id="${id}"`));
+  if (at < 0) return null;
+  const t = tokens[at] ?? '';
+  return tokens.slice(at, (isOpen(t) ? closing(tokens, at) : at) + 1).join('');
+}
+
+// A motion inside a clip as its pictures in turn (framesOf), each cut to `box` when given.
+export function insideFrames(
+  layer: FxInside,
+  box?: FxBox,
+): { from: number; to: number; xml: string }[] {
+  const motion = FX[layer.fx];
+  if (!motion) return [];
+  return framesOf(motion).map((f) => ({
+    from: f.from,
+    to: f.to,
+    xml: insideSvg(layer, f.tx, f.ty, box),
+  }));
+}
+
+// The same pictures as a view draws them: each cut to what it can show (insideBox), on whole
+// pixels (cropOf); a picture that shows nothing is left out.
+export type FxCut = { from: number; to: number; crop: FxCrop; xml: string };
+
+export function insideCuts(layer: FxInside, place: FxPlace, ratio: number): FxCut[] {
+  const motion = FX[layer.fx];
+  if (!motion) return [];
+  return framesOf(motion).flatMap((f): FxCut[] => {
+    const box = insideBox(layer, f.tx, f.ty);
+    if (!box) return [];
+    const crop = cropOf(box, place, ratio);
+    if (crop.width <= 0 || crop.height <= 0) return [];
+    return [{ from: f.from, to: f.to, crop, xml: insideSvg(layer, f.tx, f.ty, crop.viewBox) }];
+  });
+}
+
 // The drawing as layers, or null when nothing in it moves. Every layer is a whole SVG with the
 // drawing's box and all its definitions (clips, masks, gradients), the groups round it opened again.
 export function fxTree(svg: string): FxTree | null {
@@ -579,9 +710,53 @@ export function fxTree(svg: string): FxTree | null {
       i = end;
     } else body.push(t);
   }
-  const head = root + stillSvg(defs.join(''));
-  const wrap = (stack: readonly string[], inner: string) =>
-    `${head}${stack.join('')}${inner}${closeAll(stack)}</svg>`;
+  const defsXml = stillSvg(defs.join(''));
+  const rootTag: string = root;
+  const head = rootTag + defsXml;
+  const viewBox: FxBox = [bx, by, bw, bh];
+
+  // A motion inside a clip: the innermost clip or mask round it, and that clip's box.
+  function inside(fx: string, k: number, outer: string[], content: string): FxInside {
+    const matrixAt = (n: number): Matrix | null => {
+      let m: Matrix = IDENTITY;
+      for (const t of outer.slice(0, n)) {
+        const tr = /\stransform="([^"]*)"/.exec(t)?.[1];
+        if (tr === undefined) continue;
+        const own = parseTransform(tr);
+        if (!own) return null;
+        m = multiply(m, own);
+      }
+      return m;
+    };
+    let clip: FxClip | null = null;
+    let box: FxBox = viewBox;
+    for (let i = outer.length - 1; i >= 0 && !clip; i--) {
+      const ref = /\s(clip-path|mask)="url\(#([^)]*)\)"/.exec(outer[i] ?? '');
+      if (!ref) continue;
+      const id = ref[2] ?? '';
+      const xml = defById(defsXml, id);
+      if (!xml) break;
+      clip = { kind: ref[1] === 'mask' ? 'mask' : 'clipPath', id, xml };
+      const m = matrixAt(i + 1);
+      const b = m ? defBox(xml, m) : null;
+      if (b) {
+        const cut = intersect(b, viewBox);
+        box = cut ? [...cut] : [b[0], b[1], 0, 0];
+      }
+    }
+    return {
+      kind: 'inside',
+      fx,
+      clip,
+      content,
+      k,
+      matrix: matrixAt(outer.length),
+      box,
+      root: rootTag,
+      defs: defsXml,
+      outer,
+    };
+  }
 
   function build(tokens: readonly string[], outer: readonly string[]): FxLayer[] {
     const layers: FxLayer[] = [];
@@ -609,19 +784,7 @@ export function fxTree(svg: string): FxTree | null {
         const motion = FX[fx];
         const plain = t.replace(MARK, '');
         if (motion?.frames) {
-          const content = stillSvg(inner.join(''));
-          layers.push({
-            kind: 'frames',
-            fx,
-            frames: framesOf(motion).map((f) => ({
-              from: f.from,
-              to: f.to,
-              xml: wrap(
-                stack,
-                `${plain}<g transform="translate(${f.tx} ${f.ty})">${content}</g></g>`,
-              ),
-            })),
-          });
+          layers.push(inside(fx, Number(k), [...stack, plain], stillSvg(inner.join(''))));
         } else if (motion) {
           layers.push({
             kind: 'move',

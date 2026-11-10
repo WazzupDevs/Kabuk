@@ -8,11 +8,11 @@ Kanıt sınıfları: **koddan** (ana dal `52f8378`, grep ve okuma), **paketten**
 
 Skia'ya geçecek aksesuar 15 (koddan: `theme/capsuleAccessories.ts`'te kare yöntemli `data-fx` işaretleri; belgeyle aynı):
 
-| Hareket      | Aksesuar                                                                                                                                                        | Klip                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `glint` (13) | Destansı takımların onu (`kis`, `buyucu`, `yildiz`, `korsan`, `dalgic`, `sef`, `doktor`, `rock`, `astronot`, `hawaii`), `ormanteni`, `geceteni`, `kunaikolyesi` | Takımlar `mask`; `kunaikolyesi` `clipPath`; `ormanteni` ve `geceteni` P3'te doğrulanır |
-| `scan` (1)   | `neongozluk`                                                                                                                                                    | `clipPath`                                                                             |
-| `shift` (1)  | `gokkusagiatki` (üç grup)                                                                                                                                       | `clipPath` (üç ayrı)                                                                   |
+| Hareket      | Aksesuar                                                                                                                                                        | Klip                                                                                                                           |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `glint` (13) | Destansı takımların onu (`kis`, `buyucu`, `yildiz`, `korsan`, `dalgic`, `sef`, `doktor`, `rock`, `astronot`, `hawaii`), `ormanteni`, `geceteni`, `kunaikolyesi` | Takımlar `mask`; `kunaikolyesi`, `ormanteni` ve `geceteni` `clipPath` (P3'te doğrulandı: iki tende gövde yuvarlak dikdörtgeni) |
+| `scan` (1)   | `neongozluk`                                                                                                                                                    | `clipPath`                                                                                                                     |
+| `shift` (1)  | `gokkusagiatki` (üç grup)                                                                                                                                       | `clipPath` (üç ayrı)                                                                                                           |
 
 - Üç hareket de yalnız ötelemedir (`theme/capsuleFx.ts` → `FX.glint`, `scan`, `shift`: `tx` ya da `ty`).
 - Aksesuar çizimlerinde filtre, karışım modu, metin ve resim yok; `mask` tanımı 12. Takım maskesinin içi iç içe `clipPath`, `transform` ve çizgi taşır.
@@ -73,6 +73,15 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 - T0 gelmeden P2 birleşmez (taban kaybolmasın).
 - Hiçbir paket `supabase/`'e, Realtime'a ya da değişmez kurallara dokunmaz; dokunan çıkarsa birleşmeden önce `guvenlik`'ten geçer.
 - iPhone'da SVG ve Skia karşılaştırması 0.11.0 iOS build'inde, paneldeki `skia` anahtarıyla yapılır; iOS'ta SVG yaması yoktur (M3-14), taban orada ilk kez ölçülür.
+
+## P3'ün sonuçları (10 Kasım)
+
+- Tür: `theme/capsuleFx.ts` → `FxInside` (`kind: 'inside'`): hareket, klip (`clipPath` ya da `mask`, tanımıyla), ötelenmemiş içerik, içeriğin biriminden kök kutuya matris, klibin kutusu. Kare yolu (`insideCuts`) ve P6'nın Skia çizicisi aynı türden beslenir. Kutu hesabı `theme/svgBox.ts` (elle, bağımlılıksız; tutucu).
+- Klip dağılımı (koddan, testli): 10 `mask` (takımlar), 7 `clipPath` (`kunaikolyesi`, `ormanteni`, `geceteni`, `neongozluk`, `gokkusagiatki` üç grup).
+- Kırpma kare başınadır: her kare, klibin kutusuyla içeriğin o karedeki kutusunun kesişimine kırpılır, hiçbir şey göstermeyen kare görünüm kurmaz. 208 dp avatarda, 3x'te (koddan hesap): `kistakimi` 18 tam boy görünümden 10 görünüme, çizilen alan kare başına ortalama avatarın %15'i; öteki takımlar %3–14; `gokkusagiatki` üç grupta %4, %5, %22 (görünüm sayısı 72, değişmedi).
+- Aynılık (tarayıcıda, Chromium; telefonda değil): 15 aksesuar, üç çizim biçimi, 2,625x ve 3x, 2.640 kare; eski tam boy kareyle kırpılmış kare arasında 33,4 milyon boyalı pikselde 608 piksel belirgin farklı (kenar yumuşatması). Telefondaki çizim T1'de bakılır.
+- Maske yalnız beyazdır (dolgu ve çizgi beyaz ya da yok, gradyan yok; testli). Dört takımın maskesinde `opacity` vardır (`kistakimi` .16 ve .35, `yildiztakimi` .8, `dalgictakimi` .7, `astronottakimi` .88 ve .9): maske takımın kendisinin beyaza boyanmış hâlidir, yarı saydam parçada parıltı o kadar soluktur. P6 maskeyi alfa maskesi olarak çizer (opaklık dahil); değerler testte sabit.
+- P6 için: `kistakimi`, `buyucutakimi` ve `korsantakimi` maskelerinin içinde iç içe `clipPath` var.
 
 ## M15'in kapsül bulguları
 

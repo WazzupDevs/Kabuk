@@ -1,10 +1,21 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
+import { Animated, Easing, PixelRatio, StyleSheet, View } from 'react-native';
 
 import { useLoopActive } from '@/components/Loader';
 import { createLru } from '@/lib/lru';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { FX, type FxLayer, type FxProp, fxTree, sampled, stillSvg } from '@/theme/capsuleFx';
+import {
+  FX,
+  type FxInside,
+  type FxLayer,
+  type FxPlace,
+  type FxProp,
+  fxTree,
+  insideCuts,
+  placeOf,
+  sampled,
+  stillSvg,
+} from '@/theme/capsuleFx';
 
 import { CachedSvg } from './CachedSvg';
 
@@ -94,8 +105,6 @@ function useClock(ms: number, on: boolean, lane: string): Animated.Value {
   return clockOf(ms, lane).value;
 }
 
-type Place = { unit: number; dx: number; dy: number; bx: number; by: number };
-
 // Where the accessories move (the owner's call, 7 Kasım): the opened card, the profile's capsule,
 // Kapsülünü süsle's big capsule, the venue chat, the table and its games. Everywhere else (lists,
 // Süsle's small capsules, the pack's card under the rip) a drawing is still, as the boards draw it.
@@ -159,15 +168,7 @@ function MovingSvg({
   const tree = useMemo(() => fxTree(xml), [xml]);
   if (!tree) return <CachedSvg xml={xml} width={width} height={height} />;
   // The box drawn as react-native-svg draws it (meet, in the middle).
-  const [bx, by, bw, bh] = tree.box;
-  const unit = Math.min(width / bw, height / bh);
-  const place: Place = {
-    unit,
-    dx: (width - bw * unit) / 2,
-    dy: (height - bh * unit) / 2,
-    bx,
-    by,
-  };
+  const place = placeOf(tree.box, width, height);
   return (
     <View style={{ width, height }}>
       <Layers
@@ -193,7 +194,7 @@ function Layers({
   layers: FxLayer[];
   width: number;
   height: number;
-  place: Place;
+  place: FxPlace;
   on: boolean;
   lane: string;
 }) {
@@ -202,8 +203,8 @@ function Layers({
       <View key={i} style={StyleSheet.absoluteFill} pointerEvents="none">
         <CachedSvg xml={l.xml} width={width} height={height} />
       </View>
-    ) : l.kind === 'frames' ? (
-      <Frames key={i} layer={l} width={width} height={height} on={on} lane={lane} />
+    ) : l.kind === 'inside' ? (
+      <Inside key={i} layer={l} place={place} on={on} lane={lane} />
     ) : (
       <Move key={i} layer={l} width={width} height={height} place={place} on={on} lane={lane} />
     ),
@@ -223,7 +224,7 @@ function Move({
   layer: Extract<FxLayer, { kind: 'move' }>;
   width: number;
   height: number;
-  place: Place;
+  place: FxPlace;
   on: boolean;
   lane: string;
 }) {
@@ -289,44 +290,51 @@ function Move({
   );
 }
 
-// A motion inside its picture: its pictures shown in turn, each in its part of the clock.
-function Frames({
+// A motion inside its clip: its pictures shown in turn, each in its part of the clock, each only as
+// large as what it shows of the clip's box on the screen (theme/capsuleFx.ts → insideCuts).
+function Inside({
   layer,
-  width,
-  height,
+  place,
   on,
   lane,
 }: {
-  layer: Extract<FxLayer, { kind: 'frames' }>;
-  width: number;
-  height: number;
+  layer: FxInside;
+  place: FxPlace;
   on: boolean;
   lane: string;
 }) {
   const motion = FX[layer.fx];
   const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined, lane);
-  const [shown] = useState(() =>
-    layer.frames.map((f) => {
-      const e = 1e-4;
-      const input = [0, Math.max(f.from - e, 0), f.from, Math.max(f.to - e, f.from), f.to, 1];
-      const output = [
-        f.from === 0 ? 1 : 0,
-        f.from === 0 ? 1 : 0,
-        1,
-        1,
-        f.to === 1 ? 1 : 0,
-        f.to === 1 ? 1 : 0,
-      ];
-      return clock.interpolate({ inputRange: input, outputRange: output });
-    }),
+  const cuts = useMemo(() => insideCuts(layer, place, PixelRatio.get()), [layer, place]);
+  const shown = useMemo(
+    () =>
+      cuts.map((f) => {
+        const e = 1e-4;
+        const input = [0, Math.max(f.from - e, 0), f.from, Math.max(f.to - e, f.from), f.to, 1];
+        const output = [
+          f.from === 0 ? 1 : 0,
+          f.from === 0 ? 1 : 0,
+          1,
+          1,
+          f.to === 1 ? 1 : 0,
+          f.to === 1 ? 1 : 0,
+        ];
+        return clock.interpolate({ inputRange: input, outputRange: output });
+      }),
+    [cuts, clock],
   );
-  return layer.frames.map((f, i) => (
+  return cuts.map((f, i) => (
     <Animated.View
       key={i}
       pointerEvents="none"
-      style={[StyleSheet.absoluteFill, { opacity: shown[i] ?? 0 }]}
+      style={{
+        position: 'absolute',
+        left: f.crop.left,
+        top: f.crop.top,
+        opacity: shown[i] ?? 0,
+      }}
     >
-      <CachedSvg xml={f.xml} width={width} height={height} />
+      <CachedSvg xml={f.xml} width={f.crop.width} height={f.crop.height} />
     </Animated.View>
   ));
 }
