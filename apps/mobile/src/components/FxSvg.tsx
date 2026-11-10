@@ -125,7 +125,8 @@ export function FxSvg({
   const moves = useContext(FxMotion);
   const reduceMotion = useReduceMotion();
   // A still drawing holds no focus or app state subscription (useLoopActive); only a moving one.
-  if (!moves || reduceMotion || still) {
+  // A drawing with no motion's mark in it (a capsule with no moving accessory) is still as well.
+  if (!moves || reduceMotion || still || !xml.includes(' data-fx="')) {
     return <CachedSvg xml={stillOf(xml)} width={width} height={height} />;
   }
   return <MovingSvg xml={xml} width={width} height={height} paused={paused} lane={lane} />;
