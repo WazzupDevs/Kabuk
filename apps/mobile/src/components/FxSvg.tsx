@@ -1,18 +1,17 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
 import { Animated, Easing, PixelRatio, StyleSheet, View } from 'react-native';
 
 import { useLoopActive } from '@/components/Loader';
 import { createLru } from '@/lib/lru';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import {
-  cropOf,
   FX,
   type FxInside,
   type FxLayer,
   type FxPlace,
   type FxProp,
   fxTree,
-  insideFrames,
+  insideCuts,
   placeOf,
   sampled,
   stillSvg,
@@ -292,7 +291,7 @@ function Move({
 }
 
 // A motion inside its clip: its pictures shown in turn, each in its part of the clock, each only as
-// large as the clip's box on the screen (theme/capsuleFx.ts → cropOf).
+// large as what it shows of the clip's box on the screen (theme/capsuleFx.ts → insideCuts).
 function Inside({
   layer,
   place,
@@ -306,28 +305,36 @@ function Inside({
 }) {
   const motion = FX[layer.fx];
   const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined, lane);
-  const crop = useMemo(() => cropOf(layer.box, place, PixelRatio.get()), [layer, place]);
-  const frames = useMemo(() => insideFrames(layer, crop.viewBox), [layer, crop]);
-  const [shown] = useState(() =>
-    frames.map((f) => {
-      const e = 1e-4;
-      const input = [0, Math.max(f.from - e, 0), f.from, Math.max(f.to - e, f.from), f.to, 1];
-      const output = [
-        f.from === 0 ? 1 : 0,
-        f.from === 0 ? 1 : 0,
-        1,
-        1,
-        f.to === 1 ? 1 : 0,
-        f.to === 1 ? 1 : 0,
-      ];
-      return clock.interpolate({ inputRange: input, outputRange: output });
-    }),
+  const cuts = useMemo(() => insideCuts(layer, place, PixelRatio.get()), [layer, place]);
+  const shown = useMemo(
+    () =>
+      cuts.map((f) => {
+        const e = 1e-4;
+        const input = [0, Math.max(f.from - e, 0), f.from, Math.max(f.to - e, f.from), f.to, 1];
+        const output = [
+          f.from === 0 ? 1 : 0,
+          f.from === 0 ? 1 : 0,
+          1,
+          1,
+          f.to === 1 ? 1 : 0,
+          f.to === 1 ? 1 : 0,
+        ];
+        return clock.interpolate({ inputRange: input, outputRange: output });
+      }),
+    [cuts, clock],
   );
-  if (crop.width <= 0 || crop.height <= 0) return null;
-  const at = { position: 'absolute', left: crop.left, top: crop.top } as const;
-  return frames.map((f, i) => (
-    <Animated.View key={i} pointerEvents="none" style={[at, { opacity: shown[i] ?? 0 }]}>
-      <CachedSvg xml={f.xml} width={crop.width} height={crop.height} />
+  return cuts.map((f, i) => (
+    <Animated.View
+      key={i}
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: f.crop.left,
+        top: f.crop.top,
+        opacity: shown[i] ?? 0,
+      }}
+    >
+      <CachedSvg xml={f.xml} width={f.crop.width} height={f.crop.height} />
     </Animated.View>
   ));
 }

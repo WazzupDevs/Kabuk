@@ -551,6 +551,21 @@ export function insideSvg(layer: FxInside, tx: number, ty: number, box?: FxBox):
   return `${root}${layer.defs}${layer.outer.join('')}<g transform="translate(${tx} ${ty})">${layer.content}</g>${closeAll(layer.outer)}</svg>`;
 }
 
+// What one picture of a motion inside its clip can show, in the root viewBox's units: the clip's box
+// where the moved content's box meets it (a shine is a narrow band of its suit's box). Null when
+// they do not meet: that picture draws nothing. The clip's whole box when the content is not read.
+export function insideBox(layer: FxInside, tx: number, ty: number): FxBox | null {
+  if (!layer.matrix) return layer.box;
+  // The content's shapes with their strokes, as a mask's are measured (svgBox.ts → defBox).
+  const drawn = defBox(
+    `<mask>${layer.content}</mask>`,
+    multiply(layer.matrix, [1, 0, 0, 1, tx, ty]),
+  );
+  if (!drawn) return layer.box;
+  const cut = intersect(drawn, layer.box);
+  return cut ? [...cut] : null;
+}
+
 // Where the root viewBox is drawn in a view (react-native-svg's meet, in the middle): `unit` points
 // a drawing unit, the box's corner (bx, by) at (dx, dy).
 export type FxPlace = { unit: number; dx: number; dy: number; bx: number; by: number };
@@ -648,6 +663,22 @@ export function insideFrames(
     to: f.to,
     xml: insideSvg(layer, f.tx, f.ty, box),
   }));
+}
+
+// The same pictures as a view draws them: each cut to what it can show (insideBox), on whole
+// pixels (cropOf); a picture that shows nothing is left out.
+export type FxCut = { from: number; to: number; crop: FxCrop; xml: string };
+
+export function insideCuts(layer: FxInside, place: FxPlace, ratio: number): FxCut[] {
+  const motion = FX[layer.fx];
+  if (!motion) return [];
+  return framesOf(motion).flatMap((f): FxCut[] => {
+    const box = insideBox(layer, f.tx, f.ty);
+    if (!box) return [];
+    const crop = cropOf(box, place, ratio);
+    if (crop.width <= 0 || crop.height <= 0) return [];
+    return [{ from: f.from, to: f.to, crop, xml: insideSvg(layer, f.tx, f.ty, crop.viewBox) }];
+  });
 }
 
 // The drawing as layers, or null when nothing in it moves. Every layer is a whole SVG with the

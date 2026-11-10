@@ -10,6 +10,8 @@ import {
   type FxLayer,
   framesOf,
   fxTree,
+  insideBox,
+  insideCuts,
   insideFrames,
   placeOf,
   sampled,
@@ -188,9 +190,15 @@ function holderMatrix(layer: FxInside): Matrix {
 
 const WHITE = new Set(['#fff', '#ffffff', 'white', 'none']);
 
-// The accessories whose glint mask holds see-through shapes (an `opacity`), to be drawn again
-// white and opaque (each `it.fails` until then; a mask that comes right fails it).
-const SEE_THROUGH = new Set(['kistakimi', 'yildiztakimi', 'dalgictakimi', 'astronottakimi']);
+// A suit's mask is the suit itself drawn white (capsuleAccessories.ts), so its see-through parts
+// keep their `opacity`: the shine is as faint there as the part is. White at an opacity is still
+// alpha only (what a canvas draws as an alpha mask); the values are listed so a change is seen.
+const MASK_OPACITY: Readonly<Record<string, readonly string[]>> = {
+  kistakimi: ['.16', '.35'],
+  yildiztakimi: ['.8'],
+  dalgictakimi: ['.7'],
+  astronottakimi: ['.88', '.9'],
+};
 
 describe('a motion inside its clip', () => {
   for (const [id, count] of Object.entries(INSIDE)) {
@@ -242,14 +250,16 @@ describe('a motion inside its clip', () => {
       }
     });
 
-    (SEE_THROUGH.has(id) ? it.fails : it)(`${id}: a mask of it is white only`, () => {
+    it(`${id}: a mask of it is white only`, () => {
       const tree = fxTree(lookSvg(`c:mor e:klasik x:${id}`));
       for (const l of insides(tree?.layers ?? [])) {
         if (l.clip?.kind !== 'mask') continue;
         const xml = l.clip.xml;
         for (const m of xml.matchAll(/\s(fill|stroke)="([^"]*)"/g))
           expect(WHITE.has((m[2] ?? '').toLowerCase()), `${id} ${m[0]}`).toBe(true);
-        expect(xml, id).not.toMatch(/\s(?:fill-|stroke-)?opacity="/);
+        expect(xml, id).not.toMatch(/\s(?:fill-|stroke-)opacity="/);
+        const seen = [...new Set([...xml.matchAll(/\sopacity="([^"]*)"/g)].map((m) => m[1]))];
+        expect(seen.sort(), id).toEqual([...(MASK_OPACITY[id] ?? [])].sort());
         expect(xml, id).not.toMatch(/Gradient\b|style="/);
       }
     });
@@ -282,6 +292,47 @@ describe('a motion inside its clip', () => {
       }
     });
   }
+
+  for (const id of Object.keys(INSIDE)) {
+    it(`${id}: a view's pictures are the whole ones cut to what each shows`, () => {
+      const tree = fxTree(lookSvg(`c:mor e:klasik x:${id}`));
+      if (!tree) throw new Error(id);
+      const place = placeOf(tree.box, 208, 208);
+      const noBox = (x: string) => x.replace(/ viewBox="[^"]*"/, '');
+      for (const l of insides(tree.layers)) {
+        const whole = insideFrames(l);
+        const cuts = insideCuts(l, place, 3);
+        const clip = cropOf(l.box, place, 3);
+        expect(cuts.length, id).toBeGreaterThan(0);
+        expect(cuts.length, id).toBeLessThanOrEqual(whole.length);
+        let drawn = 0;
+        for (const c of cuts) {
+          const w = whole.find((f) => f.from === c.from && f.to === c.to);
+          expect(noBox(c.xml), id).toBe(noBox(w?.xml ?? ''));
+          // Inside the clip's own cut, on whole pixels.
+          for (const v of [c.crop.left, c.crop.top, c.crop.width, c.crop.height])
+            expect(Math.abs(v * 3 - Math.round(v * 3))).toBeLessThan(1e-6);
+          expect(c.crop.left).toBeGreaterThanOrEqual(clip.left - 1e-6);
+          expect(c.crop.top).toBeGreaterThanOrEqual(clip.top - 1e-6);
+          expect(c.crop.left + c.crop.width).toBeLessThanOrEqual(clip.left + clip.width + 1e-6);
+          expect(c.crop.top + c.crop.height).toBeLessThanOrEqual(clip.top + clip.height + 1e-6);
+          drawn += c.crop.width * c.crop.height;
+        }
+        // Never more than the clip's box for every picture; a shine's band is far less.
+        const all = whole.length * clip.width * clip.height;
+        expect(drawn, id).toBeLessThanOrEqual(all);
+        if (l.fx === 'glint') expect(drawn, id).toBeLessThan(all / 2);
+      }
+    });
+  }
+
+  it('leaves out a picture whose content stands off its clip', () => {
+    const tree = fxTree(lookSvg('c:mor e:klasik x:kistakimi'));
+    const [l] = insides(tree?.layers ?? []);
+    if (!l) throw new Error('kistakimi');
+    expect(insideBox(l, 0, 0)).not.toBeNull();
+    expect(insideBox(l, 1e4, 0)).toBeNull();
+  });
 
   it('places a cut picture on whole pixels, at the whole one’s scale, round its box', () => {
     const box: [number, number, number, number] = [6.77, 0.31, 41.23, 23.9];
