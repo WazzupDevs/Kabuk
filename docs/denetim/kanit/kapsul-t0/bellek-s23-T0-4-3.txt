@@ -1,0 +1,71 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 75950183 Realtime: 98660193
+
+** MEMINFO in pid 16555 [app.kabuk.mobile] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap   505851   505800       12    49051   507152   565320   553053    12266
+  Dalvik Heap   134588   134480       52      676   135532   146910    97758    49152
+ Dalvik Other     3823     3764        4      144     4352                           
+        Stack     1596     1596        0     1012     1600                           
+       Ashmem       62        0        0        0      268                           
+    Other dev       33        4       20        0      440                           
+     .so mmap     3119      152      684       39    32848                           
+    .jar mmap     3381        0     1436        0    29668                           
+    .apk mmap    10859      656    10084      844    11800                           
+    .ttf mmap      329        0      308        0      364                           
+    .dex mmap    14424       96    14316        4    15140                           
+    .oat mmap      831        0      244        0    12156                           
+    .art mmap    10160     9636      172     1898    23468                           
+   Other mmap    12521     5060     7396        0    13616                           
+   EGL mtrack    40288    40288        0        0    40288                           
+    GL mtrack    46604    46604        0        0    46604                           
+      Unknown   125319   125128      148     2081   125944                           
+        TOTAL   969537   873264    34876    55749  1001240   712230   650811    61418
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:   144288                         159000
+         Native Heap:   505800                         507152
+                Code:    27976                         102072
+               Stack:     1596                           1600
+            Graphics:    86892                          86892
+       Private Other:   141588
+              System:    61397
+             Unknown:                                  144524
+ 
+           TOTAL PSS:   969537            TOTAL RSS:  1001240       TOTAL SWAP PSS:    55749
+ 
+ Objects
+               Views:    26196         ViewRootImpl:        1
+         AppContexts:        6           Activities:        1
+              Assets:       35        AssetManagers:        0
+       Local Binders:       37        Proxy Binders:       71
+       Parcel memory:       33         Parcel count:      110
+    Death Recipients:        1             WebViews:        0
+ 
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+    Other (malloced):   154021                          14738
+ Other (nonmalloced):      124                             88
+   Bitmap (malloced):      164                          30097
+ 
+ SQL
+         MEMORY_USED:     1349
+  PAGECACHE_OVERFLOW:     1120          MALLOC_SIZE:      122
+ 
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4      604            112    18    60    12  /data/user/0/app.kabuk.mobile/databases/updates.db
+         4        8                    0     0     0    (attached) temp
+         4      604            123    40    18     6  /data/user/0/app.kabuk.mobile/databases/updates.db (2)
+         4       20             36    72    27     3  /data/user/0/app.kabuk.mobile/databases/RKStorage
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+             58            82            18  /data/user/0/app.kabuk.mobile/databases/updates.db
+             72            28             3  /data/user/0/app.kabuk.mobile/databases/RKStorage
+ 

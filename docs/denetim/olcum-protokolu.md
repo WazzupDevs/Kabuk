@@ -22,7 +22,7 @@ Panelin sayıları UI iş parçacığının (Reanimated kare geri çağrısı) v
 
 ## Cihazlar ve build
 
-- **Build:** preview kanalının APK'sı, yani release derlemesi (dev client değil). Dev build JS'i birkaç kat ağır çalıştırdığı için ölçüme girmez. Ölçülen build'in numarası ve OTA güncelleme kimliği (Ayarlar → Hakkında) kayda yazılır.
+- **Build:** preview kanalının APK'sı, yani release derlemesi (dev client değil). Dev build JS'i birkaç kat ağır çalıştırdığı için ölçüme girmez. Ölçülen build'in numarası ve içerdiği son PR kayda yazılır.
 - **Düşük sınıf:** Android 12 ya da üstü (cam ve Dissolve yalnızca orada çalışır), 3–4 GB RAM, Helio G/Unisoc sınıfı yonga, 60 ya da 90 Hz ekran.
 - **Orta sınıf:** Android 13 ya da üstü, 6–8 GB RAM, Snapdragon 7 ya da Dimensity 7000 sınıfı yonga, 120 Hz ekran.
 - **Telefonu hazırlama:** pil %50'nin üstünde, şarjda değil, güç tasarrufu kapalı, ekran parlaklığı sabit, uçak modu kapalı, Wi-Fi açık. Ölçümden önce arka plandaki uygulamalar kapatılır. Hareketi azalt kapalıdır; animatör ölçeği 1x.
@@ -76,17 +76,17 @@ Kapsülün çizim yolundaki her değişiklik (T0 taban, T1 OTA düzeltmelerinden
   1. Büyük kapsül, aksesuarsız.
   2. Büyük kapsül, `kistakimi` (Destansı; 19 SVG görünümü).
   3. Büyük kapsül, `gokkusagiatki` (79 SVG görünümü).
-  4. 12 avatarlı ızgara, hepsi `kistakimi`; ızgara yukarı ve aşağı kaydırılır (10 kez).
+  4. 12 avatarlı ızgara, hepsi `kistakimi`.
   5. Paketler: açılan kart (gerçek ekran; açılabilir paket varsa).
 - **Akış, sahne başına:**
   1. `adb shell am force-stop app.kabuk.mobile`, uygulama açılır, sahneye gidilir, 5 sn beklenir.
   2. `adb shell dumpsys gfxinfo app.kabuk.mobile reset`.
-  3. Sahne 30 sn açık kalır (4. sahnede kaydırılır).
+  3. Sahne 30 sn açık kalır.
   4. `adb shell dumpsys gfxinfo app.kabuk.mobile > kapsul-<cihaz>-<T>-<sahne>-<n>.txt`.
   5. `adb shell dumpsys meminfo app.kabuk.mobile > bellek-<cihaz>-<T>-<sahne>-<n>.txt`.
   6. Üç koşu, ortanca alınır.
 - **Pil:** 2. ve 3. sahne 5 dakika açık bırakılır; önce `adb shell dumpsys batterystats --reset`, sonra `adb shell dumpsys batterystats app.kabuk.mobile` çıktısından uygulamanın tahmini tüketimi (mAh). Telefon ölçüm boyunca Wi-Fi üzerinden `adb`'ye bağlıdır (USB şarj eder, sayı bozulur); olmuyorsa pil ölçülmez ve öyle yazılır.
-- **Kayda geçen sayılar:** `gfxinfo`'dan toplam kare, `Janky frames` (%), 50, 90, 95 ve 99. yüzdelik; `meminfo`'dan `Graphics`, `Native Heap`, `TOTAL PSS`; panelden UI ve JS p95'i; pil (mAh). Build numarası ve OTA kimliği her tabloya yazılır.
+- **Kayda geçen sayılar:** `gfxinfo`'dan toplam kare, `Janky frames` (%), 50, 90, 95 ve 99. yüzdelik; `meminfo`'dan `Graphics`, `Native Heap`, `TOTAL PSS`; panelden UI ve JS p95'i; pil (mAh). Build numarası ve içerdiği son PR her tabloya yazılır.
 
 | Sahne | Kare p50 | Kare p95 | Jank % | Graphics (MB) | Native Heap (MB) | TOTAL PSS (MB) | Panel UI p95 | Panel JS p95 | Pil (mAh / 5 dk) |
 | ----- | -------- | -------- | ------ | ------------- | ---------------- | -------------- | ------------ | ------------ | ---------------- |
@@ -97,7 +97,7 @@ Kapsülün çizim yolundaki her değişiklik (T0 taban, T1 OTA düzeltmelerinden
 ### T0: taban ölçüm (10 Kasım 2026)
 
 - **Cihaz:** Samsung Galaxy S23 (SM-S911B, Snapdragon 8 Gen 2, 8 GB, Android 16, 120 Hz). M3 kararındaki üç cihazdan biri değil, eldeki telefon; Nothing Phone 1, düşük donanımlı Android ve iPhone ölçülmedi.
-- **Build:** 0.10.0 (20), preview kanalı; OTA #554'ü (ölçüm sahnesi) içeren güncelleme. Güncelleme kimliği uygulamada görünmüyor (Ayarlar'da Hakkında yok), yazılamadı.
+- **Build:** 0.10.0 (20), preview kanalı; #554'ü (ölçüm sahnesi) içeren güncelleme. 4. sahne #557'yi (12 avatarlı ızgara) içeren güncellemeyle ölçüldü.
 - **Koşul:** güç tasarrufu kapalı, animatör 1x, koyu tema, pil %100, USB bağlı. Ham çıktılar `docs/denetim/kanit/kapsul-t0/` (`kapsul-`, `bellek-`, `panel-s23-T0-<sahne>-<n>`; koşudan önce ve sonra ekran görüntüsü). Sayılar üç koşunun ortancası.
 
 | Sahne                    | Toplam kare | Kare p50 | Kare p95 | Kare p99 | Jank % | Graphics (MB) | Native Heap (MB) | TOTAL PSS (MB) | Panel UI p95 | Panel JS p95 | Pil (mAh / 5 dk) |
@@ -105,11 +105,11 @@ Kapsülün çizim yolundaki her değişiklik (T0 taban, T1 OTA düzeltmelerinden
 | 1. Aksesuarsız           | 1618        | 5 ms     | 5 ms     | 11 ms    | 1,4    | 80            | 111              | 355            | 8,3 ms       | 8,9 ms       | ölçülmedi        |
 | 2. `kistakimi`           | 1699        | 6 ms     | 9 ms     | 15 ms    | 7,5    | 128           | 193              | 508            | 8,3 ms       | 9 ms         | ölçülmedi        |
 | 3. `gokkusagiatki`       | 254         | 200 ms   | 200 ms   | 250 ms   | 100    | 239           | 219              | 666            | 125,2 ms     | 123,3 ms     | ölçülmedi        |
-| 4. Izgara                | çöküyor     | —        | —        | —        | —      | —             | —                | —              | —            | —            | —                |
+| 4. Izgara, 12 avatar     | 1699        | 14 ms    | 21 ms    | 27 ms    | 80,2   | 85            | 476              | 947            | 8,3 ms       | 12,6 ms      | ölçülmedi        |
 | 5. Paketler, açılan kart | 0           | —        | —        | —        | 0      | 169           | 180              | 510            | —            | —            | ölçülmedi        |
 
 - **3. sahne:** 30 saniyede 244–264 kare (saniyede yaklaşık 8,5), her kare bütçenin üstünde; panelde ekran p50 116,8 ms. `gfxinfo` 150 ms'nin üstünü 50 ms'lik dilimlerle sayar, 200 ms kaba değerdir. Panelin takılma oranı bu sahnede %0–4,7 gösterir: bütçeyi penceredeki en hızlı karelerden okuduğu için her kare yavaşken yanıltır. Koşudan koşuya `Graphics` 245, 240, 311 MB, TOTAL PSS 619, 682, 752 MB; pil sıcaklığı 27,5 °C'den 36,7 °C'ye çıktı.
-- **4. sahne:** "Izgara, 48 avatar" seçilince uygulama iki denemede de ölçüm başlamadan çöktü: `java.lang.OutOfMemoryError`, Java yığını 256 MB sınırında, `com.horcrux.svg` görünümleri kurulurken (`kapsul-s23-T0-4-cokme.txt`). Sahne 48 avatar kurar, protokol 12 der. Bulgu: `docs/denetim/uctan-uca-2026-11.md` → M3-15. Sahne 12 avatara inince (#557) yalnız bu satır yeniden ölçülür.
+- **4. sahne:** "Izgara, 48 avatar" seçilince uygulama iki denemede de ölçüm başlamadan çöktü: `java.lang.OutOfMemoryError`, Java yığını 256 MB sınırında, `com.horcrux.svg` görünümleri kurulurken (`kapsul-s23-T0-4-cokme.txt`). Sahne 48 avatar kurar, protokol 12 der. Bulgu: `docs/denetim/uctan-uca-2026-11.md` → M3-15. Sahne 12 avatara inince (#557) yalnız bu satır yeniden ölçüldü (aynı gün, pil %76–78, kaydırma yok): çökme yok, üç koşuda 1669–1724 kare, p50 14 ms, p95 21–22 ms, jank %78–80,6; karelerin çoğu 8,3 ms'lik bütçenin üstünde ama kare sayısı düşmüyor. `Graphics` 85 MB'ta sabit; `Native Heap` koşudan koşuya 325, 476, 494 MB, TOTAL PSS 946, 976, 947 MB (2. sahnedeki tek büyük kapsülün yaklaşık iki katı). Panelde ekran p95 8,3 ms, takılma %2,4–3,2.
 - **5. sahne:** test hesabında üç Bronz paket açıldı. Açılan kart dururken 30 saniyede hiç kare çizilmiyor (üç koşuda 0 kare); bellek tablodaki gibi, panel bu ekranda yok. Protokolde olmayan iki ek pencere: yırtma ve kartın gelişi (Aç'tan sonraki 12 sn, iki koşu) 554–555 kare, p50 6 ms, p95 10–11 ms, p99 20–25 ms, jank %0,7–1,3 (`kapsul-s23-T0-5-acilis-<n>.txt`); kart sürüklenerek çevrilirken (10 gidiş geliş, tek koşu) 2378 kare, p50 8 ms, p95 11 ms, p99 16 ms, jank %1,8, `Graphics` 175 MB (`kapsul-s23-T0-5-cevirme.txt`).
 - **Pil:** ölçülmedi (telefon USB ile bağlıydı).
 - **Sapma:** 2. sahnenin ilk koşusundan birkaç saniye önce başka bir uygulamanın bildirimi düştü (ekran görüntüsü başka uygulamanın bildirim metnini taşıdığı için depoya konmadı); sayıları öteki iki koşudan ayrışmadı. Ölçüm betiği her koşuda Ölç'e de basar, `gfxinfo` penceresi panelin 30 saniyesiyle aynıdır.
