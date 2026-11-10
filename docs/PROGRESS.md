@@ -4,21 +4,29 @@
 
 Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başlar, tablodaki ilk "Açık" satırdan sürer. T satırları proje sahibinin telefon adımıdır (`docs/denetim/olcum-protokolu.md` → Kapsül ölçümü).
 
-| #   | Paket                                                                        | Yayın        | Model    | Durum                       |
-| --- | ---------------------------------------------------------------------------- | ------------ | -------- | --------------------------- |
-| P0  | Plan, bu tablo, kapsül ölçüm protokolü                                       | Belge        | Orkestra | Bu PR                       |
-| P1  | Ölçüm sahnesi (panel) ve M15-26                                              | OTA          | Sonnet   | Açık                        |
-| T0  | Taban ölçüm                                                                  | Telefon      | —        | P1'i bekler                 |
-| P2  | Skia'dan bağımsız düzeltmeler (M3-02, M15-46/1, M3-05, 07, 08, 09, 10, 12)   | OTA          | Sonnet   | Açık; T0'dan önce birleşmez |
-| P3  | "Klip içi hareket" katman türü, kırpılmış kare yolu                          | OTA          | Opus     | Açık                        |
-| P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri | OTA          | Sonnet   | Açık                        |
-| T1  | Ölçüm tekrarı                                                                | Telefon      | —        | P4'ü bekler                 |
-| P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`        | Build        | Opus     | Açık                        |
-| P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri      | 0.11.0'a OTA | Opus     | Açık                        |
-| T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                 | Telefon      | —        | P6'yı bekler                |
-| P7  | Düzeltmeler; anahtar Süsle'de açılır                                         | OTA          | Sonnet   | Açık                        |
-| P8  | Açılan kart ve profil bileti                                                 | OTA          | Sonnet   | Açık                        |
-| P9  | Küçük avatarlarda Skia                                                       | —            | —        | T1 ve T2'ye göre karar      |
+| #   | Paket                                                                        | Yayın        | Model    | Durum                                                                        |
+| --- | ---------------------------------------------------------------------------- | ------------ | -------- | ---------------------------------------------------------------------------- |
+| P0  | Plan, bu tablo, kapsül ölçüm protokolü                                       | Belge        | Orkestra | Birleşti, #553                                                               |
+| P1  | Ölçüm sahnesi (panel) ve M15-26                                              | OTA          | Sonnet   | Birleşti, #554                                                               |
+| T0  | Taban ölçüm                                                                  | Telefon      | —        | Açık: sahne telefonda (OTA), ölçüm proje sahibinin bilgisayarındaki oturumla |
+| P2  | Skia'dan bağımsız düzeltmeler (M3-02, M15-46/1, M3-05, 07, 08, 09, 10, 12)   | OTA          | Sonnet   | Taslak PR #555, `ci` bekler; T0 gelmeden birleşmez                           |
+| P3  | "Klip içi hareket" katman türü, kırpılmış kare yolu                          | OTA          | Opus     | Açık                                                                         |
+| P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri | OTA          | Sonnet   | Açık                                                                         |
+| T1  | Ölçüm tekrarı                                                                | Telefon      | —        | P4'ü bekler                                                                  |
+| P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`        | Build        | Opus     | Açık                                                                         |
+| P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri      | 0.11.0'a OTA | Opus     | Açık                                                                         |
+| T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                 | Telefon      | —        | P6'yı bekler                                                                 |
+| P7  | Düzeltmeler; anahtar Süsle'de açılır                                         | OTA          | Sonnet   | Açık                                                                         |
+| P8  | Açılan kart ve profil bileti                                                 | OTA          | Sonnet   | Açık                                                                         |
+| P9  | Küçük avatarlarda Skia                                                       | —            | —        | T1 ve T2'ye göre karar                                                       |
+
+### Devir notu (10 Kasım 2026, Skia P1 sonrası)
+
+- Sıradaki adım T0: proje sahibi telefonu USB ile bağlar, bilgisayarında açtığı Claude oturumu `docs/denetim/olcum-protokolu.md` → "Kapsül ölçümü"nü koşar (bulut oturumu telefonu görmez). Sahne: Ayarlar → Tasarım (test) → Bileşen önizleme → Kapsül ölçümü; sonuç tablosu aynı belgeye yazılır.
+- T0 gelince #555 (P2) taslaktan çıkarılır, `ci` yeşilse birleşir; M15-46'nın ilk maddesi (yırtmadan önce kart gizli) ve M3-09 telefonda bakılır, ikisi de koddan çıkarımla düzeltildi.
+- Sonra P3 (Opus): `theme/capsuleFx.ts`'te kare yöntemi `glint`, `scan`, `shift` (`FX.*.frames`), çizen `components/FxSvg.tsx` → `Frames`; P2 `FxSvg`'yi `MovingSvg`'ye böldü, P3 onun üstüne kurulur.
+- M15-26'nın kök nedeni `lookPop`'un ilk `</g></g>` aramasıydı (ten aksesuarının kendi grupları); `lookPop` ve `lookCard`'a metin ekleyen her iş `capsuleLook.test.ts`'teki ten testini koşar.
+- Gizli içerik kapısı ana kopyada `.claude/worktrees/` altını okuyamayınca commit'i durdurur: ajan worktree'sinde commit, o klasörün içinden atılır; biten worktree `git worktree remove` ile kaldırılır.
 
 ## Devir notu (9 Kasım 2026, canlı öncesi denetim)
 
