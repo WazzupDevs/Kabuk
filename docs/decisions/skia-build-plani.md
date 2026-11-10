@@ -114,7 +114,8 @@ P5'ten önce okundu. Kaynak: `Shopify/react-native-skia` `v2.6.2` etiketi → `p
 - **Sonuç:** okunan hiçbir metinde zorunlu copyleft (GPL, AGPL, LGPL, MPL) yok; paket durmadı. FreeType çift lisanslıdır ve FTL seçilir; GPLv2 yalnız seçenektir.
 - ICU'nun lisans dosyası GPL'li üç derleme betiğini (`aclocal.m4`, `config.guess`; Autoconf istisnasıyla) sayar; bunlar derlenen kaynak değildir (lisans metnine göre; ICU'nun derlemesi okunmadı).
 - Kapalı olduğu okunanlar: Vulkan, Dawn ve Graphite, libavif, libjxl, ffmpeg, Lua, PDF, araçlar. `perfetto` (Apache-2.0) Android'de bayrak olarak açık, `BUILD.gn`'de yalnız test kitaplığına bağlı görünüyor (dosyanın ilk üçte biri okundu, gerisi özetten: çıkarım).
-- Copyleft olmayan ama yükümlülük getirenler (proje sahibine bildirildi, 11 Kasım): `dng_sdk`'nin 5. maddesi ticari üründe dağıtana Adobe'yi tazmin yükümlülüğü yazar ve AOSP bu paketi "özel lisans koşulları" diye işaretler; FreeType (FTL), libjpeg (IJG), ICU ve Adobe bildirim metni ister. Uygulamada açık kaynak bildirimleri ekranı yok; mağaza yayınından önce ayrı iş.
+- **Karar (proje sahibi, 11 Kasım):** `dng_sdk`'nin lisansı kabul edildi; Skia hazır derlemesiyle kullanılır. Uygulama RAW dosya açmaz, kitaplık yalnız Skia'nın paketiyle gelir.
+- Copyleft olmayan ama yükümlülük getirenler: `dng_sdk`'nin 5. maddesi ticari üründe dağıtana Adobe'yi tazmin yükümlülüğü yazar ve AOSP bu paketi "özel lisans koşulları" diye işaretler; FreeType (FTL), libjpeg (IJG), ICU ve Adobe bildirim metni ister. Uygulamada açık kaynak bildirimleri ekranı yok; mağaza yayınından önce ayrı iş.
 
 ## M15'in kapsül bulguları
 
