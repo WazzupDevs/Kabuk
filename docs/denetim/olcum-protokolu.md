@@ -94,6 +94,26 @@ Kapsülün çizim yolundaki her değişiklik (T0 taban, T1 OTA düzeltmelerinden
 - **SVG ve Skia yan yana (T2):** aynı build'de panelin `skia` anahtarı kapalı ve açık, aynı sahneler. Görsel karşılaştırma: paneldeki galeride 15 aksesuar, solda SVG, sağda Skia; fark görülen aksesuarın ekran kaydı gönderilir.
 - **Okuma:** 1. sahne tabandır; 2. ve 3. sahnenin 1.'den farkı kare yönteminin maliyetidir. Skia'nın kabulü: 2. ve 3. sahnede p95 ve `Graphics` T1'den kötü değil, en az birinde belirgin iyi (p95'te bütçenin yarısından çok ya da `Graphics`'te %20'den çok); 15 aksesuar göz karşılaştırmasında aynı.
 
+### T0: taban ölçüm (10 Kasım 2026)
+
+- **Cihaz:** Samsung Galaxy S23 (SM-S911B, Snapdragon 8 Gen 2, 8 GB, Android 16, 120 Hz). M3 kararındaki üç cihazdan biri değil, eldeki telefon; Nothing Phone 1, düşük donanımlı Android ve iPhone ölçülmedi.
+- **Build:** 0.10.0 (20), preview kanalı; OTA #554'ü (ölçüm sahnesi) içeren güncelleme. Güncelleme kimliği uygulamada görünmüyor (Ayarlar'da Hakkında yok), yazılamadı.
+- **Koşul:** güç tasarrufu kapalı, animatör 1x, koyu tema, pil %100, USB bağlı. Ham çıktılar `docs/denetim/kanit/kapsul-t0/` (`kapsul-`, `bellek-`, `panel-s23-T0-<sahne>-<n>`; koşudan önce ve sonra ekran görüntüsü). Sayılar üç koşunun ortancası.
+
+| Sahne                    | Toplam kare | Kare p50 | Kare p95 | Kare p99 | Jank % | Graphics (MB) | Native Heap (MB) | TOTAL PSS (MB) | Panel UI p95 | Panel JS p95 | Pil (mAh / 5 dk) |
+| ------------------------ | ----------- | -------- | -------- | -------- | ------ | ------------- | ---------------- | -------------- | ------------ | ------------ | ---------------- |
+| 1. Aksesuarsız           | 1618        | 5 ms     | 5 ms     | 11 ms    | 1,4    | 80            | 111              | 355            | 8,3 ms       | 8,9 ms       | ölçülmedi        |
+| 2. `kistakimi`           | 1699        | 6 ms     | 9 ms     | 15 ms    | 7,5    | 128           | 193              | 508            | 8,3 ms       | 9 ms         | ölçülmedi        |
+| 3. `gokkusagiatki`       | 254         | 200 ms   | 200 ms   | 250 ms   | 100    | 239           | 219              | 666            | 125,2 ms     | 123,3 ms     | ölçülmedi        |
+| 4. Izgara                | çöküyor     | —        | —        | —        | —      | —             | —                | —              | —            | —            | —                |
+| 5. Paketler, açılan kart | 0           | —        | —        | —        | 0      | 169           | 180              | 510            | —            | —            | ölçülmedi        |
+
+- **3. sahne:** 30 saniyede 244–264 kare (saniyede yaklaşık 8,5), her kare bütçenin üstünde; panelde ekran p50 116,8 ms. `gfxinfo` 150 ms'nin üstünü 50 ms'lik dilimlerle sayar, 200 ms kaba değerdir. Panelin takılma oranı bu sahnede %0–4,7 gösterir: bütçeyi penceredeki en hızlı karelerden okuduğu için her kare yavaşken yanıltır. Koşudan koşuya `Graphics` 245, 240, 311 MB, TOTAL PSS 619, 682, 752 MB; pil sıcaklığı 27,5 °C'den 36,7 °C'ye çıktı.
+- **4. sahne:** "Izgara, 48 avatar" seçilince uygulama iki denemede de ölçüm başlamadan çöktü: `java.lang.OutOfMemoryError`, Java yığını 256 MB sınırında, `com.horcrux.svg` görünümleri kurulurken (`kapsul-s23-T0-4-cokme.txt`). Sahne 48 avatar kurar, protokol 12 der. Bulgu: `docs/denetim/uctan-uca-2026-11.md` → M3-15. Sahne 12 avatara inince (#557) yalnız bu satır yeniden ölçülür.
+- **5. sahne:** test hesabında üç Bronz paket açıldı. Açılan kart dururken 30 saniyede hiç kare çizilmiyor (üç koşuda 0 kare); bellek tablodaki gibi, panel bu ekranda yok. Protokolde olmayan iki ek pencere: yırtma ve kartın gelişi (Aç'tan sonraki 12 sn, iki koşu) 554–555 kare, p50 6 ms, p95 10–11 ms, p99 20–25 ms, jank %0,7–1,3 (`kapsul-s23-T0-5-acilis-<n>.txt`); kart sürüklenerek çevrilirken (10 gidiş geliş, tek koşu) 2378 kare, p50 8 ms, p95 11 ms, p99 16 ms, jank %1,8, `Graphics` 175 MB (`kapsul-s23-T0-5-cevirme.txt`).
+- **Pil:** ölçülmedi (telefon USB ile bağlıydı).
+- **Sapma:** 2. sahnenin ilk koşusundan birkaç saniye önce başka bir uygulamanın bildirimi düştü (ekran görüntüsü başka uygulamanın bildirim metnini taşıdığı için depoya konmadı); sayıları öteki iki koşudan ayrışmadı. Ölçüm betiği her koşuda Ölç'e de basar, `gfxinfo` penceresi panelin 30 saniyesiyle aynıdır.
+
 ## Her değişiklikte
 
 1. **Önce:** değişiklikten önceki build ya da OTA ile bu protokol koşulur ve tablo PR'a yazılır.
