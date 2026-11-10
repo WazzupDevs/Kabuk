@@ -6,6 +6,7 @@ Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel 
 
 ## Devir notu (10 Kasım 2026, M14 sonrası: denetim tamamlandı)
 
+- M15 (bütünsel frontend, UI ve UX) eklendi: bu ortamda cihaz ve emülatör olmadığı için yalnız statik kısmı yapıldı; hiçbir ekran görülmedi, hiçbir etkileşim denenmedi. Cihaz turu açık iş (M15 bölüm 6 ve 17). Yeni bulgular M15-01 … M15-07 (3 P2, 4 P3), yeni karar M15-K1 (mekana girmenin tek adı).
 - M1–M14 tamamlandı; denetim kapandı. Sıradaki adım uygulama: M14'ün "Yol haritası" (Y1–Y33) ve "Açık kararların tek tablosu" (30 karar). Kapanış özeti M14'ün sonunda.
 - Bu belge ve kural 9 düzeltmesi `ccr-40cca911-bttrif` dalında (önceki `ccr-63be298e-qnpqz0` bunun atası; ana dalın `193decc` commit'i üstünde); ana dala girmedi, PR açılmadı. Belgeyi ana dala almak proje sahibinin kararıdır.
 - Hemen başlanabilecekler: Y1 (gece koşusunu yeşile döndürmek) ve Y2 (yayın kapıları, geri alma yordamı). Pilotu bekleten kararlar: M7-01 (değişmez kural 4 ve 5), M9-02, M11-01, M8-01, M8-03, M13-K1.
@@ -15,22 +16,23 @@ Kanıt sınıfları: **D** doğrulandı (koddan, testten ya da çalışan yerel 
 
 ## Modüller
 
-| #   | Modül                                                           | Durum                                                             |
-| --- | --------------------------------------------------------------- | ----------------------------------------------------------------- |
-| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Tamamlandı (9 Kasım; ölçüm ve yerel entegrasyon açık)             |
-| M2  | Realtime ve veri eşitleme                                       | Tamamlandı (9 Kasım; M2-01 kararı: kural 9 düzeltildi)            |
-| M3  | Kapsül ve grafik, hediye paketleri                              | Tamamlandı (9 Kasım; kararlar verildi, telefon ölçümü açık)       |
-| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Tamamlandı (9 Kasım; panel ayarları ve telefon denemesi açık)     |
-| M5  | Check-in, konum, mekan, masa ve lobi                            | Tamamlandı (9 Kasım; telefon ve yük ölçümü açık)                  |
-| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Tamamlandı (9 Kasım; telefon ve Edge çağrı ölçümü açık)           |
-| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Tamamlandı (9 Kasım; M7-01 ve M7-12 kararı açık)                  |
-| M8  | Keşfet, harita, Semte Git                                       | Tamamlandı (9 Kasım; M8-01 ve M8-03 kararı, telefon ölçümü açık)  |
-| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Tamamlandı (9 Kasım; M9-02 kararı, telefon ve teslim ölçümü açık) |
-| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Tamamlandı (10 Kasım; M10-06 kararı, telefon ve TalkBack açık)    |
-| M11 | Veritabanı bütünü                                               | Tamamlandı (10 Kasım; M11-01 kararı, eşzamanlı yük ölçümü açık)   |
-| M12 | Güvenlik bütünü                                                 | Tamamlandı (10 Kasım; M12-10 ve M12-15 kararı, panel ölçümü açık) |
-| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Tamamlandı (10 Kasım; M13-K1 ve M13-K2 kararı, APK içeriği açık)  |
-| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Tamamlandı (10 Kasım; M14-K1 … K6 kararı, mağaza metinleri açık)  |
+| #   | Modül                                                           | Durum                                                                                    |
+| --- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| M1  | Sohbet çekirdeği (DM, masa, mekan, semt)                        | Tamamlandı (9 Kasım; ölçüm ve yerel entegrasyon açık)                                    |
+| M2  | Realtime ve veri eşitleme                                       | Tamamlandı (9 Kasım; M2-01 kararı: kural 9 düzeltildi)                                   |
+| M3  | Kapsül ve grafik, hediye paketleri                              | Tamamlandı (9 Kasım; kararlar verildi, telefon ölçümü açık)                              |
+| M4  | Kimlik, oturum, kayıt, onboarding, hesap silme                  | Tamamlandı (9 Kasım; panel ayarları ve telefon denemesi açık)                            |
+| M5  | Check-in, konum, mekan, masa ve lobi                            | Tamamlandı (9 Kasım; telefon ve yük ölçümü açık)                                         |
+| M6  | Oyun çerçevesi ve repodaki bütün oyunlar                        | Tamamlandı (9 Kasım; telefon ve Edge çağrı ölçümü açık)                                  |
+| M7  | Arkadaşlık, engel, sessize alma, şikayet, anonimlik             | Tamamlandı (9 Kasım; M7-01 ve M7-12 kararı açık)                                         |
+| M8  | Keşfet, harita, Semte Git                                       | Tamamlandı (9 Kasım; M8-01 ve M8-03 kararı, telefon ölçümü açık)                         |
+| M9  | Profil, fotoğraf, bildirimler, push, ayarlar                    | Tamamlandı (9 Kasım; M9-02 kararı, telefon ve teslim ölçümü açık)                        |
+| M10 | Açılış, navigasyon, ekran iskeleti, tema, erişilebilirlik       | Tamamlandı (10 Kasım; M10-06 kararı, telefon ve TalkBack açık)                           |
+| M11 | Veritabanı bütünü                                               | Tamamlandı (10 Kasım; M11-01 kararı, eşzamanlı yük ölçümü açık)                          |
+| M12 | Güvenlik bütünü                                                 | Tamamlandı (10 Kasım; M12-10 ve M12-15 kararı, panel ölçümü açık)                        |
+| M13 | Build, yayın, OTA, CI, test, gözlemlenebilirlik, native         | Tamamlandı (10 Kasım; M13-K1 ve M13-K2 kararı, APK içeriği açık)                         |
+| M14 | Birleştirme, gelecekteki ödeme ve paket altyapısı, yol haritası | Tamamlandı (10 Kasım; M14-K1 … K6 kararı, mağaza metinleri açık)                         |
+| M15 | Bütünsel frontend, UI ve UX                                     | Statik kısım tamamlandı (10 Kasım); cihaz ve görsel turu açık (cihaz yok), M15-K1 kararı |
 
 Her modülde ayrıca bağımsız UX denetimi yapılır. M6 kapalı oyunları, bağlantı kopmasını, oyuncu ayrılmasını ve yeniden bağlanmayı da kapsar. M14 abonelik, ödeme, reklam ve hediye ekonomisinin bugünkü mimariye nasıl oturacağını kapsar.
 
@@ -1837,3 +1839,219 @@ M3 kararları verildi (9 Kasım). Kural 9 düzeltmesi yapıldı (M2-01). Değiş
 - En önemli üç risk: (1) anonimliğin engel üzerinden açılması (M7-01) ve sessizlik kurallarının yan kanalları (M5-01, M7-02, M7-03); (2) ekran davranışını bugün hiçbir otomatik kapının doğrulamaması (M13-04, 12 gece kırmızı) ve yayının kapısız, geri alma yordamsız olması (M13-01, 02, 03); (3) mekan ve semt sohbetinin her olayda tam sayfa okutması ve toplu yeniden bağlanma (M1-05, M1-21, M2-02, M11-02): pilotta görünmez, kalabalık mekanda ilk kırılacak yer.
 - Ödemeye hazırlık: mimarinin ilkeleri uygun, katman yok. Önce gözlem, geri alma ve sürüm kapısı; sonra paket başına bakiye, defter ve tekrar güvenli açılış; sonra mağaza doğrulaması.
 - Sıradaki adım denetim değil uygulama: Y1 ve Y2 hemen, Y3 M7-01 kararıyla. 30 açık karar tek tabloda; pilotu bekleten kararlar M7-01, M9-02, M11-01, M8-01, M8-03 ve M13-K1.
+
+## M15: Bütünsel frontend, UI ve UX denetimi (10 Kasım)
+
+### 1. Kapsam ve yöntem
+
+İstenen: bütün ekranların gerçek cihazda görülerek, dokunularak denetlenmesi. Yapılabilen: **statik denetim**. Bu ortamda Android cihaz, emülatör, `adb` ve donanım sanallaştırması (`/dev/kvm`) yok; uygulamanın web hedefi yok; yeni paket kurmak yasak. Bu yüzden hiçbir uygulama ekranı görülmedi, hiçbir etkileşim denenmedi. Aşağıdaki her hüküm ya koddan, ya betikle sayımdan, ya hesaptan gelir ve öyle etiketlenmiştir. **M15'in görsel ve cihaz kısmı tamamlanmadı; modül "statik kısım tamamlandı, cihaz turu açık" olarak kapanır.** Cihaz turunun yapılacakları bölüm 6 ve 17'de listelidir.
+
+Kanıt sınıfları bu modülde: **D (kod)**, **D (sayım)**, **D (hesap)**, **Ş**, **Ö**, **K**. "Görsel" sınıfı yok, çünkü görsel kanıt yok.
+
+### 2. Cihazlar ve test ortamı
+
+| Ne                                | Durum                                                                                                                                                       |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Gerçek Android cihaz              | Yok                                                                                                                                                         |
+| Emülatör                          | Yok (`adb`, `emulator` bulunamadı; `/dev/kvm` yok)                                                                                                          |
+| Çalışan build                     | Yok; APK artifact'i indirilemiyor (M13)                                                                                                                     |
+| Ekran görüntüsü, video            | Alınamadı                                                                                                                                                   |
+| Depodaki görsel kanıt             | `e2e/visual/baz/`: 16 görüntü, 720×1232, son değişiklik 6 Kasım; yalnız bileşen galerisi (sohbet, renkler, kimlik, ölçü; açık ve koyu). Uygulama ekranı yok |
+| Bakılan görüntü                   | 3 (`galeri-olcu-light-1`, `galeri-renkler-dark-1`, `galeri-sohbet-light-1`)                                                                                 |
+| Test hesabı, test verisi          | Kullanılmadı, üretilmedi                                                                                                                                    |
+| Çözünürlük, yazı boyutu, TalkBack | Denenmedi                                                                                                                                                   |
+
+Bakılan üç görüntüden söylenebilen (yalnız galeri için): balon, alıntı, tepki ve saat hizaları düzgün; Türkçe karakterler (İ, ı, ş, ğ) doğru çiziliyor; koyu temada kart çizgisi ve başlık okunur. Bunlar uygulama ekranları hakkında hüküm değildir.
+
+### 3. Ekran envanteri
+
+57 rota dosyası; 7'si yerleşim, 50'si ekran. "Hâl" sütunu betikle arandı (dosyada yükleme, hata, boş ve yeniden deneme izleri: Y, H, B, T); iz yoksa "—". Bu bir varlık taramasıdır, hâlin doğru çalıştığının kanıtı değildir. Hiçbir ekran görsel incelenmedi ve cihazda denenmedi (iki sütun her satırda "Hayır").
+
+| Ekran                                                                              | Modül   | Erişim                        | Hâl (Y H B T) | Önceki bulgu                  |
+| ---------------------------------------------------------------------------------- | ------- | ----------------------------- | ------------- | ----------------------------- |
+| `(auth)/welcome`                                                                   | M4, M10 | İlk açılış                    | — — — T       | M10-11                        |
+| `(auth)/agree`, `phone`, `otp`                                                     | M4      | Başla                         | Y — — —       | M4-03, M4-04, M4-13           |
+| `(onboarding)/consents`                                                            | M4      | Kod doğrulanınca              | Y H B T       | M4-13                         |
+| `(onboarding)/name`, `birth`, `gender`                                             | M4      | Sırayla                       | Y H — —       | M4-06, M4-07                  |
+| `(onboarding)/extras`                                                              | M4, M9  | Kayıt sonu                    | — — B T       | M9-05                         |
+| `(tabs)/explore/index`                                                             | M8      | İlk sekme                     | Y H B T       | M8-01, M8-02, M8-13, M8-16    |
+| `(tabs)/explore/[venueId]`                                                         | M8, M5  | Mekan satırı                  | Y H B T       | —                             |
+| `(tabs)/venue`                                                                     | M5      | Sekme (check-in'liyken lobi)  | Y H B T       | M5-04, M5-05, M10-02, M10-03  |
+| `(tabs)/activities`                                                                | M8, M14 | Sekme                         | Y H B T       | M8-02                         |
+| `(tabs)/messages/index`                                                            | M1      | Sekme                         | Y H B T       | M1-09                         |
+| `(tabs)/messages/[threadId]`                                                       | M1      | Satır, bildirim               | Y H B T       | M1-01, M1-02, M1-07, M12-11   |
+| `(tabs)/profile/index`                                                             | M9      | Sekme                         | Y H B T       | —                             |
+| `(tabs)/profile/edit`                                                              | M9      | Profil                        | Y H — T       | M9-02                         |
+| `(tabs)/profile/capsule`, `capsules`                                               | M3      | Profil                        | Y H B T / —   | M3-05, M3-06, M3-07           |
+| `(tabs)/profile/friends`                                                           | M7      | Profil                        | Y H B T       | —                             |
+| `checkin/index`, `spot`                                                            | M5      | Mekan sayfası                 | Y H — —       | M5-02, M5-03                  |
+| `room/[id]`                                                                        | M5, M6  | Masa kur, katıl, davet        | Y H B T       | M10-05, M7-05                 |
+| `room-chat/[id]`                                                                   | M1      | Masa                          | Y H — —       | M1-03, M1-04                  |
+| Oyun ekranları (masa içinde, rota değil)                                           | M6      | Sahibin başlatması            | Sayılmadı     | M6-03, M6-19, M10-01, M10-04  |
+| `venue-chat/index`, `[messageId]`                                                  | M1      | Lobi kartı                    | Y H B T       | M1-05, M1-21, M9-01           |
+| `district/locate`, `gate`, `open`, `closed`, `outside`, `ended`                    | M8      | Keşfet'teki kart              | Değişken      | M8-04, M10-09                 |
+| `district/room`, `[messageId]`                                                     | M8, M1  | Geçit                         | Y H B T       | M1-06, M8-03, M8-17           |
+| `people/[publicId]`                                                                | M9, M7  | Profil dokunuşu               | Y H B T       | M9-01                         |
+| `notifications`                                                                    | M9      | Mesajlar'daki zil             | Y H B T       | M10-02                        |
+| `gifts`                                                                            | M3, M14 | Aktiviteler'deki kart         | Y H B T       | M3-02, M3-09, M14-03          |
+| `settings`, `settings-account`, `-privacy`, `-notifications`, `-blocked`, `-muted` | M9, M4  | Profil                        | Değişken      | M9-04, M10-02                 |
+| `legal/[doc]`, `kvkk`, `terms`                                                     | M4      | Onay, Ayarlar                 | —             | M12-08                        |
+| `design-preview`, `gorsel`                                                         | M13     | Yalnız tasarım seçici açıkken | —             | M10-08 (kapı var: `Redirect`) |
+
+Rota olmayan yüzeyler (sayım): alt sayfa (`Sheet`) 38 dosyada, rota olarak açılan sayfa (`RouteSheet`) 4, menü (`Menu`) 12, `Modal` 4, uyarı kartı (`Banner`) 12, bağlantı bandı 1, boş durum (`EmptyState`) 26, yükleme (`Loader`) 43. Tek tek envanterlenmedi: cihaz turunun işi.
+
+### 4. Görsel inceleme kapsamı
+
+Uygulama ekranı: 0 / 50. Galeri görüntüsü: 3 / 16. Estetik hüküm verilmedi.
+
+### 5. Test edilen kullanıcı yolculukları
+
+Cihazda: 0 / 7. Koddan izlenenler ve çıkan sonuçlar bölüm 13 ve 14'te; yedi yolculuğun hata ve kesinti senaryoları önceki modüllerde deneyle (sunucu tarafı) sınanmıştı, ekran tarafı sınanmadı.
+
+### 6. Test edilmeyen alanlar ve nedenleri
+
+| Alan                                                          | Neden                            | Cihaz turunda nasıl                                                                                    |
+| ------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Bütün ekranların görünüşü (denge, hiyerarşi, boşluk, kesilme) | Cihaz yok                        | Envanterdeki her ekran açık ve koyu temada, üst, orta ve alt; görüntü `docs/denetim/kanit/m15/` altına |
+| Etkileşim (çift dokunuş, geri tuşu, sürükleme, klavye)        | Cihaz yok                        | Yedi yolculuk, her birinde bir kesinti (uçak modu, arka plan)                                          |
+| 320 dp, büyük ekran, yazı 1,3 ve %200, ekran yakınlaştırma    | Cihaz yok                        | Üç boy; M10-06 için tavan kaldırılmış deneme build'i gerekir (kod değişikliği: ayrı iş)                |
+| TalkBack                                                      | Cihaz yok                        | M10-01 ve M10-12 önce; sonra her yolculuk gözler kapalı                                                |
+| Animasyon hissi ve akıcılık                                   | Cihaz yok                        | `docs/denetim/olcum-protokolu.md`                                                                      |
+| Üç tuşlu gezinme, çentik, klavye üstünde kalan düğme          | Cihaz yok                        | İki cihaz ayarı                                                                                        |
+| Bildirimden açılış ve geri dönüş                              | Gerçek bildirim yasak, cihaz yok | Dev projesinde test hesabıyla                                                                          |
+
+### 7. Tasarım sistemi değerlendirmesi
+
+| Ölçü (uygulama ekranları ve bileşenler; tasarım önizlemesi ve testler hariç) | Sonuç                                               | Sınıf     |
+| ---------------------------------------------------------------------------- | --------------------------------------------------- | --------- |
+| Tema dışında yazılmış renk kodu (`#…`)                                       | 0 dosya                                             | D (sayım) |
+| `rgba(…)` sabiti                                                             | 1                                                   | D (sayım) |
+| Sayıyla yazılmış yazı boyutu                                                 | 0 (temada 2)                                        | D (sayım) |
+| Bileşende sabit Türkçe metin                                                 | 0                                                   | D (sayım) |
+| Kit (`@/aura/kit`) kullanan dosya                                            | 130                                                 | D (sayım) |
+| Eski bileşen (`Text`, `Button`, `Input`) kullanan dosya                      | 26; 9'u tasarım önizlemesi, 17'si uygulama (M15-02) | D (sayım) |
+| İkon sistemi                                                                 | `CapIcon` 40 dosya, `AppIcon` 20, eski `Icon` 2     | D (sayım) |
+| Yükleme göstergesi                                                           | Tek (`Loader`); `ActivityIndicator` 0               | D (sayım) |
+| Onay sayfası kalıbı                                                          | Üç (M15-03)                                         | D (kod)   |
+
+Token disiplini güçlü ve testle korunuyor (`styleGuard.test.ts`). Sistemin zayıf yeri token değil, iki bileşen ailesinin yan yana yaşaması.
+
+### 8. Tipografi ve renk
+
+- Yazı tavanı: `maxFontSizeMultiplier` 122 yerde, `allowFontScaling={false}` 0 yerde. Tavan 1,3 (M10-06, değişmedi).
+- Kontrast (hesap, WCAG formülü; kullanım yerleri sayılmadı):
+
+| Çift                                            | Oran | 4,5 eşiği       |
+| ----------------------------------------------- | ---- | --------------- |
+| Açık: soluk yazı, beyaz zemin                   | 6,43 | Geçer           |
+| Açık: pasif düğme yazısı, pasif dolgu           | 5,13 | Geçer           |
+| Açık: kırmızı, beyaz zemin                      | 5,32 | Geçer           |
+| Beyaz yazı, birincil yeşil (`#0E8745`)          | 4,59 | Sınırda         |
+| Beyaz yazı, başarı yeşili (`#1C8C4E`)           | 4,28 | Geçmez          |
+| Koyu: soluk yazı, cam                           | 7,98 | Geçer           |
+| Koyu: pasif düğme yazısı, pasif dolgu           | 6,75 | Geçer           |
+| Koyu: kırmızı, cam                              | 3,43 | Geçmez (M10-07) |
+| Koyu: birincil yeşil, cam (yazı ya da ikon ise) | 3,97 | Geçmez          |
+
+- Pasif düğme soluklaştırılmaz, nötr dolguya geçer (bilinçli; `auraKit.ts`). Etkin düğmeden ayrışıp ayrışmadığı görülmedi.
+- `numberOfLines` 34 yerde, çoğu oyun parçalarında (Kaupholl 4, Krot 4, Sprengja 4, Kinshi 3). Kural yalnız önizleme ve oda başlığına izin verir; hangilerinin küçülen tek satır, hangilerinin kesme olduğu ayrılmadı (M15-05).
+
+### 9. Navigasyon ve etkileşim (koddan)
+
+- Her gezgin grubunun başlangıç rotası tanımlı (`unstable_settings`); derin bağlantıyla açılan ekranda geri, boş yığına düşmez. Masa, semt ve rota sayfaları `canGoBack` yoksa güvenli bir yere döner (`room/[id].tsx:355`, `RouteSheet.tsx:92`, `district/parts.tsx:660`).
+- Kaydedilmemiş değişiklik: profil düzenleme ve Kapsülünü süsle sorar (geri tuşu dahil).
+- Masa bitirme ve ayrılma onay sayfasıyla; onay beklerken kilitli, hata sayfanın içinde.
+- Bildirim dokunuşu tek yerden (`features/push/push.ts:104–109`, `pure/navigation.ts` → `pushRoute`, testli). Geri dönüşün doğruluğu cihazda denenmedi.
+- Devralınanlar değişmedi: bilinmeyen adres İngilizce ekran (M10-08), DM adresinden gelen ad (M12-11), masada tek dokunuşla engel (M7-05).
+
+### 10. Animasyon ve performans
+
+Ölçüm yok. Koddan: hareketi azaltmayı okuyan 55 dosya; sonsuz döngü kuran 13 dosyanın 12'si aynı dosyada azaltmayı da okuyor, `components/Mark.tsx` okumuyor (2 kullanım yeri; çağıranın durdurup durdurmadığı doğrulanmadı: Ş). Kullanıcının hissedeceği performans riskleri önceki modüllerde yazılı ve değişmedi: M1-05, M1-21 (mekan sohbetinde her tepkide tam sayfa), M1-10 ve M3-01 (hareketli avatar), M2-02 ve M2-03 (toplu yeniden bağlanma), M5-05 ve M10-03 (lobi saniyede bir çizilir), M8-13 ve M8-16 (Keşfet), M14-14 (paket boyutu). Bunların hiçbiri bu oturumda telefonda ölçülmedi; "hissedilen sorun" sınıfına taşınamaz.
+
+### 11. Responsive ve erişilebilirlik (koddan)
+
+- Ham `Pressable` ve `TouchableOpacity`: 103; erişilebilirlik etiketi, rolü ya da gizleme taşımayan 0 (D, sayım). Kit bileşenleri etiketi `label`'dan alır.
+- Formlar: telefon alanı (`phone-pad`, `tel`), kod alanı (`number-pad`, `sms-otp`, `oneTimeCode`, kendiliğinden odak), ad (`words`, düzeltme kapalı), oyun girişleri (`send`, sınırlı uzunluk). Hata satırları `accessibilityLiveRegion` taşır. Eksik görülen: Keşfet aramasında `returnKeyType` yok (P3, M15-06).
+- Açık kalanlar önceki modüllerden: M10-01 (rol kartları TalkBack'te açılamaz), M10-10 (36 ve 44'lük dokunma alanı), M10-12 (sayfalarda odak), M10-13, M1-14, M3-11.
+
+### 12. Yükleme, boş ve hata hâlleri (koddan)
+
+- Sunucu hata kodları tipli; `errorMessage` her kodu `tr.errors`'tan okur, kod yoksa tek genel metin. Kaynakta geçen 34 kodun hepsinin metni var (D, sayım).
+- Envanterdeki "Hâl" sütunu: veri okuyan ekranların hepsinde yükleme ve hata izi var. Doğru kalıbı kullanmayanlar M8-02 ve M10-02'de listeli (veri eldeyken yenileme düşünce listeyi kaldıranlar); yeni yer bulunmadı.
+- Başarı geri bildirimi iki biçimde: sohbetlerde ve oyunlarda kısa bildirim (`GameToast`, mekan ve semt sohbeti), başka yerlerde satır içi metin ya da düğme durumu ("İstek gönderildi.", "Şikayetin alındı. Teşekkürler.", "Kapsülün kaydedildi."). Hangi işlemin sessiz bittiği cihazda aranacak.
+
+### 13. M1–M14 bulgularıyla ilişkiler
+
+Yeniden üretilemedi (cihaz yok); koda karşı yeniden bakılıp **değişmediği görülenler**: M10-06 (1,3), M10-07 (koyu kırmızı 3,43), M10-08 (önizleme rotaları kapılı, `+not-found` yok), M14-03 (açma hatasında durum yenilenmiyor), M7-05, M13-04. **Düzeltme:** M10-06 "ilk oyun tanıtımı"nı eski `Text` kullanan canlı ekranlar arasında sayıyordu; `FirstGameIntro` yalnız tasarım önizlemesinden çağrılıyor, uygulamada erişilmiyor (ölü ekran; M13-16'nın listesine eklenir). Düzeltilmiş bulunan önceki bulgu yok (kod denetim boyunca değişmedi).
+
+### 14. Yeni M15 bulguları
+
+| #      | Önc. | Sınıf        | Bulgu                                                                                                                                                                                                                                                                                                                                                                                         | Kanıt                                                                                               | Öneri                                                                                                                                                        |
+| ------ | ---- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M15-01 | P2   | D (dosya)    | Uygulama ekranlarının görünüşünü tutan hiçbir kanıt yok: görsel kapının bazı yalnız bileşen galerisidir (4 durum, 16 görüntü); `states.json`'daki üç ekran durumu bazsız (`baz: false`). Gece koşusu kırmızıyken (M13-04) ekranların bugünkü hâli yalnız proje sahibinin telefonunda. Bu denetim de göremedi.                                                                                 | `e2e/visual/states.json`; `e2e/visual/baz/`                                                         | Y1'den sonra: yedi yolculuğun kilit ekranları için baz (açık ve koyu, 320 dp ve normal); görüntüler aynı zamanda cihaz turunun kanıtı olur                   |
+| M15-02 | P3   | D (sayım)    | İki bileşen ailesi yan yana: eski `Input` kayıt formlarında (telefon, ad, doğum tarihi) ve profil düzenlemede; eski `Button` kod ekranında, hata ekranında (`RouteError`), Vampir'de ve arkadaş onay sayfasında; eski `Text` davet sayfasında ve Sahtekar'da. Aynı yolculukta kit ve eski bileşen art arda gelir; yazı tavanı ve dokunma alanı kuralları ikisinde farklı (M10-06, M10-10).    | İçe aktarma sayımı (17 uygulama dosyası; biri erişilmeyen `FirstGameIntro`)                         | Yeni ekran işi açılmadan, dokunulan ekranda eskiyi kit'e çevirmek (ayrı temizlik paketi değil); önce kayıt akışı, çünkü ilk izlenim orada                    |
+| M15-03 | P3   | D (kod)      | Onay sayfası üç kalıpta: ortak `ConfirmSheet` (yan yana, iptal solda) yalnız tasarım önizlemesinde kullanılıyor, uygulamada ölü; masa ekranı aynı adla kendi yerelini tanımlıyor (alt alta, tehlikeli üstte, "Vazgeç" altta); `ConfirmWithReport` kit tehlike düğmesiyle eski hayalet iptali karıştırıyor (5 çağrı yeri). İptal 28 yerde `glassy`, bir yerde `ghost`.                         | `components/ConfirmSheet.tsx:36–58`; `room/[id].tsx:665–722`; `friends/ConfirmWithReport.tsx:44–59` | Masa ekranındaki kalıbı ortak bileşen yapmak, ölü olanı kaldırmak, `ConfirmWithReport`'un iptalini `glassy`'ye çekmek                                        |
+| M15-04 | P2   | D (dosya), Ö | Aynı sözcük üç iş için kullanılıyor: "giriş" oturum açma ("Tekrar giriş yap"), mekana check-in ("Buraya giriş yap", "Önce mekana giriş yapman gerekiyor", "yeniden giriş yapabilirsin") ve hediye sayımı ("Günde 1 giriş sayılır"). Aynı iş iki adla anılıyor: Keşfet "check-in yaptın" der, düğme "Buraya giriş yap". İlk kez gelen için uygulamanın temel eylemi tek bir adla öğrenilmiyor. | `tr.ts:281, 499, 1959, 2399, 2416` ve hediye metinleri (`howToEarn`); terim sayımı                  | Tek sözlük: oturum için "oturum aç", mekan için tek ad (karar M15-K1), hediye için "açılış" ya da "gün". Etkisi beş kişilik ilk kullanım denemesiyle ölçülür |
+| M15-05 | P3   | Ş            | `numberOfLines` 34 yerde; kural yalnız önizleme alıntısı ve oda başlığına izin veriyor. Oyun parçalarındaki tek satırlık kullanımların (ad, soru, skor) 320 dp ve 1,3 yazıda kesip kesmediği görülmedi.                                                                                                                                                                                       | Sayım; `KauphollParts.tsx:149, 324, 875, 1152`                                                      | Cihaz turunda 320 dp ve en büyük yazıda dört oyunun ad ve soru satırları; kesen yer varsa küçülen satıra çevirmek                                            |
+| M15-06 | P3   | D (kod)      | Küçük form eksikleri: Keşfet aramasında klavye tuşu "ara" değil (varsayılan); beyaz yazı başarı yeşili üstünde 4,28 (kullanım yeri sayılmadı); `Mark` döngüsü hareketi azaltmayı kendi okumuyor.                                                                                                                                                                                              | `explore/index.tsx:739`; bölüm 8; `Mark.tsx:45`                                                     | Bir sonraki Keşfet işinde `returnKeyType="search"`; kit renklerini kontrast testine almak (M10-07 ile aynı iş)                                               |
+| M15-07 | P2   | D (kod), K   | Hediye ekranı hakkın kaynağını göstermiyor: tek sayı ("n paket açılabilir") dört pakette de aynı okunur (M14-01'in ekran yüzü). Ücretli paket gelince kişi kazandığı ile satın aldığını ayırt edemez; kilitli pakette "Yakında" dışında ne zaman ve nasıl açılacağına dair iz yok (bilinçli, ödeme kararı bekliyor).                                                                          | `gifts.tsx:313–320`; `api/gifts.ts:29–30`                                                           | Y25 ile birlikte: paket başına sayı; satın alma ekranı tuvale çizilirken "kazanılan" ve "satın alınan" ayrı satır                                            |
+
+Bulgu sayısı bilerek az: görülmeden yazılabilecek görsel bulgu yok, ve koddan görülenlerin çoğu M1–M14'te yazılı.
+
+### 15. Güçlü yönler (kanıtlı)
+
+1. Token disiplini: ekranlarda sıfır renk kodu ve sıfır sayısal yazı boyutu; testle korunuyor.
+2. Metin: bileşenlerde sabit metin yok; her hata kodunun Türkçe karşılığı tip düzeyinde zorunlu.
+3. Erişilebilirlik tabanı: etiketsiz ham dokunma hedefi yok; hata satırları canlı bölge; hareketi azaltma 55 dosyada.
+4. Formlar: SMS kodu kendiliğinden dolar, klavye türleri doğru, kaydedilmemiş değişiklik sorulur.
+5. Geri dönüş: her grubun başlangıç rotası ve `canGoBack` yedeği var; yıkıcı işlemler onaylı, onay sırasında kilitli.
+6. Tek yükleme göstergesi ve gecikmeli gösterim (300 ms, en az 600 ms) kuralı kodda.
+
+### 16. Öncelikli iyileştirme önerileri
+
+Yeni iş açmadan önce yol haritasındaki sıraya eklenir:
+
+| Sıra | İş                                                             | Bulgular        | Yol haritasında                   |
+| ---- | -------------------------------------------------------------- | --------------- | --------------------------------- |
+| 1    | Cihaz turu (bu denetimin yapılamayan yarısı)                   | Bölüm 6         | Y1'den hemen sonra, pilottan önce |
+| 2    | Ekran bazları                                                  | M15-01          | Y1 ile                            |
+| 3    | Sözlük kararı ve metin düzeltmesi                              | M15-04 (M15-K1) | Y10 ile (metin paketi)            |
+| 4    | Kayıt akışında eski bileşenlerin kit'e çevrilmesi, onay kalıbı | M15-02, M15-03  | Y20 (erişilebilirlik) ile         |
+| 5    | Hediye ekranında hakkın kaynağı                                | M15-07          | Y25, Y29                          |
+| 6    | Küçükler                                                       | M15-05, M15-06  | Y33                               |
+
+### 17. Ölçülemeyen konular
+
+Bölüm 6'daki her satır. Ek olarak: ilk kullanımda nerede kararsız kalındığı (beş kişilik görevli deneme: "bir masaya otur" görevi, süre ve yanlış dokunuş sayısı); açılıştan ilk ekrana süre; sohbet kaydırmasında kare süresi; hediye açılışında kare süresi; klavye açılışında sohbetin sona tutunması. Hiçbiri için sayı verilmedi.
+
+### 18. Genel kalite değerlendirmesi
+
+Söylenebilen: frontend'in **yapısal** kalitesi yüksek (tek tema kaynağı, tek metin kaynağı, tipli hata, testli kurallar, erişilebilirlik tabanı). Söylenemeyen: görünüşün profesyonelliği, ekranların aynı ürün gibi hissettirip hissettirmediği, hareketin hissi, ilk izlenim. Bunlar görülmeden yazılırsa uydurma olur; cihaz turuna bırakıldı. Koddan görülen en büyük deneyim riskleri yeni değil: ekranı hiçbir otomatik kanıtın tutmaması (M13-04, M15-01), TalkBack'te oyunların oynanamaması (M10-01), hata anında listenin kaybolması (M8-02, M10-02), kalabalık mekanda sohbetin ağırlaşması (M1-05, M1-21), temel eylemin adının tutarsızlığı (M15-04).
+
+### 19. M15 kapanış özeti
+
+| Soru                                    | Cevap                                                                                                         |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Tespit edilen ekran                     | 50 rota ekranı (57 dosya, 7 yerleşim); oyun ekranları ve alt sayfalar ayrıca sayıldı, tek tek envanterlenmedi |
+| Görsel incelenen                        | 0 uygulama ekranı; 3 galeri görüntüsü                                                                         |
+| Gerçek cihazda test edilen              | 0                                                                                                             |
+| Yalnız koddan incelenen                 | 50 (betikle tarama); derin okuma: `gifts`, `room/[id]`, onay sayfaları, form bileşenleri                      |
+| Test edilen yolculuk, denenen etkileşim | 0, 0                                                                                                          |
+| Cihaz ve çözünürlük                     | Yok                                                                                                           |
+| Bulgular                                | P0 0, P1 0, P2 3 (M15-01, M15-04, M15-07), P3 4                                                               |
+| Önceki bulgularla ilişkili              | 5 (M15-01 → M13-04; M15-02 → M10-06, M10-10; M15-05 → M10-06; M15-06 → M10-07; M15-07 → M14-01)               |
+| Yeni kök neden                          | 2 (ekran bazı yokluğu; sözlük)                                                                                |
+| Görsel kanıtı olan bulgu                | 0                                                                                                             |
+
+Yeni karar:
+
+| Karar  | Konu                    | Seçenek                                       | Artı                                 | Eksi                                               |
+| ------ | ----------------------- | --------------------------------------------- | ------------------------------------ | -------------------------------------------------- |
+| M15-K1 | Mekana girmenin tek adı | A: "check-in" her yerde                       | Kısa, yaygın, belgelerde ve kodda bu | Türkçe değil; ilk kez duyan için yabancı olabilir  |
+|        |                         | B: "mekana gir" her yerde, oturum "oturum aç" | Türkçe, kendini açıklar              | Hediye sayımındaki "giriş" de değişmeli; daha uzun |
+
+Öneri: B (ürün metni kararı; proje sahibinin).
+
+Yol haritası grupları: pilot öncesi zorunlu: cihaz turu, M15-01; canlıdan önce: M15-04, M15-02, M15-03; ödemeden önce: M15-07; sonra: M15-05, M15-06. "Kullanıcı sayısı artmadan" grubuna M15'ten yeni iş girmedi (o grup Y14 ve Y15'tir).
+
+Doğrulama: bu modülde uygulama kodu, test, yapılandırma, veritabanı ve kullanıcı verisi değişmedi; yerel yığına yazılmadı; yalnız bu belge değişti. Kanıt klasörü açılmadı, çünkü üretilen görsel kanıt yok.
