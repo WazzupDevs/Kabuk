@@ -4,7 +4,7 @@ import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
 import { BackHandler, Pressable, View } from 'react-native';
-import Reanimated from 'react-native-reanimated';
+import Reanimated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -104,6 +104,12 @@ function TableScreenBody() {
   // a scroll close it (CLAUDE.md → Ekran davranışı), a scroll under the finger (useDrawerScroll).
   const [drawer, setDrawer] = useState(false);
   const drawerScroll = useDrawerScroll(drawer, setDrawer);
+  // The games move down as the drawer opens, so it does not lie over them (the owner's report, 10
+  // Kasım). On the UI thread: a spacer as tall as the drawer's opening, no render per frame.
+  const { progress: drawerProgress, travel: drawerTravel } = drawerScroll;
+  const drawerSpace = useAnimatedStyle(() => ({
+    height: Math.max(0, drawerTravel.get() * drawerProgress.get()),
+  }));
   useEffect(() => {
     if (!drawer) return undefined;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -592,7 +598,7 @@ function TableScreenBody() {
         style={{ flex: 1, opacity: headHeight > 0 ? 1 : 0 }}
         contentContainerStyle={{
           paddingHorizontal: KIT.size.side,
-          paddingTop: headHeight + KIT.size.venueGap,
+          paddingTop: headHeight,
           paddingBottom: insets.bottom + SPACING[8],
           gap: KIT.size.venueGap,
         }}
@@ -600,6 +606,7 @@ function TableScreenBody() {
         onScroll={drawerScroll.onScroll}
         scrollEventThrottle={16}
       >
+        <Reanimated.View style={drawerSpace} />
         {owner ? (
           <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
         ) : null}
@@ -634,8 +641,8 @@ function TableScreenBody() {
           onPress={() => setSheet('people')}
           open={drawer}
           onToggle={() => setDrawer((v) => !v)}
-          // The open drawer lies over the games (they do not move with it, the owner's report, 6
-          // Kasım, round 3: following its height each frame rendered the screen each frame).
+          // The games move with the drawer on the UI thread (`drawerSpace`): following its height
+          // on the JavaScript side rendered the screen each frame (6 Kasım, round 3).
           progress={drawerScroll.progress}
           travel={drawerScroll.travel}
           onRestHeight={(h) => setHeadHeight((prev) => (prev === h ? prev : h))}

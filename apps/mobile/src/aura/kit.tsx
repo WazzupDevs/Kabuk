@@ -279,7 +279,7 @@ export function Btn({
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const inRow = useContext(InRow);
   // Riso (the owner's call, 8 Kasım; docs/decisions/riso-dugme.md): the ink flat, a second ink
   // printed a little off under it, halftone and paper grain over it, no soft shadow. Disabled is
@@ -288,9 +288,16 @@ export function Btn({
   const riso = variant !== 'dark';
   const R = KIT.riso;
   const paper = variant === 'glassy';
-  const ink = fill ?? (variant === 'danger' ? R.danger : paper ? R.paper : R.ink);
-  const fg =
-    tint ?? (variant === 'dark' ? (off ? c.onDisabled : c.onChipOn) : paper ? R.paperInk : R.onInk);
+  // In the light a faded primary left its white words on a pale green (the owner's report, 10
+  // Kasım): disabled there is the neutral fill and its ink, unfaded (U10). The dark as it was.
+  const plainOff = off && riso && !paper && scheme === 'light';
+  const ink = plainOff
+    ? c.disabled
+    : (fill ?? (variant === 'danger' ? R.danger : paper ? R.paper : R.ink));
+  const fg = plainOff
+    ? c.onDisabled
+    : (tint ??
+      (variant === 'dark' ? (off ? c.onDisabled : c.onChipOn) : paper ? R.paperInk : R.onInk));
   const height = bar
     ? bar
     : sm
@@ -303,7 +310,7 @@ export function Btn({
   const big = bar ? bar >= KIT.size.roundLg : false;
   const small = sm || (!!bar && !big);
   // The second ink only on the full buttons; a small one keeps its edge and texture.
-  const shift = riso && !small ? R.shift : 0;
+  const shift = riso && !small && !plainOff ? R.shift : 0;
   const padX = snug
     ? KIT.size.btnPadXSnug
     : big || mid
@@ -337,7 +344,7 @@ export function Btn({
         {
           alignSelf: block ? 'stretch' : inRow ? 'center' : 'flex-start',
           borderRadius: KIT.size.btn,
-          opacity: off && riso ? R.offOpacity : 1,
+          opacity: off && riso && !plainOff ? R.offOpacity : 1,
         },
         style,
       ]}
@@ -378,7 +385,7 @@ export function Btn({
           },
         ]}
       >
-        {riso ? (
+        {riso && !plainOff ? (
           <Image
             source={paper ? RISO_TEXTURE.dark : RISO_TEXTURE.light}
             resizeMode="repeat"
@@ -1225,6 +1232,7 @@ export function Seg<V extends string>({
   narrow?: boolean;
 }) {
   const { c } = useKit();
+  const flat = useContext(FlatGlass);
   const reduce = useReduceMotion();
   const item = large ? KIT.size.segLg : narrow ? KIT.size.segItemNarrow : KIT.size.segItem;
   const radius = large ? KIT.size.segLgRadius : KIT.size.seg;
@@ -1257,12 +1265,15 @@ export function Seg<V extends string>({
     <Glass
       frost
       radius={radius}
-      style={{
-        flexDirection: 'row',
-        padding: KIT.size.segPad,
-        gap: KIT.size.segGap,
-        borderRadius: radius,
-      }}
+      style={[
+        flat ? gradientStyle(c.segTrackInSheet) : null,
+        {
+          flexDirection: 'row',
+          padding: KIT.size.segPad,
+          gap: KIT.size.segGap,
+          borderRadius: radius,
+        },
+      ]}
     >
       <View
         accessibilityRole="tablist"

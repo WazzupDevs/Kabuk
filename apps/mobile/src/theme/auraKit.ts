@@ -206,6 +206,12 @@ export const KIT = {
     // The chosen part's words: the ink; in the dark #0B0E0D on the 94 % white.
     segOnInk: '#031B0B',
     segShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
+    // In a sheet the track is sunk, so the chosen white shows (the owner's report, 10 Kasım:
+    // Ayarlar's two switches were white on white).
+    segTrackInSheet: 'linear-gradient(180deg, #E0EDE2, #E0EDE2)',
+    // An empty step on a light ground (Paketler's page dots, the login bar's parts): --track
+    // vanished on the pale canvas.
+    emptyMark: 'rgba(3, 27, 11, 0.18)',
     // The sheet (U8): the glass (`.glass.sheet`) over a blurred scrim. Laid on the canvas so it stays
     // opaque (the owner's call, 29 Ekim: Bildirimler and Ayarlar showed too much under them); its
     // top and bottom colours are what scrolls under its edges fades into.
@@ -271,6 +277,9 @@ export const KIT = {
     segOn: 'rgba(255, 255, 255, 0.94)',
     segOnInk: '#0B0E0D',
     segShadow: '',
+    // As before: the sheet's card colour.
+    segTrackInSheet: '#1B211F',
+    emptyMark: '#1B211F',
     // A shade under the cards, as in the light (the cards' glass is the old sheet's colour).
     sheet: '#121614',
     sheetBase: '#121614',

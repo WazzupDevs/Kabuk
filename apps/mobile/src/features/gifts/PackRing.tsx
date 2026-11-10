@@ -11,6 +11,7 @@ import Reanimated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
@@ -399,6 +400,7 @@ function RingPack({
 // The dots under the ring: the front pack's long and green, the others round on the track.
 export function RingDots({ front, stage }: { front: number; stage: Stage }) {
   const { colors } = useTheme();
+  const { c } = useKit();
   return (
     <View
       accessibilityElementsHidden
@@ -417,7 +419,7 @@ export function RingDots({ front, stage }: { front: number; stage: Stage }) {
             width: i === front ? DOT_ON : DOT,
             height: DOT,
             borderRadius: DOT / 2,
-            backgroundColor: i === front ? colors.primary : colors.track,
+            backgroundColor: i === front ? colors.primary : c.emptyMark,
           }}
         />
       ))}

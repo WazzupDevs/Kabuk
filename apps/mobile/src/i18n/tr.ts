@@ -2329,6 +2329,8 @@ export const tr = {
     },
     notifyFriendRequests: 'Arkadaşlık istekleri',
     signOut: 'Çıkış yap',
+    signOutConfirmTitle: 'Çıkış yapılsın mı?',
+    signOutConfirmBody: 'Masadaysan masadan da kalkarsın. Yeniden girmek için numarana kod gelir.',
     deleteAccount: 'Hesabımı sil',
     deleteConfirmTitle: 'Hesabın silinsin mi?',
     deleteConfirm: 'Sil',

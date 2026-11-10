@@ -153,6 +153,7 @@ export function LoginBar({
   off?: string;
 }) {
   const { colors } = useTheme();
+  const { c } = useKit();
   return (
     <View style={{ flexDirection: 'row', gap: SPACING[1], width }}>
       {Array.from({ length: per }, (_, i) => (
@@ -162,7 +163,7 @@ export function LoginBar({
             flex: 1,
             height: 6,
             borderRadius: 3,
-            backgroundColor: i < logins ? (on ?? colors.primary) : (off ?? colors.track),
+            backgroundColor: i < logins ? (on ?? colors.primary) : (off ?? c.emptyMark),
           }}
         />
       ))}
