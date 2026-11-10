@@ -1,5 +1,25 @@
 # İlerleme
 
+## Skia build'i (10 Kasım 2026; plan `docs/decisions/skia-build-plani.md`)
+
+Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başlar, tablodaki ilk "Açık" satırdan sürer. T satırları proje sahibinin telefon adımıdır (`docs/denetim/olcum-protokolu.md` → Kapsül ölçümü).
+
+| #   | Paket                                                                        | Yayın        | Model    | Durum                       |
+| --- | ---------------------------------------------------------------------------- | ------------ | -------- | --------------------------- |
+| P0  | Plan, bu tablo, kapsül ölçüm protokolü                                       | Belge        | Orkestra | Bu PR                       |
+| P1  | Ölçüm sahnesi (panel) ve M15-26                                              | OTA          | Sonnet   | Açık                        |
+| T0  | Taban ölçüm                                                                  | Telefon      | —        | P1'i bekler                 |
+| P2  | Skia'dan bağımsız düzeltmeler (M3-02, M15-46/1, M3-05, 07, 08, 09, 10, 12)   | OTA          | Sonnet   | Açık; T0'dan önce birleşmez |
+| P3  | "Klip içi hareket" katman türü, kırpılmış kare yolu                          | OTA          | Opus     | Açık                        |
+| P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri | OTA          | Sonnet   | Açık                        |
+| T1  | Ölçüm tekrarı                                                                | Telefon      | —        | P4'ü bekler                 |
+| P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`        | Build        | Opus     | Açık                        |
+| P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri      | 0.11.0'a OTA | Opus     | Açık                        |
+| T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                 | Telefon      | —        | P6'yı bekler                |
+| P7  | Düzeltmeler; anahtar Süsle'de açılır                                         | OTA          | Sonnet   | Açık                        |
+| P8  | Açılan kart ve profil bileti                                                 | OTA          | Sonnet   | Açık                        |
+| P9  | Küçük avatarlarda Skia                                                       | —            | —        | T1 ve T2'ye göre karar      |
+
 ## Devir notu (9 Kasım 2026, canlı öncesi denetim)
 
 - Faz 0–2 bitti: `performans` ajanı (#531), güvenlik 1 (#532), performans 1 (#533), güvenlik 2 (#534, onaylı), P2a #535, P2b #537 (D5 `after` imleci ve `venue_chat_removed`, D6 Sprengja işi açık, D9 24 saat saklama). M1 #539, M2 #540, F1 #541. Tablodaki kod paketleri bitti; kalanlar onay (C3), build (C4, F3), panel (C5, F4) ve hukuk (F5) işleri, F2 Semte Git üretimde açılmadan önce.

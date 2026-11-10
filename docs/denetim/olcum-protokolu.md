@@ -67,6 +67,33 @@ Sonuç tablosu (cihaz başına):
 - JS p95'i yüksek ama UI p95'i normalse sorun React tarafındadır (B2, B6). İkisi de yüksekse ya da `Slow issue draw commands` artıyorsa sorun çizimdedir (B1, B12).
 - Gerekirse Perfetto ile bir geçişin izi alınır: `gfx`, `view`, `hwui`, `sched`, `freq` kategorileri, uygulama süreci için `atrace_apps`. RenderThread'de `DrawFrame` süreleri, UI'da `Record View#draw()`, JS'te commit dilimleri okunur.
 
+## Kapsül ölçümü (M3 aşama 0; `docs/decisions/skia-build-plani.md`)
+
+Kapsülün çizim yolundaki her değişiklik (T0 taban, T1 OTA düzeltmelerinden sonra, T2 Skia ile) aynı sahnelerle ölçülür. Cihaz hazırlığı ve build kuralı yukarıdaki gibidir; telefon USB ile bağlıdır (`adb`).
+
+- **Cihazlar:** Nothing Phone 1, düşük donanımlı bir Android, bir iPhone (M3 kararı); eldeki başka telefon ayrıca yazılır. iPhone 0.11.0 iOS build'iyle ölçülür (Xcode Instruments: Time Profiler ve Allocations; `adb` satırları orada geçerli değildir).
+- **Sahneler** (Ayarlar → Tasarım (test) → Kapsül ölçümü; panel sahneyi sabit aksesuarla çizer, hesabın sahip olduğu aksesuara bağlı değildir):
+  1. Büyük kapsül, aksesuarsız.
+  2. Büyük kapsül, `kistakimi` (Destansı; 19 SVG görünümü).
+  3. Büyük kapsül, `gokkusagiatki` (79 SVG görünümü).
+  4. 12 avatarlı ızgara, hepsi `kistakimi`; ızgara yukarı ve aşağı kaydırılır (10 kez).
+  5. Paketler: açılan kart (gerçek ekran; açılabilir paket varsa).
+- **Akış, sahne başına:**
+  1. `adb shell am force-stop app.kabuk.mobile`, uygulama açılır, sahneye gidilir, 5 sn beklenir.
+  2. `adb shell dumpsys gfxinfo app.kabuk.mobile reset`.
+  3. Sahne 30 sn açık kalır (4. sahnede kaydırılır).
+  4. `adb shell dumpsys gfxinfo app.kabuk.mobile > kapsul-<cihaz>-<T>-<sahne>-<n>.txt`.
+  5. `adb shell dumpsys meminfo app.kabuk.mobile > bellek-<cihaz>-<T>-<sahne>-<n>.txt`.
+  6. Üç koşu, ortanca alınır.
+- **Pil:** 2. ve 3. sahne 5 dakika açık bırakılır; önce `adb shell dumpsys batterystats --reset`, sonra `adb shell dumpsys batterystats app.kabuk.mobile` çıktısından uygulamanın tahmini tüketimi (mAh). Telefon ölçüm boyunca Wi-Fi üzerinden `adb`'ye bağlıdır (USB şarj eder, sayı bozulur); olmuyorsa pil ölçülmez ve öyle yazılır.
+- **Kayda geçen sayılar:** `gfxinfo`'dan toplam kare, `Janky frames` (%), 50, 90, 95 ve 99. yüzdelik; `meminfo`'dan `Graphics`, `Native Heap`, `TOTAL PSS`; panelden UI ve JS p95'i; pil (mAh). Build numarası ve OTA kimliği her tabloya yazılır.
+
+| Sahne | Kare p50 | Kare p95 | Jank % | Graphics (MB) | Native Heap (MB) | TOTAL PSS (MB) | Panel UI p95 | Panel JS p95 | Pil (mAh / 5 dk) |
+| ----- | -------- | -------- | ------ | ------------- | ---------------- | -------------- | ------------ | ------------ | ---------------- |
+
+- **SVG ve Skia yan yana (T2):** aynı build'de panelin `skia` anahtarı kapalı ve açık, aynı sahneler. Görsel karşılaştırma: paneldeki galeride 15 aksesuar, solda SVG, sağda Skia; fark görülen aksesuarın ekran kaydı gönderilir.
+- **Okuma:** 1. sahne tabandır; 2. ve 3. sahnenin 1.'den farkı kare yönteminin maliyetidir. Skia'nın kabulü: 2. ve 3. sahnede p95 ve `Graphics` T1'den kötü değil, en az birinde belirgin iyi (p95'te bütçenin yarısından çok ya da `Graphics`'te %20'den çok); 15 aksesuar göz karşılaştırmasında aynı.
+
 ## Her değişiklikte
 
 1. **Önce:** değişiklikten önceki build ya da OTA ile bu protokol koşulur ve tablo PR'a yazılır.
