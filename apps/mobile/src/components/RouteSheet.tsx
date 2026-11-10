@@ -29,6 +29,7 @@ import { EASE_OUT } from '@/theme/markMotion';
 import { Quiet } from './Quiet';
 import { SheetCard } from './SheetCard';
 import { SheetScrim } from './SheetScrim';
+import { ScreenStatusBar, StatusScrim } from './StatusScrim';
 
 // A route drawn as a bottom sheet over the screen it opened from (skall tuvali: Ayarlar,
 // Bildirimler, mekana giriş and "Neredesin?" are sheets; the owner's decision, 27 Ekim). The route
@@ -108,6 +109,10 @@ export function RouteSheet({
     <CloseContext.Provider value={close}>
       <View style={StyleSheet.absoluteFill}>
         <SheetScrim opacity={progress} />
+        {/* The status bar over the scrim: a fade and light icons; the light scheme's dark ones were
+            lost on it (audit M15-12). */}
+        <StatusScrim opacity={progress} />
+        <ScreenStatusBar style="light" />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={tr.common.close}

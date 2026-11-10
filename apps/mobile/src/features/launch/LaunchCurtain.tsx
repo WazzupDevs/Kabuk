@@ -27,6 +27,7 @@ import Svg, {
 import { BRAND, LAUNCH_LIGHT } from '@/theme/brand';
 import {
   CLEAR_SCENE,
+  appTransform,
   flareCircle,
   glintPath,
   type LaunchApart,
@@ -234,22 +235,12 @@ export function LaunchCurtain({ children }: Props) {
   const riso = useDerivedValue(() => risoIn(since.value));
   const variant = useDerivedValue(() => risoVariant(since.value, reduce));
 
-  // The app under the curtain settles from 1.06 around the overlap as the print parts.
-  const appStyle = useAnimatedStyle(() => {
-    if (!active.value) return { transform: [] };
-    const s = scene.value;
-    const dx = s.origin[0] - w / 2;
-    const dy = s.origin[1] - h / 2;
-    return {
-      transform: [
-        { translateX: dx },
-        { translateY: dy },
-        { scale: s.appScale },
-        { translateX: -dx },
-        { translateY: -dy },
-      ],
-    };
-  });
+  // The app under the curtain settles from 1.06 around the overlap as the print parts; before the
+  // clock's first frame and after the curtain, at its own size (launchMotion.ts → appTransform:
+  // React's copy of this style must be the rest, audit M15-22).
+  const appStyle = useAnimatedStyle(() => ({
+    transform: appTransform(active.value && began.value >= 0, scene.value, w, h),
+  }));
 
   return (
     <View style={styles.fill} onLayout={onLayout}>

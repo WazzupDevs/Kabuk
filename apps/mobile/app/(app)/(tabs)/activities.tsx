@@ -1,7 +1,7 @@
 import { groupHistory, historyDay, historyResult, historySessions } from '@shared/activities.ts';
 import { explorePlace, todayEvents } from '@shared/explore.ts';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 import { runOnJS, useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
 
@@ -11,6 +11,7 @@ import { GameDisc } from '@/components/Glyph';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
+import { useTabBarSpace } from '@/components/TabBar';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { boxShadowParts } from '@/components/NativeShadow';
@@ -187,17 +188,16 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
   if (events.length === 0) {
     // U15: the empty state upright in the middle of what is left.
     return (
-      <View
-        testID="activities-no-events"
-        style={{ flex: 1, justifyContent: 'center', paddingBottom: EMPTY_LIFT }}
-      >
-        <EmptyState
-          kind="empty"
-          title={tr.activities.noEvents}
-          body={tr.activities.noEventsHint}
-          picture={NO_EVENTS_PICTURE}
-        />
-      </View>
+      <FitEmpty testID="activities-no-events" lift={EMPTY_LIFT}>
+        {(small) => (
+          <EmptyState
+            kind="empty"
+            title={tr.activities.noEvents}
+            body={tr.activities.noEventsHint}
+            picture={small ? NO_EVENTS_PICTURE_SMALL : NO_EVENTS_PICTURE}
+          />
+        )}
+      </FitEmpty>
     );
   }
   return (
@@ -266,9 +266,11 @@ function History({ now }: { now: number }) {
   }
   if (history.data.length === 0) {
     return (
-      <View testID="activities-no-history" className="flex-1 justify-center">
-        <EmptyState kind="empty" riso="history" body={tr.friends.noHistory} />
-      </View>
+      <FitEmpty testID="activities-no-history">
+        {(small) => (
+          <EmptyState kind="empty" riso="history" compact={small} body={tr.friends.noHistory} />
+        )}
+      </FitEmpty>
     );
   }
 
@@ -457,6 +459,42 @@ const NO_EVENTS_PICTURE = {
   height: 165,
   radius: 28,
 };
+// Where the page has no room for it: the small riso of a card (EmptyState → compact).
+const NO_EVENTS_PICTURE_SMALL = { ...NO_EVENTS_PICTURE, width: 160, height: 110, radius: 22 };
+
+// An empty state in the middle of what is left of the page. Where its last line would end under the
+// tab bar (a short screen, the gift card over the tabs), it takes the small picture so it all shows
+// without scrolling (audit M15-17).
+function FitEmpty({
+  testID,
+  lift = 0,
+  children,
+}: {
+  testID: string;
+  lift?: number;
+  children: (small: boolean) => ReactNode;
+}) {
+  const ref = useRef<View>(null);
+  const { height } = useWindowDimensions();
+  const bottom = useTabBarSpace();
+  const [small, setSmall] = useState(false);
+  const check = () => {
+    if (small) return;
+    ref.current?.measureInWindow((_x, y, _w, h) => {
+      if (h > 0 && y + h > height - bottom) setSmall(true);
+    });
+  };
+  return (
+    <View
+      testID={testID}
+      style={{ flex: 1, justifyContent: 'center', paddingBottom: small ? 0 : lift }}
+    >
+      <View ref={ref} collapsable={false} onLayout={check}>
+        {children(small)}
+      </View>
+    </View>
+  );
+}
 
 // The game's disc; a chat without a game has the speech bubbles.
 function Thumb({ concept }: { concept: HistoryConcept }) {

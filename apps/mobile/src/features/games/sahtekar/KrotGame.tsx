@@ -43,6 +43,7 @@ import { RISO as R, RISO_PANEL_WIDTH, risoDeck } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
+import { ScreenStatusBar, StatusScrim } from '@/components/StatusScrim';
 
 import {
   Buddy,
@@ -1117,7 +1118,10 @@ function End({
             }}
           />
         ))}
+        {/* The light lineup under the status bar: a fade and light icons (audit M15-12). */}
+        <StatusScrim />
       </View>
+      <ScreenStatusBar style="light" />
       <ScrollView
         bounces={false}
         overScrollMode="never"
