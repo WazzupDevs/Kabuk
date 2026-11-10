@@ -47,7 +47,7 @@ export default function ProfileScreen() {
   const barSpace = useTabBarSpace();
   const own = useProfile();
   const publicId = own.data?.public_id;
-  const view = useProfileView(publicId);
+  const view = useProfileView(publicId, true);
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
 

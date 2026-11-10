@@ -156,7 +156,8 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
   const pending = venues.isPending || cities.isPending;
   const loading = useLoaderHold(pending);
 
-  if (venues.isError || cities.isError) {
+  // A failed refresh keeps the list (audit M8-02): the error only stands in for nothing read.
+  if ((venues.isError && !venues.data) || (cities.isError && !cities.data)) {
     return (
       <View style={{ marginTop: SPACING[6] }}>
         <EmptyState

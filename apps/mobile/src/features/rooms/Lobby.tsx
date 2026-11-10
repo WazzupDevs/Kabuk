@@ -136,7 +136,8 @@ export function Lobby({
   const narrow = width / Math.min(fontScale, MAX_FONT_SCALE) < NARROW_ROW_DP;
   // Loading and on an error neither section has a count, and "Süren masalar" nothing under it: the
   // lobby is one read, its loader and its error show once, under "Açık masalar".
-  const read = !tables.isPending && !tables.isError;
+  // A failed refresh keeps the tables read before (audit M8-02).
+  const read = !!tables.data;
   const others = (list: VenueTable[]) => list.filter((t) => t.roomId !== roomId);
   const open = others(tables.data?.open ?? []);
   const running = others(tables.data?.running ?? []);
@@ -182,7 +183,7 @@ export function Lobby({
         <View className="items-center py-4" accessibilityLabel={tr.lobby.loading}>
           <Loader />
         </View>
-      ) : tables.isError ? (
+      ) : !tables.data ? (
         <EmptyState
           kind="error"
           body={errorMessage(tables.error)}

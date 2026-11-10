@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import Reanimated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
+import Reanimated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tr } from '@/i18n/tr';
@@ -12,19 +12,16 @@ import { ICON, SPACING } from '@/theme/tokens';
 
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
-import { useLabOff } from '@/lib/drawLab';
-import { boxShadowParts } from './NativeShadow';
 
 const CHECK_MS = 4000;
 
-// "Bağlantı yok" (skall tuvali, Haller): at the top over any screen while the server cannot be
-// reached; it checks again every few seconds and, back online, fetches the screen's lists again
-// ("Tekrar bağlanınca liste kendiliğinden güncellenir"). It takes no touches.
+// "Bağlantı yok" (skall tuvali, Haller): a band at the top of the app while the server cannot be
+// reached. It takes the status bar's place and pushes the screen down under it (the group's
+// layout gives the screens the safe area below the band), so it never covers a screen's top
+// buttons, its title or the status bar's icons (audit M15-19). It checks again every few seconds
+// and, back online, fetches the screen's data again. It takes no touches.
 export function ConnectionBanner() {
   const { colors, shape } = useTheme();
-  // Its soft shadow natively (NativeShadow.tsx): the banner slides in.
-  const shadowOff = useLabOff('golge');
-  const shadow = boxShadowParts(shadowOff, shape.shadow.sheet, shape.radius.lg);
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const offline = useConnection((s) => s.offline);
@@ -46,38 +43,28 @@ export function ConnectionBanner() {
   if (!offline) return null;
   return (
     <Reanimated.View
-      entering={FadeInUp}
-      exiting={FadeOutUp}
+      entering={FadeIn}
+      exiting={FadeOut}
       pointerEvents="none"
       accessibilityLiveRegion="polite"
       testID="connection-banner"
       style={{
-        position: 'absolute',
-        left: shape.screenPadding,
-        right: shape.screenPadding,
-        top: insets.top + SPACING[2],
+        backgroundColor: colors.warnSoft,
+        paddingTop: insets.top + SPACING[1.5],
+        paddingBottom: SPACING[2],
+        paddingLeft: shape.screenPadding + insets.left,
+        paddingRight: shape.screenPadding + insets.right,
       }}
     >
-      <View
-        className="flex-row items-start"
-        style={{
-          gap: SPACING[3],
-          padding: SPACING[4],
-          borderRadius: shape.radius.lg,
-          backgroundColor: colors.warnSoft,
-          boxShadow: shadow.boxShadow,
-        }}
-      >
-        {shadow.node}
-        <AppIcon name="alert" size={ICON.md} color={colors.onWarnSoft} />
-        <View className="flex-1 gap-0.5">
+      <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
+        <AppIcon name="alert" size={ICON.sm} color={colors.onWarnSoft} />
+        <Text variant="fine" tone="onWarnSoft" className="flex-1">
           <Text variant="label" tone="onWarnSoft">
             {tr.connection.offlineTitle}
           </Text>
-          <Text variant="fine" tone="onWarnSoft">
-            {tr.connection.offlineBody}
-          </Text>
-        </View>
+          {' · '}
+          {tr.connection.offlineBody}
+        </Text>
       </View>
     </Reanimated.View>
   );

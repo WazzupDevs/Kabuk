@@ -44,6 +44,7 @@ import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { EventTag } from '@/features/explore/EventTag';
 import { type CityVenue, useCityVenues } from '@/features/explore/useExploreVenues';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { dayPart } from '@/lib/dayPart';
@@ -90,7 +91,10 @@ export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = useWindowDimensions();
 
-  const ready = venues.isSuccess && cities.isSuccess;
+  // A failed refresh keeps what was read (audit M8-02, Mesajlar's way): the list, the search, the
+  // chips and the head stay; the error only stands in for nothing read at all.
+  const ready = !!venues.data && !!cities.data;
+  const failed = !ready && (venues.isError || cities.isError);
   const showMap = ready && view === 'map';
   // The map's GL surface cannot be blurred: over it the tab bar is opaque.
   useTabBarOverMap(showMap);
@@ -206,16 +210,16 @@ export default function ExploreScreen() {
           </View>
         </View>
 
-        {!ready && !venues.isError && !cities.isError ? (
+        {!ready && !failed ? (
           <View className="mt-8 items-center">
             <Loader />
           </View>
         ) : null}
-        {venues.isError || cities.isError ? (
+        {failed ? (
           <View style={{ paddingHorizontal: shape.screenPadding }}>
             <EmptyState
               icon="cloud-offline-outline"
-              body={tr.common.genericError}
+              body={errorMessage(venues.error ?? cities.error)}
               action={{
                 label: tr.checkin.retry,
                 onPress: () => {
