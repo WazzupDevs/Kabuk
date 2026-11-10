@@ -371,6 +371,10 @@ export const KIT = {
   // round) and its shadow.
   // A neutral dark under a photo (Telegram Android's black), not the ink's green (18.1).
   photoScrim: 'rgba(0, 0, 0, 0.82)',
+  // Under the status bar over a picture or a sheet's scrim (audit M15-12): a dark fade 40 below the
+  // bar, so its light icons read on a light picture.
+  statusScrim: 'linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0))',
+  statusScrimBelow: 40,
   photoCard: { side: 22, radius: 30, shadow: '0px 24px 60px rgba(0, 0, 0, 0.35)' },
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(14, 135, 69, 0.14)',

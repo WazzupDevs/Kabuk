@@ -307,6 +307,42 @@ export const CLEAR_SCENE: LaunchScene = {
   done: true,
 };
 
+// The app under the curtain: it settles from 1.06 around the overlap as the print parts. At rest
+// (before the curtain's clock runs, after it, or dropped) the same five steps at no change. That rest
+// is what React keeps as the style: Reanimated sends the moving frames straight to the view
+// (ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS), not through React, and a later render of the curtain
+// (the keyboard, signing in) sent React's copy back to the view. With the first frame's 1.06 as that
+// copy, the whole app stayed 6 % larger around the screen's middle: the title under the status bar,
+// the tab bar on the navigation buttons (audit M15-22).
+export type AppStep = { translateX: number } | { translateY: number } | { scale: number };
+
+export const APP_AT_REST: AppStep[] = [
+  { translateX: 0 },
+  { translateY: 0 },
+  { scale: 1 },
+  { translateX: 0 },
+  { translateY: 0 },
+];
+
+export function appTransform(
+  moving: boolean,
+  scene: Pick<LaunchScene, 'appScale' | 'origin'>,
+  w: number,
+  h: number,
+): AppStep[] {
+  'worklet';
+  if (!moving) return APP_AT_REST;
+  const dx = scene.origin[0] - w / 2;
+  const dy = scene.origin[1] - h / 2;
+  return [
+    { translateX: dx },
+    { translateY: dy },
+    { scale: scene.appScale },
+    { translateX: -dx },
+    { translateY: -dy },
+  ];
+}
+
 // Whether the launch is waiting for the app at `t` (the wait motion plays).
 export function launchWaiting(T: LaunchTimeline, t: number, wait: number): boolean {
   'worklet';

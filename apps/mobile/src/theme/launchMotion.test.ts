@@ -4,6 +4,8 @@ import { MAIN, reach, SPLASH, SPLASH_REACH } from '../../../../scripts/icon/mark
 
 import { LAUNCH_ART, LAUNCH_TEXTURE_BOX, type TextureBox } from './launchTextures';
 import {
+  APP_AT_REST,
+  appTransform,
   bezier,
   flareCircle,
   glintPath,
@@ -389,5 +391,34 @@ describe('which launch', () => {
   it('an unreadable record is a cold launch', () => {
     expect(launchKindFrom('not json', 'u1', false)).toBe('cold');
     expect(launchKindFrom('{}', 'u1', false)).toBe('quick');
+  });
+});
+
+describe('the app under the curtain (audit M15-22)', () => {
+  const scene = { appScale: 1.06, origin: [200, 400] as [number, number] };
+
+  it('is at its own size at rest, in the same five steps as when it moves', () => {
+    const rest = appTransform(false, scene, 400, 800);
+    expect(rest).toBe(APP_AT_REST);
+    expect(rest).toEqual([
+      { translateX: 0 },
+      { translateY: 0 },
+      { scale: 1 },
+      { translateX: 0 },
+      { translateY: 0 },
+    ]);
+    expect(appTransform(true, scene, 400, 800).map((s) => Object.keys(s)[0])).toEqual(
+      rest.map((s) => Object.keys(s)[0]),
+    );
+  });
+
+  it('scales around the overlap while the curtain moves', () => {
+    expect(appTransform(true, scene, 400, 600)).toEqual([
+      { translateX: 0 },
+      { translateY: 100 },
+      { scale: 1.06 },
+      { translateX: -0 },
+      { translateY: -100 },
+    ]);
   });
 });

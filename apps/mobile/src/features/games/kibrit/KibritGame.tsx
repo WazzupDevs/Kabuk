@@ -33,6 +33,7 @@ import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { Sheet } from '@/components/Sheet';
+import { ScreenStatusBar } from '@/components/StatusScrim';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { StageFit } from '@/features/games/GameStage';
 import { useSecondsLeft } from '@/features/games/useSecondsLeft';
@@ -1372,6 +1373,8 @@ function Scene({
           ...gradientStyle(`linear-gradient(180deg, ${KB.scene.shadeFrom}, transparent)`),
         }}
       />
+      {/* Light icons on the scene's shade (audit M15-12). */}
+      <ScreenStatusBar style="light" />
       {children ? (
         <View style={{ position: 'absolute', left: 0, right: 0, top: sceneTop }}>{children}</View>
       ) : null}

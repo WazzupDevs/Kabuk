@@ -25,6 +25,7 @@ import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { SPRENGJA as S, SPRENGJA_TYPE as ST, type SprengjaRing } from '@/theme/sprengja';
 import { useTheme } from '@/theme/ThemeProvider';
 import { BRAND } from '@/theme/brand';
+import { ScreenStatusBar } from '@/components/StatusScrim';
 
 import { Buddy, Face, type Faces, nameOf, useRisoDeck } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
@@ -750,6 +751,8 @@ export function Scene({
           ...gradientStyle(`linear-gradient(180deg, ${SC.shadeFrom}, transparent)`),
         }}
       />
+      {/* Light icons on the scene's shade (audit M15-12). */}
+      <ScreenStatusBar style="light" />
       {children ? (
         <View style={[StyleSheet.absoluteFill, { top: sceneTop }]}>{children}</View>
       ) : null}

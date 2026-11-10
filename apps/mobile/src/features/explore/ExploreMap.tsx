@@ -19,6 +19,7 @@ import { router } from 'expo-router';
 import { describeEventTime } from '@shared/explore.ts';
 import { type ReactNode, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
+import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Li, Live, RowList, T, Tag, useKit } from '@/aura/kit';
@@ -157,13 +158,23 @@ export function ExploreMap({
     if (first) setOpening(first);
   }
   const padding = mapPadding(headerHeight, tabBarHeight, SPACING[6]);
+  const keyboard = useKeyboardState((k) => (k.isVisible ? k.height : 0));
   // A venue that left the data (deactivated) closes its card.
   const card = selected ? (venues.find((v) => v.id === selected) ?? null) : null;
 
-  // Nothing to show: the list's words, on the map too.
+  // Nothing to show: the list's words, on the map too, in the middle of what the head, the tab bar
+  // and the keyboard leave (audit M15-17: its second line went under the keyboard).
   if (!opening || venues.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center" style={{ gap: SPACING[1] }}>
+      <View
+        className="flex-1 items-center justify-center"
+        style={{
+          gap: SPACING[1],
+          paddingTop: headerHeight,
+          paddingBottom: Math.max(tabBarHeight, keyboard + SPACING[4]),
+          paddingHorizontal: KIT.size.side,
+        }}
+      >
         <T strong>{empty.title}</T>
         {empty.hint ? <T v="fine">{empty.hint}</T> : null}
       </View>

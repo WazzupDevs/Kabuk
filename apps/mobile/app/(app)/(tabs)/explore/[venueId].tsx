@@ -1,16 +1,27 @@
 import { describeEventTime } from '@shared/explore.ts';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { FrostResolve } from '@/aura/FrostIn';
 import { PICTURE_FILL } from '@/aura/RisoPicture';
-import { Btn, Glass, Round, Sec, T, Tag } from '@/aura/kit';
+import { Btn, Glass, Round, Sec, T, Tag, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { GlassTarget } from '@/components/LiquidGlass';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
+import { ScreenStatusBar, StatusScrim } from '@/components/StatusScrim';
 import { useTabBarSpace } from '@/components/TabBar';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -21,6 +32,7 @@ import { useNow } from '@/lib/useNow';
 import { venueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { PROFILE_COVER } from '@/theme/profileCover';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -41,6 +53,34 @@ export default function VenueDetailScreen() {
   const insets = useSafeAreaInsets();
   const barSpace = useTabBarSpace();
   const now = useNow(60_000);
+  const { c } = useKit();
+  // Scrolled past the scene, a thin bar stays under the back button as on Profil: the name and the
+  // rest scroll under it, not under the button (audit M15-11). The status bar's icons are light on
+  // the scene and the scheme's on the bar (M15-12).
+  const barHeight = insets.top + SPACING[2] * 2 + KIT.size.round;
+  const barAt = KIT.venueHero.height - barHeight;
+  const scrollY = useSharedValue(0);
+  const [onBar, setOnBar] = useState(false);
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
+  useAnimatedReaction(
+    () => scrollY.value >= barAt,
+    (now, before) => {
+      if (now !== before) runOnJS(setOnBar)(now);
+    },
+    [barAt],
+  );
+  const barStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollY.value,
+      [barAt * PROFILE_COVER.barFadeFrom, barAt],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
 
   if (isPending) {
     return (
@@ -88,7 +128,10 @@ export default function VenueDetailScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
-      <ScrollView
+      <ScreenStatusBar style={onBar && scheme === 'light' ? 'dark' : 'light'} />
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         bounces={false}
@@ -130,6 +173,7 @@ export default function VenueDetailScreen() {
           </GlassTarget>
           {/* The picture appears frosted and resolves 320 ms later over 500 (hareket.json). */}
           <FrostResolve />
+          <StatusScrim />
           <View
             className="flex-row items-center justify-between"
             style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[2] }}
@@ -245,7 +289,23 @@ export default function VenueDetailScreen() {
             )}
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            height: barHeight,
+            backgroundColor: AURA[scheme].ground,
+            borderBottomWidth: KIT.size.hair,
+            borderBottomColor: c.hair,
+          },
+          barStyle,
+        ]}
+      />
       {/* Back stays where it is while the page scrolls (the owner's report, 2 Kasım, X4). */}
       <View style={{ position: 'absolute', left: KIT.size.side, top: insets.top + SPACING[2] }}>
         <Round light icon="back" label={tr.explore.back} onPress={() => router.back()} />

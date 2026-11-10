@@ -17,7 +17,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, T } from '@/aura/kit';
@@ -60,6 +60,7 @@ export default function WelcomeScreen() {
 function Welcome() {
   const { scheme, shape } = useTheme();
   const reduce = useReduceMotion();
+  const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   // The scene waits for the launch curtain to open (src/features/launch/LaunchCurtain.tsx).
   const curtain = useLaunchStore((s) => s.curtain);
@@ -220,7 +221,12 @@ function Welcome() {
             testID="intro-skip"
             accessibilityRole="button"
             onPress={skip}
-            style={styles.skipSpot}
+            // Under the status bar: an absolute child ignores the SafeAreaView's padding, and the
+            // button sat on the battery (audit M15-24).
+            style={[
+              styles.skipSpot,
+              { top: insets.top + SPACING[3], right: insets.right + SPACING[3] },
+            ]}
           >
             {({ pressed }) => (
               <View
@@ -275,8 +281,6 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   skipSpot: {
     position: 'absolute',
-    top: SPACING[3],
-    right: SPACING[3],
   },
   skip: {
     minWidth: SPACING[16],

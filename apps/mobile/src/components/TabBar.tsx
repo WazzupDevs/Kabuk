@@ -207,6 +207,9 @@ export function TabScene({
   );
 }
 
+// Three-button navigation is 48 high; the gesture line's strip is at most 24.
+const THREE_BUTTON_NAV = 32;
+
 // Keşfet · Aktiviteler · Mekan · Mesajlar · Profil. `opens` says which tab a press leads to (the
 // Mekan tab without a table: Keşfet, opened by its route as the tab's listener did); every press
 // that changes the tab is felt, the redirected one too (haptics.ts → tabChanged). An unread count
@@ -221,6 +224,7 @@ export function TabBar({
   const hidden = useBarMode((s) => s.hidden > 0);
   const overMap = useBarMode((s) => s.overMap > 0);
   const target = useBarMode((s) => s.target);
+  const { scheme } = useTheme();
   if (hidden) return null;
 
   const focused = state.routes[state.index];
@@ -271,23 +275,41 @@ export function TabBar({
   };
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={{
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: insets.bottom + AURA.tabBar.bottom,
-        alignItems: 'center',
-      }}
-    >
-      <AuraTabBar
-        items={tabs.map((t) => t.item)}
-        selected={focused ? (TAB_OF[focused.name] ?? null) : null}
-        onPress={onPress}
-        glassTarget={target}
-        opaque={overMap}
-      />
-    </View>
+    <>
+      {/* Three-button navigation: the rows scrolling under the buttons drew their words through
+          them (audit M15-17). The buttons' strip on the ground, as Telegram Android does; the
+          gesture line's thin strip stays clear. */}
+      {insets.bottom >= THREE_BUTTON_NAV ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: insets.bottom,
+            backgroundColor: AURA[scheme].ground,
+          }}
+        />
+      ) : null}
+      <View
+        pointerEvents="box-none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: insets.bottom + AURA.tabBar.bottom,
+          alignItems: 'center',
+        }}
+      >
+        <AuraTabBar
+          items={tabs.map((t) => t.item)}
+          selected={focused ? (TAB_OF[focused.name] ?? null) : null}
+          onPress={onPress}
+          glassTarget={target}
+          opaque={overMap}
+        />
+      </View>
+    </>
   );
 }
