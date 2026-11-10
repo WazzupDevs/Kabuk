@@ -20,12 +20,6 @@ export function isShownPack(pack: GiftPack): pack is ShownPack {
 export const PACK_RATIO = 160 / 252;
 export const TEAR_AT = 0.085;
 
-const TIER_FRAME: Record<GiftTier, ImageSourcePropType> = {
-  siradan: require('../../../assets/gifts/art-siradan.webp'),
-  nadir: require('../../../assets/gifts/art-nadir.webp'),
-  destansi: require('../../../assets/gifts/art-destansi.webp'),
-  efsanevi: require('../../../assets/gifts/art-efsanevi.webp'),
-};
 export const CARD_RATIO = 600 / 840;
 // The empty card's clear sides on its 600 wide picture, by tier (measured on the frames), and its
 // corner: the card's light (holo, band) stays inside the picture (the owner's report, 7 Kasım: it
@@ -48,9 +42,4 @@ const BLANK_CARD: Record<GiftTier, ImageSourcePropType> = {
 
 export function blankCard(tier: GiftTier): ImageSourcePropType {
   return BLANK_CARD[tier];
-}
-
-// The collection tile's ground (hediye.css `.nf.tile`): the tier's frame art.
-export function tileArt(tier: GiftTier): ImageSourcePropType {
-  return TIER_FRAME[tier];
 }
