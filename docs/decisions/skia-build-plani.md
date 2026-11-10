@@ -8,11 +8,11 @@ Kanıt sınıfları: **koddan** (ana dal `52f8378`, grep ve okuma), **paketten**
 
 Skia'ya geçecek aksesuar 15 (koddan: `theme/capsuleAccessories.ts`'te kare yöntemli `data-fx` işaretleri; belgeyle aynı):
 
-| Hareket      | Aksesuar                                                                                                                                                        | Klip                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `glint` (13) | Destansı takımların onu (`kis`, `buyucu`, `yildiz`, `korsan`, `dalgic`, `sef`, `doktor`, `rock`, `astronot`, `hawaii`), `ormanteni`, `geceteni`, `kunaikolyesi` | Takımlar `mask`; `kunaikolyesi` `clipPath`; `ormanteni` ve `geceteni` P3'te doğrulanır |
-| `scan` (1)   | `neongozluk`                                                                                                                                                    | `clipPath`                                                                             |
-| `shift` (1)  | `gokkusagiatki` (üç grup)                                                                                                                                       | `clipPath` (üç ayrı)                                                                   |
+| Hareket      | Aksesuar                                                                                                                                                        | Klip                                                                                                                           |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `glint` (13) | Destansı takımların onu (`kis`, `buyucu`, `yildiz`, `korsan`, `dalgic`, `sef`, `doktor`, `rock`, `astronot`, `hawaii`), `ormanteni`, `geceteni`, `kunaikolyesi` | Takımlar `mask`; `kunaikolyesi`, `ormanteni` ve `geceteni` `clipPath` (P3'te doğrulandı: iki tende gövde yuvarlak dikdörtgeni) |
+| `scan` (1)   | `neongozluk`                                                                                                                                                    | `clipPath`                                                                                                                     |
+| `shift` (1)  | `gokkusagiatki` (üç grup)                                                                                                                                       | `clipPath` (üç ayrı)                                                                                                           |
 
 - Üç hareket de yalnız ötelemedir (`theme/capsuleFx.ts` → `FX.glint`, `scan`, `shift`: `tx` ya da `ty`).
 - Aksesuar çizimlerinde filtre, karışım modu, metin ve resim yok; `mask` tanımı 12. Takım maskesinin içi iç içe `clipPath`, `transform` ve çizgi taşır.
