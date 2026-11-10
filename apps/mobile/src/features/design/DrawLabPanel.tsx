@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Component, type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -88,11 +88,102 @@ export function DrawLabPanel() {
               />
             ))}
             <SwitchMeter />
+            <SkiaSmoke />
           </>
         )}
       </View>
     </View>
   );
+}
+
+// Skia's smoke test (docs/decisions/skia-build-plani.md → P5): one small Canvas with a filled
+// circle and a round rectangle. Skia is imported only here, and only when the panel opens: the
+// import is lazy, so the app's launch never loads it. A build without the native module (0.10.0),
+// web or a test: the import throws (its JS reads the native global `SkiaApi`) and the promise
+// rejects, or the Canvas throws while drawing and the boundary catches it; either way the panel
+// stays and says Skia did not load.
+type SkiaLib = typeof import('@shopify/react-native-skia');
+type SkiaState = { lib: SkiaLib } | 'loading' | 'failed';
+const SMOKE = KIT.size.btnSm;
+
+function SkiaSmoke() {
+  const [skia, setSkia] = useState<SkiaState>('loading');
+  const { c } = useKit();
+  useEffect(() => {
+    let live = true;
+    import('@shopify/react-native-skia').then(
+      (lib) => {
+        if (live) setSkia(typeof lib.Skia === 'object' && lib.Skia !== null ? { lib } : 'failed');
+      },
+      () => {
+        if (live) setSkia('failed');
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  const t = tr.design.drawLab;
+  const failed = (
+    <T v="fine" ink>
+      {t.skiaFailed}
+    </T>
+  );
+  if (skia === 'loading' || skia === 'failed') {
+    return (
+      <View style={{ width: '100%', alignItems: 'center' }}>
+        <T v="fine" ink>
+          {skia === 'loading' ? t.skiaLoading : t.skiaFailed}
+        </T>
+      </View>
+    );
+  }
+  const { Canvas, Circle, RoundedRect } = skia.lib;
+  const half = SMOKE / 2;
+  return (
+    <View
+      style={{
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: KIT.size.btnGap,
+      }}
+    >
+      <SkiaBoundary fallback={failed}>
+        <Canvas style={{ width: SMOKE * 2 + KIT.size.btnGap, height: SMOKE }}>
+          <Circle cx={half} cy={half} r={half} color={c.ink} />
+          <RoundedRect
+            x={SMOKE + KIT.size.btnGap}
+            y={0}
+            width={SMOKE}
+            height={SMOKE}
+            r={KIT.size.btnGap}
+            color={c.muted}
+          />
+        </Canvas>
+        <T v="fine" ink>
+          {t.skiaOk}
+        </T>
+      </SkiaBoundary>
+    </View>
+  );
+}
+
+// A drawing that throws shows the fallback; the panel around it stays mounted.
+class SkiaBoundary extends Component<
+  { fallback: ReactNode; children: ReactNode },
+  { failed: boolean }
+> {
+  override state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  override render(): ReactNode {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
 }
 
 // The last second's frames, counted where they are made (the owner's report, 29 Ekim: the app

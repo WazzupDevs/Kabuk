@@ -60,3 +60,12 @@ jobs:
         run: |
           cd apps/mobile/android
           ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon --build-cache
+      # The APK's size, before and after a native change (x86_64 only, so not the store's size).
+      - name: APK size
+        run: |
+          for apk in apps/mobile/android/app/build/outputs/apk/release/*.apk; do
+            bytes=$(stat -c %s "$apk")
+            line="$(basename "$apk"): $bytes bytes, $(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }') MB"
+            echo "$line"
+            echo "$line" >> "$GITHUB_STEP_SUMMARY"
+          done

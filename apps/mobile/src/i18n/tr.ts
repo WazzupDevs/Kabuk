@@ -2183,6 +2183,10 @@ export const tr = {
       threadUi: 'Ekran',
       threadJs: 'JS',
       reset: 'Sıfırla',
+      // Skia's smoke test (P5): one small Canvas, loaded only when the panel opens.
+      skiaLoading: 'Skia yükleniyor',
+      skiaOk: 'Skia çalışıyor',
+      skiaFailed: 'Skia yüklenemedi',
     },
     previewIncoming: 'Mesaj gelsin',
     // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.

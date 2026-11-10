@@ -1,6 +1,8 @@
 package expo.modules.skallglass
 
+import android.content.ComponentCallbacks2
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
@@ -117,6 +119,26 @@ class ShadowPicture(
 internal object ShadowPictures {
   private val cache = object : LruCache<String, ShadowPicture>(48 * 1024 * 1024) {
     override fun sizeOf(key: String, value: ShadowPicture) = value.bitmap.byteCount
+  }
+
+  // Memory pressure (denetim M13-15): when the app goes to the background or the system runs low,
+  // the kept pictures are let go and the next draw makes them again. They are only dropped, never
+  // recycled: a frame already recorded may still draw one. The system calls this on the main
+  // thread, where the views draw; LruCache is synchronized besides.
+  val trimCallbacks: ComponentCallbacks2 = object : ComponentCallbacks2 {
+    // TRIM_MEMORY_RUNNING_LOW (10) and up: running low, critical, then UI_HIDDEN (20) and the
+    // background levels. The running levels are deprecated from API 34 but still sent before it.
+    @Suppress("DEPRECATION")
+    override fun onTrimMemory(level: Int) {
+      if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) cache.evictAll()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) = Unit
+
+    @Deprecated("Deprecated in Java")
+    override fun onLowMemory() {
+      cache.evictAll()
+    }
   }
 
   fun get(

@@ -83,6 +83,14 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 - Maske yalnız beyazdır (dolgu ve çizgi beyaz ya da yok, gradyan yok; testli). Dört takımın maskesinde `opacity` vardır (`kistakimi` .16 ve .35, `yildiztakimi` .8, `dalgictakimi` .7, `astronottakimi` .88 ve .9): maske takımın kendisinin beyaza boyanmış hâlidir, yarı saydam parçada parıltı o kadar soluktur. P6 maskeyi alfa maskesi olarak çizer (opaklık dahil); değerler testte sabit.
 - P6 için: `kistakimi`, `buyucutakimi` ve `korsantakimi` maskelerinin içinde iç içe `clipPath` var.
 
+## P5'in sonuçları (10 Kasım)
+
+- Eklendi: `@shopify/react-native-skia` 2.6.2 (Expo 57.0.26 `bundledNativeModules.json`'daki sürüm, paketten); geçişliler `react-reconciler` 0.31.0 ve `scheduler` 0.25.0 (MIT), `canvaskit-wasm` 0.41.0 ve `@webgpu/types` 0.1.21 (BSD-3), `react-native-skia-android`, `-apple-ios`, `-apple-macos`, `-apple-tvos` 147.1.0 (MIT). `version` 0.11.0.
+- `postinstall` (`install-libs.js`, koddan ve kurulum çıktısından): ağdan indirmez; ön derleme paketlerindeki Apple `xcframework`'lerini ve Android statik kitaplıklarını (dört ABI) paketin `libs/` klasörüne kopyalar (yerelde 713 MB); Android Gradle `libs/android`'i okur. Ön derleme paketlerinin kendi betiği yok.
+- R8: keep kuralı eklenmedi. JNI'nin adla bulduğu sınıflar (`SkiaManager`, `PlatformContext`, `SkiaPictureView`) ve çağırdığı yöntemler, alanlar (`mHybridData`) `@DoNotStrip`'li ya da `native` yöntemlidir (paketten); React Native'in consumer kuralları iki `DoNotStrip`'i de tutar, `proguard-android.txt` `native` yöntemli sınıfların adını tutar (paketten ve Expo şablonundan). Release'te açılış yine telefonda denenir (doğrulanmadı).
+- `ShadowPictures` bellek baskısında (`TRIM_MEMORY_RUNNING_LOW` ve üstü, `onLowMemory`) önbelleği boşaltır; resimler `recycle` edilmez. Kayıt `SkallGlassModule` → `OnCreate`/`OnDestroy`. Derlenmedi (bu ortamda Android yok; `apk.yml` derler).
+- Ölçüm panelinde duman testi (tembel `import()`, hata sınırı); `apk.yml` APK boyutunu yazar. Telefonda çizim, boyut farkı ve React 19.2.3 ile `react-reconciler` uyumu ölçülmedi.
+
 ## Skia'nın üçüncü taraf lisansları (11 Kasım)
 
 P5'ten önce okundu. Kaynak: `Shopify/react-native-skia` `v2.6.2` etiketi → `packages/skia/scripts/skia-configuration.ts` (derleme bayrakları), Skia'nın o etiketteki commit'i `4502f88` → `DEPS`, `gn/skia.gni` ve `BUILD.gn` (varsayılanlar, hangi kitaplığın bağlandığı). Lisans metinleri her kitaplığın GitHub'daki kendi deposundan, ana daldan okundu (`DEPS`'teki commit'ten değil; `googlesource.com` bu ortamdan açılmıyor). `dng_sdk` AOSP'nin bir GitHub aynasından (`GrapheneOS/platform_external_dng_sdk`, 1.4.0) okundu. `libskia.a`'nın içine gerçekten neyin girdiği ikiliden doğrulanmadı; liste derleme bayraklarından çıkarımdır.
