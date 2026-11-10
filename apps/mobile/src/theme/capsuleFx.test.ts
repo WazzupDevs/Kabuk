@@ -3,8 +3,21 @@ import { describe, expect, it } from 'vitest';
 import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
 
 import { ACCESSORY_ART } from './capsuleAccessories';
-import { FX, framesOf, fxTree, sampled, stillSvg, valueAt } from './capsuleFx';
-import { lookPop, lookSvg } from './capsuleLook';
+import {
+  cropOf,
+  FX,
+  type FxInside,
+  type FxLayer,
+  framesOf,
+  fxTree,
+  insideFrames,
+  placeOf,
+  sampled,
+  stillSvg,
+  valueAt,
+} from './capsuleFx';
+import { lookCard, lookPop, lookSvg } from './capsuleLook';
+import { apply, IDENTITY, type Matrix, multiply, parseTransform, shapeBox } from './svgBox';
 
 describe('accessory motions', () => {
   it('knows every motion the drawings name', () => {
@@ -73,7 +86,11 @@ describe('the drawing in layers', () => {
         const walk = (layers: NonNullable<typeof tree>['layers']) => {
           for (const l of layers) {
             if (l.kind === 'still') xmls.push(l.xml);
-            else if (l.kind === 'frames') xmls.push(...l.frames.map((f) => f.xml));
+            else if (l.kind === 'inside')
+              xmls.push(
+                ...insideFrames(l).map((f) => f.xml),
+                ...insideFrames(l, l.box).map((f) => f.xml),
+              );
             else walk(l.layers);
           }
         };
@@ -95,5 +112,200 @@ describe('the drawing in layers', () => {
     const svg = lookSvg('c:mor e:klasik x:alevsac');
     expect(stillSvg(svg)).not.toContain('data-fx');
     expect(stillSvg(svg).length).toBeLessThan(svg.length);
+  });
+});
+
+// Every accessory with a motion inside a clip (FX[…].frames): glint, scan, shift.
+const INSIDE: Readonly<Record<string, number>> = {
+  kistakimi: 1,
+  buyucutakimi: 1,
+  yildiztakimi: 1,
+  korsantakimi: 1,
+  dalgictakimi: 1,
+  seftakimi: 1,
+  doktortakimi: 1,
+  rocktakimi: 1,
+  astronottakimi: 1,
+  hawaiitakimi: 1,
+  ormanteni: 1,
+  geceteni: 1,
+  kunaikolyesi: 1,
+  neongozluk: 1,
+  gokkusagiatki: 3,
+};
+
+function insides(layers: readonly FxLayer[]): FxInside[] {
+  return layers.flatMap((l) =>
+    l.kind === 'inside' ? [l] : l.kind === 'move' ? insides(l.layers) : [],
+  );
+}
+
+const area = (b: readonly number[]) => (b[2] ?? 0) * (b[3] ?? 0);
+
+// The points a definition's shapes stand on (each shape's box corners, its groups' transforms on),
+// in the root viewBox's units.
+function shapePoints(def: string, m: Matrix): [number, number][] {
+  const out: [number, number][] = [];
+  const stack: { m: Matrix; hidden: boolean }[] = [{ m, hidden: false }];
+  const tokens = def.match(/<[^>]+>/g) ?? [];
+  for (const t of tokens.slice(1, -1)) {
+    const top = stack[stack.length - 1] ?? { m, hidden: false };
+    if (t.startsWith('</')) {
+      stack.pop();
+      continue;
+    }
+    const tr = /\stransform="([^"]*)"/.exec(t)?.[1];
+    const here = {
+      m: tr ? multiply(top.m, parseTransform(tr) ?? IDENTITY) : top.m,
+      hidden: top.hidden || /^<(defs|clipPath)\b/.test(t),
+    };
+    const b = here.hidden ? null : shapeBox(t);
+    if (b) {
+      const [x, y, w, h] = b;
+      out.push(
+        apply(here.m, x, y),
+        apply(here.m, x + w, y),
+        apply(here.m, x, y + h),
+        apply(here.m, x + w, y + h),
+      );
+    }
+    if (!t.endsWith('/>')) stack.push(here);
+  }
+  return out;
+}
+
+// The matrix of the groups round the clip's own group (the one that names it).
+function holderMatrix(layer: FxInside): Matrix {
+  let m = IDENTITY;
+  const ref = new RegExp(`(?:clip-path|mask)="url\\(#${layer.clip?.id ?? ''}\\)"`);
+  for (const t of layer.outer) {
+    const tr = /\stransform="([^"]*)"/.exec(t)?.[1];
+    if (tr) m = multiply(m, parseTransform(tr) ?? IDENTITY);
+    if (ref.test(t)) break;
+  }
+  return m;
+}
+
+const WHITE = new Set(['#fff', '#ffffff', 'white', 'none']);
+
+// The accessories whose glint mask holds see-through shapes (an `opacity`), to be drawn again
+// white and opaque (each `it.fails` until then; a mask that comes right fails it).
+const SEE_THROUGH = new Set(['kistakimi', 'yildiztakimi', 'dalgictakimi', 'astronottakimi']);
+
+describe('a motion inside its clip', () => {
+  for (const [id, count] of Object.entries(INSIDE)) {
+    it(`${id}: is ${count} motion(s) inside a clip, not whole drawings`, () => {
+      for (const svg of [
+        lookSvg(`c:mor e:klasik x:${id}`),
+        lookSvg(`c:mor e:klasik x:${id}`, 'fig'),
+        lookPop(`c:mor e:klasik x:${id}`),
+        lookCard(`c:mor e:klasik x:${id}`),
+      ]) {
+        const tree = fxTree(svg);
+        expect(tree, id).not.toBeNull();
+        if (!tree) continue;
+        expect(JSON.stringify(tree)).not.toContain('"frames"');
+        const found = insides(tree.layers);
+        expect(found.length, id).toBe(count);
+        for (const l of found) {
+          expect(l.clip, id).not.toBeNull();
+          expect(l.matrix, id).not.toBeNull();
+          expect(l.content).not.toContain('data-fx');
+          expect(l.content).not.toContain('translate(');
+        }
+      }
+    });
+
+    it(`${id}: its box is the clip's, inside the drawing's and smaller`, () => {
+      const tree = fxTree(lookSvg(`c:mor e:klasik x:${id}`));
+      if (!tree) throw new Error(id);
+      const [vx, vy, vw, vh] = tree.box;
+      for (const l of insides(tree.layers)) {
+        const [x, y, w, h] = l.box;
+        expect(x).toBeGreaterThanOrEqual(vx);
+        expect(y).toBeGreaterThanOrEqual(vy);
+        expect(x + w).toBeLessThanOrEqual(vx + vw + 1e-9);
+        expect(y + h).toBeLessThanOrEqual(vy + vh + 1e-9);
+        expect(area(l.box)).toBeGreaterThan(0);
+        expect(area(l.box)).toBeLessThan(area(tree.box));
+        // Every point a shape of the clip stands on, where the drawing shows it, is in the box.
+        const pts = shapePoints(l.clip?.xml ?? '', holderMatrix(l));
+        expect(pts.length).toBeGreaterThan(0);
+        for (const [px, py] of pts) {
+          const cx = Math.min(Math.max(px, vx), vx + vw);
+          const cy = Math.min(Math.max(py, vy), vy + vh);
+          expect(cx, `${id} ${px}`).toBeGreaterThanOrEqual(x - 1e-9);
+          expect(cx, `${id} ${px}`).toBeLessThanOrEqual(x + w + 1e-9);
+          expect(cy, `${id} ${py}`).toBeGreaterThanOrEqual(y - 1e-9);
+          expect(cy, `${id} ${py}`).toBeLessThanOrEqual(y + h + 1e-9);
+        }
+      }
+    });
+
+    (SEE_THROUGH.has(id) ? it.fails : it)(`${id}: a mask of it is white only`, () => {
+      const tree = fxTree(lookSvg(`c:mor e:klasik x:${id}`));
+      for (const l of insides(tree?.layers ?? [])) {
+        if (l.clip?.kind !== 'mask') continue;
+        const xml = l.clip.xml;
+        for (const m of xml.matchAll(/\s(fill|stroke)="([^"]*)"/g))
+          expect(WHITE.has((m[2] ?? '').toLowerCase()), `${id} ${m[0]}`).toBe(true);
+        expect(xml, id).not.toMatch(/\s(?:fill-|stroke-)?opacity="/);
+        expect(xml, id).not.toMatch(/Gradient\b|style="/);
+      }
+    });
+
+    it(`${id}: its cut pictures are the whole ones with another viewBox`, () => {
+      const tree = fxTree(lookSvg(`c:mor e:klasik x:${id}`));
+      if (!tree) throw new Error(id);
+      for (const l of insides(tree.layers)) {
+        const motion = FX[l.fx];
+        if (!motion) throw new Error(l.fx);
+        const steps = framesOf(motion);
+        const whole = insideFrames(l);
+        const crop = cropOf(l.box, placeOf(tree.box, 40, 40), 2.625);
+        const cut = insideFrames(l, crop.viewBox);
+        expect(whole.length).toBe(steps.length);
+        expect(cut.length).toBe(steps.length);
+        const noBox = (x: string) => x.replace(/ viewBox="[^"]*"/, '');
+        for (let i = 0; i < steps.length; i++) {
+          const w = whole[i]?.xml ?? '';
+          const c = cut[i]?.xml ?? '';
+          expect(w.startsWith(`<svg viewBox="${tree.box.join(' ')}"`)).toBe(true);
+          expect(c).not.toBe(w);
+          expect(noBox(c)).toBe(noBox(w));
+          expect(w).toContain(
+            `${l.outer.join('')}<g transform="translate(${steps[i]?.tx} ${steps[i]?.ty})">${l.content}</g>`,
+          );
+          expect(w).toContain(l.defs);
+          expect([whole[i]?.from, whole[i]?.to]).toEqual([steps[i]?.from, steps[i]?.to]);
+        }
+      }
+    });
+  }
+
+  it('places a cut picture on whole pixels, at the whole one’s scale, round its box', () => {
+    const box: [number, number, number, number] = [6.77, 0.31, 41.23, 23.9];
+    for (const ratio of [1, 2, 2.625, 3, 3.5]) {
+      for (const [w, h] of [
+        [40, 40],
+        [36.5, 36.5],
+        [88, 120],
+      ] as const) {
+        const place = placeOf([0, 0, 48, 48], w, h);
+        const c = cropOf(box, place, ratio);
+        for (const v of [c.left, c.top, c.width, c.height])
+          expect(Math.abs(v * ratio - Math.round(v * ratio))).toBeLessThan(1e-9);
+        // The cut viewBox draws at the same scale and the same place as the whole one.
+        expect(c.width / c.viewBox[2]).toBeCloseTo(place.unit, 9);
+        expect(c.height / c.viewBox[3]).toBeCloseTo(place.unit, 9);
+        expect(place.dx + (c.viewBox[0] - place.bx) * place.unit).toBeCloseTo(c.left, 9);
+        expect(place.dy + (c.viewBox[1] - place.by) * place.unit).toBeCloseTo(c.top, 9);
+        // It holds the box.
+        expect(c.viewBox[0]).toBeLessThanOrEqual(box[0]);
+        expect(c.viewBox[1]).toBeLessThanOrEqual(box[1]);
+        expect(c.viewBox[0] + c.viewBox[2]).toBeGreaterThanOrEqual(box[0] + box[2] - 1e-9);
+        expect(c.viewBox[1] + c.viewBox[3]).toBeGreaterThanOrEqual(box[1] + box[3] - 1e-9);
+      }
+    }
   });
 });

@@ -4,7 +4,7 @@ import LOOK from './capsuleDrawing';
 import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
 
 import { ACCESSORY_ART, accessoryFigure } from './capsuleAccessories';
-import { fxTree, type FxLayer } from './capsuleFx';
+import { fxTree, type FxLayer, insideFrames } from './capsuleFx';
 import { eyeLayers, lookCard, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
 
 describe('capsule look', () => {
@@ -123,8 +123,8 @@ describe('pack accessory', () => {
       layers.flatMap((l) =>
         l.kind === 'still'
           ? [l.xml]
-          : l.kind === 'frames'
-            ? l.frames.map((f) => f.xml)
+          : l.kind === 'inside'
+            ? insideFrames(l).map((f) => f.xml)
             : descendants(l.layers),
       );
     // A drawing tag of the accessory that stands in no defs (and, `still`, in no motion group).
