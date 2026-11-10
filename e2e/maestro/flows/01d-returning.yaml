@@ -19,6 +19,9 @@ appId: app.kabuk.mobile
     timeout: 20000
 - tapOn:
     id: settings-sign-out
+# "Çıkış yap" asks first (SignOutSheet).
+- tapOn:
+    id: sign-out-confirm
 - extendedWaitUntil:
     visible:
       id: welcome

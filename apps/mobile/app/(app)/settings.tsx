@@ -1,17 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Li, RowList, Seg, T, useKit } from '@/aura/kit';
-import { Loader } from '@/components/Loader';
 import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
 import { useProfile } from '@/features/account/useProfile';
 import { patchProfile } from '@/features/account/patchProfile';
-import { signOutOfApp } from '@/features/auth/signOut';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DesignPicker } from '@/features/design/DesignPicker';
 import { AppearanceSetting } from '@/features/profile/AppearanceSetting';
+import { SignOutSheet } from '@/features/settings/SignOutSheet';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -55,7 +55,7 @@ function Body() {
     onSettled: () => void queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
   const shown = value;
-  const signOut = useMutation({ mutationFn: signOutOfApp });
+  const [signingOut, setSigningOut] = useState(false);
   const open = (path: Parameters<typeof router.push>[0]) => router.push(path);
 
   // U33: the sections 24 apart; a section's title h3, its notes fine, 4 apart, the seg 8 under them
@@ -141,7 +141,7 @@ function Body() {
         </Li>
         <Li
           testID="settings-sign-out"
-          onPress={() => (signOut.isPending ? undefined : signOut.mutate())}
+          onPress={() => setSigningOut(true)}
           accessibilityLabel={tr.settings.signOut}
         >
           <CapIcon name="logout" color={c.warn} size={KIT.size.iconSm} />
@@ -150,9 +150,9 @@ function Body() {
               {tr.settings.signOut}
             </T>
           </View>
-          {signOut.isPending ? <Loader size={KIT.size.iconSm} delay={0} /> : null}
         </Li>
       </RowList>
+      <SignOutSheet visible={signingOut} onClose={() => setSigningOut(false)} />
     </View>
   );
 }

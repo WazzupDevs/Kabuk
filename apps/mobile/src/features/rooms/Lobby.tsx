@@ -134,7 +134,7 @@ export function Lobby({
   // lobi: 320 dp, en büyük yazı), so neither the name nor the button is cut.
   const { width, fontScale } = useWindowDimensions();
   const narrow = width / Math.min(fontScale, MAX_FONT_SCALE) < NARROW_ROW_DP;
-  // Loading and on an error neither section has a count, and "Süren masalar" nothing under it: the
+  // Loading and on an error "Açık masalar" has no count and "Süren masalar" is not shown: the
   // lobby is one read, its loader and its error show once, under "Açık masalar".
   // A failed refresh keeps the tables read before (audit M8-02).
   const read = !!tables.data;
@@ -232,8 +232,11 @@ export function Lobby({
         ))
       )}
 
-      <SectionHead title={tr.lobby.runningTitle} count={read ? running.length : null} />
-      {/* No running table, no note (the canvas's call, 31 Ekim). */}
+      {/* No running table, no heading and no note (the canvas's call, 31 Ekim; the owner's report,
+          10 Kasım: an empty "Süren masalar" stood alone under the open ones). */}
+      {read && running.length > 0 ? (
+        <SectionHead title={tr.lobby.runningTitle} count={running.length} />
+      ) : null}
       {read && running.length > 0 ? (
         <T v="fine">
           {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}

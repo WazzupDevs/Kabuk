@@ -67,7 +67,10 @@ const SPARKLES = [
 ] as const;
 const HINT_AT = 612;
 const BUTTONS_FOOT = 46;
-const BUTTON_MIN = 120;
+// Each button as wide as its words, the room left shared; when the two do not fit side by side the
+// second goes under the first. Neither shrinks its words, so the pair keeps one size (the owner's
+// report, 10 Kasım: "Aksesuarı tak" with its icon shrank beside "Sonra").
+const BUTTON_SIDE = { flexGrow: 1, flexBasis: 'auto' } as const;
 const HOLO_BASE = 0.3;
 const HOLO_PER = 40;
 const BAND_PER = 2.2;
@@ -302,22 +305,17 @@ export function OpenedCard({
             variant="glassy"
             label={worn ? tr.gifts.next : tr.gifts.later}
             onPress={onClose}
-            style={{ flexGrow: 1, flexBasis: 0, minWidth: BUTTON_MIN }}
+            style={BUTTON_SIDE}
           />
           {worn ? (
-            <Btn
-              icon="check"
-              label={tr.gifts.worn}
-              disabled
-              style={{ flexGrow: 1, flexBasis: 0, minWidth: BUTTON_MIN }}
-            />
+            <Btn icon="check" label={tr.gifts.worn} disabled style={BUTTON_SIDE} />
           ) : (
             <Btn
               icon="sparkles"
               label={tr.gifts.wear}
               onPress={wear}
               loading={equip.isPending}
-              style={{ flexGrow: 1, flexBasis: 0, minWidth: BUTTON_MIN }}
+              style={BUTTON_SIDE}
             />
           )}
         </View>

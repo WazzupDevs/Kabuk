@@ -10,8 +10,8 @@ import { Sheet } from '@/components/Sheet';
 import { Wordmark } from '@/components/Wordmark';
 import { useProfile } from '@/features/account/useProfile';
 import { useSessionStore } from '@/features/auth/session';
-import { signOutOfApp } from '@/features/auth/signOut';
 import { SettingsRow } from '@/features/settings/SettingsRow';
+import { SignOutSheet } from '@/features/settings/SignOutSheet';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -40,7 +40,7 @@ export default function AccountScreen() {
   const view = useProfileView(own.data?.public_id);
   const birthDate = view.data?.birthDate ?? null;
   const [deleting, setDeleting] = useState(false);
-  const signOut = useMutation({ mutationFn: signOutOfApp });
+  const [signingOut, setSigningOut] = useState(false);
   const remove = useMutation({
     meta: FEEL_ERROR,
     mutationFn: async () => {
@@ -79,11 +79,13 @@ export default function AccountScreen() {
               onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
             />
           ) : null}
+          {/* In the warning colour, as in Ayarlar (the owner's report, 10 Kasım). */}
           <SettingsRow
+            negative
             icon="logout"
+            testID="account-sign-out"
             label={tr.settings.signOut}
-            loading={signOut.isPending}
-            onPress={() => signOut.mutate()}
+            onPress={() => setSigningOut(true)}
           />
           <SettingsRow
             negative
@@ -103,6 +105,7 @@ export default function AccountScreen() {
           </T>
         </View>
       </View>
+      <SignOutSheet visible={signingOut} onClose={() => setSigningOut(false)} />
       <Sheet
         visible={deleting}
         onClose={() => setDeleting(false)}

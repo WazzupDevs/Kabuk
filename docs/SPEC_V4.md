@@ -301,6 +301,7 @@ Değişmez kabul edilir.
   - Yeni native paket yok: `react-native-reanimated`, `react-native-svg` ve `expo-haptics` kurulu. Kapsüller kapsül avatarından zemin dairesi olmadan, masalar, lambalar ve ışık konisi `react-native-svg` ile çizilir; görsel dosya yok. Sahnenin zamanlama tablosu saf bir modülde durur ve testlidir (`launchMotion.ts` kalıbı).
 - **Biyografi ve görünen ad** (K-34): telefon, e-posta, kullanıcı adı ya da bağlantı içeren biyografi ve görünen ad reddedilir (maskeleme yok). Denetim `pure/profanity.ts` ve `trText.ts` içindedir (kural 7); kayıt ve Profili düzenle aynı denetimi istemcide gösterir, profil fonksiyonu sunucuda uygular. Biyografi sınırı 80; mevcut uzun biyografiler düzenlenene kadar kalır.
 - **Alt sekme etiketleri** en büyük yazıda en çok 1,2 kat büyür (`maxFontSizeMultiplier={1.2}`); 320 dp'de sığmazsa 1 (K-23).
+- **"Çıkış yap" önce sorar** (proje sahibinin isteği, 10 Kasım): Ayarlar'da ve Hesap'ta aynı satır (uyarı renginde) aynı onay sayfasını açar: "Çıkış yapılsın mı?", kırmızı "Çıkış yap" ve "Vazgeç" (`src/features/settings/SignOutSheet.tsx`).
 - **Görünüm ayarı** (K-54): Ayarlar'da Sistem, Açık, Koyu; varsayılan Sistem; seçim yalnızca telefonda saklanır (`AsyncStorage`). Yalnızca istemci, OTA. Bugünkü "Tasarım (test)" seçicisi buna dönüşür; E2E'nin tema seçimi bu ayarla yapılır.
 - **v46'nın kontrast ve koyu harita düzeltmeleri** (K-65; v46 raporu, bölüm 8) 4.3'ün kalan OTA işleridir:
   - yer tutucu yazı açıkta `#6E6890`, koyuda v45'in `#ADA8C8`'i;
@@ -473,7 +474,7 @@ Değişmez kabul edilir.
    - 60 sn, saatte 10 istek, red ve zaman aşımı `unavailable` (kural 5) aynen.
 2. **Bu masadayım (süren masalar):** `rooms/request-join { roomId, asMember: true }`.
    - Masası olmayan kişi, fiziksel olarak oturduğu bir masaya tek başına istek gönderir. Kuralı SPEC_V3 §22.C ve kural 5'in Faz 2 ekidir.
-   - "Süren masalar" mekandaki lobide olmayan bütün masalardır, tek kişilik masa dahil (teknik karar ve gerekçesi §4.P). Sahip gelen isteği sessizce reddedebilir: red ve zaman aşımı istekçiye aynı görünür (`unavailable`, kural 5).
+   - "Süren masalar" mekandaki lobide olmayan bütün masalardır, tek kişilik masa dahil (teknik karar ve gerekçesi §4.P). Sahip gelen isteği sessizce reddedebilir: red ve zaman aşımı istekçiye aynı görünür (`unavailable`, kural 5). Süren masa yoksa lobide "Süren masalar" başlığı görünmez (proje sahibinin isteği, 10 Kasım).
 3. **Davet** (4.7): sahibin davetini kabul eden arkadaş (§4.G).
 
 **İstek kartı** (sahip):
