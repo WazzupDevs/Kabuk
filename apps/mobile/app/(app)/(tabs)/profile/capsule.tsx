@@ -419,8 +419,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   );
 }
 
-// "Karıştır" (the owner's call, 27 Ekim): the family's crossing arrows, which turn once round and
-// swell a little with each shuffle; still with reduce motion.
+// "Karıştır" (the owner's call, 27 Ekim): the set's die, which turns once round and swells a little
+// with each shuffle (it says "random", as the four squares did not); still with reduce motion.
 function ShuffleGlyph({ turn }: { turn: number }) {
   const { c } = useKit();
   const reduce = useReduceMotion();
@@ -442,7 +442,7 @@ function ShuffleGlyph({ turn }: { turn: number }) {
   }));
   return (
     <Animated.View style={style}>
-      <CapIcon name="grid2x2" color={c.ink} />
+      <CapIcon name="shuffle" color={c.ink} />
     </Animated.View>
   );
 }

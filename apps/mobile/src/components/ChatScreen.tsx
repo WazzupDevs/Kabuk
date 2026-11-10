@@ -59,7 +59,9 @@ import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
 import { ChatWallpaper, WallBand } from './ChatWallpaper';
 import { SPLIT_PILL } from './ChatTopBar';
-import { ChatScrollingContext } from './chatScrolling';
+import { faceMovers, sameKeys } from '@/lib/faceMovers';
+
+import { ChatMoversContext, ChatScrollingContext } from './chatScrolling';
 import { useTabBarSpace } from './TabBar';
 import { AppIcon } from './AppIcon';
 // Frame by frame with the keyboard (react-native-keyboard-controller), on the UI thread: the
@@ -898,7 +900,11 @@ function ChatList<T extends ChatListItem>({
     timeOfRef.current = timeOf;
   });
   // The same function for the list's life (FlatList takes no new one).
+  const [movers, setMovers] = useState<ReadonlySet<string>>(() => new Set());
   const [onViewable] = useState(() => ({ viewableItems }: { viewableItems: ViewToken<T>[] }) => {
+    // The faces that move: the newest few of the rows on the screen.
+    const next = faceMovers(viewableItems);
+    setMovers((prev) => (sameKeys(prev, next) ? prev : next));
     const time = timeOfRef.current;
     if (!time) return;
     let oldest: T | null = null;
@@ -1023,107 +1029,109 @@ function ChatList<T extends ChatListItem>({
           <ChatRowStoreContext.Provider value={store}>
             <ChatInvertedContext.Provider value>
               <ChatScrollingContext.Provider value={scrolling}>
-                {items.length === 0 && empty ? (
-                  // Clear of the top bar and the message bar (the list's own padding, unflipped).
-                  <View
-                    style={{
-                      flex: 1,
-                      paddingTop: contentContainerStyle?.paddingBottom,
-                      paddingBottom: contentContainerStyle?.paddingTop,
-                      paddingHorizontal: contentContainerStyle?.paddingHorizontal,
-                    }}
-                  >
-                    {empty}
-                  </View>
-                ) : (
-                  <MetaReportContext.Provider value={reportMeta}>
-                    <DayReportContext.Provider value={timeOf ? reportDay : null}>
-                      <FlatList
-                        ref={list}
-                        testID={testID}
-                        data={items}
-                        inverted
-                        keyExtractor={(item) => item.key}
-                        renderItem={({ item }) => renderItem(item)}
-                        renderScrollComponent={renderScroll}
-                        CellRendererComponent={MetaCell}
-                        onLayout={(e) => {
-                          listHeight.current = e.nativeEvent.layout.height;
-                          placeDay();
-                        }}
-                        showsVerticalScrollIndicator={false}
-                        showsHorizontalScrollIndicator={false}
-                        // The first screenful at once, from the newest up; the rest as it nears.
-                        initialNumToRender={INITIAL_ROWS}
-                        maxToRenderPerBatch={BATCH_ROWS}
-                        windowSize={WINDOW}
-                        // Rows added under the reader leave what is shown where it is; at the bottom the
-                        // list goes on to the new one.
-                        maintainVisibleContentPosition={FOLLOW}
-                        onEndReached={onReachOld}
-                        onEndReachedThreshold={OLD_THRESHOLD}
-                        ListFooterComponent={older ? <>{older}</> : null}
-                        ListHeaderComponent={
-                          latest ? (
-                            <View onLayout={(e) => setLatestHeight(e.nativeEvent.layout.height)}>
-                              {latest}
-                            </View>
-                          ) : null
-                        }
-                        // Dragging the messages puts the keyboard away, like any chat app.
-                        keyboardDismissMode="on-drag"
-                        keyboardShouldPersistTaps="handled"
-                        contentContainerStyle={contentContainerStyle}
-                        scrollEventThrottle={64}
-                        onScroll={onScroll}
-                        onScrollBeginDrag={() => {
-                          dragging.current = true;
-                          pinned.current = false;
-                          bar.setOpen(null);
-                          showDay();
-                        }}
-                        onScrollEndDrag={(e) => {
-                          dragging.current = false;
-                          if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
-                            pinned.current = true;
+                <ChatMoversContext.Provider value={movers}>
+                  {items.length === 0 && empty ? (
+                    // Clear of the top bar and the message bar (the list's own padding, unflipped).
+                    <View
+                      style={{
+                        flex: 1,
+                        paddingTop: contentContainerStyle?.paddingBottom,
+                        paddingBottom: contentContainerStyle?.paddingTop,
+                        paddingHorizontal: contentContainerStyle?.paddingHorizontal,
+                      }}
+                    >
+                      {empty}
+                    </View>
+                  ) : (
+                    <MetaReportContext.Provider value={reportMeta}>
+                      <DayReportContext.Provider value={timeOf ? reportDay : null}>
+                        <FlatList
+                          ref={list}
+                          testID={testID}
+                          data={items}
+                          inverted
+                          keyExtractor={(item) => item.key}
+                          renderItem={({ item }) => renderItem(item)}
+                          renderScrollComponent={renderScroll}
+                          CellRendererComponent={MetaCell}
+                          onLayout={(e) => {
+                            listHeight.current = e.nativeEvent.layout.height;
+                            placeDay();
+                          }}
+                          showsVerticalScrollIndicator={false}
+                          showsHorizontalScrollIndicator={false}
+                          // The first screenful at once, from the newest up; the rest as it nears.
+                          initialNumToRender={INITIAL_ROWS}
+                          maxToRenderPerBatch={BATCH_ROWS}
+                          windowSize={WINDOW}
+                          // Rows added under the reader leave what is shown where it is; at the bottom the
+                          // list goes on to the new one.
+                          maintainVisibleContentPosition={FOLLOW}
+                          onEndReached={onReachOld}
+                          onEndReachedThreshold={OLD_THRESHOLD}
+                          ListFooterComponent={older ? <>{older}</> : null}
+                          ListHeaderComponent={
+                            latest ? (
+                              <View onLayout={(e) => setLatestHeight(e.nativeEvent.layout.height)}>
+                                {latest}
+                              </View>
+                            ) : null
                           }
-                          hideDaySoon();
-                        }}
-                        onMomentumScrollBegin={showDay}
-                        onMomentumScrollEnd={(e) => {
-                          if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
-                            pinned.current = true;
-                          }
-                          hideDaySoon();
-                        }}
-                        // A row came or grew (a photo, a quote): at the end it stays at the end.
-                        onContentSizeChange={() => {
-                          if (pinned.current && !dragging.current && !popOpenRef.current) {
-                            stayAtEnd();
-                          }
-                        }}
-                        onViewableItemsChanged={onViewable}
-                        viewabilityConfig={VIEWABLE}
-                        onScrollToIndexFailed={(info) => {
-                          // A row not drawn yet: near it first, then to it.
-                          list.current?.scrollToOffset({
-                            offset: info.averageItemLength * info.index,
-                            animated: true,
-                          });
-                          setTimeout(
-                            () =>
-                              list.current?.scrollToIndex({
-                                index: info.index,
-                                animated: true,
-                                viewPosition: 0.5,
-                              }),
-                            JUMP_RETRY_MS,
-                          );
-                        }}
-                      />
-                    </DayReportContext.Provider>
-                  </MetaReportContext.Provider>
-                )}
+                          // Dragging the messages puts the keyboard away, like any chat app.
+                          keyboardDismissMode="on-drag"
+                          keyboardShouldPersistTaps="handled"
+                          contentContainerStyle={contentContainerStyle}
+                          scrollEventThrottle={64}
+                          onScroll={onScroll}
+                          onScrollBeginDrag={() => {
+                            dragging.current = true;
+                            pinned.current = false;
+                            bar.setOpen(null);
+                            showDay();
+                          }}
+                          onScrollEndDrag={(e) => {
+                            dragging.current = false;
+                            if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
+                              pinned.current = true;
+                            }
+                            hideDaySoon();
+                          }}
+                          onMomentumScrollBegin={showDay}
+                          onMomentumScrollEnd={(e) => {
+                            if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
+                              pinned.current = true;
+                            }
+                            hideDaySoon();
+                          }}
+                          // A row came or grew (a photo, a quote): at the end it stays at the end.
+                          onContentSizeChange={() => {
+                            if (pinned.current && !dragging.current && !popOpenRef.current) {
+                              stayAtEnd();
+                            }
+                          }}
+                          onViewableItemsChanged={onViewable}
+                          viewabilityConfig={VIEWABLE}
+                          onScrollToIndexFailed={(info) => {
+                            // A row not drawn yet: near it first, then to it.
+                            list.current?.scrollToOffset({
+                              offset: info.averageItemLength * info.index,
+                              animated: true,
+                            });
+                            setTimeout(
+                              () =>
+                                list.current?.scrollToIndex({
+                                  index: info.index,
+                                  animated: true,
+                                  viewPosition: 0.5,
+                                }),
+                              JUMP_RETRY_MS,
+                            );
+                          }}
+                        />
+                      </DayReportContext.Provider>
+                    </MetaReportContext.Provider>
+                  )}
+                </ChatMoversContext.Provider>
               </ChatScrollingContext.Provider>
             </ChatInvertedContext.Provider>
           </ChatRowStoreContext.Provider>

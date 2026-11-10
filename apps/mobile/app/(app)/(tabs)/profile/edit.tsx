@@ -255,6 +255,8 @@ function EditForm({
 
   // skall tuvali (ProfilDuzenleCikis): leaving with changes asks first, back key too.
   const [leaving, setLeaving] = useState(false);
+  // "Kaydet ve çık" with a name that does not pass: the name's error shows.
+  const [tried, setTried] = useState(false);
   const dirty = (nameChanged || bioChanged) && !save.isSuccess;
   const leave = useCallback(() => (dirty ? setLeaving(true) : router.back()), [dirty]);
   const askToLeave = useCallback(() => setLeaving(true), []);
@@ -319,7 +321,13 @@ function EditForm({
           hint={tr.profile.nameHint}
           value={name}
           onChangeText={setName}
-          error={nameContact ? tr.errors.contact_not_allowed : null}
+          error={
+            nameContact
+              ? tr.errors.contact_not_allowed
+              : tried && !nameValid
+                ? tr.errors.display_name_invalid
+                : null
+          }
           maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
           autoCapitalize="words"
           autoCorrect={false}
@@ -354,22 +362,37 @@ function EditForm({
         </T>
       </Glass>
 
-      <Sheet visible={leaving} onClose={() => setLeaving(false)} title={tr.profile.leaveTitle}>
+      {/* One pattern with Kapsülün's: "Kaydet ve çık" tries to save; a save that cannot go through
+      closes the sheet and the error shows on the screen, so the page is not left. */}
+      <Sheet
+        visible={leaving}
+        onClose={() => {
+          if (!save.isPending) setLeaving(false);
+        }}
+        title={tr.profile.leaveTitle}
+      >
         <T v="fine">{tr.profile.leaveBody}</T>
         <Btn
           block
-          variant="danger"
-          label={tr.profile.leaveConfirm}
+          label={tr.profile.saveAndLeave}
+          loading={save.isPending}
           onPress={() => {
-            setLeaving(false);
-            router.back();
+            if (!nameValid || !bioValid) {
+              setTried(true);
+              setLeaving(false);
+              return;
+            }
+            save.mutate(undefined, { onError: () => setLeaving(false) });
           }}
         />
         <Btn
           block
           variant="glassy"
-          label={tr.profile.leaveBack}
-          onPress={() => setLeaving(false)}
+          label={tr.profile.leaveConfirm}
+          onPress={() => {
+            setLeaving(false);
+            router.back();
+          }}
         />
       </Sheet>
     </Screen>

@@ -39,7 +39,7 @@ import { FxMoves } from '@/components/FxSvg';
 import { IconButton, MoreDots } from '@/components/IconButton';
 import { IdentityToggle } from '@/components/IdentityToggle';
 import { Loader } from '@/components/Loader';
-import { LookAvatar } from '@/components/LookAvatar';
+import { ChatLookAvatar, LookAvatar } from '@/components/LookAvatar';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -250,7 +250,7 @@ function DistrictRoomBody() {
     if (!base || !q || q.gone) return base;
     return { ...base, color: q.fromMe ? colors.accent : inkOf(base.name) };
   };
-  const faceOf = (m: VenueChatMessage, size: number) =>
+  const faceOf = (m: VenueChatMessage, size: number, inStream = false) =>
     m.profiled ? (
       <Avatar
         kind="profile"
@@ -259,7 +259,12 @@ function DistrictRoomBody() {
         size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'}
       />
     ) : m.senderLook ? (
-      <LookAvatar look={m.senderLook} size={size} />
+      // In the stream the face moves only on the screen (ChatLookAvatar); elsewhere always.
+      inStream ? (
+        <ChatLookAvatar look={m.senderLook} size={size} id={m.id} />
+      ) : (
+        <LookAvatar look={m.senderLook} size={size} />
+      )
     ) : (
       <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
     );
@@ -420,7 +425,7 @@ function DistrictRoomBody() {
               last={last}
               time={tr.chat.time(m.createdAt)}
               name={m.fromMe ? undefined : senderLabel(m)}
-              avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
+              avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm, true)}
               nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
               onPressSender={m.fromMe ? undefined : () => setPerson(m)}
             />

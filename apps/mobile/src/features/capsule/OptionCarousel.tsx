@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Extrapolation,
@@ -12,9 +12,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { LookAvatar } from '@/components/LookAvatar';
+import { useLatestCallback } from '@/lib/useLatestCallback';
 import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 
+import { carouselWindow } from './carouselWindow';
 import type { Option } from './options';
 
 const STEP = KIT.size.carouselStep;
@@ -49,20 +51,37 @@ export function OptionCarousel({
   const ref = useAnimatedRef<Animated.ScrollView>();
   const x = useSharedValue(chosen * STEP);
   const last = options.length - 1;
+  // Only the options on the screen and a few either side are bound (carouselWindow); the rest are
+  // the row's empty width. The UI thread works the window out and tells React when it moves.
+  const [win, setWin] = useState(() => carouselWindow(chosen * STEP, STEP, options.length, width));
+  const winFrom = useSharedValue(win.from);
+  const winTo = useSharedValue(win.to);
+  const count = options.length;
+  const moveWindow = (from: number, to: number) => setWin({ from, to });
   const settle = (offset: number) => {
     const at = Math.min(Math.max(Math.round(offset / STEP), 0), last);
     if (at !== chosen) onPick(at);
   };
+  const press = useLatestCallback((index: number) => {
+    ref.current?.scrollTo({ x: index * STEP, animated: !reduce });
+    if (index !== chosen) onPick(index);
+  });
   const onScroll = useAnimatedScrollHandler(
     {
       onScroll: (e) => {
         x.set(e.contentOffset.x);
+        const w = carouselWindow(e.contentOffset.x, STEP, count, width);
+        if (w.from !== winFrom.get() || w.to !== winTo.get()) {
+          winFrom.set(w.from);
+          winTo.set(w.to);
+          runOnJS(moveWindow)(w.from, w.to);
+        }
       },
       onMomentumEnd: (e) => {
         runOnJS(settle)(e.contentOffset.x);
       },
     },
-    [settle],
+    [settle, count, width],
   );
   // The chosen option comes to the centre when it changes elsewhere (Karıştır, Hepsini çıkar, the
   // sheet).
@@ -87,25 +106,27 @@ export function OptionCarousel({
       style={{ flexGrow: 0, width }}
       contentContainerStyle={{ paddingHorizontal: pad, alignItems: 'center' }}
     >
-      {options.map((option, index) => (
-        <Item
-          key={option.key}
-          option={option}
-          index={index}
-          on={index === chosen}
-          x={x}
-          reduce={reduce}
-          onPress={() => {
-            ref.current?.scrollTo({ x: index * STEP, animated: !reduce });
-            if (index !== chosen) onPick(index);
-          }}
-        />
-      ))}
+      <View style={{ width: win.from * STEP }} />
+      {options.slice(win.from, win.to + 1).map((option, i) => {
+        const index = win.from + i;
+        return (
+          <Item
+            key={option.key}
+            option={option}
+            index={index}
+            on={index === chosen}
+            x={x}
+            reduce={reduce}
+            onPress={press}
+          />
+        );
+      })}
+      <View style={{ width: Math.max(0, last - win.to) * STEP }} />
     </Animated.ScrollView>
   );
 }
 
-function Item({
+const Item = memo(function Item({
   option,
   index,
   on,
@@ -118,7 +139,7 @@ function Item({
   on: boolean;
   x: SharedValue<number>;
   reduce: boolean;
-  onPress: () => void;
+  onPress: (index: number) => void;
 }) {
   const { colors } = useTheme();
   const style = useAnimatedStyle(() => {
@@ -134,7 +155,7 @@ function Item({
       accessibilityRole="radio"
       accessibilityState={{ checked: on }}
       accessibilityLabel={option.name}
-      onPress={onPress}
+      onPress={() => onPress(index)}
       style={{ width: STEP, height: BOX, alignItems: 'center', justifyContent: 'center' }}
     >
       <Animated.View style={[{ width: BOX, height: BOX, padding: RING_OUT }, style]}>
@@ -157,4 +178,4 @@ function Item({
       </Animated.View>
     </Pressable>
   );
-}
+});

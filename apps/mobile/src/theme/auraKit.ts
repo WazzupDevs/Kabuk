@@ -175,8 +175,9 @@ export const KIT = {
     infoRow: '#E6F0E8',
     glassEdge: 'rgba(255, 255, 255, 0.86)',
     glassShadow: SHADOW.glass,
-    // Kapsülünü süsle: the capsule's floor shadow.
-    capsuleFloor: 'rgba(3, 27, 11, 0.12)',
+    // Kapsülünü süsle: the capsule's floor shadow (light: faint, so the pill under it does not read
+    // as a grey bar on the light ground, audit M15-30).
+    capsuleFloor: 'rgba(3, 27, 11, 0.06)',
     // The light top edge of glass and of the primary (none in the dark: a white line on every
     // object, the owner's call, 28 Ekim).
     glassInset: 'inset 0px 1px 0px #FFFFFF',

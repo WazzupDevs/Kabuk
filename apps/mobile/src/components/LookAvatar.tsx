@@ -6,6 +6,7 @@ import { stillSvg } from '@/theme/capsuleFx';
 import { lookSvg } from '@/theme/capsuleLook';
 
 import { readAhead } from './CachedSvg';
+import { useChatMovers, useChatScrolling } from './chatScrolling';
 import { FxSvg } from './FxSvg';
 
 // A look's avatar drawing, made once (the options of Kapsülünü süsle make the same ones again and
@@ -31,10 +32,17 @@ export function LookAvatar({
   look,
   size,
   accessibilityLabel,
+  still = false,
+  paused = false,
+  lane,
 }: {
   look: string;
   size: number;
   accessibilityLabel?: string;
+  // Drawn still / its motion held where it stands, on the clocks of `lane` (FxSvg).
+  still?: boolean;
+  paused?: boolean;
+  lane?: string;
 }) {
   const xml = useMemo(() => avatarSvg(look), [look]);
   return (
@@ -43,7 +51,18 @@ export function LookAvatar({
       accessibilityLabel={accessibilityLabel}
       style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
     >
-      <FxSvg xml={xml} width={size} height={size} />
+      <FxSvg xml={xml} width={size} height={size} still={still} paused={paused} lane={lane} />
     </View>
   );
+}
+
+// Its own clocks: the chat faces pause while the stream scrolls without holding the other faces'.
+const CHAT_LANE = 'chatface';
+
+// A face beside a chat message (ChatList's streams): it moves only while its row is on the screen
+// and among the newest few of them, and holds still while the stream scrolls. `id` is the row's key.
+export function ChatLookAvatar({ look, size, id }: { look: string; size: number; id: string }) {
+  const moves = useChatMovers().has(id);
+  const scrolling = useChatScrolling();
+  return <LookAvatar look={look} size={size} still={!moves} paused={scrolling} lane={CHAT_LANE} />;
 }
