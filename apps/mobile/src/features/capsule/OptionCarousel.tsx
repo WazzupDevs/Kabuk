@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Extrapolation,
@@ -58,11 +58,23 @@ export function OptionCarousel({
   const winTo = useSharedValue(win.to);
   const count = options.length;
   const moveWindow = (from: number, to: number) => setWin({ from, to });
+  // Where the row is, or is already going: a choice the row made itself (a scroll's end, a tap)
+  // needs no second scroll to it.
+  const aim = useRef(chosen);
+  // Only a scroll the finger began chooses where it ends. The row's own scrolls (a tap, a choice
+  // made elsewhere) do not: one of them cut short by the next ends part of the way, and choosing
+  // from there sent the row back and forth between two options without end (the owner's recording,
+  // 11 Kasım).
+  const byHand = useSharedValue(false);
   const settle = (offset: number) => {
     const at = Math.min(Math.max(Math.round(offset / STEP), 0), last);
+    aim.current = at;
     if (at !== chosen) onPick(at);
   };
   const press = useLatestCallback((index: number) => {
+    aim.current = index;
+    // A tap during a fling takes over: the fling's cut end chooses nothing.
+    byHand.set(false);
     ref.current?.scrollTo({ x: index * STEP, animated: !reduce });
     if (index !== chosen) onPick(index);
   });
@@ -77,7 +89,12 @@ export function OptionCarousel({
           runOnJS(moveWindow)(w.from, w.to);
         }
       },
+      onBeginDrag: () => {
+        byHand.set(true);
+      },
       onMomentumEnd: (e) => {
+        if (!byHand.get()) return;
+        byHand.set(false);
         runOnJS(settle)(e.contentOffset.x);
       },
     },
@@ -86,6 +103,8 @@ export function OptionCarousel({
   // The chosen option comes to the centre when it changes elsewhere (Karıştır, Hepsini çıkar, the
   // sheet).
   useEffect(() => {
+    if (aim.current === chosen) return;
+    aim.current = chosen;
     ref.current?.scrollTo({ x: chosen * STEP, animated: !reduce });
   }, [chosen, reduce, ref]);
 
