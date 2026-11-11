@@ -4,7 +4,9 @@ import { FX, type FxInside, type FxLayer, framesOf, fxTree, placeOf } from './ca
 import { lookPop, lookSvg } from './capsuleLook';
 import {
   CAPSULE_SKIA,
+  CAPSULE_SKIA_OS,
   capsulePainter,
+  capsuleSkiaOn,
   clockLead,
   curveAt,
   insideAt,
@@ -55,12 +57,24 @@ const SIZES = [
 ];
 
 describe('the switch', () => {
-  it('is off, and off draws the pictures', () => {
-    expect(CAPSULE_SKIA).toBe(false);
-    expect(capsulePainter(CAPSULE_SKIA, false)).toBe('svg');
+  it('is on for Android only (P7; no iPhone was compared)', () => {
+    expect(CAPSULE_SKIA).toBe(true);
+    expect(CAPSULE_SKIA_OS).toEqual(['android']);
+    expect(capsuleSkiaOn('android')).toBe(true);
+    expect(capsuleSkiaOn('ios')).toBe(false);
+    expect(capsuleSkiaOn('web')).toBe(false);
+  });
+
+  it('draws what the switch says while the panel is closed', () => {
+    expect(capsulePainter(true, null)).toBe('skia');
+    expect(capsulePainter(false, null)).toBe('svg');
+  });
+
+  it("draws what the panel's switch says while the panel is open", () => {
+    expect(capsulePainter(true, false)).toBe('svg');
+    expect(capsulePainter(true, true)).toBe('skia');
     expect(capsulePainter(false, false)).toBe('svg');
     expect(capsulePainter(false, true)).toBe('skia');
-    expect(capsulePainter(true, false)).toBe('skia');
   });
 });
 

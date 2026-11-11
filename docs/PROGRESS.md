@@ -16,12 +16,13 @@ Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başl
 | P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`                               | Build        | Opus     | Birleşti, #564                                                                |
 | P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri; panelde 12 avatarlı ızgara | 0.11.0'a OTA | Opus     | Birleşti, #565                                                                |
 | T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                                        | Telefon      | —        | Açık: build alınacak                                                          |
-| P7  | Düzeltmeler; anahtar Süsle'de açılır                                                                | OTA          | Sonnet   | T2 sonrası karar                                                              |
+| P7  | Düzeltmeler; anahtar Süsle'de açılır                                                                | OTA          | Sonnet   | #567: anahtar Süsle'de açık, yalnız Android; telefonda bakılacak              |
 | P8  | Açılan kart ve profil bileti                                                                        | OTA          | Sonnet   | T2 sonrası karar                                                              |
 | P9  | Küçük avatarlarda Skia                                                                              | —            | —        | T1 ve T2'ye göre karar                                                        |
 
 ### Devir notu (11 Kasım 2026, Skia P6 sonrası)
 
+- T2 ölçüldü (Galaxy S23, 0.11.0 build 21; `skia-t2-olcum` dalı, PR'ı açılmadı): büyük kapsülde Skia jank %0,03, p95 ve `Graphics` SVG'den biraz kötü; 12 avatarlı ızgarada Skia p95 17 → 25 ms. iPhone ölçülmedi. Proje sahibinin kararı: önce P7 (#567), sonra P9 konuşulur (sohbet avatarları; önce sohbet ekranının ölçümü).
 - P5 (#564: Skia 2.6.2, `version` 0.11.0) ve P6 (#565: Skia çizicisi, `CAPSULE_SKIA` kapalı; panelde "Skia çizimi" anahtarı, "Skia yan yana" galerisi, ızgaranın Skia'lı hâli) birleşti. Lisans listesi ve `dng_sdk` kararı plan belgesinde. Skia hiçbir telefonda çalıştırılmadı.
 - Sıradaki: T2 (proje sahibi): 0.11.0 build'i (Android `preview`, iOS `testflight`), sonra ölçüm (`docs/denetim/olcum-protokolu.md` → Kapsül ölçümü; her sahne anahtar kapalı ve açık, 4. sahne dahil) ve galeride 15 aksesuarın göz karşılaştırması. Ölçüm dalı gelince orkestra kanıtı kişisel veri ve sır için tarar, PR'ı açar.
 - T2'den sonra, P7'den önce proje sahibiyle birlikte değerlendirilir: P7, P8 ve P9'un sırası (ana soru çok avatarlı ekran: T1'de 12 avatarlı ızgarada takılma %76) ve gelecek tasarımlar için performans prensipleri (bütçe, boya göre kademe, içerik sayım testi; öneri sohbette verildi, karar yok).

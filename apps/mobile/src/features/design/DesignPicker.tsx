@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { openDrawLab } from '@/lib/drawLab';
+import { capsuleSkiaOn } from '@/theme/capsuleSkia';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
 // Ayarlar → Tasarım (test): the component preview and the v46 gallery. Preview builds and development only;
@@ -32,7 +33,7 @@ export function DesignPicker() {
           variant="neutral"
           testID="draw-lab-open"
           label={tr.design.drawLab.open}
-          onPress={() => openDrawLab(true)}
+          onPress={() => openDrawLab(true, capsuleSkiaOn(Platform.OS))}
         />
       </View>
       <Text variant="fine">{tr.design.drawLab.hint}</Text>
