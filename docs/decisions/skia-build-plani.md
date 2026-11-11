@@ -103,7 +103,7 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 
 ## P7'nin sonuçları (11 Kasım)
 
-- **Sıra kararı (proje sahibi, 11 Kasım):** T2'den sonra önce P7. Proje sahibinin telefondaki gözlemi: yan yana galeride Skia çok akıcı, bugünkü çizim takılıyor. T2'nin sayıları (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T2, `skia-t2-olcum` dalında): büyük kapsülde Skia jank %0,03 (SVG, aynı koşulda %9,3 ve %16,2), p95 9 → 10 ve 10 → 11 ms, `Graphics` `kistakimi`'nda 108 → 128 MB.
+- **Sıra kararı (proje sahibi, 11 Kasım):** T2'den sonra önce P7. Proje sahibinin telefondaki gözlemi: yan yana galeride Skia çok akıcı, bugünkü çizim takılıyor. T2'nin sayıları (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T2): büyük kapsülde Skia jank %0,03 (SVG, aynı koşulda %9,3 ve %16,2), p95 9 → 10 ve 10 → 11 ms, `Graphics` `kistakimi`'nda 108 → 128 MB.
 - **Anahtar:** `CAPSULE_SKIA = true`, yalnız Android (`CAPSULE_SKIA_OS`, `capsuleSkiaOn`): iPhone'da SVG ve Skia karşılaştırılmadı, iOS kare yolunda kalır; iPhone karşılaştırmasından sonra listeye `ios` eklenir.
 - **Kapsam:** yalnız Süsle'nin büyük kapsülü (`CapsuleStage`). `useSkiaInside('stage')` uygulamanın anahtarını, `'lab'` yalnız panelin anahtarını (Kapsül ölçümü'nün ızgarası; küçük avatarlar P9), `'always'` galeriyi okur.
 - **Panel:** Çizim ölçümü açıkken çizim yolunu yalnız panelin "Skia çizimi" anahtarı seçer (`capsulePainter(on, lab)`, panel kapalıyken `lab` null); panel uygulamanın çizdiği yolla açılır. Aynı telefonda iki yol ölçülmeye devam eder; büyük kapsülün SVG'si artık yalnız panel açıkken ölçülür.
