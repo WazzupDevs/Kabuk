@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Extrapolation,
@@ -16,12 +16,8 @@ import { useLatestCallback } from '@/lib/useLatestCallback';
 import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 
-import { CAROUSEL_KEEP, carouselBound, carouselGrow, carouselWindow } from './carouselWindow';
+import { carouselWindow } from './carouselWindow';
 import type { Option } from './options';
-
-// How long the row rests before one more option is bound ahead (each one a few hundred native
-// views): after a choice's big capsule has begun its change, one at a time.
-const GROW_MS = 250;
 
 const STEP = KIT.size.carouselStep;
 const ITEM = KIT.size.carouselItem;
@@ -56,42 +52,16 @@ export function OptionCarousel({
   const x = useSharedValue(chosen * STEP);
   const last = options.length - 1;
   // Only the options on the screen and a few either side are bound (carouselWindow); the rest are
-  // the row's empty width. The UI thread works the window out and tells React when it moves. What
-  // was bound stays bound a few past the window (carouselBound), and while the row rests a few more
-  // are bound ahead in idle time (carouselGrow), so that a scroll binds as few as it can.
+  // the row's empty width. The UI thread works the window out and tells React when it moves.
   const [win, setWin] = useState(() => carouselWindow(chosen * STEP, STEP, options.length, width));
-  const need = useRef(win);
-  const [resting, setResting] = useState(true);
   const winFrom = useSharedValue(win.from);
   const winTo = useSharedValue(win.to);
   const count = options.length;
-  const moveWindow = (from: number, to: number) => {
-    const next = { from, to };
-    need.current = next;
-    setWin((bound) => carouselBound(bound, next, CAROUSEL_KEEP));
-  };
+  const moveWindow = (from: number, to: number) => setWin({ from, to });
   const settle = (offset: number) => {
-    setResting(true);
     const at = Math.min(Math.max(Math.round(offset / STEP), 0), last);
     if (at !== chosen) onPick(at);
   };
-  useEffect(() => {
-    if (!resting) return undefined;
-    if (carouselGrow(win, need.current, count, CAROUSEL_KEEP) === win) return undefined;
-    // No handle until the idle callback is asked for: cancelling a number throws on this runtime
-    // (the handle is an object), which broke the screen at the first scroll.
-    let handle: ReturnType<typeof requestIdleCallback> | null = null;
-    const timer = setTimeout(() => {
-      handle = requestIdleCallback(() => {
-        const at = need.current;
-        setWin((bound) => carouselGrow(bound, at, count, CAROUSEL_KEEP));
-      });
-    }, GROW_MS);
-    return () => {
-      clearTimeout(timer);
-      if (handle !== null) cancelIdleCallback(handle);
-    };
-  }, [resting, win, count]);
   const press = useLatestCallback((index: number) => {
     ref.current?.scrollTo({ x: index * STEP, animated: !reduce });
     if (index !== chosen) onPick(index);
@@ -106,9 +76,6 @@ export function OptionCarousel({
           winTo.set(w.to);
           runOnJS(moveWindow)(w.from, w.to);
         }
-      },
-      onBeginDrag: () => {
-        runOnJS(setResting)(false);
       },
       onMomentumEnd: (e) => {
         runOnJS(settle)(e.contentOffset.x);
