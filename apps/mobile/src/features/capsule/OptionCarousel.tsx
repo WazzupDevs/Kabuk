@@ -78,7 +78,9 @@ export function OptionCarousel({
   useEffect(() => {
     if (!resting) return undefined;
     if (carouselGrow(win, need.current, count, CAROUSEL_KEEP) === win) return undefined;
-    let handle = 0;
+    // No handle until the idle callback is asked for: cancelling a number throws on this runtime
+    // (the handle is an object), which broke the screen at the first scroll.
+    let handle: ReturnType<typeof requestIdleCallback> | null = null;
     const timer = setTimeout(() => {
       handle = requestIdleCallback(() => {
         const at = need.current;
@@ -87,7 +89,7 @@ export function OptionCarousel({
     }, GROW_MS);
     return () => {
       clearTimeout(timer);
-      cancelIdleCallback(handle);
+      if (handle !== null) cancelIdleCallback(handle);
     };
   }, [resting, win, count]);
   const press = useLatestCallback((index: number) => {
