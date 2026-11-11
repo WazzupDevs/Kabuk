@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 import { useLabSkia } from '@/lib/drawLab';
-import { CAPSULE_SKIA, capsulePainter } from '@/theme/capsuleSkia';
+import { capsulePainter, capsuleSkiaOn } from '@/theme/capsuleSkia';
 
 import type { InsidePainter } from './FxSvg';
 
-// The capsule's Skia drawing, behind its switch (theme/capsuleSkia.ts → CAPSULE_SKIA, Çizim
-// ölçümü's `skia` on a preview build). Skia is read only when it is on: the import is lazy, once for
-// every drawing on the screen (one promise), so the app's launch never loads it. Undefined (the
+// The capsule's Skia drawing, behind its switch (theme/capsuleSkia.ts → CAPSULE_SKIA, on for
+// Süsle's big capsule on Android; Çizim ölçümü's `skia` on a preview build). Skia is read only when
+// it is on: the import is lazy, once for every drawing on the screen (one promise), so the app's
+// launch never loads it. Undefined (the
 // picture way) while it is off, while it loads, and when it does not load (a build without the
 // native module, a test, web: the import throws or Skia is not there).
 // Kept in an object: a function given to useState would be called as its initial value.
@@ -27,10 +29,16 @@ function load(): Promise<Loaded> {
   });
 }
 
-// `always`: loaded whatever the switch says (Kapsül ölçümü's side by side, a preview build only).
-export function useSkiaInside(always = false): InsidePainter | undefined {
+// `stage`: Süsle's big capsule, the app's switch (the panel's while the panel is open). `lab`: the
+// panel's switch only (Kapsül ölçümü's grid: small avatars are not the app's yet, P9). `always`:
+// whatever the switches say (Kapsül ölçümü's side by side, a preview build only).
+export type SkiaWhere = 'stage' | 'lab' | 'always';
+
+export function useSkiaInside(where: SkiaWhere = 'stage'): InsidePainter | undefined {
   const lab = useLabSkia();
-  const on = always || capsulePainter(CAPSULE_SKIA, lab) === 'skia';
+  const on =
+    where === 'always' ||
+    capsulePainter(where === 'stage' && capsuleSkiaOn(Platform.OS), lab) === 'skia';
   const [painter, setPainter] = useState<Loaded | null>(loaded);
   useEffect(() => {
     if (!on || painter !== null) return undefined;

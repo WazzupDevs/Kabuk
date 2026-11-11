@@ -18,14 +18,23 @@ import {
 } from './capsuleFx';
 import { defBox } from './svgBox';
 
-// One switch for the capsule's Skia drawing: false draws it the picture way everywhere. Off until
-// the owner has compared the two on the phone (T2); Çizim ölçümü's `skia` switch turns it on in a
-// preview build without an update.
-export const CAPSULE_SKIA = false;
+// One switch for the capsule's Skia drawing: false draws it the picture way everywhere. On for
+// Süsle's big capsule (CapsuleStage) since P7 (docs/decisions/skia-build-plani.md): the owner
+// compared the two on the phone (T2, Galaxy S23). Only where the two were compared: no iPhone was,
+// so iOS keeps the pictures until one is.
+export const CAPSULE_SKIA = true;
+export const CAPSULE_SKIA_OS: readonly string[] = ['android'];
 
-// Which way the capsule is drawn: the switch, or the panel's on a preview build. The one choice.
-export function capsulePainter(on: boolean, lab: boolean): 'svg' | 'skia' {
-  return on || lab ? 'skia' : 'svg';
+// The switch on this phone's system (`os` is Platform.OS).
+export function capsuleSkiaOn(os: string): boolean {
+  return CAPSULE_SKIA && CAPSULE_SKIA_OS.includes(os);
+}
+
+// Which way the capsule is drawn. The one choice: the switch, and while Çizim ölçümü's panel is
+// open on a preview build its `skia` switch alone (`lab` is null while the panel is closed), so the
+// same phone still measures both ways.
+export function capsulePainter(on: boolean, lab: boolean | null): 'svg' | 'skia' {
+  return (lab ?? on) ? 'skia' : 'svg';
 }
 
 // The accessories that move inside a clip (FX[…].frames), as the drawings name them.

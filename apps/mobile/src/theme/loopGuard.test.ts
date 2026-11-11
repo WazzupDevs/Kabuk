@@ -29,7 +29,7 @@ const FRAME_LOOPS: Record<string, string> = {
   // reduce motion.
   'src/aura/RisoKanki.tsx': 'first screen only, §13.1',
   // The capsule's Skia drawing (skia-build-plani.md → P6): a Skia canvas takes only a shared value,
-  // and its clock moves the canvas's own drawing, no view's props. Behind CAPSULE_SKIA (off) and
+  // and its clock moves the canvas's own drawing, no view's props. Behind CAPSULE_SKIA (Süsle) and
   // the lab's switch; held only while the drawing moves (FxSvg → useLoopActive, reduce motion).
   'src/components/FxSkia.tsx': 'Skia drawing, behind its switch',
 };
