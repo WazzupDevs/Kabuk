@@ -117,6 +117,13 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 - **Değişen:** `lookPop` metni görünüş başına bir kez (`popOf`); `fxTree` ve `insideCuts` önbellekli; seçilinin iki yanındaki ikişer seçeneğin büyük kapsülü (katmanlar, Skia planı ve SVG'leri) boşta önden okunur, karolar açık şeritten başlayarak; ekran kayarak açıldıktan sonra 1 noktalık boş bir Skia tuvali çizim bağlamını önden kurar; şerit bağlı karoları pencerenin 6 ötesine kadar tutar ve dururken boşta birer birer bağlar; Skia saati yalnız sayıları UI iş parçacığına kopyalar.
 - **Doğrulanmadı (telefon yok):** kazancın büyüklüğü; boş tuvalin bağlamı gerçekten önden kurduğu; sönen kapsülün ikinci yerel ağacı (kaldırılmadı, davranış riski) ve büyük still katmanın ilk resmi hâlâ seçim karesinde.
 
+## P9 denemesi: tek Canvas'lı ızgara (11 Kasım)
+
+- **Neden:** T2'de avatar başına Canvas'la 12 avatarlı ızgarada bellek 753 → 470 MB, ama kare p95 17 → 25 ms ve JS p95 10,8 → 24,7 ms. Soru: 12 avatar tek Canvas'ta çizilirse ne olur.
+- **Sahne:** Kapsül ölçümü → `Izgara, tek Canvas` (`features/design/capsuleGridCanvas.tsx`, yalnız dinamik import'la okunur; plan `theme/capsuleCanvas.ts`). Aynı 12 avatar, aynı boy ve yerler; her avatar bütünüyle Skia'da (durağan katman `ImageSVG`, klip içi hareket `FxSkia`'nın maske ve `srcIn` katmanı), daireye kırpılır; avatar başına yerel görünüm yok. 12 avatar tek planı, tek maskeyi, tek içeriği ve hareket başına tek paylaşılan değeri kullanır. `kistakimi`'nın avatarı 1 durağan, 1 klip içi katmandır (koddan); `move` katmanı çizilmez, öyle bir görünüşte sahne avatar çizmez ve bunu yazar.
+- Yalnız panel: gerçek ekranlara ve Süsle'ye dokunulmadı (`FxSkia.tsx`'te yalnız `export`).
+- **Doğrulanmadı (telefon yok):** sahnenin çizdiği görüntü (daire kırpması, maske, yerler), Skia'nın SVG oranının react-native-svg ile aynılığı, kare ve bellek sayıları. Ölçüm: `docs/denetim/olcum-protokolu.md` → 4b.
+
 ## Skia'nın üçüncü taraf lisansları (11 Kasım)
 
 P5'ten önce okundu. Kaynak: `Shopify/react-native-skia` `v2.6.2` etiketi → `packages/skia/scripts/skia-configuration.ts` (derleme bayrakları), Skia'nın o etiketteki commit'i `4502f88` → `DEPS`, `gn/skia.gni` ve `BUILD.gn` (varsayılanlar, hangi kitaplığın bağlandığı). Lisans metinleri her kitaplığın GitHub'daki kendi deposundan, ana daldan okundu (`DEPS`'teki commit'ten değil; `googlesource.com` bu ortamdan açılmıyor). `dng_sdk` AOSP'nin bir GitHub aynasından (`GrapheneOS/platform_external_dng_sdk`, 1.4.0) okundu. `libskia.a`'nın içine gerçekten neyin girdiği ikiliden doğrulanmadı; liste derleme bayraklarından çıkarımdır.

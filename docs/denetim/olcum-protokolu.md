@@ -77,6 +77,7 @@ Kapsülün çizim yolundaki her değişiklik (T0 taban, T1 OTA düzeltmelerinden
   2. Büyük kapsül, `kistakimi` (Destansı; 19 SVG görünümü).
   3. Büyük kapsül, `gokkusagiatki` (79 SVG görünümü).
   4. 12 avatarlı ızgara, hepsi `kistakimi`.
+     - 4b. Aynı ızgara tek Skia Canvas'ında (`Izgara, tek Canvas`; panelin "Skia çizimi" anahtarından bağımsız her zaman Skia). 4. sahnenin "Skia (panel açık)" satırıyla, panel açık karşılaştırılır.
   5. Paketler: açılan kart (gerçek ekran; açılabilir paket varsa).
 - **Akış, sahne başına:**
   1. `adb shell am force-stop app.kabuk.mobile`, uygulama açılır, sahneye gidilir, 5 sn beklenir.

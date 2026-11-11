@@ -82,7 +82,7 @@ function release(ms: number, lane: string): void {
   }
 }
 
-function useClock(ms: number, on: boolean, lane: string): SharedValue<number> {
+export function useClock(ms: number, on: boolean, lane: string): SharedValue<number> {
   useEffect(() => {
     if (!on) return undefined;
     hold(ms, lane);
@@ -97,7 +97,7 @@ function useClock(ms: number, on: boolean, lane: string): SharedValue<number> {
 const plans = createLru<SkiaPlan | null>(64);
 const svgs = createLru<SkSVG | null>(128);
 
-function planOf(layer: FxInside, place: FxPlace, ratio: number): SkiaPlan | null {
+export function planOf(layer: FxInside, place: FxPlace, ratio: number): SkiaPlan | null {
   const key = insidePlanKey(layer, place, ratio);
   const hit = plans.get(key);
   if (hit !== undefined) return hit;
@@ -106,7 +106,7 @@ function planOf(layer: FxInside, place: FxPlace, ratio: number): SkiaPlan | null
   return made;
 }
 
-function svgOf(xml: string, width: number, height: number): SkSVG | null {
+export function svgOf(xml: string, width: number, height: number): SkSVG | null {
   const key = `${width}x${height}|${xml}`;
   const hit = svgs.get(key);
   if (hit !== undefined) return hit;

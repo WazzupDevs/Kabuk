@@ -18,7 +18,7 @@ Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başl
 | T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                                        | Telefon      | —        | Tamamlandı (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T2); iPhone ölçülmedi |
 | P7  | Düzeltmeler; anahtar Süsle'de açılır                                                                | OTA          | Sonnet   | Birleşti, #567 (yalnız Android); Süsle düzeltmeleri #569–#572                     |
 | P8  | Açılan kart ve profil bileti                                                                        | OTA          | Sonnet   | T2 sonrası karar                                                                  |
-| P9  | Küçük avatarlarda Skia                                                                              | —            | —        | T1 ve T2'ye göre karar                                                            |
+| P9  | Küçük avatarlarda Skia                                                                              | —            | —        | Tek Canvas'lı ızgara denemesi panelde (sahne 4b); telefonda ölçülmedi             |
 
 ### Devir notu (11 Kasım 2026, Süsle düzeltmeleri sonrası)
 

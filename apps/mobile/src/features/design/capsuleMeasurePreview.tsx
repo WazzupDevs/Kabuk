@@ -1,5 +1,5 @@
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
-import { useEffect, useMemo, useState } from 'react';
+import { type ComponentType, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
@@ -14,10 +14,10 @@ import { tr } from '@/i18n/tr';
 import { DRAW_LAB } from '@/lib/drawLab';
 import { type SwitchStats, switchStats } from '@/lib/frameStats';
 import { KIT } from '@/theme/auraKit';
+import { MEASURE_GRID } from '@/theme/capsuleCanvas';
 import { lookPop } from '@/theme/capsuleLook';
 import { skiaAccessories } from '@/theme/capsuleSkia';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
 
 import { PreviewBlock } from './PreviewBlock';
 
@@ -26,25 +26,23 @@ import { PreviewBlock } from './PreviewBlock';
 // looks, so they never depend on what the account owns. Preview builds and development only: with
 // DRAW_LAB off the set draws nothing. `skia`: the accessories that move inside a clip side by side,
 // the pictures and Skia (docs/decisions/skia-build-plani.md → P6). The big capsule and the grid take
-// Skia with Çizim ölçümü's `skia` switch (CapsuleStage, Grid).
-type Scene = 'bare' | 'winter' | 'rainbow' | 'grid' | 'skia';
-const SCENES: readonly Scene[] = ['bare', 'winter', 'rainbow', 'grid', 'skia'];
+// Skia with Çizim ölçümü's `skia` switch (CapsuleStage, Grid). `gridOne`: the same grid on one Skia
+// canvas, whatever the switch says (P9).
+type Scene = 'bare' | 'winter' | 'rainbow' | 'grid' | 'gridOne' | 'skia';
+const SCENES: readonly Scene[] = ['bare', 'winter', 'rainbow', 'grid', 'gridOne', 'skia'];
 const sceneName = (s: Scene) =>
   s === 'skia' ? tr.design.drawLab.skiaGallery : tr.design.capsuleMeasure.scenes[s];
 
-const LOOKS: Record<Exclude<Scene, 'grid' | 'skia'>, string> = {
+const LOOKS: Record<Exclude<Scene, 'grid' | 'gridOne' | 'skia'>, string> = {
   bare: 'c:pembe e:koyu',
   winter: 'c:pembe e:koyu x:kistakimi',
   rainbow: 'c:pembe e:koyu x:gokkusagiatki',
 };
-const GRID_LOOK = 'c:pembe e:koyu x:kistakimi';
-const GRID_COLUMNS = 4;
-// The most a table seats (MAX_TABLE_PHONES), all on the screen at once. With 48, four times that,
-// the scene died of a memory error on the first measurement (T0, 10 Kasım).
-const GRID_COUNT = 12;
-const GRID_AVATAR = SPACING[14];
-const GRID_GAP = SPACING[2];
-const GRID_DATA = Array.from({ length: GRID_COUNT }, (_, i) => i);
+const GRID_LOOK = MEASURE_GRID.look;
+const GRID_COLUMNS = MEASURE_GRID.columns;
+const GRID_AVATAR = MEASURE_GRID.size;
+const GRID_GAP = MEASURE_GRID.gap;
+const GRID_DATA = Array.from({ length: MEASURE_GRID.count }, (_, i) => i);
 
 const MEASURE_MS = 30000;
 const TICK_MS = 1000;
@@ -97,7 +95,15 @@ export function CapsuleMeasureSet() {
         </Text>
       </View>
       <PreviewBlock title={sceneName(scene)}>
-        {scene === 'grid' ? <Grid /> : scene === 'skia' ? <Gallery /> : <Big look={LOOKS[scene]} />}
+        {scene === 'grid' ? (
+          <Grid />
+        ) : scene === 'gridOne' ? (
+          <GridOne />
+        ) : scene === 'skia' ? (
+          <Gallery />
+        ) : (
+          <Big look={LOOKS[scene]} />
+        )}
       </PreviewBlock>
     </View>
   );
@@ -158,6 +164,49 @@ function Grid() {
       </View>
     </FxMoves>
   );
+}
+
+// The same grid on one Skia canvas (capsuleGridCanvas.tsx; P9). The drawing is read by a lazy
+// import (components/skiaInside.ts's way), once, so that nothing of Skia is read before the scene
+// opens; Skia whatever the panel's switch says.
+type GridCanvasKit = { Grid: ComponentType };
+// Kept in an object: a component given to useState would be called as its initial value.
+type GridLoaded = GridCanvasKit | 'failed';
+let gridLoaded: GridLoaded | null = null;
+let gridLoading: Promise<GridLoaded> | null = null;
+
+function loadGridCanvas(): Promise<GridLoaded> {
+  gridLoading ??= import('./capsuleGridCanvas').then(
+    (mod): GridLoaded => (mod.skiaReady() ? { Grid: mod.GridCanvas } : 'failed'),
+    (): GridLoaded => 'failed',
+  );
+  return gridLoading.then((l) => {
+    gridLoaded = l;
+    return l;
+  });
+}
+
+function GridOne() {
+  const d = tr.design.drawLab;
+  const [kit, setKit] = useState<GridLoaded | null>(gridLoaded);
+  useEffect(() => {
+    if (kit !== null) return undefined;
+    let live = true;
+    void loadGridCanvas().then((l) => {
+      if (live) setKit(l);
+    });
+    return () => {
+      live = false;
+    };
+  }, [kit]);
+  if (kit === null || kit === 'failed') {
+    return (
+      <Text variant="fine" tone="muted">
+        {kit === null ? d.skiaLoading : d.skiaFailed}
+      </Text>
+    );
+  }
+  return <kit.Grid />;
 }
 
 // Each accessory that moves inside a clip on Süsle's stage drawing (lookPop), its name over it: on
