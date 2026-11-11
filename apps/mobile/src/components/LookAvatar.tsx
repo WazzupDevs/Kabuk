@@ -7,7 +7,7 @@ import { lookSvg } from '@/theme/capsuleLook';
 
 import { readAhead } from './CachedSvg';
 import { useChatMovers, useChatScrolling } from './chatScrolling';
-import { FxSvg } from './FxSvg';
+import { FxSvg, type InsidePainter } from './FxSvg';
 
 // A look's avatar drawing, made once (the options of Kapsülünü süsle make the same ones again and
 // again as the person moves between tabs).
@@ -35,6 +35,7 @@ export function LookAvatar({
   still = false,
   paused = false,
   lane,
+  inside,
 }: {
   look: string;
   size: number;
@@ -43,6 +44,8 @@ export function LookAvatar({
   still?: boolean;
   paused?: boolean;
   lane?: string;
+  // What draws its motions inside a clip (FxSvg): Kapsül ölçümü's grid with Skia only.
+  inside?: InsidePainter;
 }) {
   const xml = useMemo(() => avatarSvg(look), [look]);
   return (
@@ -51,7 +54,19 @@ export function LookAvatar({
       accessibilityLabel={accessibilityLabel}
       style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
     >
-      <FxSvg xml={xml} width={size} height={size} still={still} paused={paused} lane={lane} />
+      {inside ? (
+        <FxSvg
+          xml={xml}
+          width={size}
+          height={size}
+          still={still}
+          paused={paused}
+          lane={lane}
+          inside={inside}
+        />
+      ) : (
+        <FxSvg xml={xml} width={size} height={size} still={still} paused={paused} lane={lane} />
+      )}
     </View>
   );
 }

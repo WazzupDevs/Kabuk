@@ -4,21 +4,21 @@
 
 Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başlar, tablodaki ilk "Açık" satırdan sürer. T satırları proje sahibinin telefon adımıdır (`docs/denetim/olcum-protokolu.md` → Kapsül ölçümü).
 
-| #   | Paket                                                                        | Yayın        | Model    | Durum                                                                         |
-| --- | ---------------------------------------------------------------------------- | ------------ | -------- | ----------------------------------------------------------------------------- |
-| P0  | Plan, bu tablo, kapsül ölçüm protokolü                                       | Belge        | Orkestra | Birleşti, #553                                                                |
-| P1  | Ölçüm sahnesi (panel) ve M15-26                                              | OTA          | Sonnet   | Birleşti, #554                                                                |
-| T0  | Taban ölçüm                                                                  | Telefon      | —        | Tamamlandı, #558 ve #560 (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T0) |
-| P2  | Skia'dan bağımsız düzeltmeler (M3-02, M15-46/1, M3-05, 07, 08, 09, 10, 12)   | OTA          | Sonnet   | Birleşti, #555; M15-46/1 ve M3-09 telefonda bakılacak                         |
-| P3  | "Klip içi hareket" katman türü, kırpılmış kare yolu                          | OTA          | Opus     | Birleşti, #561; telefonda T1'de bakılır                                       |
-| P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri | OTA          | Sonnet   | Birleşti, #562; M15-30 ve Süsle karoları telefonda bakılacak                  |
-| T1  | Ölçüm tekrarı                                                                | Telefon      | —        | Tamamlandı, #563 (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T1)         |
-| P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`        | Build        | Opus     | Açık                                                                          |
-| P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri      | 0.11.0'a OTA | Opus     | Açık                                                                          |
-| T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                 | Telefon      | —        | P6'yı bekler                                                                  |
-| P7  | Düzeltmeler; anahtar Süsle'de açılır                                         | OTA          | Sonnet   | Açık                                                                          |
-| P8  | Açılan kart ve profil bileti                                                 | OTA          | Sonnet   | Açık                                                                          |
-| P9  | Küçük avatarlarda Skia                                                       | —            | —        | T1 ve T2'ye göre karar                                                        |
+| #   | Paket                                                                                               | Yayın        | Model    | Durum                                                                         |
+| --- | --------------------------------------------------------------------------------------------------- | ------------ | -------- | ----------------------------------------------------------------------------- |
+| P0  | Plan, bu tablo, kapsül ölçüm protokolü                                                              | Belge        | Orkestra | Birleşti, #553                                                                |
+| P1  | Ölçüm sahnesi (panel) ve M15-26                                                                     | OTA          | Sonnet   | Birleşti, #554                                                                |
+| T0  | Taban ölçüm                                                                                         | Telefon      | —        | Tamamlandı, #558 ve #560 (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T0) |
+| P2  | Skia'dan bağımsız düzeltmeler (M3-02, M15-46/1, M3-05, 07, 08, 09, 10, 12)                          | OTA          | Sonnet   | Birleşti, #555; M15-46/1 ve M3-09 telefonda bakılacak                         |
+| P3  | "Klip içi hareket" katman türü, kırpılmış kare yolu                                                 | OTA          | Opus     | Birleşti, #561; telefonda T1'de bakılır                                       |
+| P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri                        | OTA          | Sonnet   | Birleşti, #562; M15-30 ve Süsle karoları telefonda bakılacak                  |
+| T1  | Ölçüm tekrarı                                                                                       | Telefon      | —        | Tamamlandı, #563 (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T1)         |
+| P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`                               | Build        | Opus     | Birleşti, #564                                                                |
+| P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri; panelde 12 avatarlı ızgara | 0.11.0'a OTA | Opus     | PR açık                                                                       |
+| T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                                        | Telefon      | —        | P6'yı bekler                                                                  |
+| P7  | Düzeltmeler; anahtar Süsle'de açılır                                                                | OTA          | Sonnet   | Açık                                                                          |
+| P8  | Açılan kart ve profil bileti                                                                        | OTA          | Sonnet   | Açık                                                                          |
+| P9  | Küçük avatarlarda Skia                                                                              | —            | —        | T1 ve T2'ye göre karar                                                        |
 
 ### Devir notu (11 Kasım 2026, Skia T1 sonrası)
 

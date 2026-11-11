@@ -1,4 +1,11 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
+import {
+  type ComponentType,
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react';
 import { Animated, Easing, PixelRatio, StyleSheet, View } from 'react-native';
 
 import { useLoopActive } from '@/components/Loader';
@@ -114,8 +121,14 @@ export function FxMoves({ children, on = true }: { children: ReactNode; on?: boo
   return <FxMotion.Provider value={on}>{children}</FxMotion.Provider>;
 }
 
+// What draws a motion inside its clip: the pictures in turn (Inside) unless one is given (Skia's,
+// components/FxSkia.tsx; docs/decisions/skia-build-plani.md → P6).
+export type InsideProps = { layer: FxInside; place: FxPlace; on: boolean; lane: string };
+export type InsidePainter = ComponentType<InsideProps>;
+
 // `still`: drawn still here (a set balloon past the newest few); `paused`: its motion held where it
-// stands (a set balloon while its stream scrolls), on the clocks of its `lane`.
+// stands (a set balloon while its stream scrolls), on the clocks of its `lane`. `inside`: what draws
+// the motions inside a clip (the pictures in turn when not given).
 export function FxSvg({
   xml,
   width,
@@ -123,6 +136,7 @@ export function FxSvg({
   still = false,
   paused = false,
   lane = 'main',
+  inside,
 }: {
   xml: string;
   width: number;
@@ -130,6 +144,7 @@ export function FxSvg({
   still?: boolean;
   paused?: boolean;
   lane?: string;
+  inside?: InsidePainter;
 }) {
   const moves = useContext(FxMotion);
   const reduceMotion = useReduceMotion();
@@ -138,7 +153,16 @@ export function FxSvg({
   if (!moves || reduceMotion || still || !xml.includes(' data-fx="')) {
     return <CachedSvg xml={stillOf(xml)} width={width} height={height} />;
   }
-  return <MovingSvg xml={xml} width={width} height={height} paused={paused} lane={lane} />;
+  return (
+    <MovingSvg
+      xml={xml}
+      width={width}
+      height={height}
+      paused={paused}
+      lane={lane}
+      inside={inside}
+    />
+  );
 }
 
 // stillSvg's result for a text, made once.
@@ -157,12 +181,14 @@ function MovingSvg({
   height,
   paused,
   lane,
+  inside,
 }: {
   xml: string;
   width: number;
   height: number;
   paused: boolean;
   lane: string;
+  inside: InsidePainter | undefined;
 }) {
   const active = useLoopActive();
   const tree = useMemo(() => fxTree(xml), [xml]);
@@ -178,6 +204,7 @@ function MovingSvg({
         place={place}
         on={active && !paused}
         lane={lane}
+        inside={inside}
       />
     </View>
   );
@@ -190,6 +217,7 @@ function Layers({
   place,
   on,
   lane,
+  inside,
 }: {
   layers: FxLayer[];
   width: number;
@@ -197,16 +225,27 @@ function Layers({
   place: FxPlace;
   on: boolean;
   lane: string;
+  inside: InsidePainter | undefined;
 }) {
+  const Painter = inside ?? Inside;
   return layers.map((l, i) =>
     l.kind === 'still' ? (
       <View key={i} style={StyleSheet.absoluteFill} pointerEvents="none">
         <CachedSvg xml={l.xml} width={width} height={height} />
       </View>
     ) : l.kind === 'inside' ? (
-      <Inside key={i} layer={l} place={place} on={on} lane={lane} />
+      <Painter key={i} layer={l} place={place} on={on} lane={lane} />
     ) : (
-      <Move key={i} layer={l} width={width} height={height} place={place} on={on} lane={lane} />
+      <Move
+        key={i}
+        layer={l}
+        width={width}
+        height={height}
+        place={place}
+        on={on}
+        lane={lane}
+        inside={inside}
+      />
     ),
   );
 }
@@ -220,6 +259,7 @@ function Move({
   place,
   on,
   lane,
+  inside,
 }: {
   layer: Extract<FxLayer, { kind: 'move' }>;
   width: number;
@@ -227,6 +267,7 @@ function Move({
   place: FxPlace;
   on: boolean;
   lane: string;
+  inside: InsidePainter | undefined;
 }) {
   const motion = FX[layer.fx];
   const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined, lane);
@@ -285,6 +326,7 @@ function Move({
         place={place}
         on={on}
         lane={lane}
+        inside={inside}
       />
     </Animated.View>
   );
@@ -292,17 +334,7 @@ function Move({
 
 // A motion inside its clip: its pictures shown in turn, each in its part of the clock, each only as
 // large as what it shows of the clip's box on the screen (theme/capsuleFx.ts → insideCuts).
-function Inside({
-  layer,
-  place,
-  on,
-  lane,
-}: {
-  layer: FxInside;
-  place: FxPlace;
-  on: boolean;
-  lane: string;
-}) {
+export function Inside({ layer, place, on, lane }: InsideProps) {
   const motion = FX[layer.fx];
   const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined, lane);
   const cuts = useMemo(() => insideCuts(layer, place, PixelRatio.get()), [layer, place]);
