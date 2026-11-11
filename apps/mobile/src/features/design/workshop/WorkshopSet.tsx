@@ -4,13 +4,18 @@ import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { SPACING } from '@/theme/tokens';
 
 import { PreviewBlock } from '../PreviewBlock';
-import { nextVariantKey, resolveVariantKey } from './drafts';
+import { nextVariantKey, resolveVariantKey, validateDrafts } from './drafts';
 import { WORKSHOP_DRAFTS } from './registry';
 
-// Space between the two columns (SPACING[2], the gap-2 of the row).
-const COLUMN_GAP = 8;
+// Space between the two columns (the row's gap-2).
+const COLUMN_GAP = SPACING[2];
+
+// What is wrong with the registry (a key used twice, a draft with no variant), shown over the set:
+// the registry draws components, so no test reads it.
+const PROBLEMS = validateDrafts(WORKSHOP_DRAFTS);
 
 // Atölye: the drafts of the registry drawn with the real components; one variant at full width, or
 // the selected one and the next side by side (each column gets its measured width).
@@ -37,6 +42,11 @@ export function WorkshopSet() {
 
   return (
     <View className="gap-4" testID="workshop-set">
+      {PROBLEMS.map((p) => (
+        <Text key={p} variant="fine" tone="muted">
+          {p}
+        </Text>
+      ))}
       {WORKSHOP_DRAFTS.length > 1 ? (
         <View className="flex-row flex-wrap gap-2">
           {WORKSHOP_DRAFTS.map((d) => (
