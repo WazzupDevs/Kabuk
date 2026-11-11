@@ -1,0 +1,192 @@
+Applications Graphics Acceleration Info:
+Uptime: 17591700 Realtime: 17619505
+
+** Graphics info for pid 16826 [app.kabuk.mobile] **
+
+Stats since: 17559855828873ns
+Total frames rendered: 3112
+Janky frames: 706 (22.69%)
+Janky frames (legacy): 3112 (100.00%)
+50th percentile: 18ms
+90th percentile: 25ms
+95th percentile: 25ms
+99th percentile: 27ms
+Number Missed Vsync: 376
+Number High input latency: 4802
+Number Slow UI thread: 706
+Number Slow bitmap uploads: 1
+Number Slow issue draw commands: 1
+Number Frame deadline missed: 706
+Number Frame deadline missed (legacy): 716
+HISTOGRAM: 5ms=0 6ms=0 7ms=0 8ms=0 9ms=0 10ms=587 11ms=391 12ms=129 13ms=113 14ms=105 15ms=60 16ms=49 17ms=94 18ms=183 19ms=172 20ms=174 21ms=183 22ms=217 23ms=204 24ms=135 25ms=198 26ms=86 27ms=22 28ms=6 29ms=0 30ms=2 31ms=0 32ms=0 34ms=0 36ms=1 38ms=1 40ms=0 42ms=0 44ms=0 46ms=0 48ms=0 53ms=0 57ms=0 61ms=0 65ms=0 69ms=0 73ms=0 77ms=0 81ms=0 85ms=0 89ms=0 93ms=0 97ms=0 101ms=0 105ms=0 109ms=0 113ms=0 117ms=0 121ms=0 125ms=0 129ms=0 133ms=0 150ms=0 200ms=0 250ms=0 300ms=0 350ms=0 400ms=0 450ms=0 500ms=0 550ms=0 600ms=0 650ms=0 700ms=0 750ms=0 800ms=0 850ms=0 900ms=0 950ms=0 1000ms=0 1050ms=0 1100ms=0 1150ms=0 1200ms=0 1250ms=0 1300ms=0 1350ms=0 1400ms=0 1450ms=0 1500ms=0 1550ms=0 1600ms=0 1650ms=0 1700ms=0 1750ms=0 1800ms=0 1850ms=0 1900ms=0 1950ms=0 2000ms=0 2050ms=0 2100ms=0 2150ms=0 2200ms=0 2250ms=0 2300ms=0 2350ms=0 2400ms=0 2450ms=0 2500ms=0 2550ms=0 2600ms=0 2650ms=0 2700ms=0 2750ms=0 2800ms=0 2850ms=0 2900ms=0 2950ms=0 3000ms=0 3050ms=0 3100ms=0 3150ms=0 3200ms=0 3250ms=0 3300ms=0 3350ms=0 3400ms=0 3450ms=0 3500ms=0 3550ms=0 3600ms=0 3650ms=0 3700ms=0 3750ms=0 3800ms=0 3850ms=0 3900ms=0 3950ms=0 4000ms=0 4050ms=0 4100ms=0 4150ms=0 4200ms=0 4250ms=0 4300ms=0 4350ms=0 4400ms=0 4450ms=0 4500ms=0 4550ms=0 4600ms=0 4650ms=0 4700ms=0 4750ms=0 4800ms=0 4850ms=0 4900ms=0 4950ms=0
+50th gpu percentile: 2ms
+90th gpu percentile: 2ms
+95th gpu percentile: 2ms
+99th gpu percentile: 2ms
+GPU HISTOGRAM: 1ms=0 2ms=3097 3ms=13 4ms=2 5ms=0 6ms=0 7ms=0 8ms=0 9ms=0 10ms=0 11ms=0 12ms=0 13ms=0 14ms=0 15ms=0 16ms=0 17ms=0 18ms=0 19ms=0 20ms=0 21ms=0 22ms=0 23ms=0 24ms=0 25ms=0 4950ms=0
+
+Pipeline=Skia (OpenGL)
+Memory policy:
+  Max surface area: 2527200
+  Max resource usage: 121.31MB (x48)
+  Background retention: 50% (altUiHidden = true)
+  GPU Context timeout: 10
+Contexts: 1 (stopped = 0)
+CPU Caches:
+  Glyph Cache: 4.70 MB (1 entry)
+  Glyph Count: 363 
+Total CPU memory usage:
+  4932709 bytes, 4.70 MB (0.00 bytes is purgeable)
+GPU Caches:
+  Other:
+    TextBlobCache: 250.89 KB (1 entry)
+    StencilAttachment: 1.75 MB (3 entries)
+    Buffer Object: 2.94 KB (6 entries)
+  Image:
+    Texture: 40.57 MB (63 entries)
+  Scratch:
+    Texture: 2.00 MB (1 entry)
+    Buffer Object: 78.00 KB (2 entries)
+Layer Info:
+    GlLayer size 240x108
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+    GlLayer size 145x166
+  Layers Total         1229.53 KB (numLayers = 13)
+Total GPU memory usage:
+  46815188 bytes, 44.65 MB (28.21 MB is purgeable)
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 145x166
+TextureView: 240x108
+
+GraphicBufferAllocator buffers:
+            Handle |         Size |     W (Stride) x H | Layers |   Format |      Usage | Requestor
+0xb400006c7ce57100 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-8
+0xb400006c7ce57a80 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-9
+0xb400006c7d0f4380 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-10
+0xb400006c7d0f4c80 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-11
+0xb400006c7d38f580 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-12
+0xb400006c7d4b4100 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-1
+0xb400006c91915400 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-3
+0xb400006c91915d00 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-4
+0xb400006c91b43600 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-5
+0xb400006c91b43f00 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-6
+0xb400006c91dd3800 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-7
+0xb400006e9ca7f380 |   108.00 KiB |  240 ( 256) x  108 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-0
+0xb400006e9d0e5400 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-2
+0xb400006e9d0e5680 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-3
+0xb400006e9d0e5900 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-4
+0xb400006e9d0e5a00 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-5
+0xb400006e9d0e5a80 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-6
+0xb400006e9d0e5b00 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-7
+0xb400006e9d0e5b80 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-8
+0xb400006e9d0e5c00 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-9
+0xb400006e9d0e5c80 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-10
+0xb400006e9d0e5d00 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-11
+0xb400006e9d0e5d80 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-12
+0xb400006e9d10c200 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-1
+0xb400006e9d10cb00 |   124.50 KiB |  145 ( 192) x  166 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-2
+0xb40000710a2ee600 |  9945.00 KiB | 1080 (1088) x 2340 |      1 |        1 | 0x10000900 | VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0
+0xb40000710a2ee680 |  9945.00 KiB | 1080 (1088) x 2340 |      1 |        1 | 0x10000900 | VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0
+0xb40000710a2ee700 |  9945.00 KiB | 1080 (1088) x 2340 |      1 |        1 | 0x10000900 | VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0
+0xb40000710a2ee780 |  9945.00 KiB | 1080 (1088) x 2340 |      1 |        1 | 0x10000900 | VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0
+0xb4000071a4860280 |   108.00 KiB |  240 ( 256) x  108 |      1 |        1 | 0x10000100 | SurfaceTexture-0-16826-0
+Total allocated by GraphicBufferAllocator (estimate): 42984.00 KB
+Imported gralloc buffers:
++ name:SurfaceTexture-0-16826-12, id:13055, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-10, id:13053, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-8, id:13051, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-9, id:13052, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-6, id:13049, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0, id:13024, size:10072.00KiB, w/h:1080x2340, usage: 0x10000900, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:1080x2340, stride:4352 bytes, size:10313728
++ name:SurfaceTexture-0-16826-3, id:13046, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-2, id:13045, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-4, id:13047, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-12, id:13043, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-10, id:13041, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-5, id:13048, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-11, id:13042, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0, id:13025, size:10072.00KiB, w/h:1080x2340, usage: 0x10000900, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:1080x2340, stride:4352 bytes, size:10313728
++ name:SurfaceTexture-0-16826-8, id:13039, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-7, id:13038, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-5, id:13036, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-2, id:13033, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-1, id:13032, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-3, id:13034, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0, id:13023, size:10072.00KiB, w/h:1080x2340, usage: 0x10000900, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:1080x2340, stride:4352 bytes, size:10313728
++ name:SurfaceTexture-0-16826-6, id:13037, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-1, id:13044, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-9, id:13040, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-0, id:13030, size:116.00KiB, w/h:240x108, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:240x108, stride:1024 bytes, size:118784
++ name:SurfaceTexture-0-16826-11, id:13054, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-4, id:13035, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:SurfaceTexture-0-16826-0, id:13031, size:116.00KiB, w/h:240x108, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:240x108, stride:1024 bytes, size:118784
++ name:SurfaceTexture-0-16826-7, id:13050, size:136.00KiB, w/h:145x166, usage: 0x10000100, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:145x166, stride:768 bytes, size:139264
++ name:VRI[MainActivity]@3b5e65b#0(BLAST Consumer)0, id:13026, size:10072.00KiB, w/h:1080x2340, usage: 0x10000900, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x0, compressed: true
+	planes: R/G/B/A:	 w/h:1080x2340, stride:4352 bytes, size:10313728
+Total imported by gralloc: 43784.00KiB
+
+Profile data in ms:
+
+	app.kabuk.mobile/app.kabuk.mobile.MainActivity/android.view.ViewRootImpl@2089a4d (visibility=0)
+View hierarchy:
+
+  app.kabuk.mobile/app.kabuk.mobile.MainActivity/android.view.ViewRootImpl@2089a4d
+  2536 views, 4369,55 kB of render nodes
+
+
+Total ViewRootImpl   : 1
+Total attached Views : 2536
+Total RenderNode     : 4369,55 kB (used) / 14814,35 kB (capacity)
+
+Total STB frames rendered : 0
+  ProcessConfig={1.0 286mcc1mnc [tr_TR,en_US] ldltr sw360dp w360dp h780dp 480dpi nrml long compactNeeded hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2340) mAppBounds=Rect(0, 0 - 1080, 2340) mMaxBounds=Rect(0, 0 - 1080, 2340) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0 mStageConfig=undefined mEmbedActivityMode=undefined mPopOver=off mOverlappingWithCutout=false} s.3492 fontWeightAdjustment=0 ff=0 bf=-1 bts=0 cst=1.0 nightDim=0 themeSeq=0}
+  Application ResourcesConfig={1.0 286mcc1mnc [tr_TR,en_US] ldltr sw360dp w360dp h780dp 480dpi nrml long compactNeeded hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2340) mAppBounds=Rect(0, 0 - 1080, 2340) mMaxBounds=Rect(0, 0 - 1080, 2340) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0 mStageConfig=undefined mEmbedActivityMode=undefined mPopOver=off mOverlappingWithCutout=false} s.3492 fontWeightAdjustment=0 ff=0 bf=-1 bts=0 cst=1.0 nightDim=0 themeSeq=0}
