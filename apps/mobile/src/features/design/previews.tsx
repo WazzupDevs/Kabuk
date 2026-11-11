@@ -67,6 +67,7 @@ import { MeasureSet } from './measurePreview';
 import { PartsSet } from './partsPreview';
 import { PreviewBlock } from './PreviewBlock';
 import { ScrollSet } from './scrollPreview';
+import { WorkshopSet } from './workshop/WorkshopSet';
 
 // Sample data for the component preview (Ayarlar → Tasarım (test) → Bileşen önizleme): the game
 // components that screens wire later, shown with made-up props so E2E can photograph them in both
@@ -765,4 +766,5 @@ export const PREVIEW_SETS: PreviewSet[] = [
     label: tr.design.capsuleMeasure.set,
     render: () => <CapsuleMeasureSet />,
   },
+  { key: 'workshop', label: tr.design.workshop.set, render: () => <WorkshopSet /> },
 ];

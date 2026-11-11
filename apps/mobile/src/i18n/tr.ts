@@ -2138,6 +2138,20 @@ export const tr = {
     hint: 'Yalnızca test sürümünde görünür.',
     previewTitle: 'Bileşen önizleme',
     previewOpen: 'Bileşen önizlemesini aç',
+    workshop: {
+      set: 'Atölye',
+      status: { draft: 'Taslak', approved: 'Onaylandı', rejected: 'Reddedildi' },
+      sideBySide: 'Yan yana',
+      empty: 'Atölyede taslak yok.',
+      variantA: 'A',
+      variantB: 'B',
+      buttonOrder: {
+        title: 'Düğme sırası',
+        note: 'Aracın çalıştığını gösteren örnek taslak.',
+        primary: 'Devam',
+        neutral: 'Vazgeç',
+      },
+    },
     // Çizim ölçümü (lib/drawLab.ts): parts of the screen off one by one, each a few seconds, while
     // the phone's frame bars are recorded.
     drawLab: {
