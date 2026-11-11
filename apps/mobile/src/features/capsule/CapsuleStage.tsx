@@ -17,8 +17,10 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
-import { FxSvg } from '@/components/FxSvg';
-import { useSkiaInside } from '@/components/skiaInside';
+import { FxSvg, readFxAhead } from '@/components/FxSvg';
+import { useSkiaKit } from '@/components/skiaInside';
+import { createLru } from '@/lib/lru';
+import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
@@ -32,6 +34,37 @@ const FADE_MS = 240;
 const BUBBLE_MS = 340;
 
 export type Play = { move: Move; key: number };
+
+// lookPop's drawing for a look and a feeling, made once: the look shown, the one fading out over it
+// and the ones read ahead are the same texts.
+const pops = createLru<string>(32);
+function popOf(look: string, feeling: string): string {
+  const key = `${feeling}|${look}`;
+  const hit = pops.get(key);
+  if (hit !== undefined) return hit;
+  const made = lookPop(look, feeling);
+  pops.set(key, made);
+  return made;
+}
+
+// The figure's box for the circle's diameter `size`.
+function figureOf(size: number): { width: number; height: number } {
+  const unit = size / STAGE.circle;
+  return { width: STAGE.width * unit, height: STAGE.height * unit };
+}
+
+// Reads a look ahead, in idle time, as the stage will draw it (with no feeling, at the circle's
+// diameter `size`; `moving` in FxMoves with motion; `prepare`: Skia's, when it draws), so that
+// choosing it has nothing left to read (Kapsülünü süsle: the options next to the chosen one).
+export function readStageAhead(
+  look: string,
+  size: number,
+  moving: boolean,
+  prepare?: (layer: FxInside, place: FxPlace) => void,
+): void {
+  const { width, height } = figureOf(size);
+  readFxAhead(popOf(look, ''), width, height, moving, prepare);
+}
 
 // The capsule large in its circle (skall tuvali, KapsulSusle): a tap on it shows the next feeling
 // (the face, a little move and the things around it, for a moment), the circle beats once. A part
@@ -50,6 +83,7 @@ export function CapsuleStage({
   testID,
   ring: ringWidth,
   ringColor,
+  warm = false,
 }: {
   look: string;
   // The feeling's id ('' for none) and its name in the bubble.
@@ -67,13 +101,18 @@ export function CapsuleStage({
   // The surface ring around the circle (6 unless given), and its colour.
   ring?: number;
   ringColor?: string;
+  // Skia's drawing context made ahead while Skia draws (FxSkia.tsx → SkiaWarm): after the screen's
+  // slide in, before the first motion inside a clip needs it.
+  warm?: boolean;
 }) {
   const { colors, shape } = useTheme();
   const shadowOff = useLabOff('golge');
   const reduce = useReduceMotion();
   // The one choice of the Skia drawing (components/skiaInside.ts): undefined while it is off, and
   // then the drawing is the pictures' as it always was.
-  const inside = useSkiaInside();
+  const skia = useSkiaKit();
+  const inside = skia?.painter;
+  const Warm = warm ? skia?.Warm : undefined;
   const unit = size / STAGE.circle;
   const ring = ringWidth ?? SPACING[1.5];
   // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
@@ -152,18 +191,18 @@ export function CapsuleStage({
     ],
   }));
 
-  const xml = useMemo(() => lookPop(shownLook, feeling?.id ?? ''), [shownLook, feeling?.id]);
-  const oldXml = useMemo(() => (oldLook ? lookPop(oldLook) : null), [oldLook]);
+  const xml = useMemo(() => popOf(shownLook, feeling?.id ?? ''), [shownLook, feeling?.id]);
+  const oldXml = useMemo(() => (oldLook ? popOf(oldLook, '') : null), [oldLook]);
   const figure = {
     position: 'absolute' as const,
     left: -STAGE.left * unit,
     top: -STAGE.top * unit,
-    width: STAGE.width * unit,
-    height: STAGE.height * unit,
+    ...figureOf(size),
   };
 
   return (
     <View style={{ paddingTop: STAGE.top * unit, alignItems: 'center' }}>
+      {Warm ? <Warm /> : null}
       <View style={{ width: size + ring * 2 }}>
         <Pressable
           testID={testID}

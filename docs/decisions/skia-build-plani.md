@@ -110,6 +110,13 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 - **Karşılaştırmanın düzeltmeleri:** yok. T2'nin durağan görüntülerinde 15 aksesuarda şekil, renk ve yer aynı; proje sahibi çizim farkı bildirmedi.
 - Doğrulanmadı: bu değişiklik telefonda çalıştırılmadı (Süsle'nin anahtar açık hâli T2'de panelden ölçüldü, sabitle değil); Skia yüklenirken ilk karelerin kare yoluyla çizilip Skia'ya geçişi gözle bakılmadı; 12 avatarlı ızgarada Skia'nın kare süresi (p95 17 → 25 ms) P9'un konusudur.
 
+## Süsle'de takılma (11 Kasım)
+
+- **Seçim (B):** çizim kitaplığı `LOOK.pop`'ta klibe her çağrıda yeni ad verir (`capsuleDrawing.js` → `'cpc' + (++UID)`); `CapsuleStage` her değişimde `lookPop`'u yeniden çağırdığından aynı görünüş her seferinde başka metindi: metne bağlı bütün önbellekler (SVG ayrıştırma, `fxTree`, Skia planı ve SVG'leri, `nativeID` ile paylaşılan resim) ıskalıyor, sönen eski kapsül de büyük boyda baştan ayrıştırılıp çiziliyordu. İlk Skia tuvali çizim bağlamını (EGL, `GrDirectContext`) ilk destansıda kuruyordu.
+- **Şerit (A):** her 90 dp'lik adımda pencereye bir karo girip biri çıkıyordu; takım karosu 50–280 SVG öğesi, her biri yerel görünüm. Her bırakış bir seçimdir (`disableIntervalMomentum`), yani her adım B'nin bedelini de öder.
+- **Değişen:** `lookPop` metni görünüş başına bir kez (`popOf`); `fxTree` ve `insideCuts` önbellekli; seçilinin iki yanındaki ikişer seçeneğin büyük kapsülü (katmanlar, Skia planı ve SVG'leri) boşta önden okunur, karolar açık şeritten başlayarak; ekran kayarak açıldıktan sonra 1 noktalık boş bir Skia tuvali çizim bağlamını önden kurar; şerit bağlı karoları pencerenin 6 ötesine kadar tutar ve dururken boşta birer birer bağlar; Skia saati yalnız sayıları UI iş parçacığına kopyalar.
+- **Doğrulanmadı (telefon yok):** kazancın büyüklüğü; boş tuvalin bağlamı gerçekten önden kurduğu; sönen kapsülün ikinci yerel ağacı (kaldırılmadı, davranış riski) ve büyük still katmanın ilk resmi hâlâ seçim karesinde.
+
 ## Skia'nın üçüncü taraf lisansları (11 Kasım)
 
 P5'ten önce okundu. Kaynak: `Shopify/react-native-skia` `v2.6.2` etiketi → `packages/skia/scripts/skia-configuration.ts` (derleme bayrakları), Skia'nın o etiketteki commit'i `4502f88` → `DEPS`, `gn/skia.gni` ve `BUILD.gn` (varsayılanlar, hangi kitaplığın bağlandığı). Lisans metinleri her kitaplığın GitHub'daki kendi deposundan, ana daldan okundu (`DEPS`'teki commit'ten değil; `googlesource.com` bu ortamdan açılmıyor). `dng_sdk` AOSP'nin bir GitHub aynasından (`GrapheneOS/platform_external_dng_sdk`, 1.4.0) okundu. `libskia.a`'nın içine gerçekten neyin girdiği ikiliden doğrulanmadı; liste derleme bayraklarından çıkarımdır.

@@ -14,6 +14,7 @@ import {
   type FxMotion,
   type FxPlace,
   phaseOf,
+  placeKey,
   valueAt,
 } from './capsuleFx';
 import { defBox } from './svgBox';
@@ -236,8 +237,23 @@ export function insidePlan(layer: FxInside, place: FxPlace, ratio: number): Skia
   };
 }
 
+// A plan's cache key: everything insidePlan reads (the layer's motion, groups, box, content and
+// definitions, the place and the pixel ratio), so that equal keys make equal plans.
+export function insidePlanKey(layer: FxInside, place: FxPlace, ratio: number): string {
+  return `${placeKey(place, ratio)}|${layer.fx}|${layer.matrix?.join(' ') ?? '-'}|${layer.box.join(' ')}|${layer.outer.join('')}|${layer.content}|${layer.defs}`;
+}
+
+// What the UI thread reads of a plan (insideAt): the curve and the numbers, not the mask's and the
+// content's texts, which a worklet would copy over with it.
+export type SkiaAt = Pick<SkiaPlan, 'curve' | 'x' | 'y' | 'a' | 'b' | 'c' | 'd'>;
+
+export function skiaAt(plan: SkiaPlan): SkiaAt {
+  const { curve, x, y, a, b, c, d } = plan;
+  return { curve, x, y, a, b, c, d };
+}
+
 // Where the content stands in its canvas when the clock is at `t` (on the UI thread).
-export function insideAt(plan: SkiaPlan, t: number): { x: number; y: number } {
+export function insideAt(plan: SkiaAt, t: number): { x: number; y: number } {
   'worklet';
   const tx = curveAt(plan.curve.input, plan.curve.tx, t);
   const ty = curveAt(plan.curve.input, plan.curve.ty, t);

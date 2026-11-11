@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { type ComponentType, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { useLabSkia } from '@/lib/drawLab';
+import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { capsulePainter, capsuleSkiaOn } from '@/theme/capsuleSkia';
 
 import type { InsidePainter } from './FxSvg';
@@ -12,15 +13,24 @@ import type { InsidePainter } from './FxSvg';
 // launch never loads it. Undefined (the
 // picture way) while it is off, while it loads, and when it does not load (a build without the
 // native module, a test, web: the import throws or Skia is not there).
+// `prepare` reads a layer's plan and SVGs ahead (FxSkia.tsx → prepareInside), `Warm` is the canvas
+// that makes Skia's drawing context ahead (SkiaWarm).
+export type SkiaKit = {
+  painter: InsidePainter;
+  prepare: (layer: FxInside, place: FxPlace) => void;
+  Warm: ComponentType;
+};
 // Kept in an object: a function given to useState would be called as its initial value.
-type Loaded = { painter: InsidePainter } | 'failed';
+type Loaded = SkiaKit | 'failed';
 let loaded: Loaded | null = null;
 let loading: Promise<Loaded> | null = null;
 
 function load(): Promise<Loaded> {
   loading ??= Promise.all([import('@shopify/react-native-skia'), import('./FxSkia')]).then(
     ([lib, mod]): Loaded =>
-      typeof lib.Skia === 'object' && lib.Skia !== null ? { painter: mod.SkiaInside } : 'failed',
+      typeof lib.Skia === 'object' && lib.Skia !== null
+        ? { painter: mod.SkiaInside, prepare: mod.prepareInside, Warm: mod.SkiaWarm }
+        : 'failed',
     (): Loaded => 'failed',
   );
   return loading.then((l) => {
@@ -34,22 +44,27 @@ function load(): Promise<Loaded> {
 // whatever the switches say (Kapsül ölçümü's side by side, a preview build only).
 export type SkiaWhere = 'stage' | 'lab' | 'always';
 
-export function useSkiaInside(where: SkiaWhere = 'stage'): InsidePainter | undefined {
+// The loaded kit, undefined while the switch is off, while it loads and when it does not load.
+export function useSkiaKit(where: SkiaWhere = 'stage'): SkiaKit | undefined {
   const lab = useLabSkia();
   const on =
     where === 'always' ||
     capsulePainter(where === 'stage' && capsuleSkiaOn(Platform.OS), lab) === 'skia';
-  const [painter, setPainter] = useState<Loaded | null>(loaded);
+  const [kit, setKit] = useState<Loaded | null>(loaded);
   useEffect(() => {
-    if (!on || painter !== null) return undefined;
+    if (!on || kit !== null) return undefined;
     let live = true;
     void load().then((l) => {
-      if (live) setPainter(l);
+      if (live) setKit(l);
     });
     return () => {
       live = false;
     };
-  }, [on, painter]);
-  if (!on || painter === null || painter === 'failed') return undefined;
-  return painter.painter;
+  }, [on, kit]);
+  if (!on || kit === null || kit === 'failed') return undefined;
+  return kit;
+}
+
+export function useSkiaInside(where: SkiaWhere = 'stage'): InsidePainter | undefined {
+  return useSkiaKit(where)?.painter;
 }

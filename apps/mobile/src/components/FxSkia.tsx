@@ -13,7 +13,15 @@ import {
 } from 'react-native-reanimated';
 
 import { createLru } from '@/lib/lru';
-import { clockLead, insideAt, insidePlan, type SkiaPlan } from '@/theme/capsuleSkia';
+import type { FxInside, FxPlace } from '@/theme/capsuleFx';
+import {
+  clockLead,
+  insideAt,
+  insidePlan,
+  insidePlanKey,
+  skiaAt,
+  type SkiaPlan,
+} from '@/theme/capsuleSkia';
 
 import { Inside, type InsideProps } from './FxSvg';
 
@@ -89,9 +97,8 @@ function useClock(ms: number, on: boolean, lane: string): SharedValue<number> {
 const plans = createLru<SkiaPlan | null>(64);
 const svgs = createLru<SkSVG | null>(128);
 
-function planOf(props: InsideProps, ratio: number): SkiaPlan | null {
-  const { layer, place } = props;
-  const key = `${ratio}|${place.unit}|${place.dx}|${place.dy}|${layer.fx}|${layer.outer.join('')}|${place.bx}|${place.by}|${layer.box.join(' ')}|${layer.content}|${layer.defs}`;
+function planOf(layer: FxInside, place: FxPlace, ratio: number): SkiaPlan | null {
+  const key = insidePlanKey(layer, place, ratio);
   const hit = plans.get(key);
   if (hit !== undefined) return hit;
   const made = insidePlan(layer, place, ratio);
@@ -108,10 +115,42 @@ function svgOf(xml: string, width: number, height: number): SkSVG | null {
   return made;
 }
 
+// Reads a layer's plan and its two SVGs ahead, in idle time, into the caches SkiaInside reads (the
+// options next to the chosen one in Kapsülünü süsle), so that choosing it parses nothing.
+export function prepareInside(layer: FxInside, place: FxPlace): void {
+  const plan = planOf(layer, place, PixelRatio.get());
+  if (!plan) return;
+  svgOf(plan.mask, plan.crop.width, plan.crop.height);
+  svgOf(plan.content, plan.width, plan.height);
+}
+
+// A canvas of one point that draws nothing (an empty SVG), put on the screen ahead: the first
+// canvas makes Skia's drawing context and reads its SVG module, so the first capsule with a motion
+// inside its clip does not wait for them.
+const EMPTY_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>';
+const WARM_PT = 1;
+
+export function SkiaWarm() {
+  const svg = useMemo(() => svgOf(EMPTY_SVG, WARM_PT, WARM_PT), []);
+  if (!svg) return null;
+  return (
+    <SkiaBoundary fallback={null}>
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', left: 0, top: 0, width: WARM_PT, height: WARM_PT }}
+      >
+        <Canvas style={{ width: WARM_PT, height: WARM_PT }}>
+          <ImageSVG svg={svg} x={0} y={0} width={WARM_PT} height={WARM_PT} />
+        </Canvas>
+      </View>
+    </SkiaBoundary>
+  );
+}
+
 export function SkiaInside(props: InsideProps) {
   const ratio = PixelRatio.get();
   // Read from the caches by text: the same for every canvas of the same look and size.
-  const plan = planOf(props, ratio);
+  const plan = planOf(props.layer, props.place, ratio);
   const drawn = useMemo(() => {
     if (!plan) return null;
     const mask = svgOf(plan.mask, plan.crop.width, plan.crop.height);
@@ -147,8 +186,10 @@ function Drawn({
   lane: string;
 }) {
   const clock = useClock(plan.ms, on, lane);
+  // The worklet closes over the numbers only: the plan's texts stay on this thread.
+  const at = useMemo(() => skiaAt(plan), [plan]);
   const transform = useDerivedValue(() => {
-    const p = insideAt(plan, clock.value);
+    const p = insideAt(at, clock.value);
     return [{ translateX: p.x }, { translateY: p.y }];
   });
   const { crop } = plan;
