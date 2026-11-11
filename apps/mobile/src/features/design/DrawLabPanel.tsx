@@ -92,8 +92,8 @@ export function DrawLabPanel() {
             ))}
             <SwitchMeter />
             <SkiaSmoke />
-            {/* The capsule with Skia (theme/capsuleSkia.ts), while CAPSULE_SKIA is off. */}
-            <Chip label={tr.design.drawLab.skiaSwitch} on={skia} onPress={toggleLabSkia} />
+            {/* The capsule with Skia or the pictures while the panel is open (theme/capsuleSkia.ts). */}
+            <Chip label={tr.design.drawLab.skiaSwitch} on={skia === true} onPress={toggleLabSkia} />
           </>
         )}
       </View>

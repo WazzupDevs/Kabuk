@@ -101,6 +101,15 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 - Galeri: Kapsül ölçümü → `Skia yan yana`, 15 aksesuar koddan (`skiaAccessories`).
 - Doğrulanmadı (telefon yok, Skia native'i bu ortamda yok): Skia'nın SVG modülünün iç içe `clipPath`/`mask`'ı doğru çizmesi, çizim aynılığı, ölçüm, JS'ten `SharedValue.get()` ile saatin durduğu yerin okunması.
 
+## P7'nin sonuçları (11 Kasım)
+
+- **Sıra kararı (proje sahibi, 11 Kasım):** T2'den sonra önce P7. Proje sahibinin telefondaki gözlemi: yan yana galeride Skia çok akıcı, bugünkü çizim takılıyor. T2'nin sayıları (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T2, `skia-t2-olcum` dalında): büyük kapsülde Skia jank %0,03 (SVG, aynı koşulda %9,3 ve %16,2), p95 9 → 10 ve 10 → 11 ms, `Graphics` `kistakimi`'nda 108 → 128 MB.
+- **Anahtar:** `CAPSULE_SKIA = true`, yalnız Android (`CAPSULE_SKIA_OS`, `capsuleSkiaOn`): iPhone'da SVG ve Skia karşılaştırılmadı, iOS kare yolunda kalır; iPhone karşılaştırmasından sonra listeye `ios` eklenir.
+- **Kapsam:** yalnız Süsle'nin büyük kapsülü (`CapsuleStage`). `useSkiaInside('stage')` uygulamanın anahtarını, `'lab'` yalnız panelin anahtarını (Kapsül ölçümü'nün ızgarası; küçük avatarlar P9), `'always'` galeriyi okur.
+- **Panel:** Çizim ölçümü açıkken çizim yolunu yalnız panelin "Skia çizimi" anahtarı seçer (`capsulePainter(on, lab)`, panel kapalıyken `lab` null); panel uygulamanın çizdiği yolla açılır. Aynı telefonda iki yol ölçülmeye devam eder; büyük kapsülün SVG'si artık yalnız panel açıkken ölçülür.
+- **Karşılaştırmanın düzeltmeleri:** yok. T2'nin durağan görüntülerinde 15 aksesuarda şekil, renk ve yer aynı; proje sahibi çizim farkı bildirmedi.
+- Doğrulanmadı: bu değişiklik telefonda çalıştırılmadı (Süsle'nin anahtar açık hâli T2'de panelden ölçüldü, sabitle değil); Skia yüklenirken ilk karelerin kare yoluyla çizilip Skia'ya geçişi gözle bakılmadı; 12 avatarlı ızgarada Skia'nın kare süresi (p95 17 → 25 ms) P9'un konusudur.
+
 ## Skia'nın üçüncü taraf lisansları (11 Kasım)
 
 P5'ten önce okundu. Kaynak: `Shopify/react-native-skia` `v2.6.2` etiketi → `packages/skia/scripts/skia-configuration.ts` (derleme bayrakları), Skia'nın o etiketteki commit'i `4502f88` → `DEPS`, `gn/skia.gni` ve `BUILD.gn` (varsayılanlar, hangi kitaplığın bağlandığı). Lisans metinleri her kitaplığın GitHub'daki kendi deposundan, ana daldan okundu (`DEPS`'teki commit'ten değil; `googlesource.com` bu ortamdan açılmıyor). `dng_sdk` AOSP'nin bir GitHub aynasından (`GrapheneOS/platform_external_dng_sdk`, 1.4.0) okundu. `libskia.a`'nın içine gerçekten neyin girdiği ikiliden doğrulanmadı; liste derleme bayraklarından çıkarımdır.

@@ -20,8 +20,9 @@ type LabState = LabParts & {
   // Each tab opening while the panel is open (TabScene → markTabSwitch): the panel measures the
   // frames that follow.
   switches: number;
-  // The capsule's Skia drawing (theme/capsuleSkia.ts → CAPSULE_SKIA), on while the switch is off:
-  // Süsle's big capsule and the measure's grid, to compare with the pictures on the same phone.
+  // The capsule's Skia drawing while the panel is open (theme/capsuleSkia.ts → capsulePainter):
+  // Süsle's big capsule and the measure's grid, either way on the same phone. It opens as the app
+  // draws (CAPSULE_SKIA on this system).
   skia: boolean;
 };
 export const useDrawLab = create<LabState>(() => ({
@@ -41,8 +42,9 @@ export function labOff(part: DrawPart): boolean {
   return DRAW_LAB && partsOff(useDrawLab.getState()).includes(part);
 }
 
-export function useLabSkia(): boolean {
-  return useDrawLab((s) => DRAW_LAB && s.skia);
+// The panel's `skia` switch, null while the panel is closed (the app's own switch decides then).
+export function useLabSkia(): boolean | null {
+  return useDrawLab((s) => (DRAW_LAB && s.open ? s.skia : null));
 }
 
 export function toggleLabSkia() {
@@ -64,10 +66,13 @@ export function markTabSwitch() {
 const DRAW_STEP_MS = 5000;
 let timers: ReturnType<typeof setTimeout>[] = [];
 
-export function openDrawLab(open: boolean) {
+// `skia`: what the app draws the capsule with (the caller reads theme/capsuleSkia.ts: this file is
+// on the launch's path and does not import the drawings).
+export function openDrawLab(open: boolean, skia = false) {
   stopDrawLab();
-  // Closing the panel turns every part back on (and the Skia drawing off).
-  useDrawLab.setState(open ? { open } : { open, manual: [], skia: false });
+  // Closing the panel turns every part back on (and gives the Skia drawing back to the app's
+  // switch); opening it starts from what the app draws.
+  useDrawLab.setState(open ? { open, skia } : { open, manual: [], skia: false });
 }
 
 export function startDrawLab() {

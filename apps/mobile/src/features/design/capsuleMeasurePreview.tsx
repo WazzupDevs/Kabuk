@@ -136,7 +136,7 @@ function noop() {}
 // them (useSkiaInside's one import) and the twelve share one plan, one mask and one content
 // (components/FxSkia.tsx → planOf, svgOf).
 function Grid() {
-  const inside = useSkiaInside();
+  const inside = useSkiaInside('lab');
   return (
     <FxMoves>
       <View
@@ -168,7 +168,7 @@ const SIDE_HEIGHT = (SIDE * 57) / 60;
 const NAMES = new Map(GIFT_CATALOG.accessories.map((a) => [a.id, a.name]));
 
 function Gallery() {
-  const inside = useSkiaInside(true);
+  const inside = useSkiaInside('always');
   const ids = useMemo(() => skiaAccessories(), []);
   const d = tr.design.drawLab;
   return (
