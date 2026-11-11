@@ -14,19 +14,19 @@ Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başl
 | P4  | Görünen avatar hareket eder (M1-10), Süsle karoları (M3-06), Süsle küçükleri                        | OTA          | Sonnet   | Birleşti, #562; M15-30 ve Süsle karoları telefonda bakılacak                  |
 | T1  | Ölçüm tekrarı                                                                                       | Telefon      | —        | Tamamlandı, #563 (Galaxy S23; `docs/denetim/olcum-protokolu.md` → T1)         |
 | P5  | Native: Skia 2.6.2, `version` 0.11.0, `ShadowPictures` `onTrimMemory`                               | Build        | Opus     | Birleşti, #564                                                                |
-| P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri; panelde 12 avatarlı ızgara | 0.11.0'a OTA | Opus     | PR açık                                                                       |
-| T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                                        | Telefon      | —        | P6'yı bekler                                                                  |
-| P7  | Düzeltmeler; anahtar Süsle'de açılır                                                                | OTA          | Sonnet   | Açık                                                                          |
-| P8  | Açılan kart ve profil bileti                                                                        | OTA          | Sonnet   | Açık                                                                          |
+| P6  | Skia çizicisi, anahtar kapalı; Süsle'nin büyük kapsülü; yan yana galeri; panelde 12 avatarlı ızgara | 0.11.0'a OTA | Opus     | Birleşti, #565                                                                |
+| T2  | 0.11.0 build'i (Android, iOS), yan yana karşılaştırma, ölçüm                                        | Telefon      | —        | Açık: build alınacak                                                          |
+| P7  | Düzeltmeler; anahtar Süsle'de açılır                                                                | OTA          | Sonnet   | T2 sonrası karar                                                              |
+| P8  | Açılan kart ve profil bileti                                                                        | OTA          | Sonnet   | T2 sonrası karar                                                              |
 | P9  | Küçük avatarlarda Skia                                                                              | —            | —        | T1 ve T2'ye göre karar                                                        |
 
-### Devir notu (11 Kasım 2026, Skia T1 sonrası)
+### Devir notu (11 Kasım 2026, Skia P6 sonrası)
 
-- P3 (#561: `FxInside`, kare başına kırpma) ve P4 (#562) birleşti; T1 ölçüldü (#563, Galaxy S23, 0.10.0 build 20).
-- T1, T0'a göre: `kistakimi` p95 9 → 6 ms, jank %7,5 → %1,7; `gokkusagiatki` 30 sn'de 254 → 3080 kare, p95 200 → 10 ms, `Graphics` 239 → 117 MB; 12 avatarlı ızgara p95 21 → 15 ms, TOTAL PSS 947 → 698 MB ama jank hâlâ %76 (P9 kararının girdisi). Yırtma penceresinde kare sayısı 554 → 300; nedeni bakılmadı.
-- Sıradaki: P5 (native, Opus; `docs/decisions/skia-build-plani.md` → Build). Birleşince OTA yalnız 0.11.0 build'ine gider: proje sahibi build almaya hazırken birleşir; önce Skia'nın üçüncü taraf lisans listesi okunur.
-- Telefonda bakılacaklar açık: M15-46/1, M3-09 (P2), M15-30 ve Süsle karoları (P4), 15 aksesuarın kırpılmış karelerinin görünüşü (P3).
-- Tuzaklar: gizli içerik kapısı ana kopyada `.claude/worktrees/` altını okuyamaz (ajan commit'i worktree içinden; ana kopyada `.git/info/exclude`); UI iş parçacığından çağrılan saf fonksiyon `'worklet'` ister ve yalnız sabit varsayılan alır (`theme/worklets.test.ts`).
+- P5 (#564: Skia 2.6.2, `version` 0.11.0) ve P6 (#565: Skia çizicisi, `CAPSULE_SKIA` kapalı; panelde "Skia çizimi" anahtarı, "Skia yan yana" galerisi, ızgaranın Skia'lı hâli) birleşti. Lisans listesi ve `dng_sdk` kararı plan belgesinde. Skia hiçbir telefonda çalıştırılmadı.
+- Sıradaki: T2 (proje sahibi): 0.11.0 build'i (Android `preview`, iOS `testflight`), sonra ölçüm (`docs/denetim/olcum-protokolu.md` → Kapsül ölçümü; her sahne anahtar kapalı ve açık, 4. sahne dahil) ve galeride 15 aksesuarın göz karşılaştırması. Ölçüm dalı gelince orkestra kanıtı kişisel veri ve sır için tarar, PR'ı açar.
+- T2'den sonra, P7'den önce proje sahibiyle birlikte değerlendirilir: P7, P8 ve P9'un sırası (ana soru çok avatarlı ekran: T1'de 12 avatarlı ızgarada takılma %76) ve gelecek tasarımlar için performans prensipleri (bütçe, boya göre kademe, içerik sayım testi; öneri sohbette verildi, karar yok).
+- Telefonda bakılacaklar açık: M15-46/1, M3-09 (P2), M15-30 ve Süsle karoları (P4), kırpılmış kareler (P3); Skia'da iç içe klipli üç takım (`kistakimi`, `buyucutakimi`, `korsantakimi`), `gokkusagiatki`'de iki saatin kayması, release'te açılış (R8 kuralı eklenmedi).
+- Tuzaklar: gizli içerik kapısı ana kopyada `.claude/worktrees/` altını okuyamaz (ajan commit'i worktree içinden; ana kopyada `.git/info/exclude`); paketler kök `node_modules`'tadır (hoisted); `git fetch origin main` ile push aynı komutta olursa hook durdurur; açık kaynak bildirimleri ekranı yok (mağaza öncesi ayrı iş).
 
 ## Devir notu (9 Kasım 2026, canlı öncesi denetim)
 
