@@ -1,5 +1,6 @@
 package expo.modules.skallglass
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.view.WindowInsetsController
@@ -12,8 +13,23 @@ import expo.modules.kotlin.modules.ModuleDefinition
 // owner's call), a tab screen's arrival blurs and clears (DissolveView), and soft shadows are drawn
 // from pictures made once (ShadowView).
 class SkallGlassModule : Module() {
+  // Where the shadow pictures' memory callbacks were registered, so they are removed from the same.
+  private var trimContext: Context? = null
+
   override fun definition() = ModuleDefinition {
     Name("SkallGlass")
+
+    // Once per module: the shadow pictures let go of their memory under pressure (ShadowPictures).
+    OnCreate {
+      val context = appContext.reactContext?.applicationContext ?: return@OnCreate
+      context.registerComponentCallbacks(ShadowPictures.trimCallbacks)
+      trimContext = context
+    }
+
+    OnDestroy {
+      trimContext?.unregisterComponentCallbacks(ShadowPictures.trimCallbacks)
+      trimContext = null
+    }
 
     // The navigation buttons dark on a light screen, light on a dark one: Android no longer shades
     // their strip (app.config.ts → withClearNavigationBar), so their colour follows the app's theme.

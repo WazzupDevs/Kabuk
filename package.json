@@ -46,6 +46,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@shopify/react-native-skia",
       "supabase"
     ],
     "peerDependencyRules": {

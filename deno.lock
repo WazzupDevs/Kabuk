@@ -94,6 +94,7 @@
             "npm:@maplibre/maplibre-react-native@11.4.0",
             "npm:@react-native-async-storage/async-storage@2.2.0",
             "npm:@sentry/react-native@7.11",
+            "npm:@shopify/react-native-skia@2.6.2",
             "npm:@supabase/supabase-js@^2.117.1",
             "npm:@tanstack/react-query@^5.103.2",
             "npm:@types/geojson@^7946.0.16",
