@@ -20,12 +20,16 @@ type LabState = LabParts & {
   // Each tab opening while the panel is open (TabScene → markTabSwitch): the panel measures the
   // frames that follow.
   switches: number;
+  // The capsule's Skia drawing (theme/capsuleSkia.ts → CAPSULE_SKIA), on while the switch is off:
+  // Süsle's big capsule and the measure's grid, to compare with the pictures on the same phone.
+  skia: boolean;
 };
 export const useDrawLab = create<LabState>(() => ({
   open: false,
   step: null,
   manual: [],
   switches: 0,
+  skia: false,
 }));
 
 export function useLabOff(part: DrawPart): boolean {
@@ -35,6 +39,15 @@ export function useLabOff(part: DrawPart): boolean {
 // The same outside a render (a listener reads it when it runs).
 export function labOff(part: DrawPart): boolean {
   return DRAW_LAB && partsOff(useDrawLab.getState()).includes(part);
+}
+
+export function useLabSkia(): boolean {
+  return useDrawLab((s) => DRAW_LAB && s.skia);
+}
+
+export function toggleLabSkia() {
+  if (!DRAW_LAB) return;
+  useDrawLab.setState((s) => ({ skia: !s.skia }));
 }
 
 export function toggleLabPart(part: DrawPart) {
@@ -53,8 +66,8 @@ let timers: ReturnType<typeof setTimeout>[] = [];
 
 export function openDrawLab(open: boolean) {
   stopDrawLab();
-  // Closing the panel turns every part back on.
-  useDrawLab.setState(open ? { open } : { open, manual: [] });
+  // Closing the panel turns every part back on (and the Skia drawing off).
+  useDrawLab.setState(open ? { open } : { open, manual: [], skia: false });
 }
 
 export function startDrawLab() {

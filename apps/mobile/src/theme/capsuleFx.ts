@@ -448,7 +448,7 @@ export function valueAt(motion: FxMotion, prop: FxProp, t: number): number {
 }
 
 // Where the cycle stands when its clock (0…1 every `ms`) is at 0.
-function phaseOf(motion: FxMotion): number {
+export function phaseOf(motion: FxMotion): number {
   const p = -(motion.delay ?? 0) / motion.ms;
   return p - Math.floor(p);
 }

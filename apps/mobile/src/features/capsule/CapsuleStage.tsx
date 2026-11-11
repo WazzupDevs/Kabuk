@@ -18,6 +18,7 @@ import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg } from '@/components/FxSvg';
+import { useSkiaInside } from '@/components/skiaInside';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
@@ -70,6 +71,9 @@ export function CapsuleStage({
   const { colors, shape } = useTheme();
   const shadowOff = useLabOff('golge');
   const reduce = useReduceMotion();
+  // The one choice of the Skia drawing (components/skiaInside.ts): undefined while it is off, and
+  // then the drawing is the pictures' as it always was.
+  const inside = useSkiaInside();
   const unit = size / STAGE.circle;
   const ring = ringWidth ?? SPACING[1.5];
   // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
@@ -183,11 +187,19 @@ export function CapsuleStage({
           >
             {discShadow.node}
             <Reanimated.View style={[figure, moveStyle]}>
-              <FxSvg xml={xml} width={figure.width} height={figure.height} />
+              {inside ? (
+                <FxSvg xml={xml} width={figure.width} height={figure.height} inside={inside} />
+              ) : (
+                <FxSvg xml={xml} width={figure.width} height={figure.height} />
+              )}
             </Reanimated.View>
             {oldXml ? (
               <Reanimated.View pointerEvents="none" style={[figure, fadeStyle]}>
-                <FxSvg xml={oldXml} width={figure.width} height={figure.height} />
+                {inside ? (
+                  <FxSvg xml={oldXml} width={figure.width} height={figure.height} inside={inside} />
+                ) : (
+                  <FxSvg xml={oldXml} width={figure.width} height={figure.height} />
+                )}
               </Reanimated.View>
             ) : null}
           </Reanimated.View>

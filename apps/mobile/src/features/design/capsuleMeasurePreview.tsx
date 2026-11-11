@@ -1,17 +1,21 @@
-import { useEffect, useState } from 'react';
+import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
+import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
 import { useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
-import { FxMoves } from '@/components/FxSvg';
+import { FxMoves, FxSvg } from '@/components/FxSvg';
 import { LookAvatar } from '@/components/LookAvatar';
+import { useSkiaInside } from '@/components/skiaInside';
 import { Text } from '@/components/Text';
 import { CapsuleStage } from '@/features/capsule/CapsuleStage';
 import { tr } from '@/i18n/tr';
 import { DRAW_LAB } from '@/lib/drawLab';
 import { type SwitchStats, switchStats } from '@/lib/frameStats';
 import { KIT } from '@/theme/auraKit';
+import { lookPop } from '@/theme/capsuleLook';
+import { skiaAccessories } from '@/theme/capsuleSkia';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -20,11 +24,15 @@ import { PreviewBlock } from './PreviewBlock';
 // Bileşen önizleme → Kapsül ölçümü: the capsule's drawing cost on the owner's phone, the same
 // scenes every time (adb `dumpsys gfxinfo` and `meminfo` read alongside). The scenes carry their own
 // looks, so they never depend on what the account owns. Preview builds and development only: with
-// DRAW_LAB off the set draws nothing.
-type Scene = 'bare' | 'winter' | 'rainbow' | 'grid';
-const SCENES: readonly Scene[] = ['bare', 'winter', 'rainbow', 'grid'];
+// DRAW_LAB off the set draws nothing. `skia`: the accessories that move inside a clip side by side,
+// the pictures and Skia (docs/decisions/skia-build-plani.md → P6). The big capsule and the grid take
+// Skia with Çizim ölçümü's `skia` switch (CapsuleStage, Grid).
+type Scene = 'bare' | 'winter' | 'rainbow' | 'grid' | 'skia';
+const SCENES: readonly Scene[] = ['bare', 'winter', 'rainbow', 'grid', 'skia'];
+const sceneName = (s: Scene) =>
+  s === 'skia' ? tr.design.drawLab.skiaGallery : tr.design.capsuleMeasure.scenes[s];
 
-const LOOKS: Record<Exclude<Scene, 'grid'>, string> = {
+const LOOKS: Record<Exclude<Scene, 'grid' | 'skia'>, string> = {
   bare: 'c:pembe e:koyu',
   winter: 'c:pembe e:koyu x:kistakimi',
   rainbow: 'c:pembe e:koyu x:gokkusagiatki',
@@ -58,7 +66,7 @@ export function CapsuleMeasureSet() {
             key={s}
             size="sm"
             variant={s === scene ? 'primary' : 'neutral'}
-            label={t.scenes[s]}
+            label={sceneName(s)}
             testID={`capsule-measure-${s}`}
             disabled={meter.running}
             onPress={() => setScene(s)}
@@ -88,8 +96,8 @@ export function CapsuleMeasureSet() {
             : t.none}
         </Text>
       </View>
-      <PreviewBlock title={t.scenes[scene]}>
-        {scene === 'grid' ? <Grid /> : <Big look={LOOKS[scene]} />}
+      <PreviewBlock title={sceneName(scene)}>
+        {scene === 'grid' ? <Grid /> : scene === 'skia' ? <Gallery /> : <Big look={LOOKS[scene]} />}
       </PreviewBlock>
     </View>
   );
@@ -123,7 +131,12 @@ function Big({ look }: { look: string }) {
 
 function noop() {}
 
+// The grid of T1 (twelve, the same size and places); with the `skia` switch each avatar draws its
+// motion with Skia, a canvas each, as a real screen's avatars would. Skia is loaded once for all of
+// them (useSkiaInside's one import) and the twelve share one plan, one mask and one content
+// (components/FxSkia.tsx → planOf, svgOf).
 function Grid() {
+  const inside = useSkiaInside();
   return (
     <FxMoves>
       <View
@@ -139,11 +152,53 @@ function Grid() {
               marginBottom: GRID_GAP,
             }}
           >
-            <LookAvatar look={GRID_LOOK} size={GRID_AVATAR} />
+            <LookAvatar look={GRID_LOOK} size={GRID_AVATAR} inside={inside} />
           </View>
         ))}
       </View>
     </FxMoves>
+  );
+}
+
+// Each accessory that moves inside a clip on Süsle's stage drawing (lookPop), its name over it: on
+// the left the pictures in turn, on the right Skia, the same size. The list is the drawings' own
+// (theme/capsuleSkia.ts → skiaAccessories). Skia loads whatever the switch says.
+const SIDE = KIT.size.capsuleStage / 2;
+const SIDE_HEIGHT = (SIDE * 57) / 60;
+const NAMES = new Map(GIFT_CATALOG.accessories.map((a) => [a.id, a.name]));
+
+function Gallery() {
+  const inside = useSkiaInside(true);
+  const ids = useMemo(() => skiaAccessories(), []);
+  const d = tr.design.drawLab;
+  return (
+    <FxMoves>
+      <View className="gap-4" testID="capsule-measure-skia">
+        <Text variant="fine" tone="muted">
+          {inside ? d.skiaSides : d.skiaLoading}
+        </Text>
+        {ids.map((id) => (
+          <SideBySide key={id} id={id} inside={inside} />
+        ))}
+      </View>
+    </FxMoves>
+  );
+}
+
+function SideBySide({ id, inside }: { id: string; inside: ReturnType<typeof useSkiaInside> }) {
+  const xml = useMemo(() => lookPop(`c:pembe e:koyu x:${id}`), [id]);
+  return (
+    <View className="gap-2">
+      <Text variant="bodyStrong">{NAMES.get(id) ?? id}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+        <FxSvg xml={xml} width={SIDE} height={SIDE_HEIGHT} />
+        {inside ? (
+          <FxSvg xml={xml} width={SIDE} height={SIDE_HEIGHT} inside={inside} />
+        ) : (
+          <View style={{ width: SIDE, height: SIDE_HEIGHT }} />
+        )}
+      </View>
+    </View>
   );
 }
 

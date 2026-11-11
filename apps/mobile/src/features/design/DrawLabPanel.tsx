@@ -12,7 +12,9 @@ import {
   startDrawLab,
   SWITCH_PARTS,
   toggleLabPart,
+  toggleLabSkia,
   useDrawLab,
+  useLabSkia,
 } from '@/lib/drawLab';
 import { type SwitchStats, switchStats } from '@/lib/frameStats';
 import { MOTION } from '@/theme/aura';
@@ -26,6 +28,7 @@ export function DrawLabPanel() {
   const open = useDrawLab((s) => s.open);
   const step = useDrawLab((s) => s.step);
   const manual = useDrawLab((s) => s.manual);
+  const skia = useLabSkia();
   const insets = useSafeAreaInsets();
   const { c } = useKit();
   if (!DRAW_LAB || !open) return null;
@@ -89,6 +92,8 @@ export function DrawLabPanel() {
             ))}
             <SwitchMeter />
             <SkiaSmoke />
+            {/* The capsule with Skia (theme/capsuleSkia.ts), while CAPSULE_SKIA is off. */}
+            <Chip label={tr.design.drawLab.skiaSwitch} on={skia} onPress={toggleLabSkia} />
           </>
         )}
       </View>
