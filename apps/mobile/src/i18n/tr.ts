@@ -2323,7 +2323,10 @@ export const tr = {
         winter: 'Büyük, kış takımı',
         rainbow: 'Büyük, gökkuşağı atkı',
         grid: 'Izgara, 12 avatar',
+        gridOne: 'Izgara, tek Canvas',
       },
+      // Izgara, tek Canvas: a layer of the look that one canvas cannot draw (capsuleCanvas.ts).
+      gridOneSkipped: 'Bu kapsülün bir katmanı tek Canvas’ta çizilemiyor, avatarlar çizilmedi.',
       hint: 'Sahneyi seç, Ölç’e bas, 30 sn dokunmadan bekle.',
       measure: 'Ölç (30 sn)',
       measuring: (left: number) => `Ölçülüyor, ${left} sn`,
