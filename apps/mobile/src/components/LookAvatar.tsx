@@ -2,12 +2,10 @@ import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { createLru } from '@/lib/lru';
-import { stillSvg } from '@/theme/capsuleFx';
 import { lookSvg } from '@/theme/capsuleLook';
 
-import { readAhead } from './CachedSvg';
 import { useChatMovers, useChatScrolling } from './chatScrolling';
-import { FxSvg, type InsidePainter } from './FxSvg';
+import { FxSvg, type InsidePainter, readStillAhead } from './FxSvg';
 
 // A look's avatar drawing, made once (the options of Kapsülünü süsle make the same ones again and
 // again as the person moves between tabs).
@@ -21,9 +19,10 @@ function avatarSvg(look: string): string {
   return xml;
 }
 
-// Reads a look's avatar ahead, still as a list shows it, so that it shows with nothing left to read.
+// Reads a look's avatar ahead, still as a list shows it, so that it shows with nothing left to read
+// (FxSvg's still text too, which a still avatar reads first).
 export function readLookAhead(look: string): void {
-  readAhead(stillSvg(avatarSvg(look)));
+  readStillAhead(avatarSvg(look));
 }
 
 // The person's own capsule from its stored look (skall tuvali, Profil: "Kapsülün"), drawn by the

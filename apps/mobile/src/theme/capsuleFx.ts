@@ -576,6 +576,11 @@ export function placeOf(box: FxBox, width: number, height: number): FxPlace {
   return { unit, dx: (width - bw * unit) / 2, dy: (height - bh * unit) / 2, bx, by };
 }
 
+// A place's cache key, with the pixel ratio (insideCuts and cropOf read both).
+export function placeKey(place: FxPlace, ratio: number): string {
+  return `${ratio}|${place.unit}|${place.dx}|${place.dy}|${place.bx}|${place.by}`;
+}
+
 // A clip's box on the screen, grown out to whole pixels (`ratio` pixels a point) so that the cut
 // picture stands where the whole one drew it and shows no seam: its view (points) and the viewBox
 // that draws the drawing at the same scale in it.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { FX, type FxInside, type FxLayer, framesOf, fxTree, placeOf } from './capsuleFx';
-import { lookPop, lookSvg } from './capsuleLook';
+import { FX, type FxInside, type FxLayer, framesOf, fxTree, placeKey, placeOf } from './capsuleFx';
+import { FEELINGS, lookPop, lookSvg } from './capsuleLook';
 import {
   CAPSULE_SKIA,
   CAPSULE_SKIA_OS,
@@ -14,7 +14,9 @@ import {
   insideCurve,
   insideMaskSvg,
   insidePlan,
+  insidePlanKey,
   skiaAccessories,
+  skiaAt,
 } from './capsuleSkia';
 import { defBox, multiply } from './svgBox';
 
@@ -207,5 +209,53 @@ describe('the clock', () => {
     expect(clockLead(0, 3000)).toBeNull();
     expect(clockLead(1, 3000)).toBeNull();
     expect(clockLead(0.25, 3000)).toBe(2250);
+  });
+});
+
+describe('the caches', () => {
+  const pop = (id: string, emo = '') => lookPop(`c:pembe e:koyu x:${id}`, emo);
+  const layerOf = (svg: string) => {
+    const tree = fxTree(svg);
+    if (!tree) throw new Error(svg);
+    const layer = insides(tree.layers)[0];
+    if (!layer) throw new Error(svg);
+    return { tree, layer };
+  };
+
+  // Why CapsuleStage keeps lookPop's text (popOf): the drawing library names its clip anew each
+  // time, so the same look drawn again is another text, and every cache keyed on it misses.
+  it('lookPop makes another text for the same look each time', () => {
+    expect(pop('kistakimi')).not.toBe(pop('kistakimi'));
+  });
+
+  it('keys a plan by everything it reads: equal keys, equal plans', () => {
+    const svg = pop('kistakimi');
+    const a = layerOf(svg);
+    const b = layerOf(svg);
+    const place = placeOf(a.tree.box, 219, 208);
+    expect(insidePlanKey(a.layer, place, 3)).toBe(insidePlanKey(b.layer, { ...place }, 3));
+    expect(insidePlan(a.layer, place, 3)).toEqual(insidePlan(b.layer, place, 3));
+  });
+
+  it('tells apart another size, ratio, accessory or feeling', () => {
+    const { tree, layer } = layerOf(pop('kistakimi'));
+    const place = placeOf(tree.box, 219, 208);
+    const key = insidePlanKey(layer, place, 3);
+    expect(insidePlanKey(layer, placeOf(tree.box, 56, 56), 3)).not.toBe(key);
+    expect(insidePlanKey(layer, place, 2)).not.toBe(key);
+    expect(insidePlanKey(layerOf(pop('buyucutakimi')).layer, place, 3)).not.toBe(key);
+    const happy = layerOf(pop('kistakimi', FEELINGS[0]?.[0] ?? ''));
+    expect(insidePlanKey(happy.layer, place, 3)).not.toBe(key);
+    expect(placeKey(place, 3)).not.toBe(placeKey(place, 2));
+    expect(placeKey(place, 3)).toBe(placeKey({ ...place }, 3));
+  });
+
+  it("gives the UI thread the plan's numbers only, which place it as the plan does", () => {
+    const { tree, layer } = layerOf(pop('kistakimi'));
+    const plan = insidePlan(layer, placeOf(tree.box, 219, 208), 3);
+    if (!plan) throw new Error('no plan');
+    const at = skiaAt(plan);
+    expect(Object.keys(at).sort()).toEqual(['a', 'b', 'c', 'curve', 'd', 'x', 'y']);
+    for (const t of [0, 0.1, 0.37, 0.5, 0.99]) expect(insideAt(at, t)).toEqual(insideAt(plan, t));
   });
 });

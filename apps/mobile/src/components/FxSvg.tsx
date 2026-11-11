@@ -9,22 +9,25 @@ import {
 import { Animated, Easing, PixelRatio, StyleSheet, View } from 'react-native';
 
 import { useLoopActive } from '@/components/Loader';
-import { createLru } from '@/lib/lru';
+import { createLru, type Lru } from '@/lib/lru';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import {
   FX,
+  type FxCut,
   type FxInside,
   type FxLayer,
   type FxPlace,
   type FxProp,
+  type FxTree,
   fxTree,
   insideCuts,
+  placeKey,
   placeOf,
   sampled,
   stillSvg,
 } from '@/theme/capsuleFx';
 
-import { CachedSvg } from './CachedSvg';
+import { CachedSvg, readAhead } from './CachedSvg';
 
 // A drawing whose pack accessories move (theme/capsuleFx.ts; docs/SPEC_V4.md §4.U): it is cut into
 // layers once, each drawn once; a moving layer is a picture moved on the native driver (as the
@@ -175,6 +178,72 @@ function stillOf(xml: string): string {
   return made;
 }
 
+// fxTree's result for a text, made once: the same drawing mounted again (the old look fading out
+// over the new one in Kapsülünü süsle, a look read ahead) cuts nothing again. Its layers are the
+// same objects then, which insideCuts' cache below keys on.
+const trees = createLru<{ tree: FxTree | null }>(32);
+function treeOf(xml: string): FxTree | null {
+  const hit = trees.get(xml);
+  if (hit !== undefined) return hit.tree;
+  const tree = fxTree(xml);
+  trees.set(xml, { tree });
+  return tree;
+}
+
+// insideCuts' result for a layer at a place, made once (a layer's few places: its sizes).
+const PLACES = 4;
+const cuts = new WeakMap<FxInside, Lru<FxCut[]>>();
+function cutsOf(layer: FxInside, place: FxPlace, ratio: number): FxCut[] {
+  let of = cuts.get(layer);
+  if (!of) {
+    of = createLru<FxCut[]>(PLACES);
+    cuts.set(layer, of);
+  }
+  const key = placeKey(place, ratio);
+  const hit = of.get(key);
+  if (hit !== undefined) return hit;
+  const made = insideCuts(layer, place, ratio);
+  of.set(key, made);
+  return made;
+}
+
+// Reads a drawing ahead, in idle time, as FxSvg will draw it at this size (`moving`: in FxMoves and
+// not with reduce motion), so that showing it later has nothing left to read: its still pictures,
+// and each motion inside a clip by `prepare` (Skia's, skiaInside.ts) or as its pictures in turn.
+export function readFxAhead(
+  xml: string,
+  width: number,
+  height: number,
+  moving: boolean,
+  prepare?: (layer: FxInside, place: FxPlace) => void,
+): void {
+  if (!moving || !xml.includes(' data-fx="')) {
+    readAhead(stillOf(xml));
+    return;
+  }
+  const tree = treeOf(xml);
+  if (!tree) {
+    readAhead(xml);
+    return;
+  }
+  const place = placeOf(tree.box, width, height);
+  const ratio = PixelRatio.get();
+  const walk = (layers: readonly FxLayer[]) => {
+    for (const l of layers) {
+      if (l.kind === 'still') readAhead(l.xml);
+      else if (l.kind === 'move') walk(l.layers);
+      else if (prepare) prepare(l, place);
+      else for (const f of cutsOf(l, place, ratio)) readAhead(f.xml);
+    }
+  };
+  walk(tree.layers);
+}
+
+// Reads a still drawing ahead, as FxSvg draws it still (a list's avatar).
+export function readStillAhead(xml: string): void {
+  readAhead(stillOf(xml));
+}
+
 function MovingSvg({
   xml,
   width,
@@ -191,7 +260,7 @@ function MovingSvg({
   inside: InsidePainter | undefined;
 }) {
   const active = useLoopActive();
-  const tree = useMemo(() => fxTree(xml), [xml]);
+  const tree = useMemo(() => treeOf(xml), [xml]);
   if (!tree) return <CachedSvg xml={xml} width={width} height={height} />;
   // The box drawn as react-native-svg draws it (meet, in the middle).
   const place = placeOf(tree.box, width, height);
@@ -337,7 +406,7 @@ function Move({
 export function Inside({ layer, place, on, lane }: InsideProps) {
   const motion = FX[layer.fx];
   const clock = useClock(motion?.ms ?? 1000, on && motion !== undefined, lane);
-  const cuts = useMemo(() => insideCuts(layer, place, PixelRatio.get()), [layer, place]);
+  const cuts = useMemo(() => cutsOf(layer, place, PixelRatio.get()), [layer, place]);
   const shown = useMemo(
     () =>
       cuts.map((f) => {

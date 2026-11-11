@@ -23,7 +23,8 @@ import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
-import { CapsuleStage, type Play } from '@/features/capsule/CapsuleStage';
+import { useSkiaKit } from '@/components/skiaInside';
+import { CapsuleStage, type Play, readStageAhead } from '@/features/capsule/CapsuleStage';
 import {
   accessories,
   bare,
@@ -37,6 +38,7 @@ import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/moti
 import { OptionCarousel } from '@/features/capsule/OptionCarousel';
 import { chosenIn, shownIn, slotOptions } from '@/features/capsule/options';
 import { OptionsSheet } from '@/features/capsule/OptionsSheet';
+import { stageAhead, tileOrder } from '@/features/capsule/readAhead';
 import { TierTag } from '@/features/gifts/parts';
 import { giftKeys, useGiftState } from '@/features/gifts/queries';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
@@ -196,25 +198,42 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const flat = current?.flat ?? [];
   const chosen = chosenIn(slot, look, flat);
   const chosenOption = flat[chosen] ?? null;
-  // Every tile read ahead in idle time, a few at a time, so that a slot opens with nothing left to
-  // read (the owner's report, 7 Kasım: Kapsülünü süsle stuttered).
+  const stage = KIT.size.capsuleStage;
+  const stageSize = stage - KIT.size.capsuleRing * 2;
+  // Skia's own reading ahead while it draws the big capsule (components/skiaInside.ts: the same
+  // one load as the stage's).
+  const prepare = useSkiaKit()?.prepare;
+  // Read ahead in idle time, a few at a time, while the idle turn lasts: first the big capsule as
+  // the options next to the chosen one would draw it (its layers, and Skia's plan and SVGs), so that
+  // choosing one draws with nothing left to read (the owner's report, 11 Kasım: a suit's first
+  // choice stalled); then every tile, the open slot's from the chosen one outwards, so that a slot
+  // opens with nothing left to read (the owner's report, 7 Kasım: Kapsülünü süsle stuttered).
   useEffect(() => {
     if (!ready) return undefined;
-    const looks = options.flatMap((s) => s.flat.map((o) => o.tile));
-    let at = 0;
+    const row = options.find((s) => s.id === slot)?.flat ?? [];
+    const at = chosenIn(slot, look, row);
+    const near = stageAhead(row.length, at).flatMap((i) => {
+      const o = row[i];
+      return o ? [code(o.apply(look))] : [];
+    });
+    const jobs: (() => void)[] = [
+      ...near.map((next) => () => readStageAhead(next, stageSize, !reduce, prepare)),
+      ...tileOrder(options, slot, at).map((o) => () => readLookAhead(o.tile)),
+    ];
+    let next = 0;
     let handle = 0;
-    const step = () => {
-      for (const end = Math.min(at + READ_AHEAD, looks.length); at < end; at++) {
-        const next = looks[at];
-        if (next) readLookAhead(next);
-      }
-      if (at < looks.length) handle = requestIdleCallback(step);
+    const step = (deadline: IdleDeadline) => {
+      const end = Math.min(next + READ_AHEAD, jobs.length);
+      do {
+        jobs[next]?.();
+        next++;
+      } while (next < end && deadline.timeRemaining() > 0);
+      if (next < jobs.length) handle = requestIdleCallback(step);
     };
     handle = requestIdleCallback(step);
     return () => cancelIdleCallback(handle);
-  }, [ready, options]);
+  }, [ready, options, slot, look, stageSize, reduce, prepare]);
   const ringColor = scheme === 'dark' ? c.glass : colors.surface;
-  const stage = KIT.size.capsuleStage;
   const floorBlur = KIT.size.capsuleFloorBlur;
 
   return (
@@ -308,12 +327,13 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               feeling={feeling}
               play={play}
               beat={beat}
-              size={stage - KIT.size.capsuleRing * 2}
+              size={stageSize}
               ring={KIT.size.capsuleRing}
               ringColor={ringColor}
               label={tr.capsule.tapHead}
               hint={null}
               onPress={feel}
+              warm={ready}
             />
           </FxMoves>
           {/* The soft floor the capsule stands on. */}
