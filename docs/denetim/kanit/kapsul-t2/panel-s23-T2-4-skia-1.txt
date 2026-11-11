@@ -1,0 +1,1 @@
+Ekran p50 8.3 ms · p95 16.7 ms · takılma %21.7 · JS p95 24.7 ms
