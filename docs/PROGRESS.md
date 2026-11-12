@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (12 Kasım 2026): ortak tasarım ve hareket dili
+
+- Paket: `docs/design/iskelet.md` (kurallar), `docs/decisions/iskelet.md` (karar, teslim sırası, açık iki soru). Yeni oturum aynı iş paketiyle açılır ve teslim sırasının 1. adımından sürer: `MOTION` eklemeleri (`aura.test.ts` ve `hareket.json` eşitliği), `src/motion` kiti, cam `Btn`, styleGuard yasakları; sonra ekranlar 5.1–5.11, sonra bölüm 6.
+- Cevap bekleyen: 5.6 "Birlikte oynanan oyunlar" (kural 4 ve K-75 ile çelişiyor), 5.10'da 11 Kasım'ın ölçüm kuralı. Cevap gelmeden bu ikisi yazılmaz.
+- Açık PR: #576 (`tuval-goruntu` işi; proje sahibinin "onaylandı"sını bekliyor). Skia tarafı aşağıdaki devir notunda duruyor: #572'nin telefondaki sonucu ve iki ölçüm dalı (`olcum/susle-gecis`, `olcum/pil-isi`) bekleniyor; 4b sahnesi (tek Canvas'lı ızgara, #574) ölçülmedi.
+- skall OS (#575): iki tasarım ajanı, dört yordam, Atölye; kullanım `docs/skall-os/INSTALLATION_REPORT.md`.
+
 ## Skia build'i (10 Kasım 2026; plan `docs/decisions/skia-build-plani.md`)
 
 Orkestra oturumu paketleri sırayla yürütür; yeni oturum aynı promptla başlar, tablodaki ilk "Açık" satırdan sürer. T satırları proje sahibinin telefon adımıdır (`docs/denetim/olcum-protokolu.md` → Kapsül ölçümü).

@@ -1,5 +1,7 @@
 # Riso düğmeler (8 Kasım 2026)
 
+> **Geçersiz (12 Kasım 2026).** Düğmelerin hepsi cam oldu: `docs/design/iskelet.md` → 2.1, karar `docs/decisions/iskelet.md`. Riso çizimlerde ve kankilerde kalır. Aşağısı tarihçedir; koddaki riso düğme, cam `Btn` birleşene kadar durur.
+
 **Karar (proje sahibi, 8 Kasım; önizlemede öneri A):** uygulamanın düğmeleri riso baskı dilinde. Ortak `Btn`'de (`src/aura/kit.tsx`); ekran başına iş yok, yeni ekran da böyle gelir.
 
 - Ana: yeşil mürekkep (`KIT.riso.ink`), altında pembe (`offset`) ikinci mürekkep 3 kaymış.
