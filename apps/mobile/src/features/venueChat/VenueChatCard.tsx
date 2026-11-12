@@ -10,7 +10,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Platform, ScrollView, Text, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
+import { CapIcon } from '@/aura/CapIcon';
 import { Av, Badge, Btn, Live, T, useKit } from '@/aura/kit';
 import { DraftComposer } from '@/components/Composer';
 import { LookAvatar } from '@/components/LookAvatar';
@@ -26,7 +28,9 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { Arrive, ArriveLater, CollapsingCard, Tap } from '@/motion';
 import { AURA, MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { LOADER_SHOW_AFTER_MS } from '@/theme/markMotion';
+import { VENUE } from '@/theme/venue';
 
 import { readVenueChatNewer, useVenueChatCard } from './queries';
 
@@ -87,13 +91,18 @@ export function VenueChatCard({
       });
   };
 
+  const { scheme, c } = useKit();
+  const look = VENUE[scheme];
+  const C = VENUE.chat;
+  const latest = card.recent.length > 0 ? card.recent[card.recent.length - 1] : null;
+  const empty = !loading && !card.failed && card.recent.length === 0;
   const head = (
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: GAP,
+        gap: C.headGap,
       }}
     >
       {/* On a narrow screen "şu an aktif" goes under the name; neither is cut. */}
@@ -105,9 +114,12 @@ export function VenueChatCard({
           columnGap: GAP,
           rowGap: HEAD_ROW_GAP,
           flexShrink: 1,
+          flexGrow: 1,
         }}
       >
-        <T v="h3">{tr.venueChat.open}</T>
+        <T v="setTitle" ink>
+          {tr.venueChat.open}
+        </T>
         {active ? (
           <Arrive testID="venue-chat-live">
             <Live soft label={tr.venue.chatActive} />
@@ -119,6 +131,7 @@ export function VenueChatCard({
           <Badge large swap={!reduce} count={unread} />
         </Arrive>
       ) : null}
+      <CapIcon name="forward" color={look.chevron} size={C.chevron} />
     </View>
   );
 
@@ -126,28 +139,44 @@ export function VenueChatCard({
     <CollapsingCard
       at={at}
       strip={AURA.venueCollapse.chatStrip}
-      radius={KIT.size.glassRadius}
+      radius={C.radius}
+      face={look.chatCard}
       folded={
         <Tap sink={false} accessibilityLabel={label} onPress={openChat}>
+          {/* Folded (tuval Mekan): the name, the last line on one line and the send round. */}
           <View
             style={{
               height: AURA.venueCollapse.chatStrip,
-              justifyContent: 'center',
-              paddingHorizontal: PAD_X,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: C.strip.gap,
+              paddingLeft: C.strip.padLeft,
+              paddingRight: C.strip.padRight,
             }}
           >
-            {head}
+            <T v="giftBtn" ink>
+              {tr.venueChat.open}
+            </T>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              {loading || card.failed ? null : (
+                <OneLine color={look.hint}>
+                  {latest ? `${senderLabel(latest)}: ${oneLine(latest.body)}` : tr.venue.chatEmpty}
+                </OneLine>
+              )}
+            </View>
+            {unread > 0 ? <Badge large swap={!reduce} count={unread} /> : null}
+            <SendRound side={C.strip.send} />
           </View>
         </Tap>
       }
     >
-      <View style={{ paddingVertical: PAD_Y, paddingHorizontal: PAD_X, gap: GAP }}>
+      <View style={{ padding: C.pad, gap: C.gap }}>
         <Tap
           testID="venue-chat-open"
           sink={false}
           accessibilityLabel={label}
           onPress={openChat}
-          style={{ gap: GAP }}
+          style={{ gap: C.gap }}
         >
           {/* What the card shows when Mekan opens stays put; what comes after moves. */}
           <ArriveLater>
@@ -160,11 +189,7 @@ export function VenueChatCard({
                   <Line message={m} />
                 </Arrive>
               ))
-            ) : (
-              <Arrive key="empty">
-                <T v="fine">{tr.venue.chatEmpty}</T>
-              </Arrive>
-            )}
+            ) : null}
           </ArriveLater>
         </Tap>
         {card.failed && !loading ? (
@@ -179,20 +204,21 @@ export function VenueChatCard({
             />
           </Arrive>
         ) : null}
+        {/* With no message yet the field itself says so (tuval Mekan). */}
         <DraftComposer
           capsule
           flush
           inputTestID="venue-card-input"
           sendTestID="venue-card-send"
           sendLabel={tr.venueChat.send}
-          placeholder={tr.venueChat.placeholder}
+          placeholder={empty ? tr.venue.chatEmpty : tr.venueChat.placeholder}
           prepare={prepareVenueMessage}
           maxLength={VENUE_CHAT.maxLength}
           sending={send.isPending}
           onSend={(body, clear) => deliver(body, requestKey(), clear)}
         />
         {send.isError && !send.isPending ? (
-          <T v="fine" color={KIT.danger}>
+          <T v="fine" color={c.warn}>
             {errorMessage(send.error)}
           </T>
         ) : null}
@@ -201,8 +227,72 @@ export function VenueChatCard({
   );
 }
 
-const PAD_Y = 16;
-const PAD_X = 18;
+// The folded strip's send round (38): the card's own green, its arrow; the strip's press opens the
+// chat.
+function SendRound({ side }: { side: number }) {
+  const { scheme } = useKit();
+  const g = KIT.button[scheme].prominent;
+  return (
+    <View
+      accessible={false}
+      style={{
+        width: side,
+        height: side,
+        borderRadius: side / 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...gradientStyle(g.fill),
+        boxShadow: g.inset,
+      }}
+    >
+      <Svg width={VENUE.chat.field.arrow} height={VENUE.chat.field.arrow} viewBox="0 0 24 24">
+        <Path
+          d={ARROW_UP}
+          fill="none"
+          stroke={KIT.onPrimary}
+          strokeWidth={ARROW_STROKE}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </Svg>
+    </View>
+  );
+}
+
+// tuval Mekan: the arrow up, its shaft 19 to 5, its head 6 to either side, 2.8 wide.
+const ARROW_UP = 'M12 19V5M6 11l6-6 6 6';
+const ARROW_STROKE = 2.8;
+
+// One line that never ends in "…": on Android it fades out over its last 44 (as Line); on iOS
+// "…" for now.
+function OneLine({ children, color }: { children: string; color: string }) {
+  const text = (
+    <Text
+      numberOfLines={Platform.OS === 'android' ? undefined : 1}
+      maxFontSizeMultiplier={MAX_FONT_SCALE}
+      style={[KIT_TYPE.friendSince, { color }]}
+    >
+      {children}
+    </Text>
+  );
+  if (Platform.OS !== 'android') return text;
+  return (
+    <View pointerEvents="none" style={{ justifyContent: 'center' }}>
+      <ScrollView
+        horizontal
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={{ alignItems: 'center' }}
+        scrollEnabled={false}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        fadingEdgeLength={{ start: 0, end: FADE }}
+      >
+        {text}
+      </ScrollView>
+    </View>
+  );
+}
+
 const GAP = 10;
 const HEAD_ROW_GAP = 4;
 

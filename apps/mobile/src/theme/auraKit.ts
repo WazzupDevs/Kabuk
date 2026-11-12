@@ -126,6 +126,22 @@ export const KIT_TYPE = {
   boxField: t(600, 16, 21),
   boxFieldMulti: t(500, 16, 22),
   boxNote: t(500, 12.5, 18),
+  // Ayarlar (tuval Ayarlar): a row's words (16, 600), Çıkış yap (16, 700), the seg's parts (14.5,
+  // 700).
+  settingsRow: t(600, 16, 20),
+  settingsDanger: t(700, 16, 20),
+  segPick: t(700, 14.5, 18),
+  // Mekan (tuval Mekan): "Mekandasın" (13, 700); the card's title (26, 800, -0.03em, 1.1) and its
+  // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
+  // field (14, 600); the invite's name (16, 700) and its button (14, 700).
+  hereTag: t(700, 13, 17),
+  cardHero: t(800, 26, 29, -0.03),
+  cardHeroNote: t(500, 14.5, 21),
+  tableBtn: t(800, 15.5, 20),
+  stripBtn: t(800, 14, 18),
+  chatField: t(600, 14, 18),
+  inviteName: t(700, 16, 20),
+  inviteBtn: t(700, 14, 18),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
@@ -210,7 +226,7 @@ export const KIT_TYPE = {
   member: t(600, 11, 14),
   wordmark: t(800, 26, 30, -0.04),
   // iskelet.md → 5.11: Mekan's venue name alone, 23.
-  venueName: t(800, 23, 28, -0.015),
+  venueName: t(800, 23, 26.5, -0.025),
   av: {
     xs: t(700, 9, 11),
     md: t(700, 15, 19),

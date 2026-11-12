@@ -7,7 +7,8 @@ import { router } from 'expo-router';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Image, type ImageSourcePropType, View } from 'react-native';
 
-import { Btn, T, Tag, useKit } from '@/aura/kit';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, type BtnLook, T, Tag, useKit } from '@/aura/kit';
 import { PICTURE_FILL } from '@/aura/RisoPicture';
 import { boxShadowParts } from '@/components/NativeShadow';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
@@ -20,6 +21,7 @@ import { CollapsingCard, Tap } from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
+import { VENUE } from '@/theme/venue';
 
 import { InviteSheet } from './InviteSheet';
 import { roomKeys, type TableRoomRow, useTablePeople } from './queries';
@@ -42,18 +44,20 @@ type Props = {
   band: number;
 };
 
-const k = KIT.tableCard;
 const fold = AURA.venueCollapse;
+const V = VENUE;
 
-// The person's table at the top of Mekan (docs/design/iskelet.md → 5.11), one card that pins under
-// the bar and folds into a 72 strip as the screen scrolls (CollapsingCard). Without a table: the
-// riso picture against the card's right, the words on the paper's fade, "Masa kur". With one: the
-// picture on the whole width (210) with the name on its dark fade and the glass state at its
-// corner; the picture opens the table. Under it the people in one row (a profiled one's photo, an
-// anonymous one's capsule; an empty chair while there is room), the thin fill and its sentence; the
-// owner gets "Lobiye aç" (or "Lobiden çek") and "Davet et", both passive while the table is full
-// (the server answers table_full, 6.2). docs/SPEC_V4.md §4.E.
+// The person's table at the top of Mekan (docs/design/iskelet.md → 5.11; tuval Mekan, theme/venue.ts),
+// one card that pins under the bar and folds into a 72 strip as the screen scrolls (CollapsingCard).
+// Without a table: the riso picture over the whole card, the words on the paper's fade at its left,
+// "Masa kur". With one: the picture on the whole width (210) with the name on its dark fade and the
+// state at its corner; the picture opens the table. Under it the people in one row (a profiled
+// one's photo, an anonymous one's capsule; an empty chair while there is room), the thin fill and
+// its sentence; the owner gets "Lobiye aç" (or "Lobiden çek") and "Davet et", both passive while
+// the table is full (the server answers table_full, 6.2). docs/SPEC_V4.md §4.E.
 export function TableCard({ checkIn, room, state, onCreate, onOpenLobby, band }: Props) {
+  const { scheme } = useKit();
+  const look = V[scheme];
   const queryClient = useQueryClient();
   const [invite, setInvite] = useState(false);
 
@@ -74,20 +78,23 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby, band }:
       <CollapsingCard
         testID="table-card"
         strip={fold.tableStrip}
-        radius={k.radius}
+        radius={V.card.radius}
+        stripRadius={V.card.stripRadius}
+        face={look.card}
         band={band}
         folded={
           <Strip
             picture={NO_TABLE_SCENE}
             name={tr.venue.noTable}
             status={null}
+            dot={null}
             action={
               <Btn
                 sm
-                icon="plus"
                 testID="table-create-open"
                 label={tr.venue.createTable}
                 onPress={onCreate}
+                look={STRIP_BUTTON}
               />
             }
           />
@@ -106,16 +113,18 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby, band }:
   const full = room.phones >= MAX_TABLE_PHONES;
   const picture = room.icon ? TABLE_CARD_WIDE[room.icon] : undefined;
   const status = full ? tr.venue.statusFull : live ? tr.venue.lobbyOpen : tr.venue.lobbyOff;
+  const dot = full ? look.dot.full : live ? look.dot.open : look.dot.off;
   const openTable = () => router.push({ pathname: '/room/[id]', params: { id: room.id } });
   const lobbyButton = (small: boolean) =>
     state === 'private' ? (
       <Btn
         sm={small}
-        icon="list"
+        icon={small ? undefined : 'list'}
         testID="lobby-open"
         label={tr.venue.openLobby}
         disabled={full}
         onPress={onOpenLobby}
+        look={small ? STRIP_BUTTON : BIG_BUTTON}
         style={small ? undefined : EQUAL}
       />
     ) : state === 'open' && !small ? (
@@ -126,14 +135,19 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby, band }:
         label={tr.venue.withdraw}
         onPress={() => withdraw.mutate()}
         loading={withdraw.isPending}
+        tint={look.clearInk}
+        look={BIG_BUTTON}
         style={EQUAL}
       />
     ) : null;
+  const B = V.table.body;
   return (
     <CollapsingCard
       testID="table-card"
       strip={fold.tableStrip}
-      radius={k.radius}
+      radius={V.card.radius}
+      stripRadius={V.card.stripRadius}
+      face={look.card}
       band={band}
       folded={
         <Tap
@@ -145,53 +159,59 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby, band }:
             picture={picture}
             name={room.name ?? ''}
             status={status}
+            dot={dot}
             action={owner ? lobbyButton(true) : null}
           />
         </Tap>
       }
     >
-      <View style={{ padding: k.pad }}>
-        <Tap
-          testID="go-to-table"
-          sink={false}
-          accessibilityLabel={tr.venue.tableHead(room.name ?? '', room.phones, status)}
-          onPress={openTable}
-          style={{
-            height: k.height,
-            borderRadius: k.imageRadius,
-            overflow: 'hidden',
-          }}
-        >
-          <PictureGround picture={picture} />
-          {/* The name on the same dark fade on every card. */}
-          <View
-            style={[
-              { position: 'absolute', left: 0, right: 0, bottom: 0, height: k.shadeHeight },
-              gradientStyle(k.shade),
-            ]}
-          />
-          <View style={{ position: 'absolute', left: k.inset, right: k.inset, bottom: k.inset }}>
-            <T v="title" color={KIT.white} testID="table-name" fit lines={2}>
-              {room.name ?? ''}
-            </T>
-          </View>
-          <View style={{ position: 'absolute', top: k.inset, right: k.inset }}>
-            <StatusTag label={status} />
-          </View>
-        </Tap>
-
+      <Tap
+        testID="go-to-table"
+        sink={false}
+        accessibilityLabel={tr.venue.tableHead(room.name ?? '', room.phones, status)}
+        onPress={openTable}
+        style={{ height: V.table.height, overflow: 'hidden' }}
+      >
+        <PictureGround picture={picture} />
+        {/* The name on the same dark fade on every card. */}
+        <View
+          style={[
+            { position: 'absolute', left: 0, right: 0, bottom: 0, height: V.table.shadeHeight },
+            gradientStyle(look.shade),
+          ]}
+        />
         <View
           style={{
-            paddingTop: k.body.top,
-            paddingHorizontal: k.body.x,
-            paddingBottom: k.body.bottom,
-            gap: k.body.gap,
+            position: 'absolute',
+            left: V.table.nameX,
+            right: V.table.nameX,
+            bottom: V.table.nameY,
           }}
         >
+          <T v="cardHero" color={KIT.white} testID="table-name" fit lines={2}>
+            {room.name ?? ''}
+          </T>
+        </View>
+        <View
+          style={{ position: 'absolute', top: V.table.status.inset, right: V.table.status.inset }}
+        >
+          <StatusTag label={status} dot={dot} />
+        </View>
+      </Tap>
+
+      <View
+        style={{
+          paddingTop: B.top,
+          paddingHorizontal: B.x,
+          paddingBottom: B.bottom,
+          gap: B.gap,
+        }}
+      >
+        <View style={{ gap: B.inner }}>
           <Seats roomId={room.id} phones={room.phones} me={checkIn.id} />
-          <View testID="table-state" style={{ gap: KIT.size.chipGap }}>
+          <View testID="table-state" style={{ gap: B.inner }}>
             <Meter phones={room.phones} />
-            <T v="fine" testID={full ? 'table-full' : undefined}>
+            <T v="friendSince" color={look.sentence} testID={full ? 'table-full' : undefined}>
               {full
                 ? tr.venue.seatsFull
                 : room.phones <= 1
@@ -199,37 +219,39 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby, band }:
                   : tr.venue.seated(room.phones)}
             </T>
           </View>
-
-          {live && (intent || tag) ? (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
-              {intent ? (
-                <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
-              ) : null}
-              {tag ? <Tag label={tr.concepts[tag]} /> : null}
-            </View>
-          ) : null}
-
-          {owner ? (
-            <View style={{ flexDirection: 'row', gap: KIT.size.chipsGap }}>
-              {lobbyButton(false)}
-              <Btn
-                variant="glassy"
-                icon="invite"
-                testID="invite-open"
-                label={tr.venue.invite}
-                disabled={full}
-                onPress={() => setInvite(true)}
-                style={EQUAL}
-              />
-            </View>
-          ) : null}
-
-          {withdraw.error ? (
-            <T v="fine" color={KIT.danger}>
-              {errorMessage(withdraw.error)}
-            </T>
-          ) : null}
         </View>
+
+        {live && (intent || tag) ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
+            {intent ? (
+              <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
+            ) : null}
+            {tag ? <Tag label={tr.concepts[tag]} /> : null}
+          </View>
+        ) : null}
+
+        {owner ? (
+          <View style={{ flexDirection: 'row', gap: V.table.buttons.gap }}>
+            {lobbyButton(false)}
+            <Btn
+              variant="glassy"
+              icon="invite"
+              testID="invite-open"
+              label={tr.venue.invite}
+              disabled={full}
+              onPress={() => setInvite(true)}
+              tint={look.clearInk}
+              look={BIG_BUTTON}
+              style={[EQUAL, { marginRight: V.table.buttons.inviteRight }]}
+            />
+          </View>
+        ) : null}
+
+        {withdraw.error ? (
+          <T v="fine" color={KIT.danger}>
+            {errorMessage(withdraw.error)}
+          </T>
+        ) : null}
       </View>
 
       {owner ? (
@@ -244,8 +266,19 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby, band }:
   );
 }
 
-// Lobiye aç (or Lobiden çek) and Davet et share the row equally.
+// Lobiye aç (or Lobiden çek) and Davet et share the row equally; their words 15.5/800, the icons 17
+// and 8 from them. The strip's small one 14/800, 14 in, no icon.
 const EQUAL = { flex: 1 };
+const BIG_BUTTON: BtnLook = {
+  type: 'tableBtn',
+  icon: VENUE.table.buttons.icon,
+  gap: VENUE.table.buttons.iconGap,
+};
+const STRIP_BUTTON: BtnLook = {
+  type: 'stripBtn',
+  padLeft: VENUE.strip.buttonPadX,
+  padRight: VENUE.strip.buttonPadX,
+};
 
 function PictureGround({ picture }: { picture: ImageSourcePropType | undefined }) {
   const { c } = useKit();
@@ -264,21 +297,32 @@ function PictureGround({ picture }: { picture: ImageSourcePropType | undefined }
   );
 }
 
-// The state at the picture's corner: a clear glass tag, drawn (no live blur in a card, 2.2).
-function StatusTag({ label }: { label: string }) {
-  const s = k.status;
+// A state's dot (7) before its words.
+function Dot({ color, size }: { color: string; size: number }) {
+  return (
+    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color }} />
+  );
+}
+
+// The state at the picture's corner: a white pill with its dot, drawn (no live blur in a card, 2.2).
+function StatusTag({ label, dot }: { label: string; dot: string }) {
+  const { scheme } = useKit();
+  const s = V.table.status;
   return (
     <View
       style={{
-        paddingHorizontal: s.padX,
-        paddingVertical: s.padY,
-        borderRadius: KIT.size.btn,
-        backgroundColor: s.fill,
-        borderWidth: KIT.size.edge,
-        borderColor: s.edge,
+        height: s.height,
+        paddingLeft: s.padLeft,
+        paddingRight: s.padRight,
+        borderRadius: s.height / 2,
+        backgroundColor: V[scheme].status.fill,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: s.gap,
       }}
     >
-      <T v="tag" color={s.ink}>
+      <Dot color={dot} size={s.dot} />
+      <T v="detailPill" color={V[scheme].status.ink}>
         {label}
       </T>
     </View>
@@ -287,20 +331,21 @@ function StatusTag({ label }: { label: string }) {
 
 // The thin fill of the table's seats: green while there is room, pink once full.
 function Meter({ phones }: { phones: number }) {
-  const { c } = useKit();
-  const m = k.meter;
+  const { scheme } = useKit();
+  const m = V[scheme].meter;
+  const height = V.table.meter;
   const full = phones >= MAX_TABLE_PHONES;
   const share = Math.min(1, Math.max(0, phones / MAX_TABLE_PHONES));
   return (
     <View
       accessible={false}
-      style={{ height: m.height, borderRadius: m.height / 2, backgroundColor: c.hair }}
+      style={{ height, borderRadius: height / 2, backgroundColor: m.track, overflow: 'hidden' }}
     >
       <View
         style={{
           width: `${share * 100}%`,
-          height: m.height,
-          borderRadius: m.height / 2,
+          height,
+          borderRadius: height / 2,
           backgroundColor: full ? m.full : m.free,
         }}
       />
@@ -313,7 +358,8 @@ function Meter({ phones }: { phones: number }) {
 // there is room. The people's faces go to everyone at the table while it runs (rule 4); the list is
 // read again when the count changes.
 function Seats({ roomId, phones, me }: { roomId: string; phones: number; me: string }) {
-  const { c, scheme } = useKit();
+  const { scheme } = useKit();
+  const look = V[scheme];
   const people = useTablePeople(roomId);
   const ids = (people.data ?? []).map((p) => p.sessionId).join(',');
   const profiles = useRoomMemberProfiles(roomId, ids).data;
@@ -325,19 +371,21 @@ function Seats({ roomId, phones, me }: { roomId: string; phones: number; me: str
     void refetch();
   }, [phones, refetch]);
   const [width, setWidth] = useState(0);
-  const f = k.face;
-  const side = KIT.size.av.sm + 2 * f.ring;
-  const faceShadow = boxShadowParts(useLabOff('golge'), f.shadow, side / 2);
+  const f = V.table.face;
+  // The face and its ring of the card's ground around it.
+  const side = f.side + 2 * f.ring;
+  const faceShadow = boxShadowParts(useLabOff('golge'), look.faceShadow || undefined, side / 2);
   const sorted = [...(people.data ?? [])].sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
   const room = phones < MAX_TABLE_PHONES;
   // One row whatever their number: they overlap more when they must.
   const n = sorted.length + (room ? 1 : 0);
-  const overlap =
-    width > 0 && n > 1 ? Math.max(f.overlap, (n * side - width) / (n - 1)) : f.overlap;
-  const ground = k.ground[scheme];
+  const least = side - f.pitch;
+  const overlap = width > 0 && n > 1 ? Math.max(least, (n * side - width) / (n - 1)) : least;
+  // The empty chair (no ring) 28 after the last face's start.
+  const seatAfter = -(side - f.ring - f.seatPitch + (overlap - least));
   return (
     <View
-      style={{ flexDirection: 'row', minHeight: side }}
+      style={{ flexDirection: 'row', alignItems: 'center', minHeight: side }}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
@@ -346,11 +394,11 @@ function Seats({ roomId, phones, me }: { roomId: string; phones: number; me: str
         <View
           key={p.sessionId}
           style={{
-            marginLeft: i === 0 ? 0 : -overlap,
+            marginLeft: i === 0 ? -f.ring : -overlap,
             borderRadius: side / 2,
             borderWidth: f.ring,
-            borderColor: ground,
-            backgroundColor: ground,
+            borderColor: look.faceRing,
+            backgroundColor: look.faceRing,
             boxShadow: faceShadow.boxShadow,
           }}
         >
@@ -366,24 +414,19 @@ function Seats({ roomId, phones, me }: { roomId: string; phones: number; me: str
       {room ? (
         <View
           style={{
-            marginLeft: sorted.length === 0 ? 0 : -overlap,
-            width: side,
-            height: side,
-            borderRadius: side / 2,
-            borderWidth: f.ring,
-            borderColor: ground,
-            backgroundColor: ground,
+            marginLeft: sorted.length === 0 ? 0 : seatAfter,
+            width: f.side,
+            height: f.side,
+            borderRadius: f.side / 2,
+            borderWidth: f.dash,
+            borderStyle: 'dashed',
+            borderColor: look.seat.edge,
+            backgroundColor: look.seat.fill,
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <View
-            style={{
-              flex: 1,
-              borderRadius: side / 2,
-              borderWidth: f.dash,
-              borderStyle: 'dashed',
-              borderColor: c.muted,
-            }}
-          />
+          <CapIcon name="plus" color={look.seat.plus} size={f.plus} />
         </View>
       ) : null}
     </View>
@@ -395,13 +438,17 @@ function Strip({
   picture,
   name,
   status,
+  dot,
   action,
 }: {
   picture: ImageSourcePropType | undefined;
   name: string;
   status: string | null;
+  dot: string | null;
   action: ReactNode;
 }) {
+  const { scheme } = useKit();
+  const S = V.strip;
   const side = fold.stripPicture;
   return (
     <View
@@ -409,64 +456,81 @@ function Strip({
         height: fold.tableStrip,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: KIT.size.liGap,
-        paddingHorizontal: k.stripPad,
+        gap: S.gap,
+        paddingHorizontal: S.padX,
       }}
     >
-      <View style={{ width: side, height: side, borderRadius: k.stripRadius, overflow: 'hidden' }}>
+      <View style={{ width: side, height: side, borderRadius: S.radius, overflow: 'hidden' }}>
         <PictureGround picture={picture} />
       </View>
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <T v="h3" lines={1} fit>
+      <View style={{ flex: 1, minWidth: 0, gap: S.lineGap }}>
+        <T v="barName" ink lines={1} fit>
           {name}
         </T>
-        {status ? <T v="fine">{status}</T> : null}
+        {status ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.dotGap }}>
+            {dot ? <Dot color={dot} size={S.dot} /> : null}
+            <T v="detailPill" color={V[scheme].stripSub}>
+              {status}
+            </T>
+          </View>
+        ) : null}
       </View>
       {action}
     </View>
   );
 }
 
-// No table yet: the riso picture against the card's right, the words on the paper's fade at its
-// left, "Masa kur" prominent. The dark scheme dims the light picture a little.
+// No table yet: the riso picture over the whole card, the words on the paper's fade at its left,
+// "Masa kur" prominent. The dark scheme dims the light picture a little.
 const NO_TABLE_SCENE = require('../../../assets/riso/venue-no-table.webp');
 function NoTable({ onCreate }: { onCreate: () => void }) {
   const { scheme } = useKit();
-  const r = KIT.risoScene;
+  const look = V[scheme];
+  const N = V.none;
   return (
     <View
       testID="no-table"
-      style={{ height: KIT.size.hero, backgroundColor: k.paper, justifyContent: 'center' }}
+      style={{ minHeight: N.height, backgroundColor: look.paper, justifyContent: 'flex-start' }}
     >
       <Picture
         source={NO_TABLE_SCENE}
         accessible={false}
         contentFit="cover"
-        contentPosition="right"
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: `${k.paperPicture * 100}%`,
-        }}
+        contentPosition={{ left: N.picX, top: N.picY }}
+        style={PICTURE_FILL}
       />
-      {scheme === 'dark' ? <View style={[PICTURE_FILL, { backgroundColor: r.darkVeil }]} /> : null}
-      <View style={[PICTURE_FILL, gradientStyle(k.paperFade)]} />
-      <View style={{ marginLeft: KIT.size.heroPad, width: r.words, gap: r.gap }}>
-        <T v="title" color={r.title}>
+      {scheme === 'dark' ? (
+        <View style={[PICTURE_FILL, { backgroundColor: KIT.risoScene.darkVeil }]} />
+      ) : null}
+      <View style={[PICTURE_FILL, gradientStyle(look.paperFade)]} />
+      <View
+        style={{
+          paddingVertical: N.padY,
+          paddingHorizontal: N.padX,
+          maxWidth: N.words,
+          gap: N.gap,
+        }}
+      >
+        <T v="cardHero" color={look.heroTitle}>
           {tr.venue.noTable}
         </T>
-        <T v="fine" color={r.note}>
+        <T v="cardHeroNote" color={look.heroNote}>
           {tr.venue.noTableHint}
         </T>
         <Btn
-          sm
           icon="plus"
           testID="table-create-open"
           label={tr.venue.createTable}
           onPress={onCreate}
-          style={{ alignSelf: 'flex-start', marginTop: r.buttonTop }}
+          look={{
+            type: 'confirmBtn',
+            padLeft: N.buttonPadLeft,
+            padRight: N.buttonPadRight,
+            icon: N.icon,
+            gap: V.table.buttons.iconGap,
+          }}
+          style={{ alignSelf: 'flex-start', marginTop: N.buttonTop }}
         />
       </View>
     </View>

@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
-import { Chip, Live, Round, T, useKit } from '@/aura/kit';
+import { Chip, PulseDot, Round, T, useKit } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { Wordmark } from '@/components/Wordmark';
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
@@ -10,6 +10,7 @@ import { tr } from '@/i18n/tr';
 import { Menu, type MenuAnchor, MenuItem, measureMenuAnchor } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
+import { VENUE } from '@/theme/venue';
 
 // Mekan's head (docs/design/iskelet.md → 5.11): the skall wordmark at the left; at the right the
 // spot (a press changes it while there is no table) and the clear "Seçenekler" whose menu grows
@@ -53,8 +54,13 @@ export function VenueHead({
     });
   return (
     <View style={{ gap: SPACING[2] }}>
-      <View className="flex-row items-center justify-between" style={{ minHeight: HEAD_HEIGHT }}>
-        <WordmarkRow />
+      <View
+        className="flex-row items-center justify-between"
+        style={{ minHeight: HEAD_HEIGHT, marginTop: VENUE.headTop }}
+      >
+        <View style={{ marginLeft: VENUE.wordmarkIn }}>
+          <WordmarkRow />
+        </View>
         <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
           {spot ? (
             // U19: the spot as a chip; a press changes it while there is no table.
@@ -129,34 +135,43 @@ const HEAD_HEIGHT = KIT.size.topBtn;
 // The note that the one change is spent stays this long.
 const USED_NOTE_MS = 2600;
 
-// The menu's first row, not a press: "Mekanda kalma süren", the time left, and the bar filling as
-// the check-in's time passes.
+// The menu's first row, not a press (tuval Mekan): "Mekanda kalma süren", the time left, and the
+// bar filling as the check-in's time passes.
 function Stay({ minutesLeft, share }: { minutesLeft: number; share: number }) {
-  const { c } = useKit();
-  const bar = KIT.tableCard.meter;
+  const { scheme } = useKit();
+  const look = VENUE[scheme];
+  const S = VENUE.stay;
   return (
     <View
       accessible
       style={{
-        paddingHorizontal: SPACING[4] + SPACING[0.5],
-        paddingVertical: SPACING[3],
-        gap: SPACING[2],
+        paddingTop: S.padTop,
+        paddingHorizontal: S.padX,
+        paddingBottom: S.padBottom,
+        gap: S.gap,
       }}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: SPACING[2] }}>
-        <T v="fine" strong>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: S.gap }}>
+        <T v="friendTag" color={look.stayLabel}>
           {tr.venue.stay}
         </T>
-        <T v="fine" tabular>
+        <T v="friendTag" color={look.stayValue} tabular>
           {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
         </T>
       </View>
-      <View style={{ height: bar.height, borderRadius: bar.height / 2, backgroundColor: c.hair }}>
+      <View
+        style={{
+          height: S.bar,
+          borderRadius: S.bar / 2,
+          backgroundColor: look.stayTrack,
+          overflow: 'hidden',
+        }}
+      >
         <View
           style={{
             width: `${Math.min(1, Math.max(0, share)) * 100}%`,
-            height: bar.height,
-            borderRadius: bar.height / 2,
+            height: S.bar,
+            borderRadius: S.bar / 2,
             backgroundColor: KIT.primary,
           }}
         />
@@ -174,15 +189,36 @@ export function WordmarkRow({ small }: { small?: boolean } = {}) {
 const WORDMARK_HEIGHT = 28;
 const WORDMARK_SMALL = 26;
 
-// The venue's name alone, large (23), and under it "Mekandasın" with its beating dot (iskelet.md →
-// 5.11). A long name shrinks to fit its two lines rather than ending in "…".
+// The venue's name alone, large (23/800), and 6 under it "Mekandasın" on its green pill with its
+// beating dot (iskelet.md → 5.11; tuval Mekan). A long name shrinks to fit its two lines rather
+// than ending in "…".
 export function VenueNameRow({ name }: { name: string }) {
+  const { scheme } = useKit();
+  const here = VENUE[scheme].here;
+  const H = VENUE.here;
   return (
-    <View style={{ gap: SPACING[1], paddingHorizontal: SPACING[0.5] }}>
+    <View style={{ gap: VENUE.titleGap, paddingHorizontal: VENUE.titleIn }}>
       <T v="venueName" accessibilityRole="header" testID="venue-name" lines={2} fit>
         {name}
       </T>
-      <Live large label={tr.venue.here} />
+      <View
+        style={{
+          alignSelf: 'flex-start',
+          minHeight: H.height,
+          paddingLeft: H.padLeft,
+          paddingRight: H.padRight,
+          borderRadius: H.height / 2,
+          backgroundColor: here.fill,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: H.gap,
+        }}
+      >
+        <PulseDot color={here.dot} size={H.dot} />
+        <T v="hereTag" color={here.ink}>
+          {tr.venue.here}
+        </T>
+      </View>
     </View>
   );
 }

@@ -174,7 +174,7 @@ export function SheetCard({
                 fadingEdgeLength={{ start: KIT.size.sheetFade, end: KIT.size.sheetFade }}
                 contentContainerStyle={{
                   flexGrow: fill ? 1 : undefined,
-                  paddingTop: head ? KIT.size.rowGap : KIT.size.sheetGap,
+                  paddingTop: head ? (look?.bodyTop ?? KIT.size.rowGap) : KIT.size.sheetGap,
                   paddingHorizontal: padX,
                   paddingBottom: footer ? KIT.size.sheetGap + KIT.size.tagGap : foot,
                 }}
@@ -221,4 +221,6 @@ export type SheetLook = {
   headTop?: number;
   titleIn?: number;
   closeIn?: number;
+  // The content's room under the title's row (tuval Ayarlar: 13).
+  bodyTop?: number;
 };

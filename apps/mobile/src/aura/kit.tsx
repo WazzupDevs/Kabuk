@@ -152,6 +152,7 @@ export function Glass({
   radius: round,
   frost,
   face,
+  keepFace,
   style,
   children,
   testID,
@@ -166,12 +167,16 @@ export function Glass({
   // A face of a board's own (Keşfet's `.glass` and `.card`, theme/explore.ts): its fill, edge, top
   // light and shadow in place of the kit's glass; inside a sheet the sheet's card as ever.
   face?: ExploreFace;
+  // The board's face inside a sheet too (tuval Ayarlar, Mekan's invite: the sheet's own white
+  // card, its edge and shadow).
+  keepFace?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   testID?: string;
 }) {
   const { c: kitColors, scheme } = useKit();
-  const flat = useContext(FlatGlass);
+  const inSheet = useContext(FlatGlass);
+  const flat = inSheet && !(face && keepFace);
   const c =
     face && !flat
       ? {
@@ -1191,7 +1196,16 @@ export function Li({
 const PRESSED_ROW = 0.7;
 
 // A settings row's icon (iskelet.md → 2.4): white on a coloured square, 32 and 10 round.
-export function IconSquare({ name, tone }: { name: CapIconName; tone: string }) {
+export function IconSquare({
+  name,
+  tone,
+  size = KIT.size.iconSm,
+}: {
+  name: CapIconName;
+  tone: string;
+  // The icon's own size where a board gives one (tuval Ayarlar: 17).
+  size?: number;
+}) {
   return (
     <View
       style={{
@@ -1203,7 +1217,7 @@ export function IconSquare({ name, tone }: { name: CapIconName; tone: string }) 
         justifyContent: 'center',
       }}
     >
-      <CapIcon name={name} color={KIT.white} soft={1} size={KIT.size.iconSm} />
+      <CapIcon name={name} color={KIT.white} soft={1} size={size} />
     </View>
   );
 }
@@ -1472,90 +1486,96 @@ export function Seg<V extends string>({
     return () => anim.stop();
   }, [index, reduce, at]);
   const n = options.length;
-  const cell = n > 0 ? (width - KIT.size.segGap * (n - 1)) / n : 0;
-  return (
+  const gap = board?.gap ?? KIT.size.segGap;
+  const cell = n > 0 ? (width - gap * (n - 1)) / n : 0;
+  const frame: ViewStyle = {
+    flexDirection: 'row',
+    padding: KIT.size.segPad,
+    gap,
+    borderRadius: radius,
+  };
+  // A board's sunk track (tuval Ayarlar): a flat fill, no glass, no edge.
+  const track = board?.track;
+  const tabs = (
+    <View
+      accessibilityRole="tablist"
+      accessibilityLabel={accessibilityLabel}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{ flex: 1, flexDirection: 'row', gap }}
+    >
+      {width > 0 ? (
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: cell,
+            height: item,
+            borderRadius: item / 2,
+            backgroundColor: c.segOn,
+            boxShadow: onShadow.boxShadow,
+            transform: [
+              {
+                translateX: at.interpolate({
+                  inputRange: [0, Math.max(1, n - 1)],
+                  outputRange: [0, Math.max(1, n - 1) * (cell + gap)],
+                }),
+              },
+            ],
+          }}
+        >
+          {onShadow.node}
+        </Animated.View>
+      ) : null}
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            testID={o.testID}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            onPress={() => onChange(o.value)}
+            style={{
+              flex: 1,
+              height: item,
+              borderRadius: item,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: KIT.size.tagGap,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={MIN_LABEL_SCALE}
+              maxFontSizeMultiplier={MAX_FONT_SCALE}
+              // U27: the tabs' words 14/600 at either size (`.seg span`).
+              style={[
+                board ? KIT_TYPE[board.type] : KIT_TYPE.btnSm,
+                { color: on ? c.segOnInk : c.muted, flexShrink: 1 },
+              ]}
+            >
+              {o.label}
+            </Text>
+            {o.badge ? <Badge count={o.badge} /> : null}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+  return track ? (
+    <View style={[frame, { backgroundColor: track }]}>{tabs}</View>
+  ) : (
     <Glass
       frost
       radius={radius}
       face={board?.face}
-      style={[
-        flat ? gradientStyle(c.segTrackInSheet) : null,
-        {
-          flexDirection: 'row',
-          padding: KIT.size.segPad,
-          gap: KIT.size.segGap,
-          borderRadius: radius,
-        },
-      ]}
+      style={[flat ? gradientStyle(c.segTrackInSheet) : null, frame]}
     >
-      <View
-        accessibilityRole="tablist"
-        accessibilityLabel={accessibilityLabel}
-        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-        style={{ flex: 1, flexDirection: 'row', gap: KIT.size.segGap }}
-      >
-        {width > 0 ? (
-          <Animated.View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: cell,
-              height: item,
-              borderRadius: item / 2,
-              backgroundColor: c.segOn,
-              boxShadow: onShadow.boxShadow,
-              transform: [
-                {
-                  translateX: at.interpolate({
-                    inputRange: [0, Math.max(1, n - 1)],
-                    outputRange: [0, Math.max(1, n - 1) * (cell + KIT.size.segGap)],
-                  }),
-                },
-              ],
-            }}
-          >
-            {onShadow.node}
-          </Animated.View>
-        ) : null}
-        {options.map((o) => {
-          const on = o.value === value;
-          return (
-            <Pressable
-              key={o.value}
-              testID={o.testID}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: on }}
-              onPress={() => onChange(o.value)}
-              style={{
-                flex: 1,
-                height: item,
-                borderRadius: item,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: KIT.size.tagGap,
-              }}
-            >
-              <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={MIN_LABEL_SCALE}
-                maxFontSizeMultiplier={MAX_FONT_SCALE}
-                // U27: the tabs' words 14/600 at either size (`.seg span`).
-                style={[
-                  board ? KIT_TYPE[board.type] : KIT_TYPE.btnSm,
-                  { color: on ? c.segOnInk : c.muted, flexShrink: 1 },
-                ]}
-              >
-                {o.label}
-              </Text>
-              {o.badge ? <Badge count={o.badge} /> : null}
-            </Pressable>
-          );
-        })}
-      </View>
+      {tabs}
     </Glass>
   );
 }
@@ -1565,6 +1585,9 @@ export type SegBoard = {
   type: KitTextVariant;
   face: ExploreFace;
   onShadow: string | undefined;
+  // A sunk track instead of the glass (tuval Ayarlar: a flat fill) and the gap between the parts.
+  track?: string;
+  gap?: number;
 };
 // hareket.json gives the swap curve no length: the disk's slide takes this long.
 const SEG_SLIDE_MS = 300;
