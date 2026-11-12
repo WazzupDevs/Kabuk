@@ -208,6 +208,7 @@ export type TypeStyle = {
 
 export type TypeVariant =
   | 'display' // screen title (h1)
+  | 'largeTitle' // a page's large title under its top bar (iskelet.md → 3.1: 34, 800)
   | 'title' // sheet title (h2)
   | 'heading' // section title (h3)
   | 'gameName' // a game's name on its card (two lines fit a 320 dp screen's half)
@@ -228,7 +229,8 @@ export type TypeVariant =
   | 'buttonDetail'
   | 'buttonSmall' // a small button in a header ("Mekandan ayrıl", "Odayı bitir")
   | 'tag'
-  | 'caption' // tab labels, small counters
+  | 'caption' // small counters
+  | 'tabLabel' // the tab bar's labels (iskelet.md → 3.3: 10.5)
   | 'overline' // "Söylenmeyecekler"
   | 'signalMark' // the emoji of the "Tanışalım mı?" signal
   | 'gameButton' // the 56 high game button (v43: .tbtn)
@@ -330,6 +332,7 @@ export const MAP_FONTS = { bold: ['Noto Sans Bold'] } as const;
 export function baseTypography(overrides: Partial<Typography> = {}): Typography {
   return {
     display: { font: 'display', size: 28, lineHeight: 34, letterSpacing: -0.8 },
+    largeTitle: { font: 'display', size: 34, lineHeight: 42, letterSpacing: -0.8 },
     title: { font: 'display', size: 21, lineHeight: 27, letterSpacing: -0.5 },
     heading: { font: 'display', size: 16, lineHeight: 21, letterSpacing: -0.2 },
     gameName: { font: 'displayBold', size: 16, lineHeight: 20 },
@@ -351,6 +354,7 @@ export function baseTypography(overrides: Partial<Typography> = {}): Typography 
     buttonSmall: { font: 'bold', size: 13, lineHeight: 18 },
     tag: { font: 'display', size: 11, lineHeight: 14 },
     caption: { font: 'display', size: 11, lineHeight: 14 },
+    tabLabel: { font: 'display', size: 10.5, lineHeight: 13 },
     overline: { font: 'bold', size: 12, lineHeight: 16, letterSpacing: 1, uppercase: true },
     signalMark: { font: 'regular', size: 104, lineHeight: 126 },
     gameButton: { font: 'display', size: 16, lineHeight: 20 },

@@ -1,16 +1,15 @@
-import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { type ReactNode, useContext } from 'react';
 import { View } from 'react-native';
 
-import { tr } from '@/i18n/tr';
-import { SPACING, TOUCH } from '@/theme/tokens';
+import { LargeTitle, PageTopPart, TopBarRow } from '@/motion/TopBar';
+import { SPACING } from '@/theme/tokens';
 
-import { IconButton } from './IconButton';
-import { Text } from './Text';
-
-// A page's top (skall tuvali: Bildirim ayarları, Gizlilik, Hesap…): the round back button and the
-// title on one line, something on the right. It goes in Screen → `top`: it stays while the page
-// scrolls under it (the owner's report, 2 Kasım, B2).
+// A page's top (docs/design/iskelet.md → 3.1, the `sayfa` bar: Arkadaşlar, Bildirim ayarları,
+// Gizlilik, Hesap…): the 46 glass back button on the bar, something on the right, and the 34/800
+// large title under it. It goes in Screen → `top`. On a scrolling page the bar stays and the title
+// scrolls with the content, fading over 5 to 50 while the bar's band comes in and its small centred
+// title over 40 to 70 (Screen draws each part where it goes, PageTopPart). On a still page the band
+// never shows and the title stays in place.
 export function PageTop({
   title,
   sub,
@@ -23,21 +22,15 @@ export function PageTop({
   onBack?: () => void;
   trailing?: ReactNode;
 }) {
+  const part = useContext(PageTopPart);
+  const row = <TopBarRow kind="sayfa" title={title} onBack={onBack} trailing={trailing} />;
+  const head = <LargeTitle kind="sayfa" title={title} sub={sub} />;
+  if (part === 'bar') return row;
+  if (part === 'title') return head;
   return (
-    <View className="flex-row items-center" style={{ gap: SPACING[3], minHeight: TOUCH.min }}>
-      <IconButton
-        round
-        icon="chevron-back"
-        label={tr.common.back}
-        onPress={onBack ?? (() => router.back())}
-      />
-      <View className="flex-1">
-        <Text variant="heading" accessibilityRole="header">
-          {title}
-        </Text>
-        {sub ? <Text variant="fine">{sub}</Text> : null}
-      </View>
-      {trailing}
+    <View style={{ gap: SPACING[3] }}>
+      {row}
+      {head}
     </View>
   );
 }

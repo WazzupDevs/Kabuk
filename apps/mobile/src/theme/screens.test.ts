@@ -13,7 +13,10 @@ const app = (file: string) => readFileSync(join(mobile, file), 'utf8');
 describe("the app's tabs", () => {
   it('float the bar above the bottom, feel a new tab and blur the focused screen', () => {
     const tabs = app('src/components/TabBar.tsx');
-    expect(tabs).toMatch(/import \{ AuraTabBar, type AuraTabItem \} from '@\/aura\/AuraTabBar'/);
+    // The kit's bar (iskelet.md → 3.3), folded by the tabs' scroll (TabBarMotion), over its edge.
+    expect(tabs).toMatch(/TabBar as FloatingTabBar,[\s\S]*from '@\/motion\/TabBar'/);
+    expect(tabs).toMatch(/<TabBarMotion>\{children\}<\/TabBarMotion>/);
+    expect(tabs).toMatch(/\{overMap \? null : <TabBarEdge \/>\}/);
     expect(tabs).toMatch(/bottom: insets\.bottom \+ AURA\.tabBar\.bottom/);
     // The room the bar takes at the bottom of a tab screen: the bar, its distance, a little more.
     expect(tabs).toMatch(/t\.height \+ t\.bottom \+ insets\.bottom \+ SPACING\[4\]/);
@@ -23,9 +26,9 @@ describe("the app's tabs", () => {
     );
     const layout = app('app/(app)/(tabs)/_layout.tsx');
     expect(layout).toMatch(/opens=\{\(tab\) => tabOpenedBy\(tab, table\.data, Date\.now\(\)\)\}/);
-    // Each tab screen is a glass target; the focused one is the bar's; over the map it is opaque.
+    // Each tab screen is a glass target where the live glass is on; over the map the bar is opaque.
     expect(tabs).toMatch(/<GlassTarget targetId=\{id\}/);
-    expect(tabs).toMatch(/glassTarget=\{target\}\s*opaque=\{overMap\}/);
+    expect(tabs).toMatch(/onPress=\{onPress\}\s*opaque=\{overMap\}/);
     expect(layout).toMatch(
       /screenLayout=\{\(\{ navigation, route, children \}\) => \(\s*<TabScene navigation=\{navigation\} routeKey=\{route\.key\}>\s*\{children\}\s*<\/TabScene>/,
     );

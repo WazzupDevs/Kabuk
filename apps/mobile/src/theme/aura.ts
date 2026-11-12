@@ -27,6 +27,16 @@ export const AURA = {
       off: '#4A6550',
       // The chosen icon's strong part (skall.css `.tab.on .ci`: --accent); its body is --buzz.
       on: '#0B783D',
+      // iskelet.md → 3.3: the chosen tab in a green-toned pill, its icon and label green.
+      pill: 'rgba(14, 135, 69, 0.12)',
+      onInk: '#0E8745',
+    },
+    // iskelet.md → 3.1 and 3.3: the top bar's band (the ground at 84 %, its foot fading out) and the
+    // tab bar's bottom edge (from clear to the ground at 92 %).
+    bar: {
+      band: 'rgba(239, 247, 241, 0.84)',
+      clear: 'rgba(239, 247, 241, 0)',
+      edge: 'rgba(239, 247, 241, 0.92)',
     },
   },
   // `.dark.pA`: a flat black ground with no clouds, flat glass #121614 with a 9 % white edge and no
@@ -47,6 +57,14 @@ export const AURA = {
       off: '#A3AEA8',
       // `.dark .tab.on .ci`: #0B783D on the near-white disc.
       on: '#0B783D',
+      pill: 'rgba(31, 220, 117, 0.16)',
+      onInk: '#1FDC75',
+    },
+    // The dark ground (#000000) in place of the light one.
+    bar: {
+      band: 'rgba(0, 0, 0, 0.84)',
+      clear: 'rgba(0, 0, 0, 0)',
+      edge: 'rgba(0, 0, 0, 0.92)',
     },
   },
   // Cards: a frosted pane on the clouds.
@@ -68,6 +86,26 @@ export const AURA = {
     dot: 9,
     dotTop: 10,
     dotRight: 11,
+    // iskelet.md → 3.3: the labelled bar's icon 22 and its pill (the tab's height, round); the
+    // bottom edge band 160 under it.
+    iconLabelled: 22,
+    labelGap: 2,
+    pillHeight: 52,
+    edgeHeight: 160,
+  },
+  // iskelet.md → 3.1: the top bar. Its band 118 high (status bar included), the foot `bandFade`
+  // of it fading out; a `sayfa` page's large title fades over `pageTitleFade` while the band comes
+  // in, the bar's centred small title over `pageBarTitle`; a tab's large title shrinks to
+  // `largeTitleScale` from its lower left while it fades (MOTION.scroll.titleFade), and comes into
+  // the bar over its last `largeBarTitlePx`. A part over a sticky field shrinks to `stickyScale`.
+  topBar: {
+    bandHeight: 118,
+    bandFade: 0.28,
+    pageTitleFade: [5, 50],
+    pageBarTitle: [40, 70],
+    largeTitleScale: 0.94,
+    largeBarTitlePx: 30,
+    stickyScale: 0.95,
   },
   // The tab icons' colours when selected: the mark's (purple back, pink front, amber overlap).
   mark: { back: BRAND.purple, front: BRAND.pink, overlap: BRAND.orange, light: BRAND.white },
@@ -256,6 +294,21 @@ export const AURA = {
   // An SVG mask: white shows, black hides (the outlined icons' gap).
   mask: { show: '#FFFFFF', hide: '#000000' },
 } as const;
+
+// The top bar's band drawn `height` tall (taller under a pinned field, iskelet.md → 3.2): the ground
+// at 84 % down to its foot, whose last 28 % of the band's own height fades out (no hard line).
+export function barBandCss(scheme: AuraScheme, height: number): string {
+  const b = AURA[scheme].bar;
+  const t = AURA.topBar;
+  const solid = Math.round(((height - t.bandHeight * t.bandFade) / height) * 1000) / 10;
+  return `linear-gradient(180deg, ${b.band} 0%, ${b.band} ${solid}%, ${b.clear} 100%)`;
+}
+
+// The tab bar's bottom edge (iskelet.md → 3.3): from clear to the ground at 92 %.
+export function barEdgeCss(scheme: AuraScheme): string {
+  const b = AURA[scheme].bar;
+  return `linear-gradient(180deg, ${b.clear} 0%, ${b.edge} 100%)`;
+}
 
 // The motion standard (docs/design/aura/project/hareket.json, played by the film
 // docs/design/aura/skall-hareket.mp4): springs in Reanimated's model, curves as cubic-bezier.

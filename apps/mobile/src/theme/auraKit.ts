@@ -603,6 +603,12 @@ export const KIT = {
     tagPadX: 8,
     tagGap: 4,
     round: 44,
+    // iskelet.md → 2.1 and 3.1: every top bar button 46 (the glass back button); a sticky field
+    // pins `stickyTop` under the top of its screen's scrolling body (top 52 to 54 on the canvas's 47
+    // status bar) and the band reaches `stickyBandPad` under it.
+    topBtn: 46,
+    stickyTop: 6,
+    stickyBandPad: 8,
     // The venue page's back button (48).
     roundLg: 44,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).

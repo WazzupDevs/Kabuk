@@ -22,7 +22,10 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 type Props = Pick<
   ScrollViewProps,
-  'contentContainerStyle' | 'keyboardShouldPersistTaps' | 'keyboardDismissMode'
+  | 'contentContainerStyle'
+  | 'keyboardShouldPersistTaps'
+  | 'keyboardDismissMode'
+  | 'onContentSizeChange'
 > & {
   // Fetches the list again; the mark turns until it settles (and at least as long as a loader
   // stays, LOADER_MIN_VISIBLE_MS).
@@ -30,6 +33,8 @@ type Props = Pick<
   children: ReactNode;
   // The list's offset, for a part that pins once it reaches the top (Aktiviteler's tabs).
   scrollY?: SharedValue<number>;
+  // How far down the indicator starts: under a top bar drawn over the list (Screen → PageTop).
+  indicatorTop?: number;
 };
 
 const p = PULL;
@@ -48,6 +53,7 @@ export function PullScroll({
   children,
   contentContainerStyle,
   scrollY,
+  indicatorTop = 0,
   ...scroll
 }: Props) {
   const reduce = useReduceMotion();
@@ -161,7 +167,7 @@ export function PullScroll({
       <Animated.View
         pointerEvents="none"
         style={[
-          { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' },
+          { position: 'absolute', top: indicatorTop, left: 0, right: 0, alignItems: 'center' },
           indicator,
         ]}
       >
