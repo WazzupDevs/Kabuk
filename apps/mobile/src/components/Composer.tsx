@@ -20,6 +20,7 @@ import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { DM } from '@/theme/dm';
 import { gradientStyle } from '@/theme/gradient';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
+import { VENUE } from '@/theme/venue';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
 
@@ -325,18 +326,26 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   // was.
   const dm = !flush;
   const look = DM[k.scheme].composer;
+  // In Mekan's card (`flush`, tuval Mekan, theme/venue.ts): a sunk green field 44 high, no edge and
+  // no shadow, the words 14/600 16 in, the send round 36 always there, 6 from the right.
+  const card = VENUE.chat.field;
+  const cardLook = VENUE[k.scheme];
+  const height = flush ? card.height : CAPSULE;
   const shadowOff = useLabOff('golge');
   const capsuleShadow = shadowParts(
     shadowOff,
-    dm ? look.shadow || undefined : k.c.glassShadow,
-    dm ? look.inset || undefined : undefined,
-    CAPSULE / 2,
+    flush ? undefined : look.shadow || undefined,
+    flush ? undefined : look.inset || undefined,
+    height / 2,
     true,
     KIT.size.edge,
   );
   const followEnd = useChatEnd();
-  const shown = !sendDisabled || !!sending;
-  const padLeft = dm ? DM.composer.padLeft : KIT.size.fieldPadX;
+  const shown = flush || !sendDisabled || !!sending;
+  const padLeft = dm ? DM.composer.padLeft : card.padLeft;
+  const send = flush ? card.send : SEND_IN;
+  const sendRight = flush ? card.padRight : SEND_INSET;
+  const sendBottom = flush ? (card.height - card.send) / 2 : SEND_INSET;
   return (
     <View
       style={{
@@ -350,20 +359,16 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
       {replyTo ? <ReplyStrip quote={replyTo} onCancel={onCancelReply} /> : null}
       <View
         style={{
-          minHeight: CAPSULE,
-          borderRadius: CAPSULE / 2,
+          minHeight: height,
+          borderRadius: height / 2,
           justifyContent: 'center',
-          ...(dm
-            ? gradientStyle(look.fill)
-            : k.scheme === 'light'
-              ? { backgroundColor: KIT.bubble.light.mine }
-              : gradientStyle(k.c.glass)),
-          borderWidth: KIT.size.edge,
-          borderColor: dm ? look.edge : k.c.glassEdge,
+          ...(dm ? gradientStyle(look.fill) : { backgroundColor: cardLook.field }),
+          borderWidth: dm ? KIT.size.edge : 0,
+          borderColor: dm ? look.edge : undefined,
           boxShadow: capsuleShadow.boxShadow,
           paddingLeft: padLeft,
           // The words stop short of the send button's place, shown or not.
-          paddingRight: SEND_IN + 2 * SEND_INSET,
+          paddingRight: send + 2 * sendRight,
         }}
       >
         {capsuleShadow.node}
@@ -381,10 +386,10 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
           maxLength={maxLength}
           multiline
           style={[
-            dm ? KIT_TYPE.msgDm : typeStyle(theme, 'body'),
+            dm ? KIT_TYPE.msgDm : KIT_TYPE.chatField,
             {
               color: colors.text,
-              paddingVertical: SPACING[3],
+              paddingVertical: dm ? SPACING[3] : (card.height - FIELD_LINE) / 2,
               paddingHorizontal: 0,
               maxHeight: SPACING[16] * 2,
               includeFontPadding: false,
@@ -398,18 +403,23 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
             className="absolute inset-0 justify-center"
             style={{ paddingLeft: padLeft }}
           >
-            {dm ? (
-              <RNText style={[KIT_TYPE.msgDm, { color: DM[k.scheme].hint }]}>{placeholder}</RNText>
-            ) : (
-              <Text variant="body" color={colors.placeholder}>
-                {placeholder}
-              </Text>
-            )}
+            <RNText
+              numberOfLines={dm ? undefined : 2}
+              adjustsFontSizeToFit={!dm}
+              style={
+                dm
+                  ? [KIT_TYPE.msgDm, { color: DM[k.scheme].hint }]
+                  : [KIT_TYPE.chatField, { color: cardLook.hint }]
+              }
+            >
+              {placeholder}
+            </RNText>
           </View>
         ) : null}
-        <View style={{ position: 'absolute', right: SEND_INSET, bottom: SEND_INSET }}>
+        <View style={{ position: 'absolute', right: sendRight, bottom: sendBottom }}>
           <SendIn
             dm={dm}
+            side={send}
             shown={shown}
             sending={!!sending}
             disabled={!!sendDisabled || !!sending}
@@ -432,6 +442,7 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
 // there is.
 function SendIn({
   dm,
+  side,
   shown,
   sending,
   disabled,
@@ -439,8 +450,10 @@ function SendIn({
   testID,
   onPress,
 }: {
-  // The DM's (tuval Dm): its green shadow, the arrow 18.
+  // The DM's (tuval Dm): its green shadow, the arrow 18. Otherwise Mekan's card's (tuval Mekan):
+  // the prominent green with its shadow, the arrow 16.
   dm: boolean;
+  side: number;
   shown: boolean;
   sending: boolean;
   disabled: boolean;
@@ -467,12 +480,12 @@ function SendIn({
   }));
   const pressScale = usePressScale();
   const { scheme } = useKit();
-  const sendShadow = boxShadowParts(
-    useLabOff('golge'),
-    dm ? DM[scheme].sendShadow || undefined : undefined,
-    SEND_IN / 2,
-  );
-  const arrow = dm ? DM.composer.arrow : ICON.md;
+  const prominent = KIT.button[scheme].prominent;
+  const labOff = useLabOff('golge');
+  const sendShadow = dm
+    ? boxShadowParts(labOff, DM[scheme].sendShadow || undefined, side / 2)
+    : shadowParts(labOff, prominent.shadow || undefined, prominent.inset || undefined, side / 2);
+  const arrow = dm ? DM.composer.arrow : VENUE.chat.field.arrow;
   return (
     <Pressable
       testID={testID}
@@ -489,12 +502,12 @@ function SendIn({
           <View
             style={[
               {
-                width: SEND_IN,
-                height: SEND_IN,
-                borderRadius: SEND_IN / 2,
+                width: side,
+                height: side,
+                borderRadius: side / 2,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: KIT.primary,
+                ...(dm ? { backgroundColor: KIT.primary } : gradientStyle(prominent.fill)),
                 boxShadow: sendShadow.boxShadow,
               },
               pressScale(pressed),
@@ -509,7 +522,7 @@ function SendIn({
                   d={dm ? ARROW_UP_DM : ARROW_UP}
                   fill="none"
                   stroke={KIT.onPrimary}
-                  strokeWidth={ARROW_STROKE}
+                  strokeWidth={dm ? ARROW_STROKE : ARROW_STROKE_CARD}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -526,6 +539,9 @@ const ARROW_UP = 'M12 19V5M5.5 11.5 12 5l6.5 6.5';
 // tuval Dm: the shaft from 19 to 6, the head 5.5 to either side.
 const ARROW_UP_DM = 'M12 19V6M6.5 11.5 12 6l5.5 5.5';
 const ARROW_STROKE = 2.2;
+const ARROW_STROKE_CARD = 2.8;
+// The card's field's line (KIT_TYPE.chatField: 14 on 18).
+const FIELD_LINE = 18;
 
 // The message being answered, over the message bar: a bar on the left, the name and one line.
 type DraftProps = Omit<Props, 'value' | 'onChangeText' | 'onSend' | 'sendDisabled'> & {
