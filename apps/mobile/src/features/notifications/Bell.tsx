@@ -10,13 +10,15 @@ import { KIT } from '@/theme/auraKit';
 // in a DM, a room, the venue chat or the check-in flow (none of them is a tab root).
 export function NotificationsBell() {
   const count = useUnseenCount();
-  // docs/design/aura → Mesajlar: a round glass button (52), the count as a pink badge.
+  // iskelet.md → 2.1 and 5.4: a top bar's clear glass round (46); something unseen, a pink dot (the
+  // count is read out).
   return (
     <Round
-      side={KIT.size.bell}
+      glass="clear"
+      side={KIT.size.topBtn}
       icon="bell"
       label={count > 0 ? tr.notifications.withCount(count) : tr.notifications.title}
-      badge={count}
+      dot={count > 0}
       onPress={() => router.push('/notifications')}
       testID="bell"
     />

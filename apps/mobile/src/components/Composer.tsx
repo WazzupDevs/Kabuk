@@ -5,14 +5,17 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import Svg, { Path } from 'react-native-svg';
 
 import { tr } from '@/i18n/tr';
 import { haptic, noteTyping } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { CapIcon } from '@/aura/CapIcon';
 import { useKit } from '@/aura/kit';
+import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
@@ -44,6 +47,9 @@ type Props = {
   onCancelReply?: () => void;
   inputTestID?: string;
   sendTestID?: string;
+  // iskelet.md → 5.5 (the DM): one capsule, the send button inside it at the right, shown only
+  // once there is something to send.
+  capsule?: boolean;
 };
 
 // The message bar of a chat screen (v45: .dbar): it floats at the bottom over the chat's wallpaper, a
@@ -57,6 +63,68 @@ const SEND = KIT.size.composerSend;
 const FLY_OUT_MS = 150;
 const FLY_IN_MS = 230;
 export const Composer = forwardRef<TextInput, Props>(function Composer(
+  {
+    value,
+    onChangeText,
+    placeholder,
+    maxLength,
+    onSend,
+    sendLabel,
+    sendDisabled,
+    sending,
+    above,
+    replyTo,
+    onCancelReply,
+    inputTestID,
+    sendTestID,
+    capsule,
+  },
+  ref,
+) {
+  if (capsule) {
+    return (
+      <CapsuleBar
+        ref={ref}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        onSend={onSend}
+        sendLabel={sendLabel}
+        sendDisabled={sendDisabled}
+        sending={sending}
+        above={above}
+        replyTo={replyTo}
+        onCancelReply={onCancelReply}
+        inputTestID={inputTestID}
+        sendTestID={sendTestID}
+      />
+    );
+  }
+  return (
+    <PillBar
+      ref={ref}
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      maxLength={maxLength}
+      onSend={onSend}
+      sendLabel={sendLabel}
+      sendDisabled={sendDisabled}
+      sending={sending}
+      above={above}
+      replyTo={replyTo}
+      onCancelReply={onCancelReply}
+      inputTestID={inputTestID}
+      sendTestID={sendTestID}
+    />
+  );
+});
+
+type BarProps = Omit<Props, 'capsule'>;
+
+// The field and the round send button beside it (the masa, venue and district chats).
+const PillBar = forwardRef<TextInput, BarProps>(function PillBar(
   {
     value,
     onChangeText,
@@ -215,6 +283,215 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
     </View>
   );
 });
+
+// iskelet.md → 5.5: the DM's message bar is one glass capsule (52), the field filling it and the
+// send button inside it at the right, a 38 green round with a white arrow up. With nothing to send
+// it is not there; once there is, it grows from 0.4 to 1 on springs.pop (at once with reduce
+// motion). A still surface as the pill field (the message passing under it would bend its colour).
+const CAPSULE = KIT.size.composerCapsule;
+const SEND_IN = KIT.size.composerSendIn;
+const SEND_INSET = KIT.size.composerSendInset;
+
+const CapsuleBar = forwardRef<TextInput, BarProps>(function CapsuleBar(
+  {
+    value,
+    onChangeText,
+    placeholder,
+    maxLength,
+    onSend,
+    sendLabel,
+    sendDisabled,
+    sending,
+    above,
+    replyTo,
+    onCancelReply,
+    inputTestID,
+    sendTestID,
+  },
+  ref,
+) {
+  const theme = useTheme();
+  const { colors, shape } = theme;
+  const k = useKit();
+  const shadowOff = useLabOff('golge');
+  const capsuleShadow = shadowParts(
+    shadowOff,
+    k.c.glassShadow,
+    undefined,
+    CAPSULE / 2,
+    true,
+    KIT.size.edge,
+  );
+  const followEnd = useChatEnd();
+  const shown = !sendDisabled || !!sending;
+  return (
+    <View
+      style={{
+        paddingHorizontal: shape.screenPadding,
+        paddingTop: above ? SPACING[1] : SPACING[2],
+        paddingBottom: SPACING[4] + SPACING[0.5],
+        gap: SPACING[1.5],
+      }}
+    >
+      {above}
+      {replyTo ? <ReplyStrip quote={replyTo} onCancel={onCancelReply} /> : null}
+      <View
+        style={{
+          minHeight: CAPSULE,
+          borderRadius: CAPSULE / 2,
+          justifyContent: 'center',
+          ...(k.scheme === 'light'
+            ? { backgroundColor: KIT.bubble.light.mine }
+            : gradientStyle(k.c.glass)),
+          borderWidth: KIT.size.edge,
+          borderColor: k.c.glassEdge,
+          boxShadow: capsuleShadow.boxShadow,
+          paddingLeft: KIT.size.fieldPadX,
+          // The words stop short of the send button's place, shown or not.
+          paddingRight: SEND_IN + 2 * SEND_INSET,
+        }}
+      >
+        {capsuleShadow.node}
+        <TextInput
+          ref={ref}
+          testID={inputTestID}
+          value={value}
+          onChangeText={(text) => {
+            // No touch while the person types (K-30).
+            noteTyping();
+            onChangeText(text);
+          }}
+          accessibilityLabel={placeholder}
+          selectionColor={colors.accent}
+          maxLength={maxLength}
+          multiline
+          style={[
+            typeStyle(theme, 'body'),
+            {
+              color: colors.text,
+              paddingVertical: SPACING[3],
+              paddingHorizontal: 0,
+              maxHeight: SPACING[16] * 2,
+              includeFontPadding: false,
+              textAlignVertical: 'center',
+            },
+          ]}
+        />
+        {value.length === 0 ? (
+          <View
+            pointerEvents="none"
+            className="absolute inset-0 justify-center"
+            style={{ paddingLeft: KIT.size.fieldPadX }}
+          >
+            <Text variant="body" color={colors.placeholder}>
+              {placeholder}
+            </Text>
+          </View>
+        ) : null}
+        <View style={{ position: 'absolute', right: SEND_INSET, bottom: SEND_INSET }}>
+          <SendIn
+            shown={shown}
+            sending={!!sending}
+            disabled={!!sendDisabled || !!sending}
+            label={sendLabel}
+            testID={sendTestID}
+            onPress={() => {
+              haptic('sent');
+              onSend();
+              // The stream goes to its end with the message (every chat).
+              followEnd?.();
+            }}
+          />
+        </View>
+      </View>
+    </View>
+  );
+});
+
+// The capsule's send button: hidden while there is nothing to send, grown on springs.pop when
+// there is.
+function SendIn({
+  shown,
+  sending,
+  disabled,
+  label,
+  testID,
+  onPress,
+}: {
+  shown: boolean;
+  sending: boolean;
+  disabled: boolean;
+  label: string;
+  testID?: string;
+  onPress: () => void;
+}) {
+  const reduce = useReduceMotion();
+  const from = MOTION.messageIn.sendFromScale;
+  const scale = useSharedValue(shown ? 1 : from);
+  const seen = useSharedValue(shown ? 1 : 0);
+  useEffect(() => {
+    if (!shown) {
+      seen.set(0);
+      scale.set(from);
+      return;
+    }
+    seen.set(1);
+    scale.set(reduce ? 1 : withSpring(1, MOTION.springs.pop));
+  }, [shown, reduce, from, scale, seen]);
+  const style = useAnimatedStyle(() => ({
+    opacity: seen.get(),
+    transform: [{ scale: scale.get() }],
+  }));
+  const pressScale = usePressScale();
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled, busy: sending }}
+      accessibilityElementsHidden={!shown}
+      importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}
+      disabled={disabled || !shown}
+      onPress={onPress}
+    >
+      {({ pressed }) => (
+        <Animated.View style={style}>
+          <View
+            style={[
+              {
+                width: SEND_IN,
+                height: SEND_IN,
+                borderRadius: SEND_IN / 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: KIT.primary,
+              },
+              pressScale(pressed),
+            ]}
+          >
+            {sending ? (
+              <Loader kind="meet" size={ICON.md} delay={0} label={null} />
+            ) : (
+              <Svg width={ICON.md} height={ICON.md} viewBox="0 0 24 24">
+                <Path
+                  d={ARROW_UP}
+                  fill="none"
+                  stroke={KIT.onPrimary}
+                  strokeWidth={ARROW_STROKE}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+            )}
+          </View>
+        </Animated.View>
+      )}
+    </Pressable>
+  );
+}
+// iskelet.md → 2.4: the line icons' stroke, round ends.
+const ARROW_UP = 'M12 19V5M5.5 11.5 12 5l6.5 6.5';
+const ARROW_STROKE = 2.2;
 
 // The message being answered, over the message bar: a bar on the left, the name and one line.
 type DraftProps = Omit<Props, 'value' | 'onChangeText' | 'onSend' | 'sendDisabled'> & {

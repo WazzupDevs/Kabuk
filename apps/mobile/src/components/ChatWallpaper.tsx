@@ -27,6 +27,12 @@ const WALLS: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
   },
 };
 
+// iskelet.md → 5.5: the picture (the DM's 1290 × 2796) is decoded at the screen's size, not its
+// own (Android: the image pipeline scales it down before decoding), once: the wall and every band
+// strip ask for it at the same size (canvas), so they share the one decoded copy in the pipeline's
+// memory cache.
+const WALL_DECODE = 'resize' as const;
+
 // The picture over the chat's whole area (`canvas`: its width and the tallest height it has had,
 // so the keyboard never scales it), from the area's top.
 export const ChatWallpaper = memo(function ChatWallpaper({
@@ -54,6 +60,7 @@ export const ChatWallpaper = memo(function ChatWallpaper({
         source={source ?? WALLS[kind][scheme]}
         fadeDuration={0}
         resizeMode="cover"
+        resizeMethod={WALL_DECODE}
         accessible={false}
         style={{ position: 'absolute', left: 0, top: 0, width: canvas.w, height: canvas.h }}
       />
@@ -123,6 +130,7 @@ export function WallBand({
               source={source ?? WALLS[kind][scheme]}
               fadeDuration={0}
               resizeMode="cover"
+              resizeMethod={WALL_DECODE}
               accessible={false}
               style={{
                 position: 'absolute',

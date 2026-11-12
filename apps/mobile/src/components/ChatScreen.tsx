@@ -32,14 +32,7 @@ import {
   type ViewStyle,
   Text as RNText,
 } from 'react-native';
-import Reanimated, {
-  Easing,
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
-  FadeOut,
-  withTiming,
-} from 'react-native-reanimated';
+import Reanimated, { FadeIn, FadeOut, withSpring, withTiming } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { sameDay } from '@shared/chatRuns.ts';
@@ -53,7 +46,7 @@ import { ICON, SPACING } from '@/theme/tokens';
 import { type ChatWallKind, type WallpaperCanvas, wallpaperCanvas } from '@/theme/chatWallpaper';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { AURA } from '@/theme/aura';
+import { AURA, MOTION } from '@/theme/aura';
 import { Round, useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
@@ -70,6 +63,9 @@ import { AppIcon } from './AppIcon';
 import { KeyboardChatScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 
 import { GlassTarget } from '@/components/LiquidGlass';
+import { shadowParts } from '@/components/NativeShadow';
+import { useLabOff } from '@/lib/drawLab';
+import { gradientStyle } from '@/theme/gradient';
 import { ChatKindContext } from './chatKind';
 import { ChatMetaContext } from './chatMeta';
 import { metaHiddenAt } from '@/lib/chatMeta';
@@ -138,27 +134,26 @@ const SETTLE_MS = 800;
 // flipped cell.
 const ChatInvertedContext = createContext(false);
 const FLASH_MS = 1400;
-// A message the reader sent rises from the message bar into its place (Telegram Android; the
-// owner's call, 30 Ekim); another's fades up a little.
-const SEND_RISE = SPACING[16];
-const SEND_MS = 260;
+// iskelet.md → 5.5: a new message, the reader's own or another's, comes in from 18 below and 0.86
+// on springs.pop (MOTION.messageIn), fading in over its first part. Only the row's own look moves:
+// its place in the stream, the list's offset and its following the end are the list's (ChatList).
+const ARRIVE_FADE_MS = 130;
 
 function riseFrom(distance: number) {
+  const { fromScale } = MOTION.messageIn;
+  const pop = MOTION.springs.pop;
   return () => {
     'worklet';
     return {
-      initialValues: { opacity: 0, transform: [{ translateY: distance }] },
+      initialValues: { opacity: 0, transform: [{ translateY: distance }, { scale: fromScale }] },
       animations: {
-        opacity: withTiming(1, { duration: SEND_MS / 2 }),
-        transform: [
-          { translateY: withTiming(0, { duration: SEND_MS, easing: Easing.out(Easing.cubic) }) },
-        ],
+        opacity: withTiming(1, { duration: ARRIVE_FADE_MS }),
+        transform: [{ translateY: withSpring(0, pop) }, { scale: withSpring(1, pop) }],
       },
     };
   };
 }
 const KEEP_VISIBLE = { minIndexForVisible: 0 } as const;
-const ARRIVE_MS = 220;
 
 // One message's row in the stream: reports its place for jumpTo and hands jumpTo to its bubble
 // (a quote's tap). Outside a ChatScroll it is a plain View and jumpTo does nothing. A message that
@@ -170,9 +165,10 @@ export const ChatRow = memo(function ChatRow({
   children,
 }: {
   id: string;
-  // A run's first message: a little more room above it.
+  // A run's first message: the room between two writers above it (iskelet.md → 5.5: 12, a run's
+  // bubbles 3 apart).
   first?: boolean;
-  // The reader's own: it rises from the message bar when sent.
+  // The reader's own: it grows from its own side when it comes in.
   mine?: boolean;
   children: (jumpTo: (id: string) => void) => ReactNode;
 }) {
@@ -189,16 +185,18 @@ export const ChatRow = memo(function ChatRow({
   const reduce = useReduceMotion();
   const [arriving] = useState(store.live && !reduce && id === store.newest);
   // In a list drawn from the bottom up the cell is flipped: a rise from below is a move up in it.
-  const entering = !arriving
-    ? undefined
-    : mine
-      ? riseFrom(inverted ? -SEND_RISE : SEND_RISE)
-      : (inverted ? FadeInUp : FadeInDown).duration(ARRIVE_MS);
+  const rise = MOTION.messageIn.fromY;
+  const entering = arriving ? riseFrom(inverted ? -rise : rise) : undefined;
   return (
     <Reanimated.View
       entering={entering}
       onLayout={jump?.row(id)}
-      style={{ gap: SPACING[2], marginTop: first ? SPACING[2] : 0 }}
+      style={{
+        gap: SPACING[2],
+        marginTop: first ? KIT.size.runApart - KIT.size.runGap : 0,
+        // It grows from the side its bubble stands on.
+        transformOrigin: mine ? 'right center' : 'left center',
+      }}
     >
       {flash > 0 ? <Flash key={flash} /> : null}
       {children((target) => void jump?.jumpTo(target))}
@@ -1318,8 +1316,8 @@ export function ChatScreen<T extends ChatListItem>({
                           paddingHorizontal: shape.screenPadding,
                           paddingTop: SPACING[3] + under,
                           paddingBottom: SPACING[2] + topHeight,
-                          // Telegram Android: a run's bubbles close together, runs apart (ChatRow).
-                          gap: SPACING[0.5],
+                          // iskelet.md → 5.5: a run's bubbles 3 apart, runs 12 (ChatRow).
+                          gap: KIT.size.runGap,
                         }}
                       />
                     ) : (
@@ -1334,11 +1332,11 @@ export function ChatScreen<T extends ChatListItem>({
                         keyboardOffset={bottomPad}
                         contentContainerStyle={{
                           flexGrow: 1,
-                          // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+                          // 16 at the sides; iskelet.md → 5.5: a run's bubbles 3 apart, runs 12.
                           paddingHorizontal: shape.screenPadding,
                           paddingTop: SPACING[2] + topHeight,
                           paddingBottom: SPACING[3] + under,
-                          gap: SPACING[0.5],
+                          gap: KIT.size.runGap,
                         }}
                       >
                         {children}
@@ -1431,6 +1429,7 @@ export function DayLine({
 }) {
   const { c, scheme, tags } = useKit();
   const lineRef = useContext(DayLineRefContext);
+  const shadowOff = useLabOff('golge');
   if (fresh) {
     // docs/design/aura → Mekan sohbeti: "Yeni mesaj" in pink between two soft pink lines.
     const ink = scheme === 'dark' ? tags.pink.fg : KIT.nameInk;
@@ -1451,20 +1450,34 @@ export function DayLine({
       </View>
     );
   }
+  // iskelet.md → 5.5 and 2.2: a glass pill ("Dün", "Bugün"), the clear glass drawn without a live
+  // blur (it is one of the stream's rows).
+  const g = KIT.button[scheme].clear;
+  const shadow = shadowParts(
+    shadowOff,
+    g.shadow || undefined,
+    g.inset || undefined,
+    KIT.size.chip,
+    true,
+    KIT.size.edge,
+  );
   return (
     <View
       ref={floating ? undefined : (lineRef ?? undefined)}
       className="self-center"
-      // docs/design/aura → Dm (`.day`): a soft white pill.
       style={{
         marginTop: floating ? 0 : SPACING[2.5],
         marginBottom: floating ? 0 : SPACING[1.5],
-        backgroundColor: c.day,
+        ...gradientStyle(g.fill),
+        borderWidth: KIT.size.edge,
+        borderColor: g.edge,
+        boxShadow: shadow.boxShadow,
         borderRadius: KIT.size.chip,
         paddingHorizontal: KIT.size.dayPadX,
         paddingVertical: KIT.size.dayPadY,
       }}
     >
+      {shadow.node}
       <RNText
         maxFontSizeMultiplier={DAY_SCALE}
         style={[KIT_TYPE.day, { color: fresh ? KIT.primary : c.muted }]}

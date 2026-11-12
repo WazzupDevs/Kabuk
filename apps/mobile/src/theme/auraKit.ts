@@ -4,7 +4,6 @@
 // src/aura/kit/ read only these.
 import type { TextStyle } from 'react-native';
 import { BUTTON_GLASS } from './buttonGlass';
-import { RISO_BUTTON } from './risoButton';
 
 const F = {
   500: 'PlusJakartaSans_500Medium',
@@ -77,6 +76,10 @@ export const KIT_TYPE = {
   eyebrow: t(600, 12, 16, 0.02),
   stamp: t(600, 11, 14),
   strong: { fontFamily: F[600] } as TextStyle,
+  // A conversation's name and last line while unread (iskelet.md → 5.4).
+  bold: { fontFamily: F[800] } as TextStyle,
+  // "Henüz mesaj yok" (5.4): slanted (the face has no italic file; Android slants it).
+  italic: { fontStyle: 'italic' } as TextStyle,
   btn: t(600, 16, 20),
   btnSm: t(600, 14, 18),
   // Mekan's "Masa kur" (44 high, 15).
@@ -128,7 +131,7 @@ export const KIT_TYPE = {
   },
 } as const;
 
-export type KitTextVariant = Exclude<keyof typeof KIT_TYPE, 'av' | 'strong'>;
+export type KitTextVariant = Exclude<keyof typeof KIT_TYPE, 'av' | 'strong' | 'bold' | 'italic'>;
 
 // Aura v75 E4: in the narrow state (320 dp or the largest text, `lib/narrow.ts`) the eyebrow is 13,
 // so it is the canvas's 17/22 at the largest text (1.3x).
@@ -166,9 +169,7 @@ export type { ButtonGlassKind } from './buttonGlass';
 export const BTN_STRONG: TextStyle = { fontFamily: F[800] };
 
 export const KIT = {
-  // Riso round "+" of Mesajlar (theme/risoButton.ts); the buttons are glass (`button`,
-  // theme/buttonGlass.ts).
-  riso: RISO_BUTTON,
+  // The buttons are glass (theme/buttonGlass.ts; iskelet.md → 2.1).
   button: BUTTON_GLASS,
   light: {
     ink: '#031B0B',
@@ -748,9 +749,9 @@ export const KIT = {
     // Mesajlar's bell (52) and its new message button (70, 26 from the right).
     // U27: the bell 44 (round soft).
     bell: 44,
-    // U27 (`.fab`): the new chat button, 20 from the right; the round buttons' size (44, as the
-    // bell), riso (the owner's call, 8 Kasım).
-    newChat: 44,
+    // iskelet.md → 5.4: the new chat button a prominent round, a body's main button (2.1: 50 to
+    // 56), 20 from the right.
+    newChat: 56,
     newChatRight: 20,
     // Mesajlar's rows: a 58 face, 12 above and under.
     // U27 (`.list .li`): a conversation 72 high, 12 / 16 in; the hairline from 72.
@@ -784,10 +785,12 @@ export const KIT = {
     grabH: 4,
     msgRadius: 22,
     msgTail: 8,
-    // Chat bubbles as Telegram Android lays them (the owner's call, 30 Ekim): 18 round, 6 inside a
-    // run on the author's side, the run's last one with a tail 7 × 12; tighter padding.
-    bubbleRadius: 18,
-    bubbleInner: 6,
+    // Chat bubbles (iskelet.md → 5.5): 20 round, 7 where a run's bubbles face each other, the run's
+    // last one with a tail 7 × 12; a run's bubbles 3 apart, 12 when the writer changes.
+    bubbleRadius: 20,
+    bubbleInner: 7,
+    runGap: 3,
+    runApart: 12,
     bubblePadX: 12,
     bubblePadY: 7,
     tailW: 7,
@@ -830,6 +833,11 @@ export const KIT = {
     // A chat's message field and its send button (docs/design/aura → Dm).
     composerField: 44,
     composerSend: 44,
+    // iskelet.md → 5.5: the DM's message bar one glass capsule 52, its send a 38 green round inside
+    // it at the right, `composerSendInset` from its edge.
+    composerCapsule: 52,
+    composerSendIn: 38,
+    composerSendInset: 7,
     phoneField: 72,
     fieldPadX: 20,
     dayPadX: 12,

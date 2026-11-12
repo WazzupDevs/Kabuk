@@ -408,11 +408,6 @@ export function Btn({
     </Pressable>
   );
 }
-// The riso print's texture tile (scripts/icon/risoButton.ts), light marks on the dark ink: only
-// Mesajlar's riso "+" now; the buttons are glass (iskelet.md → 2.1).
-export const RISO_TEXTURE = {
-  light: require('../../assets/riso/button/texture-light.png') as ImageSourcePropType,
-};
 const PRIMARY_SOFT = 0.62;
 const CLEAR_SOFT = 0.5;
 // A disabled switch (not a button: U10 is for buttons) still fades.
@@ -435,6 +430,8 @@ export function Round({
   light,
   side,
   onHold,
+  glass,
+  dot,
   children,
 }: {
   icon?: CapIconName;
@@ -457,29 +454,54 @@ export function Round({
   light?: boolean;
   // Its own size (Masa's bar: 48, or 44 on a narrow phone).
   side?: number;
+  // The buttons' glass (iskelet.md → 2.1) on a round: `prominent` (Mesajlar's new chat) or
+  // `clear` (a bar's bell); no live blur.
+  glass?: ButtonGlassKind;
+  // A pink dot on its corner instead of a count (Mesajlar's bell, 5.4).
+  dot?: boolean;
   children?: ReactNode;
 }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const press = usePress();
   const s = side ?? (big ? KIT.size.roundLg : KIT.size.round);
   const shadowOff = useLabOff('golge');
+  const solid = useReduceTransparency();
   const frost = useFrost();
   const off = disabled && !loading;
-  const frosted = frost && glassy && !primary && !off && !light;
+  const g = glass ? KIT.button[scheme][glass] : null;
+  const frosted = frost && glassy && !primary && !off && !light && !g;
   const fg = off
     ? c.onDisabled
-    : primary
-      ? KIT.onPrimary
-      : light
-        ? KIT.sceneRound.ink
-        : (color ?? c.ink);
+    : g
+      ? g.ink
+      : primary
+        ? KIT.onPrimary
+        : light
+          ? KIT.sceneRound.ink
+          : (color ?? c.ink);
   const shadow = off
     ? null
-    : primary
-      ? shadowParts(shadowOff, c.primaryShadow, c.primaryInset, s / 2)
-      : glassy
-        ? shadowParts(shadowOff, c.raisedShadow || undefined, undefined, s / 2, true, KIT.size.edge)
-        : null;
+    : g
+      ? shadowParts(
+          shadowOff,
+          g.shadow || undefined,
+          g.inset || undefined,
+          s / 2,
+          true,
+          KIT.size.edge,
+        )
+      : primary
+        ? shadowParts(shadowOff, c.primaryShadow, c.primaryInset, s / 2)
+        : glassy
+          ? shadowParts(
+              shadowOff,
+              c.raisedShadow || undefined,
+              undefined,
+              s / 2,
+              true,
+              KIT.size.edge,
+            )
+          : null;
   return (
     <Pressable
       testID={testID}
@@ -511,46 +533,80 @@ export function Round({
           // Disabled (U10): the neutral fill, not faded.
           off
             ? { backgroundColor: frost ? c.disabled : c.disabledOnCard }
-            : primary
-              ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
-              : light
-                ? {
-                    backgroundColor: KIT.sceneRound.bg,
-                    borderWidth: KIT.size.edge,
-                    borderColor: KIT.sceneRound.edge,
-                  }
-                : glassy
+            : g
+              ? {
+                  ...gradientStyle(solid ? g.solid : g.fill),
+                  borderWidth: KIT.size.edge,
+                  borderColor: g.edge,
+                  boxShadow: shadow?.boxShadow,
+                }
+              : primary
+                ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
+                : light
                   ? {
-                      backgroundColor: frosted ? undefined : c.raisedRound,
+                      backgroundColor: KIT.sceneRound.bg,
                       borderWidth: KIT.size.edge,
-                      borderColor: c.raisedEdge,
-                      boxShadow: shadow?.boxShadow,
+                      borderColor: KIT.sceneRound.edge,
                     }
-                  : null,
+                  : glassy
+                    ? {
+                        backgroundColor: frosted ? undefined : c.raisedRound,
+                        borderWidth: KIT.size.edge,
+                        borderColor: c.raisedEdge,
+                        boxShadow: shadow?.boxShadow,
+                      }
+                    : null,
         ]}
       >
         {shadow?.node}
-        {glassy && !primary && !off && !light ? <FrostOf height={s} fill={c.raisedRound} /> : null}
+        {glassy && !primary && !off && !light && !g ? (
+          <FrostOf height={s} fill={c.raisedRound} />
+        ) : null}
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
           (children ?? (icon ? <CapIcon name={icon} color={fg} /> : null))
         )}
-        {badge ? (
+        {badge && !dot ? (
           <View style={{ position: 'absolute', top: -BADGE_OUT, right: -BADGE_OUT }}>
             <Badge count={badge} />
           </View>
+        ) : null}
+        {dot ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: DOT_IN,
+              right: DOT_IN,
+              width: KIT.size.dot,
+              height: KIT.size.dot,
+              borderRadius: KIT.size.dot / 2,
+              backgroundColor: KIT.pink,
+            }}
+          />
         ) : null}
       </Animated.View>
     </Pressable>
   );
 }
 const BADGE_OUT = 4;
+// The dot sits inside the round's corner, on its edge's curve.
+const DOT_IN = 9;
 
-// .badge: a pink count.
+// .badge: a pink count; `green`: in the primary (Mesajlar's unread conversation, 5.4).
 // `swap`: a new count takes the old one's place, the old fading out (hareket.json → leave, 120) and the
 // new in (arrive, 180); the badge stays where it is (Mekan sohbeti kartı).
-export function Badge({ count, large, swap }: { count: number; large?: boolean; swap?: boolean }) {
+export function Badge({
+  count,
+  large,
+  swap,
+  green,
+}: {
+  count: number;
+  large?: boolean;
+  swap?: boolean;
+  green?: boolean;
+}) {
   const side = large ? KIT.size.badgeLg : KIT.size.badge;
   const label = count > 99 ? '99+' : String(count);
   const textStyle = [large ? KIT_TYPE.badgeLg : KIT_TYPE.badge, { color: KIT.white }];
@@ -561,7 +617,7 @@ export function Badge({ count, large, swap }: { count: number; large?: boolean; 
         height: side,
         paddingHorizontal: KIT.size.badgePadX,
         borderRadius: side / 2,
-        backgroundColor: KIT.pink,
+        backgroundColor: green ? KIT.primary : KIT.pink,
         alignItems: 'center',
         justifyContent: 'center',
       }}

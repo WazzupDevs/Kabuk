@@ -26,7 +26,7 @@ import { track } from '@/lib/analytics';
 import { callAccount, friendsApi, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
-import { KIT } from '@/theme/auraKit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { SPACING } from '@/theme/tokens';
 import { firstRows, useOpenRows } from '@/lib/afterTransition';
@@ -186,6 +186,7 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   };
 
   let name = item.displayName ?? '';
+  let line = '';
   let status = '';
   let time = tr.common.ago(item.createdAt, now);
   let faded = false;
@@ -200,12 +201,12 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
           : (item.otherAlias ?? item.displayName ?? '');
       const accepted = item.state === 'accepted' || (respond.isSuccess && respond.variables.accept);
       if (accepted) {
-        status = tr.notifications.short.friends;
+        line = tr.notifications.line.friends;
         actions = item.publicId ? (
           <MessageRound onPress={() => message(item.publicId ?? '', item.displayName)} />
         ) : null;
       } else {
-        status = tr.notifications.short.request;
+        line = tr.notifications.line.request;
         actions = (
           <>
             <Round
@@ -230,14 +231,15 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
       break;
     }
     case 'accepted':
-      status = tr.notifications.short.accepted;
+      line = tr.notifications.line.accepted;
       actions = <MessageRound onPress={() => message(item.publicId, item.displayName)} />;
       break;
     case 'match':
-      status = tr.notifications.short.match;
+      line = tr.notifications.line.match;
       actions = <MessageRound onPress={() => message(item.publicId, item.displayName)} />;
       break;
     case 'invite': {
+      line = tr.notifications.line.invite;
       const state = answer.isSuccess
         ? answer.variables.accept
           ? 'joined'
@@ -280,16 +282,23 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
     }
   }
 
-  // docs/design/aura → Bildirimler, kept short (the owner's call, 28 Ekim): the face, the name
-  // and one line of state on a row of one height, the answers as round buttons at the right.
+  // iskelet.md → 5.4: the face, the name in bold with what happened as one sentence ("Furkan
+  // isteğini kabul etti"; it wraps, never cut), its date under it (an invite's state or its
+  // minutes in its place), the answers as round buttons at the right.
+  const under = item.kind === 'invite' ? status : time;
   const words = (
     <View style={{ flex: 1, gap: SPACING[0.5] }}>
-      <T v="h3" lines={1} fit>
-        {name}
+      <T v="body" ink>
+        <T v="body" ink style={KIT_TYPE.bold}>
+          {name}
+        </T>
+        {` ${line}`}
       </T>
-      <T v="fine" lines={1} fit color={joined ? KIT.success : undefined}>
-        {time ? [status, time].join(` ${tr.common.separator} `) : status}
-      </T>
+      {under ? (
+        <T v="fine" tabular color={joined ? KIT.success : undefined}>
+          {under}
+        </T>
+      ) : null}
       {error ? <Error error={error} /> : null}
     </View>
   );
