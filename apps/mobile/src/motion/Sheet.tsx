@@ -41,6 +41,9 @@ type Props = {
   icon?: IconName;
   // Aura v71 (SikayetEt): a 24 icon in the title's line, 10 before it, no disc.
   titleIcon?: IconName;
+  // A picture in the title's line before it, the title and the subtitle beside it (iskelet.md →
+  // 5.3: a game's picture over its record).
+  titleArt?: ReactNode;
   // Centered text for a single decision (the join request); menus stay left-aligned.
   centered?: boolean;
   // Buddies looking over the sheet's top edge (docs/design/aura → CheckIn, Bildirimler).
@@ -72,6 +75,7 @@ export function Sheet({
   subtitle,
   icon,
   titleIcon,
+  titleArt,
   centered,
   peek,
   titleLarge,
@@ -135,27 +139,38 @@ export function Sheet({
           </View>
         ) : null}
         {title ? (
-          <View style={{ gap: SUBTITLE_GAP, alignSelf: 'stretch' }}>
-            <View className="flex-row items-center" style={{ gap: KIT.size.titleIconGap }}>
-              {titleIcon ? (
-                <AppIcon name={titleIcon} size={KIT.size.titleIcon} color={colors.accent} />
-              ) : null}
-              <View className="flex-1">
-                <T
-                  v={titleLarge ? 'sheetTitleLg' : 'title'}
-                  center={centered}
-                  accessibilityRole="header"
-                >
-                  {title}
-                  {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
-                </T>
+          <View
+            style={
+              titleArt
+                ? { flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }
+                : { alignSelf: 'stretch' }
+            }
+          >
+            {titleArt}
+            <View
+              style={{ gap: SUBTITLE_GAP, alignSelf: 'stretch', flex: titleArt ? 1 : undefined }}
+            >
+              <View className="flex-row items-center" style={{ gap: KIT.size.titleIconGap }}>
+                {titleIcon ? (
+                  <AppIcon name={titleIcon} size={KIT.size.titleIcon} color={colors.accent} />
+                ) : null}
+                <View className="flex-1">
+                  <T
+                    v={titleLarge ? 'sheetTitleLg' : 'title'}
+                    center={centered}
+                    accessibilityRole="header"
+                  >
+                    {title}
+                    {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                  </T>
+                </View>
               </View>
+              {subtitle ? (
+                <T v="fine" center={centered}>
+                  {subtitle}
+                </T>
+              ) : null}
             </View>
-            {subtitle ? (
-              <T v="fine" center={centered}>
-                {subtitle}
-              </T>
-            ) : null}
           </View>
         ) : null}
       </View>

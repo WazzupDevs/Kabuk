@@ -72,6 +72,22 @@ export const GIFT_STAGE = {
   packShadow: 'rgba(20,8,2,0.45)',
 } as const;
 
+// Aktiviteler's card (docs/design/iskelet.md → 5.3): one dark layer 150 high, 30 round, 16 in;
+// the packs stand out over its top edge at its right (right, top, width, turn): Gümüş turned -12°,
+// Altın 12°, Bronz in the middle in front and bigger. `overhang`: the room over the card for them.
+export const GIFT_CARD = {
+  height: 150,
+  radius: 30,
+  pad: 16,
+  textWidth: 150,
+  overhang: 34,
+  packs: [
+    { pack: 'gumus', right: 98, top: -16, width: 58, turn: '-12deg' },
+    { pack: 'altin', right: 8, top: -16, width: 58, turn: '12deg' },
+    { pack: 'bronz', right: 44, top: -34, width: 96, turn: '0deg' },
+  ],
+} as const;
+
 // The ring's floor shadow and the opened card's light (PaketKartEgme).
 export const GIFT_FLOOR = {
   light: 'radial-gradient(closest-side, rgba(4,40,20,0.28), transparent)',

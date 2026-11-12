@@ -68,6 +68,7 @@ export function T({
   center,
   lines,
   fit,
+  tabular,
   style,
   children,
   testID,
@@ -82,6 +83,8 @@ export function T({
   lines?: number;
   // Shrinks to fit its lines rather than ending in "…" (CLAUDE.md → Ekran davranışı).
   fit?: boolean;
+  // Digits of one width (a time at a list row's right, iskelet.md → 5.3).
+  tabular?: boolean;
   style?: StyleProp<TextStyle>;
   children: ReactNode;
   testID?: string;
@@ -104,6 +107,7 @@ export function T({
         v === 'eyebrow' && narrow ? EYEBROW_NARROW : KIT_TYPE[v],
         strong ? KIT_TYPE.strong : null,
         { color: tone, textAlign: center ? 'center' : undefined },
+        tabular ? TABULAR : null,
         style,
       ]}
     >
@@ -114,6 +118,7 @@ export function T({
 // The canvas's type grows with the system's text size up to this much.
 const MAX_FONT_SCALE = 1.3;
 const MIN_FIT = 0.5;
+const TABULAR: TextStyle = { fontVariant: ['tabular-nums'] };
 
 // .glass (.sm, .pad, .pad-lg): frosted white, a white edge, the soft green shadow and a light top
 // line; in the dark flat #121614 with a 9 % white edge.
