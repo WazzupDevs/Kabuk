@@ -30,6 +30,8 @@ export function artifactOf(name: string): { theme: Theme; shard: number | null }
 export function isShot(theme: Theme, path: string): boolean {
   const parts = path.split('/');
   if (!path.endsWith('.png') || parts.includes('attempt-1')) return false;
+  // Maestro's own picture of a failed step (step-<n>-<command>.png) is not a takeScreenshot.
+  if (/^step-\d+-/.test(parts[parts.length - 1] ?? '')) return false;
   return theme === 'visual'
     ? parts.length === 2 && parts[0] === 'aday'
     : parts[0] === 'screenshots';

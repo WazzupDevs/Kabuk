@@ -122,9 +122,12 @@ appId: app.kabuk.mobile
       id: explore-map-ready
     timeout: 30000
 - tapOn: Liste
+# Centred: at 320 dp the venue's row came into view under the floating tab bar and the tap landed
+# on the bar's Mesajlar tab (the nightly's failure since 8 Kasım; seen in the run's own picture).
 - scrollUntilVisible:
     element:
       text: E2E Kafe
+    centerElement: true
     timeout: 30000
 - tapOn: E2E Kafe
 - extendedWaitUntil:
