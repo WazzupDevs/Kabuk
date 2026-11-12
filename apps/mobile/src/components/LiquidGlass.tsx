@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
+import { SHEET_GLASS, TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
 
 // The native side of skall's glass (modules/skall-glass, Android; frosted since 0.9.0, the owner's
 // call, 29 Ekim): a screen a glass can see through (GlassTarget) and the glass itself
@@ -19,6 +19,9 @@ type TargetProps = {
   // A screen's backdrop (its ground and still pictures, never a button): the frosted buttons drawn
   // after it look through it without an id (Frost).
   backdrop?: boolean;
+  // Whether a glass looks through it: the tab bar's switch unless given (a sheet's still backdrop
+  // takes SHEET_GLASS).
+  enabled?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
 };
@@ -44,10 +47,16 @@ const NativeGlass: ComponentType<GlassProps> | null = android
   : null;
 
 // A screen the glass may show; elsewhere (iOS) a plain view.
-export function GlassTarget({ targetId, backdrop, style, children }: TargetProps) {
+export function GlassTarget({
+  targetId,
+  backdrop,
+  enabled = TAB_BAR_GLASS,
+  style,
+  children,
+}: TargetProps) {
   // With the glass off (theme/glass.ts → TAB_BAR_GLASS) no glass looks through it: a plain view, so
   // no native target tracks what changes under it.
-  return NativeTarget && TAB_BAR_GLASS ? (
+  return NativeTarget && enabled ? (
     <NativeTarget targetId={targetId} backdrop={backdrop} style={style}>
       {children}
     </NativeTarget>
@@ -65,6 +74,23 @@ export function LiquidGlass(props: GlassProps) {
 // Elsewhere it keeps its own fill alone.
 export const FROSTED =
   NativeGlass !== null && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
+
+// Whether a sheet's and a menu's card can be on the live glass (theme/glass.ts → SHEET_GLASS):
+// where the native glass blurs.
+export const SHEET_FROSTED =
+  NativeGlass !== null && SHEET_GLASS && blursBehind(Platform.OS, Platform.Version);
+
+// The screen behind a sheet or a menu, copied once as it opens and drawn blurred by `blur` (the
+// deviation in dp; modules/skall-glass → BackdropBlurView): a Modal is a window of its own and the
+// glass cannot look through to the screen under it. Android 12 and later; nothing elsewhere.
+type BackdropProps = { blur: number; style?: StyleProp<ViewStyle> };
+const NativeBackdrop: ComponentType<BackdropProps> | null = android
+  ? requireNativeView<BackdropProps>('SkallGlass', 'BackdropBlurView')
+  : null;
+export function BackdropBlur(props: BackdropProps) {
+  return NativeBackdrop ? <NativeBackdrop {...props} /> : null;
+}
+export const HAS_BACKDROP = NativeBackdrop !== null;
 
 // A clear button's frost (the owner's call, 30 Ekim: every clear button frosted): the screen's
 // backdrop behind it blurred as the tab bar's glass is (theme/glass.ts → TAB_GLASS), cut to its

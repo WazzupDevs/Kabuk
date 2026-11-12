@@ -46,6 +46,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { CapIcon, type CapIconName } from './CapIcon';
 import { springConfig, SWAP_RN } from './motion';
 import { photoCacheKey } from '@/lib/usePhoto';
+import { PRESS_DELAY, usePress } from '@/motion/Tap';
 
 // The canvas's component kit (docs/design/aura/project/aura.css), class for class. Values from
 // theme/auraKit.ts; nothing is measured here.
@@ -221,27 +222,9 @@ function FrostOf({ height, fill }: { height: number; fill?: string }) {
   return <Frost radius={height / 2} ground={AURA[scheme].ground} fill={fill} />;
 }
 
-// A press that sinks a little and springs back (hareket.json → press), on the native driver.
-// `delay` goes to the Pressable's `unstable_pressDelay` (iskelet.md → 2.3): the press shows a moment
-// after the touch, and a scroll that starts first cancels it (its responder ends before the press
-// in), so rows under a scrolling finger never look pressed. A quick tap still sinks and springs
-// back as it lifts.
-export const PRESS_DELAY = MOTION.press.delayMs;
-export function usePress() {
-  const [scale] = useState(() => new Animated.Value(1));
-  return {
-    scale,
-    delay: PRESS_DELAY,
-    onPressIn: () =>
-      Animated.timing(scale, {
-        toValue: MOTION.press.scale,
-        duration: MOTION.press.downMs,
-        useNativeDriver: true,
-      }).start(),
-    onPressOut: () =>
-      Animated.spring(scale, { ...springConfig(MOTION.springs.press), toValue: 1 }).start(),
-  };
-}
+// The press (iskelet.md → 2.3) is the motion kit's (src/motion/Tap.tsx): one source for Tap and
+// every button here.
+export { PRESS_DELAY, usePress };
 
 // .btn (.primary, .glassy, .dark; .sm; .block): a capsule, its icon before its label. Busy: the
 // label stays, the meeting capsules turn beside it, a second press is ignored.
