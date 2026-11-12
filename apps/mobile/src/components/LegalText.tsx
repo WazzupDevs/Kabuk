@@ -49,7 +49,8 @@ function blocksOf(doc: LegalDocKey): LegalBlock[] {
 }
 
 function open(href: string) {
-  const doc = LEGAL_DOC_BY_SLUG[href.replace(/\.html$/, '')];
+  const slug = href.replace(/\.html$/, '');
+  const doc = Object.hasOwn(LEGAL_DOC_BY_SLUG, slug) ? LEGAL_DOC_BY_SLUG[slug] : undefined;
   if (doc) router.push(ROUTES[doc]);
   else void Linking.openURL(/^https?:/.test(href) ? href : `${SITE}${href}`);
 }

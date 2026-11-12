@@ -12,20 +12,6 @@ import PostHog from 'posthog-react-native';
 const apiKey = process.env.EXPO_PUBLIC_POSTHOG_KEY;
 const host = process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com';
 
-let client: PostHog | null = null;
-
-function posthog(): PostHog | null {
-  if (!apiKey) return null;
-  client ??= new PostHog(apiKey, {
-    host,
-    disableGeoip: true,
-    personProfiles: 'identified_only',
-    captureAppLifecycleEvents: false,
-    enableSessionReplay: false,
-  });
-  return client;
-}
-
 // Usage statistics can be turned off (Ayarlar → Gizlilik; KVKK m. 11, the right to object). The
 // choice stays on the phone. Until it is read nothing is sent: every call waits for it.
 const PREF_KEY = 'skall.analytics.off';
@@ -37,6 +23,25 @@ const ready: Promise<void> = AsyncStorage.getItem(PREF_KEY)
     enabled = stored !== '1';
   })
   .catch(() => undefined);
+
+let client: PostHog | null = null;
+
+function posthog(): PostHog | null {
+  if (!apiKey) return null;
+  client ??= new PostHog(apiKey, {
+    host,
+    disableGeoip: true,
+    personProfiles: 'identified_only',
+    captureAppLifecycleEvents: false,
+    enableSessionReplay: false,
+    // No feature flags are used, so nothing is asked of the server when the client is made; and a
+    // client made while statistics are off (to forget the last account, resetAnalytics) sends
+    // nothing.
+    preloadFeatureFlags: false,
+    defaultOptIn: enabled,
+  });
+  return client;
+}
 
 function whenOn(send: (client: PostHog) => void): void {
   void ready.then(() => {
@@ -57,8 +62,10 @@ export function setAnalyticsEnabled(on: boolean): void {
   );
   if (on) {
     const live = posthog();
-    void live?.optIn();
-    if (userId) live?.identify(userId);
+    // The person is named again only once the client sends again.
+    void live?.optIn().then(() => {
+      if (enabled && userId) live.identify(userId);
+    });
   } else {
     void client?.optOut();
   }
@@ -73,9 +80,11 @@ export function identify(id: string): void {
   whenOn((on) => on.identify(id));
 }
 
+// Forgets the account on the phone too, also while statistics are off and also when the client was
+// not made in this run: the next account must never be tied to the last one's id.
 export function resetAnalytics(): void {
   userId = null;
-  client?.reset();
+  void ready.then(() => posthog()?.reset());
 }
 
 // For events derived from state the screen may see more than once (a status change, a result

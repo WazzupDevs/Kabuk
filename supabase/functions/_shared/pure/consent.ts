@@ -12,9 +12,11 @@ export const CURRENT_KVKK_VERSION = '2026-11';
 // draft-1: no box; the text over "Konumumu kullan" (aura 31, docs/decisions/aura-31.md). An app
 // from before still sends draft-0 for the box it showed. Since 12 Kasım the text is a notice and
 // not a consent: the location is needed for the check-in itself (KVKK m. 5/2-c, the owner's call,
-// docs/decisions/yasal-metinler.md). The value stays so that installed apps keep working.
-export const CURRENT_LOCATION_CONSENT_VERSION = 'draft-1';
-const ACCEPTED_LOCATION_CONSENT_VERSIONS: readonly string[] = ['draft-0', 'draft-1'];
+// docs/decisions/yasal-metinler.md).
+// 2026-11: that notice. The record says which text the person saw; the older values are still
+// taken from installed apps.
+export const CURRENT_LOCATION_CONSENT_VERSION = '2026-11';
+const ACCEPTED_LOCATION_CONSENT_VERSIONS: readonly string[] = ['draft-0', 'draft-1', '2026-11'];
 
 export function acceptsLocationConsent(version: string): boolean {
   return ACCEPTED_LOCATION_CONSENT_VERSIONS.includes(version);

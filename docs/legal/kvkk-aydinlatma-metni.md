@@ -47,7 +47,7 @@ Verileriniz satılmaz, reklam amacıyla kullanılmaz ve yukarıdakiler dışınd
 
 ## 5. Saklama süreleri
 
-- Masa sohbeti mesajları ve oyun verileri masa kapandıktan 24 saat sonra, mekan sohbeti mesajları 24 saat sonra, semt sohbeti mesajları her gece 00.00'da silinir.
+- Masa sohbeti mesajları ile oyunların hamleleri ve gizli bilgileri masa kapandıktan 24 saat sonra, mekan sohbeti mesajları 24 saat sonra, semt sohbeti mesajları her gece 00.00'da silinir.
 - Şikayet kayıtları 30 gün sonra silinir.
 - Arkadaşlar arası mesajlar arkadaşlık bittiğinde ya da hesap silindiğinde silinir.
 - Hata raporları en fazla 90 gün, kullanım istatistikleri en fazla 1 yıl, giriş ve bağlantı kayıtları en fazla 2 yıl saklanır.
