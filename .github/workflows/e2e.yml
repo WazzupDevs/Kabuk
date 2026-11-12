@@ -538,6 +538,68 @@ jobs:
           path: ${{ env.OUT }}
           retention-days: 7
 
-  # Screenshots, logs and the visual gate's images stay in this run's artifacts only (e2e-run-*,
-  # kept 7 days): no screenshots branch, so no binaries in the repository. `pnpm visual:accept`
-  # and `pnpm store:screenshots` read them with `gh run download`.
+  # Screenshots, logs and the visual gate's images are in this run's artifacts (e2e-run-*, kept
+  # 7 days); `pnpm visual:accept` and `pnpm store:screenshots` read them with `gh run download`.
+  # No binary enters main's history. The one copy outside the artifacts is the job below.
+
+  # The run's screenshots for the design canvas (the owner's decision, 12 Kasım 2026,
+  # docs/decisions/tuval-goruntuleri.md): the design session cannot download artifacts but reads
+  # branches, so the nightly and the manual run on main write every screenshot to the orphan branch
+  # tuval-goruntuleri: light/, dark/, large/ (the shards' takeScreenshot names) and visual/ (the
+  # gate's candidates) with a manifest.json (scripts/e2e/tuval-images.ts). One commit, written anew
+  # each time (force push): old images do not pile up. Never on a PR. It runs whatever the shards
+  # did (a failed shard's images are the ones it took); a run with no image at all (nothing new
+  # that night, every job dead) leaves the branch as it was. The only job with contents: write;
+  # its actions are pinned to commits (deploy-dev.yml's), the artifacts come through `gh`.
+  tuval-goruntu:
+    needs: [e2e, visual]
+    if: >-
+      !cancelled() &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: This run's artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # No artifact at all (the shards did not run) is not a failure here.
+        run: |
+          mkdir -p "$RUNNER_TEMP/artifacts"
+          gh run download "$GITHUB_RUN_ID" --pattern 'e2e-run-*' --dir "$RUNNER_TEMP/artifacts" \
+            || echo "no e2e-run-* artifact in this run"
+      - name: Images and manifest
+        id: images
+        run: |
+          node --experimental-strip-types scripts/e2e/tuval-images.ts . "$RUNNER_TEMP/artifacts" "$RUNNER_TEMP/tuval"
+          count=$(find "$RUNNER_TEMP/tuval" -name '*.png' | wc -l)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          {
+            echo "### tuval-goruntuleri: $count images"
+            for d in light dark large visual; do
+              echo "- $d: $(find "$RUNNER_TEMP/tuval/$d" -name '*.png' 2>/dev/null | wc -l)"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Write the branch (one commit)
+        if: steps.images.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$RUNNER_TEMP/tuval"
+          git init --quiet --initial-branch tuval-goruntuleri
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit --quiet --message "E2E görüntüleri: ${GITHUB_SHA} (koşu ${GITHUB_RUN_ID})"
+          git push --force --quiet \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            tuval-goruntuleri
