@@ -1,11 +1,12 @@
 # İlerleme
 
-## Devir notu (12 Kasım 2026): ortak tasarım ve hareket dili
+## Devir notu (12 Kasım 2026, gece yürütmesi sonrası): ortak tasarım ve hareket dili
 
-- Paket: `docs/design/iskelet.md` (kurallar), `docs/decisions/iskelet.md` (karar, teslim sırası, açık iki soru). Yeni oturum aynı iş paketiyle açılır ve teslim sırasının 1. adımından sürer: `MOTION` eklemeleri (`aura.test.ts` ve `hareket.json` eşitliği), `src/motion` kiti, cam `Btn`, styleGuard yasakları; sonra ekranlar 5.1–5.11, sonra bölüm 6.
-- Cevap bekleyen: 5.6 "Birlikte oynanan oyunlar" (kural 4 ve K-75 ile çelişiyor), 5.10'da 11 Kasım'ın ölçüm kuralı. Cevap gelmeden bu ikisi yazılmaz.
-- Açık PR: #576 (`tuval-goruntu` işi; proje sahibinin "onaylandı"sını bekliyor). Skia tarafı aşağıdaki devir notunda duruyor: #572'nin telefondaki sonucu ve iki ölçüm dalı (`olcum/susle-gecis`, `olcum/pil-isi`) bekleniyor; 4b sahnesi (tek Canvas'lı ızgara, #574) ölçülmedi.
-- skall OS (#575): iki tasarım ajanı, dört yordam, Atölye; kullanım `docs/skall-os/INSTALLATION_REPORT.md`.
+- Birleşenler (`docs/decisions/iskelet.md` → "Uygulama"): temel #579 (cam düğmeler, `MOTION`), #580 (hareket kiti, alt sayfa, menü), #582 (üst bar, yapışan alan, sekme çubuğu, geçişler); ekranlar 5.1 #583, 5.2–5.3 #584, 5.4–5.5 #585, 5.6–5.8 #586, 5.9 ve 5.11 #588, 5.10 #589; hatalar 6.1–6.2 #578, 6.3 #589, 6.4 ve 6.6 #579. Hiçbiri telefonda görülmedi: proje sahibinin bildirdiği bozukluk aynı gün düzeltilir; 5.10 için ekran kaydı istenir (şerit, kenetlenme, takılma).
+- Kalan kod: "Birlikte oynanan oyunlar" (5.6; sunucu sorgusu, yalnız iki taraf da masada profilliyse, `guvenlik` denetimi); canlı cam üst barda ve sekme çubuğunda açılmadı (`TAB_BAR_GLASS` false, sahte cam; gerçek bulanıklık yerel modül işi olabilir); Android'de kenardan geri kaydırma yok; hareket cırcırının izinli listesi (`motionGuard.allowed.ts`) sıfıra inmedi; 6.5 (iPhone'da 120 Hz) bir sonraki native build'e.
+- Kural 4 nedeniyle yazılmayanlar (proje sahibinin kararı gerekir): başkasının profilinde kapsül; geçmiş satırında "Anonim" yazısı.
+- E2E: main'de üç elle koşu düştü (`02-checkin`, Keşfet'te mekan satırına dokunuş Mesajlar sekmesine gidiyordu); #581 ve #587 düzeltmeleri gitti, sonucu sonraki koşuda. `tuval-goruntuleri` dalı çalışıyor (#576); E2E geçene kadar yalnız akışın ilk ekranlarını taşır. Bu geceki yeni ekranlar akışları bozmuş olabilir: düşen akış hata karesinden ve iş günlüğünün sonundaki ekran dökümünden okunur.
+- Skia tarafı aşağıdaki notta duruyor (#572'nin telefondaki sonucu, `olcum/susle-gecis` ve `olcum/pil-isi` dalları, 4b sahnesi); 5.10 şeridi yeniden yazdığı için #572'nin doğrulaması yeni şeritte yapılır. skall OS (#575): `docs/skall-os/INSTALLATION_REPORT.md`.
 
 ## Skia build'i (10 Kasım 2026; plan `docs/decisions/skia-build-plani.md`)
 
