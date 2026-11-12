@@ -120,5 +120,7 @@ export function StickyFade({ children }: { children: ReactNode }) {
     const f = stickyFadeAt(scroll.y.get(), scroll.stickyAt.get(), fadePx, scaleTo);
     return { opacity: f.opacity, transform: [{ scale: f.scale }] };
   });
-  return <Animated.View style={style}>{children}</Animated.View>;
+  // It shrinks toward its foot (tuval Aktivite: from 50 % 100 %).
+  return <Animated.View style={[SHRINK_FROM_FOOT, style]}>{children}</Animated.View>;
 }
+const SHRINK_FROM_FOOT = { transformOrigin: 'center bottom' } as const;

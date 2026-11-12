@@ -6,6 +6,7 @@ import { KIT } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
 
 const PICTURE: number = require('../../../assets/riso/empty-venues.webp');
+const EMPTY_LINE_GAP = 4;
 
 // The small empty card (docs/design/iskelet.md → 3.4; Keşfet's empty result, a venue page's
 // events): the riso picture 104x72 at its left, the title and one sentence at its right; never half
@@ -44,10 +45,11 @@ export function EmptyCard({
         contentFit="cover"
         style={{ width: pic.width, height: pic.height, borderRadius: pic.radius }}
       />
-      <View style={{ flex: 1, minWidth: 0, gap: card.lineGap }}>
-        <T v="placeName">{title}</T>
+      {/* tuval Detay, Aktivite: the title 15.5/700, its sentence 13/500 at 1.4, 4 apart. */}
+      <View style={{ flex: 1, minWidth: 0, gap: EMPTY_LINE_GAP }}>
+        <T v="emptyTitle">{title}</T>
         {body ? (
-          <T v="placeSub" color={c.muted}>
+          <T v="emptyNote" color={c.muted}>
             {body}
           </T>
         ) : null}

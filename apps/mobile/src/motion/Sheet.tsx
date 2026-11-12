@@ -5,7 +5,7 @@ import type { AnimatedRef } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { InSheet, T } from '@/aura/kit';
+import { InSheet, T, useKit } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { AppIcon } from '@/components/AppIcon';
 import type { IconName } from '@/components/Button';
@@ -15,6 +15,7 @@ import { useSheetCloser } from '@/components/sheetCloser';
 import { SheetCard } from '@/components/SheetCard';
 import { SheetScrim } from '@/components/SheetScrim';
 import { tr } from '@/i18n/tr';
+import { ACTIVITIES } from '@/theme/activities';
 import { KIT } from '@/theme/auraKit';
 import { runSheetSlide } from '@/lib/sheetSlide';
 import { useLeaveKeyboard } from '@/lib/modalKeyboard';
@@ -27,6 +28,8 @@ import { useSheetFrost, useSheetMotion } from './useSheetMotion';
 const SLIDE_FALLBACK_MS = 250;
 const ICON_DISC = 56;
 const SUBTITLE_GAP = 4;
+// The title's line with a picture (`titleArt`): only the game's sheet has one (tuval Sohbet).
+const ART = ACTIVITIES.sheet;
 
 type Props = {
   visible: boolean;
@@ -85,6 +88,7 @@ export function Sheet({
   children,
 }: Props) {
   const { colors, shape } = useTheme();
+  const { c: kit } = useKit();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const motion = useSheetMotion();
@@ -142,13 +146,20 @@ export function Sheet({
           <View
             style={
               titleArt
-                ? { flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }
+                ? { flexDirection: 'row', alignItems: 'center', gap: ART.artGap }
                 : { alignSelf: 'stretch' }
             }
           >
             {titleArt}
+            {/* With a picture (tuval Sohbet, the game's sheet): the title 22/800, its line 13/600,
+                3 apart. */}
             <View
-              style={{ gap: SUBTITLE_GAP, alignSelf: 'stretch', flex: titleArt ? 1 : undefined }}
+              style={{
+                gap: titleArt ? ART.titleGap : SUBTITLE_GAP,
+                alignSelf: 'stretch',
+                flex: titleArt ? 1 : undefined,
+                justifyContent: 'center',
+              }}
             >
               <View className="flex-row items-center" style={{ gap: KIT.size.titleIconGap }}>
                 {titleIcon ? (
@@ -156,7 +167,7 @@ export function Sheet({
                 ) : null}
                 <View className="flex-1">
                   <T
-                    v={titleLarge ? 'sheetTitleLg' : 'title'}
+                    v={titleArt ? 'sheetGame' : titleLarge ? 'sheetTitleLg' : 'title'}
                     center={centered}
                     accessibilityRole="header"
                   >
@@ -166,7 +177,11 @@ export function Sheet({
                 </View>
               </View>
               {subtitle ? (
-                <T v="fine" center={centered}>
+                <T
+                  v={titleArt ? 'exploreCount' : 'fine'}
+                  color={titleArt ? kit.muted : undefined}
+                  center={centered}
+                >
                   {subtitle}
                 </T>
               ) : null}

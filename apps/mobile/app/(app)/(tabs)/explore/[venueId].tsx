@@ -4,22 +4,26 @@ import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
+import { CapIcon } from '@/aura/CapIcon';
 import { FrostResolve } from '@/aura/FrostIn';
 import { PICTURE_FILL } from '@/aura/RisoPicture';
-import { Btn, Glass, PulseDot, Round, Sec, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, Round, T, Tag, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
 import { GlassTarget } from '@/components/LiquidGlass';
 import { Loader } from '@/components/Loader';
+import { boxShadowParts } from '@/components/NativeShadow';
 import { Screen } from '@/components/Screen';
 import { ScreenStatusBar } from '@/components/StatusScrim';
 import { useTabBarSpace } from '@/components/TabBar';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { Bucket } from '@/features/explore/Bucket';
 import { EmptyCard } from '@/features/explore/EmptyCard';
 import { useExploreVenue, useVenueCity } from '@/features/explore/useExploreVenues';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
 import { venueType } from '@/lib/venueType';
 import {
@@ -27,6 +31,7 @@ import {
   BarBand,
   Cover,
   ScrollBody,
+  ScrollFade,
   ScrollScreen,
   useScrollOffset,
   useScrollPast,
@@ -36,6 +41,7 @@ import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { VENUE_DETAIL as D } from '@/theme/venueDetail';
 
 // U17: the one riso scene of every venue (Aura v65 §9.1; venue scenes of their own wait, §9.2).
 const SCENE = require('../../../../assets/riso/venue-scene.webp');
@@ -101,7 +107,8 @@ export default function VenueDetailScreen() {
 // card 34 round: the kind, district and city with the bucket's tag at the right, the name at 31,
 // why the position is asked, check-in (or "Mekana dön"), and the week's events (the owner's call,
 // 31 Ekim: they stay). Scrolled, the bar's band comes in over 240–280 and the venue's small
-// picture and name beside the back button over 300–330; the back button never moves.
+// picture and name beside the back button over 300–330; the back button never moves. The rest of
+// the board's values (tuval Detay): theme/venueDetail.ts.
 function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollOffset> }) {
   const setVenue = useCheckinDraft((s) => s.setVenue);
   // Already checked in here: back to Mekan, not a new check-in that would end this one and take
@@ -116,10 +123,17 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
   const onBar = useScrollPast((V.band[0] + V.band[1]) / 2);
   const here = active.data?.venue_id === venue.id;
   const type = venueType(venue);
-  const info = tr.explore.venueInfo(
-    [tr.explore.typeLabel[type], venue.district, city].filter((p): p is string => !!p),
-  );
-  const barTop = insets.top + SPACING[2];
+  const place = tr.explore.venuePlace([venue.district, city].filter((p): p is string => !!p));
+  const barTop = insets.top + D.barTop;
+  const look = D[scheme];
+  const { c } = useKit();
+  // The card's shadow rising over the cover (tuval Detay), drawn natively.
+  const cardShadow = boxShadowParts(useLabOff('golge'), look.shadow || undefined, [
+    V.cardRadius,
+    V.cardRadius,
+    0,
+    0,
+  ]);
 
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
@@ -159,34 +173,81 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
         contentContainerStyle={{ flexGrow: 1, paddingTop: V.height - V.cardRadius }}
       >
         <View
-          style={{
-            flexGrow: 1,
-            backgroundColor: AURA[scheme].ground,
-            borderTopLeftRadius: V.cardRadius,
-            borderTopRightRadius: V.cardRadius,
-            paddingHorizontal: KIT.size.side,
-            paddingTop: SPACING[6],
-            paddingBottom: insets.bottom + SPACING[8] + barSpace,
-            gap: SPACING[6],
-          }}
+          style={[
+            {
+              flexGrow: 1,
+              backgroundColor: AURA[scheme].ground,
+              borderTopLeftRadius: V.cardRadius,
+              borderTopRightRadius: V.cardRadius,
+              boxShadow: cardShadow.boxShadow,
+              paddingHorizontal: D.side,
+              paddingTop: D.padTop,
+              paddingBottom: insets.bottom + SPACING[8] + barSpace,
+            },
+          ]}
         >
-          <View style={{ gap: SPACING[2] }}>
+          {cardShadow.node}
+          {look.ground ? (
+            <View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFill,
+                { borderTopLeftRadius: V.cardRadius, borderTopRightRadius: V.cardRadius },
+                gradientStyle(look.ground),
+              ]}
+            />
+          ) : null}
+          {/* The card's handle (tuval Detay). */}
+          <View
+            style={{
+              alignSelf: 'center',
+              width: D.handle.width,
+              height: D.handle.height,
+              borderRadius: D.handle.radius,
+              marginTop: D.handle.top,
+              marginBottom: D.handle.bottom,
+              backgroundColor: look.handle,
+            }}
+          />
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: D.infoGap,
+            }}
+          >
             <View
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: SPACING[2],
+                minHeight: D.pill.height,
+                paddingHorizontal: D.pill.padX,
+                borderRadius: D.pill.height / 2,
+                backgroundColor: look.pill,
+                justifyContent: 'center',
               }}
             >
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <T v="fineLg">{info}</T>
-              </View>
-              <Bucket bucket={venue.bucket} />
+              <T v="detailPill" ink>
+                {tr.explore.typeLabel[type]}
+              </T>
             </View>
-            <T v="venueTitle" accessibilityRole="header">
-              {venue.name}
-            </T>
+            {place ? (
+              <View style={{ flexShrink: 1, minWidth: 0 }}>
+                <T v="detailPlace" color={c.muted}>
+                  {place}
+                </T>
+              </View>
+            ) : null}
+            <View style={{ marginLeft: 'auto' }}>
+              <Bucket tall bucket={venue.bucket} />
+            </View>
+          </View>
+          {/* The name fades as the bar's small one comes in (tuval Detay: 290–330). */}
+          <View style={{ marginTop: D.titleTop, gap: SPACING[2] }}>
+            <ScrollFade fade={D.titleFade} shrink={NO_SHRINK} scaleTo={1}>
+              <T v="detailTitle" accessibilityRole="header">
+                {venue.name}
+              </T>
+            </ScrollFade>
             {/* Not twice when the campus carries its university's name (igu-tower). */}
             {venue.university && venue.university.name !== venue.name ? (
               <T v="body" ink>
@@ -197,11 +258,17 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
                 report, 30 Ekim). */}
             {here ? null : <T v="body">{tr.explore.checkInHint}</T>}
           </View>
-          {/* Prominent (iskelet.md → 2.1): the body's main action. */}
+          {/* Prominent (iskelet.md → 2.1): the body's main action; "Mekana dön" with its arrow
+              after the words (tuval Detay). */}
           <Btn
             block
             tall
-            icon={here ? 'forward' : 'pin'}
+            style={{ marginTop: D.buttonTop }}
+            look={{ type: 'detailBtn' }}
+            icon={here ? undefined : 'pin'}
+            trail={
+              here ? <CapIcon name="chevron" color={KIT.onPrimary} size={D.buttonIcon} /> : null
+            }
             label={here ? tr.explore.backToVenue : tr.explore.checkInHere}
             onPress={() => {
               if (here) {
@@ -221,8 +288,35 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
           />
           {/* The week's events, under the button (the owner's call, 31 Ekim); none: the small
               empty card (3.4). */}
-          <View style={{ gap: SPACING[3] }}>
-            <Sec title={tr.explore.eventsTitle} note={tr.explore.weekNote} />
+          <View style={{ marginTop: D.eventsTop, gap: D.eventsBottom }}>
+            {/* Etkinlikler at 21/800 and "Bu hafta" in a glass pill at its right (tuval Detay):
+                a note, not a press. */}
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: SPACING[2],
+              }}
+            >
+              <T v="exploreSection" accessibilityRole="header">
+                {tr.explore.eventsTitle}
+              </T>
+              <Glass
+                face={look.week}
+                radius={D.week.height / 2}
+                style={{
+                  minHeight: D.week.height,
+                  paddingHorizontal: D.week.padX,
+                  justifyContent: 'center',
+                }}
+              >
+                <T v="exploreSort" ink>
+                  {tr.explore.weekNote}
+                </T>
+              </Glass>
+            </View>
             {venue.events.length === 0 ? (
               <EmptyCard
                 title={tr.explore.noEventsTitle}
@@ -234,8 +328,8 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
                 showsVerticalScrollIndicator={false}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                style={{ marginHorizontal: -KIT.size.side }}
-                contentContainerStyle={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}
+                style={{ marginHorizontal: -D.side }}
+                contentContainerStyle={{ paddingHorizontal: D.side, gap: KIT.size.rowGap }}
               >
                 {venue.events.map((event, i) => (
                   <Glass
@@ -267,12 +361,12 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
         pointerEvents="box-none"
         style={{
           position: 'absolute',
-          left: KIT.size.side,
-          right: KIT.size.side,
+          left: D.barSide,
+          right: D.barSide,
           top: barTop,
           flexDirection: 'row',
           alignItems: 'center',
-          gap: SPACING[3],
+          gap: D.barGap,
         }}
       >
         {/* Back stays where it is while the page scrolls (the owner's report, 2 Kasım, X4). */}
@@ -284,11 +378,16 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
           onPress={() => router.back()}
         />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <BarArrive from={V.barTitle[0]} to={V.barTitle[1]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
-              <VenueThumb kind={type} size={V.barThumb} />
+          <BarArrive from={V.barTitle[0]} to={V.barTitle[1]} rise={D.barRise}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: D.barNameGap }}>
+              <VenueThumb
+                kind={type}
+                size={D.barThumb}
+                radius={D.barThumb / 2}
+                shadow={look.barThumbShadow || undefined}
+              />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <T v="h3" lines={2} fit>
+                <T v="barName" lines={2} fit>
                   {venue.name}
                 </T>
               </View>
@@ -300,29 +399,5 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
   );
 }
 
-// The bucket as a dotted tag at the info line's right (5.2, as Keşfet's cards, 5.1): "Sessiz" with
-// a still dot, the livelier ones with the beating pink dot.
-function Bucket({ bucket }: { bucket: Venue['bucket'] }) {
-  const { tags } = useKit();
-  const calm = bucket === 'calm';
-  return (
-    <Tag
-      tone={calm ? 'purple' : 'pink'}
-      label={tr.explore.buckets[bucket]}
-      lead={
-        calm ? (
-          <View
-            style={{
-              width: KIT.size.dot,
-              height: KIT.size.dot,
-              borderRadius: KIT.size.dot / 2,
-              backgroundColor: tags.purple.fg,
-            }}
-          />
-        ) : (
-          <PulseDot color={KIT.pink} ring={KIT.pinkRing} />
-        )
-      }
-    />
-  );
-}
+// The name's fade does not shrink it.
+const NO_SHRINK = [0, 1] as const;

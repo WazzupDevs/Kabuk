@@ -270,6 +270,7 @@ export function Btn({
   tint,
   fill,
   trail,
+  look,
   testID,
   accessibilityLabel,
   style,
@@ -304,6 +305,10 @@ export function Btn({
   fill?: string;
   // Something after the words (Kinshi's count in Sonraki tura geç, its pass count).
   trail?: ReactNode;
+  // A board's own words and room where it draws them (tuval Detay's "Mekana dön" 17/800, Aktivite's
+  // "Paketlere bak", Sohbet's "Ekle"): the words' type, the room at either side, the gap and the
+  // icon's size; the height stays the kit's (iskelet.md → 2.1).
+  look?: BtnLook;
   testID?: string;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -340,7 +345,13 @@ export function Btn({
       : small
         ? KIT.size.btnPadXSm
         : KIT.size.btnPadX;
-  const labelType = mid ? KIT_TYPE.btnMid : small ? KIT_TYPE.btnSm : KIT_TYPE.btn;
+  const labelType = look?.type
+    ? KIT_TYPE[look.type]
+    : mid
+      ? KIT_TYPE.btnMid
+      : small
+        ? KIT_TYPE.btnSm
+        : KIT_TYPE.btn;
   // The soft outer shadow drawn natively (NativeShadow.tsx); the top light, the bottom line and the
   // white edge inside are inset shadows. A flat `fill` has none.
   const shadow =
@@ -389,12 +400,13 @@ export function Btn({
             : { backgroundColor: off ? c.disabledOnCard : c.chipOn },
           {
             height,
-            paddingHorizontal: padX,
+            paddingLeft: look?.padLeft ?? padX,
+            paddingRight: look?.padRight ?? padX,
             borderRadius: height / 2,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: KIT.size.btnGap,
+            gap: look?.gap ?? KIT.size.btnGap,
             transform: [{ scale: press.scale }],
           },
         ]}
@@ -410,7 +422,7 @@ export function Btn({
             name={icon}
             color={fg}
             soft={kind === 'clear' ? CLEAR_SOFT : PRIMARY_SOFT}
-            size={sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon}
+            size={look?.icon ?? (sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon)}
           />
         ) : null}
         <Text
@@ -420,7 +432,7 @@ export function Btn({
           maxFontSizeMultiplier={MAX_FONT_SCALE}
           style={[
             labelType,
-            (glass && !fill && kind !== 'clear') || strong ? BTN_STRONG : null,
+            look?.type ? null : (glass && !fill && kind !== 'clear') || strong ? BTN_STRONG : null,
             { color: fg, flexShrink: 1 },
           ]}
         >
@@ -431,6 +443,13 @@ export function Btn({
     </Pressable>
   );
 }
+export type BtnLook = {
+  type?: KitTextVariant;
+  padLeft?: number;
+  padRight?: number;
+  gap?: number;
+  icon?: number;
+};
 const PRIMARY_SOFT = 0.62;
 const CLEAR_SOFT = 0.5;
 // A disabled switch (not a button: U10 is for buttons) still fades.
@@ -1301,6 +1320,7 @@ export function Seg<V extends string>({
   accessibilityLabel,
   large,
   narrow,
+  board,
 }: {
   value: V;
   onChange: (v: V) => void;
@@ -1310,14 +1330,27 @@ export function Seg<V extends string>({
   large?: boolean;
   // Aura v75 AktivitelerDar: 320 dp or the largest text (src/lib/narrow.ts), tabs 52 high.
   narrow?: boolean;
+  // A board's own tabs (tuval Aktivite: 40 parts in a 24 round, 15/700 words, its glass and the
+  // chosen part's shadow); narrow still makes the parts 52.
+  board?: SegBoard;
 }) {
   const { c } = useKit();
   const flat = useContext(FlatGlass);
   const reduce = useReduceMotion();
-  const item = large ? KIT.size.segLg : narrow ? KIT.size.segItemNarrow : KIT.size.segItem;
-  const radius = large ? KIT.size.segLgRadius : KIT.size.seg;
+  const item = narrow
+    ? KIT.size.segItemNarrow
+    : board
+      ? board.item
+      : large
+        ? KIT.size.segLg
+        : KIT.size.segItem;
+  const radius = board ? board.radius : large ? KIT.size.segLgRadius : KIT.size.seg;
   // The chosen tab's soft shadow natively (NativeShadow.tsx).
-  const onShadow = shadowParts(useLabOff('golge'), c.segShadow || undefined, undefined, item / 2);
+  const onShadow = boxShadowParts(
+    useLabOff('golge'),
+    board ? board.onShadow : c.segShadow || undefined,
+    item / 2,
+  );
   const index = Math.max(
     0,
     options.findIndex((o) => o.value === value),
@@ -1345,6 +1378,7 @@ export function Seg<V extends string>({
     <Glass
       frost
       radius={radius}
+      face={board?.face}
       style={[
         flat ? gradientStyle(c.segTrackInSheet) : null,
         {
@@ -1411,7 +1445,10 @@ export function Seg<V extends string>({
                 minimumFontScale={MIN_LABEL_SCALE}
                 maxFontSizeMultiplier={MAX_FONT_SCALE}
                 // U27: the tabs' words 14/600 at either size (`.seg span`).
-                style={[KIT_TYPE.btnSm, { color: on ? c.segOnInk : c.muted, flexShrink: 1 }]}
+                style={[
+                  board ? KIT_TYPE[board.type] : KIT_TYPE.btnSm,
+                  { color: on ? c.segOnInk : c.muted, flexShrink: 1 },
+                ]}
               >
                 {o.label}
               </Text>
@@ -1423,6 +1460,13 @@ export function Seg<V extends string>({
     </Glass>
   );
 }
+export type SegBoard = {
+  item: number;
+  radius: number;
+  type: KitTextVariant;
+  face: ExploreFace;
+  onShadow: string | undefined;
+};
 // hareket.json gives the swap curve no length: the disk's slide takes this long.
 const SEG_SLIDE_MS = 300;
 

@@ -541,6 +541,9 @@ export const tr = {
     noEventsTitle: 'Etkinlik yok',
     // The venue page's line over its name (5.2): the kind, the district and the city.
     venueInfo: (parts: readonly string[]) => parts.join(' · '),
+    // The same line drawn as the board draws it (tuval Detay): the kind in its pill, then the
+    // district and the city.
+    venuePlace: (parts: readonly string[]) => parts.join(', '),
   },
   friends: {
     empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
