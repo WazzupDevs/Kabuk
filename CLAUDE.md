@@ -19,6 +19,7 @@ skall: mekan içi sosyal oyun uygulaması. Kişiler mekana check-in yapar, masa 
 | Departmanlar (UI/UX, Capsule Art, Engineering), talebin yönlendirilmesi, hangi bilginin nerede olduğu, departman notları, teslim şablonu, çizilmiş aksesuarların kaydı | `docs/skall-os/README.md` |
 | Ekran denetimi; Atölye'de (UI Workshop) taslak, onay ve teslim | `.claude/skills/ui-screen-audit`, `.claude/skills/ui-workshop-workflow` |
 | Kapsül aksesuarı tasarımı ve SVG denetimi | `.claude/skills/capsule-accessory-design`, `.claude/skills/svg-asset-validation` |
+| Ortak tasarım ve hareket dili: bileşen kuralları, ekran iskeleti, hareket, ekran ekran hedef (12 Kasım; riso düğme ve canlı cam kararlarını değiştirir) | `docs/design/iskelet.md`, karar `docs/decisions/iskelet.md` |
 | Ajanlar | `.claude/agents/` |
 
 Kod ve belgelerdeki "CLAUDE.md → <bölüm>" atıfları bu tabloyla bulunur. Açık kalan işin devir notu `docs/PROGRESS.md`'nin başında.

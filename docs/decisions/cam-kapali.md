@@ -1,5 +1,7 @@
 # Canlı cam kapalı (6 Kasım 2026)
 
+> **Daraltıldı (12 Kasım 2026).** Canlı bulanıklık yalnız üst bar bandında, sekme çubuğunda, alt sayfalarda, menülerde ve sabitlenen şeritlerde geri gelir; katman bir kez çizilir, kaydırmada yeniden hesaplanmaz. Düğmelerde ve kartlarda yine yok (`docs/design/iskelet.md` → 2.2, karar `docs/decisions/iskelet.md`). Koddaki anahtar, hareket kiti birleşene kadar kapalı durur.
+
 Proje sahibinin kararı: akıcılık camdan önce gelir ("uygulama akıcı olsun").
 
 - Sekme çubuğunun camı, kaydırılan içerik çubuğun üstünde solduğu ve altını zemin şeridi kapattığı için yalnızca sabit zemini bulanıklaştırıyordu; görüntü değişmediği hâlde her karede yeniden hesaplanıyordu (`docs/denetim/performans-2026-11.md` → B1, B12).
