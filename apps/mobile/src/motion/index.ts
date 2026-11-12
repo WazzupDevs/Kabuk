@@ -7,3 +7,9 @@ export { Sheet } from './Sheet';
 export { Menu, MenuItem, measureMenuAnchor } from './Menu';
 export type { MenuAnchor } from './menuPlace';
 export { PRESS_DELAY, Tap, usePress } from './Tap';
+// The screen's skeleton (iskelet.md → 3.1 to 3.3): Screen holds the scroll (ScrollScreen) and
+// draws the top bar; a screen places its sticky field and what fades above it.
+export { ScrollScreen, useScreenScroll } from './ScrollScreen';
+export { StickyFade, StickyField } from './StickyField';
+export { BarBack, BarBand, LargeTitle, TopBarRow, type TopBarKind } from './TopBar';
+export { TabBar, TabBarEdge, TabBarMotion, type TabItem, useTabShrink } from './TabBar';

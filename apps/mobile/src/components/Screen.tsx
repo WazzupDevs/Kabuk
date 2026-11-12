@@ -1,13 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Children,
+  createElement,
   isValidElement,
+  type ReactElement,
   type ReactNode,
   type RefObject,
   useEffect,
   useState,
 } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, type ViewStyle } from 'react-native';
 import { type Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SharedValue } from 'react-native-reanimated';
 
@@ -15,11 +17,29 @@ import { AuraBackground } from '@/aura/AuraBackground';
 import { useTabOpenings } from '@/aura/motion';
 import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
+import {
+  ScrollBody,
+  ScrollScreen,
+  ScrollViewport,
+  useContentHeightFeed,
+  useScrollOffset,
+} from '@/motion/ScrollScreen';
+import { StickyField } from '@/motion/StickyField';
+import {
+  BarBand,
+  LargeTitle,
+  PageTopPart,
+  TOP_BAR,
+  TOP_BAR_ROW,
+  TopBarRow,
+  type TopBarKind,
+} from '@/motion/TopBar';
 import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { PullScroll } from '@/components/PullScroll';
 
+import { PageTop } from './PageTop';
 import { useTabBarSpace } from './TabBar';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
 import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
@@ -57,6 +77,10 @@ type Props = {
   // Drawn on the ground behind the page, placed against the whole screen (Aura v71: a riso buddy
   // standing in a corner of Gizlilik, Engellenenler).
   backdrop?: ReactNode;
+  // The screen's top bar (docs/design/iskelet.md → 3.1) with its `title`: `buyukBaslik` (a tab's own
+  // screen) or `sayfa` (as a PageTop in `top`, which takes the `sayfa` bar by itself).
+  bar?: TopBarKind;
+  title?: string;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
@@ -86,6 +110,8 @@ export function Screen({
   backdrop,
   scrollY,
   pinned,
+  bar,
+  title,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -95,88 +121,175 @@ export function Screen({
   const barSpace = useTabBarSpace();
   const insets = useSafeAreaInsets();
   const keyboardUp = useKeyboardState((s) => s.isVisible);
+  const y = useScrollOffset(scrollY);
   const safe: readonly Edge[] = barSpace
     ? (edges ?? ['top', 'left', 'right', 'bottom']).filter((e) => e !== 'bottom')
     : (edges ?? ['top', 'left', 'right', 'bottom']);
-  // Under a fixed top the page starts 20 below the bar's foot.
+  const fixed = !(list || refresh || scrollRef || stickyHeaderIndices);
+  // The top bar (iskelet.md → 3.1): a PageTop in `top` is the `sayfa` bar; `bar` names one.
+  const page: ReactElement | null =
+    isValidElement(top) && top.type === PageTop
+      ? top
+      : bar === 'sayfa' && title
+        ? createElement(PageTop, { title })
+        : null;
+  const kind: TopBarKind | null = page ? 'sayfa' : bar === 'buyukBaslik' && title ? bar : null;
+  // A scrolling screen with a top bar: the bar stays over the content (its band coming in), and
+  // the large title is the content's first part, scrolling with it. A fixed screen keeps its top
+  // where it was, the large title still under the bar's row.
+  const overlay = !fixed && kind !== null;
+  const head = !overlay ? null : page ? (
+    <PageTopPart.Provider key="top-bar-title" value="title">
+      {page}
+    </PageTopPart.Provider>
+  ) : (
+    <LargeTitle key="top-bar-title" kind="buyukBaslik" title={title ?? ''} />
+  );
+  const flowTop =
+    overlay || kind === null
+      ? top
+      : (page ?? <LargeTitle kind="buyukBaslik" title={title ?? ''} />);
+  const body = head ? [head, ...cascade(children, openings)] : cascade(children, openings);
+  // Under a fixed top the page starts 20 below the bar's foot; under the overlaid bar, below its row.
   const content = {
     flexGrow: 1,
     paddingHorizontal: shape.screenPadding,
-    paddingTop: top ? TOP_FADE : SPACING[3],
+    paddingTop: overlay ? TOP_BAR_ROW + SPACING[2] : flowTop ? TOP_FADE : SPACING[3],
     paddingBottom: footer ? SPACING[4] : barSpace ? insets.bottom + SCROLL_PAD : SPACING[8],
     gap,
   };
+  // The large title goes before the screen's own parts: their sticky indices move by one.
+  const sticky = head ? stickyHeaderIndices?.map((i) => i + 1) : stickyHeaderIndices;
+  const range = kind ? TOP_BAR[kind].title : null;
   return (
-    <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-      <AuraBackground />
-      {backdrop}
-      {top ? (
-        <View
-          // Over the band below it (drawn last): its buttons' shadows reach past its foot and the
-          // band's hard top edge cut them (the owner's report, 2 Kasım, 6.8).
-          style={{
-            paddingHorizontal: shape.screenPadding,
-            paddingTop: SPACING[2],
-            paddingBottom: SPACING[1],
-            zIndex: 1,
-          }}
-        >
-          {top}
-        </View>
-      ) : null}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        // Android is edge-to-edge: the window no longer resizes for the keyboard, so pad here too.
-        behavior="padding"
-      >
-        {!(list || refresh || scrollRef || stickyHeaderIndices) ? (
-          <FixedBody content={content}>{cascade(children, openings)}</FixedBody>
-        ) : refresh && !scrollRef && !stickyHeaderIndices ? (
-          <PullScroll
-            onRefresh={refresh}
-            scrollY={scrollY}
-            contentContainerStyle={content}
-            keyboardShouldPersistTaps="handled"
-          >
-            {cascade(children, openings)}
-          </PullScroll>
-        ) : (
-          <ScrollView
-            showsHorizontalScrollIndicator={false}
-            ref={scrollRef}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={content}
-            keyboardShouldPersistTaps="handled"
-            stickyHeaderIndices={stickyHeaderIndices}
-          >
-            {cascade(children, openings)}
-          </ScrollView>
-        )}
-        {pinned ? (
+    <ScrollScreen y={fixed ? null : y}>
+      <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
+        <AuraBackground />
+        {backdrop}
+        {flowTop ? (
           <View
-            pointerEvents="box-none"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0 }}
-          >
-            {pinned}
-          </View>
-        ) : null}
-        {footer ? (
-          <View
+            // Over the band below it (drawn last): its buttons' shadows reach past its foot and the
+            // band's hard top edge cut them (the owner's report, 2 Kasım, 6.8).
             style={{
               paddingHorizontal: shape.screenPadding,
-              gap: FOOTER_GAP,
-              paddingBottom:
-                FOOTER_LIFT +
-                (keyboardUp || !barSpace
-                  ? 0
-                  : insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height),
+              paddingTop: SPACING[2],
+              paddingBottom: SPACING[1],
+              zIndex: 1,
             }}
           >
-            {footer}
+            {flowTop}
           </View>
         ) : null}
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          // Android is edge-to-edge: the window no longer resizes for the keyboard, so pad here too.
+          behavior="padding"
+        >
+          <ScrollViewport>
+            {fixed ? (
+              <FixedBody content={content}>{body}</FixedBody>
+            ) : refresh && !scrollRef && !stickyHeaderIndices ? (
+              <PullBody
+                onRefresh={refresh}
+                y={y}
+                content={content}
+                indicatorTop={overlay ? TOP_BAR_ROW : 0}
+              >
+                {body}
+              </PullBody>
+            ) : (
+              <ScrollBody
+                y={y}
+                scrollRef={scrollRef}
+                contentContainerStyle={content}
+                keyboardShouldPersistTaps="handled"
+                stickyHeaderIndices={sticky}
+              >
+                {body}
+              </ScrollBody>
+            )}
+          </ScrollViewport>
+          {pinned ? (
+            <View
+              pointerEvents="box-none"
+              style={{ position: 'absolute', left: 0, right: 0, top: 0 }}
+            >
+              {pinned}
+            </View>
+          ) : null}
+          {footer ? (
+            <View
+              style={{
+                paddingHorizontal: shape.screenPadding,
+                gap: FOOTER_GAP,
+                paddingBottom:
+                  FOOTER_LIFT +
+                  (keyboardUp || !barSpace
+                    ? 0
+                    : insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height),
+              }}
+            >
+              {footer}
+            </View>
+          ) : null}
+        </KeyboardAvoidingView>
+        {overlay && range ? (
+          <>
+            {/* The band from the screen's top edge (under the status bar too), then the bar's row
+                where the top was. */}
+            <BarBand from={range[0]} to={range[1]} />
+            <View
+              pointerEvents="box-none"
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: safe.includes('top') ? insets.top : 0,
+                paddingHorizontal: shape.screenPadding,
+                paddingTop: SPACING[2],
+                paddingBottom: SPACING[1],
+              }}
+            >
+              {page ? (
+                <PageTopPart.Provider value="bar">{page}</PageTopPart.Provider>
+              ) : (
+                <TopBarRow kind="buyukBaslik" title={title ?? ''} back={false} />
+              )}
+            </View>
+          </>
+        ) : null}
+      </SafeAreaView>
+    </ScrollScreen>
+  );
+}
+
+// The refreshing list (PullScroll) inside the screen's scroll holder: its offset is the screen's,
+// its content's height goes to a sticky field.
+function PullBody({
+  onRefresh,
+  y,
+  content,
+  indicatorTop,
+  children,
+}: {
+  onRefresh: () => Promise<unknown>;
+  y: SharedValue<number>;
+  content: ViewStyle;
+  indicatorTop: number;
+  children: ReactNode;
+}) {
+  const onContentSizeChange = useContentHeightFeed();
+  return (
+    <PullScroll
+      onRefresh={onRefresh}
+      scrollY={y}
+      indicatorTop={indicatorTop}
+      contentContainerStyle={content}
+      keyboardShouldPersistTaps="handled"
+      onContentSizeChange={onContentSizeChange}
+    >
+      {children}
+    </PullScroll>
   );
 }
 
@@ -224,7 +337,11 @@ function cascade(children: ReactNode, openings: TabOpenings | null) {
       key={isValidElement(child) && child.key !== null ? child.key : i}
       index={i}
       openings={openings}
-      style={fills(child) ? { flexGrow: 1 } : undefined}
+      style={[
+        fills(child) ? { flexGrow: 1 } : null,
+        // A sticky field is drawn over the parts that scroll under it once it is pinned.
+        isValidElement(child) && child.type === StickyField ? { zIndex: 1 } : null,
+      ]}
     >
       {child}
     </Reveal>

@@ -286,6 +286,8 @@ export const tr = {
     venue: 'Mekan',
     messages: 'Mesajlar',
     profile: 'Profil',
+    // The shrunk tab bar, read out: a press opens it again.
+    openBar: 'Sekmeleri aç',
     // The Mesajlar tab read out with its dot: unread DMs and waiting requests (the bell's).
     messagesWith: (unread: number, requests: number) =>
       [

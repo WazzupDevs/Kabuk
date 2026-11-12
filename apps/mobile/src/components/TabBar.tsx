@@ -15,8 +15,8 @@ import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
-import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
 import { ARRIVE_RN, TabOpeningsContext } from '@/aura/motion';
+import { TabBar as FloatingTabBar, TabBarEdge, TabBarMotion, type TabItem } from '@/motion/TabBar';
 import { labOff, markTabSwitch } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
 import { createTabActivity, TabActivityContext } from '@/lib/tabActivity';
@@ -29,11 +29,12 @@ import { SPACING } from '@/theme/tokens';
 import { TAB_BAR_GLASS } from '@/theme/glass';
 import { GlassTarget } from '@/components/LiquidGlass';
 
-// The tabs' navigator and the airy look's bar (src/aura/AuraTabBar.tsx, docs/design/aura): the bar
-// floats above the bottom (above the safe area), centred, and shows the focused tab's screen
-// through its liquid glass. Each tab
-// screen is a glass target (TabScene, the navigator's `screenLayout`); the bar is drawn outside
-// them. Over the Keşfet map, which the glass cannot show, the bar is opaque.
+// The tabs' navigator and its floating bar (src/motion/TabBar.tsx, docs/design/iskelet.md → 3.3):
+// the bar floats above the bottom (above the safe area), centred, over a bottom edge that fades
+// what scrolls under it. Each tab screen is a glass target where the live glass is on (TabScene,
+// the navigator's `screenLayout`; theme/glass.ts → TAB_BAR_GLASS); the bar is drawn outside them.
+// Over the Keşfet map the bar is opaque. The tabs' screens fold the bar as they scroll (TabBarMotion,
+// read by Screen's scroll, motion/ScrollScreen.tsx).
 
 // The tab of each route; other routes (the hidden index) have none.
 const TAB_OF: Partial<Record<string, TabKey>> = {
@@ -92,7 +93,7 @@ export function TabBarSpace({ children }: { children: ReactNode }) {
     <TabBarSpaceContext.Provider
       value={hidden ? 0 : t.height + t.bottom + insets.bottom + SPACING[4]}
     >
-      {children}
+      <TabBarMotion>{children}</TabBarMotion>
     </TabBarSpaceContext.Provider>
   );
 }
@@ -223,7 +224,6 @@ export function TabBar({
 }: BottomTabBarProps & { opens: (tab: TabKey) => TabKey }) {
   const hidden = useBarMode((s) => s.hidden > 0);
   const overMap = useBarMode((s) => s.overMap > 0);
-  const target = useBarMode((s) => s.target);
   const { scheme } = useTheme();
   if (hidden) return null;
 
@@ -234,7 +234,7 @@ export function TabBar({
     if (!key || !options) return [];
     const label = options.title ?? route.name;
     const badge = options.tabBarBadge;
-    const item: AuraTabItem = {
+    const item: TabItem = {
       key,
       label,
       unread: badge !== undefined,
@@ -292,6 +292,8 @@ export function TabBar({
           }}
         />
       ) : null}
+      {/* Over the map nothing scrolls under the bar. */}
+      {overMap ? null : <TabBarEdge />}
       <View
         pointerEvents="box-none"
         style={{
@@ -302,11 +304,10 @@ export function TabBar({
           alignItems: 'center',
         }}
       >
-        <AuraTabBar
+        <FloatingTabBar
           items={tabs.map((t) => t.item)}
           selected={focused ? (TAB_OF[focused.name] ?? null) : null}
           onPress={onPress}
-          glassTarget={target}
           opaque={overMap}
         />
       </View>
