@@ -5,7 +5,7 @@ Ajan `ui-ux-studio`. Yordamlar: `.claude/skills/ui-screen-audit`, `.claude/skill
 ## Başlamadan bilinecekler
 
 - Var olan ekranın görünüşünün kaynağı uygulamanın kendisidir; yeni ekranın ve yeni parçanın kaynağı aura tuvalidir (`docs/decisions/tuval-kaynak.md`). Var olan ekrana yalnız istenen parça girer.
-- Değerler yalnız tokenlardan: `apps/mobile/src/theme/`, boylar `auraKit.ts` → `KIT.size` (ana düğme 48, küçük 36, ikon 44, alan 48, çip 36), hareket `aura.ts` → `MOTION`. Yeni değer uydurulmaz; gerekiyorsa proje sahibine tek soru.
+- Değerler yalnız tokenlardan: `apps/mobile/src/theme/`, boylar `auraKit.ts` → `KIT.size` (ana düğme 52, küçük 36, ikon 44, alan 48, çip 36), hareket `aura.ts` → `MOTION`. Yeni değer uydurulmaz; gerekiyorsa proje sahibine tek soru.
 - Ekran davranışı kuralları `CLAUDE.md` → Ekran davranışı (320 dp, en büyük yazı, yükleniyor, boş ve hata hâli, sabit üst düğmeler).
 - Kapalı: canlı cam (`docs/decisions/cam-kapali.md`), sekme açılışında bulanıklık. Öneri bunları geri getirmez.
 - Bu ortamda telefon yok. Görüntü proje sahibinin telefonundan ya da CI'daki görsel kapıdan (`.claude/skills/e2e`) gelir; görülmeyen ekran "görülmedi" diye yazılır.

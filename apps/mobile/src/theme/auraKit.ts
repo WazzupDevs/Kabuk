@@ -3,6 +3,7 @@
 // .live). Light from `:root`, dark from `.night` (the canvas's dark side). Components in
 // src/aura/kit/ read only these.
 import type { TextStyle } from 'react-native';
+import { BUTTON_GLASS } from './buttonGlass';
 import { RISO_BUTTON } from './risoButton';
 
 const F = {
@@ -157,9 +158,16 @@ export const VENUE_THUMB = {
   shadow: '0px 6px 14px rgba(4, 73, 35, 0.16)',
 } as const;
 
+export type { ButtonGlassKind } from './buttonGlass';
+
+// A prominent and a danger button's words: 800 (iskelet.md → 2.1).
+export const BTN_STRONG: TextStyle = { fontFamily: F[800] };
+
 export const KIT = {
-  // Riso buttons (theme/risoButton.ts).
+  // Riso round "+" of Mesajlar (theme/risoButton.ts); the buttons are glass (`button`,
+  // theme/buttonGlass.ts).
   riso: RISO_BUTTON,
+  button: BUTTON_GLASS,
   light: {
     ink: '#031B0B',
     muted: '#4A6550',
@@ -557,9 +565,11 @@ export const KIT = {
     padLg: 22,
     // The button scale (the owner's call, 2 Kasım, B1): every main button 48, every small one 36,
     // a round icon button 44, a form field 48, a chip 36; a screen never picks its own (the many-line
-    // field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4).
-    btn: 48,
-    btnTall: 48,
+    // field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4). The glass
+    // buttons (docs/design/iskelet.md → 2.1): a main button in a screen's body 50 to 56 (52, the
+    // venue page's and the check-in sheet's 56), a small one in a line 36 to 40.
+    btn: 52,
+    btnTall: 56,
     btnSm: 36,
     // Mekan's "Masa kur" and Masa's "Bitir": the small height, 18 inside.
     btnMid: 36,

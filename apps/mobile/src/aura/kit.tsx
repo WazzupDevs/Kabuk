@@ -29,8 +29,16 @@ import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { useNarrow } from '@/lib/useNarrow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { useReduceTransparency } from '@/lib/useReduceTransparency';
 import { AURA, MOTION } from '@/theme/aura';
-import { EYEBROW_NARROW, KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
+import {
+  BTN_STRONG,
+  type ButtonGlassKind,
+  EYEBROW_NARROW,
+  KIT,
+  KIT_TYPE,
+  type KitTextVariant,
+} from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { Frost, FROSTED } from '@/components/LiquidGlass';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -121,12 +129,14 @@ const OnCard = createContext(false);
 
 // Whether a clear button here is frosted (ui/LiquidGlass → Frost): where the glass blurs, straight
 // on the screen (not on a card, not in a sheet). Çizim ölçümü's `buzlu` (lib/drawLab.ts) unfrosts it:
-// the control keeps its own fill, as where the glass does not blur.
+// the control keeps its own fill, as where the glass does not blur. With the system's "reduce
+// transparency" on nothing is frosted (iskelet.md → 6.6).
 export function useFrost(): boolean {
   const onCard = useContext(OnCard);
   const flat = useContext(FlatGlass);
   const labOff = useLabOff('buzlu');
-  return FROSTED && !onCard && !flat && !labOff;
+  const solid = useReduceTransparency();
+  return FROSTED && !onCard && !flat && !labOff && !solid;
 }
 
 export function Glass({
@@ -152,7 +162,11 @@ export function Glass({
   const { c, scheme } = useKit();
   const flat = useContext(FlatGlass);
   const shadowOff = useLabOff('golge');
-  const flatFill = useLabOff('kart');
+  // Çizim ölçümü's `kart`, and the system's "reduce transparency" (iskelet.md → 6.6) outside a
+  // sheet (a card there is already opaque): the toned opaque fill instead of the translucent glass.
+  const labFlat = useLabOff('kart');
+  const solid = useReduceTransparency();
+  const flatFill = labFlat || (solid && !flat);
   const canFrost = useFrost();
   const frosted = !!frost && canFrost;
   const radius = round ?? (sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius);
@@ -208,10 +222,16 @@ function FrostOf({ height, fill }: { height: number; fill?: string }) {
 }
 
 // A press that sinks a little and springs back (hareket.json → press), on the native driver.
+// `delay` goes to the Pressable's `unstable_pressDelay` (iskelet.md → 2.3): the press shows a moment
+// after the touch, and a scroll that starts first cancels it (its responder ends before the press
+// in), so rows under a scrolling finger never look pressed. A quick tap still sinks and springs
+// back as it lifts.
+export const PRESS_DELAY = MOTION.press.delayMs;
 export function usePress() {
   const [scale] = useState(() => new Animated.Value(1));
   return {
     scale,
+    delay: PRESS_DELAY,
     onPressIn: () =>
       Animated.timing(scale, {
         toValue: MOTION.press.scale,
@@ -281,23 +301,18 @@ export function Btn({
 }) {
   const { c, scheme } = useKit();
   const inRow = useContext(InRow);
-  // Riso (the owner's call, 8 Kasım; docs/decisions/riso-dugme.md): the ink flat, a second ink
-  // printed a little off under it, halftone and paper grain over it, no soft shadow. Disabled is
-  // the same print faded. "dark" (a chip-like button) stays as it was.
+  const press = usePress();
+  const shadowOff = useLabOff('golge');
+  const solid = useReduceTransparency();
+  // Glass (iskelet.md → 2.1): the primary prominent, the glassy clear, the danger red; no live
+  // blur. Disabled is the same button faded, its touch off. "dark" (a chip-like button) stays as it
+  // was.
   const off = disabled && !loading;
-  const riso = variant !== 'dark';
-  const R = KIT.riso;
-  const paper = variant === 'glassy';
-  // In the light a faded primary left its white words on a pale green (the owner's report, 10
-  // Kasım): disabled there is the neutral fill and its ink, unfaded (U10). The dark as it was.
-  const plainOff = off && riso && !paper && scheme === 'light';
-  const ink = plainOff
-    ? c.disabled
-    : (fill ?? (variant === 'danger' ? R.danger : paper ? R.paper : R.ink));
-  const fg = plainOff
-    ? c.onDisabled
-    : (tint ??
-      (variant === 'dark' ? (off ? c.onDisabled : c.onChipOn) : paper ? R.paperInk : R.onInk));
+  const glass = variant !== 'dark';
+  const kind: ButtonGlassKind =
+    variant === 'danger' ? 'danger' : variant === 'glassy' ? 'clear' : 'prominent';
+  const g = KIT.button[scheme][kind];
+  const fg = tint ?? (variant === 'dark' ? (off ? c.onDisabled : c.onChipOn) : g.ink);
   const height = bar
     ? bar
     : sm
@@ -309,8 +324,6 @@ export function Btn({
           : KIT.size.btn;
   const big = bar ? bar >= KIT.size.roundLg : false;
   const small = sm || (!!bar && !big);
-  // The second ink only on the full buttons; a small one keeps its edge and texture.
-  const shift = riso && !small && !plainOff ? R.shift : 0;
   const padX = snug
     ? KIT.size.btnPadXSnug
     : big || mid
@@ -319,16 +332,19 @@ export function Btn({
         ? KIT.size.btnPadXSm
         : KIT.size.btnPadX;
   const labelType = mid ? KIT_TYPE.btnMid : small ? KIT_TYPE.btnSm : KIT_TYPE.btn;
-  // Pressed, the print settles onto its second ink.
-  const [sink] = useState(() => new Animated.Value(0));
-  const settle = (to: number) =>
-    Animated.timing(sink, {
-      toValue: to,
-      duration: R.pressMs,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start();
-  const travel = sink.interpolate({ inputRange: [0, 1], outputRange: [0, Math.max(shift - 1, 1)] });
+  // The soft outer shadow drawn natively (NativeShadow.tsx); the top light, the bottom line and the
+  // white edge inside are inset shadows. A flat `fill` has none.
+  const shadow =
+    glass && !fill
+      ? shadowParts(
+          shadowOff,
+          g.shadow || undefined,
+          g.inset || undefined,
+          height / 2,
+          true,
+          KIT.size.edge,
+        )
+      : null;
   return (
     <Pressable
       testID={testID}
@@ -337,62 +353,44 @@ export function Btn({
       accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       disabled={disabled || loading}
       onPress={onPress}
-      onPressIn={() => settle(1)}
-      onPressOut={() => settle(0)}
+      unstable_pressDelay={press.delay}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
       // Round like the button: a shadow a screen gives it (Paketler's Aç) drew a box round it.
       style={[
         {
           alignSelf: block ? 'stretch' : inRow ? 'center' : 'flex-start',
           borderRadius: KIT.size.btn,
-          opacity: off && riso && !plainOff ? R.offOpacity : 1,
+          opacity: off && glass ? KIT.button.offOpacity : 1,
         },
         style,
       ]}
     >
-      {shift > 0 ? (
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            top: shift,
-            left: shift,
-            right: -shift,
-            bottom: -shift,
-            borderRadius: KIT.size.btn,
-            backgroundColor: variant === 'danger' ? R.dangerOffset : R.offset,
-          }}
-        />
-      ) : null}
       <Animated.View
         style={[
-          riso
-            ? {
-                backgroundColor: ink,
-                borderWidth: paper ? R.edge : 0,
-                borderColor: R.paperInk,
-                overflow: 'hidden',
-              }
+          glass
+            ? fill
+              ? { backgroundColor: fill }
+              : {
+                  ...gradientStyle(solid ? g.solid : g.fill),
+                  borderWidth: KIT.size.edge,
+                  borderColor: g.edge,
+                  boxShadow: shadow?.boxShadow,
+                }
             : { backgroundColor: off ? c.disabledOnCard : c.chipOn },
           {
             height,
             paddingHorizontal: padX,
-            borderRadius: KIT.size.btn,
+            borderRadius: height / 2,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
             gap: KIT.size.btnGap,
-            transform: [{ translateX: travel }, { translateY: travel }],
+            transform: [{ scale: press.scale }],
           },
         ]}
       >
-        {riso && !plainOff ? (
-          <Image
-            source={paper ? RISO_TEXTURE.dark : RISO_TEXTURE.light}
-            resizeMode="repeat"
-            accessibilityIgnoresInvertColors
-            style={TEXTURE_FILL}
-          />
-        ) : null}
+        {shadow?.node}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
         ) : icon && !off ? (
@@ -400,7 +398,7 @@ export function Btn({
           <CapIcon
             name={icon}
             color={fg}
-            soft={paper ? 0.5 : PRIMARY_SOFT}
+            soft={kind === 'clear' ? CLEAR_SOFT : PRIMARY_SOFT}
             size={sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon}
           />
         ) : null}
@@ -409,7 +407,11 @@ export function Btn({
           adjustsFontSizeToFit
           minimumFontScale={MIN_LABEL_SCALE}
           maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[labelType, { color: fg, flexShrink: 1 }]}
+          style={[
+            labelType,
+            glass && !fill && kind !== 'clear' ? BTN_STRONG : null,
+            { color: fg, flexShrink: 1 },
+          ]}
         >
           {label}
         </Text>
@@ -418,24 +420,13 @@ export function Btn({
     </Pressable>
   );
 }
-// The texture covers the button: a fixed span wider and taller than any button, cut by the
-// button's round edge. A percentage size left the tiles at the size first measured on Android and
-// the print stopped part way along the button (the owner's report, 8 Kasım). Not absoluteFill: an
-// Image keeps its pixel size there (styleGuard.test.ts).
-const TEXTURE_FILL = {
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  width: 1200,
-  height: 160,
-} as const;
-// The riso print's texture tiles (scripts/icon/risoButton.ts): light marks on the dark inks, dark
-// marks on the paper.
+// The riso print's texture tile (scripts/icon/risoButton.ts), light marks on the dark ink: only
+// Mesajlar's riso "+" now; the buttons are glass (iskelet.md → 2.1).
 export const RISO_TEXTURE = {
   light: require('../../assets/riso/button/texture-light.png') as ImageSourcePropType,
-  dark: require('../../assets/riso/button/texture-dark.png') as ImageSourcePropType,
 };
 const PRIMARY_SOFT = 0.62;
+const CLEAR_SOFT = 0.5;
 // A disabled switch (not a button: U10 is for buttons) still fades.
 const DISABLED = 0.45;
 const MIN_LABEL_SCALE = 0.6;
@@ -509,6 +500,7 @@ export function Round({
       accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       onPress={onPress}
       disabled={disabled || loading}
+      unstable_pressDelay={press.delay}
       onPressIn={() => {
         press.onPressIn();
         onHold?.(true);
@@ -670,6 +662,7 @@ export function Chip({
       accessibilityState={onPress ? { selected: !!on } : undefined}
       disabled={!onPress}
       onPress={onPress}
+      unstable_pressDelay={press.delay}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
     >
@@ -1070,6 +1063,8 @@ export function Li({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
+      // A row under a scrolling finger never looks pressed (iskelet.md → 2.3, 6.4).
+      unstable_pressDelay={PRESS_DELAY}
     >
       {/* The style on an inner View: NativeWind drops a function `style` on Pressable in release
           (docs/arsiv/DECISIONS.md). */}

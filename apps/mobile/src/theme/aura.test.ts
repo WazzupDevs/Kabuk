@@ -14,6 +14,8 @@ const spec = JSON.parse(
   dissolve: { blurPx: number; risePx: number; fromScale: number; inMs: number; outMs: number };
   stagger: { listRowMs: number; screenPartMs: number };
   cardOpen: { contentAfterMs: number };
+  scroll: { titleFadePx: number[]; stickyFadePx: number };
+  tabMin: { thresholdPx: number; speedPx: number; openPx: number; widths: number[] };
   semteGit: {
     gecitOpen: {
       totalMs: number;
@@ -62,6 +64,15 @@ describe('motion standard', () => {
     expect(MOTION.stagger.row).toBe(spec.stagger.listRowMs);
     expect(MOTION.stagger.part).toBe(spec.stagger.screenPartMs);
     expect(MOTION.cardOpen.contentAfterMs).toBe(spec.cardOpen.contentAfterMs);
+  });
+
+  it('has the scroll and the tab bar shrink of hareket.json', () => {
+    expect(MOTION.scroll).toEqual({
+      titleFade: spec.scroll.titleFadePx,
+      stickyFadePx: spec.scroll.stickyFadePx,
+    });
+    const { thresholdPx, speedPx, openPx, widths } = spec.tabMin;
+    expect(MOTION.tabMin).toEqual({ thresholdPx, speedPx, openPx, widths });
   });
 
   it("has Semte Git's motions of hareket.json", () => {

@@ -127,7 +127,7 @@ Her ekran buna uyar (tuvalde "Ekran davranışı" sayfası):
 - Açılan her çubuk, menü ve alt sayfa dışarı dokununca, kaydırınca ve Android geri tuşuyla kapanır. Aynı anda yalnızca biri açık olur.
 - Sohbetler (DM, oda, mekan) en son mesajdan açılır; okunmamış mesaj varken ilk okunmamıştan, üstünde "Okunmamış mesajlar" çizgisiyle açılır (proje sahibinin kararı, 30 Ekim). Fotoğraf ve alıntı yüklenince de en altta kalır. Kullanıcı yukarı kaydırdıysa yerinde kalır; sağ altta aşağı inme oku çıkar.
 - Üst düğmeler (geri, menü, ayar, bildirim) ve sayfa başlıkları hiçbir ekranda içerikle kaymaz; içerik başlığın altından kayar (proje sahibinin kararı, 2 Kasım; başlıklar 8 Kasım). İstisna kapaklı ekranlar (Profil): kapak kayar, yerine ince sabit şerit gelir.
-- Aynı tür düğme her ekranda aynı boydadır: ana düğme 48, küçük düğme 36, yuvarlak ikon düğmesi 44, form alanı 48, çip 36; ekran kendi boyunu seçmez (`src/theme/auraKit.ts` → `KIT.size`; proje sahibinin kararı, 2 Kasım).
+- Aynı tür düğme her ekranda aynı boydadır: ana düğme 52 (uzunu 56), küçük düğme 36, yuvarlak ikon düğmesi 44, form alanı 48, çip 36; ekran kendi boyunu seçmez (`src/theme/auraKit.ts` → `KIT.size`; proje sahibinin kararı, 2 Kasım; ana düğmenin boyu 12 Kasım, `docs/design/iskelet.md` → 2.1).
 - Basılan düğme, işlem bitene kadar ikinci kez basılamaz ve beklediğini gösterir.
 - Her ekranın yükleniyor, boş ve hata hâli vardır.
 - 320 dp genişlikte ve en büyük yazı boyutunda hiçbir metin "..." ile kesilmez, hiçbir düğme yazısı iki satıra bölünmez; gerekirse metin kısalır ya da düzen değişir.
