@@ -474,6 +474,8 @@ export function Round({
   onHold,
   glass,
   dot,
+  dotLook,
+  iconSize,
   children,
 }: {
   icon?: CapIconName;
@@ -501,6 +503,10 @@ export function Round({
   glass?: ButtonGlassKind;
   // A pink dot on its corner instead of a count (Mesajlar's bell, 5.4).
   dot?: boolean;
+  // A board's own dot (tuval Mesajlar: 10, 9 from the top, 10 from the right, in a white ring).
+  dotLook?: DotLook;
+  // The icon's own size (tuval Mesajlar's bell: 21).
+  iconSize?: number;
   children?: ReactNode;
 }) {
   const { c, scheme } = useKit();
@@ -515,7 +521,7 @@ export function Round({
   const fg = off
     ? c.onDisabled
     : g
-      ? g.ink
+      ? (color ?? g.ink)
       : primary
         ? KIT.onPrimary
         : light
@@ -607,14 +613,28 @@ export function Round({
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
-          (children ?? (icon ? <CapIcon name={icon} color={fg} /> : null))
+          (children ?? (icon ? <CapIcon name={icon} color={fg} size={iconSize} /> : null))
         )}
         {badge && !dot ? (
           <View style={{ position: 'absolute', top: -BADGE_OUT, right: -BADGE_OUT }}>
             <Badge count={badge} />
           </View>
         ) : null}
-        {dot ? (
+        {dot && dotLook ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: dotLook.top - dotLook.ring,
+              right: dotLook.right - dotLook.ring,
+              width: dotLook.side + 2 * dotLook.ring,
+              height: dotLook.side + 2 * dotLook.ring,
+              borderRadius: dotLook.side / 2 + dotLook.ring,
+              borderWidth: dotLook.ring,
+              borderColor: dotLook.ringColor,
+              backgroundColor: dotLook.color,
+            }}
+          />
+        ) : dot ? (
           <View
             style={{
               position: 'absolute',
@@ -631,6 +651,14 @@ export function Round({
     </Pressable>
   );
 }
+export type DotLook = {
+  side: number;
+  top: number;
+  right: number;
+  ring: number;
+  color: string;
+  ringColor: string;
+};
 const BADGE_OUT = 4;
 // The dot sits inside the round's corner, on its edge's curve.
 const DOT_IN = 9;
@@ -1224,17 +1252,87 @@ export function Av({
   name,
   photoUrl,
   size = 'md',
+  board,
   children,
 }: {
   name: string;
   photoUrl?: string | null;
   size?:
-    'xs' | 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'hero' | 'edit';
+    | 'xs'
+    | 'sm'
+    | 'member'
+    | 'bar'
+    | 'list'
+    | 'md'
+    | 'row'
+    | 'inbox'
+    | 'seat'
+    | 'lg'
+    | 'xl'
+    | 'big'
+    | 'hero'
+    | 'edit';
+  // A board's own face (tuval Mesajlar, Dm): its white ring drawn outside the face (the face keeps
+  // its size), its colour and its shadow.
+  board?: AvBoard;
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
   const { scheme } = useTheme();
   const side = KIT.size.av[size];
+  const shadowOff = useLabOff('golge');
+  if (board) {
+    const out = board.ring;
+    const outer = side + 2 * out;
+    const boardShadow = boxShadowParts(shadowOff, board.shadow || undefined, outer / 2);
+    return (
+      <View style={{ width: side, height: side }}>
+        <View
+          style={{
+            position: 'absolute',
+            left: -out,
+            top: -out,
+            width: outer,
+            height: outer,
+            borderRadius: outer / 2,
+            backgroundColor: board.ringColor,
+            boxShadow: boardShadow.boxShadow,
+          }}
+        >
+          {boardShadow.node}
+        </View>
+        <View
+          style={[
+            {
+              width: side,
+              height: side,
+              borderRadius: side / 2,
+              overflow: 'hidden',
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+            children || photoUrl ? null : gradientStyle(avatarGround(name)),
+          ]}
+        >
+          {children ? (
+            children
+          ) : photoUrl ? (
+            <PhotoView
+              source={{ uri: photoUrl, cacheKey: photoCacheKey(photoUrl) }}
+              cachePolicy="memory-disk"
+              transition={0}
+              style={{ width: side, height: side }}
+              accessibilityIgnoresInvertColors
+            />
+          ) : (
+            <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.av[size], { color: KIT.white }]}>
+              {initial(name)}
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  }
   const ring =
     size === 'xs'
       ? KIT.size.avRingXs
@@ -1246,7 +1344,6 @@ export function Av({
   // U31: the profile's face in the dark sits in a ring of the dark card (#121614).
   const ringColor = size === 'hero' && scheme === 'dark' ? KIT.dark.raised : KIT.white;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
-  const shadowOff = useLabOff('golge');
   // The face clips its photo, so its native shadow sits beside it in a box of the same size.
   const shadow = shadowParts(shadowOff, KIT.avShadow, undefined, side / 2);
   const face = (
@@ -1295,6 +1392,8 @@ export function Av({
     </View>
   );
 }
+
+export type AvBoard = { ring: number; ringColor: string; shadow: string };
 
 function initial(name: string): string {
   return upperTr(name.trim().charAt(0)) || '?';

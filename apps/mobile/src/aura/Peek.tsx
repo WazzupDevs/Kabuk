@@ -6,6 +6,7 @@ import { peekScale } from '@/lib/sheetFit';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { MESSAGES } from '@/theme/messages';
 import {
   CHECKIN_KANKI,
   CHECKIN_PEEK_FRAME,
@@ -43,20 +44,21 @@ export function Peek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number;
   return <BuddyPeek kind={kind} delay={delay} fit={fit} />;
 }
 
-// U30 (Bildirimler `.pk`): two riso buddies, 64 wide (160x200 pictures), 32 in from the sheet's
-// left and 36 from its right, turned -8 and 7 degrees; 57 of them stand over the sheet's top edge.
+// tuval Mesajlar (Bildirimler): two riso buddies 56 × 70, 40 in from the sheet's left and 44 from
+// its right, upright; 62 of them stand over the sheet's top edge, rising from 40 below.
 const RISO_PEEK = {
-  width: 64,
-  height: 80,
-  up: 57,
-  left: { source: require('../../assets/riso/peek-1.webp'), side: 32, turn: '-8deg' },
-  right: { source: require('../../assets/riso/peek-2.webp'), side: 36, turn: '7deg' },
+  width: MESSAGES.peek.width,
+  height: MESSAGES.peek.height,
+  up: MESSAGES.peek.up,
+  rise: MESSAGES.peek.rise,
+  left: { source: require('../../assets/riso/peek-1.webp'), side: MESSAGES.peek.left },
+  right: { source: require('../../assets/riso/peek-2.webp'), side: MESSAGES.peek.right },
 } as const;
 
 // iskelet.md → 5.4: as the sheet opens they look up over its edge on springs.pop, the second a
 // part's stagger after the first; at once with reduce motion.
 function RisoPeek() {
-  const { width, height, up, left, right } = RISO_PEEK;
+  const { width, height, up, rise: from, left, right } = RISO_PEEK;
   const reduce = useReduceMotion();
   const [rise] = useState(() => ({
     left: new Animated.Value(reduce ? 1 : 0),
@@ -75,7 +77,7 @@ function RisoPeek() {
   }, [reduce, rise]);
   const picture = { position: 'absolute', top: 0, width, height } as const;
   const lift = (p: Animated.Value) => ({
-    translateY: p.interpolate({ inputRange: [0, 1], outputRange: [up, 0] }),
+    translateY: p.interpolate({ inputRange: [0, 1], outputRange: [from, 0] }),
   });
   return (
     <View
@@ -83,13 +85,10 @@ function RisoPeek() {
       style={{ position: 'absolute', left: 0, right: 0, top: -up, height: up, overflow: 'hidden' }}
     >
       <Animated.View style={[picture, { left: left.side, transform: [lift(rise.left)] }]}>
-        <Image source={left.source} style={{ width, height, transform: [{ rotate: left.turn }] }} />
+        <Image source={left.source} style={{ width, height }} />
       </Animated.View>
       <Animated.View style={[picture, { right: right.side, transform: [lift(rise.right)] }]}>
-        <Image
-          source={right.source}
-          style={{ width, height, transform: [{ rotate: right.turn }] }}
-        />
+        <Image source={right.source} style={{ width, height }} />
       </Animated.View>
     </View>
   );

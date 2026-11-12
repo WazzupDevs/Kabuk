@@ -15,11 +15,11 @@ import { InSheet, T } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { useSheetFrost, useSheetMotion } from '@/motion/useSheetMotion';
-import { KIT } from '@/theme/auraKit';
+import { KIT, type KitTextVariant } from '@/theme/auraKit';
 import { peekShown, SHEET_MAX } from '@/lib/sheetFit';
 
 import { Quiet } from './Quiet';
-import { SheetCard } from './SheetCard';
+import { SheetCard, type SheetLook } from './SheetCard';
 import { SheetScrim } from './SheetScrim';
 import { ScreenStatusBar, StatusScrim } from './StatusScrim';
 
@@ -42,6 +42,8 @@ export function RouteSheet({
   testID,
   peek,
   footer,
+  look,
+  titleType = 'title',
 }: {
   title?: string;
   children: ReactNode;
@@ -51,6 +53,9 @@ export function RouteSheet({
   // Buttons that stay at the sheet's foot while the rest scrolls (Check-in, aura v37: SheetCard →
   // footer). With them the buddies are scaled to the sheet and go once it stands at its tallest.
   footer?: ReactNode;
+  // A board's own sheet (SheetCard → look) and its title's type (tuval Mesajlar: 22/800).
+  look?: SheetLook;
+  titleType?: KitTextVariant;
 }) {
   const insets = useSafeAreaInsets();
   const motion = useSheetMotion();
@@ -123,12 +128,13 @@ export function RouteSheet({
               above={showPeek && peek ? <Peek kind={peek} fit={!!footer} /> : null}
               head={
                 title ? (
-                  <T v="title" accessibilityRole="header">
+                  <T v={titleType} accessibilityRole="header">
                     {title}
                   </T>
                 ) : undefined
               }
               frost={frost}
+              look={look}
               footer={
                 footer ? (
                   <InSheet>

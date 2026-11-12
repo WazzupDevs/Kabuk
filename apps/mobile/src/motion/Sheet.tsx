@@ -12,7 +12,7 @@ import type { IconName } from '@/components/Button';
 import { InSheetLoops, useSheetsOpen } from '@/components/Loader';
 import { Quiet } from '@/components/Quiet';
 import { useSheetCloser } from '@/components/sheetCloser';
-import { SheetCard } from '@/components/SheetCard';
+import { SheetCard, type SheetLook } from '@/components/SheetCard';
 import { SheetScrim } from '@/components/SheetScrim';
 import { tr } from '@/i18n/tr';
 import { ACTIVITIES } from '@/theme/activities';
@@ -61,6 +61,8 @@ type Props = {
   footer?: ReactNode;
   // The content's scroll, for a sheet that moves it itself (Kapsülünü süsle's pack chips).
   scrollRef?: AnimatedRef<Reanimated.ScrollView>;
+  // A board's own sheet (SheetCard → look; tuval Dm's block).
+  look?: SheetLook;
   children: ReactNode;
 };
 
@@ -85,6 +87,7 @@ export function Sheet({
   top,
   footer,
   scrollRef,
+  look,
   children,
 }: Props) {
   const { colors, shape } = useTheme();
@@ -234,6 +237,7 @@ export function Sheet({
               frost={frost}
               fill={top !== undefined}
               scrollRef={scrollRef}
+              look={look}
               footer={
                 footer ? (
                   <InSheet>

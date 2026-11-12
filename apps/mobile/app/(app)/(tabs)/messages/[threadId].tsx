@@ -17,6 +17,7 @@ import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/com
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
+import { AppIcon } from '@/components/AppIcon';
 import { IconButton } from '@/components/IconButton';
 import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { Loader } from '@/components/Loader';
@@ -43,6 +44,8 @@ import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useSeen } from '@/lib/useSeen';
+import { DM } from '@/theme/dm';
+import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { useAfterTransition } from '@/lib/afterTransition';
 
@@ -86,6 +89,7 @@ function backToInbox(): void {
 
 export default function DmScreen() {
   const { threadId, publicId, name } = useLocalSearchParams<Params>();
+  const { colors, scheme } = useTheme();
   useHideTabBar();
   const queryClient = useQueryClient();
   const friend = useFriends().data?.find((f) => f.publicId === publicId);
@@ -434,18 +438,22 @@ export default function DmScreen() {
       }}
       top={
         <ChatTopBar
+          dm
           onBack={backToInbox}
           title={name}
           // iskelet.md → 5.5: "yazıyor…" under the name while the friend types, nothing otherwise.
           subtitle={typing ? tr.dm.typingTitle : undefined}
-          leading={<Av size="member" name={name} photoUrl={photoUrl} />}
+          leading={<Av size="bar" name={name} photoUrl={photoUrl} />}
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
           actions={
             <View ref={moreRef} collapsable={false}>
               <IconButton
-                // U29: moreV.
+                // U29: moreV; tuval Dm: the dots 18 in the ink.
                 icon="ellipsis-vertical"
+                glyph={
+                  <AppIcon name="ellipsis-vertical" size={DM.bar.moreIcon} color={colors.text} />
+                }
                 label={tr.friends.more}
                 onPress={openMenu}
               />
@@ -515,8 +523,20 @@ export default function DmScreen() {
         hint={confirm === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
         confirmLabel={confirm === 'block' ? tr.friends.blockConfirm : tr.friends.removeConfirm}
         confirmIcon={confirm === 'block' ? 'block' : undefined}
-        // iskelet.md → 3.5: the person's picture over the sentence.
-        picture={<Av size="lg" name={name} photoUrl={photoUrl} />}
+        // iskelet.md → 3.5: the person's picture over the sentence (tuval Dm: 64 in a 3 white
+        // ring, its soft shadow).
+        picture={
+          <Av
+            size="lg"
+            name={name}
+            photoUrl={photoUrl}
+            board={{
+              ring: DM.confirm.ring,
+              ringColor: DM[scheme].confirm.ring,
+              shadow: DM[scheme].confirm.faceShadow,
+            }}
+          />
+        }
         pending={end.isPending}
         error={end.error}
         onConfirm={(reason) => confirm && end.mutate({ kind: confirm, reason })}

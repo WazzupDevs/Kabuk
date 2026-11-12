@@ -42,6 +42,7 @@ import { usePopHost } from './popHost';
 import { CachedSvg } from './CachedSvg';
 import { FxSvg } from './FxSvg';
 import { gradientStyle } from '@/theme/gradient';
+import { DM } from '@/theme/dm';
 import type { BalloonCorner, SetBalloon } from '@/theme/setBalloons';
 
 // color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
@@ -218,11 +219,35 @@ export function ChatBubble({
   // table chat pink. Aura v65's primary own bubble and glass others are left.
   const venue = kind === 'mekan';
   const paint = KIT.bubble[scheme];
+  // The DM's own look (tuval Dm, theme/dm.ts): its padding, words, time, shadows and tail; the own
+  // bubble without a line. A set's balloon keeps its own.
+  const dm = kind === 'dm' && skin === null;
+  const D = DM[scheme];
+  const pad = dm
+    ? {
+        paddingTop: DM.bubble.padTop,
+        paddingBottom: DM.bubble.padBottom,
+        paddingLeft: DM.bubble.padLeft,
+        paddingRight: DM.bubble.padRight,
+      }
+    : { paddingHorizontal: KIT.size.bubblePadX, paddingVertical: KIT.size.bubblePadY };
+  const msgType = dm ? KIT_TYPE.msgDm : KIT_TYPE.msg;
+  const tail = dm ? DM.tail : { width: KIT.size.tailW, height: KIT.size.tailH };
+  const mineLine = mine && !dm;
+  const share = dm ? DM.share : MINE_SHARE;
   // The words on a coloured bubble are white: another's, and a set's balloon.
   const onColour = !mine || skin !== null;
   const shadowOff = useLabOff('golge');
   const fg = skin ? skin.ink : mine ? paint.mineInk : paint.themInk;
-  const muted = skin ? skin.muted : mine ? paint.mineMuted : paint.themMuted;
+  const muted = skin
+    ? skin.muted
+    : dm
+      ? mine
+        ? D.mineTime
+        : D.themTime
+      : mine
+        ? paint.mineMuted
+        : paint.themMuted;
   const inside = !mine && nameInk !== undefined;
   const R = KIT.size.bubbleRadius;
   const near = KIT.size.bubbleInner;
@@ -241,21 +266,27 @@ export function ChatBubble({
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
   const bubbleShadow = shadowParts(
     shadowOff,
-    big ? undefined : mine ? paint.mineShadow : KIT.chatShadow[kind],
+    big
+      ? undefined
+      : dm
+        ? (mine ? D.mineShadow : D.themShadow) || undefined
+        : mine
+          ? paint.mineShadow
+          : KIT.chatShadow[kind],
     undefined,
     radii,
     true,
-    mine && !big ? KIT.size.edge : 0,
+    mineLine && !big ? KIT.size.edge : 0,
   );
   // The widest a bubble's words may run (the stream's width less the screen's padding, at the
   // bubble's share of it), for keeping the time beside a one-line message (below).
   const { width: screenWidth } = useWindowDimensions();
   const maxText =
-    (screenWidth - 2 * shape.screenPadding) *
-      (mine ? MINE_SHARE : avatar ? THEIRS_SHARE : MINE_SHARE) -
+    (screenWidth - 2 * (dm ? DM.side : shape.screenPadding)) *
+      (mine ? share : avatar ? THEIRS_SHARE : share) -
     (avatar ? INDENT : 0) -
-    2 * KIT.size.bubblePadX -
-    2 * KIT.size.edge;
+    (dm ? DM.bubble.padLeft + DM.bubble.padRight : 2 * KIT.size.bubblePadX) -
+    2 * (mineLine ? KIT.size.edge : 0);
   // Android wraps a line that measured as fitting by a fraction of a point (React Native's
   // measuring and drawing round apart): a one-line message then dropped its time to a second line
   // and the bubble stayed narrow (the owner's report, 30 Ekim). When only the time went down and
@@ -338,7 +369,7 @@ export function ChatBubble({
         style={[
           big || skinned
             ? null
-            : mine
+            : mineLine
               ? {
                   backgroundColor: shaped ? undefined : fill,
                   borderWidth: KIT.size.edge,
@@ -352,8 +383,7 @@ export function ChatBubble({
                 alignItems: mine ? 'flex-end' : 'flex-start',
               }
             : {
-                paddingHorizontal: KIT.size.bubblePadX,
-                paddingVertical: KIT.size.bubblePadY,
+                ...pad,
                 borderTopLeftRadius: radii[0],
                 borderTopRightRadius: radii[1],
                 borderBottomRightRadius: radii[2],
@@ -375,10 +405,18 @@ export function ChatBubble({
             h={box.h}
             radii={radii}
             fill={fill}
-            line={mine ? paint.mineEdge : undefined}
+            line={mineLine ? paint.mineEdge : undefined}
+            tailW={tail.width}
+            tailH={tail.height}
           />
         ) : last && !big ? (
-          <BubbleTail side={mine ? 'right' : 'left'} color={fill} edge={mine ? KIT.size.edge : 0} />
+          <BubbleTail
+            side={mine ? 'right' : 'left'}
+            color={fill}
+            edge={mineLine ? KIT.size.edge : 0}
+            w={tail.width}
+            h={tail.height}
+          />
         ) : null}
         {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the
             face beside it (the owner's call, 28 Ekim). The venue chat's is over the bubble (P4). */}
@@ -413,7 +451,7 @@ export function ChatBubble({
           />
         ) : chipsInside ? (
           <>
-            <RNText style={[KIT_TYPE.msg, { color: fg }]}>{text}</RNText>
+            <RNText style={[msgType, { color: fg }]}>{text}</RNText>
             <View
               style={{
                 flexDirection: 'row',
@@ -438,11 +476,16 @@ export function ChatBubble({
                   }}
                   importantForAccessibility="no-hide-descendants"
                 >
-                  <Text variant="caption" color={muted}>
+                  <Stamp dm={dm} color={muted}>
                     {time}
-                  </Text>
+                  </Stamp>
                   {mine && delivery ? (
-                    <DeliveryTicks delivery={delivery} inBubble plainInk={muted} />
+                    <DeliveryTicks
+                      delivery={delivery}
+                      inBubble
+                      plainInk={muted}
+                      size={dm ? DM.time.ticks : undefined}
+                    />
                   ) : null}
                 </View>
               ) : null}
@@ -450,12 +493,12 @@ export function ChatBubble({
           </>
         ) : (
           <View style={widen ? { minWidth: widen } : undefined}>
-            <RNText style={[KIT_TYPE.msg, { color: fg }]} onTextLayout={onTextLayout}>
+            <RNText style={[msgType, { color: fg }]} onTextLayout={onTextLayout}>
               {text}
               {time && !state ? (
-                <Text variant="caption" color={withAlpha(fg, HIDDEN_ALPHA)} accessible={false}>
+                <Stamp dm={dm} color={withAlpha(fg, HIDDEN_ALPHA)} hidden>
                   {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
-                </Text>
+                </Stamp>
               ) : null}
             </RNText>
             {time && !state ? (
@@ -465,17 +508,23 @@ export function ChatBubble({
                   position: 'absolute',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: SPACING[1],
-                  right: 0,
-                  bottom: 0,
+                  gap: dm ? DM.time.gap : SPACING[1],
+                  // tuval Dm: 11 from the bubble's right, 6 from its foot.
+                  right: dm ? DM.time.right - DM.bubble.padRight : 0,
+                  bottom: dm ? DM.time.bottom - DM.bubble.padBottom : 0,
                 }}
                 importantForAccessibility="no-hide-descendants"
               >
-                <Text variant="caption" color={muted}>
+                <Stamp dm={dm} color={muted}>
                   {time}
-                </Text>
+                </Stamp>
                 {mine && delivery ? (
-                  <DeliveryTicks delivery={delivery} inBubble plainInk={muted} />
+                  <DeliveryTicks
+                    delivery={delivery}
+                    inBubble
+                    plainInk={muted}
+                    size={dm ? DM.time.ticks : undefined}
+                  />
                 ) : null}
               </View>
             ) : null}
@@ -533,7 +582,7 @@ export function ChatBubble({
           alignItems: 'flex-end',
           gap: SPACING[1],
           alignSelf: 'flex-end',
-          maxWidth: `${MINE_SHARE * 100}%`,
+          maxWidth: `${share * 100}%`,
         }}
       >
         {bar}
@@ -697,7 +746,7 @@ export function ChatBubble({
       style={{
         gap: SPACING[1],
         alignSelf: 'flex-start',
-        maxWidth: `${(avatar ? THEIRS_SHARE : MINE_SHARE) * 100}%`,
+        maxWidth: `${(avatar ? THEIRS_SHARE : share) * 100}%`,
       }}
     >
       {head}
@@ -921,6 +970,8 @@ function BubbleShape({
   radii,
   fill,
   line,
+  tailW,
+  tailH,
 }: {
   mine: boolean;
   w: number;
@@ -928,8 +979,10 @@ function BubbleShape({
   radii: readonly [number, number, number, number];
   fill: string;
   line?: string;
+  // The tail's size (the DM's 6 × 16, tuval Dm).
+  tailW: number;
+  tailH: number;
 }) {
-  const tailW = KIT.size.tailW;
   // The tailed (left) form's corners: the own bubble's mirrored.
   const left = (mine ? [radii[1], radii[0], radii[3], radii[2]] : radii) as readonly [
     number,
@@ -938,7 +991,7 @@ function BubbleShape({
     number,
   ];
   const edge = line ? KIT.size.edge : 0;
-  const d = bubblePath(w, h, left, tailW, KIT.size.tailH, edge / 2);
+  const d = bubblePath(w, h, left, tailW, tailH, edge / 2);
   return (
     <View
       pointerEvents="none"
@@ -972,13 +1025,15 @@ function BubbleTail({
   side,
   color,
   edge,
+  w,
+  h,
 }: {
   side: 'left' | 'right';
   color: string;
   edge: number;
+  w: number;
+  h: number;
 }) {
-  const w = KIT.size.tailW;
-  const h = KIT.size.tailH;
   // Overlapping the bubble by half a point: no hairline between them.
   const overlap = 0.5;
   return (
@@ -996,7 +1051,7 @@ function BubbleTail({
         width={w}
         height={h}
         viewBox="0 0 7 12"
-        nativeID={svgKey('tail', side, color)}
+        nativeID={svgKey('tail', side, color, w, h)}
         style={side === 'right' ? { transform: [{ scaleX: -1 }] } : undefined}
       >
         <Path d="M7 0C7 5.6 4.8 9.6 0.6 11.4C0.2 11.6 0.3 12 0.7 12H7Z" fill={color} />
@@ -1235,6 +1290,37 @@ function ReactionChips({
     </View>
   );
 }
+
+// A message's time: the caption, in a DM 11.5/600 (tuval Dm). `hidden`: the room's invisible copy
+// in the words (not read out).
+function Stamp({
+  dm,
+  color,
+  hidden,
+  children,
+}: {
+  dm: boolean;
+  color: string;
+  hidden?: boolean;
+  children: string;
+}) {
+  if (dm) {
+    return (
+      <RNText
+        accessible={hidden ? false : undefined}
+        style={[KIT_TYPE.msgTime, TABULAR, { color }]}
+      >
+        {children}
+      </RNText>
+    );
+  }
+  return (
+    <Text variant="caption" color={color} accessible={hidden ? false : undefined}>
+      {children}
+    </Text>
+  );
+}
+const TABULAR = { fontVariant: ['tabular-nums' as const] };
 
 // Also on a Mesajlar row, before the preview of the viewer's own last message. In the viewer's own
 // bubble (`onAccent`) the ticks are in its text colour and a read one in readOnAccent.

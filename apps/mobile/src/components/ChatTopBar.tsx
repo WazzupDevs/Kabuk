@@ -7,7 +7,8 @@ import { FxMoves } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { isNarrow } from '@/lib/narrow';
 import { KIT } from '@/theme/auraKit';
-import { SPACING } from '@/theme/tokens';
+import { DM } from '@/theme/dm';
+import { SPACING, TOUCH } from '@/theme/tokens';
 
 type Props = {
   title: string;
@@ -35,6 +36,9 @@ type Props = {
   actions?: ReactNode;
   // U25 (MasaSohbeti `.hpill`): the capsule without a face 20 in.
   compact?: boolean;
+  // The DM's own bar (tuval Dm, theme/dm.ts): 14 from the sides, the face (38) 7 in and 10 from the
+  // name (16.5/800), the menu 6 from the capsule's right; the heights stay the owner's 44.
+  dm?: boolean;
 };
 
 // The top of every chat (the owner's call, 8 Kasım; Telegram Android's chat top): the back button a
@@ -56,6 +60,7 @@ export function ChatTopBar({
   toggle,
   actions,
   compact = false,
+  dm = false,
 }: Props) {
   const { c } = useKit();
   const press = usePress();
@@ -71,8 +76,8 @@ export function ChatTopBar({
             arkadaşsınız". */}
         <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
           <T
-            // U25, U26, U28: the name h3 in every bar.
-            v="h3"
+            // U25, U26, U28: the name h3 in every bar; the DM's 16.5/800 (tuval Dm).
+            v={dm ? 'dmName' : 'h3'}
             accessibilityRole="header"
             lines={titleLines}
             fit={titleLines !== undefined}
@@ -106,8 +111,8 @@ export function ChatTopBar({
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     minHeight: PILL,
-    paddingVertical: PILL_INSET,
-    gap: SPACING[2.5],
+    paddingVertical: dm ? (PILL - KIT.size.av.bar) / 2 : PILL_INSET,
+    gap: dm ? DM.bar.nameGap : SPACING[2.5],
   };
   const right = faces !== null || !!toggle || !!actions;
   return (
@@ -116,8 +121,8 @@ export function ChatTopBar({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          gap: SPACING[2],
-          paddingHorizontal: KIT.size.side,
+          gap: dm ? DM.bar.gap : SPACING[2],
+          paddingHorizontal: dm ? DM.bar.side : KIT.size.side,
           paddingVertical: SPACING[1.5],
         }}
       >
@@ -155,8 +160,19 @@ export function ChatTopBar({
             flexDirection: 'row',
             alignItems: 'center',
             minHeight: PILL,
-            paddingLeft: compact ? KIT.chatPillPadX : leading ? PILL_INSET : SPACING[4],
-            paddingRight: right ? 0 : PILL_PAD_RIGHT,
+            paddingLeft: compact
+              ? KIT.chatPillPadX
+              : leading
+                ? dm
+                  ? DM.bar.faceIn
+                  : PILL_INSET
+                : SPACING[4],
+            // The DM's menu (a 44 touch, its 38 round drawn) 6 from the capsule's right.
+            paddingRight: right
+              ? dm
+                ? DM.bar.moreIn - (TOUCH.min - DM.bar.more) / 2
+                : 0
+              : PILL_PAD_RIGHT,
             gap: SPACING[1],
           }}
         >
