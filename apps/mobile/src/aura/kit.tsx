@@ -248,6 +248,7 @@ export function Btn({
   block,
   snug,
   icon,
+  lead,
   loading,
   disabled,
   tint,
@@ -274,6 +275,8 @@ export function Btn({
   // "Arkadaşlıktan çıkar"; F1).
   snug?: boolean;
   icon?: CapIconName;
+  // Something before the words in the icon's place (Profil's "N arkadaş": the friends' faces).
+  lead?: ReactNode;
   loading?: boolean;
   disabled?: boolean;
   // The label's colour where the canvas gives one (Bitir, Ayrıl in red).
@@ -381,6 +384,8 @@ export function Btn({
         {shadow?.node}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
+        ) : lead ? (
+          lead
         ) : icon && !off ? (
           // Disabled, no icon (Aura v65 `.btn.off`; the owner's report, 2 Kasım, 10.1).
           <CapIcon

@@ -2,8 +2,8 @@ import { upperTr } from '@shared/trText.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
-import Svg, { ClipPath, Defs, Line, Path, Rect } from 'react-native-svg';
+import { View } from 'react-native';
+import Svg, { Circle, ClipPath, Defs, Line, Path, Pattern, Rect } from 'react-native-svg';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, T } from '@/aura/kit';
@@ -14,9 +14,10 @@ import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
+import { Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { lookGround } from '@/theme/capsuleLook';
-import { TICKET } from '@/theme/profileCover';
+import { RISO_PAPER, TICKET } from '@/theme/profileCover';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import { LivingLook } from './LivingLook';
@@ -63,6 +64,7 @@ export function IdentityTicket({
   const [box, setBox] = useState({ w: 0, h: 0 });
   const e = TICKET.edgeWidth / 2;
   const o = TICKET.printOffset;
+  const cell = RISO_PAPER.cell;
   return (
     <View
       testID="profile-capsule"
@@ -80,9 +82,20 @@ export function IdentityTicket({
             <ClipPath id="ticket">
               <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} />
             </ClipPath>
+            {/* The riso halftone on the paper (iskelet.md → 2.5). */}
+            <Pattern id="ticket-tram" width={cell} height={cell} patternUnits="userSpaceOnUse">
+              <Circle cx={cell / 4} cy={cell / 4} r={RISO_PAPER.dot} fill={RISO_PAPER.light.dots} />
+              <Circle
+                cx={(3 * cell) / 4}
+                cy={(3 * cell) / 4}
+                r={RISO_PAPER.dot}
+                fill={RISO_PAPER.light.dots}
+              />
+            </Pattern>
           </Defs>
           <Path d={ticketPath(o + e, o + e, box.w - 2 * e, box.h - 2 * e)} fill={TICKET.print} />
           <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill={TICKET.paper} />
+          <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill="url(#ticket-tram)" />
           {look ? (
             <Rect
               x={0}
@@ -178,9 +191,8 @@ function NickRefresh({ refreshAt }: { refreshAt: string | null }) {
   }
   return (
     <View style={{ gap: SPACING[0.5] }}>
-      <Pressable
+      <Tap
         testID="nick-refresh"
-        accessibilityRole="button"
         accessibilityLabel={tr.profile.nickRenew}
         accessibilityState={{ busy: refresh.isPending, disabled: refresh.isPending }}
         disabled={refresh.isPending}
@@ -196,7 +208,7 @@ function NickRefresh({ refreshAt }: { refreshAt: string | null }) {
         <T v="fine" color={TICKET.link}>
           {tr.profile.nickRenew}
         </T>
-      </Pressable>
+      </Tap>
       {refresh.isError ? (
         <T v="fine" color={KIT.danger}>
           {errorMessage(refresh.error)}
