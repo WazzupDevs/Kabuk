@@ -6,11 +6,12 @@ export const APP_NAME = 'skall';
 
 // The games' names as the user sees them, in one place (docs/SPEC_V4.md §4.C, step 4.3): tr.ts and
 // the store texts read them. The word "Tabu" is never shown (K-5); code, tables, content files and
-// the concept key (`tabu`) keep their names.
+// the concept keys (`tabu`, `sahtekar`) keep their names. Kinshi and Krot are the games' names at
+// the table of people (docs/design/iskelet.md → 6, no. 1): the history and the badges say them too.
 export const GAME_NAMES = {
-  tabu: 'Kapsül Anlat',
+  tabu: 'Kinshi',
   sohbet: 'Sohbet kartları',
-  sahtekar: 'Sahtekar',
+  sahtekar: 'Krot',
   harf: 'Harf Kapmaca',
   sarki: 'Şarkıda Geçsin',
   ibre: 'İbre',
