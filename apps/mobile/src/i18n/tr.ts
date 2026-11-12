@@ -2441,15 +2441,18 @@ export const tr = {
       profile: 'Profilli',
       anonymous: 'Anonim',
       nowProfiled:
-        'Bu girişte profilinle görünüyorsun. Değiştirmek için mekan ekranındaki anahtarı kullan; hakkın bir kez.',
+        'Bu girişte profilinle görünüyorsun. Değiştirmek için mekan ekranının menüsünü kullan; hakkın bir kez.',
       nowAnonymous:
-        'Bu girişte anonim görünüyorsun. Değiştirmek için mekan ekranındaki anahtarı kullan; hakkın bir kez.',
+        'Bu girişte anonim görünüyorsun. Değiştirmek için mekan ekranının menüsünü kullan; hakkın bir kez.',
       photoNeeded: 'Profilli başlamak için profil fotoğrafı gerekiyor.',
     },
     notificationSettings: 'Bildirim ayarları',
+    // Ayarlar's first row (iskelet.md → 5.9); its page keeps "Bildirim ayarları".
+    notifications: 'Bildirimler',
     privacyTitle: 'Gizlilik',
     accountTitle: 'Hesap',
-    done: 'Tamam',
+    // The test build's rows at Ayarlar's foot (iskelet.md → 5.9).
+    testSection: 'Test sürümü',
     phone: {
       title: 'Telefon bildirimleri',
       on: 'Açık. Kapatırsan telefonun ayarlarından yeniden açabilirsin.',

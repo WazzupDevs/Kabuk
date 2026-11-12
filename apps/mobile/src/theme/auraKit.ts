@@ -398,6 +398,13 @@ export const KIT = {
   primaryHalo: 'rgba(14, 135, 69, 0.18)',
   saveIdle: '#9AAEA1',
   rowIcon: { side: 32, radius: 10 },
+  // Ayarlar's rows (iskelet.md → 5.9, 2.4): each row's square in its own colour, the icon white.
+  rowIconTone: {
+    notifications: '#FF4F8B',
+    privacy: '#0E8745',
+    account: '#2670E0',
+    test: '#7A8A80',
+  },
   // The bar's Kaydet keeps one width as its words change (iskelet.md → 2.1).
   saveMinWidth: 96,
   pink: '#FF4F8B',

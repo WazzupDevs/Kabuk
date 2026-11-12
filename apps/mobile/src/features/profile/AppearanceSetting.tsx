@@ -1,3 +1,4 @@
+import { upperTr } from '@shared/trText.ts';
 import { View } from 'react-native';
 
 import { Seg, T } from '@/aura/kit';
@@ -14,10 +15,10 @@ export function AppearanceSetting() {
   const scheme = useSchemePreference() ?? THEME.defaultScheme;
 
   return (
-    // U33: the title h3, the seg 8 under it and 4 over its note.
+    // iskelet.md → 5.9: the title an eyebrow in capitals, the seg 8 under it and 4 over its note.
     <View style={{ gap: SPACING[1] }}>
-      <T v="h3" accessibilityRole="header">
-        {tr.settings.appearance.title}
+      <T v="eyebrow" accessibilityRole="header">
+        {upperTr(tr.settings.appearance.title)}
       </T>
       <View style={{ marginTop: SPACING[2], marginBottom: SPACING[1] }}>
         <Seg

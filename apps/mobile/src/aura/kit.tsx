@@ -1128,6 +1128,24 @@ export function Li({
 }
 const PRESSED_ROW = 0.7;
 
+// A settings row's icon (iskelet.md → 2.4): white on a coloured square, 32 and 10 round.
+export function IconSquare({ name, tone }: { name: CapIconName; tone: string }) {
+  return (
+    <View
+      style={{
+        width: KIT.rowIcon.side,
+        height: KIT.rowIcon.side,
+        borderRadius: KIT.rowIcon.radius,
+        backgroundColor: tone,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <CapIcon name={name} color={KIT.white} soft={1} size={KIT.size.iconSm} />
+    </View>
+  );
+}
+
 // .thumb: a picture with rounded corners and a soft shadow (60, 18).
 export function Thumb({
   source,
