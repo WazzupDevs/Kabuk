@@ -34,6 +34,7 @@ export function SheetCard({
   footer,
   frost,
   scrollRef,
+  look,
   children,
 }: {
   // Unset: it cannot be pulled away and has no close button (the join request).
@@ -52,6 +53,9 @@ export function SheetCard({
   frost?: boolean;
   // The content's scroll, for a sheet that moves it itself (Kapsülünü süsle's pack chips).
   scrollRef?: AnimatedRef<Animated.ScrollView>;
+  // A board's own sheet (tuval Mesajlar's Bildirimler, Dm's block): its ground with no line, its
+  // room inside, where its title stands and how far the close button is from the side.
+  look?: SheetLook;
   children: ReactNode;
 }) {
   const k = useKit();
@@ -62,9 +66,14 @@ export function SheetCard({
   // its shadow again on every frame of the slide.
   const shadowOff = useLabOff('golge');
   const radius = KIT.size.sheetRadius;
-  const shadow = shadowParts(shadowOff, k.c.glassShadow, undefined, radius);
+  // tuval (every sheet): its shadow rises over the screen, 0 -8 40.
+  const shadow = shadowParts(shadowOff, k.c.sheetShadow || undefined, undefined, radius);
+  const padX = look?.padX ?? KIT.size.sheetPadX;
   const top = { borderRadius: radius };
-  const foot = Math.max(KIT.size.sheetPadBottom + bottomInset, KIT.size.sheetPadBottomMin);
+  const foot = Math.max(
+    KIT.size.sheetPadBottom + bottomInset,
+    look?.padBottom ?? KIT.size.sheetPadBottomMin,
+  );
   const size = fill ? { flex: 1 } : { flexShrink: 1 };
   const close = onClose ? (
     <Round
@@ -90,10 +99,17 @@ export function SheetCard({
           {shadow.node}
           <View
             style={{
-              ...(frost ? null : { ...gradientStyle(k.c.sheet), backgroundColor: k.c.sheetBase }),
+              ...(frost
+                ? null
+                : look
+                  ? {
+                      ...(look.ground ? gradientStyle(look.ground) : null),
+                      backgroundColor: look.base,
+                    }
+                  : { ...gradientStyle(k.c.sheet), backgroundColor: k.c.sheetBase }),
               ...size,
               ...top,
-              borderWidth: KIT.size.edge,
+              borderWidth: look ? 0 : KIT.size.edge,
               borderColor: k.c.glassEdge,
               overflow: 'hidden',
             }}
@@ -121,17 +137,18 @@ export function SheetCard({
                   width: KIT.size.grabW,
                   height: KIT.size.grabH,
                   borderRadius: KIT.size.grabH,
-                  backgroundColor: k.c.grab,
+                  backgroundColor: k.c.sheetGrab,
                 }}
               />
               {head ? (
                 <View
                   style={{
                     flexDirection: 'row',
-                    alignItems: 'flex-start',
                     gap: KIT.size.rowGap,
-                    marginTop: KIT.size.sheetHeadGap,
-                    paddingHorizontal: KIT.size.sheetPadX,
+                    alignItems: look ? 'center' : 'flex-start',
+                    marginTop: look?.headTop ?? KIT.size.sheetHeadGap,
+                    paddingLeft: padX + (look?.titleIn ?? 0),
+                    paddingRight: padX + (look?.closeIn ?? 0),
                   }}
                 >
                   {balance && close ? <View style={{ width: KIT.size.sheetClose }} /> : null}
@@ -158,7 +175,7 @@ export function SheetCard({
                 contentContainerStyle={{
                   flexGrow: fill ? 1 : undefined,
                   paddingTop: head ? KIT.size.rowGap : KIT.size.sheetGap,
-                  paddingHorizontal: KIT.size.sheetPadX,
+                  paddingHorizontal: padX,
                   paddingBottom: footer ? KIT.size.sheetGap + KIT.size.tagGap : foot,
                 }}
               >
@@ -169,7 +186,7 @@ export function SheetCard({
               <View
                 style={{
                   flexShrink: 0,
-                  paddingHorizontal: KIT.size.sheetPadX,
+                  paddingHorizontal: padX,
                   paddingBottom: foot,
                 }}
               >
@@ -183,7 +200,7 @@ export function SheetCard({
                 style={{
                   position: 'absolute',
                   top: KIT.size.sheetPadTop + KIT.size.grabH + KIT.size.sheetHeadGap,
-                  right: KIT.size.sheetPadX,
+                  right: padX,
                 }}
               >
                 {close}
@@ -195,3 +212,13 @@ export function SheetCard({
     </GestureDetector>
   );
 }
+
+export type SheetLook = {
+  ground?: string;
+  base: string;
+  padX?: number;
+  padBottom?: number;
+  headTop?: number;
+  titleIn?: number;
+  closeIn?: number;
+};

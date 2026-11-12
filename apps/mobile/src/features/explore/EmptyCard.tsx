@@ -16,11 +16,14 @@ export function EmptyCard({
   body,
   picture = PICTURE,
   testID,
+  pictureTestID,
 }: {
   title: string;
   body: string | null;
   picture?: number;
   testID?: string;
+  // The picture's own id (E2E K14: `empty-riso-<ad>`, as EmptyState's).
+  pictureTestID?: string;
 }) {
   const card = KIT.size.explore.card;
   const pic = KIT.size.explore.empty;
@@ -40,6 +43,7 @@ export function EmptyCard({
       }}
     >
       <Image
+        testID={pictureTestID}
         source={picture}
         accessible={false}
         contentFit="cover"

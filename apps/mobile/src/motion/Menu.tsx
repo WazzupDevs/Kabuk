@@ -35,6 +35,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useSinglePress } from '@/lib/useSinglePress';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { DM } from '@/theme/dm';
 import { MENU_GLASS } from '@/theme/glass';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -54,6 +55,9 @@ const Floating = createContext(false);
 const Follows = createContext(false);
 // In a menu grown from a button: a row's press closes the menu first.
 const PopClose = createContext<(() => void) | null>(null);
+// In a menu grown from a button (tuval Dm, `menu`): its rows 50 high, 16 in, the icon 20 and 12 from
+// the words (15.5/600).
+const Grown = createContext(false);
 
 export function Menu({
   children,
@@ -191,7 +195,9 @@ function MenuPop({
     ? menuPlace(anchor, size, screen, { top: topInset, bottom: insets.bottom }, KIT.size.menuGap)
     : null;
   const radius = KIT.size.menuRadius;
-  const shadow = shadowParts(shadowOff, k.c.glassShadow, undefined, radius);
+  // tuval Dm (`menu`): a whiter glass, a white edge, a deep soft shadow and a faint scrim.
+  const look = DM[k.scheme].menu;
+  const shadow = shadowParts(shadowOff, look.shadow, undefined, radius);
   const plain = children.filter((row) => !isNegative(row));
   const negative = children.filter(isNegative);
   return (
@@ -202,6 +208,20 @@ function MenuPop({
       statusBarTranslucent
       onRequestClose={onClose}
     >
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            backgroundColor: look.scrim,
+            opacity: p.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 1],
+              extrapolate: 'clamp',
+            }),
+          },
+        ]}
+      />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={tr.common.close}
@@ -260,22 +280,31 @@ function MenuPop({
           {shadow.node}
           <View
             style={{
-              ...(frost
-                ? gradientStyle(k.c.sheetFrost)
-                : { ...gradientStyle(k.c.sheet), backgroundColor: k.c.sheetBase }),
+              ...gradientStyle(frost ? look.fill : look.solid),
               borderRadius: radius,
               borderWidth: KIT.size.edge,
-              borderColor: k.c.glassEdge,
+              borderColor: look.edge,
               overflow: 'hidden',
+              paddingVertical: DM.menu.padY,
             }}
           >
             <PopClose.Provider value={onClose}>
               <Floating.Provider value>
-                {plain}
-                {negative.length > 0 && plain.length > 0 ? (
-                  <View style={{ height: KIT.size.menuDangerGap, backgroundColor: k.c.hair }} />
-                ) : null}
-                {negative}
+                <Grown.Provider value>
+                  {plain}
+                  {/* iskelet.md → 3.5: the destructive row apart under a 6 band (tuval Dm: 6
+                      above and under it). */}
+                  {negative.length > 0 && plain.length > 0 ? (
+                    <View
+                      style={{
+                        height: KIT.size.menuDangerGap,
+                        marginVertical: DM.menu.bandGap,
+                        backgroundColor: look.band,
+                      }}
+                    />
+                  ) : null}
+                  {negative}
+                </Grown.Provider>
               </Floating.Provider>
             </PopClose.Provider>
           </View>
@@ -319,7 +348,9 @@ export function MenuItem({
   const floating = useContext(Floating);
   const follows = useContext(Follows);
   const popClose = useContext(PopClose);
-  const iconSize = floating ? ICON.md : ICON.lg;
+  const grown = useContext(Grown);
+  const menuLook = DM[scheme].menu;
+  const iconSize = grown ? DM.menu.icon : floating ? ICON.md : ICON.lg;
   const press = useSinglePress(
     popClose
       ? () => {
@@ -328,7 +359,8 @@ export function MenuItem({
         }
       : onPress,
   );
-  const ink = negative ? colors.onDangerSoft : colors.text;
+  const ink = negative ? (grown ? menuLook.danger : colors.onDangerSoft) : colors.text;
+  const iconInk = negative ? ink : grown ? menuLook.icon : colors.muted;
   return (
     <Pressable
       testID={testID}
@@ -342,9 +374,13 @@ export function MenuItem({
           className="flex-row items-center"
           style={{
             // U21: a sheet's row 56, 16 in, 14 between the icon and the words (`.srow`).
-            gap: floating ? SPACING[4] : ROW_GAP,
-            minHeight: floating ? SPACING[11] : ROW_HEIGHT,
-            paddingHorizontal: floating ? SPACING[4] + SPACING[0.5] : SPACING[4],
+            gap: grown ? DM.menu.gap : floating ? SPACING[4] : ROW_GAP,
+            minHeight: grown ? DM.menu.row : floating ? SPACING[11] : ROW_HEIGHT,
+            paddingHorizontal: grown
+              ? DM.menu.padX
+              : floating
+                ? SPACING[4] + SPACING[0.5]
+                : SPACING[4],
             opacity: pressed ? OPACITY.pressed : 1,
           }}
         >
@@ -363,15 +399,19 @@ export function MenuItem({
             />
           ) : null}
           {cap ? (
-            <CapIcon name={cap} size={iconSize} color={negative ? ink : colors.muted} />
+            <CapIcon name={cap} size={iconSize} color={iconInk} />
           ) : icon ? (
-            <AppIcon name={icon} size={iconSize} color={negative ? ink : colors.muted} />
+            <AppIcon name={icon} size={iconSize} color={iconInk} />
           ) : null}
           <View
             className="flex-1"
             style={{ gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }}
           >
-            {floating ? (
+            {grown ? (
+              <T v="menuRow" color={ink}>
+                {label}
+              </T>
+            ) : floating ? (
               <Text variant="button" color={ink}>
                 {label}
               </Text>

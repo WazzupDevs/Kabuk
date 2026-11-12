@@ -1,5 +1,5 @@
 import { forwardRef, type ReactNode, useEffect, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, Text as RNText, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,7 +16,8 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { CapIcon } from '@/aura/CapIcon';
 import { useKit } from '@/aura/kit';
 import { MOTION } from '@/theme/aura';
-import { KIT } from '@/theme/auraKit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { DM } from '@/theme/dm';
 import { gradientStyle } from '@/theme/gradient';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -28,7 +29,7 @@ import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 import { Loader } from './Loader';
-import { shadowParts } from './NativeShadow';
+import { boxShadowParts, shadowParts } from './NativeShadow';
 
 type Props = {
   value: string;
@@ -317,23 +318,29 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   ref,
 ) {
   const theme = useTheme();
-  const { colors, shape } = theme;
+  const { colors } = theme;
   const k = useKit();
+  // The DM's bar (tuval Dm, theme/dm.ts): 14 from the sides, the glass 78 % white with its top light
+  // and shadow, the words 16/500 20 in, the hint in its own grey. In Mekan's card (`flush`) as it
+  // was.
+  const dm = !flush;
+  const look = DM[k.scheme].composer;
   const shadowOff = useLabOff('golge');
   const capsuleShadow = shadowParts(
     shadowOff,
-    k.c.glassShadow,
-    undefined,
+    dm ? look.shadow || undefined : k.c.glassShadow,
+    dm ? look.inset || undefined : undefined,
     CAPSULE / 2,
     true,
     KIT.size.edge,
   );
   const followEnd = useChatEnd();
   const shown = !sendDisabled || !!sending;
+  const padLeft = dm ? DM.composer.padLeft : KIT.size.fieldPadX;
   return (
     <View
       style={{
-        paddingHorizontal: flush ? 0 : shape.screenPadding,
+        paddingHorizontal: flush ? 0 : DM.composer.side,
         paddingTop: flush ? 0 : above ? SPACING[1] : SPACING[2],
         paddingBottom: flush ? 0 : SPACING[4] + SPACING[0.5],
         gap: SPACING[1.5],
@@ -346,13 +353,15 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
           minHeight: CAPSULE,
           borderRadius: CAPSULE / 2,
           justifyContent: 'center',
-          ...(k.scheme === 'light'
-            ? { backgroundColor: KIT.bubble.light.mine }
-            : gradientStyle(k.c.glass)),
+          ...(dm
+            ? gradientStyle(look.fill)
+            : k.scheme === 'light'
+              ? { backgroundColor: KIT.bubble.light.mine }
+              : gradientStyle(k.c.glass)),
           borderWidth: KIT.size.edge,
-          borderColor: k.c.glassEdge,
+          borderColor: dm ? look.edge : k.c.glassEdge,
           boxShadow: capsuleShadow.boxShadow,
-          paddingLeft: KIT.size.fieldPadX,
+          paddingLeft: padLeft,
           // The words stop short of the send button's place, shown or not.
           paddingRight: SEND_IN + 2 * SEND_INSET,
         }}
@@ -372,7 +381,7 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
           maxLength={maxLength}
           multiline
           style={[
-            typeStyle(theme, 'body'),
+            dm ? KIT_TYPE.msgDm : typeStyle(theme, 'body'),
             {
               color: colors.text,
               paddingVertical: SPACING[3],
@@ -387,15 +396,20 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
           <View
             pointerEvents="none"
             className="absolute inset-0 justify-center"
-            style={{ paddingLeft: KIT.size.fieldPadX }}
+            style={{ paddingLeft: padLeft }}
           >
-            <Text variant="body" color={colors.placeholder}>
-              {placeholder}
-            </Text>
+            {dm ? (
+              <RNText style={[KIT_TYPE.msgDm, { color: DM[k.scheme].hint }]}>{placeholder}</RNText>
+            ) : (
+              <Text variant="body" color={colors.placeholder}>
+                {placeholder}
+              </Text>
+            )}
           </View>
         ) : null}
         <View style={{ position: 'absolute', right: SEND_INSET, bottom: SEND_INSET }}>
           <SendIn
+            dm={dm}
             shown={shown}
             sending={!!sending}
             disabled={!!sendDisabled || !!sending}
@@ -417,6 +431,7 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
 // The capsule's send button: hidden while there is nothing to send, grown on springs.pop when
 // there is.
 function SendIn({
+  dm,
   shown,
   sending,
   disabled,
@@ -424,6 +439,8 @@ function SendIn({
   testID,
   onPress,
 }: {
+  // The DM's (tuval Dm): its green shadow, the arrow 18.
+  dm: boolean;
   shown: boolean;
   sending: boolean;
   disabled: boolean;
@@ -449,6 +466,13 @@ function SendIn({
     transform: [{ scale: scale.get() }],
   }));
   const pressScale = usePressScale();
+  const { scheme } = useKit();
+  const sendShadow = boxShadowParts(
+    useLabOff('golge'),
+    dm ? DM[scheme].sendShadow || undefined : undefined,
+    SEND_IN / 2,
+  );
+  const arrow = dm ? DM.composer.arrow : ICON.md;
   return (
     <Pressable
       testID={testID}
@@ -471,16 +495,18 @@ function SendIn({
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: KIT.primary,
+                boxShadow: sendShadow.boxShadow,
               },
               pressScale(pressed),
             ]}
           >
+            {sendShadow.node}
             {sending ? (
               <Loader kind="meet" size={ICON.md} delay={0} label={null} />
             ) : (
-              <Svg width={ICON.md} height={ICON.md} viewBox="0 0 24 24">
+              <Svg width={arrow} height={arrow} viewBox="0 0 24 24">
                 <Path
-                  d={ARROW_UP}
+                  d={dm ? ARROW_UP_DM : ARROW_UP}
                   fill="none"
                   stroke={KIT.onPrimary}
                   strokeWidth={ARROW_STROKE}
@@ -497,6 +523,8 @@ function SendIn({
 }
 // iskelet.md → 2.4: the line icons' stroke, round ends.
 const ARROW_UP = 'M12 19V5M5.5 11.5 12 5l6.5 6.5';
+// tuval Dm: the shaft from 19 to 6, the head 5.5 to either side.
+const ARROW_UP_DM = 'M12 19V6M6.5 11.5 12 6l5.5 5.5';
 const ARROW_STROKE = 2.2;
 
 // The message being answered, over the message bar: a bar on the left, the name and one line.

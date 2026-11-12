@@ -9,6 +9,7 @@ import { Avatar } from '@/components/Avatar';
 import { CapIcon } from '@/aura/CapIcon';
 import { ListCard } from '@/components/ListCard';
 import { EmptyState } from '@/components/EmptyState';
+import { EmptyCard } from '@/features/explore/EmptyCard';
 import { Loader, useLoaderHold } from '@/components/Loader';
 import { usePressScale } from '@/components/motion';
 import { errorMessage } from '@/i18n/errors';
@@ -21,6 +22,8 @@ import { ICON, SPACING } from '@/theme/tokens';
 
 import { refreshFriends, useIncomingFriendRequests, useVenueChatRequests } from './queries';
 import { useRetryAfterName } from './useRetryAfterName';
+
+const NO_REQUESTS_PICTURE: number = require('../../../assets/riso/empty-requests.webp');
 
 // The last game of the encounter, or the chat (docs/SPEC_V3.md §5.5), as on Bildirimler.
 const concept = (c: string): HistoryConcept =>
@@ -105,14 +108,13 @@ export function RequestList({ now }: { now: Date }) {
 
   if (rows.length === 0) {
     return (
-      <View className="flex-1 justify-center">
-        <EmptyState
-          kind="empty"
-          riso="requests"
-          title={tr.messages.noRequests}
-          body={tr.messages.noRequestsHint}
-        />
-      </View>
+      // tuval Mesajlar ("İstekler"): the small empty card, its riso 104 × 72 (iskelet.md → 3.4).
+      <EmptyCard
+        title={tr.messages.noRequests}
+        body={tr.messages.noRequestsHint}
+        picture={NO_REQUESTS_PICTURE}
+        pictureTestID="empty-riso-requests"
+      />
     );
   }
 

@@ -75,6 +75,21 @@ export const KIT_TYPE = {
   personLine: t(600, 12.5, 16),
   actionSm: t(800, 13.5, 17),
   actionSmDone: t(700, 13.5, 17),
+  // Mesajlar (tuval Mesajlar): a conversation's last line (14, 500); Bildirimler's line (15.5, 700;
+  // what happened in it 500, `light`).
+  inboxPreview: t(500, 14, 18),
+  notice: t(700, 15.5, 20),
+  // The DM (tuval Dm): a message (16, 500, 1.36), its time (11.5, 600), the day's pill (12.5, 700),
+  // the bar's name (16.5, 800, -0.015em), the menu's rows (15.5, 600), the block's sheet: its title
+  // (21, 800, -0.02em), its sentence (14, 500, 1.45) and its buttons (16.5, 800).
+  msgDm: t(500, 16, 22),
+  msgTime: t(600, 11.5, 15),
+  dayPill: t(700, 12.5, 16),
+  dmName: t(800, 16.5, 21, -0.015),
+  menuRow: t(600, 15.5, 20),
+  confirmTitle: t(800, 21, 27, -0.02),
+  confirmNote: t(500, 14, 20),
+  confirmBtn: t(800, 16.5, 21),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
@@ -123,6 +138,8 @@ export const KIT_TYPE = {
   bold: { fontFamily: F[800] } as TextStyle,
   // "Henüz mesaj yok" (5.4): slanted (the face has no italic file; Android slants it).
   italic: { fontStyle: 'italic' } as TextStyle,
+  // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
+  light: { fontFamily: F[500] } as TextStyle,
   btn: t(600, 16, 20),
   btnSm: t(600, 14, 18),
   // Mekan's "Masa kur" (44 high, 15).
@@ -167,6 +184,9 @@ export const KIT_TYPE = {
     seat: t(700, 20, 24),
     // A conversation's face in Mesajlar (52).
     row: t(700, 18, 22),
+    // A conversation's face (tuval Mesajlar: 54) and the DM bar's (38).
+    inbox: t(700, 19, 24),
+    bar: t(700, 14, 18),
     lg: t(700, 22, 26),
     xl: t(700, 32, 38),
     // Profil's two faces (112).
@@ -176,7 +196,10 @@ export const KIT_TYPE = {
   },
 } as const;
 
-export type KitTextVariant = Exclude<keyof typeof KIT_TYPE, 'av' | 'strong' | 'bold' | 'italic'>;
+export type KitTextVariant = Exclude<
+  keyof typeof KIT_TYPE,
+  'av' | 'strong' | 'bold' | 'italic' | 'light'
+>;
 
 // Aura v75 E4: in the narrow state (320 dp or the largest text, `lib/narrow.ts`) the eyebrow is 13,
 // so it is the canvas's 17/22 at the largest text (1.3x).
@@ -278,6 +301,10 @@ export const KIT = {
       'linear-gradient(180deg, rgba(251, 253, 252, 1) 0%, rgba(251, 253, 252, 1) 55%, rgba(251, 253, 252, 0) 100%)',
     sheetFadeBottom: 'linear-gradient(180deg, rgba(247, 251, 248, 0), rgba(247, 251, 248, 1))',
     grab: '#C6E0CC',
+    // A sheet's handle and its shadow (tuval Mesajlar, Dm, Sohbet, Ayarlar, Mekan: 40 × 5, ink 14 %;
+    // 0 -8 40, ink 22 %).
+    sheetGrab: 'rgba(3, 27, 11, 0.14)',
+    sheetShadow: '0px -8px 40px rgba(3, 27, 11, 0.22)',
     scrim: 'rgba(3, 27, 11, 0.20)',
     // The switch off: --control.
     switchOff: '#C6E0CC',
@@ -343,6 +370,8 @@ export const KIT = {
       'linear-gradient(180deg, rgba(18, 22, 20, 1) 0%, rgba(18, 22, 20, 1) 55%, rgba(18, 22, 20, 0) 100%)',
     sheetFadeBottom: 'linear-gradient(180deg, rgba(18, 22, 20, 0), rgba(18, 22, 20, 1))',
     grab: '#2A332F',
+    sheetGrab: '#2A332F',
+    sheetShadow: '',
     scrim: 'rgba(0, 0, 0, 0.45)',
     switchOff: '#2A332F',
     switchInset: '',
@@ -738,9 +767,13 @@ export const KIT = {
       xs: 18,
       sm: 32,
       member: 36,
+      // The DM's top bar (tuval Dm: 38).
+      bar: 38,
       list: 40,
       md: 44,
       row: 48,
+      // A conversation in Mesajlar (tuval Mesajlar: 54).
+      inbox: 54,
       seat: 58,
       lg: 64,
       xl: 96,
@@ -852,7 +885,8 @@ export const KIT = {
     menuRadius: 26,
     menuGap: 8,
     menuDangerGap: 6,
-    sheetPadTop: 12,
+    // The handle 10 under the sheet's top edge (tuval Mesajlar, Dm, Sohbet, Ayarlar, Mekan).
+    sheetPadTop: 10,
     sheetPadX: 20,
     // Under the sheet's content: its 38 (SablonSheet) is the bottom safe area (34) and 4 more, so
     // its buttons sit 12 above the safe area as everywhere (U9).
@@ -863,7 +897,8 @@ export const KIT = {
     // Masa kur (aura v47): what scrolls fades into the footer's top edge, only while it overflows.
     sheetFooterFade: 32,
     grabW: 40,
-    grabH: 4,
+    // The handle 5 high (tuval: every sheet and Profil's panel).
+    grabH: 5,
     msgRadius: 22,
     msgTail: 8,
     // Chat bubbles (iskelet.md → 5.5): 20 round, 7 where a run's bubbles face each other, the run's

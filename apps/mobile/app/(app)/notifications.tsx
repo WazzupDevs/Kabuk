@@ -1,4 +1,5 @@
 import type { NotificationItem } from '@shared/api/friends.ts';
+import { upperTr } from '@shared/trText.ts';
 import { inviteState, seenMark } from '@shared/notifications.ts';
 import { TABLE_ICONS } from '@shared/tableIcons.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,7 +29,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { SPACING } from '@/theme/tokens';
+import { MESSAGES as M } from '@/theme/messages';
 import { firstRows, useOpenRows } from '@/lib/afterTransition';
 
 // Bildirimler (docs/SPEC_V4.md §4.G; skall tuvali: Bildirimler, BildirimlerKabul, BildirimlerBos):
@@ -66,9 +67,28 @@ export default function NotificationsScreen() {
 
   // Opened light: the first rows while the sheet comes up, the rest after.
   const shown = useOpenRows(items?.length ?? 0);
+  // tuval Mesajlar (Bildirimler): the sheet 16 inside on its pink and green lit ground, the title
+  // 22/800 14 under the handle, 6 in.
+  const { scheme } = useKit();
+  const S = M.sheet;
+  const sheet = {
+    title: tr.notifications.title,
+    testID: 'notifications',
+    peek: 'notifications' as const,
+    titleType: 'sheetGame' as const,
+    look: {
+      ground: M[scheme].sheetGround || undefined,
+      base: M[scheme].sheetBase,
+      padX: S.padX,
+      padBottom: S.padBottom,
+      headTop: S.headTop,
+      titleIn: S.titleIn,
+      closeIn: S.closeIn,
+    },
+  };
   if (list.isPending) {
     return (
-      <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
+      <RouteSheet {...sheet}>
         <View className="items-center py-6">
           <Loader />
         </View>
@@ -77,7 +97,7 @@ export default function NotificationsScreen() {
   }
   if (list.isError) {
     return (
-      <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
+      <RouteSheet {...sheet}>
         <EmptyState
           kind="error"
           body={errorMessage(list.error)}
@@ -88,7 +108,7 @@ export default function NotificationsScreen() {
   }
   if (!items || items.length === 0) {
     return (
-      <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
+      <RouteSheet {...sheet}>
         <EmptyState
           kind="empty"
           riso="notifications"
@@ -103,21 +123,30 @@ export default function NotificationsScreen() {
   const newer = items.filter(isFresh);
   const older = items.filter((n) => !isFresh(n));
   return (
-    <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
+    <RouteSheet {...sheet}>
       {newer.length > 0 ? (
-        <View style={{ gap: SECTION_GAP }}>
-          <T v="eyebrow">{tr.notifications.fresh}</T>
+        <View style={{ gap: M.eyebrow.bottom, marginTop: EYEBROW_TOP }}>
+          <Eyebrow>{tr.notifications.fresh}</Eyebrow>
           {newer.map((n) => (
             <Row key={keyOf(n)} item={n} fresh />
           ))}
         </View>
       ) : null}
       {older.length > 0 ? (
-        <View style={{ gap: SECTION_GAP }}>
-          <T v="eyebrow">{tr.notifications.earlier}</T>
-          {/* U30: the earlier rows on one glass card, a hairline from the words, 16 in from the
-              right. */}
-          <Glass sm style={{ overflow: 'hidden' }}>
+        <View style={{ gap: M.eyebrow.bottom, marginTop: newer.length > 0 ? 0 : EYEBROW_TOP }}>
+          <Eyebrow>{tr.notifications.earlier}</Eyebrow>
+          {/* tuval Mesajlar: the earlier rows on one white card, 26 round, 4 / 6 inside, a hairline
+              from the words to the card's edge. */}
+          <Glass
+            face={M[scheme].noticeCard}
+            radius={M.card.radius}
+            style={{
+              overflow: 'hidden',
+              borderRadius: M.card.radius,
+              paddingVertical: M.card.padY,
+              paddingHorizontal: M.card.padX,
+            }}
+          >
             {firstRows(older, shown).map((n, i) => (
               <View key={keyOf(n)}>
                 {i > 0 ? <Hair /> : null}
@@ -145,7 +174,9 @@ function keyOf(n: NotificationItem): string {
 }
 
 function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
+  const look = M[scheme];
+  const N = M.notice;
   const now = useNow(item.kind === 'invite' ? 1000 : 30000);
   const queryClient = useQueryClient();
   const friends = useFriends();
@@ -286,16 +317,17 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   // isteğini kabul etti"; it wraps, never cut), its date under it (an invite's state or its
   // minutes in its place), the answers as round buttons at the right.
   const under = item.kind === 'invite' ? status : time;
+  // tuval Mesajlar: the name 15.5/700, what happened 500 in its own ink; the date 12.5/600, 2 under.
   const words = (
-    <View style={{ flex: 1, gap: SPACING[0.5] }}>
-      <T v="body" ink>
-        <T v="body" ink style={KIT_TYPE.bold}>
-          {name}
+    <View style={{ flex: 1, minWidth: 0, gap: N.lineGap }}>
+      <T v="notice">
+        {name}
+        <T v="notice" color={look.noticeLine} style={KIT_TYPE.light}>
+          {` ${line}`}
         </T>
-        {` ${line}`}
       </T>
       {under ? (
-        <T v="fine" tabular color={joined ? KIT.success : undefined}>
+        <T v="personLine" tabular color={joined ? KIT.success : look.time}>
           {under}
         </T>
       ) : null}
@@ -316,15 +348,20 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
       </View>
     </View>
   ) : (
-    <Av name={name} photoUrl={item.photoUrl} />
+    <Av
+      size="row"
+      name={name}
+      photoUrl={item.photoUrl}
+      board={{ ring: N.ring, ringColor: look.faceRing, shadow: look.faceShadow }}
+    />
   );
   const row = (
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: KIT.size.liGap,
-        minHeight: ROW_HEIGHT,
+        gap: N.gap,
+        minHeight: N.face,
       }}
     >
       {face}
@@ -342,9 +379,8 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
         testID={`notification-${item.kind}`}
         style={{
           opacity: faded ? FADED : 1,
-          paddingVertical: OLD_PAD_Y,
-          paddingLeft: OLD_PAD_LEFT,
-          paddingRight: OLD_PAD_RIGHT,
+          paddingVertical: N.padY,
+          paddingHorizontal: N.padX,
         }}
       >
         {row}
@@ -378,33 +414,52 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
 
 const FADED = 0.6;
 const INVITE_THUMB = 48;
-// Every row one height: the face's (U30: the row 64 with its padding).
-const ROW_HEIGHT = KIT.size.av.md;
-const OLD_PAD_LEFT = 14;
-const OLD_PAD_RIGHT = SPACING[3];
-// U30: the section's name 12 over its rows.
-const SECTION_GAP = SPACING[3];
 const INVITE_RADIUS = 16;
 const INVITE_BADGE_OUT = 8;
 const FRESH_PAD = 14;
-const OLD_PAD_Y = 10;
+// The section's name 16 under the title: the sheet's content starts 12 under it.
+const EYEBROW_TOP = M.eyebrow.top - KIT.size.rowGap;
 
+// ÖNCEKİ (tuval Mesajlar): 12/800, 0.1em, 10 in.
+function Eyebrow({ children }: { children: string }) {
+  const { scheme } = useKit();
+  return (
+    <View style={{ paddingLeft: M.eyebrow.in }}>
+      <T v="sheetEyebrow" color={M[scheme].eyebrow} accessibilityRole="header">
+        {upperTr(children)}
+      </T>
+    </View>
+  );
+}
+
+// From the face's right (8 + 48 + 13) to the card's edge.
 function Hair() {
-  const { c } = useKit();
+  const { scheme } = useKit();
   return (
     <View
       style={{
         height: KIT.size.hair,
-        marginLeft: OLD_PAD_LEFT + KIT.size.av.md + KIT.size.liGap,
-        marginRight: SPACING[4],
-        backgroundColor: c.hair,
+        marginLeft: M.notice.padX + M.notice.face + M.notice.gap,
+        backgroundColor: M[scheme].hair,
       }}
     />
   );
 }
 
+// tuval Mesajlar: a 42 glass round, its speech bubble 19 in the green.
 function MessageRound({ onPress }: { onPress: () => void }) {
-  return <Round icon="chat" label={tr.notifications.writeMessage} onPress={onPress} />;
+  const { scheme } = useKit();
+  return (
+    <Round
+      glass="clear"
+      side={M.notice.action}
+      iconSize={M.notice.icon}
+      color={M[scheme].action}
+      icon="chat"
+      label={tr.notifications.writeMessage}
+      onPress={onPress}
+    />
+  );
 }
 
 function Error({ error }: { error: unknown }) {

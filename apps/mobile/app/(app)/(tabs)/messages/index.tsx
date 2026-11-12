@@ -28,6 +28,7 @@ import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { PopIn, Rise, StickyField } from '@/motion';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { MESSAGES as M } from '@/theme/messages';
 import { SPACING } from '@/theme/tokens';
 
 type Tab = 'chats' | 'requests';
@@ -45,25 +46,37 @@ export default function MessagesScreen() {
   const [query, setQuery] = useState('');
   const requests = useRequestCount();
   const now = useNow(60_000);
+  const { scheme } = useKit();
 
   return (
     <View style={{ flex: 1 }}>
       <Screen
         edges={['top']}
         refreshable
-        gap={KIT.size.venueGap}
+        side={M.side}
+        padTop={M.fieldTop}
+        gap={M.listTop}
         top={
+          // tuval Mesajlar: the title 36/800 15 under the status bar, 6 in from the cards at its
+          // left and the bell 2 in at its right (the screen's top stands 20 in, 8 down).
           <View
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: M.headTop,
+              marginLeft: M.titleIn,
+              marginRight: M.bellIn,
+            }}
           >
-            <T v="display" accessibilityRole="header">
+            <T v="exploreTitle" accessibilityRole="header">
               {tr.tabs.messages}
             </T>
             <NotificationsBell />
           </View>
         }
       >
-        <StickyField band>
+        <StickyField band side={M.side}>
           <View style={{ gap: SPACING[3] }}>
             <GlassSearch
               testID="messages-search"
@@ -71,8 +84,16 @@ export default function MessagesScreen() {
               onChangeText={setQuery}
               placeholder={tr.messages.search}
             />
+            {/* tuval Mesajlar: the tabs a glass capsule 48, 24 round, the chosen part white, the
+                words 15/700. */}
             <Seg<Tab>
-              large
+              board={{
+                item: M.tabs.item,
+                radius: M.tabs.radius,
+                type: 'tabsBoard',
+                face: M[scheme].tabsGlass,
+                onShadow: M[scheme].tabOnShadow || undefined,
+              }}
               value={tab}
               onChange={setTab}
               accessibilityLabel={tr.messages.tabs}
@@ -106,8 +127,15 @@ export default function MessagesScreen() {
 // 2.1 and 5.4: a prominent glass round.
 function NewMessageButton({ onPress }: { onPress: () => void }) {
   const barSpace = useTabBarSpace();
+  // tuval Mesajlar: 26 from the right, 22 over the tab bar; the plus 24.
   return (
-    <View style={{ position: 'absolute', right: KIT.size.newChatRight, bottom: barSpace }}>
+    <View
+      style={{
+        position: 'absolute',
+        right: M.newChat.right,
+        bottom: barSpace + M.newChat.aboveBar,
+      }}
+    >
       <PopIn rise={NEW_CHAT_RISE}>
         <Round
           glass="prominent"
@@ -116,7 +144,7 @@ function NewMessageButton({ onPress }: { onPress: () => void }) {
           label={tr.messages.newMessage}
           onPress={onPress}
         >
-          <CapIcon name="plus" color={KIT.onPrimary} soft={NEW_CHAT_SOFT} />
+          <CapIcon name="plus" color={KIT.onPrimary} soft={NEW_CHAT_SOFT} size={M.newChat.icon} />
         </Round>
       </PopIn>
     </View>
@@ -180,7 +208,7 @@ function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => v
 }
 
 function Chats({ now, query }: { now: Date; query: string }) {
-  const { c } = useKit();
+  const { scheme } = useKit();
   const inbox = useDmInbox();
   const loading = useLoaderHold(inbox.isPending);
   // The conversations' copies on the phone into memory (useDmMessages): a DM opened from here
@@ -251,21 +279,20 @@ function Chats({ now, query }: { now: Date; query: string }) {
   return (
     <View style={{ paddingBottom: NEW_CHAT }}>
       {/* The room under the last row for the "+" over it. */}
-      {/* U27: the conversations on glass sm, a hairline from 72 to 16 short of the right. */}
-      <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
+      {/* tuval Mesajlar: the conversations on one `.card`, 26 round, 4 / 6 inside; the hairline
+          over each row's words but the first (InboxRow). */}
+      <Glass
+        face={M[scheme].card}
+        radius={M.card.radius}
+        style={{
+          borderRadius: M.card.radius,
+          paddingVertical: M.card.padY,
+          paddingHorizontal: M.card.padX,
+        }}
+      >
         {shown.map((t, i) => (
           <Rise key={t.publicId} index={i}>
-            {i > 0 ? (
-              <View
-                style={{
-                  height: KIT.size.hair,
-                  marginLeft: KIT.size.liPadX + KIT.size.av.md + KIT.size.liGap,
-                  marginRight: KIT.size.liPadX,
-                  backgroundColor: c.hair,
-                }}
-              />
-            ) : null}
-            <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
+            <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} follows={i > 0} />
           </Rise>
         ))}
       </Glass>
@@ -280,19 +307,24 @@ const WARM_ROWS = 20;
 // of channels, and the rows further down are off screen.
 const TYPING_ROWS = 30;
 
-// A conversation (U27, docs/design/aura → Mesajlar: `.li`): 72 high, the 44 face, the name (h3) and
-// the read ticks and time (fine) on top, the last message (body, one line) or "yazıyor" below.
-// iskelet.md → 5.4: unread, the name and the last line bold, the time green and the count on a green
-// badge at the right.
+// A conversation (tuval Mesajlar): 10 / 8 inside, the 54 face in a white ring, 13 from the words;
+// the words 4 above and under, the hairline over them when a row is above; the name (16/700) and
+// the read ticks and time (12.5/600) on top, the last message (14/500, one line) or "yazıyor" 3
+// under it. iskelet.md → 5.4: unread, the name and the last line bold, the time green and the count
+// on a green badge at the right.
 function InboxRow({
   thread: t,
   now,
   listen,
+  follows,
 }: {
   thread: DmInboxThread;
   now: Date;
   listen: boolean;
+  follows: boolean;
 }) {
+  const { scheme } = useKit();
+  const look = M[scheme];
   const name = t.displayName ?? tr.profile.noName;
   const unread = t.unreadCount > 0;
   const threadId = t.threadId;
@@ -301,31 +333,40 @@ function InboxRow({
     <Li
       testID={`inbox-${name}`}
       accessibilityLabel={tr.messages.row(name, t.lastBody ?? tr.messages.noMessage, t.unreadCount)}
-      padY={KIT.size.inboxPadY}
+      padY={M.row.padY}
+      padX={M.row.padX}
+      gap={M.row.gap}
       onPress={
         threadId ? () => openDm({ threadId, publicId: t.publicId, name: t.displayName }) : undefined
       }
     >
-      <Av size="md" name={name} photoUrl={t.photoUrl} />
+      <Av
+        size="inbox"
+        name={name}
+        photoUrl={t.photoUrl}
+        board={{ ring: M.row.ring, ringColor: look.faceRing, shadow: look.faceShadow }}
+      />
       <View
         style={{
           flex: 1,
-          gap: ROW_GAP,
-          minHeight: KIT.size.inboxRow - 2 * KIT.size.inboxPadY,
-          justifyContent: 'center',
+          minWidth: 0,
+          gap: M.row.lineGap,
+          paddingVertical: M.row.wordsPadY,
+          borderTopWidth: follows ? KIT.size.hair : 0,
+          borderTopColor: look.hair,
         }}
       >
         <View style={BETWEEN}>
-          <T v="h3" style={[{ flexShrink: 1 }, unread ? KIT_TYPE.bold : null]}>
+          <T v="placeName" style={[{ flex: 1 }, unread ? KIT_TYPE.bold : null]}>
             {name}
           </T>
           {t.lastMessageAt ? (
             // The own last message's ticks by the time (Telegram Android).
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: M.row.metaGap }}>
               {t.lastFromMe && t.lastStatus ? (
-                <DeliveryTicks delivery={t.lastStatus} size={INBOX_TICK} />
+                <DeliveryTicks delivery={t.lastStatus} size={M.ticks.width} />
               ) : null}
-              <T v="fine" tabular color={unread ? KIT.primary : undefined}>
+              <T v="personLine" tabular color={unread ? KIT.primary : look.time}>
                 {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
               </T>
             </View>
@@ -349,24 +390,23 @@ function InboxRow({
     </Li>
   );
 }
-const ROW_GAP = 2;
-const INBOX_TICK = 17;
 const BETWEEN = {
   flexDirection: 'row' as const,
   alignItems: 'center' as const,
   justifyContent: 'space-between' as const,
-  gap: KIT.size.chipsGap,
+  gap: M.row.metaGap,
 };
 
 // The last message, ink and bold while unread (its ticks are by the time); none yet, "Henüz mesaj
-// yok" slanted and quiet (iskelet.md → 5.4).
+// yok" slanted and quieter (iskelet.md → 5.4; tuval Mesajlar: #4A6550, none #7C8F82).
 function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
+  const { c, scheme } = useKit();
   const none = t.lastBody === null;
   return (
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
       <T
-        v="body"
-        ink={unread && !none}
+        v="inboxPreview"
+        color={none ? M[scheme].none : unread ? c.ink : M[scheme].preview}
         lines={1}
         style={[{ flex: 1 }, none ? KIT_TYPE.italic : unread ? KIT_TYPE.bold : null]}
       >

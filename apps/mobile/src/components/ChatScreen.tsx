@@ -66,7 +66,8 @@ import { GlassTarget } from '@/components/LiquidGlass';
 import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { gradientStyle } from '@/theme/gradient';
-import { ChatKindContext } from './chatKind';
+import { ChatKindContext, useChatKind } from './chatKind';
+import { DM } from '@/theme/dm';
 import { ChatMetaContext } from './chatMeta';
 import { metaHiddenAt } from '@/lib/chatMeta';
 import { PopHostContext, PopOpenContext, usePopHostState, usePopOpen } from './popHost';
@@ -1313,7 +1314,8 @@ export function ChatScreen<T extends ChatListItem>({
                         // Drawn from the bottom up: its start is the screen's foot.
                         contentContainerStyle={{
                           flexGrow: 1,
-                          paddingHorizontal: shape.screenPadding,
+                          // tuval Dm: the bubbles 18 from the sides (12 and each row's 6).
+                          paddingHorizontal: wall === 'dm' ? DM.side : shape.screenPadding,
                           paddingTop: SPACING[3] + under,
                           paddingBottom: SPACING[2] + topHeight,
                           // iskelet.md → 5.5: a run's bubbles 3 apart, runs 12 (ChatRow).
@@ -1430,6 +1432,7 @@ export function DayLine({
   const { c, scheme, tags } = useKit();
   const lineRef = useContext(DayLineRefContext);
   const shadowOff = useLabOff('golge');
+  const dm = useChatKind() === 'dm';
   if (fresh) {
     // docs/design/aura → Mekan sohbeti: "Yeni mesaj" in pink between two soft pink lines.
     const ink = scheme === 'dark' ? tags.pink.fg : KIT.nameInk;
@@ -1451,13 +1454,14 @@ export function DayLine({
     );
   }
   // iskelet.md → 5.5 and 2.2: a glass pill ("Dün", "Bugün"), the clear glass drawn without a live
-  // blur (it is one of the stream's rows).
-  const g = KIT.button[scheme].clear;
+  // blur (it is one of the stream's rows). In a DM (tuval Dm): 28 high, 12 in, 12.5/700 in the ink,
+  // 6 under the message above and 12 over the next (the row's own 8 of it), its own shadow.
+  const g = dm ? DM[scheme].day : KIT.button[scheme].clear;
   const shadow = shadowParts(
     shadowOff,
     g.shadow || undefined,
     g.inset || undefined,
-    KIT.size.chip,
+    dm ? DM.day.height / 2 : KIT.size.chip,
     true,
     KIT.size.edge,
   );
@@ -1466,21 +1470,26 @@ export function DayLine({
       ref={floating ? undefined : (lineRef ?? undefined)}
       className="self-center"
       style={{
-        marginTop: floating ? 0 : SPACING[2.5],
-        marginBottom: floating ? 0 : SPACING[1.5],
+        marginTop: floating ? 0 : dm ? DM.day.top : SPACING[2.5],
+        marginBottom: floating ? 0 : dm ? DM.day.bottom - SPACING[2] : SPACING[1.5],
         ...gradientStyle(g.fill),
         borderWidth: KIT.size.edge,
         borderColor: g.edge,
         boxShadow: shadow.boxShadow,
-        borderRadius: KIT.size.chip,
-        paddingHorizontal: KIT.size.dayPadX,
-        paddingVertical: KIT.size.dayPadY,
+        borderRadius: dm ? DM.day.height / 2 : KIT.size.chip,
+        paddingHorizontal: dm ? DM.day.padX : KIT.size.dayPadX,
+        ...(dm
+          ? { minHeight: DM.day.height, justifyContent: 'center' as const }
+          : { paddingVertical: KIT.size.dayPadY }),
       }}
     >
       {shadow.node}
       <RNText
         maxFontSizeMultiplier={DAY_SCALE}
-        style={[KIT_TYPE.day, { color: fresh ? KIT.primary : c.muted }]}
+        style={[
+          dm ? KIT_TYPE.dayPill : KIT_TYPE.day,
+          { color: fresh ? KIT.primary : dm ? DM[scheme].dayInk : c.muted },
+        ]}
       >
         {label}
       </RNText>
