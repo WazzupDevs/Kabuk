@@ -114,6 +114,30 @@ Bulgu sayılmayanlar ve tutanlar:
 - Satıra basınca satır soluyor (basma tepkisi var, 21,10 sn). Sekme alanında seçim göstergesi yaylı kayıyor. Yenilemede gösterge dönüyor ve liste yumuşak oturuyor (6,47–6,63 sn).
 - PF-06 (dolu ikonlar) burada da: zil, arama, satırdaki mesaj düğmesi.
 
+## DM sohbeti (giriş, hızlı kaydırma, aşağı inme oku, mesaja basılı tutma)
+
+Kayıt: 17,2 sn, açık tema, duvar kâğıtlı sohbet. Sıra: Mesajlar'dan DM'ye giriş (3,2–3,6 sn), yukarı kaydırma (3,7–5,7), aşağı inme okuyla en sona dönüş (5,7–6,5), hızlı yukarı kaydırma ve eski mesajların yüklenmesi (6,9–10,5), mesaja basılı tutma: tepki çubuğu ve menü (12,2–12,6), kapanış (13,3–13,6), yukarı kaydırma (14,1–15,0), ikinci basılı tutma (15,9–16,3) ve kapanış (16,9–17,2). Kayıtta görülmeyenler: yazma ve gönderme, klavye, üç nokta menüsü, engelleme onayı, yanıt, okunmamış çizgisi, fotoğraf, DM'den dönüş, koyu tema.
+
+Panolar: Dm, DmMenu, DmEngel. Kod: `src/components/ChatScreen.tsx` (`ChatList`), `src/theme/dm.ts`. Giriş geçişi PF-44'te yazılı; burada yinelenmedi (bu kayıtta da aynı: 3,23–3,56 sn).
+
+Kayıtta kişi adı, fotoğraf ve mesaj metinleri var; dosyaya yazılmadı.
+
+| No  | Durum | Görülen | Pano | Olası neden | Önem | Tür |
+| --- | ----- | ------- | ---- | ----------- | ---- | --- |
+
+| PF-51 | Basılı tutma menüsü kapanınca | Menü kapanırken sohbet, kullanıcının okuduğu yerden en sona sıçrıyor: bir kare boyunca bütün balonlar kayboluyor (yalnız duvar kâğıdı, menü ve tepki çubuğu), sonraki karede liste en sonda; menü ve tepki çubuğu yaklaşık 150 ms yeni içeriğin üstünde sönüyor. İki kapanışın ikisinde (13,356→13,381 sn; 16,931→16,952 sn). Parmak kayıtta görünmüyor: menünün dışarı dokunarak kapatıldığı varsayıldı; proje sahibine soruldu. | Kullanıcı yukarı kaydırdıysa yerinde kalır (CLAUDE.md → Ekran davranışı); menü dışarı dokununca yalnız kapanır. | Çıkarım: menü kapanırken "sona tutun" yolu çalışıyor (`src/components/ChatScreen.tsx:757-770` `stayAtEnd`, hareketsiz `scrollToOffset(0)`); `pinned` yukarı kaydırmadan sonra yanlış kalıyor ya da kapanış onu yeniden kuruyor olabilir. | Yüksek | Bozukluk |
+| PF-52 | Sohbet, yazma alanının çevresi | Mesajlar yazma alanının içinden ve altından okunuyor: balon yazısı "Mesaj yaz…" ipucunun üstüne biniyor, alanın altında da balonlar görünüyor (4,0 sn; 10,5–12,0 sn; 14,6 sn). | Alt uçta 130'luk silinme ve bulanıklık; yazma alanı beyaz %78 ve bulanık: arkası okunmaz. | Canlı bulanıklık kapalı (PF-09, bilinen sınır); ama alt silinme bandı da görünmüyor ya da yetmiyor (`src/theme/dm.ts`; çıkarım). Bulanıklık olmadan alanın dolgusunun koyulaştırılması gerekir. | Orta | Panodan sapma |
+| PF-53 | Hızlı kaydırma, tarih hapı | Yüzen tarih hapı ile akıştaki tarih hapı aynı anda, üst üste ya da alt alta görünüyor: aynı tarih iki kez (4,0 sn; 7,7 sn; 9,5 sn). Hızlı kaydırmada yüzen hap geride kalıyor: ekrandaki mesajlar başka günden iken eski günü gösteriyor (14,34–14,50 sn). | Pano yalnız akıştaki hapı çiziyor (28 yüksek, cam). | `src/components/ChatScreen.tsx` yüzen gün hapı (`:1490` çevresi): akıştaki hap tepeye gelince gizlenmiyor; gün, kaydırma durunca güncelleniyor olabilir (çıkarım). | Orta | Bozukluk |
+| PF-54 | Basılı tutma menüsü | Menü düz beyaz kart: yaklaşık 130 dp geniş, köşe yaklaşık 16, satırlar yaklaşık 44; tepki çubuğu önceki balonun, menü sonraki balonların üstüne biniyor. Açılış akıcı (yaklaşık 300 ms, tepkiler sırayla beliriyor). | Pano mesaj menüsünü çizmiyor. Ortak menü dili (`iskelet.md` 3.5; DmMenu): 256–272 geniş, köşe 26, satır 50, cam. | #595 "düğmeden açılan her menü" kapsamına mesaj menüsü girmemiş (`useChatBar`, `ChatScreen.tsx`). | Düşük | Panodan sapma |
+| PF-55 | Üst çubuk | Geri düğmesi ve ad kapsülü yaklaşık 44 dp yüksek; kapsülün içinden alttaki balon yazısı okunuyor (3,6 sn). | İkisi de 50; bulanık cam. | Boy: `iskelet.md` 46, CLAUDE.md 44, pano 50 diyor; #595 "Kapatılmayanlar": düğme boyları. Yazının görünmesi PF-09. | Düşük | Bilinen sınır |
+| PF-56 | En eski yüklenen mesaja varınca | Liste yüklenen kısmın başına gelince tepede yaklaşık ekranın üçte biri boş kalıyor ve geri yaylanıyor (8,03–8,53 sn); eski mesajlar yaklaşık 0,5 sn sonra geliyor (9,0 sn). Yükleniyor göstergesi yok. | - | Eski sayfa istenirken gösterge çizilmiyor (`ChatList`; çıkarım). | Düşük | Davranış |
+
+Bulgu sayılmayanlar ve tutanlar:
+
+- Hızlı kaydırmada balon yazılarının bulanık ve çift görünmesi kaydın sıkıştırmasıdır (dokulu duvar kâğıdı); bulgu sayılmadı. Kaydırma akıcı: 6,9–8,6 sn arasındaki 188 karede kare boşluğu yok.
+- Panoyla tutanlar: karşının balonu mavi, kendi balonun beyaz; art arda balonlarda birleşik köşe ve kuyruk yalnız grubun sonunda; saat son satırın sonunda; mavi çift tik; gönder düğmesi alan boşken yok; yazma alanı yaklaşık 50 (pano 52); görsel 38; aşağı inme oku sağ altta ve basınca hareketli iniyor (5,7–6,5 sn).
+- Yazma alanının alt boşluğu yaklaşık 19 dp (pano 26): #595 "Kapatılmayanlar".
+
 ## Ekranlar arası ortak konular
 
 Tek bir ekrana bağlı olmayan, proje sahibinin sohbette bildirdiği ya da birden çok kayıtta görülen konular.
