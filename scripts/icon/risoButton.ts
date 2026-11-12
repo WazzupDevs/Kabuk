@@ -1,7 +1,7 @@
-// The riso buttons' print texture (docs/decisions/riso-dugme.md): a tile of halftone dots and paper
-// grain laid over a button's ink, repeated (Image resizeMode="repeat"). Two tones: light marks for
-// the dark inks (primary, danger), dark marks for the paper (secondary). 8 dp tiles at 3×, made
-// once; run again only to change the texture:
+// The riso print texture (docs/decisions/riso-dugme.md) of Mesajlar's riso "+": a tile of halftone
+// dots and paper grain laid over its ink, repeated (Image resizeMode="repeat"), light marks for the
+// dark ink. The buttons are glass since 12 Kasım (docs/design/iskelet.md → 2.1). 8 dp tiles at 3×,
+// made once; run again only to change the texture:
 //   cd scripts && node --experimental-strip-types icon/risoButton.ts
 import { writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
@@ -50,4 +50,3 @@ function tile(ink: [number, number, number], dotAlpha: number, grainAlpha: numbe
 
 const out = new URL('../../apps/mobile/assets/riso/button', import.meta.url).pathname;
 writeFileSync(`${out}/texture-light@3x.png`, tile([255, 255, 255], 0.22, 0.12));
-writeFileSync(`${out}/texture-dark@3x.png`, tile([3, 27, 11], 0.1, 0.08));

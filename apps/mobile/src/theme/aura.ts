@@ -267,7 +267,18 @@ export const MOTION = {
     press: { stiffness: 500, damping: 22, mass: 1 },
     tabLead: { stiffness: 420, damping: 30, mass: 1 },
     tabTrail: { stiffness: 200, damping: 24, mass: 1 },
+    // docs/design/iskelet.md → 4.3: a sheet opening, a menu growing out of its button, a segmented
+    // control's indicator.
+    sheet: { stiffness: 260, damping: 24, mass: 1 },
+    menu: { stiffness: 300, damping: 24, mass: 1 },
+    seg: { stiffness: 380, damping: 30, mass: 1 },
   },
+  // Scroll-driven (iskelet.md → 4.1): linear and clamped, never a spring. The large title fades
+  // between these offsets; what is above a sticky part fades over this many px.
+  scroll: { titleFade: [5, 100], stickyFadePx: 80 },
+  // The tab bar shrinking (iskelet.md → 4.3): past the threshold, a scroll faster than `speedPx`
+  // a frame shrinks it, `openPx` back up opens it; its width from the first to the second.
+  tabMin: { thresholdPx: 120, speedPx: 3, openPx: 50, widths: [350, 76] },
   curves: {
     arrive: [0.2, 0.9, 0.25, 1],
     leave: [0.4, 0, 1, 1],
@@ -287,7 +298,10 @@ export const MOTION = {
     offInMs: 200,
     offInDelay: 80,
   },
-  press: { scale: 0.96, downMs: 100 },
+  // `delayMs`: a press shows only after this long on the spot, so a scroll that starts under the
+  // finger takes the touch before anything looks pressed (Telegram Android's tap timeout; iskelet.md
+  // → 2.3). A tap shorter than it still shows the press when the finger lifts.
+  press: { scale: 0.96, downMs: 100, delayMs: 100 },
   idle: { floatPx: 4, floatMs: 1300, blinkMs: 160, blinkEveryMs: [4000, 6000], blinkClosed: 0.12 },
   // Semte Git and Geçit (hareket.json → semteGit, the canvas's motionSemteGit). Places in the 350 ×
   // 240 scene's dp; with reduce motion the full riso pictures stand still.

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { BUTTON_VARIANTS, buttonFill } from './buttonFill';
 import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
+import { AURA } from './aura';
+import { BUTTON_GLASS } from './buttonGlass';
 import { RISO_BUTTON } from './risoButton';
 import { THEME } from './theme';
 import { type Palette, type PaletteKey } from './tokens';
@@ -188,12 +190,48 @@ describe('readableOn', () => {
   });
 });
 
-// The riso buttons' words on their inks (theme/risoButton.ts), body text size.
-describe('riso buttons', () => {
-  it('read on every ink', () => {
-    const r = RISO_BUTTON;
-    expect(contrastRatio(r.onInk, r.ink)).toBeGreaterThanOrEqual(AA_TEXT);
-    expect(contrastRatio(r.onInk, r.danger)).toBeGreaterThanOrEqual(AA_TEXT);
-    expect(contrastRatio(r.paperInk, r.paper)).toBeGreaterThanOrEqual(AA_TEXT);
+// Mesajlar's riso "+" (theme/risoButton.ts): its white plus on the ink.
+describe('riso round', () => {
+  it('reads on its ink', () => {
+    expect(contrastRatio(RISO_BUTTON.onInk, RISO_BUTTON.ink)).toBeGreaterThanOrEqual(AA_LARGE);
   });
+});
+
+// The glass buttons' words (auraKit.ts → BUTTON_GLASS; docs/design/iskelet.md → 2.1), body text
+// size, on each end of their fill laid over the screen's ground.
+const hexes = (css: string): string[] => css.match(/#[0-9A-F]{6}/gi) ?? [];
+// An rgba() over an opaque ground, as the eye sees it.
+function over(css: string, ground: string): string[] {
+  const g = [1, 3, 5].map((i) => parseInt(ground.slice(i, i + 2), 16));
+  return [...css.matchAll(/rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/g)].map((m) => {
+    const a = Number(m[4]);
+    const ch = [m[1], m[2], m[3]].map((v, i) => Math.round(Number(v) * a + (g[i] ?? 0) * (1 - a)));
+    return `#${ch.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+  });
+}
+
+describe('glass buttons', () => {
+  it.each(['light', 'dark'] as const)('the clear one reads (%s)', (scheme) => {
+    const b = BUTTON_GLASS[scheme].clear;
+    const grounds = [...over(b.fill, AURA[scheme].ground), b.solid];
+    expect(grounds.length).toBe(2);
+    for (const ground of grounds) {
+      expect(contrastRatio(b.ink, ground)).toBeGreaterThanOrEqual(AA_TEXT);
+    }
+  });
+
+  // The document's greens and reds (not to be changed, the owner's call, 12 Kasım) hold white words
+  // at 4.5:1 only at their deep end: the light top of the green (#28AA64) is 3.0:1 and of the red
+  // (#E24E3A) 3.9:1. Measured here so a change shows; the deep end stays AA.
+  it.each(['light', 'dark'] as const)(
+    'the prominent and the danger at their deep end (%s)',
+    (s) => {
+      for (const kind of ['prominent', 'danger'] as const) {
+        const b = BUTTON_GLASS[s][kind];
+        const [top, deep] = hexes(b.solid);
+        expect(contrastRatio(b.ink, deep ?? '')).toBeGreaterThanOrEqual(AA_TEXT);
+        expect(contrastRatio(b.ink, top ?? '')).toBeCloseTo(kind === 'prominent' ? 2.99 : 3.9, 1);
+      }
+    },
+  );
 });

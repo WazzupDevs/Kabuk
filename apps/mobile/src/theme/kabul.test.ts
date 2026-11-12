@@ -26,8 +26,9 @@ function code(path: string): string {
 }
 
 describe('K1: the size scale', () => {
-  it('main 48, small 36, round 44, chip 36, field 48', () => {
-    expect(KIT.size.btn).toBe(48);
+  // The main button 52 since the glass buttons (docs/design/iskelet.md → 2.1: 50 to 56).
+  it('main 52, small 36, round 44, chip 36, field 48', () => {
+    expect(KIT.size.btn).toBe(52);
     expect(KIT.size.btnSm).toBe(36);
     expect(KIT.size.round).toBe(44);
     expect(KIT.size.chip).toBe(36);

@@ -36,27 +36,42 @@
       "damping": 24,
       "mass": 1,
       "use": "the tab disc's trailing edge, so the disc stretches on the way"
+    },
+    "sheet": {
+      "stiffness": 260,
+      "damping": 24,
+      "mass": 1,
+      "use": "a sheet opening (from 80 px below, from opacity 0.3)"
+    },
+    "menu": {
+      "stiffness": 300,
+      "damping": 24,
+      "mass": 1,
+      "use": "a menu growing out of its button"
+    },
+    "seg": {
+      "stiffness": 380,
+      "damping": 30,
+      "mass": 1,
+      "use": "a segmented control's indicator sliding"
     }
   },
+  "scroll": {
+    "use": "scroll-driven, linear and clamped, never eased",
+    "titleFadePx": [5, 100],
+    "stickyFadePx": 80
+  },
+  "tabMin": {
+    "use": "the tab bar shrinking on scroll",
+    "thresholdPx": 120,
+    "speedPx": 3,
+    "openPx": 50,
+    "widths": [350, 76]
+  },
   "curves": {
-    "arrive": [
-      0.2,
-      0.9,
-      0.25,
-      1
-    ],
-    "leave": [
-      0.4,
-      0,
-      1,
-      1
-    ],
-    "swap": [
-      0.4,
-      0,
-      0.2,
-      1
-    ]
+    "arrive": [0.2, 0.9, 0.25, 1],
+    "leave": [0.4, 0, 1, 1],
+    "swap": [0.4, 0, 0.2, 1]
   },
   "dissolve": {
     "use": "every screen part comes in and goes out through blur",
@@ -100,48 +115,22 @@
       "leaf": {
         "layer": "gecit-kanat-kapali",
         "hingeX": 119,
-        "rotateYDeg": [
-          0,
-          -78
-        ],
+        "rotateYDeg": [0, -78],
         "perspective": 600,
-        "ms": [
-          0,
-          420
-        ],
+        "ms": [0, 420],
         "curve": "arrive"
       },
       "light": {
         "layer": "gecit-acik-isik",
-        "opacity": [
-          0,
-          1
-        ],
-        "scale": [
-          0.85,
-          1
-        ],
-        "origin": [
-          175,
-          130
-        ],
-        "ms": [
-          120,
-          520
-        ],
+        "opacity": [0, 1],
+        "scale": [0.85, 1],
+        "origin": [175, 130],
+        "ms": [120, 520],
         "curve": "arrive"
       },
       "buddies": {
-        "layers": [
-          "gecit-kanki-1",
-          "gecit-kanki-2",
-          "gecit-kanki-3"
-        ],
-        "startMs": [
-          360,
-          440,
-          520
-        ],
+        "layers": ["gecit-kanki-1", "gecit-kanki-2", "gecit-kanki-3"],
+        "startMs": [360, 440, 520],
         "spring": "pop",
         "fromScale": 0.3,
         "fadeMs": 120
@@ -151,10 +140,7 @@
       "loop": true,
       "lock": {
         "layer": "gecit-kilit",
-        "pivot": [
-          175,
-          116
-        ],
+        "pivot": [175, 116],
         "rotateDeg": 4,
         "periodMs": 1600,
         "curve": "swap"
@@ -171,10 +157,7 @@
     "typingDots": {
       "layer": "bank-nokta",
       "count": 3,
-      "opacity": [
-        0.3,
-        1
-      ],
+      "opacity": [0.3, 1],
       "periodMs": 1200,
       "staggerMs": 200,
       "curve": "swap"
