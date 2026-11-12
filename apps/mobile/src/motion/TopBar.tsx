@@ -154,14 +154,18 @@ export function TopBarRow({
 
 // The large title (and a quieter line under it): it scrolls with the content and fades over
 // `kind`'s range, a tab's shrinking from its lower left. Still on a screen that does not scroll.
+// `children` stand for the title where a screen draws its own (Keşfet's line of the day over its
+// question, 5.1); they fade the same way.
 export function LargeTitle({
   kind,
   title,
   sub,
+  children,
 }: {
   kind: TopBarKind;
-  title: string;
+  title?: string;
   sub?: string;
+  children?: ReactNode;
 }) {
   const scroll = useScreenScroll();
   const { title: range, scale: scaleTo } = TOP_BAR[kind];
@@ -173,9 +177,11 @@ export function LargeTitle({
   });
   return (
     <Animated.View style={[{ transformOrigin: 'left bottom' }, style]}>
-      <Text variant="largeTitle" accessibilityRole="header">
-        {title}
-      </Text>
+      {children ?? (
+        <Text variant="largeTitle" accessibilityRole="header">
+          {title}
+        </Text>
+      )}
       {sub ? <Text variant="fine">{sub}</Text> : null}
     </Animated.View>
   );

@@ -465,9 +465,6 @@ export const tr = {
     district: 'Semt',
     allDistricts: 'Tüm semtler',
     showPlace: 'Göster',
-    // The count line (K-42).
-    countLine: (n: number, eventsFirst: boolean) =>
-      `${n} mekan · ${eventsFirst ? 'bugün etkinliği olanlar önce' : 'ada göre sıralı'}`,
     noMatch: 'Mekan bulunamadı',
     noMatchHint: 'Başka bir ad dene.',
     noPlace: 'Bu semtte mekan yok',
@@ -500,12 +497,30 @@ export const tr = {
       'Mekanı sen seçtin; konumun yalnızca mekanda olduğunu doğrulamak için bir kez alınır.',
     checkInHere: 'Buraya giriş yap',
     // Keşfet's question (docs/design/aura → Keşfet), by the part of the day (lib/dayPart.ts; the
-    // owner's call, 30 Ekim).
+    // owner's call, 30 Ekim); its last word in green (iskelet.md → 5.1).
     question: {
-      morning: 'Bu sabah\nnerede oturuyorsun?',
-      day: 'Bugün\nnerede oturuyorsun?',
-      evening: 'Bu akşam\nnerede oturuyorsun?',
+      morning: 'Bu sabah\nnerede ',
+      day: 'Bugün\nnerede ',
+      evening: 'Bu akşam\nnerede ',
     },
+    questionEnd: 'oturuyorsun?',
+    // The line of the day over it, from the phone's clock (lib/dayPart.ts → dayLine; 5.1:
+    // "PERŞEMBE AKŞAMI", written in capitals by upperTr).
+    dayLine: (weekday: number, part: 'morning' | 'day' | 'evening') =>
+      `${WEEKDAYS[weekday] ?? ''} ${{ morning: 'sabahı', day: 'öğleden sonrası', evening: 'akşamı' }[part]}`,
+    // The venues' order as a clear button (5.1): events today first (K-42) or by name.
+    sortByName: 'Ada göre',
+    sortEventsFirst: 'Etkinlik önce',
+    sortLabel: (byName: boolean) =>
+      byName
+        ? 'Ada göre sıralı. Etkinliği olanları öne al.'
+        : 'Etkinliği olanlar önce. Ada göre sırala.',
+    count: (n: number) => `${n} mekan`,
+    emptyTitle: 'Henüz mekan yok',
+    // The map's glass column (5.1): the camera back over the venues (never the phone's position,
+    // rule 6) and the map's sources.
+    recentre: 'Bütün mekanları göster',
+    mapInfo: 'Harita bilgisi',
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',

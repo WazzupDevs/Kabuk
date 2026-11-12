@@ -10,6 +10,7 @@ import {
   ramp,
   stickyFadeAt,
   stickyLift,
+  stickyShrinkAt,
   tabRowShift,
   tabShrinks,
 } from '../motion/scrollMath';
@@ -109,6 +110,18 @@ describe('the sticky field (3.2)', () => {
     const end = stickyFadeAt(120, 120, fade, AURA.topBar.stickyScale);
     expect(end.opacity).toBe(0);
     expect(end.scale).toBeCloseTo(0.95);
+  });
+
+  it("Keşfet's capsule thins from 54 to 48, linearly, over the last 80 px before it pins (5.1)", () => {
+    const fade = MOTION.scroll.stickyFadePx;
+    // Read from the source: the kit's values bring React Native's types into this program.
+    expect(code('src/theme/auraKit.ts')).toMatch(/capsule: 54,\s+capsulePinned: 48,/);
+    const [capsule, capsulePinned] = [54, 48];
+    expect(stickyShrinkAt(40, 120, fade, capsule, capsulePinned)).toBe(54);
+    expect(stickyShrinkAt(80, 120, fade, capsule, capsulePinned)).toBeCloseTo(51);
+    expect(stickyShrinkAt(120, 120, fade, capsule, capsulePinned)).toBe(48);
+    expect(stickyShrinkAt(400, 120, fade, capsule, capsulePinned)).toBe(48);
+    expect(stickyShrinkAt(400, -1, fade, capsule, capsulePinned)).toBe(54);
   });
 
   it('the band reaches below it as it pins', () => {
