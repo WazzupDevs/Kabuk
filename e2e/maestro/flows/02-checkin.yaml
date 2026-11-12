@@ -44,6 +44,13 @@ appId: app.kabuk.mobile
 - assertVisible:
     id: tab-explore
     label: tab bar 2/4
+# Centred first: at 320 dp the filter row lies under the floating tab bar (the run of 12 Kasım,
+# 7523f4c: its bounds were [20,570][111,592], inside the bar's) and the tap landed on the bar.
+- scrollUntilVisible:
+    element:
+      id: explore-place
+    centerElement: true
+    timeout: 15000
 - tapOn:
     id: explore-place
 - extendedWaitUntil:
@@ -61,6 +68,11 @@ appId: app.kabuk.mobile
 - assertNotVisible: E2E Kafe
 - takeScreenshot: 05g-explore-sakarya
 # Back to every city, the default, for the rest of the flow (the choice stays on the phone).
+- scrollUntilVisible:
+    element:
+      id: explore-place
+    centerElement: true
+    timeout: 15000
 - tapOn:
     id: explore-place
 - tapOn:
