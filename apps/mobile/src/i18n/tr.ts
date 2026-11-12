@@ -355,6 +355,8 @@ export const tr = {
     howToEarn: (per: number) => `Günde 1 giriş sayılır. ${per} girişte 1 paket.`,
     pack: (name: string) => `${name} paket`,
     open: 'Aç',
+    // Aktiviteler's card (iskelet.md → 5.3): the clear button to Paketler.
+    seePacks: 'Paketlere bak',
     odds: 'Oranlar',
     soon: 'Yakında',
     loadError: 'Paketler yüklenemedi.',
@@ -400,6 +402,8 @@ export const tr = {
     eventKind: 'Etkinlik',
     eventLabel: (title: string, venue: string, when: string) => `${title}, ${venue}, ${when}`,
     noEvents: 'Bugün etkinlik yok',
+    // Geçmiş's small empty card's title (iskelet.md → 3.4).
+    noHistory: 'Henüz geçmiş yok',
     noEventsHint:
       'Mekanların bugünkü etkinlikleri burada görünür; haftanın geri kalanı mekan sayfasında.',
     days: {
@@ -425,6 +429,11 @@ export const tr = {
     withTable: (alias: string) => `${alias} ile`,
     // One game with several people, one row (the owner's call, 30 Ekim).
     withPeople: (n: number) => `${n} kişiyle`,
+    // A game's sheet (iskelet.md → 5.3): the day and time and how many sat there; its people.
+    sheetNote: (when: string, people: number) => `${when} · ${people} kişi`,
+    atTable: 'Masadakiler',
+    // Beside a day's heading: how many games (5.3).
+    gameCount: (n: number) => `${n} oyun`,
     results: { won: 'Kazandın', lost: 'Kaybettin', done: 'Bitti' } satisfies Record<
       HistoryResult,
       string
@@ -524,6 +533,10 @@ export const tr = {
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',
+    // Its small empty card's title (iskelet.md → 3.4, 5.2).
+    noEventsTitle: 'Etkinlik yok',
+    // The venue page's line over its name (5.2): the kind, the district and the city.
+    venueInfo: (parts: readonly string[]) => parts.join(' · '),
   },
   friends: {
     empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
@@ -545,6 +558,8 @@ export const tr = {
     noHistory: `Başka bir masayla en az ${ENCOUNTER_MIN_MINUTES} dakika oynadığınızda burada görünür.`,
     sendRequest: 'İstek gönder',
     addFriend: 'Arkadaş ekle',
+    // On a person's row in Aktiviteler's game sheet (iskelet.md → 5.3).
+    addShort: 'Ekle',
     actionDone: 'Gönderildi',
     addFriendHint: 'İkiniz de basarsanız arkadaş olursunuz. O basmazsa hiçbir şey olmaz.',
     more: 'Diğer',

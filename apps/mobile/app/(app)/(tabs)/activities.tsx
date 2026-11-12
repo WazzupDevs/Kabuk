@@ -1,23 +1,22 @@
 import { groupHistory, historyDay, historyResult, historySessions } from '@shared/activities.ts';
 import { explorePlace, todayEvents } from '@shared/explore.ts';
+import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
-import { runOnJS, useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
 
 import { Btn, Glass, Li, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
 import { useLoaderHold } from '@/components/Loader';
-import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
-import { useTabBarSpace } from '@/components/TabBar';
-import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
+import { Text } from '@/components/Text';
 import { boxShadowParts } from '@/components/NativeShadow';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
 import { GiftCard } from '@/features/gifts/GiftCard';
+import { EmptyCard } from '@/features/explore/EmptyCard';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { useCityVenues } from '@/features/explore/useExploreVenues';
 import {
@@ -32,21 +31,16 @@ import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
 import { useNarrow } from '@/lib/useNarrow';
-import { AURA } from '@/theme/aura';
+import { LargeTitle, Rise, Sheet, StickyFade, StickyField } from '@/motion';
 import { KIT } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 type Tab = 'events' | 'history';
 
-// The page starts 20 under the title (Screen's TOP_FADE); the tabs 20 under the gift card, and
-// pinned 8 under the title with 8 under them.
-const PAGE_TOP = SPACING[5];
+// The tabs 20 under the gift card.
 const TABS_TOP = SPACING[5];
-const PIN_PAD = SPACING[2];
-const GIFT_OVERHANG = SPACING[3];
 
-// U16: a record's picture 52, 16 round, on the raised shadow.
+// iskelet.md → 5.3: a record's picture 56, 16 round, on the raised shadow.
 const THUMB = KIT.size.historyThumb;
 const THUMB_RADIUS = 16;
 
@@ -55,82 +49,45 @@ const THUMB_RADIUS = 16;
 // venue's page (K-43); no campaigns and no "ilgileniyorum". "Geçmiş" is the caller's play history
 // under day headings, each record with its game's result; a record opens what Bildirimler offers
 // for it ("Arkadaş ekle" or "İstek gönder", "Mesaj" once friends, "Diğer"). Nothing is sorted by
-// location (rule 6). docs/design/aura → Aktiviteler: geçmiş / etkinlik yok: the large title, the
-// sliding tabs, the place or day lines at 15, thin rows (the record's result stays, §4.C).
+// location (rule 6). docs/design/iskelet.md → 5.3: a tab's large title (the place as its eyebrow)
+// scrolling and fading with the content, the gift card, then Etkinlikler and Geçmiş as the sticky
+// field pinning under the top (3.2); the gift card fades out and shrinks over the last 80 px before
+// they pin. The scroll is the screen's (Screen → ScrollScreen), on the UI thread.
 export default function ActivitiesScreen() {
   const [tab, setTab] = useState<Tab>('events');
   const now = useNow(60_000);
   const city = useCity();
   const narrow = useNarrow();
-  const { scheme, shape } = useTheme();
-  const { c } = useKit();
-  // Scrolled up, the tabs pin under the title once they reach it; the list scrolls under them
-  // (the owner's call, 8 Kasım).
-  const scrollY = useSharedValue(0);
-  const [giftH, setGiftH] = useState(0);
-  const [pinned, setPinned] = useState(false);
-  const pinAt = PAGE_TOP + giftH + TABS_TOP - PIN_PAD;
-  useAnimatedReaction(
-    () => giftH > 0 && scrollY.value >= pinAt,
-    (now, before) => {
-      if (now !== before) runOnJS(setPinned)(now);
-    },
-    [pinAt, giftH],
-  );
-  const tabs = (
-    <Seg<Tab>
-      narrow={narrow}
-      value={tab}
-      onChange={setTab}
-      accessibilityLabel={tr.activities.tabs}
-      options={[
-        { value: 'events', label: tr.activities.events, testID: 'activities-tab-events' },
-        { value: 'history', label: tr.activities.history, testID: 'activities-tab-history' },
-      ]}
-    />
-  );
   return (
-    <Screen
-      edges={['top']}
-      refreshable
-      scrollY={scrollY}
-      pinned={
-        pinned ? (
-          <View
-            style={{
-              paddingHorizontal: shape.screenPadding,
-              paddingVertical: PIN_PAD,
-              backgroundColor: AURA[scheme].ground,
-              borderBottomWidth: KIT.size.hair,
-              borderBottomColor: c.hair,
-            }}
-          >
-            {tabs}
-          </View>
-        ) : null
-      }
-      // U15: the place as an eyebrow over the title (both tabs), 4 apart. The title stays on top;
-      // the content scrolls under it (the owner's call, 8 Kasım: titles never scroll).
-      top={
+    <Screen edges={['top']} refreshable>
+      {/* U15: the place as an eyebrow over the title (both tabs), 4 apart. */}
+      <LargeTitle kind="buyukBaslik">
         <View style={{ gap: SPACING[1] }}>
           {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}
-          <T v="display" accessibilityRole="header">
+          <Text variant="largeTitle" accessibilityRole="header">
             {tr.tabs.activities}
-          </T>
+          </Text>
         </View>
-      }
-    >
-      {/* Hediye paketleri (§4.U, AktivitelerHediye): the gift card over the tabs. The packs and
-          the number over the bronze one stand out over the card's top: room for them, or the
-          list's top edge cuts them (the owner's report, 8 Kasım). */}
-      <View
-        style={{ paddingTop: GIFT_OVERHANG }}
-        onLayout={(e) => setGiftH(e.nativeEvent.layout.height)}
-      >
-        <GiftCard />
-      </View>
-      {/* U15: the glass seg, 44 high; hidden while its pinned copy is over it. */}
-      <View style={{ marginTop: TABS_TOP, opacity: pinned ? 0 : 1 }}>{tabs}</View>
+      </LargeTitle>
+      {/* Hediye paketleri (§4.U): the gift card over the tabs; its packs stand out over its top
+          (the room for them is the card's own). */}
+      <StickyFade>
+        <View style={{ paddingBottom: TABS_TOP }}>
+          <GiftCard />
+        </View>
+      </StickyFade>
+      <StickyField band>
+        <Seg<Tab>
+          narrow={narrow}
+          value={tab}
+          onChange={setTab}
+          accessibilityLabel={tr.activities.tabs}
+          options={[
+            { value: 'events', label: tr.activities.events, testID: 'activities-tab-events' },
+            { value: 'history', label: tr.activities.history, testID: 'activities-tab-history' },
+          ]}
+        />
+      </StickyField>
       {tab === 'events' ? <Events now={now} city={city} /> : <History now={now} />}
     </Screen>
   );
@@ -186,54 +143,43 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
     );
   }
   if (events.length === 0) {
-    // U15: the empty state upright in the middle of what is left.
+    // iskelet.md → 3.4: the small empty card, never half the screen.
     return (
-      <FitEmpty testID="activities-no-events" lift={EMPTY_LIFT}>
-        {(small) => (
-          <EmptyState
-            kind="empty"
-            title={tr.activities.noEvents}
-            body={tr.activities.noEventsHint}
-            picture={small ? NO_EVENTS_PICTURE_SMALL : NO_EVENTS_PICTURE}
-          />
-        )}
-      </FitEmpty>
+      <View style={{ marginTop: SPACING[6] }}>
+        <EmptyCard
+          testID="activities-no-events"
+          title={tr.activities.noEvents}
+          body={tr.activities.noEventsHint}
+          picture={NO_EVENTS_PICTURE}
+        />
+      </View>
     );
   }
   return (
-    <View style={{ marginTop: SPACING[6] }}>
-      {
-        <View style={{ gap: SPACING[3] }}>
-          {events.map(({ venue, event }, i) => (
-            <Rise key={`${venue.id}-${event.startsAt}-${event.title}`} index={i}>
-              <EventCard
-                venue={venue}
-                event={event}
-                now={now}
-                onPress={() =>
-                  router.navigate({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
-                }
-              />
-            </Rise>
-          ))}
-        </View>
-      }
+    <View style={{ marginTop: SPACING[6], gap: SPACING[3] }}>
+      {events.map(({ venue, event }, i) => (
+        <Rise key={`${venue.id}-${event.startsAt}-${event.title}`} index={i}>
+          <EventCard
+            venue={venue}
+            event={event}
+            now={now}
+            onPress={() =>
+              router.navigate({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
+            }
+          />
+        </Rise>
+      ))}
     </View>
   );
 }
-
-// AktivitelerBos `.empty`: the words centred a little above the middle (150 under them over the
-// tab bar's room).
-const EMPTY_LIFT = SPACING[12];
 
 function History({ now }: { now: number }) {
   const history = usePlayHistory();
   const friends = useHistoryFriends();
   const results = useGameResults();
   const { act, openMenu, sheets } = useHistoryActions();
-  const { c } = useKit();
   const [open, setOpen] = useState<string | null>(null);
-  // Side by side the action and "Diğer" do not fit at 320 dp with the largest text.
+  // Side by side the name and its actions do not fit at 320 dp with the largest text.
   const { width, fontScale } = useWindowDimensions();
   const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
   const loading = useLoaderHold(history.isPending);
@@ -266,11 +212,14 @@ function History({ now }: { now: number }) {
   }
   if (history.data.length === 0) {
     return (
-      <FitEmpty testID="activities-no-history">
-        {(small) => (
-          <EmptyState kind="empty" riso="history" compact={small} body={tr.friends.noHistory} />
-        )}
-      </FitEmpty>
+      <View style={{ marginTop: SPACING[6] }}>
+        <EmptyCard
+          testID="activities-no-history"
+          title={tr.activities.noHistory}
+          body={tr.friends.noHistory}
+          picture={NO_HISTORY_PICTURE}
+        />
+      </View>
     );
   }
 
@@ -284,11 +233,23 @@ function History({ now }: { now: number }) {
   return (
     <View style={{ marginTop: SPACING[6], gap: SPACING[6] }}>
       {groups.map((group) => (
-        // U16: the day as an h3 in the ink, 12 over its rows on a small glass card.
+        // iskelet.md → 3.4 and 5.3: the day with its number of games beside it, 12 over its rows
+        // on one grouped list card.
         <View key={group.day} style={{ gap: SPACING[3] }}>
-          <View style={{ paddingTop: KIT.size.secPadTop }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'baseline',
+              flexWrap: 'wrap',
+              columnGap: SPACING[2],
+              paddingTop: KIT.size.secPadTop,
+            }}
+          >
             <T v="h3" accessibilityRole="header">
               {tr.activities.days[group.day]}
+            </T>
+            <T v="fine" tabular>
+              {tr.activities.gameCount(group.sessions.length)}
             </T>
           </View>
           <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
@@ -297,7 +258,7 @@ function History({ now }: { now: number }) {
               const result = historyResult(h, results.data ?? []);
               return (
                 <Rise key={x.key} index={i}>
-                  {i > 0 ? <RowHair /> : null}
+                  {i > 0 ? <RowHair inset={THUMB} /> : null}
                   <HistoryRow
                     concept={historyConcept(h.concept)}
                     alias={h.other_alias}
@@ -317,9 +278,23 @@ function History({ now }: { now: number }) {
       <Sheet
         visible={session !== null}
         onClose={() => setOpen(null)}
-        // The game and the day and time, then each person at that table, one row each on the
-        // sheet's card, with what can be done. "Kapat" at the foot: only the people scroll (5.1).
+        // iskelet.md → 5.3: the game's picture, its name, the day and time and how many sat there
+        // in the title; the green-toned note; then each person at that table on one grouped list
+        // (MASADAKİLER), with what can be done. "Kapat" at the foot stays (E2E's
+        // history-sheet-close): only the people scroll.
         title={session ? tr.activities.game(historyConcept(session.first.concept)) : ''}
+        titleArt={session ? <Thumb concept={historyConcept(session.first.concept)} /> : null}
+        subtitle={
+          session
+            ? tr.activities.sheetNote(
+                tr.activities.whenFull(
+                  session.first.played_at,
+                  historyDay(session.first.played_at, today),
+                ),
+                session.people.length,
+              )
+            : undefined
+        }
         footer={
           <Btn
             block
@@ -332,39 +307,40 @@ function History({ now }: { now: number }) {
       >
         {session ? (
           <View style={{ gap: KIT.size.sheetGap }}>
-            <T v="fine">
-              {tr.activities.whenFull(
-                session.first.played_at,
-                historyDay(session.first.played_at, today),
-              )}
-            </T>
-            <HistoryAddHint records={session.people} />
-            <Glass sm style={{ overflow: 'hidden' }}>
-              {session.people.map((record, i) => (
-                <View
-                  key={record.id}
-                  style={{
-                    gap: SPACING[1],
-                    paddingVertical: KIT.size.liPadY,
-                    paddingHorizontal: KIT.size.liPadX,
-                    borderTopWidth: i > 0 ? KIT.size.hair : 0,
-                    borderTopColor: c.hair,
-                  }}
-                >
-                  <T v="h3">{record.other_alias}</T>
-                  <HistoryActions
-                    record={record}
-                    friend={friends.data?.get(record.id)}
-                    act={act}
-                    narrow={narrow}
-                    onMore={() => {
-                      setOpen(null);
-                      openMenu(record.id);
-                    }}
-                  />
-                </View>
-              ))}
-            </Glass>
+            <HistoryAddHint boxed records={session.people} />
+            <View style={{ gap: SPACING[2] }}>
+              <T v="eyebrow" accessibilityRole="header">
+                {upperTr(tr.activities.atTable)}
+              </T>
+              <Glass sm style={{ overflow: 'hidden', paddingVertical: KIT.size.listPadY }}>
+                {session.people.map((record, i) => (
+                  <View key={record.id}>
+                    {i > 0 ? <RowHair inset={KIT.size.av.list} /> : null}
+                    <View
+                      style={{
+                        paddingVertical: KIT.size.liPadY,
+                        paddingHorizontal: KIT.size.liPadX,
+                      }}
+                    >
+                      <HistoryActions
+                        record={record}
+                        friend={friends.data?.get(record.id)}
+                        act={act}
+                        narrow={narrow}
+                        row={{
+                          lead: <Kanki index={i} />,
+                          title: <T v="h3">{record.other_alias}</T>,
+                        }}
+                        onMore={() => {
+                          setOpen(null);
+                          openMenu(record.id);
+                        }}
+                      />
+                    </View>
+                  </View>
+                ))}
+              </Glass>
+            </View>
             {act.isError ? (
               <T v="fine" color={KIT.danger}>
                 {errorMessage(act.error)}
@@ -378,8 +354,8 @@ function History({ now }: { now: number }) {
   );
 }
 
-// A game (docs/design/aura → Aktiviteler: geçmiş): its picture, its name and with whom, the time on
-// the right; the result under the time.
+// A game (iskelet.md → 5.3): its picture 56, its name and how many sat there (or with whom), the
+// time at the right in digits of one width; the result under the time.
 function HistoryRow({
   concept,
   alias,
@@ -407,14 +383,16 @@ function HistoryRow({
       padY={SPACING[3]}
     >
       <Thumb concept={concept} />
-      {/* U16: the day on the title's line at the right, the result under it at the right; the
-          second line keeps its height with or without a result. */}
+      {/* The time on the title's line at the right, the result under it at the right; the second
+          line keeps its height with or without a result. */}
       <View style={{ flex: 1, gap: SPACING[0.5] }}>
         <View style={ROW_LINE}>
           <View style={{ flex: 1 }}>
             <T v="h3">{game}</T>
           </View>
-          <T v="fine">{when}</T>
+          <T v="fine" tabular>
+            {when}
+          </T>
         </View>
         <View style={[ROW_LINE, { minHeight: KIT.size.tag }]}>
           <View style={{ flex: 1 }}>
@@ -434,14 +412,15 @@ const ROW_LINE = {
   gap: SPACING[2],
 } as const;
 
-// The hairline between two rows: from the words, 16 short of the card's right edge.
-function RowHair() {
+// The hairline between two rows (3.4): from the words after the row's `inset` wide picture, 16
+// short of the card's right edge.
+function RowHair({ inset }: { inset: number }) {
   const { c } = useKit();
   return (
     <View
       style={{
         height: KIT.size.hair,
-        marginLeft: KIT.size.liPadX + THUMB + KIT.size.liGap,
+        marginLeft: KIT.size.liPadX + inset + KIT.size.liGap,
         marginRight: KIT.size.liPadX,
         backgroundColor: c.hair,
       }}
@@ -449,52 +428,44 @@ function RowHair() {
   );
 }
 
-// The riso pictures of the history row (Aura v65 §9.1): a chat and Vampir Köylü.
-const VAMPIR_THUMB = require('../../../assets/riso/history-vampir.webp');
-const CHAT_THUMB = require('../../../assets/riso/history-sohbet.webp');
-// U15: the empty Etkinlikler's riso 240 × 165, 28 round.
-const NO_EVENTS_PICTURE = {
-  source: require('../../../assets/riso/empty-events.webp'),
-  width: 240,
-  height: 165,
-  radius: 28,
-};
-// Where the page has no room for it: the small riso of a card (EmptyState → compact).
-const NO_EVENTS_PICTURE_SMALL = { ...NO_EVENTS_PICTURE, width: 160, height: 110, radius: 22 };
-
-// An empty state in the middle of what is left of the page. Where its last line would end under the
-// tab bar (a short screen, the gift card over the tabs), it takes the small picture so it all shows
-// without scrolling (audit M15-17).
-function FitEmpty({
-  testID,
-  lift = 0,
-  children,
-}: {
-  testID: string;
-  lift?: number;
-  children: (small: boolean) => ReactNode;
-}) {
-  const ref = useRef<View>(null);
-  const { height } = useWindowDimensions();
-  const bottom = useTabBarSpace();
-  const [small, setSmall] = useState(false);
-  const check = () => {
-    if (small) return;
-    ref.current?.measureInWindow((_x, y, _w, h) => {
-      if (h > 0 && y + h > height - bottom) setSmall(true);
-    });
-  };
+// A person at the table (5.3): a riso buddy by the row's place in the list, never by who they are
+// (the record carries no look of theirs, rule 4).
+function Kanki({ index }: { index: number }) {
+  const { c } = useKit();
+  const side = KIT.size.av.list;
   return (
     <View
-      testID={testID}
-      style={{ flex: 1, justifyContent: 'center', paddingBottom: small ? 0 : lift }}
+      style={{
+        width: side,
+        height: side,
+        borderRadius: side / 2,
+        overflow: 'hidden',
+        backgroundColor: c.raisedChip,
+      }}
     >
-      <View ref={ref} collapsable={false} onLayout={check}>
-        {children(small)}
-      </View>
+      <Image
+        source={KANKI[index % KANKI.length]}
+        accessible={false}
+        resizeMode="cover"
+        style={{ width: side, height: side }}
+      />
     </View>
   );
 }
+
+// The riso pictures of the history row (Aura v65 §9.1): a chat and Vampir Köylü.
+const VAMPIR_THUMB = require('../../../assets/riso/history-vampir.webp');
+const CHAT_THUMB = require('../../../assets/riso/history-sohbet.webp');
+// The small empty cards' riso (3.4).
+const NO_EVENTS_PICTURE: number = require('../../../assets/riso/empty-events.webp');
+const NO_HISTORY_PICTURE: number = require('../../../assets/riso/empty-history.webp');
+// The buddies of the table's people (assets/riso/buddies).
+const KANKI = [
+  require('../../../assets/riso/buddies/riso_1a80a9.webp'),
+  require('../../../assets/riso/buddies/riso_3c95b1.webp'),
+  require('../../../assets/riso/buddies/riso_4957ac.webp'),
+  require('../../../assets/riso/buddies/riso_6f419d.webp'),
+] as const;
 
 // The game's disc; a chat without a game has the speech bubbles.
 function Thumb({ concept }: { concept: HistoryConcept }) {

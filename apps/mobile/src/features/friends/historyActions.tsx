@@ -5,7 +5,7 @@ import { type ReactNode, useCallback, useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, T, useKit } from '@/aura/kit';
+import { Btn, Round, T, useKit } from '@/aura/kit';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -14,10 +14,12 @@ import { openDm } from '@/features/friends/openDm';
 import { refreshFriends } from '@/features/friends/queries';
 import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { tr } from '@/i18n/tr';
+import { PopIn } from '@/motion';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { KIT } from '@/theme/auraKit';
+import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 type Action = { kind: 'request' | 'add' | 'withdraw'; historyId: string };
@@ -143,23 +145,43 @@ type Friend = { threadId: string | null; publicId: string; name: string | null }
 // (canvas: Faz 3 · 23.3 → oyun geçmişi), else "Arkadaş ekle" or "İstek gönder"; then "Diğer". The
 // aura kit's buttons (5.4); the press's explanation is said once for the sheet (`HistoryAddHint`,
 // 5.2), not under each person.
+// `row` (Aktiviteler's game sheet, iskelet.md → 5.3): one line a person, `lead` (their buddy) and
+// `title` (their name) at its left, the hint under the name, the small prominent action ("Ekle")
+// and the three dots at its right; what a press turns it into ("Eklendi", "Gönderildi") comes in on
+// springs.pop. The same states and calls as the stacked one, only drawn so.
 export function HistoryActions({
   record: h,
   friend,
   act,
   narrow,
   onMore,
+  row,
 }: {
   record: HistoryRecord;
   friend: Friend | undefined;
   act: HistoryAct;
   narrow: boolean;
   onMore: () => void;
+  row?: { lead: ReactNode; title: ReactNode };
 }): ReactNode {
   const { c } = useKit();
   const action = historyAction(h);
   const silent = h.reveal_mutual || h.friend_open;
   const pending = act.isPending && act.variables?.historyId === h.id;
+  const state = friend?.threadId
+    ? 'message'
+    : action === 'done'
+      ? silent
+        ? 'added'
+        : 'sent'
+      : 'press';
+  // A state reached while this row is shown pops in; the one it opened with stands still.
+  const [shownState, setShownState] = useState(state);
+  const [pop, setPop] = useState(false);
+  if (shownState !== state) {
+    setShownState(state);
+    setPop(state === 'added' || state === 'sent');
+  }
   const primary = friend?.threadId ? (
     <Btn
       sm
@@ -196,7 +218,13 @@ export function HistoryActions({
       sm
       icon="plus"
       testID={action === 'add_friend' ? 'history-add' : 'history-request'}
-      label={action === 'add_friend' ? tr.friends.addFriend : tr.friends.sendRequest}
+      label={
+        action === 'add_friend'
+          ? row
+            ? tr.friends.addShort
+            : tr.friends.addFriend
+          : tr.friends.sendRequest
+      }
       disabled={act.isPending}
       loading={pending}
       onPress={() =>
@@ -217,6 +245,39 @@ export function HistoryActions({
   ) : action === 'done' && silent ? (
     <T v="fine">{tr.friends.addedNote(h.other_alias)}</T>
   ) : null;
+  if (row) {
+    const actions = (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
+        {pop ? (
+          <PopIn key={state} rise={0}>
+            {primary}
+          </PopIn>
+        ) : (
+          primary
+        )}
+        <Round
+          icon="more"
+          side={KIT.size.btnSm}
+          testID="history-more"
+          label={tr.friends.more}
+          onPress={onMore}
+        />
+      </View>
+    );
+    return (
+      <View style={{ gap: SPACING[2] }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }}>
+          {row.lead}
+          <View style={{ flex: 1, minWidth: 0, gap: SPACING[0.5] }}>
+            {row.title}
+            {hint}
+          </View>
+          {narrow ? null : actions}
+        </View>
+        {narrow ? actions : null}
+      </View>
+    );
+  }
   return (
     <>
       {hint}
@@ -237,8 +298,25 @@ export function HistoryActions({
 
 // "İkiniz de basarsanız arkadaş olursunuz…": once over the sheet's people when any of them can be
 // added (5.2).
-export function HistoryAddHint({ records }: { records: HistoryRecord[] }): ReactNode {
-  return records.some((r) => historyAction(r) === 'add_friend') ? (
-    <T v="fine">{tr.friends.addFriendHint}</T>
-  ) : null;
+// `boxed`: in the green-toned note box (Aktiviteler's game sheet, iskelet.md → 5.3).
+export function HistoryAddHint({
+  records,
+  boxed,
+}: {
+  records: HistoryRecord[];
+  boxed?: boolean;
+}): ReactNode {
+  const { scheme } = useTheme();
+  if (!records.some((r) => historyAction(r) === 'add_friend')) return null;
+  if (!boxed) return <T v="fine">{tr.friends.addFriendHint}</T>;
+  const note = KIT.historyNote;
+  return (
+    <View
+      style={{ backgroundColor: note[scheme].fill, borderRadius: note.radius, padding: note.pad }}
+    >
+      <T v="fine" color={note[scheme].ink}>
+        {tr.friends.addFriendHint}
+      </T>
+    </View>
+  );
 }

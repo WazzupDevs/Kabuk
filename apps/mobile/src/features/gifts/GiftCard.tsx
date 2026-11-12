@@ -1,14 +1,15 @@
 import { router } from 'expo-router';
-import { Animated, Image, Pressable, View } from 'react-native';
+import { Animated, Image, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, T, useKit } from '@/aura/kit';
+import { Btn, Glass, T } from '@/aura/kit';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { Tap } from '@/motion';
 import { upperTr } from '@shared/trText.ts';
 import { gradientStyle } from '@/theme/gradient';
-import { GIFT_STAGE } from '@/theme/gifts';
+import { GIFT_CARD, GIFT_STAGE } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -19,20 +20,11 @@ import { cardState, packName } from './model';
 import { BADGE, CanOpenBadge, LoginBar } from './parts';
 import { useGiftState } from './queries';
 
-// AktivitelerHediye: the card over Etkinlikler/Geçmiş, 8 inside a glass card 30 round; the stage
-// strip 150 high, 22 round; three packs in the air at the right, Bronz rising 22 over the card.
-const STAGE_H = 150;
-const STAGE_RADIUS = 22;
-const CARD_RADIUS = 30;
-const CARD_PAD = SPACING[2];
-const ROUND = 28;
-// The packs over the stage (right, top, width, turn): Gümüş, Altın, then Bronz in front.
-const PACKS = [
-  { pack: 'gumus', right: 86, top: 32, width: 60, turn: '-13deg' },
-  { pack: 'altin', right: 8, top: 28, width: 60, turn: '11deg' },
-  { pack: 'bronz', right: 34, top: -22, width: 92, turn: '-4deg' },
-] as const;
-// The stage's stars (as a share of the stage's width, top, size, opacity).
+// Aktiviteler's gift card (docs/design/iskelet.md → 5.3): one dark layer (no glass round it), the
+// three packs in the air standing out over its top edge at its right (Gümüş -12°, Altın 12°, Bronz
+// in the middle, bigger), the words at its left and the clear "Paketlere bak" under them.
+const C = GIFT_CARD;
+// The stage's stars (as a share of the card's width, top, size, opacity).
 const STARS = [
   { x: 0.545, top: 18, size: 10, opacity: 0.9 },
   { x: 0.629, top: 112, size: 7, opacity: 0.7 },
@@ -49,32 +41,30 @@ const PACK_SHADOW = {
 
 export function GiftCard() {
   const gifts = useGiftState();
-  const { c } = useKit();
   const { colors } = useTheme();
   const open = () => router.push('/gifts');
 
   if (gifts.isPending) {
     return (
-      <Glass radius={CARD_RADIUS} style={{ padding: CARD_PAD }}>
+      <View style={{ paddingTop: C.overhang }}>
         <View
           accessibilityState={{ busy: true }}
-          style={{ height: STAGE_H, borderRadius: STAGE_RADIUS, backgroundColor: colors.track }}
+          style={{ height: C.height, borderRadius: C.radius, backgroundColor: colors.track }}
         />
-      </Glass>
+      </View>
     );
   }
   if (!gifts.data) {
     return (
-      <Glass radius={CARD_RADIUS} style={{ padding: CARD_PAD }}>
-        <View
+      <View style={{ paddingTop: C.overhang }}>
+        <Glass
+          radius={C.radius}
           style={{
-            minHeight: STAGE_H,
-            borderRadius: STAGE_RADIUS,
-            padding: SPACING[4],
+            minHeight: C.height,
+            padding: C.pad,
             alignItems: 'center',
             justifyContent: 'center',
             gap: SPACING[2],
-            backgroundColor: c.raisedChip,
           }}
         >
           <CapIcon name="warn" color={colors.danger} size={ICON.lg} />
@@ -92,8 +82,8 @@ export function GiftCard() {
             loading={gifts.isRefetching}
             onPress={() => void gifts.refetch()}
           />
-        </View>
-      </Glass>
+        </Glass>
+      </View>
     );
   }
 
@@ -107,129 +97,91 @@ export function GiftCard() {
         : tr.gifts.cardLabelAllOwned;
 
   return (
-    <Pressable
+    <Tap
       testID="gift-card"
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={open}
+      style={{ paddingTop: C.overhang }}
     >
-      <Glass
-        radius={CARD_RADIUS}
+      <View
         style={[
-          { padding: CARD_PAD },
+          { minHeight: C.height, borderRadius: C.radius },
+          gradientStyle(state.kind === 'allOwned' ? GIFT_STAGE.allOwned : GIFT_STAGE.ready),
           // Ready: the accent ring round the card.
           ready ? { boxShadow: `0 0 0 2px ${colors.accent}` } : null,
         ]}
       >
-        <View
-          style={[
-            {
-              height: STAGE_H,
-              borderRadius: STAGE_RADIUS,
-              overflow: 'hidden',
-            },
-            gradientStyle(state.kind === 'allOwned' ? GIFT_STAGE.allOwned : GIFT_STAGE.ready),
-          ]}
-        >
-          {state.kind !== 'allOwned' ? <StageLight /> : null}
+        {state.kind !== 'allOwned' ? (
           <View
-            style={{
-              position: 'absolute',
-              left: SPACING[4],
-              top: SPACING[4],
-              bottom: 14,
-              width: 150,
-              gap: SPACING[1],
-            }}
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { borderRadius: C.radius, overflow: 'hidden' }]}
           >
-            <T v="stamp" color={GIFT_STAGE.eyebrow} strong style={{ letterSpacing: 1.5 }}>
-              {upperTr(tr.gifts.eyebrow)}
-            </T>
-            {state.kind === 'ready' ? (
-              <>
-                <T v="title" color={GIFT_STAGE.ink}>
-                  {tr.gifts.ready(packName(state.pack))}
-                </T>
-                <Btn
-                  sm
-                  label={tr.gifts.open}
-                  fill={GIFT_STAGE.button}
-                  tint={GIFT_STAGE.buttonInk}
-                  onPress={open}
-                  style={{ marginTop: SPACING[2], alignSelf: 'flex-start' }}
-                />
-              </>
-            ) : state.kind === 'progress' ? (
-              <>
-                <T v="h3" color={GIFT_STAGE.ink}>
-                  {tr.gifts.loginsLeft(packName(state.pack), state.left)}
-                </T>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: SPACING[2],
-                    marginTop: SPACING[2],
-                  }}
-                >
-                  <LoginBar
-                    logins={state.logins}
-                    per={state.per}
-                    width={74}
-                    on={GIFT_STAGE.ink}
-                    off={GIFT_STAGE.barOff}
-                  />
-                  <T v="fine" strong color={GIFT_STAGE.ink}>
-                    {tr.gifts.progress(state.logins, state.per)}
-                  </T>
-                </View>
-              </>
-            ) : (
-              <T v="h3" color={GIFT_STAGE.ink}>
-                {tr.gifts.allOwned}
-              </T>
-            )}
+            <StageLight />
           </View>
-          {!ready ? (
-            <View
-              style={{
-                position: 'absolute',
-                right: SPACING[3],
-                bottom: SPACING[3],
-                width: ROUND,
-                height: ROUND,
-                borderRadius: ROUND / 2,
-                backgroundColor: GIFT_STAGE.round,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <CapIcon name="chevron" color={GIFT_STAGE.ink} size={ICON.sm} />
-            </View>
-          ) : null}
-        </View>
-      </Glass>
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          left: CARD_PAD,
-          right: CARD_PAD,
-          top: CARD_PAD,
-          height: STAGE_H,
-        }}
-      >
-        {PACKS.map((p, i) => (
-          <FloatingPack
-            key={p.pack}
-            index={i}
-            {...p}
-            greyed={state.kind === 'allOwned'}
-            badge={ready && p.pack === state.pack ? state.count : 0}
+        ) : null}
+        <View style={{ width: C.textWidth, padding: C.pad, gap: SPACING[1] }}>
+          <T v="stamp" color={GIFT_STAGE.eyebrow} strong style={{ letterSpacing: 1.5 }}>
+            {upperTr(tr.gifts.eyebrow)}
+          </T>
+          {state.kind === 'ready' ? (
+            <T v="title" color={GIFT_STAGE.ink}>
+              {tr.gifts.ready(packName(state.pack))}
+            </T>
+          ) : state.kind === 'progress' ? (
+            <>
+              <T v="h3" color={GIFT_STAGE.ink}>
+                {tr.gifts.loginsLeft(packName(state.pack), state.left)}
+              </T>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: SPACING[2],
+                  marginTop: SPACING[1],
+                }}
+              >
+                <LoginBar
+                  logins={state.logins}
+                  per={state.per}
+                  width={74}
+                  on={GIFT_STAGE.ink}
+                  off={GIFT_STAGE.barOff}
+                />
+                <T v="fine" strong color={GIFT_STAGE.ink}>
+                  {tr.gifts.progress(state.logins, state.per)}
+                </T>
+              </View>
+            </>
+          ) : (
+            <T v="h3" color={GIFT_STAGE.ink}>
+              {tr.gifts.allOwned}
+            </T>
+          )}
+          <Btn
+            sm
+            variant="glassy"
+            label={tr.gifts.seePacks}
+            onPress={open}
+            style={{ marginTop: SPACING[2], alignSelf: 'flex-start' }}
           />
-        ))}
+        </View>
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: 0, right: 0, top: 0, height: C.height }}
+        >
+          {C.packs.map((p, i) => (
+            <FloatingPack
+              key={p.pack}
+              index={i}
+              {...p}
+              greyed={state.kind === 'allOwned'}
+              badge={ready && p.pack === state.pack ? state.count : 0}
+            />
+          ))}
+        </View>
       </View>
-    </Pressable>
+    </Tap>
   );
 }
 
@@ -271,7 +223,7 @@ function FloatingPack({
   greyed,
   badge,
 }: {
-  pack: (typeof PACKS)[number]['pack'];
+  pack: (typeof GIFT_CARD.packs)[number]['pack'];
   right: number;
   top: number;
   width: number;

@@ -160,6 +160,13 @@ function useVenueCities() {
   });
 }
 
+// A venue's city for its page's line (iskelet.md → 5.2): the same list Keşfet and Aktiviteler read
+// (held half an hour), null until it is read.
+export function useVenueCity(id: string): string | null {
+  const cities = useVenueCities();
+  return cities.data?.[id] ?? null;
+}
+
 export type CityVenue = ExploreVenue & { city: string };
 
 // The venues with their city (Keşfet's list, Aktiviteler's events). A venue the city list has not

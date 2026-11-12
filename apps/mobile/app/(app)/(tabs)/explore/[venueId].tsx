@@ -1,43 +1,49 @@
 import { describeEventTime } from '@shared/explore.ts';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  runOnJS,
-  useAnimatedReaction,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { FrostResolve } from '@/aura/FrostIn';
 import { PICTURE_FILL } from '@/aura/RisoPicture';
-import { Btn, Glass, Round, Sec, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, PulseDot, Round, Sec, T, Tag, useKit } from '@/aura/kit';
+import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
 import { GlassTarget } from '@/components/LiquidGlass';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
-import { ScreenStatusBar, StatusScrim } from '@/components/StatusScrim';
+import { ScreenStatusBar } from '@/components/StatusScrim';
 import { useTabBarSpace } from '@/components/TabBar';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { useExploreVenue } from '@/features/explore/useExploreVenues';
+import { EmptyCard } from '@/features/explore/EmptyCard';
+import { useExploreVenue, useVenueCity } from '@/features/explore/useExploreVenues';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { venueType } from '@/lib/venueType';
+import {
+  BarArrive,
+  BarBand,
+  Cover,
+  ScrollBody,
+  ScrollScreen,
+  useScrollOffset,
+  useScrollPast,
+} from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { PROFILE_COVER } from '@/theme/profileCover';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 // U17: the one riso scene of every venue (Aura v65 §9.1; venue scenes of their own wait, §9.2).
 const SCENE = require('../../../../assets/riso/venue-scene.webp');
+const EVENTS_PICTURE: number = require('../../../../assets/riso/empty-events.webp');
+
+const V = KIT.venueCover;
+
+type Venue = NonNullable<ReturnType<typeof useExploreVenue>['venue']>;
 
 // A venue from Keşfet (docs/design/aura → KesfetMekan): its bucket, the week's events, and check-in.
 // Choosing the venue here is the manual selection; the position is taken next only to verify it
@@ -45,42 +51,7 @@ const SCENE = require('../../../../assets/riso/venue-scene.webp');
 export default function VenueDetailScreen() {
   const { venueId } = useLocalSearchParams<{ venueId: string }>();
   const { venue, isPending, isError, error, refetch } = useExploreVenue(venueId);
-  const setVenue = useCheckinDraft((s) => s.setVenue);
-  // Already checked in here: back to Mekan, not a new check-in that would end this one and take
-  // the person off its table (audit VEN-2).
-  const active = useActiveTable();
-  const { scheme } = useTheme();
-  const insets = useSafeAreaInsets();
-  const barSpace = useTabBarSpace();
-  const now = useNow(60_000);
-  const { c } = useKit();
-  // Scrolled past the scene, a thin bar stays under the back button as on Profil: the name and the
-  // rest scroll under it, not under the button (audit M15-11). The status bar's icons are light on
-  // the scene and the scheme's on the bar (M15-12).
-  const barHeight = insets.top + SPACING[2] * 2 + KIT.size.round;
-  const barAt = KIT.venueHero.height - barHeight;
-  const scrollY = useSharedValue(0);
-  const [onBar, setOnBar] = useState(false);
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: (e) => {
-      scrollY.value = e.contentOffset.y;
-    },
-  });
-  useAnimatedReaction(
-    () => scrollY.value >= barAt,
-    (now, before) => {
-      if (now !== before) runOnJS(setOnBar)(now);
-    },
-    [barAt],
-  );
-  const barStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      scrollY.value,
-      [barAt * PROFILE_COVER.barFadeFrom, barAt],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
-  }));
+  const y = useScrollOffset();
 
   if (isPending) {
     return (
@@ -118,43 +89,54 @@ export default function VenueDetailScreen() {
       </Screen>
     );
   }
+  return (
+    <ScrollScreen y={y}>
+      <CoverPage venue={venue} y={y} />
+    </ScrollScreen>
+  );
+}
 
+// The `kapak` page (docs/design/iskelet.md → 3.1, 5.2): the scene 360 high under the status bar,
+// moving at 0.45 of the scroll, a dark fade over its top; the content rides over its foot as a
+// card 34 round: the kind, district and city with the bucket's tag at the right, the name at 31,
+// why the position is asked, check-in (or "Mekana dön"), and the week's events (the owner's call,
+// 31 Ekim: they stay). Scrolled, the bar's band comes in over 240–280 and the venue's small
+// picture and name beside the back button over 300–330; the back button never moves.
+function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollOffset> }) {
+  const setVenue = useCheckinDraft((s) => s.setVenue);
+  // Already checked in here: back to Mekan, not a new check-in that would end this one and take
+  // the person off its table (audit VEN-2).
+  const active = useActiveTable();
+  const city = useVenueCity(venue.id);
+  const { scheme } = useTheme();
+  const insets = useSafeAreaInsets();
+  const barSpace = useTabBarSpace();
+  const now = useNow(60_000);
+  // The status bar's icons: light on the scene, the scheme's once the band is in (M15-12).
+  const onBar = useScrollPast((V.band[0] + V.band[1]) / 2);
   const here = active.data?.venue_id === venue.id;
-  const calm = venue.bucket === 'calm';
-  // docs/design/aura → KesfetMekan: the venue's riso scene under the status bar, back and its tags
-  // over it; the name and district, why the position is asked,
-  // check-in, and under it the week's events (the owner's call, 31 Ekim: they stay). Not a list:
-  // the screen stays still (CLAUDE.md → Ekran davranışı).
+  const type = venueType(venue);
+  const info = tr.explore.venueInfo(
+    [tr.explore.typeLabel[type], venue.district, city].filter((p): p is string => !!p),
+  );
+  const barTop = insets.top + SPACING[2];
+
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
       <ScreenStatusBar style={onBar && scheme === 'light' ? 'dark' : 'light'} />
-      <Animated.ScrollView
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        overScrollMode="never"
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingBottom: insets.bottom + SPACING[8] + barSpace,
-        }}
-      >
-        {/* U17: the scene from the very top, 300 high with the status bar on it (no strip of its
-            own), its bottom corners 28. */}
-        <View
-          style={{
-            height: KIT.venueHero.height,
-            borderBottomLeftRadius: KIT.venueHero.radius,
-            borderBottomRightRadius: KIT.venueHero.radius,
-            overflow: 'hidden',
-          }}
-        >
-          {/* The scene is the backdrop of the buttons and tags over it: they frost it, a lamp's
-              cord blurred behind a tag instead of crossing its words (the owner's report, 30 Ekim). */}
-          {/* Also drawn once as a plain picture under the target, as the ground (AuraBackground,
-              K2): the scene showed nothing on first opening (the owner's report, 2 Kasım, 14.1). */}
+      <Cover height={V.height} speed={V.speed}>
+        {/* The scene is the backdrop of the back button over it: it frosts it (the owner's
+            report, 30 Ekim). Also drawn once as a plain picture under the target, as the ground
+            (AuraBackground, K2): the scene showed nothing on first opening (2 Kasım, 14.1). */}
+        <Image
+          source={SCENE}
+          fadeDuration={0}
+          accessible={false}
+          resizeMode="cover"
+          style={PICTURE_FILL}
+        />
+        <GlassTarget backdrop style={StyleSheet.absoluteFill}>
           <Image
             source={SCENE}
             fadeDuration={0}
@@ -162,73 +144,60 @@ export default function VenueDetailScreen() {
             resizeMode="cover"
             style={PICTURE_FILL}
           />
-          <GlassTarget backdrop style={StyleSheet.absoluteFill}>
-            <Image
-              source={SCENE}
-              fadeDuration={0}
-              accessible={false}
-              resizeMode="cover"
-              style={PICTURE_FILL}
-            />
-          </GlassTarget>
-          {/* The picture appears frosted and resolves 320 ms later over 500 (hareket.json). */}
-          <FrostResolve />
-          <StatusScrim />
-          <View
-            className="flex-row items-center justify-between"
-            style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[2] }}
-          >
-            {/* U17: back on light glass, 44 (drawn over the page, below); the kind and the bucket
-                as light tags, 28. */}
-            <View style={{ width: KIT.size.round, height: KIT.size.round }} />
-            <View style={{ flexDirection: 'row', gap: KIT.size.chipGap }}>
-              <Tag large tone="scene" label={tr.explore.typeLabel[venueType(venue)]} />
-              <Tag
-                large
-                tone={calm ? 'sceneCalm' : 'scene'}
-                label={tr.explore.buckets[venue.bucket]}
-                lead={
-                  calm ? undefined : (
-                    <View
-                      style={{
-                        width: KIT.size.dot,
-                        height: KIT.size.dot,
-                        borderRadius: KIT.size.dot / 2,
-                        backgroundColor: KIT.pink,
-                      }}
-                    />
-                  )
-                }
-              />
-            </View>
-          </View>
-        </View>
+        </GlassTarget>
+        {/* The picture appears frosted and resolves 320 ms later over 500 (hareket.json). */}
+        <FrostResolve />
+        <View
+          style={[
+            { position: 'absolute', left: 0, right: 0, top: 0, height: V.shadeHeight },
+            gradientStyle(V.shade),
+          ]}
+        />
+      </Cover>
+      <ScrollBody
+        y={y}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: V.height - V.cardRadius }}
+      >
         <View
           style={{
             flexGrow: 1,
+            backgroundColor: AURA[scheme].ground,
+            borderTopLeftRadius: V.cardRadius,
+            borderTopRightRadius: V.cardRadius,
             paddingHorizontal: KIT.size.side,
             paddingTop: SPACING[6],
+            paddingBottom: insets.bottom + SPACING[8] + barSpace,
             gap: SPACING[6],
           }}
         >
-          {/* U17: the name at .display, the district in the ink 2 under it, why the position is
-              asked muted 8 under them. */}
           <View style={{ gap: SPACING[2] }}>
-            <View style={{ gap: SPACING[0.5] }}>
-              <T v="display" accessibilityRole="header">
-                {venue.name}
-              </T>
-              <T v="body" ink>
-                {/* Not twice when the campus carries its university's name (igu-tower). */}
-                {venue.university && venue.university.name !== venue.name
-                  ? tr.explore.campusOf(venue.university.name, venue.district)
-                  : venue.district}
-              </T>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: SPACING[2],
+              }}
+            >
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <T v="fineLg">{info}</T>
+              </View>
+              <Bucket bucket={venue.bucket} />
             </View>
+            <T v="venueTitle" accessibilityRole="header">
+              {venue.name}
+            </T>
+            {/* Not twice when the campus carries its university's name (igu-tower). */}
+            {venue.university && venue.university.name !== venue.name ? (
+              <T v="body" ink>
+                {venue.university.name}
+              </T>
+            ) : null}
             {/* Before a check-in only: once here, the location was already checked (the owner's
                 report, 30 Ekim). */}
             {here ? null : <T v="body">{tr.explore.checkInHint}</T>}
           </View>
+          {/* Prominent (iskelet.md → 2.1): the body's main action. */}
           <Btn
             block
             tall
@@ -250,14 +219,16 @@ export default function VenueDetailScreen() {
               router.push('/checkin');
             }}
           />
-          {/* The week's events, under the button (the owner's call, 31 Ekim); none: a small glass
-              card says so (U17). */}
+          {/* The week's events, under the button (the owner's call, 31 Ekim); none: the small
+              empty card (3.4). */}
           <View style={{ gap: SPACING[3] }}>
             <Sec title={tr.explore.eventsTitle} note={tr.explore.weekNote} />
             {venue.events.length === 0 ? (
-              <Glass sm style={{ padding: SPACING[4] }}>
-                <EmptyState kind="empty" riso="events" compact body={tr.explore.noEvents} />
-              </Glass>
+              <EmptyCard
+                title={tr.explore.noEventsTitle}
+                body={tr.explore.noEvents}
+                picture={EVENTS_PICTURE}
+              />
             ) : (
               <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -289,27 +260,69 @@ export default function VenueDetailScreen() {
             )}
           </View>
         </View>
-      </Animated.ScrollView>
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          {
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            height: barHeight,
-            backgroundColor: AURA[scheme].ground,
-            borderBottomWidth: KIT.size.hair,
-            borderBottomColor: c.hair,
-          },
-          barStyle,
-        ]}
-      />
-      {/* Back stays where it is while the page scrolls (the owner's report, 2 Kasım, X4). */}
-      <View style={{ position: 'absolute', left: KIT.size.side, top: insets.top + SPACING[2] }}>
-        <Round light icon="back" label={tr.explore.back} onPress={() => router.back()} />
+      </ScrollBody>
+      {/* The bar (3.1, `kapak`): its band from the screen's top edge, under the status bar too. */}
+      <BarBand from={V.band[0]} to={V.band[1]} />
+      <View
+        pointerEvents="box-none"
+        style={{
+          position: 'absolute',
+          left: KIT.size.side,
+          right: KIT.size.side,
+          top: barTop,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING[3],
+        }}
+      >
+        {/* Back stays where it is while the page scrolls (the owner's report, 2 Kasım, X4). */}
+        <Round
+          light
+          icon="back"
+          side={KIT.size.topBtn}
+          label={tr.explore.back}
+          onPress={() => router.back()}
+        />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <BarArrive from={V.barTitle[0]} to={V.barTitle[1]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
+              <VenueThumb kind={type} size={V.barThumb} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <T v="h3" lines={2} fit>
+                  {venue.name}
+                </T>
+              </View>
+            </View>
+          </BarArrive>
+        </View>
       </View>
     </View>
+  );
+}
+
+// The bucket as a dotted tag at the info line's right (5.2, as Keşfet's cards, 5.1): "Sessiz" with
+// a still dot, the livelier ones with the beating pink dot.
+function Bucket({ bucket }: { bucket: Venue['bucket'] }) {
+  const { tags } = useKit();
+  const calm = bucket === 'calm';
+  return (
+    <Tag
+      tone={calm ? 'purple' : 'pink'}
+      label={tr.explore.buckets[bucket]}
+      lead={
+        calm ? (
+          <View
+            style={{
+              width: KIT.size.dot,
+              height: KIT.size.dot,
+              borderRadius: KIT.size.dot / 2,
+              backgroundColor: tags.purple.fg,
+            }}
+          />
+        ) : (
+          <PulseDot color={KIT.pink} ring={KIT.pinkRing} />
+        )
+      }
+    />
   );
 }

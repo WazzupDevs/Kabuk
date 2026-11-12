@@ -85,9 +85,9 @@ describe("the app's Keşfet", () => {
     expect(app('src/theme/auraKit.ts')).toMatch(/picture: 76, pictureRadius: 14/);
     expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
-    expect(app('app/(app)/(tabs)/explore/[venueId].tsx')).toMatch(
-      /tr\.explore\.typeLabel\[venueType\(venue\)\]/,
-    );
+    const page = app('app/(app)/(tabs)/explore/[venueId].tsx');
+    expect(page).toMatch(/const type = venueType\(venue\);/);
+    expect(page).toMatch(/tr\.explore\.typeLabel\[type\]/);
     // The words for the types (v46's, kept).
     const tr = app('src/i18n/tr.ts');
     for (const word of ['Kafe', 'Çay bahçesi', 'Kampüs']) expect(tr).toContain(`'${word}'`);

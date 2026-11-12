@@ -152,6 +152,34 @@ export function TopBarRow({
   );
 }
 
+// What comes into the bar over [from, to] of the scroll (the `kapak` bar's small picture and name
+// beside the back button, 5.2): its opacity follows the finger; never pressed, and a copy of what
+// the screen reader reads on the page.
+export function BarArrive({
+  from,
+  to,
+  children,
+}: {
+  from: number;
+  to: number;
+  children: ReactNode;
+}) {
+  const scroll = useScreenScroll();
+  const style = useAnimatedStyle(() => ({
+    opacity: scroll ? arriveAt(scroll.y.get(), from, to) : 0,
+  }));
+  return (
+    <Animated.View
+      pointerEvents="none"
+      importantForAccessibility="no-hide-descendants"
+      accessibilityElementsHidden
+      style={style}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
 // The large title (and a quieter line under it): it scrolls with the content and fades over
 // `kind`'s range, a tab's shrinking from its lower left. Still on a screen that does not scroll.
 // `children` stand for the title where a screen draws its own (Keşfet's line of the day over its
