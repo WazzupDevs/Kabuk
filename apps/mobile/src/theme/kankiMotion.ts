@@ -183,6 +183,11 @@ export const FRIENDS_PEEK: readonly KankiPlace[] = [
   { id: 'peek-1', left: 230, top: -4, width: 72, height: 94 },
 ];
 export const FRIENDS_LIST_TOP = 76;
+// Keşfet (iskelet.md → 5.1): one buddy looking over the search capsule's right, scrolling with the
+// content, in the 350 wide frame.
+export const EXPLORE_PEEK: readonly KankiPlace[] = [
+  { id: 'peek-1', left: 262, top: -4, width: 72, height: 94 },
+];
 
 // MasaIstek (U42): three riso buddies looking over the incoming request's card, in the card's 362
 // wide frame (390 less 14 a side).

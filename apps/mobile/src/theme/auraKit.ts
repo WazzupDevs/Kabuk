@@ -31,6 +31,8 @@ export const KIT_TYPE = {
   displayLg: t(500, 34, 41, -0.025),
   // Mesajlar's title (.display at 36).
   displayXl: t(500, 36, 46, -0.025),
+  // Keşfet's question (iskelet.md → 5.1: 36, 800).
+  exploreTitle: t(800, 36, 46, -0.025),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
@@ -609,6 +611,21 @@ export const KIT = {
     topBtn: 46,
     stickyTop: 6,
     stickyBandPad: 8,
+    // iskelet.md → 5.1 (Keşfet): the search and list/map capsule 54, 48 once pinned, its switch's
+    // rounds 3 in; a venue's card 26 round and 12 inside, its picture 76 at 14 (2.4: the card's 26
+    // less its 12); the empty card's riso 104x72; the map's glass column of round buttons.
+    explore: {
+      capsule: 54,
+      capsulePinned: 48,
+      capsulePadX: 18,
+      switchPad: 3,
+      switchGap: 2,
+      icon: 20,
+      card: { radius: 26, pad: 12, picture: 76, pictureRadius: 14, gap: 12, lineGap: 4 },
+      cardsGap: 12,
+      empty: { width: 104, height: 72, radius: 14 },
+      mapColumn: { width: 48, gap: 2, pad: 2 },
+    },
     // The venue page's back button (48).
     roundLg: 44,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).

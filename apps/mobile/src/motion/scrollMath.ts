@@ -46,6 +46,20 @@ export function stickyFadeAt(
   return fadeAt(y, pinAt - fadePx, pinAt, scaleTo);
 }
 
+// A sticky field that thins as it pins (Keşfet's capsule, iskelet.md → 5.1): its height goes from
+// `from` to `to` over the same last `fadePx` before the pin, and stays `to` once pinned.
+export function stickyShrinkAt(
+  y: number,
+  pinAt: number,
+  fadePx: number,
+  from: number,
+  to: number,
+): number {
+  'worklet';
+  if (pinAt < 0) return from;
+  return from + (to - from) * ramp(y, pinAt - fadePx, pinAt);
+}
+
 // The band reaches `reach` further down once the field pins (drawn that much taller and moved up
 // by it until then): its move, from -reach to 0 over the last `reach` before the pin.
 export function bandReachAt(y: number, pinAt: number, reach: number): number {

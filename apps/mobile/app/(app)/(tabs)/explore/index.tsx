@@ -14,22 +14,17 @@ import {
   sortVenues,
 } from '@shared/explore.ts';
 import { hasActiveTable } from '@shared/navigation.ts';
+import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
+import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, Li, Live, Round, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Chip, Glass, Li, Live, PulseDot, Round, T, Tag, useKit } from '@/aura/kit';
 import { useTabOpenings } from '@/aura/motion';
+import { RisoPeekOver } from '@/aura/Peek';
 import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
@@ -40,6 +35,7 @@ import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DistrictCard } from '@/features/district/DistrictCard';
+import { EmptyCard } from '@/features/explore/EmptyCard';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { EventTag } from '@/features/explore/EventTag';
@@ -47,13 +43,16 @@ import { type CityVenue, useCityVenues } from '@/features/explore/useExploreVenu
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { dayPart } from '@/lib/dayPart';
+import { dayLine, dayPart } from '@/lib/dayPart';
 import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { venueType } from '@/lib/venueType';
-import { AURA } from '@/theme/aura';
 import { useNarrow } from '@/lib/useNarrow';
+import { LargeTitle, ScrollScreen, StickyField, Tap } from '@/motion';
+import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
+import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
+import { EXPLORE_PEEK } from '@/theme/kankiMotion';
 import { THEME } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -62,16 +61,20 @@ type View_ = 'list' | 'map';
 
 type Here = { name: string; spot: string | null };
 
-// Keşfet (docs/design/aura → Keşfet, Keşfet: boş; docs/arsiv/SPEC_V2.md §4, SPEC_V4 §4.C): always the
-// list of a city's venues, chosen by hand, never by the phone's position (rule 6). The venue is
-// picked here; check-in then verifies the position. The question at the very top (no bar with the
-// place and the bell: the bell is in Mesajlar only, K-6), the search and the list/map switch, the
-// kind chips, the city and district with the count (K-38; it opens the place sheet), then the venues
-// as plain rows with a hairline between them; venues with an event today first (K-21, K-42), the
-// bucket in words (K-41); a row opens the venue page (K-43). No venue to show: a glass card says so.
+const X = KIT.size.explore;
+
+// Keşfet (docs/design/iskelet.md → 5.1; docs/arsiv/SPEC_V2.md §4, SPEC_V4 §4.C): always the list
+// of a city's venues, chosen by hand, never by the phone's position (rule 6). The venue is picked
+// here; check-in then verifies the position. The list: the line of the day over the question (a
+// tab's large title, fading as it scrolls), the one glass capsule of the search and the list/map
+// switch (it pins under the top and thins, no title bar of its own) with a buddy looking over it,
+// the kind chips, Semte Git (the one featured card), the city and district with the count (K-38;
+// it opens the place sheet) and the order, then each venue on its own card; venues with an event
+// today first (K-21, K-42), the bucket in words (K-41); a card opens the venue page (K-43). The map:
+// the whole screen, the capsule and the chips floating over it, no title. The scroll is the
+// screen's (ScrollScreen): the tab bar folds with it, everything that follows it on the UI thread.
 export default function ExploreScreen() {
-  const narrow = useNarrow();
-  const { scheme, shape } = useTheme();
+  const { scheme } = useTheme();
   const table = useActiveTable();
   const now = useNow(30_000);
   const { venues, cities, listed } = useCityVenues();
@@ -81,15 +84,17 @@ export default function ExploreScreen() {
   const [kind, setKind] = useState<ExploreKind>('all');
   // A kind chosen plays the list's arrival again (hareket.json → dissolve).
   const [kindRuns, setKindRuns] = useState(0);
+  // "Ada göre" (5.1): the order by name over the events first (K-42).
+  const [byName, setByName] = useState(false);
   const saved = useExplorePlace((s) => s.saved);
   const loadPlace = useExplorePlace((s) => s.load);
   useEffect(loadPlace, [loadPlace]);
-  // The map lies under the head; its opening camera keeps the venues below it.
-  const [headerHeight, setHeaderHeight] = useState(0);
+  // The map's floating head: its opening camera keeps the venues below it.
+  const [mapHead, setMapHead] = useState(0);
   // The floating tab bar covers the bottom of the map and the list.
   const barSpace = useTabBarSpace();
   const insets = useSafeAreaInsets();
-  const { height: screenHeight } = useWindowDimensions();
+  const y = useScrollOffset();
 
   // A failed refresh keeps what was read (audit M8-02, Mesajlar's way): the list, the search, the
   // chips and the head stay; the error only stands in for nothing read at all.
@@ -108,6 +113,14 @@ export default function ExploreScreen() {
     () => sortVenues(filterVenues(listed, { place, kind, query }), now),
     [listed, place, kind, query, now],
   );
+  // Without an event today both orders are the name's: the button stays, its touch off.
+  const canSort = shown.sort === 'eventsFirst';
+  const nameOrder = byName || !canSort;
+  const ordered = useMemo(
+    () =>
+      byName ? [...shown.venues].sort((a, b) => a.name.localeCompare(b.name, 'tr')) : shown.venues,
+    [shown.venues, byName],
+  );
   // Why nothing shows, for the list's card and the map (kabul raporu §9.1).
   const empty = exploreEmpty(listed.length, { kind, query });
   const here = hasActiveTable(table.data, now) ? table.data : null;
@@ -115,148 +128,258 @@ export default function ExploreScreen() {
     ? { name: here.venue?.name ?? '', spot: here.spot?.name ?? null }
     : null;
 
+  const capsule = (
+    <SearchCapsule
+      value={query}
+      onChangeText={setQuery}
+      view={view}
+      onChange={(mode) => {
+        haptic('selection');
+        setView(mode);
+      }}
+    />
+  );
+  const chips = (
+    <KindChips
+      kind={kind}
+      onChoose={(k) => {
+        setKind(k);
+        setKindRuns((n) => n + 1);
+      }}
+    />
+  );
+
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-      {/* The colour clouds (docs/design/aura → Keşfet); the map covers them when it is open. */}
-      <AuraBackground />
-      {/* The map from the very top, under the status bar, fading into the ground towards the top
-          under the head (the owner's call, 28 Ekim: the status bar's flat band looked odd). */}
-      {showMap && headerHeight > 0 ? (
-        <>
-          <View style={StyleSheet.absoluteFill}>
-            <ExploreMap
-              venues={shown.venues}
-              empty={emptyCopy(empty, kind)}
-              headerHeight={insets.top + headerHeight}
-              tabBarHeight={barSpace}
-            />
-          </View>
-          {/* U14: the aura over the top 26 % of the screen, giving way to the map by 40 %; never
-              before the head's foot, or the map's labels show between its parts (the owner's
-              report, 2 Kasım, 4.3). */}
-          <AuraBand
-            top={0}
-            height={Math.max(screenHeight * MAP_SOLID, insets.top + headerHeight)}
-            fade={screenHeight * MAP_FADE}
-            direction="down"
-            soft
-          />
-        </>
-      ) : null}
-      <View style={{ flex: 1 }}>
-        <View onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)} style={{ zIndex: 1 }}>
-          {/* docs/design/aura → Keşfet: the question, the search field and the list/map switch
-              on glass, the kind chips; each part arrives a step after the one before. */}
-          <View
-            testID="explore-head"
-            style={{
-              paddingHorizontal: KIT.size.side,
-              paddingTop: SPACING[2],
-              gap: SPACING[6],
-            }}
-          >
-            {/* U13: the question at .display, at most its two lines. */}
-            <Reveal index={0} openings={openings}>
-              <T v="display" accessibilityRole="header">
-                {tr.explore.question[dayPart(now)]}
-              </T>
-            </Reveal>
-            {ready ? (
-              <View style={{ gap: SPACING[3] }}>
-                <Reveal index={1} openings={openings}>
-                  <View style={{ flexDirection: 'row', gap: SEARCH_GAP }}>
-                    <SearchGlass value={query} onChangeText={setQuery} />
-                    <ViewSwitch
-                      value={view}
-                      onChange={(mode) => {
-                        haptic('selection');
-                        setView(mode);
-                      }}
-                    />
-                  </View>
-                </Reveal>
-                <Reveal index={2} openings={openings}>
-                  {/* U13: the kind chips on one line, scrolling sideways to the screen's edge. */}
-                  <ScrollView
-                    horizontal
-                    showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}
-                    accessibilityRole="radiogroup"
-                    accessibilityLabel={tr.explore.kindsLabel}
-                    style={{ marginRight: -KIT.size.side, overflow: 'visible' }}
-                    contentContainerStyle={{
-                      gap: KIT.size.chipsGap,
-                      paddingRight: KIT.size.side,
-                    }}
-                  >
-                    {EXPLORE_KINDS.map((k) => (
-                      <Chip
-                        key={k}
-                        testID={`explore-kind-${k}`}
-                        label={tr.explore.kinds[k]}
-                        narrow={narrow}
-                        on={kind === k}
-                        onPress={() => {
-                          if (k === kind) return;
-                          setKind(k);
-                          setKindRuns((n) => n + 1);
-                        }}
-                      />
-                    ))}
-                  </ScrollView>
-                </Reveal>
+    <ScrollScreen y={showMap ? null : y}>
+      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
+        {/* The colour clouds (docs/design/aura → Keşfet); the map covers them when it is open. */}
+        <AuraBackground />
+        {showMap ? (
+          <>
+            {/* 5.1: the map on the whole screen, under the status bar too. */}
+            {mapHead > 0 ? (
+              <View style={StyleSheet.absoluteFill}>
+                <ExploreMap
+                  venues={shown.venues}
+                  empty={emptyCopy(empty, kind)}
+                  headerHeight={mapHead}
+                  tabBarHeight={barSpace}
+                />
               </View>
             ) : null}
-          </View>
-        </View>
-
-        {!ready && !failed ? (
-          <View className="mt-8 items-center">
-            <Loader />
-          </View>
-        ) : null}
-        {failed ? (
-          <View style={{ paddingHorizontal: shape.screenPadding }}>
-            <EmptyState
-              icon="cloud-offline-outline"
-              body={errorMessage(venues.error ?? cities.error)}
-              action={{
-                label: tr.checkin.retry,
-                onPress: () => {
-                  void venues.refetch();
-                  void cities.refetch();
-                },
-                loading: venues.isRefetching || cities.isRefetching,
+            {/* The capsule and the chips float over it on glass; no large title. */}
+            <View
+              testID="explore-head"
+              pointerEvents="box-none"
+              onLayout={(e) => setMapHead(e.nativeEvent.layout.height)}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                paddingTop: insets.top + SPACING[2],
+                paddingHorizontal: KIT.size.side,
+                gap: SPACING[3],
               }}
-            />
-          </View>
-        ) : null}
-
-        {ready && view === 'list' ? (
-          <VenueList
-            venues={shown.venues}
-            eventsFirst={shown.sort === 'eventsFirst'}
-            listed={listed}
-            empty={empty}
-            kind={kind}
-            place={place}
-            here={hereCard}
-            bottomSpace={barSpace}
-            replay={kindRuns}
-            openings={openings}
-            onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
-          />
-        ) : null}
-      </View>
-    </SafeAreaView>
+            >
+              <View style={{ height: X.capsule }}>{capsule}</View>
+              {chips}
+            </View>
+          </>
+        ) : (
+          <ScrollViewport>
+            <ListBody
+              y={y}
+              ready={ready}
+              failed={failed}
+              now={now}
+              openings={openings}
+              capsule={capsule}
+              chips={chips}
+              bottomSpace={barSpace}
+              onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
+            >
+              {failed ? (
+                <EmptyState
+                  icon="cloud-offline-outline"
+                  body={errorMessage(venues.error ?? cities.error)}
+                  action={{
+                    label: tr.checkin.retry,
+                    onPress: () => {
+                      void venues.refetch();
+                      void cities.refetch();
+                    },
+                    loading: venues.isRefetching || cities.isRefetching,
+                  }}
+                />
+              ) : !ready ? (
+                <View className="mt-8 items-center">
+                  <Loader />
+                </View>
+              ) : (
+                <VenueList
+                  venues={ordered}
+                  listed={listed}
+                  empty={empty}
+                  kind={kind}
+                  place={place}
+                  here={hereCard}
+                  replay={kindRuns}
+                  openings={openings}
+                  nameOrder={nameOrder}
+                  canSort={canSort}
+                  onSort={() => {
+                    haptic('selection');
+                    setByName((on) => !on);
+                  }}
+                />
+              )}
+            </ListBody>
+          </ScrollViewport>
+        )}
+      </SafeAreaView>
+    </ScrollScreen>
   );
 }
 
-// The words for an empty result (kabul raporu §9.1): search, kind, district; no data at all has no hint.
+// The list's scroll: the head (the line of the day and the question, fading as a tab's large
+// title), the capsule pinned under the top, the chips, then the body. Pulled down at its top it
+// fetches the list again (v46's `.ptr-ind`); its offset is the screen's.
+function ListBody({
+  y,
+  ready,
+  failed,
+  now,
+  openings,
+  capsule,
+  chips,
+  bottomSpace,
+  onRefresh,
+  children,
+}: {
+  y: ReturnType<typeof useScrollOffset>;
+  ready: boolean;
+  failed: boolean;
+  now: number;
+  openings: TabOpenings | null;
+  capsule: ReactNode;
+  chips: ReactNode;
+  bottomSpace: number;
+  onRefresh: () => Promise<unknown>;
+  children: ReactNode;
+}) {
+  const onContentSizeChange = useContentHeightFeed();
+  return (
+    <PullScroll
+      onRefresh={onRefresh}
+      scrollY={y}
+      onContentSizeChange={onContentSizeChange}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      contentContainerStyle={{
+        paddingHorizontal: KIT.size.side,
+        paddingTop: SPACING[2],
+        // At least 124 under the list (U13; the bar's room is 92 without a safe area).
+        paddingBottom: SPACING[8] + bottomSpace,
+      }}
+    >
+      <View testID="explore-head">
+        <Reveal index={0} openings={openings}>
+          <Question now={now} />
+        </Reveal>
+        {/* 5.1: a buddy looks over the capsule's top edge; it scrolls with the content. */}
+        {ready ? (
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', left: 0, right: 0, bottom: -SPACING[6], height: 0 }}
+          >
+            <RisoPeekOver places={EXPLORE_PEEK} />
+          </View>
+        ) : null}
+      </View>
+      {ready ? (
+        <>
+          {/* Over what scrolls under it once pinned. */}
+          <View style={{ zIndex: 1, marginTop: SPACING[6] }}>
+            <Reveal index={1} openings={openings}>
+              <StickyField shrink={[X.capsule, X.capsulePinned]} band>
+                {capsule}
+              </StickyField>
+            </Reveal>
+          </View>
+          <View style={{ marginTop: SPACING[3] }}>
+            <Reveal index={2} openings={openings}>
+              {chips}
+            </Reveal>
+          </View>
+        </>
+      ) : null}
+      {/* 24 between the head's blocks and the body, 12 inside it (U13). */}
+      <View style={{ marginTop: SPACING[6], gap: SPACING[3] }}>{children}</View>
+    </PullScroll>
+  );
+}
+
+// The line of the day from the phone's clock ("PERŞEMBE AKŞAMI") over the question at 36/800, its
+// last word in green (5.1); a tab's large title, fading and shrinking from its lower left.
+function Question({ now }: { now: number }) {
+  const { c } = useKit();
+  const { colors } = useTheme();
+  const line = dayLine(new Date(now));
+  return (
+    <LargeTitle kind="buyukBaslik">
+      <View style={{ gap: SPACING[1] }}>
+        <T v="eyebrow">{upperTr(tr.explore.dayLine(line.weekday, line.part))}</T>
+        <Text
+          accessibilityRole="header"
+          maxFontSizeMultiplier={MAX_FONT_SCALE}
+          style={[KIT_TYPE.exploreTitle, { color: c.ink }]}
+        >
+          {tr.explore.question[dayPart(now)]}
+          <Text style={{ color: colors.accent }}>{tr.explore.questionEnd}</Text>
+        </Text>
+      </View>
+    </LargeTitle>
+  );
+}
+// As the kit's text (aura/kit → T).
+const MAX_FONT_SCALE = 1.3;
+
+// U13: the kind chips on one line, scrolling sideways to the screen's edge.
+function KindChips({ kind, onChoose }: { kind: ExploreKind; onChoose: (k: ExploreKind) => void }) {
+  const narrow = useNarrow();
+  return (
+    <ScrollView
+      horizontal
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      accessibilityRole="radiogroup"
+      accessibilityLabel={tr.explore.kindsLabel}
+      style={{ marginHorizontal: -KIT.size.side, overflow: 'visible' }}
+      contentContainerStyle={{ gap: KIT.size.chipsGap, paddingHorizontal: KIT.size.side }}
+    >
+      {EXPLORE_KINDS.map((k) => (
+        <Chip
+          key={k}
+          testID={`explore-kind-${k}`}
+          label={tr.explore.kinds[k]}
+          narrow={narrow}
+          on={kind === k}
+          onPress={() => {
+            if (k !== kind) onChoose(k);
+          }}
+        />
+      ))}
+    </ScrollView>
+  );
+}
+
+// The words for an empty result (kabul raporu §9.1): search, kind, district; no data at all says
+// there is none.
 function emptyCopy(empty: ExploreEmpty, kind: ExploreKind): { title: string; hint: string | null } {
   switch (empty) {
     case 'none':
-      return { title: tr.explore.empty, hint: null };
+      return { title: tr.explore.emptyTitle, hint: tr.explore.empty };
     case 'search':
       return { title: tr.explore.noMatch, hint: tr.explore.noMatchHint };
     case 'kind':
@@ -268,12 +391,30 @@ function emptyCopy(empty: ExploreEmpty, kind: ExploreKind): { title: string; hin
   }
 }
 
-// A venue row's liveliness: "Sessiz" as the calm tag (U13), the live dot otherwise.
-function Bucket({ bucket, calm }: { bucket: CityVenue['bucket']; calm: boolean }) {
-  return calm ? (
-    <Tag tone="purple" label={tr.explore.buckets[bucket]} />
-  ) : (
-    <Live label={tr.explore.buckets[bucket]} color={KIT.pink} ring={KIT.pinkRing} />
+// A venue's liveliness as a dotted tag (5.1): "Sessiz" with a still dot, the livelier ones with
+// the beating pink dot.
+function Bucket({ bucket }: { bucket: CityVenue['bucket'] }) {
+  const { tags } = useKit();
+  const calm = bucket === 'calm';
+  return (
+    <Tag
+      tone={calm ? 'purple' : 'pink'}
+      label={tr.explore.buckets[bucket]}
+      lead={
+        calm ? (
+          <View
+            style={{
+              width: KIT.size.dot,
+              height: KIT.size.dot,
+              borderRadius: KIT.size.dot / 2,
+              backgroundColor: tags.purple.fg,
+            }}
+          />
+        ) : (
+          <PulseDot color={KIT.pink} ring={KIT.pinkRing} />
+        )
+      }
+    />
   );
 }
 
@@ -314,147 +455,144 @@ function HereNow({ here }: { here: Here }) {
   );
 }
 
-// The list (Keşfet, Keşfet: boş): the city and district with the count, then the venues as plain
-// rows with a hairline between them, within the screen's side padding. The rows arrive 60 ms apart
-// after the head's parts.
+// The list's body: Semte Git, "Şu an buradasın", the city and district with the count and the
+// order, then each venue on its own card (3.4), 12 apart. The cards arrive 60 ms apart after the
+// head's parts.
 function VenueList({
   venues,
-  eventsFirst,
   listed,
   empty,
   kind,
   place,
   here,
-  bottomSpace,
   replay,
   openings,
-  onRefresh,
+  nameOrder,
+  canSort,
+  onSort,
 }: {
   venues: readonly CityVenue[];
-  eventsFirst: boolean;
   listed: readonly CityVenue[];
   empty: ExploreEmpty;
   kind: ExploreKind;
   place: ExplorePlace | null;
   here: Here | null;
-  bottomSpace: number;
   replay: number;
   openings: TabOpenings | null;
-  onRefresh: () => Promise<unknown>;
+  nameOrder: boolean;
+  canSort: boolean;
+  onSort: () => void;
 }) {
-  const side = KIT.size.side;
   const [placeSheet, setPlaceSheet] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
   const cityList = useMemo(() => exploreCities(listed), [listed]);
   // The university whose campuses are open in the sheet (docs/SPEC_V4.md §4.Q).
   const [uni, setUni] = useState<ExploreUniversity | null>(null);
   const [uniKey, setUniKey] = useState(0);
+  const copy = emptyCopy(empty, kind);
   return (
-    // Pulled down at its top it fetches the list again (v46's `.ptr-ind`).
-    <PullScroll
-      onRefresh={onRefresh}
-      keyboardShouldPersistTaps="handled"
-      keyboardDismissMode="on-drag"
-      contentContainerStyle={{
-        paddingHorizontal: side,
-        paddingTop: SPACING[6],
-        // At least 124 under the list (U13; the bar's room is 92 without a safe area).
-        paddingBottom: SPACING[8] + bottomSpace,
-        gap: SPACING[3],
-      }}
-    >
-      {/* Semte Git (docs/SPEC_V4.md §4.V): under the chips, over "Şu an buradasın" or the list,
-          12 apart (the list's gap). */}
+    <>
+      {/* Semte Git (docs/SPEC_V4.md §4.V): the screen's one featured card, under the chips. */}
       <DistrictCard />
       {here ? <HereNow here={here} /> : null}
-      {/* The city and district, and how many venues (K-38): a section's head. */}
+      {/* The city and district, and how many venues (K-38), the order at the right. */}
       <Reveal index={SECTION_AT} replay={replay} openings={openings}>
         <View
           style={{
             flexDirection: 'row',
             flexWrap: 'wrap',
-            alignItems: 'baseline',
+            alignItems: 'center',
             justifyContent: 'space-between',
-            // Side by side while both fit; the count goes under the place on a narrow screen (the
+            // Side by side while both fit; the order goes under the place on a narrow screen (the
             // owner's report, 30 Ekim: the two ran into each other).
             columnGap: KIT.size.rowGap,
-            rowGap: SPACING[0.5],
+            rowGap: SPACING[2],
             paddingTop: KIT.size.secPadTop,
           }}
         >
-          {/* The place sheet opens from here when there is a city to choose (K-38); every city is
-              the default (5 Kasım). */}
-          <Pressable
-            testID="explore-place"
-            accessibilityRole={cityList.length > 1 ? 'button' : 'header'}
-            accessibilityLabel={
-              place ? tr.explore.placeLabel(place.city, place.district) : tr.explore.allCitiesLabel
-            }
-            disabled={cityList.length <= 1}
-            onPress={() => {
-              setSheetKey((k) => k + 1);
-              setPlaceSheet(true);
-            }}
-            hitSlop={KIT.size.chipsGap}
-          >
-            <T v="h3">
-              {place ? tr.explore.place(place.city, place.district) : tr.explore.allCities}
+          <View style={{ flexShrink: 1, gap: SPACING[0.5] }}>
+            {/* The place sheet opens from here when there is a city to choose (K-38); every city
+                is the default (5 Kasım). */}
+            <Tap
+              testID="explore-place"
+              accessibilityRole={cityList.length > 1 ? 'button' : 'header'}
+              accessibilityLabel={
+                place
+                  ? tr.explore.placeLabel(place.city, place.district)
+                  : tr.explore.allCitiesLabel
+              }
+              disabled={cityList.length <= 1}
+              sink={cityList.length > 1}
+              onPress={() => {
+                setSheetKey((k) => k + 1);
+                setPlaceSheet(true);
+              }}
+              hitSlop={KIT.size.chipsGap}
+            >
+              <T v="h3">
+                {place ? tr.explore.place(place.city, place.district) : tr.explore.allCities}
+              </T>
+            </Tap>
+            <T v="fine" testID="explore-count">
+              {tr.explore.count(venues.length)}
             </T>
-          </Pressable>
-          <T v="fine" testID="explore-count">
-            {tr.explore.countLine(venues.length, eventsFirst)}
-          </T>
+          </View>
+          {/* 5.1: the order as a clear button. */}
+          <Btn
+            sm
+            variant="glassy"
+            testID="explore-sort"
+            label={nameOrder ? tr.explore.sortByName : tr.explore.sortEventsFirst}
+            accessibilityLabel={tr.explore.sortLabel(nameOrder)}
+            disabled={!canSort}
+            onPress={onSort}
+          />
         </View>
       </Reveal>
-      {listed.length === 0 ? (
-        <EmptyState kind="empty" riso="venues" body={tr.explore.empty} />
-      ) : venues.length === 0 ? (
-        // Keşfet: boş: a filter or a search that finds nothing, said by its cause.
+      {venues.length === 0 ? (
+        // Keşfet: boş: nothing at all, or a filter or a search that finds nothing, said by its
+        // cause on the small card (3.4).
         <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay} openings={openings}>
-          <Glass pad="lg" testID="explore-no-match" style={{ gap: SPACING[1] }}>
-            <T v="sec">{emptyCopy(empty, kind).title}</T>
-            <T v="body">{emptyCopy(empty, kind).hint}</T>
-          </Glass>
+          <EmptyCard
+            testID={listed.length === 0 ? 'explore-empty' : 'explore-no-match'}
+            title={copy.title}
+            body={copy.hint}
+          />
         </Reveal>
       ) : (
-        // U13: the rows on a small glass card, a hairline between them from the words to 16 short of
-        // the right edge.
-        <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
-          {/* A university with several campuses is one row opening its campuses (docs/SPEC_V4.md
-              §4.Q); every other venue, a single campus included, is its own row. */}
-          {groupByUniversity(venues, listed).map((row, i) => (
-            <Reveal
-              key={row.type === 'venue' ? row.venue.id : `u-${row.university.id}`}
-              index={ROWS_AT + i}
-              step={ROW_STEP}
-              replay={replay}
-              openings={openings}
-            >
-              {i > 0 ? <RowHair /> : null}
-              {row.type === 'venue' ? (
-                <VenueRow
-                  venue={row.venue}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/explore/[venueId]',
-                      params: { venueId: row.venue.id },
-                    })
-                  }
-                />
-              ) : (
-                <UniversityRow
-                  university={row.university}
-                  campuses={row.campuses}
-                  onPress={() => {
-                    haptic('selection');
-                    setUniKey((k) => k + 1);
-                    setUni(row.university);
-                  }}
-                />
-              )}
-            </Reveal>
-          ))}
-        </Glass>
+        // A university with several campuses is one card opening its campuses (docs/SPEC_V4.md
+        // §4.Q); every other venue, a single campus included, is its own card.
+        groupByUniversity(venues, listed).map((row, i) => (
+          <Reveal
+            key={row.type === 'venue' ? row.venue.id : `u-${row.university.id}`}
+            index={ROWS_AT + i}
+            step={ROW_STEP}
+            replay={replay}
+            openings={openings}
+          >
+            {row.type === 'venue' ? (
+              <VenueCard
+                venue={row.venue}
+                onPress={() =>
+                  router.push({
+                    pathname: '/explore/[venueId]',
+                    params: { venueId: row.venue.id },
+                  })
+                }
+              />
+            ) : (
+              <UniversityCard
+                university={row.university}
+                campuses={row.campuses}
+                onPress={() => {
+                  haptic('selection');
+                  setUniKey((k) => k + 1);
+                  setUni(row.university);
+                }}
+              />
+            )}
+          </Reveal>
+        ))
       )}
       <CampusSheet
         key={uniKey}
@@ -469,52 +607,76 @@ function VenueList({
         cities={cityList}
         place={place}
       />
-    </PullScroll>
+    </>
   );
 }
 
-// The hairline between two rows of the list, from the words to 16 short of the right edge (U13).
-function RowHair() {
+// A venue's card (5.1, 3.4): its 76 picture, the name, the type and district, the dotted bucket and
+// the arrow; 26 round, 12 inside.
+function PlaceCard({
+  testID,
+  accessibilityLabel,
+  onPress,
+  picture,
+  name,
+  sub,
+  bucket,
+}: {
+  testID: string;
+  accessibilityLabel: string;
+  onPress: () => void;
+  picture: ReactNode;
+  name: string;
+  sub: string;
+  bucket: CityVenue['bucket'];
+}) {
   const { c } = useKit();
+  const card = X.card;
   return (
-    <View
-      style={{
-        height: KIT.size.hair,
-        marginLeft: KIT.size.liPadX + VENUE_ROW_PICTURE + KIT.size.liGap,
-        marginRight: KIT.size.liPadX,
-        backgroundColor: c.hair,
-      }}
-    />
+    <Tap testID={testID} accessibilityLabel={accessibilityLabel} onPress={onPress}>
+      <Glass
+        radius={card.radius}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: card.gap,
+          padding: card.pad,
+          borderRadius: card.radius,
+        }}
+      >
+        {picture}
+        <View style={{ flex: 1, minWidth: 0, gap: card.lineGap }}>
+          <T v="h3">{name}</T>
+          <T v="fine">{sub}</T>
+          <View style={{ flexDirection: 'row', marginTop: card.lineGap }}>
+            <Bucket bucket={bucket} />
+          </View>
+        </View>
+        <CapIcon name="forward" color={c.muted} size={X.icon} />
+      </Glass>
+    </Tap>
   );
 }
 
-// A venue's row (U13): its picture, the name, the type and district, the bucket.
-function VenueRow({ venue: v, onPress }: { venue: CityVenue; onPress: () => void }) {
+function VenueCard({ venue: v, onPress }: { venue: CityVenue; onPress: () => void }) {
   const type = venueType(v);
   return (
-    <Li
-      padY={SPACING[3]}
+    <PlaceCard
       testID={`explore-venue-${v.name}`}
       accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
       onPress={onPress}
-    >
-      <VenueThumb kind={type} size={VENUE_ROW_PICTURE} />
-      <View style={{ flex: 1, gap: SPACING[0.5] }}>
-        <T v="h3">{v.name}</T>
-        <T v="fine">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
-        {/* Under the type and district, so it never wraps the name (1.4). */}
-        <View style={{ flexDirection: 'row' }}>
-          <Bucket bucket={v.bucket} calm={v.bucket === 'calm'} />
-        </View>
-      </View>
-    </Li>
+      picture={<VenueThumb kind={type} size={VENUE_CARD_PICTURE} />}
+      name={v.name}
+      sub={tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}
+      bucket={v.bucket}
+    />
   );
 }
 
 // A university with several campuses (docs/SPEC_V4.md §4.Q): the kampüs picture, its name, how
 // many campuses are shown and their districts, the liveliest campus's bucket. Not a place: it opens
 // the campus sheet; nothing here asks for the position.
-function UniversityRow({
+function UniversityCard({
   university,
   campuses,
   onPress,
@@ -526,21 +688,30 @@ function UniversityRow({
   const bucket = liveliestBucket(campuses.map((v) => v.bucket));
   const districts = [...new Set(campuses.map((v) => v.district))].join(', ');
   return (
-    <Li
-      padY={SPACING[3]}
+    <PlaceCard
       testID={`explore-university-${university.ref}`}
       accessibilityLabel={tr.explore.universityLabel(university.name, campuses.length)}
       onPress={onPress}
-    >
-      <VenueThumb kind="kampus" size={VENUE_ROW_PICTURE} />
-      <View style={{ flex: 1, gap: SPACING[0.5] }}>
-        <T v="h3">{university.name}</T>
-        <T v="fine">{tr.explore.universitySub(campuses.length, districts)}</T>
-        <View style={{ flexDirection: 'row' }}>
-          <Bucket bucket={bucket} calm={bucket === 'calm'} />
-        </View>
-      </View>
-    </Li>
+      picture={<VenueThumb kind="kampus" size={VENUE_CARD_PICTURE} />}
+      name={university.name}
+      sub={tr.explore.universitySub(campuses.length, districts)}
+      bucket={bucket}
+    />
+  );
+}
+
+// The hairline between two rows of the campus sheet, from the words to 16 short of the right edge.
+function RowHair() {
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        height: KIT.size.hair,
+        marginLeft: KIT.size.liPadX + VENUE_THUMB_SIZE + KIT.size.liGap,
+        marginRight: KIT.size.liPadX,
+        backgroundColor: c.hair,
+      }}
+    />
   );
 }
 
@@ -577,12 +748,12 @@ function CampusSheet({
                 router.push({ pathname: '/explore/[venueId]', params: { venueId: v.id } });
               }}
             >
-              <VenueThumb kind="kampus" size={VENUE_ROW_PICTURE} />
+              <VenueThumb kind="kampus" size={VENUE_THUMB_SIZE} />
               <View style={{ flex: 1, gap: SPACING[0.5] }}>
                 <T v="h3">{v.name}</T>
                 <T v="fine">{v.district}</T>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[1] }}>
-                  <Bucket bucket={v.bucket} calm={v.bucket === 'calm'} />
+                  <Bucket bucket={v.bucket} />
                   {v.event ? <EventTag event={v.event} /> : null}
                 </View>
               </View>
@@ -689,52 +860,46 @@ function PlaceSheet({
 
 const CHIPS = { flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap } as const;
 
-// Over the map (U14, KesfetHarita): the aura solid over the top 26 % of the screen, fading into the
-// map down to 40 %.
-const MAP_SOLID = 0.26;
-const MAP_FADE = 0.14;
-
-// The place line comes after the head's three parts (the question, the search, the chips), 70 ms
-// apart; the rows after it, 60 ms apart (hareket.json → stagger).
+// The place line comes after the head's three parts (the question, the capsule, the chips), 70 ms
+// apart; the cards after it, 60 ms apart (hareket.json → stagger).
 const SECTION_AT = 3;
 const ROWS_AT = 5;
 const ROW_STEP = 60;
 
-// A venue row's picture (U13: 56, 18 round).
-const VENUE_ROW_PICTURE = VENUE_THUMB.size;
+// A venue card's picture (5.1: 76, 14 round), the campus sheet's rows' the thumb's own (56).
+const VENUE_CARD_PICTURE = X.card.picture;
+const VENUE_THUMB_SIZE = VENUE_THUMB.size;
 
-// U13: the search field and the switch 8 apart, the search icon 8 before the words.
-const SEARCH_GAP = SPACING[2];
-
-// "Mekan ara" on glass (U13: 56 high, a pill, 20 inside, the search icon md first, the hint in
-// the placeholder colour).
-function SearchGlass({
+// The one glass capsule (5.1): "Mekan ara" with the search icon, and the list/map switch at its
+// right; 54 high, 48 once pinned (StickyField → shrink: it fills the height it is given).
+function SearchCapsule({
   value,
   onChangeText,
+  view,
+  onChange,
 }: {
   value: string;
   onChangeText: (text: string) => void;
+  view: View_;
+  onChange: (v: View_) => void;
 }) {
   const { c } = useKit();
   const { colors } = useTheme();
-  // Aura v75 KesfetHaritaDar: 56 when narrow, the hint on one line.
-  const narrow = useNarrow();
-  const h = narrow ? KIT.size.fieldNarrow : KIT.size.field;
   return (
     <Glass
       frost
-      radius={h / 2}
+      radius={X.capsule / 2}
       style={{
         flex: 1,
-        height: h,
-        borderRadius: h / 2,
-        paddingHorizontal: SPACING[5],
+        borderRadius: X.capsule / 2,
+        paddingLeft: X.capsulePadX,
+        paddingRight: X.switchPad,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: SEARCH_GAP,
+        gap: SPACING[2],
       }}
     >
-      <CapIcon name="search" color={colors.placeholder} size={ICON_MD} />
+      <CapIcon name="search" color={colors.placeholder} size={X.icon} />
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <TextInput
           testID="explore-search"
@@ -760,86 +925,57 @@ function SearchGlass({
           </View>
         ) : null}
       </View>
+      <ViewSwitch value={view} onChange={onChange} />
     </Glass>
   );
 }
 
-// The list/map switch (U13): two round buttons 2 apart in a glass capsule as tall as the search, 4 in
-// from its outer edge; the chosen one raised on the surface, its icon lit (accent in front, buzz behind;
-// in the dark on white 94 % with the light accent).
+// The list/map switch inside the capsule: two rounds 2 apart, the chosen one raised on the surface,
+// its icon green (5.1); sized for the pinned capsule, so they sit in its middle at either height.
 function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
   const { c, scheme } = useKit();
   const { colors } = useTheme();
-  // As tall as the search beside it (Aura v75 KesfetHaritaDar).
-  const h = useNarrow() ? KIT.size.fieldNarrow : KIT.size.field;
-  // The rounds fill the capsule less its padding (ui 3.2: a fixed 48 stood out of a 48 capsule).
-  const pad = SPACING[1] - KIT.size.edge;
-  const round = h - 2 * pad;
+  const round = X.capsulePinned - 2 * X.switchPad;
   return (
-    <Glass
-      frost
-      radius={h / 2}
-      style={{
-        height: h,
-        // Two rounds 2 apart, the padding and the edge each side: sized here, since the rounds sit
-        // over the capsule's middle (the owner's report, 8 Kasım: the chosen one leaned down).
-        width: 2 * round + SWITCH_GAP + 2 * (pad + KIT.size.edge),
-        borderRadius: h / 2,
-      }}
+    <View
+      accessibilityRole="tablist"
+      accessibilityLabel={tr.explore.viewSwitch}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: X.switchGap }}
     >
-      <View
-        accessibilityRole="tablist"
-        accessibilityLabel={tr.explore.viewSwitch}
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: SWITCH_GAP,
-        }}
-      >
-        {(['list', 'map'] as const).map((mode) => {
-          const on = value === mode;
-          return (
-            <Pressable
-              key={mode}
-              testID={`explore-view-${mode}`}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: on }}
-              accessibilityLabel={tr.explore.views[mode]}
-              onPress={() => onChange(mode)}
-              style={{
-                width: round,
-                height: round,
-                borderRadius: round / 2,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: on ? c.segOn : undefined,
-                boxShadow: on ? c.segShadow || undefined : undefined,
-              }}
-            >
-              <CapIcon
-                name={mode}
-                color={on ? (scheme === 'dark' ? THEME_LIGHT_ACCENT : colors.accent) : c.muted}
-                second={on ? colors.buzz : undefined}
-                soft={on ? 1 : undefined}
-                size={ICON_MD}
-              />
-            </Pressable>
-          );
-        })}
-      </View>
-    </Glass>
+      {(['list', 'map'] as const).map((mode) => {
+        const on = value === mode;
+        return (
+          <Tap
+            key={mode}
+            testID={`explore-view-${mode}`}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            accessibilityLabel={tr.explore.views[mode]}
+            onPress={() => {
+              if (!on) onChange(mode);
+            }}
+            style={{
+              width: round,
+              height: round,
+              borderRadius: round / 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: on ? c.segOn : undefined,
+              boxShadow: on ? c.segShadow || undefined : undefined,
+            }}
+          >
+            {/* In the dark on white 94 % with the light scheme's green. */}
+            <CapIcon
+              name={mode}
+              color={on ? (scheme === 'dark' ? THEME_LIGHT_ACCENT : colors.accent) : c.muted}
+              size={X.icon}
+            />
+          </Tap>
+        );
+      })}
+    </View>
   );
 }
 
-// skall.css `.ci.md` (20).
-const ICON_MD = 20;
-// The list/map rounds' gap.
-const SWITCH_GAP = 2;
 // Kesfet `.dark .segx span.on .ci`: the light scheme's accent on the white part.
 const THEME_LIGHT_ACCENT = THEME.palettes.light.accent;

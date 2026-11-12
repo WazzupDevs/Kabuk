@@ -7,6 +7,7 @@ import {
   Layer,
   type LayerProps,
   Map,
+  type MapRef,
 } from '@maplibre/maplibre-react-native';
 import {
   type Bounds,
@@ -22,10 +23,11 @@ import { View } from 'react-native';
 import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Li, Live, RowList, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, Li, Live, RowList, T, Tag, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
 import { tr } from '@/i18n/tr';
+import { PopIn, Tap } from '@/motion';
 import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
 import { KIT, VENUE_THUMB } from '@/theme/auraKit';
@@ -103,6 +105,7 @@ export function ExploreMap({
   const narrow = useNarrow();
   const mapStyle = useMapStyle(MAP_STYLE_URL[scheme], scheme);
   const camera = useRef<CameraRef>(null);
+  const map = useRef<MapRef>(null);
   const source = useRef<GeoJSONSourceRef>(null);
   const [selected, setSelected] = useState<string | null>(null);
   // E2E waits on this (testID below): the style, its glyphs and the venue layers are drawn.
@@ -229,7 +232,7 @@ export function ExploreMap({
       camera.current?.flyTo({
         center: [Number(coords[0]), Number(coords[1])],
         zoom: zoom ?? MAP_ZOOM.labels,
-        duration: 400,
+        duration: CAMERA_MS,
       });
       return;
     }
@@ -250,6 +253,7 @@ export function ExploreMap({
       testID={ready ? 'explore-map-ready' : 'explore-map'}
     >
       <Map
+        ref={map}
         mapStyle={mapStyle}
         style={{ flex: 1 }}
         logo={false}
@@ -257,10 +261,8 @@ export function ExploreMap({
         // app's window translucent for good, and after the map a black strip stayed over the
         // navigation bar on every screen (0.6.0; the owner, 21 Oct). Its native side is in the APK.
         androidView="texture"
-        attribution
-        // Over the tab bar, not pressed against its edge (the owner's report, 28 Ekim).
-        // U14: the (i) 12 above the tab bar, 20 from the right (the bar's room counts 16 more).
-        attributionPosition={{ bottom: tabBarHeight - SPACING[1], right: KIT.size.side }}
+        // The map's own (i) gives way to the glass column's (5.1), which opens the same dialog.
+        attribution={false}
         tintColor={colors.muted}
         accessibilityLabel={tr.explore.mapLabel}
         onPress={() => {
@@ -332,6 +334,21 @@ export function ExploreMap({
             }}
           />
           <Layer
+            id="venue-selected-halo"
+            type="circle"
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'stack']],
+              ['==', ['get', 'id'], id],
+            ]}
+            paint={{
+              'circle-color': colors.accent,
+              'circle-opacity': MAP_PIN.selectedHaloOpacity,
+              'circle-radius': MAP_PIN.selectedRadius + outer + MAP_PIN.selectedHalo,
+            }}
+          />
+          <Layer
             id="venue-halo"
             type="circle"
             filter={[
@@ -339,6 +356,7 @@ export function ExploreMap({
               ['!', ['has', 'point_count']],
               ['!', ['has', 'stack']],
               ['!=', ['get', 'bucket'], 'calm'],
+              ['!=', ['get', 'id'], id],
             ]}
             paint={{
               'circle-color': live,
@@ -356,7 +374,8 @@ export function ExploreMap({
             type="circle"
             filter={IS_VENUE}
             paint={{
-              'circle-color': ring,
+              // 5.1: the selected pin's ring green.
+              'circle-color': ['case', ['==', ['get', 'id'], id], colors.accent, ring],
               'circle-radius': [
                 'case',
                 ['==', ['get', 'id'], id],
@@ -446,24 +465,74 @@ export function ExploreMap({
           />
         </GeoJSONSource>
       </Map>
-      {card ? <VenueCard venue={card} bottom={tabBarHeight} /> : null}
-      {stackVenues.length > 1 ? <StackCard venues={stackVenues} bottom={tabBarHeight} /> : null}
+      <MapColumn
+        top={headerHeight + SPACING[3]}
+        onRecentre={() => camera.current?.fitBounds(opening, { padding, duration: CAMERA_MS })}
+        onInfo={() => void map.current?.showAttribution()}
+      />
+      {/* 5.1: the selected venue's card comes up on a spring, again for each venue. */}
+      {card ? (
+        <MapCard bottom={tabBarHeight}>
+          <PopIn key={card.id}>
+            <VenueCard venue={card} />
+          </PopIn>
+        </MapCard>
+      ) : null}
+      {stackVenues.length > 1 ? (
+        <MapCard bottom={tabBarHeight}>
+          <PopIn key={stack ?? ''}>
+            <StackCard venues={stackVenues} />
+          </PopIn>
+        </MapCard>
+      ) : null}
     </View>
   );
 }
 
-// The map's card (aura v51): an opaque page surface, as the sheets have (the map's GL surface
-// cannot be blurred), 12 above the tab bar.
-function MapCard({
-  bottom,
-  testID,
-  children,
+// The map's camera moves (a cluster opened, the venues shown again).
+const CAMERA_MS = 400;
+
+// 5.1: the position and the map's sources at the top right in one glass column, under the floating
+// search and chips. "Konum" is the venues', never the phone's (rule 6): it shows every venue again.
+function MapColumn({
+  top,
+  onRecentre,
+  onInfo,
 }: {
-  bottom: number;
-  testID: string;
-  children: ReactNode;
+  top: number;
+  onRecentre: () => void;
+  onInfo: () => void;
 }) {
   const { c } = useKit();
+  const col = KIT.size.explore.mapColumn;
+  const side = col.width - 2 * col.pad;
+  const button = (icon: 'compass' | 'info', label: string, onPress: () => void) => (
+    <Tap
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={{
+        width: side,
+        height: side,
+        borderRadius: side / 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <CapIcon name={icon} color={c.ink} size={KIT.size.explore.icon} />
+    </Tap>
+  );
+  return (
+    <View pointerEvents="box-none" style={{ position: 'absolute', top, right: KIT.size.side }}>
+      <Glass radius={col.width / 2} style={{ padding: col.pad, gap: col.gap }}>
+        {button('compass', tr.explore.recentre, onRecentre)}
+        {button('info', tr.explore.mapInfo, onInfo)}
+      </Glass>
+    </View>
+  );
+}
+
+// Where the map's card stands: 12 above the tab bar.
+function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) {
   return (
     <View
       pointerEvents="box-none"
@@ -475,21 +544,30 @@ function MapCard({
         paddingHorizontal: SPACING[4],
       }}
     >
-      <View
-        testID={testID}
-        style={{
-          ...gradientStyle(c.sheet),
-          backgroundColor: c.sheetBase,
-          borderRadius: KIT.size.glassRadius,
-          borderWidth: KIT.size.edge,
-          borderColor: c.glassEdge,
-          boxShadow: c.glassShadow,
-          padding: KIT.size.pad,
-          gap: SPACING[3],
-        }}
-      >
-        {children}
-      </View>
+      {children}
+    </View>
+  );
+}
+
+// The map's card (aura v51): an opaque page surface, as the sheets have (the map's GL surface
+// cannot be blurred).
+function MapFace({ testID, children }: { testID: string; children: ReactNode }) {
+  const { c } = useKit();
+  return (
+    <View
+      testID={testID}
+      style={{
+        ...gradientStyle(c.sheet),
+        backgroundColor: c.sheetBase,
+        borderRadius: KIT.size.glassRadius,
+        borderWidth: KIT.size.edge,
+        borderColor: c.glassEdge,
+        boxShadow: c.glassShadow,
+        padding: KIT.size.pad,
+        gap: SPACING[3],
+      }}
+    >
+      {children}
     </View>
   );
 }
@@ -523,10 +601,10 @@ function openVenue(id: string) {
 }
 
 // The selected venue, above the floating tab bar.
-function VenueCard({ venue, bottom }: { venue: ExploreVenue; bottom: number }) {
+function VenueCard({ venue }: { venue: ExploreVenue }) {
   const type = venueType(venue);
   return (
-    <MapCard bottom={bottom} testID="explore-map-card">
+    <MapFace testID="explore-map-card">
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }}>
         <VenueThumb kind={type} size={VENUE_THUMB.size} />
         <View style={{ flex: 1, gap: SPACING[0.5] }}>
@@ -542,15 +620,15 @@ function VenueCard({ venue, bottom }: { venue: ExploreVenue; bottom: number }) {
         testID="explore-map-go"
         onPress={() => openVenue(venue.id)}
       />
-    </MapCard>
+    </MapFace>
   );
 }
 
 // A stack's venues (one address, one disc on the map): each a row to its page.
-function StackCard({ venues, bottom }: { venues: readonly ExploreVenue[]; bottom: number }) {
+function StackCard({ venues }: { venues: readonly ExploreVenue[] }) {
   const { c } = useKit();
   return (
-    <MapCard bottom={bottom} testID="explore-map-stack">
+    <MapFace testID="explore-map-stack">
       <T v="sec">{tr.explore.stackTitle(venues.length)}</T>
       <RowList plain inset={KIT.size.liGap + VENUE_THUMB.size}>
         {venues.map((venue) => {
@@ -567,6 +645,6 @@ function StackCard({ venues, bottom }: { venues: readonly ExploreVenue[]; bottom
           );
         })}
       </RowList>
-    </MapCard>
+    </MapFace>
   );
 }

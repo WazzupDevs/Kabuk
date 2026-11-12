@@ -3,7 +3,6 @@
 export const MOTION_ALLOWED: readonly string[] = [
   'app/(app)/(tabs)/activities.tsx',
   'app/(app)/(tabs)/explore/[venueId].tsx',
-  'app/(app)/(tabs)/explore/index.tsx',
   'app/(app)/(tabs)/messages/index.tsx',
   'app/(app)/(tabs)/profile/capsule.tsx',
   'app/(app)/(tabs)/profile/edit.tsx',

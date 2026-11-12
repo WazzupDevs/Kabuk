@@ -27,6 +27,11 @@ export const SEMT = {
     lineGap: 4,
     buttonTop: 8,
     door: { width: 72, height: 86, radius: 16, shadow: '0px 6px 14px rgba(4, 73, 35, 0.16)' },
+    // iskelet.md → 5.1: Keşfet's one featured card on the ink ground; the gate a sticker turned a
+    // little, a buddy standing beside it over its lower left, the live dot before the eyebrow.
+    art: { tilt: '-7deg', buddy: { width: 46, height: 60 }, overlap: 24, edge: 3 },
+    stickerEdge: '#FFFFFF',
+    eyebrowGap: 8,
     meta: { gap: 6, icon: 16 },
     // The skeleton (`.sk`): its bars' widths and heights.
     skeleton: {
