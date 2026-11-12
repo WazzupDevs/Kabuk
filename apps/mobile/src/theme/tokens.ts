@@ -309,6 +309,9 @@ export const MAP_PIN = {
   // A lively or crowded venue glows in its colour around the pin (the owner's call, 27 Ekim).
   halo: 8,
   haloOpacity: 0.28,
+  // iskelet.md → 5.1: the selected pin's ring in the accent's green, its wider green halo.
+  selectedHalo: 12,
+  selectedHaloOpacity: 0.3,
   // The second line under the name: how lively, and the event when there is one.
   statusScale: 0.82,
   eventDot: 6,

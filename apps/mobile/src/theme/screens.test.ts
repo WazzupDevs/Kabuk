@@ -49,10 +49,13 @@ describe("the app's Keşfet", () => {
 
   it("is built from the canvas's kit", () => {
     expect(screen).toMatch(/from '@\/aura\/kit'/);
-    // The venues on a small glass card (Aura v65, U13).
-    for (const part of ['<SearchGlass', '<ViewSwitch', '<Chip', '<Glass sm', '<Li']) {
+    // iskelet.md → 5.1: the one capsule of the search and the switch, pinned and thinning; each
+    // venue on its own card; the motion from the kit.
+    for (const part of ['<SearchCapsule', '<ViewSwitch', '<Chip', '<PlaceCard', '<EmptyCard']) {
       expect(screen, part).toContain(part);
     }
+    expect(screen).toMatch(/<StickyField shrink=\{\[X\.capsule, X\.capsulePinned\]\} band>/);
+    expect(screen).toMatch(/from '@\/motion'/);
   });
 
   it('leaves the bell to Mesajlar alone, its dot on the tab for unread DMs and waiting requests (K-6)', () => {
@@ -77,8 +80,9 @@ describe("the app's Keşfet", () => {
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
     // The list row and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
-    expect(screen).toMatch(/<VenueThumb kind=\{type\} size=\{VENUE_ROW_PICTURE\} \/>/);
-    expect(screen).toMatch(/const VENUE_ROW_PICTURE = VENUE_THUMB\.size;/);
+    expect(screen).toMatch(/<VenueThumb kind=\{type\} size=\{VENUE_CARD_PICTURE\} \/>/);
+    expect(screen).toMatch(/const VENUE_CARD_PICTURE = X\.card\.picture;/);
+    expect(app('src/theme/auraKit.ts')).toMatch(/picture: 76, pictureRadius: 14/);
     expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
     expect(app('app/(app)/(tabs)/explore/[venueId].tsx')).toMatch(
@@ -90,14 +94,14 @@ describe("the app's Keşfet", () => {
   });
 
   it('keeps 24 between its blocks and 12 inside them (U13), and is always the list (no single venue)', () => {
-    expect(screen).toMatch(/gap: SPACING\[6\],/);
-    expect(screen).toMatch(/gap: SPACING\[3\],/);
+    expect(screen).toMatch(/marginTop: SPACING\[6\]/);
+    expect(screen).toMatch(/gap: SPACING\[3\]/);
     expect(screen).not.toMatch(/SingleVenue|exploreLayout/);
   });
 
   it('fetches the list again when pulled at its top', () => {
     // The list view only, fetching the venues and their cities.
-    expect(screen).toMatch(/<PullScroll\s+onRefresh=\{onRefresh\}/);
+    expect(screen).toMatch(/<PullScroll\s+onRefresh=\{onRefresh\}\s+scrollY=\{y\}/);
     expect(screen).toMatch(
       /onRefresh=\{\(\) => Promise\.all\(\[venues\.refetch\(\), cities\.refetch\(\)\]\)\}/,
     );

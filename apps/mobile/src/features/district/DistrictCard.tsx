@@ -5,21 +5,27 @@ import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, T, useKit } from '@/aura/kit';
+import { Btn, PulseDot, T, useKit } from '@/aura/kit';
 import { boxShadowParts } from '@/components/NativeShadow';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
 import { SEMT } from '@/theme/semt';
+import { useTheme } from '@/theme/ThemeProvider';
 
 import { districtScreen, useEnterDistrict } from './flow';
 import { RISO } from './parts';
 import { DISTRICT_VISIBLE, useDistrictState } from './queries';
 
+// The buddy standing beside the gate (assets/riso/buddies).
+const BUDDY = require('../../../assets/riso/buddies/riso_1a80a9.webp') as ImageSourcePropType;
+
 // Keşfet's Semte Git card (SemteGitKesfet, GaleriSemteGit; docs/SPEC_V4.md §4.V): the question
 // waiting ([Semte Git]), Geçit closed for today (the locked door, the time to 00:00), in the room
-// (the time left, [Odaya dön]), outside the districts (no button), loading and error.
+// (the time left, [Odaya dön]), outside the districts (no button), loading and error. The screen's
+// one featured card (docs/design/iskelet.md → 5.1): the ink ground, the beating green dot, the gate
+// a sticker turned a little with a buddy beside it, the prominent button.
 export function DistrictCard() {
   const state = useDistrictState();
   const enter = useEnterDistrict({ replace: false });
@@ -30,8 +36,8 @@ export function DistrictCard() {
   if (!state.data) {
     return (
       <Frame door={RISO.door}>
-        <T v="h3">{tr.district.card.errorTitle}</T>
-        <T v="fine">{tr.district.card.errorNote}</T>
+        <Title>{tr.district.card.errorTitle}</Title>
+        <Note>{tr.district.card.errorNote}</Note>
         <CardButton
           label={tr.common.retry}
           soft
@@ -52,7 +58,7 @@ export function DistrictCard() {
     const [h, m] = hm(s.session.endsAt);
     return (
       <Frame door={RISO.door}>
-        <T v="h3">{tr.district.card.inRoom(s.district.name)}</T>
+        <Title>{tr.district.card.inRoom(s.district.name)}</Title>
         <Meta text={grace ? tr.district.continueChip : tr.district.left(h, m)} />
         <CardButton
           label={tr.district.card.backToRoom}
@@ -64,26 +70,26 @@ export function DistrictCard() {
   }
   if (s.located === 'outside') {
     return (
-      <Frame door={RISO.doorLocked}>
-        <T v="h3">{tr.district.card.outsideTitle}</T>
-        <T v="fine">{tr.district.card.outsideNote}</T>
+      <Frame door={RISO.doorLocked} still>
+        <Title>{tr.district.card.outsideTitle}</Title>
+        <Note>{tr.district.card.outsideNote}</Note>
       </Frame>
     );
   }
   if (s.gate === 'failed') {
     const [h, m] = hm(s.opensAt);
     return (
-      <Frame door={RISO.doorLocked}>
-        <T v="h3">{tr.district.card.closedTitle}</T>
-        <T v="fine">{tr.district.card.closedNote}</T>
+      <Frame door={RISO.doorLocked} still>
+        <Title>{tr.district.card.closedTitle}</Title>
+        <Note>{tr.district.card.closedNote}</Note>
         <Meta text={tr.district.card.opensIn(h, m)} />
       </Frame>
     );
   }
   return (
     <Frame door={RISO.door}>
-      <T v="h3">{tr.district.card.title(s.district?.name ?? null)}</T>
-      <T v="fine">{tr.district.card.note}</T>
+      <Title>{tr.district.card.title(s.district?.name ?? null)}</Title>
+      <Note>{tr.district.card.note}</Note>
       <CardButton
         label={tr.district.card.go}
         testID="district-card-go"
@@ -103,69 +109,126 @@ export function DistrictCard() {
   );
 }
 
-// `.glass.sg-card`: the words on the left, the door on the right.
-function Frame({ door, children }: { door: ImageSourcePropType; children: ReactNode }) {
+// The green that reads on the card's ground: the dark scheme's on the ink, the light scheme's on
+// the dark scheme's near-white card.
+function useCardGreen(): string {
   const { scheme } = useKit();
+  return SEMT.eyebrow[scheme === 'light' ? 'dark' : 'light'];
+}
+
+function Title({ children }: { children: ReactNode }) {
+  const { colors } = useTheme();
+  return (
+    <T v="h3" color={colors.onFeature}>
+      {children}
+    </T>
+  );
+}
+
+function Note({ children }: { children: ReactNode }) {
+  const { colors } = useTheme();
+  return (
+    <T v="fine" color={colors.featureMuted}>
+      {children}
+    </T>
+  );
+}
+
+// `.sg-card` on the ink: the words on the left, the gate and its buddy on the right. `still`: the
+// gate is shut (outside the districts, Geçit closed), the dot does not beat.
+function Frame({
+  door,
+  still,
+  children,
+}: {
+  door: ImageSourcePropType;
+  still?: boolean;
+  children: ReactNode;
+}) {
+  const { colors } = useTheme();
+  const green = useCardGreen();
   const c = SEMT.card;
   return (
-    <Glass
+    <View
       testID="district-card"
-      radius={c.radius}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-start',
         gap: c.gap,
         padding: c.pad,
         borderRadius: c.radius,
+        backgroundColor: colors.feature,
       }}
     >
       <View style={{ flex: 1, minWidth: 0, gap: c.lineGap }}>
-        <T v="eyebrow" color={SEMT.eyebrow[scheme]}>
-          {upperTr(tr.district.eyebrow)}
-        </T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: c.eyebrowGap }}>
+          {still ? null : <PulseDot color={green} />}
+          <T v="eyebrow" color={green}>
+            {upperTr(tr.district.eyebrow)}
+          </T>
+        </View>
         {children}
       </View>
-      <Door source={door} />
-    </Glass>
+      <Sticker source={door} />
+    </View>
   );
 }
 
-function Door({ source }: { source: ImageSourcePropType }) {
-  const { scheme } = useKit();
+// The gate as a sticker (a white edge, turned a little) and a buddy standing over its lower left.
+function Sticker({ source }: { source: ImageSourcePropType }) {
   const d = SEMT.card.door;
-  const shadow = boxShadowParts(
-    useLabOff('golge'),
-    scheme === 'light' ? d.shadow : undefined,
-    d.radius,
-  );
+  const a = SEMT.card.art;
+  const shadow = boxShadowParts(useLabOff('golge'), d.shadow, d.radius);
   return (
     <View
       accessible={false}
-      style={{
-        width: d.width,
-        height: d.height,
-        borderRadius: d.radius,
-        boxShadow: shadow.boxShadow,
-      }}
+      style={{ width: d.width + a.buddy.width - a.overlap, height: d.height + a.edge * 2 }}
     >
-      {shadow.node}
       <View
-        style={{ width: d.width, height: d.height, borderRadius: d.radius, overflow: 'hidden' }}
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          width: d.width,
+          height: d.height,
+          borderRadius: d.radius,
+          borderWidth: a.edge,
+          borderColor: SEMT.card.stickerEdge,
+          backgroundColor: SEMT.card.stickerEdge,
+          boxShadow: shadow.boxShadow,
+          transform: [{ rotate: a.tilt }],
+        }}
       >
-        <Image
-          source={source}
-          fadeDuration={0}
-          resizeMode="cover"
-          style={{ width: d.width, height: d.height }}
-        />
+        {shadow.node}
+        <View style={{ flex: 1, borderRadius: d.radius - a.edge, overflow: 'hidden' }}>
+          <Image
+            source={source}
+            fadeDuration={0}
+            resizeMode="cover"
+            style={{ width: d.width - a.edge * 2, height: d.height - a.edge * 2 }}
+          />
+        </View>
       </View>
+      <Image
+        source={BUDDY}
+        fadeDuration={0}
+        resizeMode="contain"
+        style={{
+          position: 'absolute',
+          left: 0,
+          bottom: 0,
+          width: a.buddy.width,
+          height: a.buddy.height,
+        }}
+      />
     </View>
   );
 }
 
 // `.sg-meta`: the clock and the time.
 function Meta({ text }: { text: string }) {
-  const { scheme } = useKit();
+  const { colors } = useTheme();
+  const green = useCardGreen();
   return (
     <View
       style={{
@@ -175,8 +238,8 @@ function Meta({ text }: { text: string }) {
         marginTop: SEMT.card.lineGap,
       }}
     >
-      <CapIcon name="clock" color={SEMT.eyebrow[scheme]} size={SEMT.card.meta.icon} />
-      <T v="fine" strong>
+      <CapIcon name="clock" color={green} size={SEMT.card.meta.icon} />
+      <T v="fine" strong color={colors.onFeature}>
         {text}
       </T>
     </View>
@@ -210,11 +273,12 @@ function CardButton({
   );
 }
 
-// "Kart · yükleniyor": the bars where the words go, the door's place.
+// "Kart · yükleniyor": the bars where the words go, the gate's place, on the card's own ground.
 function CardSkeleton() {
   const { scheme } = useKit();
+  const { colors } = useTheme();
   const c = SEMT.card;
-  const sk = SEMT.skeleton[scheme];
+  const sk = SEMT.skeleton[scheme === 'light' ? 'dark' : 'light'];
   const bar = (
     width: number | `${number}%`,
     height: number,
@@ -228,15 +292,15 @@ function CardSkeleton() {
     borderColor: sk.edge,
   });
   return (
-    <Glass
+    <View
       testID="district-card-loading"
-      radius={c.radius}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-start',
         gap: c.gap,
         padding: c.pad,
         borderRadius: c.radius,
+        backgroundColor: colors.feature,
       }}
     >
       <View
@@ -255,6 +319,6 @@ function CardSkeleton() {
         />
       </View>
       <View style={bar(c.door.width, c.door.height, c.door.radius)} />
-    </Glass>
+    </View>
   );
 }
