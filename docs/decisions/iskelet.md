@@ -16,10 +16,38 @@ Karar (proje sahibi, 12 Kasım 2026, sohbette verilen iş paketi): uygulamanın 
 3. Bölüm 6'daki hatalar.
 4. 6.5 (iPhone'da 120 Hz) bir sonraki native build'e.
 
-## Açık kalan iki soru (12 Kasım, proje sahibine soruldu)
+## İki sorunun sonucu (12 Kasım)
 
-- **5.6 "Birlikte oynanan oyunlar" ve değişmez kural 4.** Ortak `play_history` kaydını profilde göstermek, masada anonim oturmuş bir arkadaşın o masadaki anonim kişi olduğunu açar; kural 4 ve K-75 bunu bilerek gizliyor ("Arkadaşsınız" yalnızca kişi masada profilliyse görünür). Cevap gelene kadar bu bölüm yazılmaz.
-- **5.10 Kapsül düzenleyici ve 11 Kasım'ın ölçüm kuralı.** Deneme şeridi, bugün iki kez hata çıkaran şerit kodunun yerine geçiyor; "telefonda ölçmeden ya da ekran kaydı görmeden gönderme" kuralı bu ekranda geçerli mi, yoksa bu paket onu da kaldırıyor mu.
+Proje sahibi gece yürütmesinden önce her şeyi önceden onayladı; iki soruda oturumun önerisi uygulandı:
+
+- **5.6 "Birlikte oynanan oyunlar":** yalnız iki tarafın da masada profilli oturduğu kayıtlar gösterilecek (kural 4 ve K-75 değişmez). Sunucu sorgusu henüz yazılmadı.
+- **5.10 kapsül düzenleyici:** en son yazıldı ve OTA ile gitti (#589); proje sahibinden ekran kaydı istenir. Seçim kuralı saf modülde ve testli (`src/lib/snapPick.ts`).
+
+## Uygulama (12 Kasım gecesi)
+
+| Adım      | PR   | Not                                                                                         |
+| --------- | ---- | ------------------------------------------------------------------------------------------- |
+| Belge     | #577 | `docs/design/iskelet.md`                                                                    |
+| 1a        | #579 | Cam düğmeler, `MOTION` eklemeleri, basma gecikmesi, saydamlığı azalt                        |
+| 1b        | #580 | `src/motion` kiti (Tap, Rise, PopIn, Sheet, Menu), ortak alt sayfa ve menü, hareket cırcırı |
+| 1c        | #582 | Üst bar türleri, yapışan alan, etiketli ve küçülen sekme çubuğu, `ios_from_right`           |
+| 5.1       | #583 | Keşfet                                                                                      |
+| 5.2, 5.3  | #584 | Mekan detayı, Aktiviteler                                                                   |
+| 5.4, 5.5  | #585 | Mesajlar, DM                                                                                |
+| 5.6–5.8   | #586 | Profiller, Profili düzenle, Arkadaşlar                                                      |
+| 5.9, 5.11 | #588 | Ayarlar, Mekan                                                                              |
+| 5.10, 6.3 | #589 | Kapsül düzenleyici                                                                          |
+| 6.1, 6.2  | #578 | Kinshi ve Krot; dolu masa lobiye açılamaz                                                   |
+
+Belgeden sapmalar (ayrıntı PR açıklamalarında):
+
+- **Canlı cam:** yalnız alt sayfalarda ve menülerde açık (`SHEET_GLASS`). Üst bar bandı, sekme çubuğu, alt kenar ve sabit şeritler sahte camla çizildi: içerik kayarken camın yeniden hesaplanması önlenemedi ve bugünkü anahtar bütün clear düğmeleri de buzlardı.
+- **Kenardan geri kaydırma:** Android'de yok (native-stack yalnız iOS'ta sunuyor).
+- **Kural 4:** başkasının profilinde kapsül ve geçmiş satırında "Anonim" yazılmadı; "İstek gitti" yerine bugünkü "Eklendi" ve "Gönderildi" kaldı.
+- **Sohbet:** `ChatList`'in kaydırma mantığına dokunulmadı; yeni mesajda öteki satırların yumuşak kayması ve alttaki bant yapılmadı.
+- **Kontrast:** beyaz yazı yeşil ve kırmızı geçişin açık ucunda AA'nın altında (2,99 ve 3,9); renkler belgedeki gibi.
+- **Kabul ölçütü "doğrudan import yok":** cırcır kuruldu, izinli liste küçüldü ama sıfıra inmedi (oyun sahneleri ve dokunulmayan özellikler).
+- **Göz kırpma (5.10):** büyük kapsülün çizim yoluna girilmediği için yok.
 
 ## Belgeye yazarken düzeltilen atıflar
 
