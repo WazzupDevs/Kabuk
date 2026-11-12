@@ -26,7 +26,7 @@ Her madde için ekranın kodunda ve görüntüsünde bakılır; uymayan her şey
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | İskelet           | `Screen` kullanıyor mu; üst düğmeler ve başlık `top`'ta mı (içerikle kaymaz); liste değilse sabit mi                                                                 |
 | Hâller            | Yükleniyor (`Loader`, `useLoaderHold`), boş ve hata hâli var mı; her biri ne gösteriyor; ikinci bir sorgu ya da izin gelene kadar ekran yanlış bir hâl gösteriyor mu |
-| Boylar            | Düğme, alan, çip ve ikon düğmesi `KIT.size`'tan mı (48, 36, 44, 48, 36); ekran kendi boyunu seçmiş mi                                                                |
+| Boylar            | Düğme, alan, çip ve ikon düğmesi `KIT.size`'tan mı (52, 36, 44, 48, 36); ekran kendi boyunu seçmiş mi                                                                |
 | Değerler          | Renk, boşluk, köşe, font yalnız tokenlardan mı; sabit sayı ya da renk kodu var mı                                                                                    |
 | Metin             | Bileşende sabit metin var mı (hepsi `tr.ts`'te olmalı); 320 dp ve en büyük yazıda kesilen ya da iki satıra bölünen düğme yazısı                                      |
 | Dokunma           | Basılan düğme beklerken ikinci kez basılabiliyor mu; hatası görünen mutation `FEEL_ERROR` taşıyor mu                                                                 |
