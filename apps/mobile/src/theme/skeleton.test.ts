@@ -7,6 +7,7 @@ import {
   arriveAt,
   bandReachAt,
   barNameX,
+  collapseAt,
   coverShift,
   fadeAt,
   flightAt,
@@ -294,5 +295,45 @@ describe('page transitions (4.4)', () => {
     expect(stack).toMatch(/animation: 'ios_from_right'/);
     expect(stack).toMatch(/gestureEnabled: true/);
     expect(stack).toMatch(/fullScreenGestureEnabled: true/);
+  });
+});
+
+describe("Mekan's folding cards (5.11)", () => {
+  const v = AURA.venueCollapse;
+  const at = (y: number, full = 300) =>
+    collapseAt(y, 100, full, v.tableStrip, v.stripFrom, v.stripFadePx);
+
+  it('pins under the bar at 104 into a 72 strip, the chat into 54; the strip from 170 over 70', () => {
+    expect(v).toEqual({
+      pinTop: 104,
+      tableStrip: 72,
+      stripPicture: 52,
+      chatStrip: 54,
+      stripFrom: 170,
+      stripFadePx: 70,
+    });
+  });
+
+  it('scrolls with the content until it pins, then its foot follows the finger one to one', () => {
+    expect(at(40)).toEqual({ lift: 0, height: 300, strip: 0 });
+    expect(at(150)).toEqual({ lift: 50, height: 250, strip: 0 });
+    // Linear: equal steps fold it equally.
+    expect(at(160).height - at(170).height).toBe(at(180).height - at(190).height);
+    // Folded, it stays a strip and pinned.
+    expect(at(1000)).toEqual({ lift: 900, height: 72, strip: 1 });
+  });
+
+  it('gives way to the strip between 170 and 100 high, linearly', () => {
+    expect(at(230).strip).toBe(0);
+    expect(at(265).strip).toBeCloseTo(0.5);
+    expect(at(300).strip).toBe(1);
+    // A card lower than 170 starts at its own height.
+    const low = (y: number) => collapseAt(y, 0, 140, v.chatStrip, v.stripFrom, v.stripFadePx);
+    expect(low(0).strip).toBe(0);
+    expect(low(70).strip).toBe(1);
+  });
+
+  it('stays in place before it is measured', () => {
+    expect(collapseAt(500, -1, 300, 72, 170, 70)).toEqual({ lift: 0, height: 300, strip: 0 });
   });
 });

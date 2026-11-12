@@ -1,145 +1,203 @@
-import { senderLabel, venueChatActive, type VenueChatMessage } from '@shared/venueChat.ts';
+import { QUIET_RETRY_MS, retriesQuietly } from '@shared/chatOutbox.ts';
+import {
+  prepareVenueMessage,
+  senderLabel,
+  VENUE_CHAT,
+  venueChatActive,
+  type VenueChatMessage,
+} from '@shared/venueChat.ts';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
-import Reanimated, {
-  Easing,
-  LayoutAnimationConfig,
-  LinearTransition,
-  withDelay,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import { Platform, ScrollView, Text, View } from 'react-native';
 
-import { Av, Badge, Btn, Glass, Live, T, useKit } from '@/aura/kit';
+import { Av, Badge, Btn, Live, T, useKit } from '@/aura/kit';
+import { DraftComposer } from '@/components/Composer';
 import { LookAvatar } from '@/components/LookAvatar';
 import { useLoaderHold } from '@/components/Loader';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { track } from '@/lib/analytics';
+import { ApiError, venueChatApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { requestKey } from '@/lib/requestKey';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { MOTION, type Bezier } from '@/theme/aura';
+import { Arrive, ArriveLater, CollapsingCard, Tap } from '@/motion';
+import { AURA, MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { LOADER_SHOW_AFTER_MS } from '@/theme/markMotion';
 
-import { useVenueChatCard } from './queries';
+import { readVenueChatNewer, useVenueChatCard } from './queries';
 
-// "Mekan sohbeti" on Mekan (docs/design/aura → Mekan, Galeri: Mekan sohbeti kartı): a glass card,
+// "Mekan sohbeti" on Mekan (docs/design/iskelet.md → 5.11; docs/design/aura → Mekan): a glass card,
 // its name with "şu an aktif" while the chat is active (a message in the last 10 minutes, K-12) and
-// at the right the count of others' messages since the person last read it: two signs, apart. Then
-// the last two messages as one line each: the writer's face, the name in its colour (a nick in
-// amber, a name in pink) and the message. Loading: two still placeholder lines; an error: the
-// message and "Tekrar dene", which reads the card again (a press elsewhere still opens the chat).
-// Everyone checked in at the venue reads them (rule 4).
-export function VenueChatCard({ venueId, sessionId }: { venueId: string; sessionId: string }) {
+// at the right the count of others' messages since the person last read it. Then the last two
+// messages as one line each (the writer's face, the name in its colour, the message), and the
+// field to write in with its send button: the chat's own send (venue-chat → send, the check-in's
+// identity), no other call. Loading: two still placeholder lines; an error: the message and "Tekrar
+// dene". The card's head and lines open the chat. Pinned under the table card it folds into a 54
+// strip (CollapsingCard). Everyone checked in at the venue reads them (rule 4).
+export function VenueChatCard({
+  venueId,
+  sessionId,
+  identity,
+  at,
+}: {
+  venueId: string;
+  sessionId: string;
+  identity: 'anonymous' | 'profiled';
+  // Its line under the table card's strip.
+  at: number;
+}) {
+  const queryClient = useQueryClient();
   const card = useVenueChatCard(venueId, sessionId);
   const now = useNow(30_000);
   const reduce = useReduceMotion();
   const loading = useLoaderHold(card.pending);
   const active = !loading && !card.failed && venueChatActive(card.lastAt, now);
   const unread = loading || card.failed ? 0 : card.unread;
-  const motion = !reduce;
-  return (
-    <Pressable
-      testID="venue-chat-open"
-      accessibilityRole="button"
-      accessibilityLabel={
-        active ? `${tr.venueChat.open}, ${tr.venue.chatActive}` : tr.venueChat.open
-      }
-      onPress={() => router.push('/venue-chat')}
+  const openChat = () => router.push('/venue-chat');
+  const label = active ? `${tr.venueChat.open}, ${tr.venue.chatActive}` : tr.venueChat.open;
+
+  const send = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: ({ text, clientId }: { text: string; clientId: string }) =>
+      venueChatApi.sendAs(venueId, text, identity, undefined, clientId),
+  });
+  const deliver = (body: string, clientId: string, clear: () => void, attempt = 0) => {
+    send
+      .mutateAsync({ text: body, clientId })
+      .then(() => {
+        track('venue_chat_sent', { profiled: identity === 'profiled' });
+        clear();
+        readVenueChatNewer(queryClient, venueId, sessionId);
+      })
+      .catch((err: unknown) => {
+        const errorCode = err instanceof ApiError ? err.code : null;
+        // The flood guard: sent again by itself, with the same clientId (the server writes it once).
+        if (retriesQuietly(errorCode, attempt)) {
+          setTimeout(() => deliver(body, clientId, clear, attempt + 1), QUIET_RETRY_MS);
+          return;
+        }
+        // The identity changed elsewhere (or the photo went): nothing was sent.
+        if (errorCode === 'identity_mismatch' || errorCode === 'photo_required') {
+          void queryClient.invalidateQueries({ queryKey: ['activeTable'] });
+        }
+      });
+  };
+
+  const head = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: GAP,
+      }}
     >
-      {({ pressed }) => (
-        <Glass
-          style={{
-            paddingVertical: PAD_Y,
-            paddingHorizontal: PAD_X,
-            gap: GAP,
-            opacity: pressed ? PRESSED : 1,
-          }}
+      {/* On a narrow screen "şu an aktif" goes under the name; neither is cut. */}
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          columnGap: GAP,
+          rowGap: HEAD_ROW_GAP,
+          flexShrink: 1,
+        }}
+      >
+        <T v="h3">{tr.venueChat.open}</T>
+        {active ? (
+          <Arrive testID="venue-chat-live">
+            <Live soft label={tr.venue.chatActive} />
+          </Arrive>
+        ) : null}
+      </View>
+      {unread > 0 ? (
+        <Arrive kind="badge" accessible accessibilityLabel={tr.messages.unread(unread)}>
+          <Badge large swap={!reduce} count={unread} />
+        </Arrive>
+      ) : null}
+    </View>
+  );
+
+  return (
+    <CollapsingCard
+      at={at}
+      strip={AURA.venueCollapse.chatStrip}
+      radius={KIT.size.glassRadius}
+      folded={
+        <Tap sink={false} accessibilityLabel={label} onPress={openChat}>
+          <View
+            style={{
+              height: AURA.venueCollapse.chatStrip,
+              justifyContent: 'center',
+              paddingHorizontal: PAD_X,
+            }}
+          >
+            {head}
+          </View>
+        </Tap>
+      }
+    >
+      <View style={{ paddingVertical: PAD_Y, paddingHorizontal: PAD_X, gap: GAP }}>
+        <Tap
+          testID="venue-chat-open"
+          sink={false}
+          accessibilityLabel={label}
+          onPress={openChat}
+          style={{ gap: GAP }}
         >
           {/* What the card shows when Mekan opens stays put; what comes after moves. */}
-          <LayoutAnimationConfig skipEntering>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                gap: GAP,
-              }}
-            >
-              {/* On a narrow screen "şu an aktif" goes under the name; neither is cut. */}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  columnGap: GAP,
-                  rowGap: HEAD_ROW_GAP,
-                  flexShrink: 1,
-                }}
-              >
-                <T v="h3">{tr.venueChat.open}</T>
-                {active ? (
-                  <Reanimated.View
-                    testID="venue-chat-live"
-                    entering={motion ? dissolveIn() : undefined}
-                    exiting={motion ? fadeOut(MOTION.dissolve.outMs) : undefined}
-                  >
-                    <Live soft label={tr.venue.chatActive} />
-                  </Reanimated.View>
-                ) : null}
-              </View>
-              {unread > 0 ? (
-                <Reanimated.View
-                  entering={motion ? badgeIn : undefined}
-                  exiting={motion ? badgeOut : undefined}
-                  accessible
-                  accessibilityLabel={tr.messages.unread(unread)}
-                >
-                  <Badge large swap={motion} count={unread} />
-                </Reanimated.View>
-              ) : null}
-            </View>
+          <ArriveLater>
+            {head}
             {loading ? (
-              <Placeholder key="loading" motion={motion} />
-            ) : card.failed ? (
-              <Reanimated.View
-                key="error"
-                entering={motion ? dissolveIn() : undefined}
-                style={{ gap: GAP, alignItems: 'flex-start' }}
-              >
-                <T v="fineLg">{tr.common.genericError}</T>
-                <Btn
-                  sm
-                  variant="glassy"
-                  label={tr.common.retry}
-                  loading={card.retrying}
-                  onPress={card.retry}
-                />
-              </Reanimated.View>
-            ) : card.recent.length > 0 ? (
-              card.recent.map((m) => (
-                <Reanimated.View
-                  key={m.id}
-                  entering={motion ? dissolveIn(MOTION.stagger.part) : undefined}
-                  exiting={motion ? fadeOut(MOTION.dissolve.outMs) : undefined}
-                  layout={motion ? SWAP_LAYOUT : undefined}
-                >
+              <Placeholder key="loading" />
+            ) : card.failed ? null : card.recent.length > 0 ? (
+              card.recent.map((m, i) => (
+                <Arrive key={m.id} delay={i === 0 ? 0 : MOTION.stagger.part} swap>
                   <Line message={m} />
-                </Reanimated.View>
+                </Arrive>
               ))
             ) : (
-              <Reanimated.View
-                key="empty"
-                entering={motion ? dissolveIn() : undefined}
-                exiting={motion ? fadeOut(MOTION.dissolve.outMs) : undefined}
-              >
+              <Arrive key="empty">
                 <T v="fine">{tr.venue.chatEmpty}</T>
-              </Reanimated.View>
+              </Arrive>
             )}
-          </LayoutAnimationConfig>
-        </Glass>
-      )}
-    </Pressable>
+          </ArriveLater>
+        </Tap>
+        {card.failed && !loading ? (
+          <Arrive style={{ gap: GAP, alignItems: 'flex-start' }}>
+            <T v="fineLg">{tr.common.genericError}</T>
+            <Btn
+              sm
+              variant="glassy"
+              label={tr.common.retry}
+              loading={card.retrying}
+              onPress={card.retry}
+            />
+          </Arrive>
+        ) : null}
+        <DraftComposer
+          capsule
+          flush
+          inputTestID="venue-card-input"
+          sendTestID="venue-card-send"
+          sendLabel={tr.venueChat.send}
+          placeholder={tr.venueChat.placeholder}
+          prepare={prepareVenueMessage}
+          maxLength={VENUE_CHAT.maxLength}
+          sending={send.isPending}
+          onSend={(body, clear) => deliver(body, requestKey(), clear)}
+        />
+        {send.isError && !send.isPending ? (
+          <T v="fine" color={KIT.danger}>
+            {errorMessage(send.error)}
+          </T>
+        ) : null}
+      </View>
+    </CollapsingCard>
   );
 }
 
@@ -147,74 +205,10 @@ const PAD_Y = 16;
 const PAD_X = 18;
 const GAP = 10;
 const HEAD_ROW_GAP = 4;
-const PRESSED = 0.8;
-const BADGE_RISE = 6;
-const BADGE_FROM = 0.3;
-
-// hareket.json's curves for Reanimated.
-const curve = (b: Bezier) => Easing.bezier(b[0], b[1], b[2], b[3]);
-const ARRIVE = curve(MOTION.curves.arrive);
-const LEAVE = curve(MOTION.curves.leave);
-// The lines' move up when a new one comes (hareket.json gives swap no duration: 300, as Mesajlar's
-// disc).
-const SWAP_MS = 300;
-const SWAP_LAYOUT = LinearTransition.duration(SWAP_MS).easing(curve(MOTION.curves.swap));
-
-// The dissolve's arrival (hareket.json → dissolve): from a little lower and smaller, faded in.
-function dissolveIn(delay = 0) {
-  const d = MOTION.dissolve;
-  return () => {
-    'worklet';
-    return {
-      initialValues: { opacity: 0, transform: [{ translateY: d.rise }, { scale: d.fromScale }] },
-      animations: {
-        opacity: withDelay(delay, withTiming(1, { duration: d.inMs, easing: ARRIVE })),
-        transform: [
-          { translateY: withDelay(delay, withTiming(0, { duration: d.inMs, easing: ARRIVE })) },
-          { scale: withDelay(delay, withTiming(1, { duration: d.inMs, easing: ARRIVE })) },
-        ],
-      },
-    };
-  };
-}
-
-function fadeOut(ms: number) {
-  return () => {
-    'worklet';
-    return {
-      initialValues: { opacity: 1 },
-      animations: { opacity: withTiming(0, { duration: ms, easing: LEAVE }) },
-    };
-  };
-}
-
-// The count arrives on the pop spring, 6 from below; it leaves smaller and faded.
-const badgeIn = () => {
-  'worklet';
-  const pop = MOTION.springs.pop;
-  return {
-    initialValues: { opacity: 0, transform: [{ translateY: BADGE_RISE }, { scale: BADGE_FROM }] },
-    animations: {
-      opacity: withTiming(1, { duration: MOTION.dissolve.outMs }),
-      transform: [{ translateY: withSpring(0, pop) }, { scale: withSpring(1, pop) }],
-    },
-  };
-};
-const badgeOut = () => {
-  'worklet';
-  const ms = MOTION.dissolve.outMs;
-  return {
-    initialValues: { opacity: 1, transform: [{ scale: 1 }] },
-    animations: {
-      opacity: withTiming(0, { duration: ms, easing: LEAVE }),
-      transform: [{ scale: withTiming(BADGE_FROM, { duration: ms, easing: LEAVE }) }],
-    },
-  };
-};
 
 // Two still lines in the messages' place: a face's circle and a bar. They show 300 ms into the
 // wait (a quick answer shows none) and stay at least 600 ms (useLoaderHold).
-function Placeholder({ motion }: { motion: boolean }) {
+function Placeholder() {
   const { c } = useKit();
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -223,13 +217,7 @@ function Placeholder({ motion }: { motion: boolean }) {
   }, []);
   if (!shown) return null;
   return (
-    <Reanimated.View
-      entering={motion ? dissolveIn() : undefined}
-      exiting={motion ? fadeOut(MOTION.dissolve.outMs) : undefined}
-      accessible
-      accessibilityLabel={tr.common.loading}
-      style={{ gap: GAP }}
-    >
+    <Arrive accessible accessibilityLabel={tr.common.loading} style={{ gap: GAP }}>
       {PLACEHOLDER_BARS.map((width) => (
         <View key={width} style={{ flexDirection: 'row', alignItems: 'center', gap: GAP }}>
           <View
@@ -250,7 +238,7 @@ function Placeholder({ motion }: { motion: boolean }) {
           />
         </View>
       ))}
-    </Reanimated.View>
+    </Arrive>
   );
 }
 const PLACEHOLDER_BARS = ['58%', '40%'] as const;

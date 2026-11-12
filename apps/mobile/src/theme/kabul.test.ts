@@ -223,8 +223,10 @@ describe('K17: a full table', () => {
     const card = code('src/features/rooms/TableCard.tsx');
     expect(card).toMatch(/const full = room\.phones >= MAX_TABLE_PHONES;/);
     expect(card).toMatch(/testID="invite-open"[\s\S]*?disabled=\{full\}/);
+    // iskelet.md → 5.11 and 6.2: "Lobiye aç" is off too, and the sentence under the faces says so.
+    expect(card).toMatch(/testID="lobby-open"[\s\S]*?disabled=\{full\}/);
     expect(card).toMatch(
-      /owner && full \? \(\s*<T v="fine" testID="table-full">\s*\{tr\.invite\.full\}/,
+      /testID=\{full \? 'table-full' : undefined\}>\s*\{full\s*\? tr\.venue\.seatsFull/,
     );
     const sheet = code('src/features/rooms/InviteSheet.tsx');
     expect(sheet).toMatch(/const full = phones >= MAX_TABLE_PHONES;/);

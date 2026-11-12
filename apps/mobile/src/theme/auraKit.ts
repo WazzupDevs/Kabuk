@@ -113,6 +113,8 @@ export const KIT_TYPE = {
   // A person's name under their face at Masa (`.mem`: 11/14 600).
   member: t(600, 11, 14),
   wordmark: t(800, 26, 30, -0.04),
+  // iskelet.md → 5.11: Mekan's venue name alone, 23.
+  venueName: t(800, 23, 28, -0.015),
   av: {
     xs: t(700, 9, 11),
     md: t(700, 15, 19),
@@ -474,7 +476,32 @@ export const KIT = {
   tableCard: {
     pad: 6,
     radius: 28,
-    height: 168,
+    // iskelet.md → 5.11: the picture on the card's whole width, 210 high.
+    height: 210,
+    // The same dark fade under the name on every card, over the picture's lower part.
+    shade: 'linear-gradient(180deg, rgba(3, 27, 11, 0) 0%, rgba(3, 27, 11, 0.64) 100%)',
+    shadeHeight: 110,
+    // The glass state tag at the picture's corner (no live blur, 2.2).
+    status: {
+      fill: 'rgba(255, 255, 255, 0.62)',
+      edge: 'rgba(255, 255, 255, 0.90)',
+      ink: '#031B0B',
+      padX: 10,
+      padY: 5,
+    },
+    // The faces apart on the card's ground (2.4: 2.5 and a soft shadow), an empty seat dashed.
+    face: { ring: 2.5, overlap: 8, shadow: '0px 2px 6px rgba(3, 27, 11, 0.16)', dash: 1.5 },
+    ground: { light: '#F7FBF8', dark: '#121614' },
+    // The thin fill under the faces: green while there is room, pink once full.
+    meter: { height: 4, free: '#1C8C4E', full: '#FF4F8B' },
+    // The strip it folds into: its picture 52, 14 round, 10 in.
+    stripPad: 10,
+    stripRadius: 14,
+    // No table: the riso picture against the card's right, the words on the paper's fade.
+    paper: '#ECE4CE',
+    paperFade:
+      'linear-gradient(90deg, rgba(236, 228, 206, 1) 0%, rgba(236, 228, 206, 1) 44%, rgba(236, 228, 206, 0) 74%)',
+    paperPicture: 0.68,
     imageRadius: 22,
     inset: 12,
     name: {

@@ -50,8 +50,5 @@ export const MOTION_ALLOWED: readonly string[] = [
   'src/features/rooms/CreateTableSheet.tsx',
   'src/features/rooms/PosterCard.tsx',
   'src/features/rooms/RoomPeople.tsx',
-  'src/features/rooms/TableCard.tsx',
   'src/features/rooms/TableScene.tsx',
-  'src/features/venue/VenueHead.tsx',
-  'src/features/venueChat/VenueChatCard.tsx',
 ];
