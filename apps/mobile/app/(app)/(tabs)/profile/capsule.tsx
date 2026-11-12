@@ -3,15 +3,17 @@ import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { Btn, Chip, Round, T, useKit } from '@/aura/kit';
+import { Btn, Round, T, useKit } from '@/aura/kit';
 import { CachedSvg, readAhead } from '@/components/CachedSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
 import { Loader } from '@/components/Loader';
+import { shadowParts } from '@/components/NativeShadow';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
@@ -33,19 +35,19 @@ import { dotAt, dotCount, packNames, packOptions } from '@/features/capsule/stri
 import { optionArt } from '@/features/capsule/tileArt';
 import { TierTag } from '@/features/gifts/parts';
 import { giftKeys, useGiftState } from '@/features/gifts/queries';
-import { RisoPaper } from '@/features/profile/ProfileCover';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { giftsApi, profileApi } from '@/lib/api';
 import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useLabOff } from '@/lib/drawLab';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { useAfterSlide } from '@/lib/useAfterSlide';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip, Tap, Turn } from '@/motion';
-import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { CAPSULE_EDIT } from '@/theme/capsuleEdit';
 import { FEELINGS } from '@/theme/capsuleLook';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -99,8 +101,9 @@ export default function CapsuleScreen() {
 }
 
 function Editor({ saved, publicId }: { saved: string; publicId: string }) {
-  const { shape, scheme, colors } = useTheme();
+  const { scheme } = useTheme();
   const { c } = useKit();
+  const insets = useSafeAreaInsets();
   const reduce = useReduceMotion();
   const queryClient = useQueryClient();
   const [look, setLook] = useState<Look>(() => parse(saved));
@@ -247,18 +250,35 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     };
   }, [ready, options, shown, chosen, slot, look, color, stageSize, reduce, prepare]);
 
-  const shadowColor = AURA.scene[scheme].shadow;
+  const E = CAPSULE_EDIT;
+  const k = E[scheme];
   const lit = dotAt(shown.length, chosen, KIT.size.stripDots);
+  // The capsule as the board stands it: its shadow's top `shadowTop` down the scene, the capsule
+  // its drawing's gap over it.
+  const stageGap = SPACING[2];
+  const stageTop = E.scene.shadowTop - stageGap - stageSize;
+  const panelShadow = shadowParts(
+    useLabOff('golge'),
+    k.panel.shadow || undefined,
+    k.panel.inset || undefined,
+    [E.panel.radius, E.panel.radius, 0, 0],
+  );
 
   return (
     <>
       <Screen
         // iskelet.md → 3.1 (`sayfa`) and 2.1: the back button and Kaydet on the bar, clear glass,
-        // the same Kaydet as Profili düzenle's.
+        // the same Kaydet as Profili düzenle's. The page runs from edge to edge and to the screen's
+        // foot (tuval Kapsul2): the panel reaches it.
+        edges={['top', 'left', 'right']}
+        side={0}
+        barSide={E.barSide}
+        padTop={E.padTop}
         top={
           <PageTop
             title={tr.capsule.title}
             onBack={leave}
+            look={{ titleIn: E.titleIn }}
             trailing={
               <Btn
                 variant="glassy"
@@ -278,50 +298,68 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         }
       >
         {save.isError ? (
-          <T v="fine" color={c.warn}>
-            {errorMessage(save.error)}
-          </T>
+          <View style={{ paddingHorizontal: E.barSide + E.titleIn }}>
+            <T v="fine" color={c.warn}>
+              {errorMessage(save.error)}
+            </T>
+          </View>
         ) : null}
-        {/* The riso scene, no ring round the capsule; "Hepsini çıkar" and the die at its foot. */}
-        <View
-          style={{
-            borderRadius: KIT.size.glassRadius,
-            overflow: 'hidden',
-            paddingTop: SPACING[4],
-            paddingBottom: SPACING[3],
-            paddingHorizontal: SPACING[3],
-            gap: SPACING[2],
-          }}
-        >
-          <RisoPaper />
-          <FloatStage
-            drop={drop}
-            dropPx={KIT.size.capsuleDrop}
-            shadow={{
-              width: KIT.size.capsuleStage * KIT.size.capsuleShadowW,
-              height: KIT.size.capsuleShadowH,
-              color: shadowColor,
-              gap: SPACING[2],
-            }}
+        {/* The scene on the page's ground: the riso disc, the capsule over its breathing shadow;
+        "Hepsini çıkar" and the die at its foot. */}
+        <View style={{ height: E.scene.height }}>
+          <View
+            pointerEvents="none"
+            style={{ ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' }}
           >
-            <FxMoves>
-              <CapsuleStage
-                testID="capsule-preview"
-                look={now}
-                feeling={feeling}
-                play={play}
-                beat={beat}
-                size={stageSize}
-                ring={0}
-                label={tr.capsule.tapHead}
-                hint={null}
-                onPress={feel}
-                warm={ready}
-              />
-            </FxMoves>
-          </FloatStage>
-          <View className="flex-row items-center justify-between">
-            <Btn sm variant="glassy" label={tr.capsule.clearAll} onPress={() => put(bare(look))} />
+            <RisoDisc side={E.scene.disc} look={k.disc} />
+          </View>
+          <View
+            style={{ position: 'absolute', left: 0, right: 0, top: stageTop, alignItems: 'center' }}
+          >
+            <FloatStage
+              drop={drop}
+              dropPx={KIT.size.capsuleDrop}
+              shadow={{
+                width: E.shadow.width,
+                height: E.shadow.height,
+                color: k.shadow,
+                gap: stageGap,
+              }}
+            >
+              <FxMoves>
+                <CapsuleStage
+                  testID="capsule-preview"
+                  look={now}
+                  feeling={feeling}
+                  play={play}
+                  beat={beat}
+                  size={stageSize}
+                  ring={0}
+                  label={tr.capsule.tapHead}
+                  hint={null}
+                  onPress={feel}
+                  warm={ready}
+                />
+              </FxMoves>
+            </FloatStage>
+          </View>
+          <View style={{ position: 'absolute', left: E.scene.side, bottom: 0 }}>
+            <Btn
+              sm
+              variant="glassy"
+              icon="reply"
+              look={{
+                type: 'coverBtn',
+                padLeft: E.clear.padLeft,
+                padRight: E.clear.padRight,
+                gap: E.clear.gap,
+                icon: E.clear.icon,
+              }}
+              label={tr.capsule.clearAll}
+              onPress={() => put(bare(look))}
+            />
+          </View>
+          <View style={{ position: 'absolute', right: E.scene.side, bottom: 0 }}>
             <Round
               testID="capsule-shuffle"
               label={tr.capsule.shuffle}
@@ -332,22 +370,37 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               }}
             >
               <Turn turn={turn}>
-                <CapIcon name="shuffle" color={c.ink} />
+                <CapIcon name="shuffle" color={c.ink} size={E.dieIcon} />
               </Turn>
             </Round>
           </View>
         </View>
-        {/* The theme packs' thin row over the slots' chips; both scroll sideways, fading at the
-        ends, from one edge of the panel to the other. */}
-        <View style={{ gap: SPACING[2] }}>
+        {/* The panel to the screen's foot: the theme packs' thin row over the slots' chips (both
+        scroll sideways, fading at the ends), the trying strip, the chosen option's name and the
+        dots. */}
+        <View
+          style={{
+            flexGrow: 1,
+            marginTop: E.panel.top,
+            // The fixed page's own foot (Screen: 32 under a fixed page) is the panel's.
+            marginBottom: -SPACING[8],
+            paddingTop: E.panel.padTop,
+            paddingBottom: E.padBottom + insets.bottom,
+            borderTopLeftRadius: E.panel.radius,
+            borderTopRightRadius: E.panel.radius,
+            backgroundColor: k.panel.fill,
+            boxShadow: panelShadow.boxShadow,
+          }}
+        >
+          {panelShadow.node}
           <ScrollView
             horizontal
             accessibilityLabel={tr.capsule.packs}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
-            fadingEdgeLength={{ start: KIT.size.stripFade, end: KIT.size.stripFade }}
-            style={{ marginHorizontal: -shape.screenPadding, flexGrow: 0 }}
-            contentContainerStyle={{ paddingHorizontal: shape.screenPadding, gap: SPACING[4] }}
+            fadingEdgeLength={{ start: E.panel.fadeStart, end: E.panel.fadeEnd }}
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{ paddingHorizontal: E.panel.side, gap: SPACING[4] }}
           >
             {[null, ...packs].map((p) => (
               <PackTab
@@ -364,14 +417,13 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
             accessibilityLabel={tr.capsule.slots}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
-            fadingEdgeLength={{ start: KIT.size.stripFade, end: KIT.size.stripFade }}
-            style={{ marginHorizontal: -shape.screenPadding, flexGrow: 0 }}
-            contentContainerStyle={{ paddingHorizontal: shape.screenPadding, gap: SPACING[2] }}
+            fadingEdgeLength={{ start: E.panel.fadeStart, end: E.panel.fadeEnd }}
+            style={{ flexGrow: 0, marginTop: E.packsGap }}
+            contentContainerStyle={{ paddingHorizontal: E.panel.side, gap: E.panel.gap }}
           >
             {options.map((s) => (
-              <Chip
+              <SlotChip
                 key={s.id}
-                lg
                 icon={SLOT_ICON[s.id]}
                 label={s.name}
                 on={s.id === slot}
@@ -384,53 +436,62 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               />
             ))}
           </ScrollView>
-        </View>
-        {/* The trying strip, from one edge of the panel to the other; a new slot or pack opens on
-        the chosen option without motion. */}
-        <View style={{ marginHorizontal: -shape.screenPadding, height: SNAP_STRIP_HEIGHT }}>
-          {ready ? (
-            <SnapStrip
-              key={`${slot}|${openPack ?? ''}`}
-              count={shown.length}
-              chosen={chosen}
-              keyOf={(i) => shown[i]?.key ?? String(i)}
-              labelOf={(i) => shown[i]?.name ?? ''}
-              renderItem={(i) => <OptionArt slot={slot} option={shown[i]} color={color} />}
-              onPick={(i) => {
-                const o = shown[i];
-                if (o) put(o.apply(look), null);
-              }}
-              label={current?.name ?? ''}
-              reduce={reduce}
-              ground={colors.surface}
-            />
-          ) : null}
-        </View>
-        {/* The chosen option's name (an accessory's tier beside it) and the dots for its place. */}
-        <View style={{ alignItems: 'center', gap: SPACING[2] }} accessibilityLiveRegion="polite">
-          <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
-            <T v="h3" ink center>
-              {chosenOption?.name ?? ''}
-            </T>
-            {chosenOption?.tier ? <TierTag tier={chosenOption.tier} /> : null}
-          </View>
+          {/* The trying strip, from one edge of the panel to the other; a new slot or pack opens on
+          the chosen option without motion. The options' middle where the board has it. */}
           <View
-            className="flex-row items-center"
-            style={{ gap: SPACING[1.5] }}
-            importantForAccessibility="no-hide-descendants"
-            accessibilityElementsHidden
+            style={{
+              height: SNAP_STRIP_HEIGHT,
+              marginTop: E.strip.top + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
+              marginBottom: E.strip.bottom + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
+            }}
           >
-            {Array.from({ length: dotCount(shown.length, KIT.size.stripDots) }, (_, i) => (
-              <View
-                key={i}
-                style={{
-                  width: i === lit ? SPACING[4] : SPACING[1.5],
-                  height: SPACING[1.5],
-                  borderRadius: SPACING[1.5] / 2,
-                  backgroundColor: i === lit ? colors.accent : c.hair,
+            {ready ? (
+              <SnapStrip
+                key={`${slot}|${openPack ?? ''}`}
+                count={shown.length}
+                chosen={chosen}
+                keyOf={(i) => shown[i]?.key ?? String(i)}
+                labelOf={(i) => shown[i]?.name ?? ''}
+                renderItem={(i) => <OptionArt slot={slot} option={shown[i]} color={color} />}
+                onPick={(i) => {
+                  const o = shown[i];
+                  if (o) put(o.apply(look), null);
                 }}
+                label={current?.name ?? ''}
+                reduce={reduce}
+                ground={k.tile}
               />
-            ))}
+            ) : null}
+          </View>
+          {/* The chosen option's name (an accessory's tier beside it) and the dots for its place. */}
+          <View
+            style={{ alignItems: 'center', marginTop: E.nameTop, paddingHorizontal: E.panel.side }}
+            accessibilityLiveRegion="polite"
+          >
+            <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
+              <T v="capsuleName" ink center>
+                {chosenOption?.name ?? ''}
+              </T>
+              {chosenOption?.tier ? <TierTag tier={chosenOption.tier} /> : null}
+            </View>
+            <View
+              className="flex-row items-center"
+              style={{ gap: E.dots.gap, marginTop: E.dots.top }}
+              importantForAccessibility="no-hide-descendants"
+              accessibilityElementsHidden
+            >
+              {Array.from({ length: dotCount(shown.length, KIT.size.stripDots) }, (_, i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: i === lit ? E.dots.on : E.dots.side,
+                    height: E.dots.side,
+                    borderRadius: E.dots.side / 2,
+                    backgroundColor: i === lit ? k.dot.on : k.dot.off,
+                  }}
+                />
+              ))}
+            </View>
           </View>
         </View>
       </Screen>
@@ -511,5 +572,98 @@ function PackTab({ name, on, onPress }: { name: string; on: boolean; onPress: ()
         {name}
       </T>
     </Tap>
+  );
+}
+
+// A slot's chip (tuval Kapsul2): its icon and name, the open one dark; the kit's chip height
+// (CLAUDE.md → Ekran davranışı).
+function SlotChip({
+  icon,
+  label,
+  on,
+  accessibilityLabel,
+  onPress,
+}: {
+  icon: CapIconName;
+  label: string;
+  on: boolean;
+  accessibilityLabel: string;
+  onPress: () => void;
+}) {
+  const { scheme } = useTheme();
+  const E = CAPSULE_EDIT;
+  const look = E[scheme].chip[on ? 'on' : 'off'];
+  const h = KIT.size.chip;
+  const shadow = shadowParts(
+    useLabOff('golge'),
+    look.shadow || undefined,
+    'inset' in look ? look.inset || undefined : undefined,
+    h / 2,
+  );
+  return (
+    <Tap
+      accessibilityRole="tab"
+      accessibilityState={{ selected: on }}
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      style={{
+        height: h,
+        paddingLeft: E.chip.padLeft,
+        paddingRight: E.chip.padRight,
+        borderRadius: h / 2,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: E.chip.gap,
+        backgroundColor: look.fill,
+        boxShadow: shadow.boxShadow,
+      }}
+    >
+      {shadow.node}
+      <CapIcon name={icon} color={look.ink} size={E.chip.icon} />
+      <T v="capsuleChip" color={look.ink} lines={1}>
+        {label}
+      </T>
+    </Tap>
+  );
+}
+
+// The scene's riso disc (tuval Kapsul2): its pink light from the middle fading out at its edge, the
+// halftone dots over the whole disc.
+function RisoDisc({
+  side,
+  look,
+}: {
+  side: number;
+  look: { mid: string; edge: string; dots: string };
+}) {
+  const E = CAPSULE_EDIT;
+  const r = side / 2;
+  const cell = E.dot.cell;
+  return (
+    <Svg width={side} height={side} importantForAccessibility="no-hide-descendants">
+      <Defs>
+        <RadialGradient id="capsule-disc-light" cx={r} cy={r} r={r} gradientUnits="userSpaceOnUse">
+          <Stop offset="0%" stopColor={look.mid} />
+          <Stop offset={E.discMid} stopColor={look.edge} />
+          <Stop offset="100%" stopColor={look.edge} stopOpacity={0} />
+        </RadialGradient>
+        <Pattern id="capsule-disc-dots" width={cell} height={cell} patternUnits="userSpaceOnUse">
+          <Circle cx={cell / 4} cy={cell / 4} r={E.dot.r} fill={look.dots} />
+          <Circle cx={(3 * cell) / 4} cy={(3 * cell) / 4} r={E.dot.r} fill={look.dots} />
+        </Pattern>
+        <ClipPath id="capsule-disc-clip">
+          <Circle cx={r} cy={r} r={r} />
+        </ClipPath>
+      </Defs>
+      <Circle cx={r} cy={r} r={r} fill="url(#capsule-disc-light)" />
+      <Rect
+        x={0}
+        y={0}
+        width={side}
+        height={side}
+        fill="url(#capsule-disc-dots)"
+        clipPath="url(#capsule-disc-clip)"
+      />
+    </Svg>
   );
 }
