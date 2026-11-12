@@ -2,7 +2,6 @@
 // themselves (61 files on 12 Kasım). Only shrinks: a file moved to the kit leaves it.
 export const MOTION_ALLOWED: readonly string[] = [
   'app/(app)/(tabs)/activities.tsx',
-  'app/(app)/(tabs)/explore/[venueId].tsx',
   'app/(app)/(tabs)/messages/index.tsx',
   'app/(app)/(tabs)/profile/capsule.tsx',
   'app/(app)/(tabs)/profile/edit.tsx',

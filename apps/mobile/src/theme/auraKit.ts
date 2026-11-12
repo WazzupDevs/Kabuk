@@ -557,8 +557,21 @@ export const KIT = {
   // U24 (Masadakiler `.sh`, `.srow`): the sheet 84 from the top; a person's row 56 high, 6 / 14 in,
   // their face 40 (`av.list`).
   peopleSheet: { top: 84, height: 56, padY: 6, padX: 14 },
-  // U17: the scene 300 high from the very top, its bottom corners 28.
-  venueHero: { height: 300, radius: 28 },
+  // docs/design/iskelet.md → 5.2 (the `kapak` bar): the cover 360 high, moving at 0.45 of the
+  // scroll; a 130 dark fade over its top (#031B0B at 38 % to clear); the content riding over its
+  // foot as a card 34 round; the band coming in over 240–280, the venue's small picture (32, 10
+  // round: 2.4) and name beside the back button over 300–330.
+  venueCover: {
+    height: 360,
+    speed: 0.45,
+    shadeHeight: 130,
+    shade: 'linear-gradient(180deg, rgba(3, 27, 11, 0.38) 0%, rgba(3, 27, 11, 0) 100%)',
+    cardRadius: 34,
+    band: [240, 280],
+    barTitle: [300, 330],
+    barThumb: 32,
+    barThumbRadius: 10,
+  },
   gameCardShadow: '0px 12px 26px rgba(4, 73, 35, 0.18)',
   // A nick's colour in a line of the venue chat (Mekan: kapsul-sn19 in amber's ink).
   nickInk: '#9A4A00',

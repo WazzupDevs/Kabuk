@@ -524,6 +524,10 @@ export const tr = {
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',
+    // Its small empty card's title (iskelet.md → 3.4, 5.2).
+    noEventsTitle: 'Etkinlik yok',
+    // The venue page's line over its name (5.2): the kind, the district and the city.
+    venueInfo: (parts: readonly string[]) => parts.join(' · '),
   },
   friends: {
     empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",

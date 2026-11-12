@@ -4,17 +4,20 @@ import { View } from 'react-native';
 import { Glass, T } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 
-const PICTURE = require('../../../assets/riso/empty-venues.webp');
+const PICTURE: number = require('../../../assets/riso/empty-venues.webp');
 
-// Keşfet's empty result (docs/design/iskelet.md → 3.4): a small card, the riso picture 104x72 at
-// its left, the title and one sentence at its right; never half the screen.
+// The small empty card (docs/design/iskelet.md → 3.4; Keşfet's empty result, a venue page's
+// events): the riso picture 104x72 at its left, the title and one sentence at its right; never half
+// the screen. `picture`: a riso of its own (a bundled asset), Keşfet's venues by default.
 export function EmptyCard({
   title,
   body,
+  picture = PICTURE,
   testID,
 }: {
   title: string;
   body: string | null;
+  picture?: number;
   testID?: string;
 }) {
   const card = KIT.size.explore.card;
@@ -32,7 +35,7 @@ export function EmptyCard({
       }}
     >
       <Image
-        source={PICTURE}
+        source={picture}
         accessible={false}
         contentFit="cover"
         style={{ width: pic.width, height: pic.height, borderRadius: pic.radius }}
