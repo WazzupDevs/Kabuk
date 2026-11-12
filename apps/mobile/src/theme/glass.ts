@@ -70,3 +70,10 @@ export const GLASS_FACE = {
 // behind, copied once when the sheet opens, blurred by `blur` (the deviation in dp) under the
 // scrim's colour (modules/skall-glass → BackdropBlurView; components/SheetScrim.tsx).
 export const SCRIM_GLASS = { blur: 8 } as const;
+
+// The live glass of the sheets and the menus (iskelet.md → 2.2), apart from the tab bar's switch:
+// a sheet's card frosts the screen copied once behind it (SheetScrim's still picture, through the
+// glass module), so a scroll inside it never blurs again; a menu frosts its own still copy at
+// `menuBlur`. Off, or with "reduce transparency", both are drawn on their solid ground.
+export const SHEET_GLASS = true;
+export const MENU_GLASS = { blur: 28 } as const;

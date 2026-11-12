@@ -1,46 +1,55 @@
-import { type ReactNode, useState } from 'react';
-import { View } from 'react-native';
+import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { type AnimatedRef, useAnimatedRef } from 'react-native-reanimated';
 
-import { useKit } from '@/aura/kit';
+import { Round, useKit } from '@/aura/kit';
+import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
+import { TAB_GLASS } from '@/theme/glass';
 import { useLabOff } from '@/lib/drawLab';
+import { LiquidGlass } from './LiquidGlass';
 import { shadowParts } from './NativeShadow';
 import { useSheetDrag } from './sheetDrag';
 
-// A bottom sheet's card (Sheet, RouteSheet): Aura v65 `.sheet` (U8, SablonSheet), a glass card 8
-// from the screen's sides and foot, 28 round at every corner, its handle 40 × 4 12 from the top;
-// its content ends the bottom safe area and 4 above its foot (38 on a 34 safe area), so its buttons
-// sit 12 above the safe area as everywhere. Its content scrolls edge to edge inside the card,
-// clipped by the card's own corners, so nothing in it is cut square (the owner's report, 29 Ekim). What passes
-// under the handle and the bottom edge fades into the card. No scroll bar (29 Ekim). Pulled down it
-// follows the finger and closes (useSheetDrag); `above` (the buddies over its top edge) comes with
-// it. With a `footer` (Check-in, aura v37) the card is two parts: the content scrolls above, only
-// when it does not fit, cut square at its foot; the footer's buttons stay put under it, 18 below
-// the content. `footerFade` (Masa kur, aura v47) fades what scrolls into the footer's top edge, only
-// while the content does not fit.
+// A bottom sheet's card (Sheet, RouteSheet; iskelet.md → 3.5): it floats 8 from the screen's sides
+// and foot, 40 round at every corner. Its handle and its title stay put at its top, the 38 close
+// button at the title's right; what is under them scrolls, edge to edge inside the card, clipped by
+// its own corners, and fades out at the scroll's edges (Android's fading edge: no band of colour,
+// only while there is more to scroll). No scroll bar (29 Ekim), no "Tamam" or "Kapat" at its foot.
+// Its content ends the bottom safe area and 4 above its foot, so its buttons sit 12 above the safe
+// area as everywhere. Pulled down it follows the finger and closes (useSheetDrag); `above` (the
+// buddies over its top edge) comes with it. With a `footer` (Check-in, aura v37) the card is two
+// parts: the content scrolls above, only when it does not fit; the footer's buttons stay put under
+// it. `frost`: the card on the live glass (iskelet.md → 2.2), the screen behind blurred once
+// (SheetScrim) under the card's face; otherwise its solid ground.
 export function SheetCard({
   onClose,
   bottomInset,
   above,
+  head,
+  balance,
   fill,
   footer,
-  footerFade,
+  frost,
   scrollRef,
   children,
 }: {
-  // Unset: it cannot be pulled away (the join request).
+  // Unset: it cannot be pulled away and has no close button (the join request).
   onClose?: () => void;
   // The bottom safe area: the content's end stays clear of it.
   bottomInset: number;
   above?: ReactNode;
+  // The title that stays put under the handle, the close button at its right.
+  head?: ReactNode;
+  // A centred title: as much room before it as the close button takes after it.
+  balance?: boolean;
   // As tall as the sheet around it (Sheet → `top`), the content stretched to it.
   fill?: boolean;
   // Buttons that stay under the scrolling content.
   footer?: ReactNode;
-  footerFade?: boolean;
+  frost?: boolean;
   // The content's scroll, for a sheet that moves it itself (Kapsülünü süsle's pack chips).
   scrollRef?: AnimatedRef<Animated.ScrollView>;
   children: ReactNode;
@@ -49,20 +58,23 @@ export function SheetCard({
   const ownScroller = useAnimatedRef<Animated.ScrollView>();
   const scroller = scrollRef ?? ownScroller;
   const { pan, native, onScroll, style } = useSheetDrag(onClose, scroller);
-  const head = KIT.size.sheetPadTop + KIT.size.grabH + KIT.size.sheetGap;
   // The sheet's soft shadow natively (NativeShadow.tsx): it slides in, and React Native would blur
   // its shadow again on every frame of the slide.
   const shadowOff = useLabOff('golge');
-  const shadow = shadowParts(shadowOff, k.c.glassShadow, undefined, KIT.size.sheetRadius);
-  const top = { borderRadius: KIT.size.sheetRadius };
+  const radius = KIT.size.sheetRadius;
+  const shadow = shadowParts(shadowOff, k.c.glassShadow, undefined, radius);
+  const top = { borderRadius: radius };
   const foot = Math.max(KIT.size.sheetPadBottom + bottomInset, KIT.size.sheetPadBottomMin);
   const size = fill ? { flex: 1 } : { flexShrink: 1 };
-  // The scroll's height, its content's and the footer's: the fade shows only when content overflows.
-  const [viewH, setViewH] = useState(0);
-  const [contentH, setContentH] = useState(0);
-  const [footerH, setFooterH] = useState(0);
-  const measure = !!footer && !!footerFade;
-  const overflows = measure && viewH > 0 && footerH > 0 && contentH > viewH + 1;
+  const close = onClose ? (
+    <Round
+      testID="sheet-close"
+      icon="close"
+      label={tr.common.close}
+      side={KIT.size.sheetClose}
+      onPress={onClose}
+    />
+  ) : null;
   return (
     <GestureDetector gesture={pan}>
       <Animated.View
@@ -78,8 +90,7 @@ export function SheetCard({
           {shadow.node}
           <View
             style={{
-              ...gradientStyle(k.c.sheet),
-              backgroundColor: k.c.sheetBase,
+              ...(frost ? null : { ...gradientStyle(k.c.sheet), backgroundColor: k.c.sheetBase }),
               ...size,
               ...top,
               borderWidth: KIT.size.edge,
@@ -87,6 +98,52 @@ export function SheetCard({
               overflow: 'hidden',
             }}
           >
+            {frost ? (
+              <>
+                <LiquidGlass
+                  backdrop
+                  cornerRadius={radius}
+                  ground={k.c.sheetBase}
+                  blur={TAB_GLASS.blur}
+                  saturation={TAB_GLASS.saturation}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View
+                  pointerEvents="none"
+                  style={[StyleSheet.absoluteFill, gradientStyle(k.c.sheetFrost)]}
+                />
+              </>
+            ) : null}
+            <View style={{ flexShrink: 0, paddingTop: KIT.size.sheetPadTop }}>
+              <View
+                style={{
+                  alignSelf: 'center',
+                  width: KIT.size.grabW,
+                  height: KIT.size.grabH,
+                  borderRadius: KIT.size.grabH,
+                  backgroundColor: k.c.grab,
+                }}
+              />
+              {head ? (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: KIT.size.rowGap,
+                    marginTop: KIT.size.sheetHeadGap,
+                    paddingHorizontal: KIT.size.sheetPadX,
+                  }}
+                >
+                  {balance && close ? <View style={{ width: KIT.size.sheetClose }} /> : null}
+                  <View
+                    style={{ flex: 1, minHeight: KIT.size.sheetClose, justifyContent: 'center' }}
+                  >
+                    {head}
+                  </View>
+                  {close}
+                </View>
+              ) : null}
+            </View>
             <GestureDetector gesture={native}>
               <Animated.ScrollView
                 ref={scroller}
@@ -97,11 +154,10 @@ export function SheetCard({
                 keyboardShouldPersistTaps="handled"
                 onScroll={onScroll}
                 scrollEventThrottle={16}
-                onLayout={measure ? (e) => setViewH(e.nativeEvent.layout.height) : undefined}
-                onContentSizeChange={measure ? (_w, h) => setContentH(h) : undefined}
+                fadingEdgeLength={{ start: KIT.size.sheetFade, end: KIT.size.sheetFade }}
                 contentContainerStyle={{
                   flexGrow: fill ? 1 : undefined,
-                  paddingTop: head,
+                  paddingTop: head ? KIT.size.rowGap : KIT.size.sheetGap,
                   paddingHorizontal: KIT.size.sheetPadX,
                   paddingBottom: footer ? KIT.size.sheetGap + KIT.size.tagGap : foot,
                 }}
@@ -111,7 +167,6 @@ export function SheetCard({
             </GestureDetector>
             {footer ? (
               <View
-                onLayout={measure ? (e) => setFooterH(e.nativeEvent.layout.height) : undefined}
                 style={{
                   flexShrink: 0,
                   paddingHorizontal: KIT.size.sheetPadX,
@@ -121,56 +176,19 @@ export function SheetCard({
                 {footer}
               </View>
             ) : null}
-            <View
-              pointerEvents="none"
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: 0,
-                height: head,
-                ...gradientStyle(k.c.sheetFadeTop),
-              }}
-            >
+            {/* Without a title the close button stands at the top right over the content (a
+                person's card opens with their face under the handle). */}
+            {!head && close ? (
               <View
-                style={{
-                  alignSelf: 'center',
-                  marginTop: KIT.size.sheetPadTop,
-                  width: KIT.size.grabW,
-                  height: KIT.size.grabH,
-                  borderRadius: KIT.size.grabH,
-                  backgroundColor: k.c.grab,
-                }}
-              />
-            </View>
-            {/* What scrolls fades into the card's foot (with a footer it is cut square, the buttons
-                below it). */}
-            {overflows ? (
-              <View
-                pointerEvents="none"
                 style={{
                   position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: footerH,
-                  height: KIT.size.sheetFooterFade,
-                  ...gradientStyle(k.c.sheetFadeBottom),
+                  top: KIT.size.sheetPadTop + KIT.size.grabH + KIT.size.sheetHeadGap,
+                  right: KIT.size.sheetPadX,
                 }}
-              />
+              >
+                {close}
+              </View>
             ) : null}
-            {footer ? null : (
-              <View
-                pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: foot,
-                  ...gradientStyle(k.c.sheetFadeBottom),
-                }}
-              />
-            )}
           </View>
         </View>
       </Animated.View>

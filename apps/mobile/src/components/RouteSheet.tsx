@@ -8,23 +8,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  Animated,
-  BackHandler,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Animated, BackHandler, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { InSheet, T } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
+import { useSheetFrost, useSheetMotion } from '@/motion/useSheetMotion';
 import { KIT } from '@/theme/auraKit';
 import { peekShown, SHEET_MAX } from '@/lib/sheetFit';
-import { useReduceMotion } from '@/lib/useReduceMotion';
-import { EASE_OUT } from '@/theme/markMotion';
 
 import { Quiet } from './Quiet';
 import { SheetCard } from './SheetCard';
@@ -34,11 +26,10 @@ import { ScreenStatusBar, StatusScrim } from './StatusScrim';
 // A route drawn as a bottom sheet over the screen it opened from (skall tuvali: Ayarlar,
 // Bildirimler, mekana giriş and "Neredesin?" are sheets; the owner's decision, 27 Ekim). The route
 // is a transparent modal ((app)/_layout.tsx → SHEET); the screen under it stays as it was. The
-// sheet slides in like Sheet (the same 320 ms ease-out); a tap on the scrim, Android's back button
-// useCloseSheet() and a pull down slide it out, then the route pops. Being part of the route, a screen pushed
-// from it opens on top of it, unlike a Modal.
-const SLIDE_MS = 320;
-
+// sheet moves like Sheet (iskelet.md → 3.5: in on springs.sheet, out down off the screen;
+// useSheetMotion); a tap on the scrim, Android's back button, useCloseSheet(), its close button and
+// a pull down slide it out, then the route pops. Being part of the route, a screen pushed from it
+// opens on top of it, unlike a Modal.
 const CloseContext = createContext<() => void>(() => undefined);
 
 export function useCloseSheet(): () => void {
@@ -62,38 +53,28 @@ export function RouteSheet({
   footer?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
-  const reduce = useReduceMotion();
-  const [progress] = useState(() => new Animated.Value(0));
+  const motion = useSheetMotion();
+  const frost = useSheetFrost();
   const closing = useRef(false);
   const [area, setArea] = useState(0);
   const [sheetH, setSheetH] = useState(0);
   const showPeek = !!peek && (!footer || peekShown(sheetH, area));
+  const { show, hide, reduce } = motion;
 
   useEffect(() => {
-    const anim = Animated.timing(progress, {
-      toValue: 1,
-      duration: reduce ? 0 : SLIDE_MS,
-      easing: (u) => EASE_OUT(u),
-      useNativeDriver: true,
-    });
+    const anim = show(reduce);
     anim.start();
     return () => anim.stop();
-  }, [progress, reduce]);
+  }, [show, reduce]);
 
   const close = useCallback(() => {
     if (closing.current) return;
     closing.current = true;
-    Animated.timing(progress, {
-      toValue: 0,
-      duration: reduce ? 0 : SLIDE_MS,
-      easing: (u) => EASE_OUT(u),
-      useNativeDriver: true,
-    }).start(() => {
+    hide(reduce).start(() => {
       if (router.canGoBack()) router.back();
       else router.replace('/explore');
     });
-  }, [progress, reduce]);
+  }, [hide, reduce]);
 
   useFocusEffect(
     useCallback(() => {
@@ -108,10 +89,10 @@ export function RouteSheet({
   return (
     <CloseContext.Provider value={close}>
       <View style={StyleSheet.absoluteFill}>
-        <SheetScrim opacity={progress} />
+        <SheetScrim opacity={motion.scrim} glass={frost} />
         {/* The status bar over the scrim: a fade and light icons; the light scheme's dark ones were
             lost on it (audit M15-12). */}
-        <StatusScrim opacity={progress} />
+        <StatusScrim opacity={motion.scrim} />
         <ScreenStatusBar style="light" />
         <Pressable
           accessibilityRole="button"
@@ -128,24 +109,26 @@ export function RouteSheet({
             testID={testID}
             onLayout={footer ? (e) => setSheetH(e.nativeEvent.layout.height) : undefined}
             accessibilityViewIsModal
-            // docs/design/aura (`.sheet`), down to the screen's foot as Telegram Android's sheets
-            // (the owner's call, 30 Ekim). Pulled down, it closes (SheetCard).
+            // iskelet.md → 3.5, down to the screen's foot as Telegram Android's sheets (the owner's
+            // call, 30 Ekim). Pulled down, it closes (SheetCard).
             style={{
               maxHeight: `${SHEET_MAX * 100}%`,
-              transform: [
-                {
-                  translateY: progress.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [height, 0],
-                  }),
-                },
-              ],
+              opacity: motion.opacity,
+              transform: [{ translateY: motion.translateY }],
             }}
           >
             <SheetCard
               onClose={close}
               bottomInset={insets.bottom}
               above={showPeek && peek ? <Peek kind={peek} fit={!!footer} /> : null}
+              head={
+                title ? (
+                  <T v="title" accessibilityRole="header">
+                    {title}
+                  </T>
+                ) : undefined
+              }
+              frost={frost}
               footer={
                 footer ? (
                   <InSheet>
@@ -156,19 +139,9 @@ export function RouteSheet({
             >
               <InSheet>
                 <Quiet value>
-                  {title ? (
-                    <T v="title" accessibilityRole="header">
-                      {title}
-                    </T>
-                  ) : null}
-                  {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks (14 in
-                      a sheet with a footer: CheckInDar). */}
-                  <View
-                    style={{
-                      gap: footer ? KIT.size.sheetGap : KIT.size.rowGap,
-                      marginTop: title ? KIT.size.sheetGap : 0,
-                    }}
-                  >
+                  {/* docs/design/aura (`.sheet`): 12 between the blocks (14 in a sheet with a
+                      footer: CheckInDar). */}
+                  <View style={{ gap: footer ? KIT.size.sheetGap : KIT.size.rowGap }}>
                     {children}
                   </View>
                 </Quiet>

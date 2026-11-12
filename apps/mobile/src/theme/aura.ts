@@ -288,6 +288,10 @@ export const MOTION = {
   // follows, docs/decisions/cam-kapali.md).
   dissolve: { blur: 12, rise: 12, fromScale: 0.97, inMs: 240, outMs: 150 },
   stagger: { row: 30, part: 35, max: 5 },
+  // iskelet.md → 3.5 and 4.3: a sheet opens on springs.sheet from `fromY` below and `fromOpacity`;
+  // a menu grows out of its button on springs.menu from `fromScale`.
+  sheetOpen: { fromY: 80, fromOpacity: 0.3 },
+  menuOpen: { fromScale: 0.18 },
   // A card opening over the screen: its content this long after the ground.
   cardOpen: { contentAfterMs: 150 },
   tab: {

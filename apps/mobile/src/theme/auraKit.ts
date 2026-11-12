@@ -226,6 +226,8 @@ export const KIT = {
     // top and bottom colours are what scrolls under its edges fades into.
     sheet: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
     sheetBase: '#EFF7F1',
+    // The sheet and the menu on the live glass (iskelet.md → 2.2): the same face, over the frost.
+    sheetFrost: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
     // The sheet's top and bottom colours, for what scrolls under its edges to fade into.
     sheetFadeTop:
       'linear-gradient(180deg, rgba(251, 253, 252, 1) 0%, rgba(251, 253, 252, 1) 55%, rgba(251, 253, 252, 0) 100%)',
@@ -292,6 +294,7 @@ export const KIT = {
     // A shade under the cards, as in the light (the cards' glass is the old sheet's colour).
     sheet: '#121614',
     sheetBase: '#121614',
+    sheetFrost: 'linear-gradient(180deg, rgba(18, 22, 20, 0.80), rgba(18, 22, 20, 0.54))',
     sheetFadeTop:
       'linear-gradient(180deg, rgba(18, 22, 20, 1) 0%, rgba(18, 22, 20, 1) 55%, rgba(18, 22, 20, 0) 100%)',
     sheetFadeBottom: 'linear-gradient(180deg, rgba(18, 22, 20, 0), rgba(18, 22, 20, 1))',
@@ -709,8 +712,20 @@ export const KIT = {
     // U27 (`.list .li`): a conversation 72 high, 12 / 16 in; the hairline from 72.
     inboxPadY: 12,
     inboxRow: 72,
+    // iskelet.md → 3.5: the sheet 8 in from the edges, 40 round; its close button 38 at the title's
+    // right, 10 under the handle; what scrolls fades out over `sheetFade` at its edges (no band).
     sheetInset: 8,
-    sheetRadius: 28,
+    sheetRadius: 40,
+    sheetClose: 38,
+    sheetHeadGap: 10,
+    sheetFade: 24,
+    // iskelet.md → 3.5: a menu grown from its button, 256 to 272 wide, 26 round, 8 from its button
+    // and the screen's edges; a destructive row 6 apart under the others.
+    menuMinW: 256,
+    menuMaxW: 272,
+    menuRadius: 26,
+    menuGap: 8,
+    menuDangerGap: 6,
     sheetPadTop: 12,
     sheetPadX: 20,
     // Under the sheet's content: its 38 (SablonSheet) is the bottom safe area (34) and 4 more, so
