@@ -281,10 +281,10 @@ describe('the tab bar (3.3)', () => {
     expect(MOTION.springs.tabLead).toEqual({ stiffness: 420, damping: 30, mass: 1 });
   });
 
-  it('its bottom edge: 160 high, from clear to the ground at 92 %', () => {
+  it('its bottom edge: 160 high, from clear to the ground at 92 % (72 % 60 % down, tuval Kesfet)', () => {
     expect(AURA.tabBar.edgeHeight).toBe(160);
     expect(barEdgeCss('light')).toBe(
-      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.92) 100%)',
+      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.72) 60%, rgba(239, 247, 241, 0.92) 100%)',
     );
   });
 });

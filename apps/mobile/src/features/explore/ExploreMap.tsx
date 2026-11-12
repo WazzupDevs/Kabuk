@@ -19,11 +19,11 @@ import {
 import { router } from 'expo-router';
 import { describeEventTime } from '@shared/explore.ts';
 import { type ReactNode, useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { Image, type ImageSourcePropType, View } from 'react-native';
 import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, Li, Live, RowList, T, Tag, useKit } from '@/aura/kit';
+import { Glass, Li, RowList, Round, T, Tag, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
 import { tr } from '@/i18n/tr';
@@ -31,11 +31,13 @@ import { PopIn, Tap } from '@/motion';
 import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
 import { KIT, VENUE_THUMB } from '@/theme/auraKit';
+import { EXPLORE } from '@/theme/explore';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
 
+import { Bucket } from './Bucket';
 import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
 
@@ -70,7 +72,7 @@ const MAP_IMAGES = {
 // U14: the pin's ring and shadow (KesfetHarita `.pd`, `.dark .pd`).
 const PIN_RING = MAP_PIN.pinRing;
 const PIN_SHADOW = MAP_PIN.pinShadow;
-const PIN_SHADOW_Y = 10;
+const PIN_SHADOW_Y = MAP_PIN.shadowY;
 const PIN_SHADOW_SPREAD = 11;
 const PIN_SHADOW_BLUR = 0.6;
 // A venue label's width in ems before it wraps: a venue's name on two lines at most.
@@ -461,12 +463,32 @@ export function ExploreMap({
               ['==', ['get', 'id'], selected ?? ''],
             ]}
             layout={{ ...label.layout, 'text-allow-overlap': true }}
-            paint={label.paint}
+            // tuval Harita: the chosen pin's name white on the ink, the others' ink on white.
+            paint={{
+              'text-color': KIT.white,
+              'text-halo-color': KIT.light.ink,
+              'text-halo-width': MAP_PIN.labelHalo,
+            }}
           />
         </GeoJSONSource>
       </Map>
+      {/* tuval Harita: the map fades into the ground under the head and over the tab bar. */}
+      <View
+        pointerEvents="none"
+        style={[
+          { position: 'absolute', left: 0, right: 0, top: 0, height: EXPLORE.map.fadeTop },
+          gradientStyle(EXPLORE[scheme].fadeTop),
+        ]}
+      />
+      <View
+        pointerEvents="none"
+        style={[
+          { position: 'absolute', left: 0, right: 0, bottom: 0, height: EXPLORE.map.fadeBottom },
+          gradientStyle(EXPLORE[scheme].fadeBottom),
+        ]}
+      />
       <MapColumn
-        top={headerHeight + SPACING[3]}
+        top={headerHeight + EXPLORE.map.columnTop}
         onRecentre={() => camera.current?.fitBounds(opening, { padding, duration: CAMERA_MS })}
         onInfo={() => void map.current?.showAttribution()}
       />
@@ -493,7 +515,8 @@ export function ExploreMap({
 const CAMERA_MS = 400;
 
 // 5.1: the position and the map's sources at the top right in one glass column, under the floating
-// search and chips. "Konum" is the venues', never the phone's (rule 6): it shows every venue again.
+// search and chips (tuval Harita: 46 wide, its buttons 46, a hairline between them). "Konum" is the
+// venues', never the phone's (rule 6): it shows every venue again.
 function MapColumn({
   top,
   onRecentre,
@@ -503,35 +526,44 @@ function MapColumn({
   onRecentre: () => void;
   onInfo: () => void;
 }) {
-  const { c } = useKit();
-  const col = KIT.size.explore.mapColumn;
-  const side = col.width - 2 * col.pad;
-  const button = (icon: 'compass' | 'info', label: string, onPress: () => void) => (
+  const { c, scheme } = useKit();
+  const { colors } = useTheme();
+  const m = EXPLORE.map;
+  const e = EXPLORE[scheme];
+  const button = (icon: 'compass' | 'info', label: string, color: string, onPress: () => void) => (
     <Tap
       accessibilityLabel={label}
       onPress={onPress}
       style={{
-        width: side,
-        height: side,
-        borderRadius: side / 2,
+        width: m.column,
+        height: m.column,
+        borderRadius: m.column / 2,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <CapIcon name={icon} color={c.ink} size={KIT.size.explore.icon} />
+      <CapIcon name={icon} color={color} size={m.icon} />
     </Tap>
   );
   return (
-    <View pointerEvents="box-none" style={{ position: 'absolute', top, right: KIT.size.side }}>
-      <Glass radius={col.width / 2} style={{ padding: col.pad, gap: col.gap }}>
-        {button('compass', tr.explore.recentre, onRecentre)}
-        {button('info', tr.explore.mapInfo, onInfo)}
+    <View pointerEvents="box-none" style={{ position: 'absolute', top, right: EXPLORE.headSide }}>
+      <Glass face={e.mapGlass} radius={m.column / 2} style={{ width: m.column }}>
+        {button('compass', tr.explore.recentre, colors.accent, onRecentre)}
+        <View
+          style={{
+            height: KIT.size.hair,
+            marginHorizontal: m.dividerInset,
+            backgroundColor: e.divider,
+          }}
+        />
+        {button('info', tr.explore.mapInfo, c.muted, onInfo)}
       </Glass>
     </View>
   );
 }
 
-// Where the map's card stands: 12 above the tab bar.
+// Where the map's card stands: 16 above the tab bar, 16 from the sides (tuval Harita; the bar's room
+// already holds the 16 over it).
 function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) {
   return (
     <View
@@ -540,8 +572,8 @@ function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) 
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: bottom + SPACING[3],
-        paddingHorizontal: SPACING[4],
+        bottom: bottom - SPACING[4] + EXPLORE.map.cardBottom,
+        paddingHorizontal: EXPLORE.map.cardSide,
       }}
     >
       {children}
@@ -549,43 +581,46 @@ function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) 
   );
 }
 
-// The map's card (aura v51): an opaque page surface, as the sheets have (the map's GL surface
-// cannot be blurred).
-function MapFace({ testID, children }: { testID: string; children: ReactNode }) {
-  const { c } = useKit();
+// The map's card (tuval Harita): white 82 % on the board's glass edge and shadow, 30 round, 12
+// inside (the map's GL surface cannot be blurred).
+function MapFace({
+  testID,
+  row,
+  children,
+}: {
+  testID: string;
+  row?: boolean;
+  children: ReactNode;
+}) {
+  const { scheme } = useKit();
+  const e = EXPLORE[scheme];
+  const m = EXPLORE.map;
   return (
-    <View
+    <Glass
       testID={testID}
+      face={{ ...e.mapGlass, fill: e.mapCard }}
+      radius={m.cardRadius}
       style={{
-        ...gradientStyle(c.sheet),
-        backgroundColor: c.sheetBase,
-        borderRadius: KIT.size.glassRadius,
-        borderWidth: KIT.size.edge,
-        borderColor: c.glassEdge,
-        boxShadow: c.glassShadow,
-        padding: KIT.size.pad,
-        gap: SPACING[3],
+        padding: m.cardPad,
+        gap: row ? m.cardGap : SPACING[3],
+        flexDirection: row ? 'row' : 'column',
+        alignItems: row ? 'center' : undefined,
       }}
     >
       {children}
-    </View>
+    </Glass>
   );
 }
 
-// A venue's live tag and its event, as the list shows the live one (Keşfet's row).
+// The bucket and the event, as the list shows them.
 function VenueTags({ venue }: { venue: ExploreVenue }) {
   const now = useNow(60_000);
-  const calm = venue.bucket === 'calm';
   const when = venue.event
     ? describeEventTime(venue.event.startsAt, venue.event.endsAt, now)
     : null;
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: SPACING[2] }}>
-      {calm ? (
-        <T v="fineLg">{tr.explore.buckets[venue.bucket]}</T>
-      ) : (
-        <Live label={tr.explore.buckets[venue.bucket]} color={KIT.pink} ring={KIT.pinkRing} />
-      )}
+      <Bucket bucket={venue.bucket} />
       {venue.event && when ? (
         <Tag
           tone="amber"
@@ -600,29 +635,58 @@ function openVenue(id: string) {
   router.push({ pathname: '/explore/[venueId]', params: { venueId: id } });
 }
 
-// The selected venue, above the floating tab bar.
+// The selected venue, above the floating tab bar (tuval Harita): its 72 picture with a buddy at its
+// corner, the name, the type and district, the bucket, and the green round to the venue.
 function VenueCard({ venue }: { venue: ExploreVenue }) {
   const type = venueType(venue);
+  const { c, scheme } = useKit();
+  const m = EXPLORE.map;
   return (
-    <MapFace testID="explore-map-card">
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }}>
-        <VenueThumb kind={type} size={VENUE_THUMB.size} />
-        <View style={{ flex: 1, gap: SPACING[0.5] }}>
-          <T v="title">{venue.name}</T>
-          <T v="fineLg">{tr.explore.venueSub(tr.explore.typeLabel[type], venue.district)}</T>
+    <Tap accessibilityLabel={venue.name} onPress={() => openVenue(venue.id)}>
+      <MapFace testID="explore-map-card" row>
+        <View>
+          <VenueThumb
+            kind={type}
+            size={m.picture}
+            radius={m.pictureRadius}
+            shadow={EXPLORE[scheme].pictureShadow}
+          />
+          <Image
+            source={BUDDY}
+            fadeDuration={0}
+            resizeMode="contain"
+            accessible={false}
+            style={{
+              position: 'absolute',
+              right: m.buddy.right,
+              bottom: m.buddy.bottom,
+              width: m.buddy.width,
+              height: m.buddy.height,
+            }}
+          />
         </View>
-      </View>
-      <VenueTags venue={venue} />
-      <Btn
-        label={tr.explore.goToVenue}
-        icon="forward"
-        block
-        testID="explore-map-go"
-        onPress={() => openVenue(venue.id)}
-      />
-    </MapFace>
+        <View style={{ flex: 1, minWidth: 0, gap: EXPLORE.card.lineGap }}>
+          <T v="placeName">{venue.name}</T>
+          <T v="placeSub" color={c.muted}>
+            {tr.explore.venueSub(tr.explore.typeLabel[type], venue.district)}
+          </T>
+          <VenueTags venue={venue} />
+        </View>
+        <Round
+          primary
+          label={tr.explore.goToVenue}
+          testID="explore-map-go"
+          onPress={() => openVenue(venue.id)}
+        >
+          <CapIcon name="forward" color={KIT.onPrimary} size={m.goIcon} />
+        </Round>
+      </MapFace>
+    </Tap>
   );
 }
+
+// A buddy at the map card's picture (assets/riso/buddies).
+const BUDDY = require('../../../assets/riso/buddies/riso_6f419d.webp') as ImageSourcePropType;
 
 // A stack's venues (one address, one disc on the map): each a row to its page.
 function StackCard({ venues }: { venues: readonly ExploreVenue[] }) {

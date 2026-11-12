@@ -39,6 +39,7 @@ import {
   KIT_TYPE,
   type KitTextVariant,
 } from '@/theme/auraKit';
+import type { ExploreFace } from '@/theme/explore';
 import { gradientStyle } from '@/theme/gradient';
 import { Frost, FROSTED } from '@/components/LiquidGlass';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -150,6 +151,7 @@ export function Glass({
   pad,
   radius: round,
   frost,
+  face,
   style,
   children,
   testID,
@@ -161,12 +163,25 @@ export function Glass({
   // A control on glass (a field, a switch): the screen's backdrop frosted under its fill (the
   // owner's call, 30 Ekim). A card stays as it is.
   frost?: boolean;
+  // A face of a board's own (Keşfet's `.glass` and `.card`, theme/explore.ts): its fill, edge, top
+  // light and shadow in place of the kit's glass; inside a sheet the sheet's card as ever.
+  face?: ExploreFace;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   testID?: string;
 }) {
-  const { c, scheme } = useKit();
+  const { c: kitColors, scheme } = useKit();
   const flat = useContext(FlatGlass);
+  const c =
+    face && !flat
+      ? {
+          ...kitColors,
+          glass: face.fill,
+          glassEdge: face.edge,
+          glassInset: face.inset,
+          glassShadow: face.shadow,
+        }
+      : kitColors;
   const shadowOff = useLabOff('golge');
   // Çizim ölçümü's `kart`, and the system's "reduce transparency" (iskelet.md → 6.6) outside a
   // sheet (a card there is already opaque): the toned opaque fill instead of the translucent glass.

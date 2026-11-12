@@ -18,10 +18,14 @@ export const AURA = {
     },
     // GaleriAltMenu: the bar is the glass (--glass-bg), the chosen disc #FFFFFF with
     // --shadow-raised, the other icons --muted.
+    // tuval Kesfet, Harita (`.glass` of the bar): white 60 %, a white 90 % edge, the 95 % top light
+    // and a soft ink shadow; `solid` with "reduce transparency" or over the map.
     tab: {
-      fill: 'rgba(255, 255, 255, 0.66)',
-      edge: 'rgba(255, 255, 255, 0.86)',
-      shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
+      fill: 'rgba(255, 255, 255, 0.60)',
+      solid: '#EFF7F1',
+      edge: 'rgba(255, 255, 255, 0.90)',
+      inset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.95)',
+      shadow: '0px 10px 30px rgba(3, 27, 11, 0.08)',
       disc: '#FFFFFF',
       discShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
       off: '#4A6550',
@@ -36,6 +40,7 @@ export const AURA = {
     bar: {
       band: 'rgba(239, 247, 241, 0.84)',
       clear: 'rgba(239, 247, 241, 0)',
+      edgeMid: 'rgba(239, 247, 241, 0.72)',
       edge: 'rgba(239, 247, 241, 0.92)',
     },
   },
@@ -48,9 +53,12 @@ export const AURA = {
       edge: 'rgba(255, 255, 255, 0.09)',
       shadow: '',
     },
+    // Not drawn on the boards: the clear glass of the dark buttons (theme/buttonGlass.ts).
     tab: {
-      fill: '#121614',
-      edge: 'rgba(255, 255, 255, 0.09)',
+      fill: 'rgba(18, 22, 20, 0.62)',
+      solid: '#121614',
+      edge: 'rgba(255, 255, 255, 0.10)',
+      inset: '',
       shadow: '',
       disc: 'rgba(255, 255, 255, 0.94)',
       discShadow: '',
@@ -64,18 +72,19 @@ export const AURA = {
     bar: {
       band: 'rgba(0, 0, 0, 0.84)',
       clear: 'rgba(0, 0, 0, 0)',
+      edgeMid: 'rgba(0, 0, 0, 0.72)',
       edge: 'rgba(0, 0, 0, 0.92)',
     },
   },
   // Cards: a frosted pane on the clouds.
   card: { radius: 28, edgeWidth: 1 },
-  // The tab bar (Aura v65 GaleriAltMenu → Ölçüler): a glass capsule 64 high, 20 in from each side,
-  // 8 inside, five 48 round tabs; the selected one sits on a disc that slides to it. Icons 24, the
-  // selected one too. 12 above the bottom safe area.
+  // The tab bar (Aura v65 GaleriAltMenu → Ölçüler; tuval Kesfet: 66 high, 4 inside, its tabs 68 ×
+  // 58): a glass capsule 20 in from each side; the selected one sits on a pill that slides to it.
+  // 12 above the bottom safe area.
   tabBar: {
-    height: 64,
+    height: 66,
     inset: 20,
-    padding: 8,
+    padding: 4,
     tab: 48,
     icon: 24,
     iconOn: 24,
@@ -90,7 +99,7 @@ export const AURA = {
     // bottom edge band 160 under it.
     iconLabelled: 22,
     labelGap: 2,
-    pillHeight: 52,
+    pillHeight: 58,
     edgeHeight: 160,
   },
   // iskelet.md → 3.1: the top bar. Its band 118 high (status bar included), the foot `bandFade`
@@ -315,10 +324,11 @@ export function barBandCss(scheme: AuraScheme, height: number): string {
   return `linear-gradient(180deg, ${b.band} 0%, ${b.band} ${solid}%, ${b.clear} 100%)`;
 }
 
-// The tab bar's bottom edge (iskelet.md → 3.3): from clear to the ground at 92 %.
+// The tab bar's bottom edge (iskelet.md → 3.3): from clear to the ground at 92 %;
+// tuval Kesfet: the ground at 72 % 60 % down.
 export function barEdgeCss(scheme: AuraScheme): string {
   const b = AURA[scheme].bar;
-  return `linear-gradient(180deg, ${b.clear} 0%, ${b.edge} 100%)`;
+  return `linear-gradient(180deg, ${b.clear} 0%, ${b.edgeMid} 60%, ${b.edge} 100%)`;
 }
 
 // The motion standard (docs/design/aura/project/hareket.json, played by the film

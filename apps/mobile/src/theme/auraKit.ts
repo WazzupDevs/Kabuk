@@ -30,8 +30,26 @@ export const KIT_TYPE = {
   displayLg: t(500, 34, 41, -0.025),
   // Mesajlar's title (.display at 36).
   displayXl: t(500, 36, 46, -0.025),
-  // Keşfet's question (iskelet.md → 5.1: 36, 800).
-  exploreTitle: t(800, 36, 46, -0.025),
+  // Keşfet's question (iskelet.md → 5.1: 36, 800; the board's -0.035em). The line stays the face's
+  // own height (the board's 1.06 cut the tails off on Android, above).
+  exploreTitle: t(800, 36, 46, -0.035),
+  // Keşfet (tuval Kesfet, Harita): the line of the day (13, 700, 0.06em), the chips (14; 700 when
+  // chosen), the place line (21, 800) and its count (13, 600), a venue's name (16, 700) and line
+  // (13, 500), the bucket (12, 700), a map pin's name (11.5, 700).
+  exploreEyebrow: t(700, 13, 17, 0.06),
+  exploreChip: t(600, 14, 18),
+  exploreChipOn: t(700, 14, 18),
+  exploreSection: t(800, 21, 27, -0.02),
+  exploreCount: t(600, 13, 17),
+  exploreSort: t(600, 13, 17),
+  placeName: t(700, 16, 20, -0.01),
+  placeSub: t(500, 13, 17),
+  bucket: t(700, 12, 16),
+  // Semte Git on Keşfet: its eyebrow (11, 800, 0.1em), title (20, 800, 1.18) and note (13.5, 500,
+  // 1.42).
+  districtEyebrow: t(800, 11, 14, 0.1),
+  districtTitle: t(800, 20, 24, -0.02),
+  districtNote: t(500, 13.5, 19),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
@@ -672,7 +690,8 @@ export const KIT = {
     stickyBandPad: 8,
     // iskelet.md → 5.1 (Keşfet): the search and list/map capsule 54, 48 once pinned, its switch's
     // rounds 3 in; a venue's card 26 round and 12 inside, its picture 76 at 14 (2.4: the card's 26
-    // less its 12); the empty card's riso 104x72; the map's glass column of round buttons.
+    // less its 12), the words 14 from it, the cards 10 apart (tuval Kesfet); the empty card's riso
+    // 104x72. The rest of the boards' values: theme/explore.ts.
     explore: {
       capsule: 54,
       capsulePinned: 48,
@@ -680,10 +699,9 @@ export const KIT = {
       switchPad: 3,
       switchGap: 2,
       icon: 20,
-      card: { radius: 26, pad: 12, picture: 76, pictureRadius: 14, gap: 12, lineGap: 4 },
-      cardsGap: 12,
+      card: { radius: 26, pad: 12, picture: 76, pictureRadius: 14, gap: 14, lineGap: 5 },
+      cardsGap: 10,
       empty: { width: 104, height: 72, radius: 14 },
-      mapColumn: { width: 48, gap: 2, pad: 2 },
     },
     // The venue page's back button (48).
     roundLg: 44,

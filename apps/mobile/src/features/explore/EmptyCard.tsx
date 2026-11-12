@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
 import { View } from 'react-native';
 
-import { Glass, T } from '@/aura/kit';
+import { Glass, T, useKit } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
+import { EXPLORE } from '@/theme/explore';
 
 const PICTURE: number = require('../../../assets/riso/empty-venues.webp');
 
@@ -22,8 +23,11 @@ export function EmptyCard({
 }) {
   const card = KIT.size.explore.card;
   const pic = KIT.size.explore.empty;
+  const { c, scheme } = useKit();
   return (
+    // The venue cards' face (tuval Kesfet `.card`, iskelet.md → 2.2).
     <Glass
+      face={EXPLORE[scheme].card}
       testID={testID}
       radius={card.radius}
       style={{
@@ -41,8 +45,12 @@ export function EmptyCard({
         style={{ width: pic.width, height: pic.height, borderRadius: pic.radius }}
       />
       <View style={{ flex: 1, minWidth: 0, gap: card.lineGap }}>
-        <T v="h3">{title}</T>
-        {body ? <T v="fine">{body}</T> : null}
+        <T v="placeName">{title}</T>
+        {body ? (
+          <T v="placeSub" color={c.muted}>
+            {body}
+          </T>
+        ) : null}
       </View>
     </Glass>
   );

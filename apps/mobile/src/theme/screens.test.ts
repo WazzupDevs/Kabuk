@@ -54,7 +54,9 @@ describe("the app's Keşfet", () => {
     for (const part of ['<SearchCapsule', '<ViewSwitch', '<Chip', '<PlaceCard', '<EmptyCard']) {
       expect(screen, part).toContain(part);
     }
-    expect(screen).toMatch(/<StickyField shrink=\{\[X\.capsule, X\.capsulePinned\]\} band>/);
+    expect(screen).toMatch(
+      /<StickyField shrink=\{\[X\.capsule, X\.capsulePinned\]\} band side=\{EXPLORE\.headSide\}>/,
+    );
     expect(screen).toMatch(/from '@\/motion'/);
   });
 
@@ -80,7 +82,8 @@ describe("the app's Keşfet", () => {
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
     // The list row and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
-    expect(screen).toMatch(/<VenueThumb kind=\{type\} size=\{VENUE_CARD_PICTURE\} \/>/);
+    expect(screen).toMatch(/<VenueThumb\s+kind=\{kind\}\s+size=\{VENUE_CARD_PICTURE\}/);
+    expect(screen).toMatch(/<CardPicture kind=\{type\} \/>/);
     expect(screen).toMatch(/const VENUE_CARD_PICTURE = X\.card\.picture;/);
     expect(app('src/theme/auraKit.ts')).toMatch(/picture: 76, pictureRadius: 14/);
     expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
@@ -93,9 +96,10 @@ describe("the app's Keşfet", () => {
     for (const word of ['Kafe', 'Çay bahçesi', 'Kampüs']) expect(tr).toContain(`'${word}'`);
   });
 
-  it('keeps 24 between its blocks and 12 inside them (U13), and is always the list (no single venue)', () => {
-    expect(screen).toMatch(/marginTop: SPACING\[6\]/);
-    expect(screen).toMatch(/gap: SPACING\[3\]/);
+  it("keeps the board's spacing (tuval Kesfet, theme/explore.ts), and is always the list (no single venue)", () => {
+    expect(screen).toMatch(/marginTop: EXPLORE\.districtTop/);
+    expect(screen).toMatch(/marginTop: EXPLORE\.sectionTop/);
+    expect(screen).toMatch(/gap: X\.cardsGap/);
     expect(screen).not.toMatch(/SingleVenue|exploreLayout/);
   });
 
