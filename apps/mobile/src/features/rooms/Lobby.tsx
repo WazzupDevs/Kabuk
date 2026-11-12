@@ -22,6 +22,7 @@ import { useNowUntil } from '@/lib/useNow';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
+import { VENUE } from '@/theme/venue';
 
 import { roomKeys, useMyRequest, useVenueTables, type VenueTable } from './queries';
 import { SpotHeading } from './SpotHeading';
@@ -293,23 +294,26 @@ export function Lobby({
 }
 
 // The heading with its count beside it (iskelet.md → 5.11: the tables shown in the lobby; never a
-// spot's count, rule 6). No count while the section is empty: its empty card already says so.
+// spot's count, rule 6; tuval Mekan: 21/800, its count 13/600 8 after it, 10 under what is above
+// it and 6 in). No count while the section is empty: its empty card already says so.
 function SectionHead({ title, count }: { title: string; count: number | null }) {
-  const { c } = useKit();
+  const { scheme } = useKit();
+  const L = VENUE.lobby;
   return (
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'baseline',
-        gap: SPACING[2],
-        paddingTop: KIT.size.secPadTop,
+        gap: L.headGap,
+        paddingTop: L.headTop,
+        paddingHorizontal: L.headIn,
       }}
     >
-      <T v="secXl" accessibilityRole="header">
+      <T v="exploreSection" ink accessibilityRole="header">
         {title}
       </T>
       {count ? (
-        <T v="fineLg" color={c.muted} tabular>
+        <T v="exploreCount" color={VENUE[scheme].count} tabular>
           {String(count)}
         </T>
       ) : null}

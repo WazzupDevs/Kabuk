@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Glass } from '@/aura/kit';
+import type { ExploreFace } from '@/theme/explore';
 import { AURA, barBandCss, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
@@ -32,6 +33,8 @@ export function CollapsingCard({
   strip,
   folded,
   radius,
+  stripRadius,
+  face,
   band,
   testID,
   children,
@@ -40,6 +43,11 @@ export function CollapsingCard({
   strip: number;
   folded: ReactNode;
   radius: number;
+  // Its corners once it has turned into its strip (tuval Mekan: 30 open, 22 folded); the shadow
+  // is drawn once for each, never on a frame.
+  stripRadius?: number;
+  // A board's own face (theme/venue.ts: the table card's white and its one shadow).
+  face?: ExploreFace;
   band?: number;
   testID?: string;
   children: ReactNode;
@@ -118,6 +126,7 @@ export function CollapsingCard({
     return { opacity: arriveAt(scroll.y.get(), foldedAt, foldedAt + fadePx) };
   });
   const bandHeight = line + strip + (band ?? 0);
+  const round = shut && stripRadius !== undefined ? stripRadius : radius;
 
   return (
     <View
@@ -145,8 +154,8 @@ export function CollapsingCard({
           />
         ) : null}
         {/* Before it is measured the card is its content's height; after, the fold's. */}
-        <Glass radius={radius} style={full > 0 ? FILL : undefined}>
-          <View style={[full > 0 ? FILL : null, { borderRadius: radius, overflow: 'hidden' }]}>
+        <Glass radius={round} face={face} style={full > 0 ? FILL : undefined}>
+          <View style={[full > 0 ? FILL : null, { borderRadius: round, overflow: 'hidden' }]}>
             <Animated.View
               style={open}
               pointerEvents={shut ? 'none' : 'auto'}

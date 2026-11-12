@@ -16,7 +16,7 @@ import { SheetCard, type SheetLook } from '@/components/SheetCard';
 import { SheetScrim } from '@/components/SheetScrim';
 import { tr } from '@/i18n/tr';
 import { ACTIVITIES } from '@/theme/activities';
-import { KIT } from '@/theme/auraKit';
+import { KIT, type KitTextVariant } from '@/theme/auraKit';
 import { runSheetSlide } from '@/lib/sheetSlide';
 import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -63,6 +63,8 @@ type Props = {
   scrollRef?: AnimatedRef<Reanimated.ScrollView>;
   // A board's own sheet (SheetCard → look; tuval Dm's block).
   look?: SheetLook;
+  // The title's type where a board gives one (tuval Mekan's invite: 22/800).
+  titleType?: KitTextVariant;
   children: ReactNode;
 };
 
@@ -88,6 +90,7 @@ export function Sheet({
   footer,
   scrollRef,
   look,
+  titleType,
   children,
 }: Props) {
   const { colors, shape } = useTheme();
@@ -170,7 +173,9 @@ export function Sheet({
                 ) : null}
                 <View className="flex-1">
                   <T
-                    v={titleArt ? 'sheetGame' : titleLarge ? 'sheetTitleLg' : 'title'}
+                    v={
+                      titleType ?? (titleArt ? 'sheetGame' : titleLarge ? 'sheetTitleLg' : 'title')
+                    }
                     center={centered}
                     accessibilityRole="header"
                   >

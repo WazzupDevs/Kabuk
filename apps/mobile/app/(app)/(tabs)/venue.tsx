@@ -30,6 +30,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { PinLayer, Sheet } from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { VENUE } from '@/theme/venue';
 import { Btn, T } from '@/aura/kit';
 
 type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
@@ -132,12 +133,14 @@ export default function VenueScreen() {
   // How much of the check-in's time has passed (the menu's filling bar).
   const startedMs = Date.parse(checkIn.data.created_at);
   const stayShare = expiresAt > startedMs ? (now - startedMs) / (expiresAt - startedMs) : 1;
-  // The folding cards (iskelet.md → 5.11): the venue chat pins under the table card's strip, and
-  // the band reaches under the chat's strip and its fade once the table card is folded.
-  const gap = KIT.size.venueGap;
+  // The folding cards (iskelet.md → 5.11): the venue chat pins under the table card's strip (18
+  // under it, tuval Mekan), and the band reaches under the chat's strip and its fade once the table
+  // card is folded.
+  const gaps = VENUE.gaps;
   const fold = AURA.venueCollapse;
-  const chatAt = fold.tableStrip + gap;
-  const band = gap + fold.chatStrip + Math.round(AURA.topBar.bandHeight * AURA.topBar.bandFade);
+  const chatAt = fold.tableStrip + gaps.chat;
+  const band =
+    gaps.chat + fold.chatStrip + Math.round(AURA.topBar.bandHeight * AURA.topBar.bandFade);
 
   // The spot at the top right; while there is no table a press changes it (the server refuses it
   // at a table).
@@ -146,7 +149,9 @@ export default function VenueScreen() {
     <Screen
       edges={['top']}
       scrollRef={scroll}
-      gap={gap}
+      side={VENUE.side}
+      barSide={VENUE.side}
+      padTop={VENUE.padTop}
       top={
         <VenueHead
           spot={spotName}
@@ -173,24 +178,28 @@ export default function VenueScreen() {
         ) : null}
       </View>
       <PinLayer>
-        <TableCard
-          checkIn={checkIn.data}
-          room={room}
-          state={state}
-          band={band}
-          onCreate={() => setCreating(true)}
-          onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
-        />
+        <View style={{ marginTop: gaps.card }}>
+          <TableCard
+            checkIn={checkIn.data}
+            room={room}
+            state={state}
+            band={band}
+            onCreate={() => setCreating(true)}
+            onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
+          />
+        </View>
       </PinLayer>
       <PinLayer>
-        <VenueChatCard
-          venueId={checkIn.data.venue_id}
-          sessionId={checkIn.data.id}
-          identity={checkIn.data.identity.mode}
-          at={chatAt}
-        />
+        <View style={{ marginTop: gaps.chat }}>
+          <VenueChatCard
+            venueId={checkIn.data.venue_id}
+            sessionId={checkIn.data.id}
+            identity={checkIn.data.identity.mode}
+            at={chatAt}
+          />
+        </View>
       </PinLayer>
-      <View>
+      <View style={{ marginTop: gaps.lobby }}>
         <Lobby
           venueId={checkIn.data.venue_id}
           sessionId={checkIn.data.id}
