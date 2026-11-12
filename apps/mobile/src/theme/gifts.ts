@@ -72,19 +72,54 @@ export const GIFT_STAGE = {
   packShadow: 'rgba(20,8,2,0.45)',
 } as const;
 
-// Aktiviteler's card (docs/design/iskelet.md → 5.3): one dark layer 150 high, 30 round, 16 in;
-// the packs stand out over its top edge at its right (right, top, width, turn): Gümüş turned -12°,
-// Altın 12°, Bronz in the middle in front and bigger. `overhang`: the room over the card for them.
+// Aktiviteler's card (docs/design/iskelet.md → 5.3; tuval Aktivite): one dark layer 170 high, 30
+// round, 20 in, its title 170 wide and 8 under the eyebrow, the button at its foot; the packs stand
+// out over its top edge at its right (right, top, width, turn; each its shadow): Gümüş turned -12°,
+// Altın 12°, Bronz in the middle in front and bigger. `overhang`: the room over the card for them,
+// 44 under the page's title. Its ground a deep green with a lighter light at its top right, its
+// shadow and a faint top light.
 export const GIFT_CARD = {
-  height: 150,
+  height: 170,
   radius: 30,
-  pad: 16,
-  textWidth: 150,
-  overhang: 34,
+  pad: 20,
+  textWidth: 170,
+  titleTop: 8,
+  overhang: 44,
+  // "Paketlere bak": 16 in at its left, 14 at its right, its arrow 15. A pack ready to open: the
+  // accent ring 2 round the card.
+  button: { padLeft: 16, padRight: 14 },
+  chevron: 15,
+  ring: 2,
+  ground:
+    'radial-gradient(80% 110% at 100% 0%, #3F5A4B 0%, rgba(63, 90, 75, 0) 65%), linear-gradient(160deg, #1A2A21 0%, #06180D 100%)',
+  shadow: '0px 18px 40px rgba(3, 27, 11, 0.28), inset 0px 1px 0px rgba(255, 255, 255, 0.12)',
+  eyebrow: '#3DDC84',
+  buttonInk: '#0B5A2D',
   packs: [
-    { pack: 'gumus', right: 98, top: -16, width: 58, turn: '-12deg' },
-    { pack: 'altin', right: 8, top: -16, width: 58, turn: '12deg' },
-    { pack: 'bronz', right: 44, top: -34, width: 96, turn: '0deg' },
+    {
+      pack: 'gumus',
+      right: 112,
+      top: -6,
+      width: 84,
+      turn: '-12deg',
+      shadow: { y: 10, deviation: 7, color: 'rgba(0, 0, 0, 0.35)' },
+    },
+    {
+      pack: 'altin',
+      right: 6,
+      top: -4,
+      width: 84,
+      turn: '12deg',
+      shadow: { y: 10, deviation: 7, color: 'rgba(0, 0, 0, 0.35)' },
+    },
+    {
+      pack: 'bronz',
+      right: 46,
+      top: -40,
+      width: 112,
+      turn: '0deg',
+      shadow: { y: 16, deviation: 10, color: 'rgba(0, 0, 0, 0.45)' },
+    },
   ],
 } as const;
 

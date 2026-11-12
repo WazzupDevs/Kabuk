@@ -50,6 +50,31 @@ export const KIT_TYPE = {
   districtEyebrow: t(800, 11, 14, 0.1),
   districtTitle: t(800, 20, 24, -0.02),
   districtNote: t(500, 13.5, 19),
+  // The small empty card (tuval Detay, Aktivite: 15.5/700, its sentence 13/500 at 1.4).
+  emptyTitle: t(700, 15.5, 20),
+  emptyNote: t(500, 13, 18),
+  // A venue's page (tuval Detay): the name (31, 800, -0.03em; the line the face's own height, as
+  // exploreTitle), the info line's pills (12.5, 700) and place (13.5, 600), the main button's words
+  // (17, 800, -0.01em), the bar's name (15.5, 800, -0.015em).
+  detailTitle: t(800, 31, 39, -0.03),
+  detailPill: t(700, 12.5, 16),
+  detailPlace: t(600, 13.5, 17),
+  detailBtn: t(800, 17, 22, -0.01),
+  barName: t(800, 15.5, 20, -0.015),
+  // Aktiviteler (tuval Aktivite, Sohbet): the gift card's eyebrow (11, 800, 0.12em), title (21,
+  // 800, 1.16 raised to the face's height) and button (14.5, 800); the tabs (15, 700); the game
+  // sheet's title (22, 800, -0.025em), its note (13.5, 600, 1.42), its eyebrow (12, 800, 0.1em),
+  // a person's line (12.5, 600), the small actions (13.5, 800; once pressed 700).
+  giftEyebrow: t(800, 11, 14, 0.12),
+  giftTitle: t(800, 21, 26, -0.02),
+  giftBtn: t(800, 14.5, 18),
+  tabsBoard: t(700, 15, 19),
+  sheetGame: t(800, 22, 28, -0.025),
+  sheetNote: t(600, 13.5, 19),
+  sheetEyebrow: t(800, 12, 16, 0.1),
+  personLine: t(600, 12.5, 16),
+  actionSm: t(800, 13.5, 17),
+  actionSmDone: t(700, 13.5, 17),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),

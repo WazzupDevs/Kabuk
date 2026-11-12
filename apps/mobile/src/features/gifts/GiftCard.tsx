@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
-import { Animated, Image, StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { Animated, Image, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, T } from '@/aura/kit';
+import { boxShadowParts } from '@/components/NativeShadow';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useLabOff } from '@/lib/drawLab';
 import { Tap } from '@/motion';
 import { upperTr } from '@shared/trText.ts';
+import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { GIFT_CARD, GIFT_STAGE } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
@@ -22,26 +24,17 @@ import { useGiftState } from './queries';
 
 // Aktiviteler's gift card (docs/design/iskelet.md → 5.3): one dark layer (no glass round it), the
 // three packs in the air standing out over its top edge at its right (Gümüş -12°, Altın 12°, Bronz
-// in the middle, bigger), the words at its left and the clear "Paketlere bak" under them.
+// in the middle, bigger), the words at its left and the clear "Paketlere bak" at its foot. Every
+// state on the board's ground with the packs in colour (tuval Aktivite); a pack ready to open
+// keeps the accent ring round the card.
 const C = GIFT_CARD;
-// The stage's stars (as a share of the card's width, top, size, opacity).
-const STARS = [
-  { x: 0.545, top: 18, size: 10, opacity: 0.9 },
-  { x: 0.629, top: 112, size: 7, opacity: 0.7 },
-  { x: 0.975, top: 120, size: 8, opacity: 0.8 },
-  { x: 0.482, top: 70, size: 6, opacity: 0.5 },
-] as const;
-const STAR_PATH = 'M5 0L6 4L10 5L6 6L5 10L4 6L0 5L4 4Z';
-// Every accessory owned: the packs greyed (saturate .35, brightness .85).
-const GREYED = [{ saturate: 0.35 }, { brightness: 0.85 }] as const;
-// `drop-shadow(0 10px 12px …)`: CSS's blur is twice the deviation.
-const PACK_SHADOW = {
-  dropShadow: { offsetX: 0, offsetY: 10, standardDeviation: 6, color: GIFT_STAGE.packShadow },
-};
 
 export function GiftCard() {
   const gifts = useGiftState();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
+  // The board's deep green words on the light clear glass; the dark glass keeps its own ink.
+  const buttonInk = scheme === 'light' ? C.buttonInk : KIT.button.dark.clear.ink;
+  const shadowOff = useLabOff('golge');
   const open = () => router.push('/gifts');
 
   if (gifts.isPending) {
@@ -95,6 +88,11 @@ export function GiftCard() {
       : state.kind === 'progress'
         ? tr.gifts.cardLabelProgress(packName(state.pack), state.left, state.logins, state.per)
         : tr.gifts.cardLabelAllOwned;
+  const shadow = boxShadowParts(
+    shadowOff,
+    ready ? `${C.shadow}, 0px 0px 0px ${C.ring}px ${colors.accent}` : C.shadow,
+    C.radius,
+  );
 
   return (
     <Tap
@@ -106,31 +104,25 @@ export function GiftCard() {
     >
       <View
         style={[
-          { minHeight: C.height, borderRadius: C.radius },
-          gradientStyle(state.kind === 'allOwned' ? GIFT_STAGE.allOwned : GIFT_STAGE.ready),
-          // Ready: the accent ring round the card.
-          ready ? { boxShadow: `0 0 0 2px ${colors.accent}` } : null,
+          { minHeight: C.height, borderRadius: C.radius, boxShadow: shadow.boxShadow },
+          gradientStyle(C.ground),
         ]}
       >
-        {state.kind !== 'allOwned' ? (
-          <View
-            pointerEvents="none"
-            style={[StyleSheet.absoluteFill, { borderRadius: C.radius, overflow: 'hidden' }]}
-          >
-            <StageLight />
-          </View>
-        ) : null}
-        <View style={{ width: C.textWidth, padding: C.pad, gap: SPACING[1] }}>
-          <T v="stamp" color={GIFT_STAGE.eyebrow} strong style={{ letterSpacing: 1.5 }}>
+        {shadow.node}
+        {/* The words at its left, the button at its foot (tuval Aktivite). */}
+        <View style={{ flexGrow: 1, padding: C.pad }}>
+          <T v="giftEyebrow" color={C.eyebrow}>
             {upperTr(tr.gifts.eyebrow)}
           </T>
           {state.kind === 'ready' ? (
-            <T v="title" color={GIFT_STAGE.ink}>
-              {tr.gifts.ready(packName(state.pack))}
-            </T>
+            <View style={{ width: C.textWidth, marginTop: C.titleTop }}>
+              <T v="giftTitle" color={GIFT_STAGE.ink}>
+                {tr.gifts.ready(packName(state.pack))}
+              </T>
+            </View>
           ) : state.kind === 'progress' ? (
-            <>
-              <T v="h3" color={GIFT_STAGE.ink}>
+            <View style={{ width: C.textWidth, marginTop: C.titleTop }}>
+              <T v="giftTitle" color={GIFT_STAGE.ink}>
                 {tr.gifts.loginsLeft(packName(state.pack), state.left)}
               </T>
               <View
@@ -152,19 +144,26 @@ export function GiftCard() {
                   {tr.gifts.progress(state.logins, state.per)}
                 </T>
               </View>
-            </>
+            </View>
           ) : (
-            <T v="h3" color={GIFT_STAGE.ink}>
-              {tr.gifts.allOwned}
-            </T>
+            <View style={{ width: C.textWidth, marginTop: C.titleTop }}>
+              <T v="giftTitle" color={GIFT_STAGE.ink}>
+                {tr.gifts.allOwned}
+              </T>
+            </View>
           )}
-          <Btn
-            sm
-            variant="glassy"
-            label={tr.gifts.seePacks}
-            onPress={open}
-            style={{ marginTop: SPACING[2], alignSelf: 'flex-start' }}
-          />
+          {/* Clear, its words 14.5/800 in the deep green and its arrow after them. */}
+          <View style={{ marginTop: 'auto', paddingTop: SPACING[2] }}>
+            <Btn
+              sm
+              variant="glassy"
+              label={tr.gifts.seePacks}
+              onPress={open}
+              tint={buttonInk}
+              look={{ type: 'giftBtn', padLeft: C.button.padLeft, padRight: C.button.padRight }}
+              trail={<CapIcon name="chevron" color={buttonInk} size={C.chevron} />}
+            />
+          </View>
         </View>
         <View
           pointerEvents="none"
@@ -175,7 +174,6 @@ export function GiftCard() {
               key={p.pack}
               index={i}
               {...p}
-              greyed={state.kind === 'allOwned'}
               badge={ready && p.pack === state.pack ? state.count : 0}
             />
           ))}
@@ -185,42 +183,16 @@ export function GiftCard() {
   );
 }
 
-// The stage's warm light at the right and its stars.
-function StageLight() {
-  return (
-    <>
-      <View
-        pointerEvents="none"
-        style={[
-          { position: 'absolute', right: 20, top: 10, width: 170, height: 140 },
-          gradientStyle(GIFT_STAGE.sun),
-        ]}
-      />
-      {STARS.map((s) => (
-        <Svg
-          key={`${s.x}-${s.top}`}
-          viewBox="0 0 10 10"
-          width={s.size}
-          height={s.size}
-          style={{ position: 'absolute', left: `${s.x * 100}%`, top: s.top }}
-        >
-          <Path d={STAR_PATH} fill={GIFT_STAGE.star} opacity={s.opacity} />
-        </Svg>
-      ))}
-    </>
-  );
-}
-
 // A pack in the air: it floats ±3 over 2.6 s, each 0.65 s after the one before; still with reduce
-// motion.
+// motion. Its drop shadow is the board's (CSS's blur is twice the deviation).
 function FloatingPack({
   pack,
   right,
   top,
   width,
   turn,
+  shadow,
   index,
-  greyed,
   badge,
 }: {
   pack: (typeof GIFT_CARD.packs)[number]['pack'];
@@ -228,8 +200,8 @@ function FloatingPack({
   top: number;
   width: number;
   turn: string;
+  shadow: { y: number; deviation: number; color: string };
   index: number;
-  greyed: boolean;
   badge: number;
 }) {
   const { px, ms, stepMs } = GIFT_MOTION.cardFloat;
@@ -248,7 +220,20 @@ function FloatingPack({
       <View style={{ transform: [{ rotate: turn }] }}>
         {/* The filter on the picture only: it cuts what lies past its view (Android), and the
             badge stands out over the corner (the owner's report, 7 Kasım). */}
-        <View style={{ filter: greyed ? [...GREYED, PACK_SHADOW] : [PACK_SHADOW] }}>
+        <View
+          style={{
+            filter: [
+              {
+                dropShadow: {
+                  offsetX: 0,
+                  offsetY: shadow.y,
+                  standardDeviation: shadow.deviation,
+                  color: shadow.color,
+                },
+              },
+            ],
+          }}
+        >
           <Image
             source={PACK_ART[pack]}
             accessibilityIgnoresInvertColors

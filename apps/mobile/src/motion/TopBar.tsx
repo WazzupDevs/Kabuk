@@ -158,16 +158,20 @@ export function TopBarRow({
 export function BarArrive({
   from,
   to,
+  rise = 0,
   children,
 }: {
   from: number;
   to: number;
+  // How far it rises into place as it comes in (tuval Detay: the venue's name, 8).
+  rise?: number;
   children: ReactNode;
 }) {
   const scroll = useScreenScroll();
-  const style = useAnimatedStyle(() => ({
-    opacity: scroll ? arriveAt(scroll.y.get(), from, to) : 0,
-  }));
+  const style = useAnimatedStyle(() => {
+    const a = scroll ? arriveAt(scroll.y.get(), from, to) : 0;
+    return { opacity: a, transform: [{ translateY: (1 - a) * rise }] };
+  });
   return (
     <Animated.View
       pointerEvents="none"

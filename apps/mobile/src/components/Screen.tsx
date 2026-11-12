@@ -82,6 +82,10 @@ type Props = {
   // screen) or `sayfa` (as a PageTop in `top`, which takes the `sayfa` bar by itself).
   bar?: TopBarKind;
   title?: string;
+  // A board's own room where it draws it (tuval Aktivite: 16 from the sides, 15 under the status
+  // bar): the content's side and top padding.
+  side?: number;
+  padTop?: number;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
@@ -113,6 +117,8 @@ export function Screen({
   pinned,
   bar,
   title,
+  side,
+  padTop,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -154,8 +160,8 @@ export function Screen({
   // Under a fixed top the page starts 20 below the bar's foot; under the overlaid bar, below its row.
   const content = {
     flexGrow: 1,
-    paddingHorizontal: shape.screenPadding,
-    paddingTop: overlay ? TOP_BAR_ROW + SPACING[2] : flowTop ? TOP_FADE : SPACING[3],
+    paddingHorizontal: side ?? shape.screenPadding,
+    paddingTop: padTop ?? (overlay ? TOP_BAR_ROW + SPACING[2] : flowTop ? TOP_FADE : SPACING[3]),
     paddingBottom: footer ? SPACING[4] : barSpace ? insets.bottom + SCROLL_PAD : SPACING[8],
     gap,
   };
