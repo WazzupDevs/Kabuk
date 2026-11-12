@@ -18,9 +18,9 @@ import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton } from '@/components/IconButton';
-import { Menu, MenuItem } from '@/components/Menu';
+import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { Loader } from '@/components/Loader';
-import { Sheet } from '@/components/Sheet';
+import type { MenuAnchor } from '@/motion';
 import { useHideTabBar } from '@/components/TabBar';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -92,6 +92,14 @@ export default function DmScreen() {
   const photoUrl = friend?.photoUrl ?? null;
   const messages = useDmMessages(threadId);
   const [menu, setMenu] = useState(false);
+  // iskelet.md → 3.5 and 5.5: the menu grows out of the three dots, measured as they are pressed.
+  const moreRef = useRef<View>(null);
+  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
+  const openMenu = () =>
+    measureMenuAnchor(moreRef.current, (at) => {
+      setAnchor(at);
+      setMenu(true);
+    });
   const [confirm, setConfirm] = useState<'remove' | 'block' | null>(null);
   const [reporting, setReporting] = useState(false);
   const [outbox, dispatch] = useReducer(outboxReducer, []);
@@ -428,21 +436,26 @@ export default function DmScreen() {
         <ChatTopBar
           onBack={backToInbox}
           title={name}
+          // iskelet.md → 5.5: "yazıyor…" under the name while the friend types, nothing otherwise.
+          subtitle={typing ? tr.dm.typingTitle : undefined}
           leading={<Av size="member" name={name} photoUrl={photoUrl} />}
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
           actions={
-            <IconButton
-              // U29: moreV.
-              icon="ellipsis-vertical"
-              label={tr.friends.more}
-              onPress={() => setMenu(true)}
-            />
+            <View ref={moreRef} collapsable={false}>
+              <IconButton
+                // U29: moreV.
+                icon="ellipsis-vertical"
+                label={tr.friends.more}
+                onPress={openMenu}
+              />
+            </View>
           }
         />
       }
       composer={
         <DraftComposer
+          capsule
           inputTestID="dm-input"
           sendTestID="dm-send"
           sendLabel={tr.dm.send}
@@ -456,8 +469,9 @@ export default function DmScreen() {
         />
       }
     >
-      <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.friends.friendMenuTitle}>
-        <Menu>
+      {anchor ? (
+        // iskelet.md → 3.5: no "Vazgeç"; a tap outside closes it, Engelle red at the foot apart.
+        <Menu anchor={anchor} visible={menu} onClose={() => setMenu(false)}>
           <MenuItem
             icon="report"
             label={tr.dm.report}
@@ -484,8 +498,7 @@ export default function DmScreen() {
             }}
           />
         </Menu>
-        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
-      </Sheet>
+      ) : null}
 
       <ReportModal
         reasons={REPORT_REASONS}
@@ -502,6 +515,8 @@ export default function DmScreen() {
         hint={confirm === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
         confirmLabel={confirm === 'block' ? tr.friends.blockConfirm : tr.friends.removeConfirm}
         confirmIcon={confirm === 'block' ? 'block' : undefined}
+        // iskelet.md → 3.5: the person's picture over the sentence.
+        picture={<Av size="lg" name={name} photoUrl={photoUrl} />}
         pending={end.isPending}
         error={end.error}
         onConfirm={(reason) => confirm && end.mutate({ kind: confirm, reason })}

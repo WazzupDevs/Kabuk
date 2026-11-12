@@ -345,6 +345,9 @@ export const MOTION = {
   // a menu grows out of its button on springs.menu from `fromScale`.
   sheetOpen: { fromY: 80, fromOpacity: 0.3 },
   menuOpen: { fromScale: 0.18 },
+  // iskelet.md → 5.5: a new message comes in on springs.pop from `fromY` below and `fromScale`; the
+  // DM's send button grows on springs.pop from `sendFromScale` once there is something to send.
+  messageIn: { fromY: 18, fromScale: 0.86, sendFromScale: 0.4 },
   // A card opening over the screen: its content this long after the ground.
   cardOpen: { contentAfterMs: 150 },
   tab: {

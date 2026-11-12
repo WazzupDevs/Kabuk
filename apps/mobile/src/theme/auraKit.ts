@@ -785,10 +785,12 @@ export const KIT = {
     grabH: 4,
     msgRadius: 22,
     msgTail: 8,
-    // Chat bubbles as Telegram Android lays them (the owner's call, 30 Ekim): 18 round, 6 inside a
-    // run on the author's side, the run's last one with a tail 7 × 12; tighter padding.
-    bubbleRadius: 18,
-    bubbleInner: 6,
+    // Chat bubbles (iskelet.md → 5.5): 20 round, 7 where a run's bubbles face each other, the run's
+    // last one with a tail 7 × 12; a run's bubbles 3 apart, 12 when the writer changes.
+    bubbleRadius: 20,
+    bubbleInner: 7,
+    runGap: 3,
+    runApart: 12,
     bubblePadX: 12,
     bubblePadY: 7,
     tailW: 7,
@@ -831,6 +833,11 @@ export const KIT = {
     // A chat's message field and its send button (docs/design/aura → Dm).
     composerField: 44,
     composerSend: 44,
+    // iskelet.md → 5.5: the DM's message bar one glass capsule 52, its send a 38 green round inside
+    // it at the right, `composerSendInset` from its edge.
+    composerCapsule: 52,
+    composerSendIn: 38,
+    composerSendInset: 7,
     phoneField: 72,
     fieldPadX: 20,
     dayPadX: 12,

@@ -617,6 +617,8 @@ export const tr = {
       read: 'Okundu',
     },
     typing: 'yazıyor',
+    // Under the name in the DM's top bar (iskelet.md → 5.5).
+    typingTitle: 'yazıyor…',
   },
   // skall tuvali (KapsulSusle…, KapsulGaleri; docs/SPEC_V4.md §4.D, K-46, K-61).
   capsule: {

@@ -1,5 +1,5 @@
 import type { GameFlowReportReason } from '@shared/chat.ts';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
 import type { CapIconName } from '@/aura/CapIcon';
@@ -22,6 +22,8 @@ type Props<R extends GameFlowReportReason> = {
   confirmLabel: string;
   // The confirm button's icon (EngelleOnay: `block`).
   confirmIcon?: CapIconName;
+  // The person's picture over the sentence (iskelet.md → 3.5; the DM, 5.5).
+  picture?: ReactNode;
   pending: boolean;
   error: unknown;
   onConfirm: (report: R | undefined) => void;
@@ -38,6 +40,7 @@ export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R
   return (
     <>
       <Sheet visible={props.visible && !pickingReason} onClose={props.onClose} title={props.title}>
+        {props.picture ? <View className="items-center">{props.picture}</View> : null}
         <T v="fine">{props.hint}</T>
         <Checkbox
           boxed

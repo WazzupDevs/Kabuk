@@ -206,9 +206,9 @@ export function ChatBubble({
     if (host) host.show((close) => popLayer(at, close));
     else setPop(at);
   };
-  // Telegram Android's bubble (the owner's call, 30 Ekim): 18 round; on the author's side (left
-  // for others, right for the viewer's own) the corners inside a run are tight, and the run's last
-  // bubble has a tail at its foot.
+  // Telegram Android's bubble (the owner's call, 30 Ekim; iskelet.md → 5.5: 20 round, 7 tight): on
+  // the author's side (left for others, right for the viewer's own) the corners inside a run are
+  // tight, and the run's last bubble has a tail at its foot.
   const { scheme } = useKit();
   const kind = useChatKind();
   const metaRef = useChatMetaRef();
