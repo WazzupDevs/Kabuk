@@ -557,6 +557,14 @@ export const KIT = {
   // U24 (Masadakiler `.sh`, `.srow`): the sheet 84 from the top; a person's row 56 high, 6 / 14 in,
   // their face 40 (`av.list`).
   peopleSheet: { top: 84, height: 56, padY: 6, padX: 14 },
+  // docs/design/iskelet.md → 5.3: the game sheet's green-toned note (16 round, 12 in; 2.4: the
+  // sheet's card less its inset), its words in the clear button's green.
+  historyNote: {
+    light: { fill: 'rgba(14, 135, 69, 0.10)', ink: '#0B5A2D' },
+    dark: { fill: 'rgba(31, 220, 117, 0.14)', ink: '#1FDC75' },
+    radius: 16,
+    pad: 12,
+  },
   // docs/design/iskelet.md → 5.2 (the `kapak` bar): the cover 360 high, moving at 0.45 of the
   // scroll; a 130 dark fade over its top (#031B0B at 38 % to clear); the content riding over its
   // foot as a card 34 round; the band coming in over 240–280, the venue's small picture (32, 10
@@ -683,8 +691,8 @@ export const KIT = {
     stateLoader: 40,
     stateLoadTop: 18,
     stateLoadGap: 10,
-    // Aktiviteler's history rows (U16): a 52 picture.
-    historyThumb: 52,
+    // Aktiviteler's history rows (iskelet.md → 5.3): a 56 picture.
+    historyThumb: 56,
     // Kapsülün (U35): the capsule's 4 ring; the chosen option's 2 ring 2 out round its capsule; a
     // chip's close icon 10 in.
     capsuleRing: 4,
