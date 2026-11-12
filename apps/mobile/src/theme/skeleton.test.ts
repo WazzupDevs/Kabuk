@@ -16,6 +16,7 @@ import {
   tabShrinks,
 } from '../motion/scrollMath';
 import { AURA, barBandCss, barEdgeCss, MOTION } from './aura';
+import { PROFILE_PAGE } from './profileCover';
 
 const mobile = join(import.meta.dirname, '..', '..');
 const code = (file: string) => readFileSync(join(mobile, file), 'utf8');
@@ -145,6 +146,29 @@ describe('the cover (kapak, 5.2)', () => {
     expect(coverShift(200, 0.45) - coverShift(100, 0.45)).toBeCloseTo(-45);
     expect(coverShift(-40, 0.45)).toBe(-0);
     expect(code('src/motion/Cover.tsx')).not.toMatch(/withSpring|withTiming|Easing/);
+  });
+});
+
+describe("another person's profile (kapak, 5.6)", () => {
+  const O = PROFILE_PAGE.other;
+  const page = code('app/(app)/people/[publicId].tsx');
+  it('the cover at 0.5, the photo to 0.75 over 60–180 and out over 120–190', () => {
+    expect(O.speed).toBe(0.5);
+    expect(O.faceShrink).toEqual([60, 180]);
+    expect(O.faceScale).toBe(0.75);
+    expect(O.faceFade).toEqual([120, 190]);
+    expect(PROFILE_PAGE.face).toBe(124);
+    expect(PROFILE_PAGE.ring).toBe(4);
+    expect(page).toMatch(/<Cover height=\{coverHeight\} speed=\{O\.speed\}>/);
+    expect(page).toMatch(/<ScrollFade fade=\{O\.faceFade\} shrink=\{O\.faceShrink\}/);
+    expect(page).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}>/);
+  });
+  it('"Arkadaşlıktan çıkar" in the menu only, the DM menu grown from the three dots', () => {
+    expect(page).not.toMatch(/FriendActions/);
+    expect(page).toMatch(/<Menu anchor=\{anchor\}/);
+    expect(page).toMatch(/label=\{tr\.friends\.removeFriend\}/);
+    // No capsule and no nick on another person's profile (rule 4).
+    expect(page).not.toMatch(/capsuleNick|capsuleLook|LivingLook/);
   });
 });
 

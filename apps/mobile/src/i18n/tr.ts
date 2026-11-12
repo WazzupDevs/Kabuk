@@ -719,6 +719,13 @@ export const tr = {
       voice_tabu_five_wins: `${GAME_NAMES.tabu} ustası`,
       five_tables: '5 farklı masa',
     },
+    // docs/design/iskelet.md → 5.6: the badges in their grouped card.
+    badgesTitle: 'Rozetler',
+    // iskelet.md → 5.8: Profili düzenle's birth date row and Kaydet once saved.
+    birthDate: 'Doğum tarihi',
+    unchangeable: 'Değiştirilemez',
+    savedShort: 'Kaydedildi',
+    fieldCount: (n: number, max: number) => `${n}/${max}`,
     notVisible: 'Bu profil artık görüntülenemiyor.',
     // Another person's profile: the menu at the top right (v45: .pmore).
     more: 'Seçenekler',

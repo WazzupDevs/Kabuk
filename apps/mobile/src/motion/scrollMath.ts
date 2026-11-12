@@ -75,6 +75,56 @@ export function coverShift(y: number, speed: number): number {
   return -Math.max(0, y) * speed;
 }
 
+// Something in the scrolling content that moves at `speed` of the scroll instead (the own profile's
+// upper part, iskelet.md → 5.7): the content carries it up by y, so it is moved back by y less its
+// own move. Pulled past the top it stays where it is.
+export function riseInContent(y: number, speed: number): number {
+  'worklet';
+  return y - Math.max(0, y) * speed;
+}
+
+// The own profile's flight into the bar (5.7): t from 0 to 1 over [0, arrive], linear.
+export function flightAt(y: number, arrive: number): number {
+  'worklet';
+  return ramp(y, 0, arrive);
+}
+
+// A point's x on the flight, `from` to `to`.
+export function flyX(t: number, from: number, to: number): number {
+  'worklet';
+  return from + (to - from) * t;
+}
+
+// A point's y on the flight: it starts riding the upper part (`from` moved up at `speed`, less as t
+// grows) and ends at `to`: (from − speed·y·(1 − t))·(1 − t) + to·t.
+export function flyY(y: number, t: number, from: number, to: number, speed: number): number {
+  'worklet';
+  return (from - speed * Math.max(0, y) * (1 - t)) * (1 - t) + to * t;
+}
+
+// The photo on the flight: its white disc `from` → `to` across and its ring `ringFrom` → `ringTo`,
+// as the scales of the disc (drawn `from` across) and of the face in it (drawn from − 2·ringFrom).
+export function flyFace(
+  t: number,
+  from: number,
+  to: number,
+  ringFrom: number,
+  ringTo: number,
+): { disc: number; face: number } {
+  'worklet';
+  const side = from + (to - from) * t;
+  const ring = ringFrom + (ringTo - ringFrom) * t;
+  return { disc: side / from, face: (side - 2 * ring) / (from - 2 * ringFrom) };
+}
+
+// The name's centre in the bar: its own `x`, kept `half` (its scaled half width) clear of the photo
+// on its left (`left`) and the button on its right (`right`); centred between them if it is wider.
+export function barNameX(x: number, half: number, left: number, right: number): number {
+  'worklet';
+  if (right - left < 2 * half) return (left + right) / 2;
+  return Math.min(right - half, Math.max(left + half, x));
+}
+
 // The tab bar shrinking (3.3, MOTION.tabMin): `dy` the offset's change since the last frame. Below
 // `openPx` it is open; scrolled up it opens; past `thresholdPx`, scrolled down faster than
 // `speedPx` a frame, it shrinks; otherwise it stays as it is.
