@@ -627,22 +627,18 @@ export const tr = {
     shuffle: 'Rastgele karıştır',
     tapHead: 'Kafama dokun',
     empty: (slot: string) => `${slot} boş`,
-    pack: (name: string) => `${name} paketi`,
-    wearPack: 'Paketi tak',
-    // The slot's options all at once, grouped by pack, in a sheet (the owner's call, 8 Kasım).
-    seeAll: 'Hepsini gör',
-    allTitle: (slot: string) => `${slot} seçenekleri`,
+    // iskelet.md → 5.10: the theme packs' thin row over the slots, "Tümü" first.
     allPacks: 'Tümü',
-    // A slot's button: its name, what is in it, and whether it differs from the saved look.
-    slotLabel: (slot: string, value: string, changed: boolean) =>
-      changed ? `${slot}: ${value}, değişti` : `${slot}: ${value}`,
+    packs: 'Tema paketleri',
+    slots: 'Bölümler',
+    slotChanged: (slot: string) => `${slot}, değişti`,
     clearAll: 'Hepsini çıkar',
     save: 'Kaydet',
+    savedShort: 'Kaydedildi',
     unsavedTitle: 'Değişiklikler kaydedilmedi',
     unsavedBody: 'Kaydetmeden çıkarsan kapsülün eski hâline döner.',
     saveAndLeave: 'Kaydet ve çık',
     leaveUnsaved: 'Kaydetmeden çık',
-    saved: 'Kapsülün kaydedildi.',
     galleryTitle: 'Kapsül karakterler',
     gallerySub: (n: number) => `${n} anonim karakter`,
     galleryBody:

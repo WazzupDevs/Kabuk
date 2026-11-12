@@ -1,7 +1,6 @@
 // motionGuard.test.ts: the screens and features that still import motion or a bare Pressable
 // themselves (61 files on 12 Kasım). Only shrinks: a file moved to the kit leaves it.
 export const MOTION_ALLOWED: readonly string[] = [
-  'app/(app)/(tabs)/profile/capsule.tsx',
   'app/(app)/district/gate.tsx',
   'app/(app)/district/room.tsx',
   'app/(app)/gifts.tsx',
@@ -10,8 +9,6 @@ export const MOTION_ALLOWED: readonly string[] = [
   'app/(auth)/welcome.tsx',
   'src/features/activities/EventCard.tsx',
   'src/features/capsule/CapsuleStage.tsx',
-  'src/features/capsule/OptionCarousel.tsx',
-  'src/features/capsule/OptionsSheet.tsx',
   'src/features/design/DrawLabPanel.tsx',
   'src/features/design/capsuleGridCanvas.tsx',
   'src/features/design/capsuleMeasurePreview.tsx',

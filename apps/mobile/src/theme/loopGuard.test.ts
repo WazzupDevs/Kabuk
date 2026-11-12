@@ -32,6 +32,11 @@ const FRAME_LOOPS: Record<string, string> = {
   // and its clock moves the canvas's own drawing, no view's props. Behind CAPSULE_SKIA (Süsle) and
   // the lab's switch; held only while the drawing moves (FxSvg → useLoopActive, reduce motion).
   'src/components/FxSkia.tsx': 'Skia drawing, behind its switch',
+  // Kapsülünü süsle's floating capsule (iskelet.md → 5.10): an SVG under a view the native driver
+  // moves was not drawn until the move ended (CapsuleStage, 27 Ekim), and the float never ends. Only
+  // transform and opacity (synchronous UI props); held only while the screen is on top with the app
+  // in front (useLoopActive), still with reduce motion.
+  'src/motion/Float.tsx': 'Süsle float, SVG under it',
 };
 
 function files(dir: string): string[] {

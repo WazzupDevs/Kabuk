@@ -188,9 +188,6 @@ export const KIT = {
     infoRow: '#E6F0E8',
     glassEdge: 'rgba(255, 255, 255, 0.86)',
     glassShadow: SHADOW.glass,
-    // Kapsülünü süsle: the capsule's floor shadow (light: faint, so the pill under it does not read
-    // as a grey bar on the light ground, audit M15-30).
-    capsuleFloor: 'rgba(3, 27, 11, 0.06)',
     // The light top edge of glass and of the primary (none in the dark: a white line on every
     // object, the owner's call, 28 Ekim).
     glassInset: 'inset 0px 1px 0px #FFFFFF',
@@ -270,7 +267,6 @@ export const KIT = {
     infoRow: '#1B211F',
     glassEdge: 'rgba(255, 255, 255, 0.09)',
     glassShadow: '',
-    capsuleFloor: 'rgba(0, 0, 0, 0.40)',
     glassInset: '',
     primaryInset: '',
     raised: '#121614',
@@ -738,21 +734,21 @@ export const KIT = {
     // Kapsülün (U35): the capsule's 4 ring; the chosen option's 2 ring 2 out round its capsule; a
     // chip's close icon 10 in.
     capsuleRing: 4,
-    // Kapsülünü süsle (the owner's call, 8 Kasım): the capsule 220 on a soft floor shadow (60 %
-    // of its width, 14 high); the slot's options in a snapping row, the centred one 92 ringed in the
-    // accent and its neighbours 70, 56 and 44, 90 apart; the sheet's tiles up to 52; the six slots'
-    // buttons 36 with a 8 dot.
+    // Kapsülünü süsle (iskelet.md → 5.10): the capsule 220 on its riso scene, a breathing shadow
+    // under it (60 % of its width, 14 high); a part put on drops it 18 onto its feet. The trying
+    // strip: 84 round options, 96 apart, the centred one 1.14 and ringed in green, the others 0.9;
+    // its art 60 inside, its two ends fading over 28; at most 7 dots under it.
     capsuleStage: 220,
-    capsuleFloorW: 0.6,
-    capsuleFloorH: 14,
-    capsuleFloorBlur: 10,
-    carouselItem: 92,
-    carouselSizes: [92, 70, 56, 44],
-    carouselFades: [1, 0.8, 0.55, 0.3],
-    carouselStep: 90,
-    sheetTile: 52,
-    slotButton: 36,
-    slotDot: 8,
+    capsuleShadowW: 0.6,
+    capsuleShadowH: 14,
+    capsuleDrop: 18,
+    stripItem: 84,
+    stripStep: 96,
+    stripOn: 1.14,
+    stripOff: 0.9,
+    stripArt: 60,
+    stripFade: 28,
+    stripDots: 7,
     boxRing: 2,
     boxRingGap: 2,
     chipIconPadLeft: 10,
