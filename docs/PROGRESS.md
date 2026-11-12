@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (12 Kasım 2026, öğleden sonra): panolarla fark kapatma
+
+- Proje sahibi gece yürütmesinin sonucunu "referansın birebir aynısı olmamış" diye bildirdi: ekranlar yalnız `iskelet.md` metninden yazılmış, tuval panoları açılmamıştı. Panolar indirildi ve ekran ekran ölçü farkı kapatıldı: #592 Keşfet ve Harita, #594 Mekan detayı ve Aktiviteler, #595 Mesajlar ve DM, #596 profiller, #597 Ayarlar ve Mekan. #598 Kapsül düzenleyici açık, proje sahibinin "birleştir"ini bekliyor (Süsle kuralı). Hiçbiri telefonda görülmedi.
+- Kural: `iskelet.md`'nin açıkça yazdığı değer kaldı, yazmadığı her şey panodan alındı; panonun değerleri ekran başına `src/theme/` dosyasında (`explore.ts`, `venueDetail.ts`, `activities.ts`, `messages.ts`, `dm.ts`, `person.ts`, `ownProfile.ts`, `profileEdit.ts`, `friendsList.ts`, `settings.ts`, `venue.ts`). Belge ile panonun ayrıştığı yerler (bar bandı, düğme boyları, okundu tikinin rengi, Mesajlar'daki arama) PR açıklamalarında; hangisinin geçerli olacağı proje sahibine soruldu.
+- Proje sahibi "şimdilik ekleme" dedi: aşağıdaki nottaki kalan özellikler (birlikte oynanan oyunlar, başkasının profilinde kapsül, göz kırpma, canlı cam, kenardan geri) beklemede.
+
 ## Devir notu (12 Kasım 2026, gece yürütmesi sonrası): ortak tasarım ve hareket dili
 
 - Birleşenler (`docs/decisions/iskelet.md` → "Uygulama"): temel #579 (cam düğmeler, `MOTION`), #580 (hareket kiti, alt sayfa, menü), #582 (üst bar, yapışan alan, sekme çubuğu, geçişler); ekranlar 5.1 #583, 5.2–5.3 #584, 5.4–5.5 #585, 5.6–5.8 #586, 5.9 ve 5.11 #588, 5.10 #589; hatalar 6.1–6.2 #578, 6.3 #589, 6.4 ve 6.6 #579. Hiçbiri telefonda görülmedi: proje sahibinin bildirdiği bozukluk aynı gün düzeltilir; 5.10 için ekran kaydı istenir (şerit, kenetlenme, takılma).
