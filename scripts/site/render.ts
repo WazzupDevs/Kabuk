@@ -1,6 +1,13 @@
 // The public legal pages (skall.world): each docs/legal/*.md becomes one HTML page. Pure, so the
-// placeholder and the draft banner are tested; scripts/build-site.ts does the file work.
+// placeholders and the draft banner are tested; scripts/build-site.ts does the file work.
 import { marked } from 'marked';
+
+import {
+  fillLegalText,
+  LEGAL_ENTITY,
+  type LegalEntity,
+  legalReady,
+} from '../../supabase/functions/_shared/pure/legalEntity.ts';
 
 export type LegalPage = { slug: string; title: string };
 
@@ -9,17 +16,14 @@ export const LEGAL_PAGES: LegalPage[] = [
   { slug: 'gizlilik-politikasi', title: 'Gizlilik Politikası' },
   { slug: 'kvkk-aydinlatma-metni', title: 'KVKK Aydınlatma Metni' },
   { slug: 'kullanim-kosullari', title: 'Kullanım Koşulları' },
-  { slug: 'hesap-silme', title: 'Hesap Silme Talebi' },
+  { slug: 'topluluk-kurallari', title: 'Topluluk Kuralları' },
+  // Google Play's Child Safety Standards policy wants this page public, with the developer name.
+  { slug: 'cocuk-guvenligi', title: 'Çocuk Güvenliği Standartları' },
+  { slug: 'hesap-silme', title: 'Hesap Silme' },
 ];
 
-// Shown on every page until the texts pass legal review.
-export const DRAFT_NOTICE = 'Taslak, hukuki kontrol bekliyor.';
-
-const PLACEHOLDER = /\{\{APP_NAME\}\}/g;
-
-export function fillAppName(text: string, appName: string): string {
-  return text.replace(PLACEHOLDER, appName);
-}
+// Shown on every page until the texts name the data controller (legalEntity.ts → legalReady).
+export const DRAFT_NOTICE = 'Taslak: veri sorumlusu bilgileri eklenince yürürlüğe girer.';
 
 function escapeHtml(text: string): string {
   return text
@@ -47,7 +51,7 @@ a { color: #2563eb; }
 footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
 `;
 
-function layout(appName: string, title: string, body: string): string {
+function layout(appName: string, title: string, body: string, draft: boolean): string {
   const nav = LEGAL_PAGES.map((p) => `<a href="${p.slug}.html">${escapeHtml(p.title)}</a>`).join(
     '',
   );
@@ -62,8 +66,7 @@ function layout(appName: string, title: string, body: string): string {
 <body>
 <main>
 <header><a href="index.html">${escapeHtml(appName)}</a><nav>${nav}</nav></header>
-<p class="draft">${escapeHtml(DRAFT_NOTICE)}</p>
-${body}
+${draft ? `<p class="draft">${escapeHtml(DRAFT_NOTICE)}</p>\n` : ''}${body}
 <footer>${escapeHtml(appName)}</footer>
 </main>
 </body>
@@ -71,18 +74,28 @@ ${body}
 `;
 }
 
-export function renderLegalPage(markdown: string, page: LegalPage, appName: string): string {
-  const html = marked.parse(fillAppName(markdown, appName), { async: false, gfm: true });
+export function renderLegalPage(
+  markdown: string,
+  page: LegalPage,
+  appName: string,
+  entity: LegalEntity = LEGAL_ENTITY,
+): string {
+  const html = marked.parse(fillLegalText(markdown, appName, entity), { async: false, gfm: true });
   // Wide tables scroll inside their box instead of the page on a phone.
   const body = html
     .replaceAll('<table>', '<div class="table"><table>')
     .replaceAll('</table>', '</table></div>');
-  return layout(appName, page.title, body);
+  return layout(appName, page.title, body, !legalReady(entity));
 }
 
-export function renderIndex(appName: string): string {
+export function renderIndex(appName: string, entity: LegalEntity = LEGAL_ENTITY): string {
   const items = LEGAL_PAGES.map(
     (p) => `<li><a href="${p.slug}.html">${escapeHtml(p.title)}</a></li>`,
   ).join('\n');
-  return layout(appName, 'Yasal metinler', `<h1>Yasal metinler</h1>\n<ul>\n${items}\n</ul>`);
+  return layout(
+    appName,
+    'Yasal metinler',
+    `<h1>Yasal metinler</h1>\n<ul>\n${items}\n</ul>`,
+    !legalReady(entity),
+  );
 }

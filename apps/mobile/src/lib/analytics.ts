@@ -3,6 +3,7 @@ import {
   type AnalyticsEventProps,
   analyticsProperties,
 } from '@shared/analytics.ts';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import PostHog from 'posthog-react-native';
 
 // PostHog (MVP_SPEC §12). Without EXPO_PUBLIC_POSTHOG_KEY every call does nothing. The distinct id
@@ -25,16 +26,56 @@ function posthog(): PostHog | null {
   return client;
 }
 
-export function track<E extends AnalyticsEvent>(event: E, props: AnalyticsEventProps[E]): void {
-  posthog()?.capture(event, analyticsProperties(event, props));
+// Usage statistics can be turned off (Ayarlar → Gizlilik; KVKK m. 11, the right to object). The
+// choice stays on the phone. Until it is read nothing is sent: every call waits for it.
+const PREF_KEY = 'skall.analytics.off';
+let enabled = true;
+// The signed-in account, kept so that turning statistics back on names the person again.
+let userId: string | null = null;
+const ready: Promise<void> = AsyncStorage.getItem(PREF_KEY)
+  .then((stored) => {
+    enabled = stored !== '1';
+  })
+  .catch(() => undefined);
+
+function whenOn(send: (client: PostHog) => void): void {
+  void ready.then(() => {
+    if (!enabled) return;
+    const on = posthog();
+    if (on) send(on);
+  });
 }
 
-export function identify(userId: string): void {
-  posthog()?.identify(userId);
+export function analyticsEnabled(): Promise<boolean> {
+  return ready.then(() => enabled);
+}
+
+export function setAnalyticsEnabled(on: boolean): void {
+  enabled = on;
+  void (on ? AsyncStorage.removeItem(PREF_KEY) : AsyncStorage.setItem(PREF_KEY, '1')).catch(
+    () => undefined,
+  );
+  if (on) {
+    const live = posthog();
+    void live?.optIn();
+    if (userId) live?.identify(userId);
+  } else {
+    void client?.optOut();
+  }
+}
+
+export function track<E extends AnalyticsEvent>(event: E, props: AnalyticsEventProps[E]): void {
+  whenOn((on) => on.capture(event, analyticsProperties(event, props)));
+}
+
+export function identify(id: string): void {
+  userId = id;
+  whenOn((on) => on.identify(id));
 }
 
 export function resetAnalytics(): void {
-  posthog()?.reset();
+  userId = null;
+  client?.reset();
 }
 
 // For events derived from state the screen may see more than once (a status change, a result

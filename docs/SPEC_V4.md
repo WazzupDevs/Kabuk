@@ -1147,7 +1147,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - **4.4:** kapsül nick hesaba bağlı bir takma addır. Anonim kişi ziyaretler arasında aynı nick'le tanınabilir; nick profil kimliğini açmaz. Sessize alma kaydı: kimin hangi kimliği sessize aldığı, yalnızca sunucuda. Anahtar değişikliğinden önce yazılan mesajların eski kimlikte kaldığı. Silinen hesabın ve yenilenen nick'in metni yeniden verilmez; bunun için yalnızca nick metni, hesapla bağı olmadan saklanır.
 - **4.7:** masa daveti, arkadaşına aynı mekanda bir masan olduğunu söyler; mekan adı gitmez. Bildirim listesi ve davet push'u.
 - `CURRENT_KVKK_VERSION` tek seferde artar: 4.5 ile birlikte main'e girecek istemci PR'ında; mevcut kullanıcılar 4.4'ün ve 4.7'nin metnini bir kez onaylar. 4.4'ün istemcisi daha önce main'e girerse o PR'da artmaz (proje sahibinin kararı).
-- Sayfalar taslaktır; "hukuki kontrol bekliyor" notu kalır.
+- **12 Kasım (proje sahibinin kararları, `docs/decisions/yasal-metinler.md`):** metinler üretim metnidir ve uygulamada tam hâliyle gösterilir (`docs/legal/` tek kaynak); topluluk kuralları ve çocuk güvenliği standartları eklendi. Konumun hukuki sebebi sözleşmenin ifasıdır: "Konumumu kullan"ın üstündeki metin rıza değil bilgilendirmedir (bu belgede ve SPEC_V3'te konum için geçen "açık rıza" ifadelerinin yerine). Kullanım istatistiği Ayarlar → Gizlilik'ten kapatılır. Onay sürümleri `2026-11`; veri sorumlusunun adı yazılana kadar metinler taslak notuyla görünür.
 
 **Mağaza** (`docs/store/`):
 

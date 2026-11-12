@@ -1,3 +1,4 @@
+import { LEGAL_ENTITY } from '@shared/legalEntity.ts';
 import { useMutation } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { useState } from 'react';
@@ -22,7 +23,9 @@ import { supabase } from '@/lib/supabase';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
-const contactEmail = process.env.EXPO_PUBLIC_CONTACT_EMAIL;
+// The address in the legal texts (legalEntity.ts) unless the build names another: the row is always
+// there (App Store 1.2 and Google Play want a way to reach the developer in the app).
+const contactEmail = process.env.EXPO_PUBLIC_CONTACT_EMAIL?.trim() || LEGAL_ENTITY.contactEmail;
 
 // "+905321234501" → "+90 5•• ••• •• 01": the country, the first digit and the last two.
 function maskPhone(phone: string | undefined): string {
@@ -71,14 +74,12 @@ export default function AccountScreen() {
         </Glass>
         <T v="fine">{tr.settings.fixedNote}</T>
         <RowList inset={KIT.size.lrIcon + KIT.size.liGap}>
-          {contactEmail ? (
-            <SettingsRow
-              icon="chat"
-              chevron
-              label={tr.settings.contact}
-              onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
-            />
-          ) : null}
+          <SettingsRow
+            icon="chat"
+            chevron
+            label={tr.settings.contact}
+            onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
+          />
           {/* In the warning colour, as in Ayarlar (the owner's report, 10 Kasım). */}
           <SettingsRow
             negative

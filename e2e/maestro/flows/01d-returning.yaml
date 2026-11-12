@@ -51,7 +51,7 @@ appId: app.kabuk.mobile
     enabled: false
 - takeScreenshot: 01d-reconsent
 - tapOn: Kullanım Koşulları’nı okudum ve kabul ediyorum.
-- tapOn: KVKK Aydınlatma Metni’ni okudum.
+- tapOn: KVKK Aydınlatma Metni’ni okudum ve anladım.
 - tapOn:
     id: consents-accept
 - extendedWaitUntil:
