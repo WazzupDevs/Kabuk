@@ -22,13 +22,14 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, Li, Live, PulseDot, Round, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Chip, Glass, Li, Live, Round, T, useKit } from '@/aura/kit';
 import { useTabOpenings } from '@/aura/motion';
 import { RisoPeekOver } from '@/aura/Peek';
 import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
+import { shadowParts } from '@/components/NativeShadow';
 import { Loader } from '@/components/Loader';
 import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
@@ -38,6 +39,7 @@ import { DistrictCard } from '@/features/district/DistrictCard';
 import { EmptyCard } from '@/features/explore/EmptyCard';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
+import { Bucket } from '@/features/explore/Bucket';
 import { EventTag } from '@/features/explore/EventTag';
 import { type CityVenue, useCityVenues } from '@/features/explore/useExploreVenues';
 import { errorMessage } from '@/i18n/errors';
@@ -46,12 +48,14 @@ import { track } from '@/lib/analytics';
 import { dayLine, dayPart } from '@/lib/dayPart';
 import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
-import { venueType } from '@/lib/venueType';
+import { useLabOff } from '@/lib/drawLab';
+import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
 import { LargeTitle, ScrollScreen, StickyField, Tap } from '@/motion';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
+import { EXPLORE } from '@/theme/explore';
 import { EXPLORE_PEEK } from '@/theme/kankiMotion';
 import { THEME } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -62,6 +66,8 @@ type View_ = 'list' | 'map';
 type Here = { name: string; spot: string | null };
 
 const X = KIT.size.explore;
+// The head's parts stand 22 from the sides, the cards 16 (tuval Kesfet).
+const HEAD_IN = EXPLORE.headSide - EXPLORE.side;
 
 // Keşfet (docs/design/iskelet.md → 5.1; docs/arsiv/SPEC_V2.md §4, SPEC_V4 §4.C): always the list
 // of a city's venues, chosen by hand, never by the phone's position (rule 6). The venue is picked
@@ -128,26 +134,32 @@ export default function ExploreScreen() {
     ? { name: here.venue?.name ?? '', spot: here.spot?.name ?? null }
     : null;
 
-  const capsule = (
+  const capsuleOn = (map: boolean) => (
     <SearchCapsule
       value={query}
       onChangeText={setQuery}
       view={view}
+      map={map}
       onChange={(mode) => {
         haptic('selection');
         setView(mode);
       }}
     />
   );
-  const chips = (
+  const chipsOn = (map: boolean) => (
     <KindChips
       kind={kind}
+      map={map}
       onChoose={(k) => {
         setKind(k);
         setKindRuns((n) => n + 1);
       }}
     />
   );
+  const capsule = capsuleOn(false);
+  const chips = chipsOn(false);
+  const mapCapsule = capsuleOn(true);
+  const mapChips = chipsOn(true);
 
   return (
     <ScrollScreen y={showMap ? null : y}>
@@ -177,13 +189,13 @@ export default function ExploreScreen() {
                 top: 0,
                 left: 0,
                 right: 0,
-                paddingTop: insets.top + SPACING[2],
-                paddingHorizontal: KIT.size.side,
-                gap: SPACING[3],
+                paddingTop: insets.top + KIT.size.stickyTop,
+                paddingHorizontal: EXPLORE.headSide,
+                gap: EXPLORE.map.headGap,
               }}
             >
-              <View style={{ height: X.capsule }}>{capsule}</View>
-              {chips}
+              <View style={{ height: X.capsule }}>{mapCapsule}</View>
+              {mapChips}
             </View>
           </>
         ) : (
@@ -277,13 +289,14 @@ function ListBody({
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerStyle={{
-        paddingHorizontal: KIT.size.side,
-        paddingTop: SPACING[2],
+        // tuval Kesfet: the head 22 from the sides, the cards 16; 15 under the status bar.
+        paddingHorizontal: EXPLORE.side,
+        paddingTop: EXPLORE.top,
         // At least 124 under the list (U13; the bar's room is 92 without a safe area).
         paddingBottom: SPACING[8] + bottomSpace,
       }}
     >
-      <View testID="explore-head">
+      <View testID="explore-head" style={{ marginHorizontal: HEAD_IN }}>
         <Reveal index={0} openings={openings}>
           <Question now={now} />
         </Reveal>
@@ -291,7 +304,13 @@ function ListBody({
         {ready ? (
           <View
             pointerEvents="none"
-            style={{ position: 'absolute', left: 0, right: 0, bottom: -SPACING[6], height: 0 }}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: -EXPLORE.capsuleTop,
+              height: 0,
+            }}
           >
             <RisoPeekOver places={EXPLORE_PEEK} />
           </View>
@@ -300,36 +319,38 @@ function ListBody({
       {ready ? (
         <>
           {/* Over what scrolls under it once pinned. */}
-          <View style={{ zIndex: 1, marginTop: SPACING[6] }}>
+          <View style={{ zIndex: 1, marginTop: EXPLORE.capsuleTop, marginHorizontal: HEAD_IN }}>
             <Reveal index={1} openings={openings}>
-              <StickyField shrink={[X.capsule, X.capsulePinned]} band>
+              <StickyField shrink={[X.capsule, X.capsulePinned]} band side={EXPLORE.headSide}>
                 {capsule}
               </StickyField>
             </Reveal>
           </View>
-          <View style={{ marginTop: SPACING[3] }}>
+          <View style={{ marginTop: EXPLORE.chipsTop, marginHorizontal: HEAD_IN }}>
             <Reveal index={2} openings={openings}>
               {chips}
             </Reveal>
           </View>
         </>
       ) : null}
-      {/* 24 between the head's blocks and the body, 12 inside it (U13). */}
-      <View style={{ marginTop: SPACING[6], gap: SPACING[3] }}>{children}</View>
+      {/* Semte Git 22 under the chips; the body's own spacing in VenueList (tuval Kesfet). */}
+      <View style={{ marginTop: EXPLORE.districtTop }}>{children}</View>
     </PullScroll>
   );
 }
 
-// The line of the day from the phone's clock ("PERŞEMBE AKŞAMI") over the question at 36/800, its
-// last word in green (5.1); a tab's large title, fading and shrinking from its lower left.
+// The line of the day from the phone's clock ("PERŞEMBE AKŞAMI", 13/700) over the question at 36/800,
+// its last word in green (5.1); a tab's large title, fading and shrinking from its lower left.
 function Question({ now }: { now: number }) {
   const { c } = useKit();
   const { colors } = useTheme();
   const line = dayLine(new Date(now));
   return (
     <LargeTitle kind="buyukBaslik">
-      <View style={{ gap: SPACING[1] }}>
-        <T v="eyebrow">{upperTr(tr.explore.dayLine(line.weekday, line.part))}</T>
+      <View style={{ gap: EXPLORE.titleGap }}>
+        <T v="exploreEyebrow" color={c.muted}>
+          {upperTr(tr.explore.dayLine(line.weekday, line.part))}
+        </T>
         <Text
           accessibilityRole="header"
           maxFontSizeMultiplier={MAX_FONT_SCALE}
@@ -345,8 +366,16 @@ function Question({ now }: { now: number }) {
 // As the kit's text (aura/kit → T).
 const MAX_FONT_SCALE = 1.3;
 
-// U13: the kind chips on one line, scrolling sideways to the screen's edge.
-function KindChips({ kind, onChoose }: { kind: ExploreKind; onChoose: (k: ExploreKind) => void }) {
+// U13: the kind chips on one line, scrolling sideways to the screen's edge (22 in, as the head).
+function KindChips({
+  kind,
+  map,
+  onChoose,
+}: {
+  kind: ExploreKind;
+  map: boolean;
+  onChoose: (k: ExploreKind) => void;
+}) {
   const narrow = useNarrow();
   return (
     <ScrollView
@@ -355,15 +384,16 @@ function KindChips({ kind, onChoose }: { kind: ExploreKind; onChoose: (k: Explor
       showsHorizontalScrollIndicator={false}
       accessibilityRole="radiogroup"
       accessibilityLabel={tr.explore.kindsLabel}
-      style={{ marginHorizontal: -KIT.size.side, overflow: 'visible' }}
-      contentContainerStyle={{ gap: KIT.size.chipsGap, paddingHorizontal: KIT.size.side }}
+      style={{ marginHorizontal: -EXPLORE.headSide, overflow: 'visible' }}
+      contentContainerStyle={{ gap: KIT.size.chipsGap, paddingHorizontal: EXPLORE.headSide }}
     >
       {EXPLORE_KINDS.map((k) => (
-        <Chip
+        <KindChip
           key={k}
           testID={`explore-kind-${k}`}
           label={tr.explore.kinds[k]}
           narrow={narrow}
+          map={map}
           on={kind === k}
           onPress={() => {
             if (k !== kind) onChoose(k);
@@ -371,6 +401,60 @@ function KindChips({ kind, onChoose }: { kind: ExploreKind; onChoose: (k: Explor
         />
       ))}
     </ScrollView>
+  );
+}
+
+// A kind chip (tuval Kesfet, Harita): 36 high, 16 in, 14; the chosen one the ink with white words
+// at 700 on its soft shadow, the others on the board's glass (on the map with its shadow). 46 high
+// when narrow (Aura v75 KesfetHaritaDar).
+function KindChip({
+  label,
+  on,
+  narrow,
+  map,
+  testID,
+  onPress,
+}: {
+  label: string;
+  on: boolean;
+  narrow: boolean;
+  map: boolean;
+  testID: string;
+  onPress: () => void;
+}) {
+  const { c, scheme } = useKit();
+  const e = EXPLORE[scheme];
+  const face = map ? e.mapGlass : e.glass;
+  const h = narrow ? KIT.size.chipNarrow : KIT.size.chip;
+  const shadow = shadowParts(
+    useLabOff('golge'),
+    (on ? e.chipOnShadow : map ? face.shadow : '') || undefined,
+    on ? undefined : face.inset || undefined,
+    h / 2,
+    true,
+    KIT.size.edge,
+  );
+  return (
+    <Tap
+      testID={testID}
+      accessibilityState={{ selected: on }}
+      onPress={onPress}
+      style={{
+        height: h,
+        paddingHorizontal: EXPLORE.chipPadX,
+        borderRadius: h / 2,
+        justifyContent: 'center',
+        backgroundColor: on ? c.chipOn : face.fill,
+        borderWidth: on ? 0 : KIT.size.edge,
+        borderColor: face.edge,
+        boxShadow: shadow.boxShadow,
+      }}
+    >
+      {shadow.node}
+      <T v={on ? 'exploreChipOn' : 'exploreChip'} lines={1} color={on ? c.onChipOn : c.ink}>
+        {label}
+      </T>
+    </Tap>
   );
 }
 
@@ -389,33 +473,6 @@ function emptyCopy(empty: ExploreEmpty, kind: ExploreKind): { title: string; hin
     case 'place':
       return { title: tr.explore.noPlace, hint: tr.explore.noPlaceHint };
   }
-}
-
-// A venue's liveliness as a dotted tag (5.1): "Sessiz" with a still dot, the livelier ones with
-// the beating pink dot.
-function Bucket({ bucket }: { bucket: CityVenue['bucket'] }) {
-  const { tags } = useKit();
-  const calm = bucket === 'calm';
-  return (
-    <Tag
-      tone={calm ? 'purple' : 'pink'}
-      label={tr.explore.buckets[bucket]}
-      lead={
-        calm ? (
-          <View
-            style={{
-              width: KIT.size.dot,
-              height: KIT.size.dot,
-              borderRadius: KIT.size.dot / 2,
-              backgroundColor: tags.purple.fg,
-            }}
-          />
-        ) : (
-          <PulseDot color={KIT.pink} ring={KIT.pinkRing} />
-        )
-      }
-    />
-  );
 }
 
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
@@ -490,12 +547,18 @@ function VenueList({
   const [uni, setUni] = useState<ExploreUniversity | null>(null);
   const [uniKey, setUniKey] = useState(0);
   const copy = emptyCopy(empty, kind);
+  const { c } = useKit();
   return (
     <>
       {/* Semte Git (docs/SPEC_V4.md §4.V): the screen's one featured card, under the chips. */}
       <DistrictCard />
-      {here ? <HereNow here={here} /> : null}
-      {/* The city and district, and how many venues (K-38), the order at the right. */}
+      {here ? (
+        <View style={{ marginTop: X.cardsGap }}>
+          <HereNow here={here} />
+        </View>
+      ) : null}
+      {/* The city and district, and how many venues (K-38), the order at the right; 28 under Semte
+          Git, 12 over the cards, 22 from the sides (tuval Kesfet). */}
       <Reveal index={SECTION_AT} replay={replay} openings={openings}>
         <View
           style={{
@@ -507,10 +570,20 @@ function VenueList({
             // owner's report, 30 Ekim: the two ran into each other).
             columnGap: KIT.size.rowGap,
             rowGap: SPACING[2],
-            paddingTop: KIT.size.secPadTop,
+            marginTop: EXPLORE.sectionTop,
+            marginBottom: EXPLORE.sectionBottom,
+            marginHorizontal: HEAD_IN,
           }}
         >
-          <View style={{ flexShrink: 1, gap: SPACING[0.5] }}>
+          <View
+            style={{
+              flexShrink: 1,
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              alignItems: 'baseline',
+              columnGap: EXPLORE.sectionGap,
+            }}
+          >
             {/* The place sheet opens from here when there is a city to choose (K-38); every city
                 is the default (5 Kasım). */}
             <Tap
@@ -529,15 +602,15 @@ function VenueList({
               }}
               hitSlop={KIT.size.chipsGap}
             >
-              <T v="h3">
+              <T v="exploreSection">
                 {place ? tr.explore.place(place.city, place.district) : tr.explore.allCities}
               </T>
             </Tap>
-            <T v="fine" testID="explore-count">
+            <T v="exploreCount" color={c.muted} testID="explore-count">
               {tr.explore.count(venues.length)}
             </T>
           </View>
-          {/* 5.1: the order as a clear button. */}
+          {/* 5.1: the order as a clear button, its arrow after the words. */}
           <Btn
             sm
             variant="glassy"
@@ -546,54 +619,58 @@ function VenueList({
             accessibilityLabel={tr.explore.sortLabel(nameOrder)}
             disabled={!canSort}
             onPress={onSort}
+            tint={c.ink}
+            trail={<CapIcon name="down" color={c.ink} size={EXPLORE.sortIcon} />}
           />
         </View>
       </Reveal>
-      {venues.length === 0 ? (
-        // Keşfet: boş: nothing at all, or a filter or a search that finds nothing, said by its
-        // cause on the small card (3.4).
-        <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay} openings={openings}>
-          <EmptyCard
-            testID={listed.length === 0 ? 'explore-empty' : 'explore-no-match'}
-            title={copy.title}
-            body={copy.hint}
-          />
-        </Reveal>
-      ) : (
-        // A university with several campuses is one card opening its campuses (docs/SPEC_V4.md
-        // §4.Q); every other venue, a single campus included, is its own card.
-        groupByUniversity(venues, listed).map((row, i) => (
-          <Reveal
-            key={row.type === 'venue' ? row.venue.id : `u-${row.university.id}`}
-            index={ROWS_AT + i}
-            step={ROW_STEP}
-            replay={replay}
-            openings={openings}
-          >
-            {row.type === 'venue' ? (
-              <VenueCard
-                venue={row.venue}
-                onPress={() =>
-                  router.push({
-                    pathname: '/explore/[venueId]',
-                    params: { venueId: row.venue.id },
-                  })
-                }
-              />
-            ) : (
-              <UniversityCard
-                university={row.university}
-                campuses={row.campuses}
-                onPress={() => {
-                  haptic('selection');
-                  setUniKey((k) => k + 1);
-                  setUni(row.university);
-                }}
-              />
-            )}
+      <View style={{ gap: X.cardsGap }}>
+        {venues.length === 0 ? (
+          // Keşfet: boş: nothing at all, or a filter or a search that finds nothing, said by its
+          // cause on the small card (3.4).
+          <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay} openings={openings}>
+            <EmptyCard
+              testID={listed.length === 0 ? 'explore-empty' : 'explore-no-match'}
+              title={copy.title}
+              body={copy.hint}
+            />
           </Reveal>
-        ))
-      )}
+        ) : (
+          // A university with several campuses is one card opening its campuses (docs/SPEC_V4.md
+          // §4.Q); every other venue, a single campus included, is its own card.
+          groupByUniversity(venues, listed).map((row, i) => (
+            <Reveal
+              key={row.type === 'venue' ? row.venue.id : `u-${row.university.id}`}
+              index={ROWS_AT + i}
+              step={ROW_STEP}
+              replay={replay}
+              openings={openings}
+            >
+              {row.type === 'venue' ? (
+                <VenueCard
+                  venue={row.venue}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/explore/[venueId]',
+                      params: { venueId: row.venue.id },
+                    })
+                  }
+                />
+              ) : (
+                <UniversityCard
+                  university={row.university}
+                  campuses={row.campuses}
+                  onPress={() => {
+                    haptic('selection');
+                    setUniKey((k) => k + 1);
+                    setUni(row.university);
+                  }}
+                />
+              )}
+            </Reveal>
+          ))
+        )}
+      </View>
       <CampusSheet
         key={uniKey}
         university={uni}
@@ -611,8 +688,8 @@ function VenueList({
   );
 }
 
-// A venue's card (5.1, 3.4): its 76 picture, the name, the type and district, the dotted bucket and
-// the arrow; 26 round, 12 inside.
+// A venue's card (5.1, 3.4; tuval Kesfet): its 76 picture, the name, the type and district, the
+// dotted bucket and the arrow; the board's `.card`, 26 round, 12 inside, 14 apart, the lines 5.
 function PlaceCard({
   testID,
   accessibilityLabel,
@@ -630,11 +707,13 @@ function PlaceCard({
   sub: string;
   bucket: CityVenue['bucket'];
 }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const card = X.card;
+  const e = EXPLORE[scheme];
   return (
     <Tap testID={testID} accessibilityLabel={accessibilityLabel} onPress={onPress}>
       <Glass
+        face={e.card}
         radius={card.radius}
         style={{
           flexDirection: 'row',
@@ -646,15 +725,28 @@ function PlaceCard({
       >
         {picture}
         <View style={{ flex: 1, minWidth: 0, gap: card.lineGap }}>
-          <T v="h3">{name}</T>
-          <T v="fine">{sub}</T>
-          <View style={{ flexDirection: 'row', marginTop: card.lineGap }}>
-            <Bucket bucket={bucket} />
-          </View>
+          <T v="placeName">{name}</T>
+          <T v="placeSub" color={c.muted}>
+            {sub}
+          </T>
+          <Bucket bucket={bucket} />
         </View>
-        <CapIcon name="forward" color={c.muted} size={X.icon} />
+        <CapIcon name="forward" color={e.chevron} size={EXPLORE.card.chevron} />
       </Glass>
     </Tap>
+  );
+}
+
+// A card's picture: 76 at 14 on the board's soft ink shadow.
+function CardPicture({ kind }: { kind: VenueType }) {
+  const { scheme } = useKit();
+  return (
+    <VenueThumb
+      kind={kind}
+      size={VENUE_CARD_PICTURE}
+      radius={X.card.pictureRadius}
+      shadow={EXPLORE[scheme].pictureShadow}
+    />
   );
 }
 
@@ -665,7 +757,7 @@ function VenueCard({ venue: v, onPress }: { venue: CityVenue; onPress: () => voi
       testID={`explore-venue-${v.name}`}
       accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
       onPress={onPress}
-      picture={<VenueThumb kind={type} size={VENUE_CARD_PICTURE} />}
+      picture={<CardPicture kind={type} />}
       name={v.name}
       sub={tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}
       bucket={v.bucket}
@@ -692,7 +784,7 @@ function UniversityCard({
       testID={`explore-university-${university.ref}`}
       accessibilityLabel={tr.explore.universityLabel(university.name, campuses.length)}
       onPress={onPress}
-      picture={<VenueThumb kind="kampus" size={VENUE_CARD_PICTURE} />}
+      picture={<CardPicture kind="kampus" />}
       name={university.name}
       sub={tr.explore.universitySub(campuses.length, districts)}
       bucket={bucket}
@@ -870,36 +962,41 @@ const ROW_STEP = 60;
 const VENUE_CARD_PICTURE = X.card.picture;
 const VENUE_THUMB_SIZE = VENUE_THUMB.size;
 
-// The one glass capsule (5.1): "Mekan ara" with the search icon, and the list/map switch at its
-// right; 54 high, 48 once pinned (StickyField → shrink: it fills the height it is given).
+// The one glass capsule (5.1; tuval Kesfet, Harita): "Mekan ara" with the search icon, and the
+// list/map switch at its right; 54 high, 48 once pinned (StickyField → shrink: it fills the height
+// it is given). On the board's glass, 18 in at its left and 5 at its right, 10 apart.
 function SearchCapsule({
   value,
   onChangeText,
   view,
+  map,
   onChange,
 }: {
   value: string;
   onChangeText: (text: string) => void;
   view: View_;
+  map: boolean;
   onChange: (v: View_) => void;
 }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const { colors } = useTheme();
+  const k = EXPLORE.capsule;
   return (
     <Glass
       frost
+      face={map ? EXPLORE[scheme].mapGlass : EXPLORE[scheme].glass}
       radius={X.capsule / 2}
       style={{
         flex: 1,
         borderRadius: X.capsule / 2,
-        paddingLeft: X.capsulePadX,
-        paddingRight: X.switchPad,
+        paddingLeft: k.padLeft,
+        paddingRight: k.padRight,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: SPACING[2],
+        gap: k.gap,
       }}
     >
-      <CapIcon name="search" color={colors.placeholder} size={X.icon} />
+      <CapIcon name="search" color={c.muted} size={k.icon} />
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <TextInput
           testID="explore-search"
@@ -930,17 +1027,25 @@ function SearchCapsule({
   );
 }
 
-// The list/map switch inside the capsule: two rounds 2 apart, the chosen one raised on the surface,
-// its icon green (5.1); sized for the pinned capsule, so they sit in its middle at either height.
+// The list/map switch inside the capsule: a sunk track 3 in, its two parts 40 × 38, 2 apart, the
+// chosen one raised white, its icon green (5.1); it fits the pinned capsule too.
 function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
   const { c, scheme } = useKit();
   const { colors } = useTheme();
-  const round = X.capsulePinned - 2 * X.switchPad;
+  const k = EXPLORE.capsule;
+  const e = EXPLORE[scheme];
   return (
     <View
       accessibilityRole="tablist"
       accessibilityLabel={tr.explore.viewSwitch}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: X.switchGap }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: X.switchGap,
+        padding: k.trackPad,
+        borderRadius: k.trackRadius,
+        backgroundColor: e.track,
+      }}
     >
       {(['list', 'map'] as const).map((mode) => {
         const on = value === mode;
@@ -955,20 +1060,20 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
               if (!on) onChange(mode);
             }}
             style={{
-              width: round,
-              height: round,
-              borderRadius: round / 2,
+              width: k.segWidth,
+              height: k.segHeight,
+              borderRadius: k.segHeight / 2,
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: on ? c.segOn : undefined,
-              boxShadow: on ? c.segShadow || undefined : undefined,
+              boxShadow: on ? e.segOnShadow || undefined : undefined,
             }}
           >
             {/* In the dark on white 94 % with the light scheme's green. */}
             <CapIcon
               name={mode}
               color={on ? (scheme === 'dark' ? THEME_LIGHT_ACCENT : colors.accent) : c.muted}
-              size={X.icon}
+              size={k.segIcon}
             />
           </Tap>
         );

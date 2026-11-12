@@ -298,12 +298,13 @@ export const NARROW_SCREEN = 360;
 export const MAP_PIN = {
   // Bigger and in full colour (the owner's report, 27 Ekim: the pins were faint).
   radius: 21,
-  // The selected venue grows (canvas: Aşama 5 · Harita işaretçileri).
-  selectedRadius: 27,
+  // The selected venue grows (canvas: Aşama 5 · Harita işaretçileri; tuval Harita: 64 with its
+  // ring, the others 48).
+  selectedRadius: 29,
   // The type's picture filling the circle (40 pt in its image, the disc 42): grown with it when
-  // selected (27 / 21).
+  // selected (29 / 21).
   glyphScale: 1,
-  selectedGlyphScale: 1.29,
+  selectedGlyphScale: 1.38,
   ring: 3,
   outline: 2,
   // A lively or crowded venue glows in its colour around the pin (the owner's call, 27 Ekim).
@@ -318,15 +319,18 @@ export const MAP_PIN = {
   eventOffset: 16,
   clusterRadius: [18, 22, 26],
   clusterSteps: [10, 30],
-  labelSize: 13,
+  // tuval Harita: a pin's name 11.5, 700.
+  labelSize: 11.5,
   labelSizeNarrow: 17,
   countSize: 14,
   // Clear of the pin: the pin's radius, its rings and a gap, in the label's ems.
   labelOffset: 2.4,
   labelHalo: 2.5,
-  // U14 (KesfetHarita `.pd`): the pin's white ring and its shadow's colour, by scheme.
+  // U14 (KesfetHarita `.pd`): the pin's white ring and its shadow's colour, by scheme; tuval
+  // Harita: 0 8 20 in the ink at 25 %.
   pinRing: { light: '#FFFFFF', dark: '#EAF6EC' },
-  pinShadow: { light: 'rgba(4, 73, 35, 0.28)', dark: 'rgba(0, 0, 0, 0.5)' },
+  pinShadow: { light: 'rgba(3, 27, 11, 0.25)', dark: 'rgba(0, 0, 0, 0.5)' },
+  shadowY: 8,
 } as const;
 export const MAP_FONTS = { bold: ['Noto Sans Bold'] } as const;
 

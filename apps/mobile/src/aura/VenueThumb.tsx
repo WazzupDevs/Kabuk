@@ -15,12 +15,24 @@ const PICTURE: Record<VenueType, ImageSourcePropType> = {
   kampus: require('../../assets/riso/venue-kampus.webp'),
 };
 
-// `size`: a list row's (Keşfet's thin rows); the radius keeps its share of the side.
-export function VenueThumb({ kind, size }: { kind: VenueType; size?: number }) {
+// `size`: a list row's (Keşfet's thin rows); the radius keeps its share of the side unless it is
+// given (Keşfet's card: 76 at 14, the map's card 72 at 18), and the shadow is the thumb's unless a
+// board gives its own.
+export function VenueThumb({
+  kind,
+  size,
+  radius: own,
+  shadow: ownShadow,
+}: {
+  kind: VenueType;
+  size?: number;
+  radius?: number;
+  shadow?: string;
+}) {
   const w = size ?? t.size;
   const h = size ?? t.size;
-  const radius = size ? (t.radius * size) / t.size : t.radius;
-  const shadow = boxShadowParts(useLabOff('golge'), t.shadow, radius);
+  const radius = own ?? (size ? (t.radius * size) / t.size : t.radius);
+  const shadow = boxShadowParts(useLabOff('golge'), ownShadow ?? t.shadow, radius);
   return (
     <View style={{ width: w, height: h, borderRadius: radius, boxShadow: shadow.boxShadow }}>
       {shadow.node}

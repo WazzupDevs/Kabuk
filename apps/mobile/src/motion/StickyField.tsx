@@ -35,13 +35,17 @@ function place(scroll: ScreenScroll, anchor: View) {
 // `band`: on a screen with no top bar (Keşfet, 5.1: no title bar of its own) the field carries the
 // band itself, behind it from the scrolling body's top to the band's fade under its foot, coming in
 // over the same last px before the pin; the screen's band over the content would cover the field.
+// `side`: how far the field stands from the screen's sides, so its band reaches them (Keşfet's
+// head: 22, tuval Kesfet).
 export function StickyField({
   shrink,
   band,
+  side = KIT.size.side,
   children,
 }: {
   shrink?: readonly [number, number];
   band?: boolean;
+  side?: number;
   children: ReactNode;
 }) {
   const scroll = useScreenScroll();
@@ -73,7 +77,7 @@ export function StickyField({
       style={shrink ? { height: shrink[0] } : undefined}
     >
       <Animated.View style={[shrink ? { height: shrink[0] } : null, style]}>
-        {band ? <FieldBand height={shrink ? shrink[0] : 0} /> : null}
+        {band ? <FieldBand height={shrink ? shrink[0] : 0} side={side} /> : null}
         {children}
       </Animated.View>
     </View>
@@ -81,7 +85,7 @@ export function StickyField({
 }
 
 // The band behind a pinned field: drawn once, only its opacity follows the scroll (2.2).
-function FieldBand({ height }: { height: number }) {
+function FieldBand({ height, side }: { height: number; side: number }) {
   const scroll = useScreenScroll();
   const { scheme } = useTheme();
   const fadePx = MOTION.scroll.stickyFadePx;
@@ -96,7 +100,7 @@ function FieldBand({ height }: { height: number }) {
     <Animated.View
       pointerEvents="none"
       style={[
-        { position: 'absolute', left: -KIT.size.side, right: -KIT.size.side, top: -top },
+        { position: 'absolute', left: -side, right: -side, top: -top },
         { bottom: -foot },
         gradientStyle(barBandCss(scheme, top + height + foot)),
         style,

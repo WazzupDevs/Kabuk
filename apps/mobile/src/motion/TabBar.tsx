@@ -24,7 +24,6 @@ import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useReduceTransparency } from '@/lib/useReduceTransparency';
 import { AURA, barEdgeCss, MOTION } from '@/theme/aura';
-import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -68,7 +67,7 @@ const [OPEN_WIDTH, SHRUNK_WIDTH] = MOTION.tabMin.widths;
 // past MOTION.tabMin's threshold it shrinks to the chosen tab alone (350 → 76, the others fade) on
 // springs.tabLead; scrolled up, near the top, on a tab change or pressed, it opens again. The glass
 // is drawn, not live (theme/glass.ts → TAB_BAR_GLASS): a translucent fill, a top light and its
-// shadow; with "reduce transparency" or over the map the fill lies on the solid ground.
+// shadow (tuval Kesfet: 66 high, 4 inside, the tabs 58 high); with "reduce transparency" or over the map the fill lies on the solid ground.
 export function TabBar({ items, selected, onPress, opaque = false }: Props) {
   const { scheme } = useTheme();
   const a = AURA[scheme].tab;
@@ -113,8 +112,8 @@ export function TabBar({ items, selected, onPress, opaque = false }: Props) {
   const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: pill.get() }] }));
 
   const shadowOff = useLabOff('golge');
-  // The clear glass of the buttons (iskelet.md → 2.1): its fill, white edge, top light and shadow.
-  const g = KIT.button[scheme].clear;
+  // The bar's glass (tuval Kesfet `.glass`): its fill, white edge, top light and shadow.
+  const g = a;
   const shadow = shadowParts(shadowOff, g.shadow || undefined, undefined, s.height / 2);
   return (
     <Animated.View
