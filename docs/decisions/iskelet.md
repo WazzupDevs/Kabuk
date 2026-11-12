@@ -49,6 +49,21 @@ Belgeden sapmalar (ayrıntı PR açıklamalarında):
 - **Kabul ölçütü "doğrudan import yok":** cırcır kuruldu, izinli liste küçüldü ama sıfıra inmedi (oyun sahneleri ve dokunulmayan özellikler).
 - **Göz kırpma (5.10):** büyük kapsülün çizim yoluna girilmediği için yok.
 
+## Panolarla fark kapatma (12 Kasım, öğleden sonra)
+
+Gece yürütmesi ekranları yalnız `iskelet.md` metninden yazdı; tuval panoları açılmadı ve proje sahibi sonucu "referansın birebir aynısı olmamış" diye bildirdi. Panolar (`project/*.dc.html`) indirildi, her ekranın ölçüsü (sıra, boşluk, köşe, yazı, renk, görsel ve kanki yeri) öğe öğe eşitlendi. `iskelet.md`'nin açıkça yazdığı değer kaldı; yazmadığı her şey panodan alındı. Yeni özellik eklenmedi.
+
+| Ekranlar                               | PR   |
+| -------------------------------------- | ---- |
+| Keşfet, Harita, sekme çubuğu           | #592 |
+| Mekan detayı, Aktiviteler, oyun detayı | #594 |
+| Mesajlar, bildirimler, DM, menü, onay  | #595 |
+| Profiller, Profili düzenle, Arkadaşlar | #596 |
+| Ayarlar, Mekan                         | #597 |
+| Kapsül düzenleyici (durağan yerleşim)  | #598 |
+
+Ders: onaylı tasarım aktarımında panonun kendisi okunur (`.claude/skills/tuval-aktarim`); metin belge panonun yerini tutmaz.
+
 ## Belgeye yazarken düzeltilen atıflar
 
 İş paketindeki üç iç atıf numarası başka bölümü gösteriyordu; `iskelet.md`'de anlamına göre düzeltildi: kapak türü "5.7, 5.6 ve 5.2", Mesajlar'daki arama "5.4", menünün yayı "4.3 → `springs.menu`".
