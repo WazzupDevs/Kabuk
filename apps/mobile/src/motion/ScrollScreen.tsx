@@ -119,7 +119,11 @@ export function ScrollViewport({ children }: { children: ReactNode }) {
 
 type BodyProps = Pick<
   ScrollViewProps,
-  'contentContainerStyle' | 'keyboardShouldPersistTaps' | 'stickyHeaderIndices'
+  | 'contentContainerStyle'
+  | 'keyboardShouldPersistTaps'
+  | 'stickyHeaderIndices'
+  | 'snapToOffsets'
+  | 'snapToEnd'
 > & {
   y: SharedValue<number>;
   scrollRef?: RefObject<ScrollView | null>;
@@ -134,6 +138,8 @@ export function ScrollBody({
   contentContainerStyle,
   keyboardShouldPersistTaps,
   stickyHeaderIndices,
+  snapToOffsets,
+  snapToEnd,
   children,
 }: BodyProps) {
   const onScroll = useAnimatedScrollHandler((e) => {
@@ -151,6 +157,9 @@ export function ScrollBody({
       contentContainerStyle={contentContainerStyle}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       stickyHeaderIndices={stickyHeaderIndices}
+      // Let go between two offsets, it settles at the nearer (the own profile, 5.7): natively.
+      snapToOffsets={snapToOffsets}
+      snapToEnd={snapToEnd}
     >
       {children}
     </Animated.ScrollView>

@@ -1,134 +1,85 @@
+import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, useWindowDimensions, View } from 'react-native';
-import Animated, {
-  Easing,
-  Extrapolation,
-  interpolate,
-  scrollTo,
-  useAnimatedRef,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
+import { useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
-import { Av, Btn, Glass, Li, Round, T, useKit } from '@/aura/kit';
+import { Btn, Glass, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { PhotoPreview } from '@/components/PhotoPreview';
+import { ScreenStatusBar } from '@/components/StatusScrim';
 import { useTabBarSpace } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { SetCard } from '@/features/gifts/SetCard';
 import { IdentityTicket } from '@/features/profile/IdentityTicket';
-import { ProfileCover } from '@/features/profile/ProfileCover';
+import { ProfileCoverArt } from '@/features/profile/ProfileCover';
+import { ProfileFace } from '@/features/profile/ProfileFace';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import {
+  BarBand,
+  type Flight,
+  FlyingFace,
+  FlyingName,
+  RiseLayer,
+  ScrollBody,
+  ScrollScreen,
+  Tap,
+  useScrollOffset,
+  useScrollPast,
+} from '@/motion';
+import { TOP_BAR_ROW } from '@/motion/TopBar';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { PROFILE_COVER } from '@/theme/profileCover';
+import { PROFILE_PAGE } from '@/theme/profileCover';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
-// The own profile (docs/SPEC_V4.md §4.W, "C · kapak ve bilet"): the cover at the top (the person's
-// own or the riso scene), the photo over its foot, the name and age, the bio and "Profili düzenle";
-// the anonymous identity on a ticket; the friends and today's Set balonu. The capsule and the nick
-// show on the own profile only (rule 4). Scrolled up, the photo shrinks and glides into a thin bar
-// at the top with the name beside it; scrolled back, both glide down the same way (the owner's
-// call, 8 Kasım). Let go part way, the page settles at the nearer end. The settings never move.
+const P = PROFILE_PAGE;
+const OWN = P.own;
+
+// The own profile in two parts (docs/design/iskelet.md → 5.7; docs/SPEC_V4.md §4.W). The upper part:
+// the cover (the person's own or the riso scene), the photo in its white ring, the name with the
+// age (never the birth date, rule 11), the quiet bio, and side by side "Profili düzenle" and
+// "N arkadaş". Under it the capsule's panel, 34 round with a handle: the anonymous identity's
+// ticket and today's Set balonu (the capsule and the nick show on the own profile only, rule 4).
+// Scrolled up, the panel rides over the upper part, which moves at -0.35, fades over 120–300 and
+// shrinks to 0.92; the photo and the name fly into the bar, linear and one to one, arriving as the
+// panel reaches the bar (316): one photo and one name on the screen. Let go between, the page
+// settles at the nearer end. The settings never move.
 export default function ProfileScreen() {
+  const y = useScrollOffset();
+  return (
+    <ScrollScreen y={y}>
+      <ProfilePage y={y} />
+    </ScrollScreen>
+  );
+}
+
+function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   const { c } = useKit();
-  const { scheme, shape } = useTheme();
+  const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width, height, fontScale } = useWindowDimensions();
   const barSpace = useTabBarSpace();
   const own = useProfile();
   const publicId = own.data?.public_id;
   const view = useProfileView(publicId, true);
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
+  const [preview, setPreview] = useState(false);
+  // The upper part's words and buttons: their foot, once laid out (not on a frame).
+  const [wordsFoot, setWordsFoot] = useState(0);
+  // The status bar's icons: light over the cover, the scheme's once the band is in.
+  const onBar = useScrollPast((OWN.band[0] + OWN.band[1]) / 2);
 
   const hasName = !!own.data?.display_name;
   const friendList = friends.data ?? [];
-  const [preview, setPreview] = useState(false);
-
-  const { width } = useWindowDimensions();
-  const coverHeight = insets.top + PROFILE_COVER.ownHeight;
-  const barHeight = insets.top + KIT.size.bell + SPACING[2] * 2;
-  const glide = coverHeight - barHeight + PROFILE_COVER.glideExtra;
-  const scrollRef = useAnimatedRef<Animated.ScrollView>();
-  const scrollY = useSharedValue(0);
-  const nameW = useSharedValue(0);
-  const nameH = useSharedValue(0);
-  // Let go between the ends, the page settles at the nearer one.
-  const settle = (y: number) => {
-    'worklet';
-    if (y > 0 && y < glide) scrollTo(scrollRef, 0, y < glide / 2 ? 0 : glide, true);
-  };
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: (e) => {
-      scrollY.value = e.contentOffset.y;
-    },
-    onEndDrag: (e) => {
-      if (Math.abs(e.velocity?.y ?? 0) < SETTLE_VELOCITY) settle(e.contentOffset.y);
-    },
-    onMomentumEnd: (e) => settle(e.contentOffset.y),
-  });
-  const progress = (y: number) => {
-    'worklet';
-    return EASE(interpolate(y, [0, glide], [0, 1], Extrapolation.CLAMP));
-  };
-  const barMid = insets.top + (barHeight - insets.top) / 2;
-  const barStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      scrollY.value,
-      [glide * PROFILE_COVER.barFadeFrom, glide],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
-  }));
-  // The photo: from the cover's foot (112, centred) to the bar's left (32).
-  const faceStyle = useAnimatedStyle(() => {
-    const y = scrollY.value;
-    const e = progress(y);
-    const k = 1 + (FACE_SMALL / FACE_BIG - 1) * e;
-    const cx = width / 2 + (shape.screenPadding + FACE_SMALL / 2 - width / 2) * e;
-    const cy = coverHeight - Math.max(y, 0) * (1 - e) + (barMid - coverHeight) * e;
-    return {
-      transform: [
-        { translateX: cx - FACE_BIG / 2 },
-        { translateY: cy - FACE_BIG / 2 },
-        { scale: k },
-      ],
-    };
-  });
-  // The name: from under the photo (centred, display) to beside the small photo (h3).
-  const nameStyle = useAnimatedStyle(() => {
-    const y = scrollY.value;
-    const e = progress(y);
-    const k = 1 + (NAME_SCALE - 1) * e;
-    const w = nameW.value;
-    const h = nameH.value;
-    const x0 = width / 2 - w / 2;
-    const y0 =
-      coverHeight + PROFILE_COVER.faceOverlap + PROFILE_COVER.nameTop - Math.max(y, 0) * (1 - e);
-    // Scaled about its centre: its left edge lands beside the small photo.
-    const x1 = shape.screenPadding + FACE_SMALL + PROFILE_COVER.barGap - (w * (1 - k)) / 2;
-    const y1 = barMid - h / 2;
-    return {
-      opacity: w > 0 ? 1 : 0,
-      transform: [
-        { translateX: x0 + (x1 - x0) * e },
-        { translateY: y0 + (y1 - y0) * e },
-        { scale: k },
-      ],
-    };
-  });
-
-  const data = view.data;
+  const data = view.isPending || loading ? undefined : view.data;
   const name = data?.displayName
     ? data.age
       ? tr.profile.nameWithAge(data.displayName, data.age)
@@ -136,26 +87,138 @@ export default function ProfileScreen() {
     : tr.profile.noName;
   const photoUrl = data && !data.photoHidden ? data.photoUrl : null;
 
+  // The canvas (390 wide, PROFILE_PAGE) on this phone: heights moved by its status bar, widths from
+  // the centre by its width; the bar's row where the kit puts it.
+  const dy = insets.top - P.canvasStatus;
+  const sx = width / P.canvasWidth;
+  const atX = (x: number) => width / 2 + (x - P.canvasWidth / 2) * sx;
+  const barFoot = insets.top + TOP_BAR_ROW;
+  const barMid = insets.top + SPACING[2] + KIT.size.topBtn / 2;
+  const coverHeight = P.cover + dy;
+  const faceFlight: Flight = {
+    arrive: OWN.arrive,
+    speed: OWN.rise,
+    from: { x: atX(P.faceAt.x), y: P.faceAt.y + dy },
+    to: { x: atX(OWN.faceTo.x), y: barMid },
+  };
+  const nameFlight: Flight = {
+    arrive: OWN.arrive,
+    speed: OWN.rise,
+    from: { x: atX(P.nameAt.x), y: P.nameAt.y + dy },
+    to: { x: atX(OWN.nameTo.x), y: barMid },
+  };
+  // In the bar the name keeps clear of the small photo and of the settings button.
+  const nameLeft = faceFlight.to.x + OWN.face / 2 + SPACING[2];
+  const nameRight = width - KIT.size.side - KIT.size.topBtn - SPACING[2];
+  const nameMax = Math.min(width - 2 * KIT.size.side, (nameRight - nameLeft) / OWN.nameScale);
+  // The name's line as T draws it (at most 1.3 of the system's text size).
+  const nameHeight = (KIT_TYPE.displaySm.lineHeight ?? 0) * Math.min(fontScale, MAX_TEXT_SCALE);
+  const wordsTop = P.nameAt.y + dy + nameHeight / 2 + SPACING[1];
+  // The panel reaches the bar's foot at 316 (lower when the words need it).
+  const panelTop = Math.max(barFoot + OWN.arrive, wordsFoot + SPACING[4]);
+  const arrival = panelTop - barFoot;
+
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
-      <Animated.ScrollView
-        ref={scrollRef}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingBottom: barSpace ? insets.bottom + SCROLL_PAD : SPACING[8],
-        }}
+      <ScreenStatusBar style={onBar && scheme === 'light' ? 'dark' : 'light'} />
+      <ScrollBody
+        y={y}
+        snapToOffsets={[0, arrival]}
+        snapToEnd={false}
+        contentContainerStyle={{ flexGrow: 1 }}
       >
-        <ProfileCover
-          url={data?.coverUrl ?? null}
-          height={coverHeight}
-          accessibilityLabel={tr.profile.cover}
-        />
-        <View style={{ paddingHorizontal: shape.screenPadding }}>
+        <RiseLayer speed={OWN.rise} fade={OWN.riseFade} scaleTo={OWN.riseScale} height={panelTop}>
+          <ProfileCoverArt
+            url={data?.coverUrl ?? null}
+            height={coverHeight}
+            accessibilityLabel={tr.profile.cover}
+          />
+          {data ? (
+            <>
+              {/* The photo's place: the flying photo over the page draws it; this keeps its touch
+                  (it opens large, the owner's call, 28 Ekim). */}
+              <View
+                style={{
+                  position: 'absolute',
+                  top: faceFlight.from.y - P.face / 2,
+                  left: faceFlight.from.x - P.face / 2,
+                }}
+              >
+                <Tap
+                  testID="profile-photo"
+                  accessibilityLabel={tr.profile.photoOpen}
+                  disabled={!photoUrl}
+                  onPress={() => setPreview(true)}
+                >
+                  <View style={{ width: P.face, height: P.face }} />
+                </Tap>
+              </View>
+              <View
+                onLayout={(e) =>
+                  setWordsFoot(Math.ceil(e.nativeEvent.layout.y + e.nativeEvent.layout.height))
+                }
+                style={{
+                  position: 'absolute',
+                  top: wordsTop,
+                  left: KIT.size.side,
+                  right: KIT.size.side,
+                  alignItems: 'center',
+                  gap: SPACING[4],
+                }}
+              >
+                {data.bio ? (
+                  <T v="body" center>
+                    {data.bio}
+                  </T>
+                ) : null}
+                <View style={{ flexDirection: 'row', alignSelf: 'stretch', gap: SPACING[3] }}>
+                  <Btn
+                    variant="glassy"
+                    bar={KIT.size.btnRow}
+                    icon="edit"
+                    label={hasName ? tr.profile.edit : tr.profile.addName}
+                    onPress={() => router.push('/profile/edit')}
+                    style={{ flex: 1, minWidth: 0 }}
+                    block
+                  />
+                  <Btn
+                    variant="glassy"
+                    bar={KIT.size.btnRow}
+                    testID="profile-friends"
+                    accessibilityLabel={tr.profile.friendsCount(friendList.length)}
+                    lead={friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined}
+                    label={tr.profile.friendsSub(friendList.length)}
+                    onPress={() => router.push('/profile/friends')}
+                    style={{ flex: 1, minWidth: 0 }}
+                    block
+                  />
+                </View>
+              </View>
+            </>
+          ) : null}
+        </RiseLayer>
+        <View
+          style={{
+            flexGrow: 1,
+            minHeight: height - barFoot,
+            backgroundColor: AURA[scheme].ground,
+            borderTopLeftRadius: OWN.panelRadius,
+            borderTopRightRadius: OWN.panelRadius,
+            paddingHorizontal: KIT.size.side,
+            paddingTop: SPACING[2],
+            paddingBottom: barSpace ? insets.bottom + SCROLL_PAD : SPACING[8],
+          }}
+        >
+          <View
+            style={{
+              alignSelf: 'center',
+              width: KIT.size.grabW,
+              height: KIT.size.grabH,
+              borderRadius: KIT.size.grabH,
+              backgroundColor: c.grab,
+            }}
+          />
           {view.isPending || loading ? (
             <View style={{ marginTop: SPACING[8] }}>
               <EmptyState kind="loading" body={tr.common.loading} />
@@ -173,61 +236,8 @@ export default function ProfileScreen() {
               />
             </View>
           ) : (
-            <View>
-              {/* The photo over the cover's foot; it opens large (the owner's call, 28 Ekim). */}
-              <View style={{ alignItems: 'center', marginTop: -PROFILE_COVER.faceOverlap }}>
-                <Pressable
-                  testID="profile-photo"
-                  accessibilityRole="button"
-                  accessibilityLabel={tr.profile.photoOpen}
-                  disabled={!photoUrl}
-                  onPress={() => setPreview(true)}
-                >
-                  {/* The gliding copy over the page draws the photo; this one keeps its place
-                      and its touch. */}
-                  <View style={{ width: FACE_BIG, height: FACE_BIG }} />
-                </Pressable>
-              </View>
-              <PhotoPreview url={photoUrl} visible={preview} onClose={() => setPreview(false)} />
-              <View
-                style={{
-                  alignItems: 'center',
-                  gap: SPACING[1],
-                  marginTop: PROFILE_COVER.nameTop,
-                }}
-              >
-                <T
-                  v="display"
-                  style={[KIT_TYPE.displaySm, { opacity: 0 }]}
-                  lines={1}
-                  fit
-                  center
-                  accessibilityRole="header"
-                >
-                  {name}
-                </T>
-                {data.bio ? (
-                  <T v="body" ink center>
-                    {data.bio}
-                  </T>
-                ) : null}
-                <View style={{ marginTop: SPACING[3] }}>
-                  <Btn
-                    variant="glassy"
-                    label={hasName ? tr.profile.edit : tr.profile.addName}
-                    onPress={() => router.push('/profile/edit')}
-                  />
-                </View>
-              </View>
-
-              {data.photoHidden ? (
-                <Glass pad="pad" style={{ marginTop: SPACING[4] }}>
-                  <T v="fine" ink>
-                    {tr.profile.photoHidden}
-                  </T>
-                </Glass>
-              ) : null}
-
+            <>
+              {/* The list's head once the panel is under the bar: the ticket. */}
               {data.capsuleNick ? (
                 <IdentityTicket
                   nick={data.capsuleNick}
@@ -235,110 +245,60 @@ export default function ProfileScreen() {
                   refreshAt={data.nickRefreshAt ?? null}
                 />
               ) : null}
-
-              <Glass sm style={{ marginTop: SPACING[4], overflow: 'hidden' }}>
-                <Li
-                  testID="profile-friends"
-                  accessibilityLabel={tr.profile.friendsCount(friendList.length)}
-                  onPress={() => router.push('/profile/friends')}
-                  padY={ROW_PAD_Y}
-                  padX={SPACING[4]}
-                >
-                  <View style={{ flex: 1, gap: SPACING[0.5], minHeight: ROW_INNER }}>
-                    <T v="h3">{tr.profile.friends}</T>
-                    <T v="fine">{tr.profile.friendsPeople(friendList.length)}</T>
-                  </View>
-                  <View
-                    style={{ flexDirection: 'row' }}
-                    importantForAccessibility="no-hide-descendants"
-                  >
-                    {friendList.slice(0, STACK).map((f, i) => (
-                      <View key={f.publicId} style={{ marginLeft: i === 0 ? 0 : -SPACING[2] }}>
-                        <Av
-                          size="sm"
-                          name={f.displayName ?? tr.profile.noName}
-                          photoUrl={f.photoUrl}
-                        />
-                      </View>
-                    ))}
-                  </View>
-                  <CapIcon name="chevron" color={c.muted} size={ICON.md} />
-                </Li>
-              </Glass>
-              {/* Set balonu under Arkadaşlar (the owner's call, 8 Kasım). */}
+              {data.photoHidden ? (
+                <Glass pad="pad" style={{ marginTop: SPACING[4] }}>
+                  <T v="fine" ink>
+                    {tr.profile.photoHidden}
+                  </T>
+                </Glass>
+              ) : null}
               <SetCard />
-            </View>
+            </>
           )}
         </View>
-      </Animated.ScrollView>
+      </ScrollBody>
 
-      {/* Once the cover is gone: the small photo and the name on the screen's ground. */}
-      <Animated.View
-        pointerEvents="none"
-        importantForAccessibility="no-hide-descendants"
-        style={[
-          {
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            height: barHeight,
-            paddingTop: insets.top,
-            paddingLeft: shape.screenPadding,
-            paddingRight: shape.screenPadding + KIT.size.bell + SPACING[2],
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: PROFILE_COVER.barGap,
-            backgroundColor: AURA[scheme].ground,
-            borderBottomWidth: KIT.size.hair,
-            borderBottomColor: c.hair,
-          },
-          barStyle,
-        ]}
-      ></Animated.View>
-
-      {/* The photo and the name, gliding between the cover's foot and the bar. */}
-      {data && !(view.isPending || loading) ? (
+      <BarBand from={OWN.band[0]} to={OWN.band[1]} />
+      {data ? (
         <>
-          <Animated.View
-            pointerEvents="none"
-            importantForAccessibility="no-hide-descendants"
-            style={[{ position: 'absolute', left: 0, top: 0 }, faceStyle]}
+          <PhotoPreview url={photoUrl} visible={preview} onClose={() => setPreview(false)} />
+          <FlyingFace
+            flight={faceFlight}
+            side={P.face}
+            sideTo={OWN.face}
+            ring={P.ring}
+            ringTo={OWN.ring}
+            ringColor={P.ringColor}
           >
-            <Av size="big" name={data.displayName ?? tr.profile.noName} photoUrl={photoUrl} />
-          </Animated.View>
-          <Animated.View
-            pointerEvents="none"
-            importantForAccessibility="no-hide-descendants"
-            onLayout={(e) => {
-              nameW.value = e.nativeEvent.layout.width;
-              nameH.value = e.nativeEvent.layout.height;
-            }}
-            style={[
-              { position: 'absolute', left: 0, top: 0, maxWidth: width - 2 * shape.screenPadding },
-              nameStyle,
-            ]}
+            <ProfileFace side={P.face - 2 * P.ring} name={name} photoUrl={photoUrl} />
+          </FlyingFace>
+          <FlyingName
+            flight={nameFlight}
+            scaleTo={OWN.nameScale}
+            left={nameLeft}
+            right={nameRight}
+            maxWidth={nameMax}
           >
-            <T v="display" style={KIT_TYPE.displaySm} lines={1} fit>
+            <T v="display" style={KIT_TYPE.displaySm} lines={1} fit accessibilityRole="header">
               {name}
             </T>
-          </Animated.View>
+          </FlyingName>
         </>
       ) : null}
 
-      {/* The settings over the cover's top right; they stay while the page scrolls (the owner's
-          report, 2 Kasım, B2). */}
+      {/* The settings at the top right; they stay while the page scrolls (the owner's report,
+          2 Kasım, B2). */}
       <View
         style={{
           position: 'absolute',
           top: insets.top + SPACING[2],
-          right: shape.screenPadding,
+          right: KIT.size.side,
         }}
       >
         <Round
-          glassy
+          glass="clear"
           icon="settings"
-          side={KIT.size.bell}
+          side={KIT.size.topBtn}
           label={tr.settings.title}
           testID="profile-settings"
           onPress={() => router.push('/settings')}
@@ -348,15 +308,39 @@ export default function ProfileScreen() {
   );
 }
 
-// U32: a row of the list 72 high, 14 above and under.
-const ROW_PAD_Y = 14;
-const ROW_INNER = 72 - 2 * ROW_PAD_Y;
-const STACK = 3;
+// "N arkadaş"'s faces (iskelet.md → 2.4): 28 over each other, no ring but 2.5 of the button's
+// ground round each and a light shadow.
+function FaceStack({ friends }: { friends: readonly Friend[] }) {
+  const { scheme } = useTheme();
+  const gap = KIT.button[scheme].clear.solid;
+  const side = OWN.stack + 2 * OWN.stackGap;
+  return (
+    <View style={{ flexDirection: 'row' }} importantForAccessibility="no-hide-descendants">
+      {friends.slice(0, OWN.stackMax).map((f, i) => (
+        <View
+          key={f.publicId}
+          style={{
+            width: side,
+            height: side,
+            borderRadius: side / 2,
+            padding: OWN.stackGap,
+            backgroundColor: gap,
+            boxShadow: OWN.stackShadow,
+            marginLeft: i === 0 ? -OWN.stackGap : -KIT.size.stackOverlap,
+          }}
+        >
+          <ProfileFace
+            side={OWN.stack}
+            name={f.displayName ?? tr.profile.noName}
+            photoUrl={f.photoUrl}
+          />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 // Under the tabs the last row ends 90 over the safe area (Screen's SCROLL_PAD).
 const SCROLL_PAD = 90;
-const FACE_BIG = KIT.size.av.big;
-const FACE_SMALL = PROFILE_COVER.barFace;
-const NAME_SCALE = (KIT_TYPE.h3.fontSize ?? 16) / (KIT_TYPE.displaySm.fontSize ?? 34);
-// Slower than this when the finger lifts, no fling follows: the page settles at once.
-const SETTLE_VELOCITY = 0.05;
-const EASE = Easing.inOut(Easing.quad);
+// T's largest text size against the system's (aura/kit → MAX_FONT_SCALE).
+const MAX_TEXT_SCALE = 1.3;

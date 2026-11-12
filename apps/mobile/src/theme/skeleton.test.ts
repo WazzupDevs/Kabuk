@@ -6,9 +6,15 @@ import { describe, expect, it } from 'vitest';
 import {
   arriveAt,
   bandReachAt,
+  barNameX,
   coverShift,
   fadeAt,
+  flightAt,
+  flyFace,
+  flyX,
+  flyY,
   ramp,
+  riseInContent,
   stickyFadeAt,
   stickyLift,
   stickyShrinkAt,
@@ -16,6 +22,7 @@ import {
   tabShrinks,
 } from '../motion/scrollMath';
 import { AURA, barBandCss, barEdgeCss, MOTION } from './aura';
+import { PROFILE_PAGE } from './profileCover';
 
 const mobile = join(import.meta.dirname, '..', '..');
 const code = (file: string) => readFileSync(join(mobile, file), 'utf8');
@@ -145,6 +152,95 @@ describe('the cover (kapak, 5.2)', () => {
     expect(coverShift(200, 0.45) - coverShift(100, 0.45)).toBeCloseTo(-45);
     expect(coverShift(-40, 0.45)).toBe(-0);
     expect(code('src/motion/Cover.tsx')).not.toMatch(/withSpring|withTiming|Easing/);
+  });
+});
+
+describe("another person's profile (kapak, 5.6)", () => {
+  const O = PROFILE_PAGE.other;
+  const page = code('app/(app)/people/[publicId].tsx');
+  it('the cover at 0.5, the photo to 0.75 over 60–180 and out over 120–190', () => {
+    expect(O.speed).toBe(0.5);
+    expect(O.faceShrink).toEqual([60, 180]);
+    expect(O.faceScale).toBe(0.75);
+    expect(O.faceFade).toEqual([120, 190]);
+    expect(PROFILE_PAGE.face).toBe(124);
+    expect(PROFILE_PAGE.ring).toBe(4);
+    expect(page).toMatch(/<Cover height=\{coverHeight\} speed=\{O\.speed\}>/);
+    expect(page).toMatch(/<ScrollFade fade=\{O\.faceFade\} shrink=\{O\.faceShrink\}/);
+    expect(page).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}>/);
+  });
+  it('"Arkadaşlıktan çıkar" in the menu only, the DM menu grown from the three dots', () => {
+    expect(page).not.toMatch(/FriendActions/);
+    expect(page).toMatch(/<Menu anchor=\{anchor\}/);
+    expect(page).toMatch(/label=\{tr\.friends\.removeFriend\}/);
+    // No capsule and no nick on another person's profile (rule 4).
+    expect(page).not.toMatch(/capsuleNick|capsuleLook|LivingLook/);
+  });
+});
+
+describe('the own profile in two parts (5.7)', () => {
+  const OWN = PROFILE_PAGE.own;
+  const page = code('app/(app)/(tabs)/profile/index.tsx');
+  const flyAt = (y: number) => {
+    const t = flightAt(y, OWN.arrive);
+    return {
+      t,
+      face: {
+        x: flyX(t, PROFILE_PAGE.faceAt.x, OWN.faceTo.x),
+        y: flyY(y, t, PROFILE_PAGE.faceAt.y, OWN.faceTo.y, OWN.rise),
+        side: PROFILE_PAGE.face * flyFace(t, 124, 30, 4, 1.5).disc,
+      },
+      name: {
+        x: flyX(t, PROFILE_PAGE.nameAt.x, OWN.nameTo.x),
+        y: flyY(y, t, PROFILE_PAGE.nameAt.y, OWN.nameTo.y, OWN.rise),
+      },
+    };
+  };
+
+  it('the upper part moves at -0.35, fades over 120–300 and shrinks to 0.92', () => {
+    expect(OWN.rise).toBe(0.35);
+    expect(OWN.riseFade).toEqual([120, 300]);
+    expect(OWN.riseScale).toBe(0.92);
+    // In the content: carried up by y, moved back by y less its own 0.35·y.
+    expect(riseInContent(100, 0.35) - 100).toBeCloseTo(-35);
+    expect(riseInContent(-30, 0.35)).toBe(-30);
+    expect(page).toMatch(
+      /<RiseLayer speed=\{OWN\.rise\} fade=\{OWN\.riseFade\} scaleTo=\{OWN\.riseScale\}/,
+    );
+  });
+
+  it('the photo and the name fly into the bar by t = clamp(y / 316), linearly', () => {
+    expect(OWN.arrive).toBe(316);
+    const start = flyAt(0);
+    expect(start.face).toEqual({ x: 195, y: 196, side: 124 });
+    expect(start.name).toEqual({ x: 195, y: 291 });
+    const end = flyAt(316);
+    expect(end.face.x).toBeCloseTo(152);
+    expect(end.face.y).toBeCloseTo(73);
+    expect(end.face.side).toBeCloseTo(30);
+    expect(end.name.x).toBeCloseTo(214);
+    expect(end.name.y).toBeCloseTo(73);
+    expect(flyAt(500)).toEqual(end);
+    // Half way: (196 − 0.35·158·0.5)·0.5 + 73·0.5.
+    const mid = flyAt(158);
+    expect(mid.t).toBe(0.5);
+    expect(mid.face.y).toBeCloseTo((196 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
+    // The ring 4 → 1.5: the face in it is the disc less twice the ring.
+    const k = flyFace(1, 124, 30, 4, 1.5);
+    expect(116 * k.face).toBeCloseTo(27);
+    expect(OWN.nameScale).toBe(0.516);
+  });
+
+  it('in the bar the name keeps clear of the photo and of the button', () => {
+    expect(barNameX(214, 30, 175, 316)).toBe(214);
+    expect(barNameX(214, 60, 175, 316)).toBe(235);
+    expect(barNameX(214, 100, 175, 316)).toBeCloseTo(245.5);
+  });
+
+  it('one photo and one name: no copy in the bar', () => {
+    expect(page.match(/<ProfileFace\b/g)?.length).toBe(2);
+    expect(page.match(/<FlyingName\b/g)?.length).toBe(1);
+    expect(page).not.toMatch(/react-native-reanimated/);
   });
 });
 

@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
-import { View } from 'react-native';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import { StyleSheet, View } from 'react-native';
+import Svg, { Circle, Defs, Path, Pattern, Rect } from 'react-native-svg';
 
 import { photoCacheKey } from '@/lib/usePhoto';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { PROFILE_COVER } from '@/theme/profileCover';
+import { PROFILE_COVER, PROFILE_PAGE, RISO_PAPER } from '@/theme/profileCover';
 
 // The profile cover (docs/SPEC_V4.md §4.W): the person's own picture, cut to fill; without one the
 // riso scene (the own profile only; another person's profile shows no band then).
@@ -39,6 +40,115 @@ export function ProfileCover({
         <RisoCoverScene />
       )}
     </View>
+  );
+}
+
+// A profile page's cover (docs/design/iskelet.md → 5.6, 5.7), `height` from the screen's top: the
+// person's picture or, without one, riso paper (another person's) or the riso scene (the own); the dark fade over its top, and its lower half
+// fading into the ground over a 14 px blurred copy of the picture. expo-image blurs the copy once
+// as it decodes it and keeps it in its memory cache, never again while the page scrolls (2.2); the
+// copy shows in steps, each more opaque, so its top has no seam.
+export function ProfileCoverArt({
+  url,
+  height,
+  paper,
+  accessibilityLabel,
+}: {
+  url: string | null;
+  height: number;
+  // Without a picture: riso paper (another person's, 5.6) rather than the own profile's riso scene.
+  paper?: boolean;
+  accessibilityLabel?: string;
+}) {
+  const { scheme } = useTheme();
+  const P = PROFILE_PAGE;
+  const foot = height * (1 - P.footFrom);
+  const step = foot / P.blurSteps.length;
+  const source = url ? { uri: url, cacheKey: photoCacheKey(url) } : null;
+  return (
+    <View
+      accessible={!!accessibilityLabel}
+      accessibilityLabel={accessibilityLabel}
+      style={{ height, overflow: 'hidden' }}
+    >
+      {source ? (
+        <>
+          <Image
+            source={source}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={0}
+            style={StyleSheet.absoluteFill}
+            accessibilityIgnoresInvertColors
+          />
+          {P.blurSteps.map((opacity, i) => (
+            <View
+              key={opacity}
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: height - foot + i * step,
+                height: foot - i * step,
+                overflow: 'hidden',
+                opacity,
+              }}
+            >
+              <Image
+                source={source}
+                blurRadius={P.blur}
+                contentFit="cover"
+                cachePolicy="memory"
+                transition={0}
+                style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height }}
+                accessibilityIgnoresInvertColors
+              />
+            </View>
+          ))}
+        </>
+      ) : paper ? (
+        <RisoPaper />
+      ) : (
+        <RisoCoverScene />
+      )}
+      <View
+        style={[
+          { position: 'absolute', left: 0, right: 0, bottom: 0, height: foot },
+          gradientStyle(P.footCss[scheme]),
+        ]}
+      />
+      <View
+        style={[
+          { position: 'absolute', left: 0, right: 0, top: 0, height: P.shade },
+          gradientStyle(P.shadeCss),
+        ]}
+      />
+    </View>
+  );
+}
+
+// Riso paper (iskelet.md → 2.5, 5.6): the warm paper and its halftone, filling its box; `light`
+// keeps the light paper in both schemes (the anonymous ticket, always on paper).
+export function RisoPaper({ light }: { light?: boolean }) {
+  const { scheme } = useTheme();
+  const k = RISO_PAPER[light ? 'light' : scheme];
+  const c = RISO_PAPER.cell;
+  return (
+    <Svg
+      width="100%"
+      height="100%"
+      style={StyleSheet.absoluteFill}
+      importantForAccessibility="no-hide-descendants"
+    >
+      <Defs>
+        <Pattern id="riso-tram" width={c} height={c} patternUnits="userSpaceOnUse">
+          <Circle cx={c / 4} cy={c / 4} r={RISO_PAPER.dot} fill={k.dots} />
+          <Circle cx={(3 * c) / 4} cy={(3 * c) / 4} r={RISO_PAPER.dot} fill={k.dots} />
+        </Pattern>
+      </Defs>
+      <Rect x={0} y={0} width="100%" height="100%" fill={k.paper} />
+      <Rect x={0} y={0} width="100%" height="100%" fill="url(#riso-tram)" />
+    </Svg>
   );
 }
 

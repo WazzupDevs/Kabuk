@@ -2,8 +2,6 @@
 // themselves (61 files on 12 Kasım). Only shrinks: a file moved to the kit leaves it.
 export const MOTION_ALLOWED: readonly string[] = [
   'app/(app)/(tabs)/profile/capsule.tsx',
-  'app/(app)/(tabs)/profile/edit.tsx',
-  'app/(app)/(tabs)/profile/index.tsx',
   'app/(app)/district/gate.tsx',
   'app/(app)/district/room.tsx',
   'app/(app)/gifts.tsx',
@@ -42,13 +40,11 @@ export const MOTION_ALLOWED: readonly string[] = [
   'src/features/gifts/OpenedCard.tsx',
   'src/features/gifts/PackRing.tsx',
   'src/features/gifts/Rip.tsx',
-  'src/features/gifts/SetCard.tsx',
   'src/features/gifts/StarBurst.tsx',
   'src/features/gifts/loops.ts',
   'src/features/gifts/parts.tsx',
   'src/features/launch/LaunchCurtain.tsx',
   'src/features/onboarding/ConsentBoxes.tsx',
-  'src/features/profile/IdentityTicket.tsx',
   'src/features/profile/LivingLook.tsx',
   'src/features/profile/ProfileCard.tsx',
   'src/features/rooms/CreateTableSheet.tsx',

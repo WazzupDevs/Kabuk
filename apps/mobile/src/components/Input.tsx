@@ -41,6 +41,8 @@ type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   // U34 (ProfilDuzenle): a large field on a card: the surface with 1 divider inside, no shadow, the
   // label 600 13 and the hint fine, both muted.
   boxed?: boolean;
+  // docs/design/iskelet.md → 5.8 (Profili düzenle): focused, the green ring 3 px at 18 %.
+  halo?: boolean;
 };
 
 // A text field. Its outline is the theme's border where that reads 3:1 against the surface, the
@@ -60,6 +62,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
     search,
     large,
     boxed,
+    halo,
     multiline,
     placeholder,
     ...rest
@@ -156,7 +159,9 @@ export const Input = forwardRef<TextInput, Props>(function Input(
                 ? KIT.size.padLg
                 : KIT.size.fieldPadX,
           boxShadow: ring
-            ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
+            ? halo
+              ? `0px 0px 0px ${KIT.size.focusHalo}px ${KIT.primaryHalo}`
+              : `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
             : shadow.boxShadow,
         }}
       >

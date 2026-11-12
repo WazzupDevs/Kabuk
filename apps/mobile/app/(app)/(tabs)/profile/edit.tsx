@@ -8,37 +8,44 @@ import {
 } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { BackHandler, Linking, Pressable, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { BackHandler, Linking, useWindowDimensions, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Av, Btn, Glass, Round, T, useKit } from '@/aura/kit';
+import { Btn, Glass, Li, RowList, T, useKit } from '@/aura/kit';
 import { Input } from '@/components/Input';
-import { Screen } from '@/components/Screen';
-import { useHideTabBar } from '@/components/TabBar';
 import { Loader } from '@/components/Loader';
+import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
+import { PageTop } from '@/components/PageTop';
+import { Screen } from '@/components/Screen';
+import { Sheet } from '@/components/Sheet';
+import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoSheet, photoErrorMessage } from '@/features/profile/PhotoSheet';
 import { chooseCover, PhotoError } from '@/features/profile/photo';
 import { ProfileCover } from '@/features/profile/ProfileCover';
-import { PROFILE_COVER } from '@/theme/profileCover';
-import { Sheet } from '@/components/Sheet';
+import { RingedFace } from '@/features/profile/ProfileFace';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { maxLengthFor } from '@/lib/textLimit';
+import { type MenuAnchor, Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
+import { PROFILE_PAGE } from '@/theme/profileCover';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-// The photo, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; docs/design/aura → Profili
-// düzenle): back, the title, the photo's card, the fields' card, the birth date's note; "Kaydet"
-// stays at the foot (the canvas leaves it out). Length is checked here; the profile function checks
-// length and profanity again. The birth date cannot change (rule 11).
+// The photo, the cover, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; docs/design/
+// iskelet.md → 5.8): the `sayfa` bar with the back button and Kaydet (clear, its words quiet with
+// nothing to save, green and 800 with something, "Kaydedildi" once saved, its width kept), the cover
+// and the photo in one preview, the fields' card with their counts, the birth date's row. Length is
+// checked here; the profile function checks length and profanity again. The birth date cannot
+// change (rule 11).
 export default function EditProfileScreen() {
   // Editing, the tab bar is out of sight (the owner's call, 2 Kasım, 11.5, 12.2).
   useHideTabBar();
@@ -61,70 +68,23 @@ export default function EditProfileScreen() {
   );
 }
 
-// A photo needs a saved name first (the server refuses it otherwise).
-// U34 (ProfilDuzenle `.ph`): no card; the face 88 in the middle with the camera badge (36, the
-// surface, at its lower right, -4/-2; the camera 20, its lens the accent). The written "Fotoğrafı
-// değiştir" went: the badge does the same (the owner's call, 2 Kasım, 12.5).
-function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
-  const { c, scheme } = useKit();
+// The cover and the photo in one preview, as on the profile (iskelet.md → 5.8): the cover with the
+// clear "Kapak" button over it, opening Değiştir and Kaldır (the kit's menu, 3.5); the photo in its
+// white ring over the cover's foot with a clear camera round at its corner (the written "Fotoğrafı
+// değiştir" went, the owner's call, 2 Kasım, 12.5). Both need a saved name first (the server
+// refuses them otherwise).
+function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
+  const { scheme } = useKit();
   const { colors } = useTheme();
-  const view = useProfileView(publicId);
-  const [menu, setMenu] = useState(false);
-  const hasPhoto = !!view.data?.photoUrl || view.data?.photoHidden === true;
-  const label = hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd;
-
-  return (
-    <View style={{ gap: SPACING[2], alignItems: 'center' }}>
-      <View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          accessibilityState={{ disabled: !hasName }}
-          disabled={!hasName}
-          onPress={() => setMenu(true)}
-        >
-          <Av
-            size="edit"
-            name={view.data?.displayName ?? ''}
-            photoUrl={view.data?.photoUrl ?? null}
-          />
-          <View
-            style={{
-              position: 'absolute',
-              right: -CAMERA_OUT,
-              bottom: -CAMERA_DOWN,
-              width: CAMERA,
-              height: CAMERA,
-              borderRadius: CAMERA / 2,
-              backgroundColor: scheme === 'dark' ? c.glassInSheet : KIT.white,
-              boxShadow: scheme === 'dark' ? undefined : KIT.cameraShadow,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <CapIcon name="camera" color={colors.accent} second={c.ink} size={ICON.md} />
-          </View>
-        </Pressable>
-      </View>
-      {!hasName ? (
-        <T v="fine" center>
-          {tr.profile.photoNeedsName}
-        </T>
-      ) : null}
-
-      <PhotoSheet visible={menu} onClose={() => setMenu(false)} canRemove={hasPhoto} />
-    </View>
-  );
-}
-const CAMERA = 36;
-const CAMERA_OUT = 4;
-const CAMERA_DOWN = 2;
-
-// The profile cover (docs/SPEC_V4.md §4.W): its small preview (or the riso scene) with "Kapağı
-// değiştir" and, with one, "Kapağı kaldır". Like the photo, it needs a saved name first.
-function CoverEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
+  const { width } = useWindowDimensions();
   const queryClient = useQueryClient();
   const view = useProfileView(publicId);
+  const [photoMenu, setPhotoMenu] = useState(false);
+  const [coverMenu, setCoverMenu] = useState(false);
+  const coverRef = useRef<View>(null);
+  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
+  const hasPhoto = !!view.data?.photoUrl || view.data?.photoHidden === true;
+  const label = hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd;
   const coverUrl = view.data?.coverUrl ?? null;
   const refresh = () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all });
   const setCover = useMutation({
@@ -139,46 +99,83 @@ function CoverEditor({ publicId, hasName }: { publicId: string; hasName: boolean
   });
   const busy = setCover.isPending || removeCover.isPending;
   const failed = setCover.isError ? setCover.error : removeCover.isError ? removeCover.error : null;
+  const openCoverMenu = () =>
+    measureMenuAnchor(coverRef.current, (at) => {
+      setAnchor(at);
+      setCoverMenu(true);
+    });
+  const camera = KIT.button[scheme].clear;
+  const coverHeight = ((width - 2 * KIT.size.side) * COVER_HEIGHT_PX) / COVER_WIDTH_PX;
 
   return (
-    <Glass sm style={{ marginTop: SPACING[5], padding: SPACING[4], gap: SPACING[3] }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[3] }}>
-        <View style={{ width: PROFILE_COVER.previewWidth }}>
-          <ProfileCover
-            url={coverUrl}
-            height={(PROFILE_COVER.previewWidth * COVER_HEIGHT_PX) / COVER_WIDTH_PX}
-            radius={PROFILE_COVER.previewRadius}
-            accessibilityLabel={tr.profile.cover}
-          />
-        </View>
-        <View style={{ flex: 1, gap: SPACING[2], alignItems: 'flex-start' }}>
-          <T v="h3">{tr.profile.cover}</T>
-          {!coverUrl && view.data ? <T v="fine">{tr.profile.coverDefault}</T> : null}
-        </View>
-      </View>
-      {!hasName ? <T v="fine">{tr.profile.coverNeedsName}</T> : null}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[2] }}>
-        <Btn
-          sm
-          variant="glassy"
-          testID="cover-change"
-          label={tr.profile.coverChange}
-          disabled={!hasName || (busy && !setCover.isPending)}
-          loading={setCover.isPending}
-          onPress={() => !busy && setCover.mutate()}
+    <View style={{ gap: SPACING[3] }}>
+      <View>
+        <ProfileCover
+          url={coverUrl}
+          height={coverHeight}
+          radius={KIT.size.glassRadiusSm}
+          accessibilityLabel={tr.profile.cover}
         />
-        {coverUrl ? (
+        <View
+          ref={coverRef}
+          collapsable={false}
+          style={{ position: 'absolute', top: SPACING[3], right: SPACING[3] }}
+        >
           <Btn
             sm
             variant="glassy"
-            testID="cover-remove"
-            label={tr.profile.coverRemove}
-            disabled={busy && !removeCover.isPending}
-            loading={removeCover.isPending}
-            onPress={() => !busy && removeCover.mutate()}
+            icon="photo"
+            testID="cover-menu"
+            label={tr.profile.cover}
+            disabled={!hasName}
+            loading={busy}
+            onPress={openCoverMenu}
           />
-        ) : null}
+        </View>
+        <View style={{ alignItems: 'center', marginTop: -PROFILE_PAGE.face / 2 }}>
+          <Tap
+            accessibilityLabel={label}
+            accessibilityState={{ disabled: !hasName }}
+            disabled={!hasName}
+            onPress={() => setPhotoMenu(true)}
+          >
+            <RingedFace
+              name={view.data?.displayName ?? ''}
+              photoUrl={view.data?.photoUrl ?? null}
+            />
+            <View
+              style={[
+                {
+                  position: 'absolute',
+                  right: 0,
+                  bottom: 0,
+                  width: CAMERA,
+                  height: CAMERA,
+                  borderRadius: CAMERA / 2,
+                  borderWidth: KIT.size.edge,
+                  borderColor: camera.edge,
+                  boxShadow: camera.shadow || undefined,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                },
+                gradientStyle(camera.solid),
+              ]}
+            >
+              <CapIcon name="camera" color={colors.accent} second={camera.ink} size={ICON.md} />
+            </View>
+          </Tap>
+        </View>
       </View>
+      {!hasName ? (
+        <T v="fine" center>
+          {tr.profile.photoNeedsName}
+        </T>
+      ) : null}
+      {!coverUrl && view.data && hasName ? (
+        <T v="fine" center>
+          {tr.profile.coverDefault}
+        </T>
+      ) : null}
       {view.isError ? (
         <T v="fine" color={KIT.danger}>
           {errorMessage(view.error)}
@@ -199,9 +196,39 @@ function CoverEditor({ publicId, hasName }: { publicId: string; hasName: boolean
           ) : null}
         </View>
       ) : null}
-    </Glass>
+
+      {anchor ? (
+        // iskelet.md → 3.5: grown out of "Kapak", no "Vazgeç", Kaldır red at the foot apart.
+        <Menu anchor={anchor} visible={coverMenu} onClose={() => setCoverMenu(false)}>
+          <MenuItem
+            cap="photo"
+            label={tr.profile.coverChange}
+            testID="cover-change"
+            onPress={() => {
+              setCoverMenu(false);
+              if (!busy) setCover.mutate();
+            }}
+          />
+          {coverUrl ? (
+            <MenuItem
+              negative
+              cap="trash"
+              label={tr.profile.coverRemove}
+              testID="cover-remove"
+              onPress={() => {
+                setCoverMenu(false);
+                if (!busy) removeCover.mutate();
+              }}
+            />
+          ) : null}
+        </Menu>
+      ) : null}
+      <PhotoSheet visible={photoMenu} onClose={() => setPhotoMenu(false)} canRemove={hasPhoto} />
+    </View>
   );
 }
+// The camera round at the photo's corner (36, iskelet.md → 2.1: a small one in a line).
+const CAMERA = KIT.size.btnSm;
 
 function EditForm({
   publicId,
@@ -226,7 +253,7 @@ function EditForm({
   const bioContact = bioChanged && containsContact(bio);
   const nameValid =
     nameLength >= DISPLAY_NAME_MIN && nameLength <= DISPLAY_NAME_MAX && !nameContact;
-  // An edited bio from before the limit that is still too long says so (Kaydet stays off).
+  // An edited bio from before the limit that is still too long says so (Kaydet does not save it).
   const bioTooLong = bioChanged && [...bio.trim()].length > BIO_MAX;
   const bioValid = !bioChanged || (!bioTooLong && !bioContact);
   const bioLimit = Math.max(BIO_MAX, [...initialBio].length);
@@ -255,9 +282,10 @@ function EditForm({
 
   // skall tuvali (ProfilDuzenleCikis): leaving with changes asks first, back key too.
   const [leaving, setLeaving] = useState(false);
-  // "Kaydet ve çık" with a name that does not pass: the name's error shows.
+  // Kaydet (or "Kaydet ve çık") with a name that does not pass: the name's error shows.
   const [tried, setTried] = useState(false);
-  const dirty = (nameChanged || bioChanged) && !save.isSuccess;
+  const changed = (nameChanged || bioChanged) && !save.isSuccess;
+  const dirty = changed;
   const leave = useCallback(() => (dirty ? setLeaving(true) : router.back()), [dirty]);
   const askToLeave = useCallback(() => setLeaving(true), []);
   useAskBeforeLeaving(dirty, askToLeave);
@@ -271,54 +299,61 @@ function EditForm({
       return () => sub.remove();
     }, [dirty]),
   );
+  // Nothing to save: Kaydet stays quiet and does nothing; a field that does not pass says so.
+  const onSave = () => {
+    if (!changed || save.isPending) return;
+    if (!nameValid || !bioValid) {
+      setTried(true);
+      return;
+    }
+    save.mutate();
+  };
 
   return (
     <Screen
       gap={0}
-      // U34: back 44 round soft on the bar; it stays while the page scrolls (the owner's report,
-      // 2 Kasım, 12.1).
+      // iskelet.md → 3.1 (`sayfa`) and 2.1: the back button and Kaydet on the bar, both clear
+      // glass; the bar stays while the page scrolls (the owner's report, 2 Kasım, 12.1).
       top={
-        <>
-          <View style={{ height: KIT.size.btnRow, justifyContent: 'center' }}>
-            <Round glassy icon="back" label={tr.common.back} onPress={leave} />
-          </View>
-          {/* The title stays with the bar (the owner's call, 8 Kasım: titles never scroll). */}
-          <T v="display" accessibilityRole="header">
-            {tr.profile.editTitle}
-          </T>
-        </>
-      }
-      footer={
-        // aura v50 (ProfilDuzenle): Kaydet stays at the foot, the save error right above it.
-        <>
-          {save.isError ? (
-            <T v="fine" color={c.warn}>
-              {errorMessage(save.error)}
-            </T>
-          ) : null}
-          <Btn
-            block
-            label={tr.profile.save}
-            onPress={() => save.mutate()}
-            disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
-            loading={save.isPending}
-          />
-        </>
+        <PageTop
+          title={tr.profile.editTitle}
+          onBack={leave}
+          trailing={
+            <Btn
+              variant="glassy"
+              bar={KIT.size.topBtn}
+              testID="profile-save"
+              label={save.isSuccess ? tr.profile.savedShort : tr.profile.save}
+              tint={changed || save.isSuccess ? KIT.primary : KIT.saveIdle}
+              strong={changed || save.isSuccess}
+              loading={save.isPending}
+              onPress={onSave}
+              style={{ minWidth: KIT.saveMinWidth }}
+            />
+          }
+        />
       }
     >
+      {save.isError ? (
+        <T v="fine" color={c.warn}>
+          {errorMessage(save.error)}
+        </T>
+      ) : null}
       <View style={{ marginTop: SPACING[3] }}>
-        <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
+        <PreviewEditor publicId={publicId} hasName={initialName !== ''} />
       </View>
-      <CoverEditor publicId={publicId} hasName={initialName !== ''} />
-      {/* U34: the fields on one glass sm card 20 under the photo, 16 inside; a field's label,
-          the field and its note 8 apart, the groups 12 more. */}
+      {/* U34: the fields on one glass sm card 20 under the preview, 16 inside; a field's label,
+          the field and its note 8 apart, the groups 12 more. Their counts under them; focused,
+          the green ring (iskelet.md → 5.8). */}
       <Glass sm style={{ marginTop: SPACING[5], padding: SPACING[4], gap: SPACING[5] }}>
         <Input
           large
           boxed
+          halo
           testID="name-input"
           label={tr.profile.nameLabel}
           hint={tr.profile.nameHint}
+          counter={tr.profile.fieldCount(nameLength, DISPLAY_NAME_MAX)}
           value={name}
           onChangeText={setName}
           error={
@@ -335,6 +370,7 @@ function EditForm({
         <Input
           large
           boxed
+          halo
           label={tr.profile.bioLabel}
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}
@@ -345,22 +381,31 @@ function EditForm({
           tall
         />
       </Glass>
-      <Glass
-        sm
-        style={{
-          marginTop: SPACING[4],
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          gap: KIT.size.rowGap,
-          paddingVertical: NOTE_PAD_Y,
-          paddingHorizontal: NOTE_PAD_X,
-        }}
-      >
-        <CapIcon name="calendar" color={c.ink} size={KIT.size.icon} />
-        <T v="fineLg" ink style={{ flex: 1 }}>
-          {tr.profile.birthDateNote}
-        </T>
-      </Glass>
+      {/* The birth date as a settings row (iskelet.md → 5.8, 2.4): the lock on its square and
+          "Değiştirilemez" (rule 11: it cannot change in the app). */}
+      <View style={{ marginTop: SPACING[4], gap: SPACING[2] }}>
+        <RowList inset={KIT.rowIcon.side + KIT.size.liGap}>
+          <Li padY={KIT.size.lrPadY} minHeight={KIT.size.lrMin}>
+            <View
+              style={{
+                width: KIT.rowIcon.side,
+                height: KIT.rowIcon.side,
+                borderRadius: KIT.rowIcon.radius,
+                backgroundColor: KIT.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <CapIcon name="lock" color={KIT.white} size={ICON.sm} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <T v="h3">{tr.profile.birthDate}</T>
+            </View>
+            <T v="fine">{tr.profile.unchangeable}</T>
+          </Li>
+        </RowList>
+        <T v="fine">{tr.profile.birthDateNote}</T>
+      </View>
 
       {/* One pattern with Kapsülün's: "Kaydet ve çık" tries to save; a save that cannot go through
       closes the sheet and the error shows on the screen, so the page is not left. */}
@@ -398,6 +443,3 @@ function EditForm({
     </Screen>
   );
 }
-
-const NOTE_PAD_Y = 14;
-const NOTE_PAD_X = 16;

@@ -7,7 +7,7 @@ import {
   wornSetPieces,
 } from '@shared/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Glass, T, Tag, useKit } from '@/aura/kit';
@@ -16,6 +16,7 @@ import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { Tap } from '@/motion';
 import { SET_BALLOONS } from '@/theme/setBalloons';
 import { TIER_COLOR } from '@/theme/gifts';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -32,6 +33,7 @@ import { useEquip, useGiftState } from './queries';
 // opens the region's set pieces, by set, the ones not owned faded under a lock; choosing one wears
 // it (gifts/equip). A new set's pieces join the sheet by themselves (content/gift-packs.json).
 const DISC = 74;
+const EMPTY = 62;
 const OPTION = 64;
 const RING = 3;
 const LOCK = 24;
@@ -98,46 +100,51 @@ export function SetCard() {
         {SET_REGION_ORDER.map((region) => {
           const piece = pieces[region];
           return (
-            <Pressable
-              key={region}
-              accessibilityRole="button"
-              accessibilityLabel={tr.gifts.setSlotLabel(
-                tr.gifts.setRegion[region],
-                piece?.name ?? tr.gifts.setEmpty,
-              )}
-              onPress={() => setOpen(region)}
-              style={({ pressed }) => ({
-                flex: 1,
-                alignItems: 'center',
-                gap: SPACING[1],
-                opacity: pressed ? 0.8 : 1,
-              })}
-            >
-              <View
-                style={{
-                  width: DISC,
-                  height: DISC,
-                  borderRadius: DISC / 2,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  ...(piece
-                    ? { boxShadow: `0 0 0 ${RING}px ${gold}, 0 0 14px ${gold}88` }
-                    : { borderWidth: 2, borderStyle: 'dashed', borderColor: c.hair }),
-                }}
-              >
-                {piece ? (
-                  <LookAvatar look={pieceLook(piece.id)} size={DISC} />
-                ) : (
-                  <CapIcon name="plus" color={c.muted} size={ICON.lg} />
+            <View key={region} style={{ flex: 1 }}>
+              <Tap
+                accessibilityLabel={tr.gifts.setSlotLabel(
+                  tr.gifts.setRegion[region],
+                  piece?.name ?? tr.gifts.setEmpty,
                 )}
-              </View>
-              <T v="fine" strong center>
-                {tr.gifts.setRegion[region]}
-              </T>
-              <T v="fine" center>
-                {piece?.name ?? tr.gifts.setEmpty}
-              </T>
-            </Pressable>
+                onPress={() => setOpen(region)}
+                style={{ alignItems: 'center', gap: SPACING[1] }}
+              >
+                {/* An empty slot 62 in the worn one's place (iskelet.md → 5.7). */}
+                <View
+                  style={{
+                    width: DISC,
+                    height: DISC,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <View
+                    style={{
+                      width: piece ? DISC : EMPTY,
+                      height: piece ? DISC : EMPTY,
+                      borderRadius: (piece ? DISC : EMPTY) / 2,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      ...(piece
+                        ? { boxShadow: `0 0 0 ${RING}px ${gold}, 0 0 14px ${gold}88` }
+                        : { borderWidth: 2, borderStyle: 'dashed', borderColor: c.hair }),
+                    }}
+                  >
+                    {piece ? (
+                      <LookAvatar look={pieceLook(piece.id)} size={DISC} />
+                    ) : (
+                      <CapIcon name="plus" color={c.muted} size={ICON.lg} />
+                    )}
+                  </View>
+                </View>
+                <T v="fine" strong center>
+                  {tr.gifts.setRegion[region]}
+                </T>
+                <T v="fine" center>
+                  {piece?.name ?? tr.gifts.setEmpty}
+                </T>
+              </Tap>
+            </View>
           );
         })}
       </View>
@@ -204,9 +211,8 @@ function RegionSheet({
                 const mine = owned.has(a.id);
                 const on = worn.has(a.id);
                 return (
-                  <Pressable
+                  <Tap
                     key={a.id}
-                    accessibilityRole="button"
                     accessibilityState={{ disabled: !mine, selected: on }}
                     accessibilityLabel={mine ? a.name : tr.gifts.setLocked(a.name)}
                     disabled={!mine || equip.isPending}
@@ -247,7 +253,7 @@ function RegionSheet({
                       {a.name}
                     </T>
                     <TierGems tier={GIFT_TIERS[3]} />
-                  </Pressable>
+                  </Tap>
                 );
               })}
             </View>

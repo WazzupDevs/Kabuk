@@ -20,5 +20,6 @@ export {
 } from './ScrollScreen';
 export { StickyFade, StickyField } from './StickyField';
 export { Cover } from './Cover';
+export { type Flight, FlyingFace, FlyingName, RiseLayer, ScrollFade } from './ProfileMotion';
 export { BarArrive, BarBack, BarBand, LargeTitle, TopBarRow, type TopBarKind } from './TopBar';
 export { TabBar, TabBarEdge, TabBarMotion, type TabItem, useTabShrink } from './TabBar';
