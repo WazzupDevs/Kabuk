@@ -249,6 +249,7 @@ export function Btn({
   snug,
   icon,
   lead,
+  strong,
   loading,
   disabled,
   tint,
@@ -277,6 +278,8 @@ export function Btn({
   icon?: CapIconName;
   // Something before the words in the icon's place (Profil's "N arkadaş": the friends' faces).
   lead?: ReactNode;
+  // A clear button's words at 800 (the bar's Kaydet with something to save, iskelet.md → 2.1).
+  strong?: boolean;
   loading?: boolean;
   disabled?: boolean;
   // The label's colour where the canvas gives one (Bitir, Ayrıl in red).
@@ -402,7 +405,7 @@ export function Btn({
           maxFontSizeMultiplier={MAX_FONT_SCALE}
           style={[
             labelType,
-            glass && !fill && kind !== 'clear' ? BTN_STRONG : null,
+            (glass && !fill && kind !== 'clear') || strong ? BTN_STRONG : null,
             { color: fg, flexShrink: 1 },
           ]}
         >

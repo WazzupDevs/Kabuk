@@ -183,6 +183,7 @@ function CoverPage({
         <ProfileCoverArt
           url={profile.coverUrl}
           height={coverHeight}
+          paper
           accessibilityLabel={profile.coverUrl ? tr.profile.cover : undefined}
         />
       </Cover>

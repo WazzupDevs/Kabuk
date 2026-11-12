@@ -124,14 +124,17 @@ describe('K9: Profili düzenle', () => {
   it('hides the tab bar', () => {
     expect(edit).toMatch(/useHideTabBar\(\);/);
   });
-  it('Kaydet stands 46 from the foot: lift 12 + safe area 34', () => {
-    const screen = code('src/components/Screen.tsx');
-    const lift = Number(/const FOOTER_LIFT = (\d+);/.exec(screen)?.[1]);
-    expect(lift).toBe(12);
-    expect(lift + 34).toBe(46);
-    // The foot lifts by the lift only, with no tab bar space while the bar is hidden.
-    expect(screen).toMatch(/FOOTER_LIFT \+\s*\(keyboardUp \|\| !barSpace\s*\? 0/);
-    expect(edit).toMatch(/footer=\{/);
+  it('Kaydet is on the bar, clear, at least 96 wide (iskelet.md → 2.1, 5.8)', () => {
+    expect(edit).not.toMatch(/footer=\{/);
+    expect(edit).toMatch(/<PageTop\b/);
+    expect(edit).toMatch(/variant="glassy"\s+bar=\{KIT\.size\.topBtn\}\s+testID="profile-save"/);
+    expect(edit).toMatch(/tint=\{changed \|\| save\.isSuccess \? KIT\.primary : KIT\.saveIdle\}/);
+    expect(edit).toMatch(/style=\{\{ minWidth: KIT\.saveMinWidth \}\}/);
+    const kit = code('src/theme/auraKit.ts');
+    expect(kit).toMatch(/saveIdle: '#9AAEA1',/);
+    expect(kit).toMatch(/saveMinWidth: 96,/);
+    expect(kit).toMatch(/primaryHalo: 'rgba\(14, 135, 69, 0\.18\)',/);
+    expect(kit).toMatch(/focusHalo: 3,/);
   });
 });
 

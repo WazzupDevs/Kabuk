@@ -44,17 +44,20 @@ export function ProfileCover({
 }
 
 // A profile page's cover (docs/design/iskelet.md → 5.6, 5.7), `height` from the screen's top: the
-// person's picture or, without one, riso paper; the dark fade over its top, and its lower half
+// person's picture or, without one, riso paper (another person's) or the riso scene (the own); the dark fade over its top, and its lower half
 // fading into the ground over a 14 px blurred copy of the picture. expo-image blurs the copy once
 // as it decodes it and keeps it in its memory cache, never again while the page scrolls (2.2); the
 // copy shows in steps, each more opaque, so its top has no seam.
 export function ProfileCoverArt({
   url,
   height,
+  paper,
   accessibilityLabel,
 }: {
   url: string | null;
   height: number;
+  // Without a picture: riso paper (another person's, 5.6) rather than the own profile's riso scene.
+  paper?: boolean;
   accessibilityLabel?: string;
 }) {
   const { scheme } = useTheme();
@@ -103,8 +106,10 @@ export function ProfileCoverArt({
             </View>
           ))}
         </>
-      ) : (
+      ) : paper ? (
         <RisoPaper />
+      ) : (
+        <RisoCoverScene />
       )}
       <View
         style={[

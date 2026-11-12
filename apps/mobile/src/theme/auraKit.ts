@@ -393,6 +393,13 @@ export const KIT = {
   photoCard: { side: 22, radius: 30, shadow: '0px 24px 60px rgba(0, 0, 0, 0.35)' },
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(14, 135, 69, 0.14)',
+  // docs/design/iskelet.md → 5.8: Profili düzenle's focused field (3 px, the primary at 18 %), the
+  // bar's Kaydet with nothing to save (its words), and a settings row's icon square (32, 10 round).
+  primaryHalo: 'rgba(14, 135, 69, 0.18)',
+  saveIdle: '#9AAEA1',
+  rowIcon: { side: 32, radius: 10 },
+  // The bar's Kaydet keeps one width as its words change (iskelet.md → 2.1).
+  saveMinWidth: 96,
   pink: '#FF4F8B',
   // Profili düzenle: the camera's white round at the face's corner.
   cameraShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
@@ -726,6 +733,7 @@ export const KIT = {
     badgePadX: 6,
     dot: 8,
     dotRing: 4,
+    focusHalo: 3,
     // Telegram Android's thin rows (the owner's call, 30 Ekim): 48 picture, 9 above and under.
     liPadY: 9,
     liPadX: 16,
