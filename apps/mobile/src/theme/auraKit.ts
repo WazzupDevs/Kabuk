@@ -90,6 +90,42 @@ export const KIT_TYPE = {
   confirmTitle: t(800, 21, 27, -0.02),
   confirmNote: t(500, 14, 20),
   confirmBtn: t(800, 16.5, 21),
+  // The profile pages (tuval Profil, Benim): the name (31, 800, -0.03em; the line the face's own
+  // height, as detailTitle), "Arkadaşsınız" (13, 700), a badge (13.5, 700), Mesaj (17, 800), the
+  // bar's name (16, 800, -0.015em); the own buttons' "+N" (10.5, 800); the ticket's number (13,
+  // 700), its eyebrow (11.5, 800, 0.1em), the nick (20, 800, -0.02em) and its renewal (13, 600);
+  // Set balonu's title (17, 800, -0.015em), its count (12.5, 800), its note (13.5, 500, 1.42) and a
+  // slot's name (13, 700).
+  profileName: t(800, 31, 39, -0.03),
+  friendTag: t(700, 13, 17),
+  badgeChip: t(700, 13.5, 17),
+  profileBtn: t(800, 17, 22),
+  personBar: t(800, 16, 20, -0.015),
+  stackMore: t(800, 10.5, 13),
+  ticketNo: t(700, 13, 17),
+  ticketKicker: t(800, 11.5, 15, 0.1),
+  ticketNick: t(800, 20, 25, -0.02),
+  ticketNote: t(600, 13, 17),
+  setTitle: t(800, 17, 22, -0.015),
+  setCount: t(800, 12.5, 16),
+  setNote: t(500, 13.5, 19),
+  setSlot: t(700, 13, 17),
+  // The `sayfa` pages on the boards (tuval Arkadaslar, Duzenle): the large title (34, 800,
+  // -0.035em; the line the face's own height) and the line under it (14, 600); a friend's "since"
+  // (13, 600); Profili düzenle's Kapak (13.5, 700), the birth date's row (15, 700), its note (12.5,
+  // 500) and "Değiştirilemez" (13, 700); the fields' labels (13, 700), what is typed (16, 600; the
+  // bio 16, 500, 1.4) and their note (12.5, 500, 1.45).
+  pageTitle: t(800, 34, 42, -0.035),
+  pageSub: t(600, 14, 18),
+  friendSince: t(600, 13, 17),
+  coverBtn: t(700, 13.5, 17),
+  rowTitle: t(700, 15, 19),
+  rowNote: t(500, 12.5, 17),
+  rowLock: t(700, 13, 17),
+  boxLabel: t(700, 13, 17),
+  boxField: t(600, 16, 21),
+  boxFieldMulti: t(500, 16, 22),
+  boxNote: t(500, 12.5, 18),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),

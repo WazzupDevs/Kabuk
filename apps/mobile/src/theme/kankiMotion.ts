@@ -178,11 +178,11 @@ export const PAGE_KANKI = {
 export const LEGAL_PEEK: KankiPlace = { id: '1a80a9', right: 20, top: -36, width: 80, height: 105 };
 export const UPDATE_KANKI: KankiPlace = { id: '6f419d', width: 110, height: 144 };
 
-// Arkadaslar: one looking over the list (`.behind > .peek`), the list 76 under the title.
+// Arkadaslar (tuval Arkadaslar): one looking over the list's card, 54 × 68, 40 from its right, its
+// head 58 over the card's top edge; in the 350 wide frame scaled to the 358 card.
 export const FRIENDS_PEEK: readonly KankiPlace[] = [
-  { id: 'peek-1', left: 230, top: -4, width: 72, height: 94 },
+  { id: 'peek-1', left: 258, top: 0, width: 53, height: 66.5 },
 ];
-export const FRIENDS_LIST_TOP = 76;
 // Keşfet (iskelet.md → 5.1): one buddy looking over the search capsule's right, scrolling with the
 // content, in the 350 wide frame (tuval Kesfet: 38 × 50, 74 from the capsule's right, its head 42
 // over the capsule's top edge: 58 − 42 = 16 down the strip).

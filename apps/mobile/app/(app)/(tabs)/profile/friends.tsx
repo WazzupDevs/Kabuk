@@ -2,7 +2,7 @@ import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 
-import { Av, Btn, RowList, Li, Round, T, useKit, Glass } from '@/aura/kit';
+import { Btn, Li, Round, T, useKit, Glass } from '@/aura/kit';
 import { CapIcon } from '@/aura/CapIcon';
 import { RisoPeekOver } from '@/aura/Peek';
 import { EmptyState } from '@/components/EmptyState';
@@ -13,9 +13,10 @@ import { useFriends } from '@/features/friends/queries';
 import { openDm } from '@/features/friends/openDm';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { ProfileFace } from '@/features/profile/ProfileFace';
 import { KIT } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
-import { FRIENDS_LIST_TOP, FRIENDS_PEEK } from '@/theme/kankiMotion';
+import { FRIENDS_LIST } from '@/theme/friendsList';
+import { FRIENDS_PEEK } from '@/theme/kankiMotion';
 import { SPACING } from '@/theme/tokens';
 import { firstRows, useOpenRows } from '@/lib/afterTransition';
 
@@ -28,6 +29,9 @@ export default function FriendsScreen() {
   // Opened light: the first rows while the screen slides in, the rest after.
   const shown = useOpenRows(friends.data?.length ?? 0);
   const loading = useLoaderHold(friends.isPending);
+  const { scheme } = useKit();
+  const F = FRIENDS_LIST;
+  const look = F[scheme];
   const retry = {
     label: tr.common.retry,
     onPress: () => void friends.refetch(),
@@ -37,11 +41,14 @@ export default function FriendsScreen() {
   return (
     <Screen
       refreshable
+      side={F.side}
+      barSide={F.side}
       top={
-        // skall tuvali (Arkadaslar): the round back, the title and "N arkadaş" under it.
+        // tuval Arkadaslar: the round back, the title 6 in and "N arkadaş" 4 under it.
         <PageTop
           title={tr.profile.friends}
           sub={friends.data ? tr.profile.friendsSub(friends.data.length) : undefined}
+          look={{ titleIn: F.titleIn, subTop: F.subTop, subColor: look.sub }}
           onBack={() => router.back()}
         />
       }
@@ -57,7 +64,7 @@ export default function FriendsScreen() {
           action={retry}
         />
       ) : (
-        <View className="mt-1 gap-3">
+        <View style={{ gap: SPACING[3] }}>
           {friends.isError ? (
             <Glass sm pad="pad" style={{ gap: SPACING[3] }} testID="friends-error">
               <T v="fine" ink>
@@ -69,15 +76,34 @@ export default function FriendsScreen() {
           {friends.data.length === 0 ? (
             <EmptyState kind="empty" riso="friends" body={tr.friends.empty} />
           ) : (
-            // Aura v71 (Arkadaslar): a riso buddy looking over the list, the list 76 under the
-            // title; rows 64, the photo 44.
-            <View style={{ marginTop: FRIENDS_LIST_TOP }}>
+            // tuval Arkadaslar: a riso buddy looking over the list's right, the list 64 under
+            // "N arkadaş" on one card, 26 round, 4 / 6 inside; a hairline 78 in between the rows.
+            <View style={{ marginTop: F.listTop }}>
               <RisoPeekOver places={FRIENDS_PEEK} />
-              <RowList inset={KIT.size.av.md + KIT.size.liGap}>
-                {firstRows(friends.data, shown).map((f) => (
-                  <FriendRow key={f.publicId} friend={f} />
+              <Glass
+                face={look.card}
+                radius={F.card.radius}
+                style={{
+                  overflow: 'hidden',
+                  paddingVertical: F.card.padY,
+                  paddingHorizontal: F.card.padX,
+                }}
+              >
+                {firstRows(friends.data, shown).map((f, i) => (
+                  <View key={f.publicId}>
+                    {i > 0 ? (
+                      <View
+                        style={{
+                          height: KIT.size.hair,
+                          marginLeft: F.row.hairIn,
+                          backgroundColor: look.hair,
+                        }}
+                      />
+                    ) : null}
+                    <FriendRow friend={f} />
+                  </View>
                 ))}
-              </RowList>
+              </Glass>
             </View>
           )}
         </View>
@@ -90,8 +116,10 @@ export default function FriendsScreen() {
 // owner's call, 28 Ekim): the photo, the name and since when, and the round chat button when
 // there is a conversation. The row opens the friend's profile.
 function FriendRow({ friend: f }: { friend: Friend }) {
-  const { c } = useKit();
-  const { colors } = useTheme();
+  const { scheme } = useKit();
+  const F = FRIENDS_LIST;
+  const R = F.row;
+  const look = F[scheme];
   const name = f.displayName ?? tr.profile.noName;
   const threadId = f.threadId;
   return (
@@ -101,24 +129,40 @@ function FriendRow({ friend: f }: { friend: Friend }) {
       onPress={() =>
         router.push({ pathname: '/people/[publicId]', params: { publicId: f.publicId } })
       }
-      padY={KIT.size.lrPadY}
-      minHeight={KIT.size.lrMin}
+      padY={R.padY}
+      padX={R.padX}
+      gap={R.gap}
     >
-      <Av size="md" name={name} photoUrl={f.photoUrl} />
-      <View style={{ flex: 1, gap: SPACING[0.5] }}>
-        <T v="h3">{name}</T>
-        <T v="fine">{tr.friends.since(f.since)}</T>
+      {/* tuval Arkadaslar: the face 54 with its 2 white ring inside it. */}
+      <View
+        style={{
+          width: R.face,
+          height: R.face,
+          borderRadius: R.face / 2,
+          backgroundColor: look.faceRing,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ProfileFace side={R.face - 2 * R.ring} name={name} photoUrl={f.photoUrl} />
+      </View>
+      <View style={{ flex: 1, minWidth: 0, gap: R.lineGap }}>
+        <T v="placeName" ink>
+          {name}
+        </T>
+        <T v="friendSince" color={look.since}>
+          {tr.friends.since(f.since)}
+        </T>
       </View>
       {threadId ? (
-        // iskelet.md → 5.8: a clear glass round, 46.
+        // iskelet.md → 5.8: a clear glass round, 46; its bubble 20 in the green.
         <Round
           glass="clear"
           side={KIT.size.topBtn}
           label={tr.friends.message(name)}
           onPress={() => openDm({ threadId, publicId: f.publicId, name: f.displayName })}
         >
-          {/* Aura v71 (Arkadaslar): the icon's first part in the accent. */}
-          <CapIcon name="chat" color={colors.accent} second={c.ink} />
+          <CapIcon name="chat" color={look.message} soft={1} size={R.icon} />
         </Round>
       ) : null}
     </Li>

@@ -17,6 +17,7 @@ import { useNow } from '@/lib/useNow';
 import { Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { lookGround } from '@/theme/capsuleLook';
+import { OWN_PROFILE } from '@/theme/ownProfile';
 import { RISO_PAPER, TICKET } from '@/theme/profileCover';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -63,18 +64,26 @@ export function IdentityTicket({
 }) {
   const [box, setBox] = useState({ w: 0, h: 0 });
   const e = TICKET.edgeWidth / 2;
-  const o = TICKET.printOffset;
+  const ox = TICKET.printX;
+  const oy = TICKET.printY;
   const cell = RISO_PAPER.cell;
+  const dots = TICKET.stubDots;
   return (
     <View
       testID="profile-capsule"
       onLayout={(ev) => setBox({ w: ev.nativeEvent.layout.width, h: ev.nativeEvent.layout.height })}
-      style={{ flexDirection: 'row', marginTop: SPACING[5], marginRight: o, marginBottom: o }}
+      // tuval Benim: 150 high (more at the largest text), 4 clear of the panel's right for its print.
+      style={{
+        flexDirection: 'row',
+        minHeight: TICKET.height,
+        marginTop: OWN_PROFILE.gap,
+        marginRight: ox,
+      }}
     >
       {box.w > 0 ? (
         <Svg
-          width={box.w + o}
-          height={box.h + o}
+          width={box.w + ox}
+          height={box.h + oy}
           style={{ position: 'absolute', left: 0, top: 0 }}
           importantForAccessibility="no-hide-descendants"
         >
@@ -92,8 +101,17 @@ export function IdentityTicket({
                 fill={RISO_PAPER.light.dots}
               />
             </Pattern>
+            {/* The stub's pink halftone over the capsule's ground. */}
+            <Pattern
+              id="ticket-stub-tram"
+              width={dots.cell}
+              height={dots.cell}
+              patternUnits="userSpaceOnUse"
+            >
+              <Circle cx={dots.cell / 2} cy={dots.cell / 2} r={dots.dot} fill={dots.color} />
+            </Pattern>
           </Defs>
-          <Path d={ticketPath(o + e, o + e, box.w - 2 * e, box.h - 2 * e)} fill={TICKET.print} />
+          <Path d={ticketPath(ox + e, oy + e, box.w - 2 * e, box.h - 2 * e)} fill={TICKET.print} />
           <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill={TICKET.paper} />
           <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill="url(#ticket-tram)" />
           {look ? (
@@ -106,6 +124,14 @@ export function IdentityTicket({
               clipPath="url(#ticket)"
             />
           ) : null}
+          <Rect
+            x={0}
+            y={0}
+            width={TICKET.stub}
+            height={box.h}
+            fill="url(#ticket-stub-tram)"
+            clipPath="url(#ticket)"
+          />
           <Path
             d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)}
             fill="none"
@@ -117,8 +143,8 @@ export function IdentityTicket({
             y1={TICKET.notch + SPACING[1]}
             x2={TICKET.stub}
             y2={box.h - TICKET.notch - SPACING[1]}
-            stroke={TICKET.edge}
-            strokeWidth={TICKET.edgeWidth / 2}
+            stroke={TICKET.dashColor}
+            strokeWidth={TICKET.dashWidth}
             strokeDasharray={[...TICKET.dash]}
           />
         </Svg>
@@ -128,7 +154,7 @@ export function IdentityTicket({
           width: TICKET.stub,
           alignItems: 'center',
           justifyContent: 'center',
-          gap: SPACING[1],
+          gap: TICKET.stubGap,
           paddingVertical: TICKET.padY,
         }}
       >
@@ -144,7 +170,7 @@ export function IdentityTicket({
             </FxMoves>
           </View>
         ) : null}
-        <T v="stamp" color={TICKET.ink} center>
+        <T v="ticketNo" color={TICKET.ink} center>
           {tr.profile.ticketNo(nick.slice(-4))}
         </T>
       </View>
@@ -153,18 +179,31 @@ export function IdentityTicket({
           flex: 1,
           gap: TICKET.gap,
           paddingVertical: TICKET.padY,
-          paddingHorizontal: TICKET.padX,
+          paddingLeft: TICKET.padLeft,
+          paddingRight: TICKET.padX,
         }}
       >
-        <T v="eyebrow" color={TICKET.muted}>
+        <T v="ticketKicker" color={TICKET.muted}>
           {upperTr(tr.profile.ticketKicker)}
         </T>
-        <T v="h3" color={TICKET.ink} testID="nick">
+        <T v="ticketNick" color={TICKET.ink} testID="nick">
           {nick}
         </T>
         <NickRefresh refreshAt={refreshAt} />
         <View style={{ marginTop: TICKET.buttonTop, alignSelf: 'flex-start' }}>
-          <Btn sm label={tr.capsule.edit} onPress={() => router.push('/profile/capsule')} />
+          <Btn
+            sm
+            icon="star"
+            label={tr.capsule.edit}
+            look={{
+              type: 'giftBtn',
+              padLeft: TICKET.button.padX,
+              padRight: TICKET.button.padX,
+              gap: TICKET.button.gap,
+              icon: TICKET.button.icon,
+            }}
+            onPress={() => router.push('/profile/capsule')}
+          />
         </View>
       </View>
     </View>
@@ -184,7 +223,7 @@ function NickRefresh({ refreshAt }: { refreshAt: string | null }) {
   });
   if (waiting) {
     return (
-      <T v="fine" color={TICKET.muted}>
+      <T v="ticketNote" color={TICKET.muted}>
         {tr.profile.nickRenewIn(Math.ceil(waitMs / DAY_MS))}
       </T>
     );
@@ -205,7 +244,7 @@ function NickRefresh({ refreshAt }: { refreshAt: string | null }) {
         ) : (
           <CapIcon name="refresh" color={TICKET.link} size={ICON.sm} />
         )}
-        <T v="fine" color={TICKET.link}>
+        <T v="ticketNote" color={TICKET.link}>
           {tr.profile.nickRenew}
         </T>
       </Tap>

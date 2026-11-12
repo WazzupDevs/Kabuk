@@ -85,6 +85,8 @@ type Props = {
   // A board's own room where it draws it (tuval Aktivite: 16 from the sides, 15 under the status
   // bar): the content's side and top padding.
   side?: number;
+  // The top bar's side where a board gives one (tuval Arkadaslar, Duzenle: 16).
+  barSide?: number;
   padTop?: number;
 };
 
@@ -118,6 +120,7 @@ export function Screen({
   bar,
   title,
   side,
+  barSide,
   padTop,
 }: Props) {
   const queryClient = useQueryClient();
@@ -178,7 +181,7 @@ export function Screen({
             // Over the band below it (drawn last): its buttons' shadows reach past its foot and the
             // band's hard top edge cut them (the owner's report, 2 Kasım, 6.8).
             style={{
-              paddingHorizontal: shape.screenPadding,
+              paddingHorizontal: barSide ?? shape.screenPadding,
               paddingTop: SPACING[2],
               paddingBottom: SPACING[1],
               zIndex: 1,
@@ -252,7 +255,7 @@ export function Screen({
                 left: 0,
                 right: 0,
                 top: safe.includes('top') ? insets.top : 0,
-                paddingHorizontal: shape.screenPadding,
+                paddingHorizontal: barSide ?? shape.screenPadding,
                 paddingTop: SPACING[2],
                 paddingBottom: SPACING[1],
               }}

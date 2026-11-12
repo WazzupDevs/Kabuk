@@ -5,6 +5,7 @@ import { noteTyping } from '@/lib/haptics';
 import { useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
+import { PROFILE_EDIT } from '@/theme/profileEdit';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -38,8 +39,9 @@ type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   // docs/design/aura → Profili düzenle: 56 high (tall: 108, 24 round), 22 inside, 17 type, the
   // label in .body and the hint at 14.
   large?: boolean;
-  // U34 (ProfilDuzenle): a large field on a card: the surface with 1 divider inside, no shadow, the
-  // label 600 13 and the hint fine, both muted.
+  // tuval Duzenle (Profili düzenle): a large field on a card: white, its edge 1.5, 16 round and 16
+  // inside, no shadow; its label (13, 700) with the count at its right over it, its note (12.5, 500)
+  // under it, both 4 in (theme/profileEdit.ts).
   boxed?: boolean;
   // docs/design/iskelet.md → 5.8 (Profili düzenle): focused, the green ring 3 px at 18 %.
   halo?: boolean;
@@ -75,24 +77,37 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   const { colors, shape } = theme;
   const [focused, setFocused] = useState(false);
   const k = useKit();
+  const E = PROFILE_EDIT;
+  const boxLook = E[k.scheme];
   const flat = !!box && !large && !prefix && !tall && !search;
-  const radius = large
-    ? tall
-      ? KIT.size.fieldLgTallRadius
-      : KIT.size.fieldLg / 2
-    : prefix || big
-      ? KIT.size.glassRadius
-      : tall
-        ? shape.radius.lg
-        : box
-          ? shape.radius.md
-          : KIT.size.field / 2;
+  const radius = boxed
+    ? E.field.radius
+    : large
+      ? tall
+        ? KIT.size.fieldLgTallRadius
+        : KIT.size.fieldLg / 2
+      : prefix || big
+        ? KIT.size.glassRadius
+        : tall
+          ? shape.radius.lg
+          : box
+            ? shape.radius.md
+            : KIT.size.field / 2;
   // The raised fields (v71) have no line; only focus and an error draw one.
-  const edge = focused || error ? 2 : flat ? 0 : KIT.size.edge;
+  const edge = focused || error ? 2 : flat ? 0 : boxed ? E.field.edge : KIT.size.edge;
   const dark = theme.scheme === 'dark';
   const raised = (!dark && k.c.segShadow) || undefined;
-  // The type of the raised fields and the big one: 21 / 600.
-  const fieldType = flat || big ? KIT_TYPE.title : null;
+  // The type of the raised fields and the big one: 21 / 600; on Profili düzenle's card 16.
+  const fieldType =
+    flat || big
+      ? KIT_TYPE.title
+      : boxed
+        ? multiline
+          ? KIT_TYPE.boxFieldMulti
+          : KIT_TYPE.boxField
+        : null;
+  // On Profili düzenle's card the bio is 13 over and under.
+  const padY = boxed && tall ? E.field.padY : large && tall ? KIT.size.fieldLgPadY : SPACING[3];
   // Focused, a hard ring (no blur, cheap) as boxShadow; otherwise the soft glass shadow natively
   // (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
@@ -109,10 +124,28 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   return (
     <View className="gap-2">
       {label ? (
-        large ? (
-          <RNText style={[boxed ? KIT_TYPE.fieldLabel : KIT_TYPE.body, { color: k.c.muted }]}>
-            {label}
-          </RNText>
+        boxed ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              gap: SPACING[3],
+              paddingHorizontal: E.field.labelIn,
+            }}
+          >
+            <RNText style={[KIT_TYPE.boxLabel, { color: boxLook.label, flexShrink: 1 }]}>
+              {label}
+            </RNText>
+            {counter ? (
+              <RNText
+                style={[KIT_TYPE.boxLabel, { color: boxLook.label, fontVariant: ['tabular-nums'] }]}
+              >
+                {counter}
+              </RNText>
+            ) : null}
+          </View>
+        ) : large ? (
+          <RNText style={[KIT_TYPE.body, { color: k.c.muted }]}>{label}</RNText>
         ) : (
           <Text variant="label">{label}</Text>
         )
@@ -123,7 +156,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
         // primary with its soft ring, an error in red. The phone's field 72 high, 28 round.
         style={{
           ...(boxed
-            ? { backgroundColor: k.c.fieldOnCard }
+            ? { backgroundColor: boxLook.fieldFill }
             : flat
               ? { backgroundColor: dark ? colors.surface2 : colors.surface }
               : large
@@ -131,7 +164,9 @@ export const Input = forwardRef<TextInput, Props>(function Input(
                 : gradientStyle(k.c.glass)),
           minHeight: large
             ? tall
-              ? KIT.size.fieldLgTall
+              ? boxed
+                ? E.field.tall
+                : KIT.size.fieldLgTall
               : KIT.size.fieldLg
             : prefix
               ? KIT.size.phoneField
@@ -147,17 +182,19 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             : focused
               ? KIT.primary
               : boxed
-                ? k.c.fieldOnCardEdge
+                ? boxLook.fieldEdge
                 : flat
                   ? 'transparent'
                   : k.c.glassEdge,
-          paddingHorizontal: large
-            ? KIT.size.fieldLgPadX
-            : big
-              ? KIT.size.fieldBigPad
-              : prefix
-                ? KIT.size.padLg
-                : KIT.size.fieldPadX,
+          paddingHorizontal: boxed
+            ? E.field.padX
+            : large
+              ? KIT.size.fieldLgPadX
+              : big
+                ? KIT.size.fieldBigPad
+                : prefix
+                  ? KIT.size.padLg
+                  : KIT.size.fieldPadX,
           boxShadow: ring
             ? halo
               ? `0px 0px 0px ${KIT.size.focusHalo}px ${KIT.primaryHalo}`
@@ -222,7 +259,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
                     : typeStyle(theme, code ? 'title' : 'body')),
               {
                 color: k.c.ink,
-                paddingVertical: large && tall ? KIT.size.fieldLgPadY : SPACING[3],
+                paddingVertical: padY,
                 paddingHorizontal: 0,
                 minHeight: large ? undefined : tall ? TOUCH.large + SPACING[8] : undefined,
               },
@@ -242,7 +279,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
                 right: 0,
                 top: 0,
                 bottom: 0,
-                paddingVertical: large && tall ? KIT.size.fieldLgPadY : SPACING[3],
+                paddingVertical: padY,
                 justifyContent: multiline ? 'flex-start' : 'center',
               }}
             >
@@ -269,19 +306,21 @@ export const Input = forwardRef<TextInput, Props>(function Input(
           {error}
         </Text>
       ) : null}
-      {hint || counter ? (
+      {boxed ? (
+        hint ? (
+          <RNText
+            style={[KIT_TYPE.boxNote, { color: boxLook.note, paddingHorizontal: E.field.labelIn }]}
+          >
+            {hint}
+          </RNText>
+        ) : null
+      ) : hint || counter ? (
         <View className="flex-row justify-between gap-3">
           {large ? (
             <>
-              <RNText
-                style={[boxed ? KIT_TYPE.fine : KIT_TYPE.note, { color: k.c.muted, flex: 1 }]}
-              >
-                {hint ?? ''}
-              </RNText>
+              <RNText style={[KIT_TYPE.note, { color: k.c.muted, flex: 1 }]}>{hint ?? ''}</RNText>
               {counter ? (
-                <RNText style={[boxed ? KIT_TYPE.fine : KIT_TYPE.note, { color: k.c.muted }]}>
-                  {counter}
-                </RNText>
+                <RNText style={[KIT_TYPE.note, { color: k.c.muted }]}>{counter}</RNText>
               ) : null}
             </>
           ) : (
