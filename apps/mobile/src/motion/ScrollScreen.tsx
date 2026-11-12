@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { type ScrollView, type ScrollViewProps, View } from 'react-native';
 import Animated, {
+  runOnJS,
   type SharedValue,
   useAnimatedReaction,
   useAnimatedScrollHandler,
@@ -78,6 +79,21 @@ export function ScrollScreen({
     [y, stickyAt, reach, viewportTop, contentHeight],
   );
   return <ScreenScrollContext.Provider value={value}>{children}</ScreenScrollContext.Provider>;
+}
+
+// Whether the screen is scrolled past `px` (the status bar's icons over a cover, 5.2): told to JS
+// only when it changes, never on a frame.
+export function useScrollPast(px: number): boolean {
+  const scroll = useScreenScroll();
+  const [past, setPast] = useState(false);
+  useAnimatedReaction(
+    () => (scroll ? scroll.y.get() >= px : false),
+    (now, before) => {
+      if (now !== before) runOnJS(setPast)(now);
+    },
+    [scroll, px],
+  );
+  return past;
 }
 
 // A scrolling view's `onContentSizeChange`: the content's height for the sticky field.

@@ -68,6 +68,13 @@ export function bandReachAt(y: number, pinAt: number, reach: number): number {
   return -reach * (1 - ramp(y, pinAt - reach, pinAt));
 }
 
+// A cover under the content (the `kapak` bar, iskelet.md → 5.2): it moves up at `speed` of the
+// scroll, linear; pulled past the top it stays.
+export function coverShift(y: number, speed: number): number {
+  'worklet';
+  return -Math.max(0, y) * speed;
+}
+
 // The tab bar shrinking (3.3, MOTION.tabMin): `dy` the offset's change since the last frame. Below
 // `openPx` it is open; scrolled up it opens; past `thresholdPx`, scrolled down faster than
 // `speedPx` a frame, it shrinks; otherwise it stays as it is.
