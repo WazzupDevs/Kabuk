@@ -239,6 +239,27 @@ describe('"Masa kur" (§4.E)', () => {
     );
   });
 
+  // docs/design/iskelet.md → 6, no. 2: nobody could join a full table, so it does not open.
+  it('does not open a full table to the lobby; leaving the lobby is never refused', async () => {
+    const [owner, member] = await all(2);
+    const roomId = await tableWith(owner, [member], { open: false });
+    // The test numbers do not fill a table and leave people to spare: the count is set by hand.
+    await sql`update public.rooms set phones = ${MAX_TABLE_PHONES} where id = ${roomId}`;
+    expect(await rooms(owner, { action: 'set-visibility', roomId, open: true })).toEqual({
+      status: 409,
+      body: errorBody('table_full'),
+    });
+    expect((await roomRow(roomId)).visibility).toBe('private');
+    // One seat free: it opens; full again while in the lobby, it still leaves.
+    await sql`update public.rooms set phones = ${MAX_TABLE_PHONES - 1} where id = ${roomId}`;
+    expect((await rooms(owner, { action: 'set-visibility', roomId, open: true })).status).toBe(200);
+    await sql`update public.rooms set phones = ${MAX_TABLE_PHONES} where id = ${roomId}`;
+    expect((await rooms(owner, { action: 'set-visibility', roomId, open: false })).status).toBe(
+      200,
+    );
+    await sql`update public.rooms set phones = 2 where id = ${roomId}`;
+  });
+
   // Step 4.5b: "Masanı lobiye aç" keeps its intent and game tag (SPEC_V3 §23.C, aynen).
   it('takes the lobby sheet’s intent and game tag when opening, and clears them when leaving', async () => {
     const [owner] = await all(1);
