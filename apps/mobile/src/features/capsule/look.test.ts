@@ -1,15 +1,18 @@
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
+import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
+import { retiredParts } from '@shared/gifts.ts';
 import { describe, expect, it } from 'vitest';
 
 import {
+  accessories,
   accessoryIn,
   accessoryItems,
   bare,
   code,
+  dice,
   packsFor,
   parse,
   showsPart,
-  shuffle,
   takeAccessoryOff,
   takeOff,
   wear,
@@ -42,13 +45,31 @@ describe('capsule editor', () => {
     expect(parse(code(look)).h).toBeDefined();
   });
 
-  it('shuffles to canonical looks', () => {
-    let seed = 1;
-    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    for (let i = 0; i < 20; i++) {
-      const look = shuffle(random);
+  it('rolls canonical looks, the same for the same seed', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const look = dice(seed, new Set());
       expect(code(parse(code(look)))).toBe(code(look));
+      expect(code(dice(seed, new Set()))).toBe(code(look));
     }
+    const all = new Set(Array.from({ length: 40 }, (_, i) => code(dice(i + 1, new Set()))));
+    expect(all.size).toBeGreaterThan(30);
+  });
+
+  it('rolls only owned accessories and never a retired part', () => {
+    const owned = new Set(GIFT_CATALOG.accessories.slice(0, 6).map((a) => a.id));
+    const retired = new Set(retiredParts());
+    let worn = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const look = dice(seed, owned);
+      for (const id of accessories(look)) expect(owned.has(id)).toBe(true);
+      worn += accessories(look).length;
+      for (const slot of ['e', 'h', 'f', 'm', 'n'] as const) {
+        const id = look[slot];
+        if (id) expect(retired.has(`${slot}:${id}`)).toBe(false);
+      }
+    }
+    expect(worn).toBeGreaterThan(0);
+    for (let seed = 1; seed <= 50; seed++) expect(accessories(dice(seed, new Set()))).toEqual([]);
   });
 });
 
@@ -73,7 +94,6 @@ describe('pack accessory in the editor', () => {
     expect(code(wear(look, 'h', null))).toBe('c:pembe e:klasik x:ipkravat');
     expect(code(wear(parse('c:mor x:ormanteni'), 'c', 'pembe'))).toBe('c:pembe e:klasik');
     expect(code(bare(look))).toBe('c:pembe e:klasik');
-    expect(parse(code(shuffle(() => 0.3, look))).x).toEqual(['filiz', 'ipkravat']);
   });
 
   it('offers the owned accessories of a slot, a set in each of its slots', () => {
@@ -97,11 +117,12 @@ describe('pack accessory in the editor', () => {
     expect(ids('c:mor')).not.toContain('tac');
   });
 
-  it('never shuffles a retired part', () => {
-    let seed = 7;
-    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    for (let i = 0; i < 200; i++) {
-      expect(['bere', 'kasket', 'kulaklik', 'tac']).not.toContain(shuffle(random).h);
+  it('never rolls a retired part, but the one the saved look wears', () => {
+    const hats = new Set<string | undefined>();
+    for (let seed = 1; seed <= 400; seed++) {
+      expect(['bere', 'kasket', 'kulaklik', 'tac']).not.toContain(dice(seed, new Set()).h);
+      hats.add(dice(seed, new Set(), parse('c:mor h:tac')).h);
     }
+    expect(hats.has('tac')).toBe(true);
   });
 });

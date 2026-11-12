@@ -183,21 +183,43 @@ export function wearPack(look: Look, rack: RackId, pack: string, kept: Look = {}
   return packItems(rack, pack, kept).reduce((l, item) => wear(l, item.slot, item.id), look);
 }
 
-// A new look at random: a colour, eyes, and each part slot filled about half the time; never a
-// retired part, and the pack accessories of `keep` stay.
-export function shuffle(random: () => number, keep: Look = {}): Look {
+// A seeded random (mulberry32): the same seed gives the same numbers, in [0, 1).
+export function seeded(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// The share of the time the plain eyes stay, a part slot is filled and an owned accessory is put on.
+const PLAIN_EYES = 0.6;
+const PART_FILLED = 0.5;
+const ACCESSORY_ON = 0.35;
+
+// "Rastgele" (docs/design/iskelet.md → 5.10): a new look from what the person may wear: a colour,
+// eyes, each part slot filled about half the time from the catalog's free parts (never a retired
+// one, unless the saved look `kept` wears it: offered), and now and then some of the person's own
+// pack accessories (`owned`; never one they do not own: the server refuses it, gifts/wear).
+export function dice(seed: number, owned: ReadonlySet<string>, kept: Look = {}): Look {
+  const random = seeded(seed);
   const pick = <T>(list: readonly T[]): T | undefined =>
     list[Math.min(Math.floor(random() * list.length), list.length - 1)];
-  const look: Look = {
+  const eyes = CAPSULE_CATALOG.eyes.filter((e) => offered('e', e.id, kept));
+  let look: Look = {
     c: pick(CAPSULE_CATALOG.colors)?.id,
-    e: random() < 0.6 ? DEFAULT_EYES : pick(CAPSULE_CATALOG.eyes)?.id,
+    e: random() < PLAIN_EYES ? DEFAULT_EYES : (pick(eyes)?.id ?? DEFAULT_EYES),
   };
   for (const slot of PART_SLOTS) {
-    if (random() < 0.5) continue;
+    if (random() >= PART_FILLED) continue;
     look[slot] = pick(
-      CAPSULE_CATALOG.parts.filter((p) => p.slot === slot && !RETIRED.has(`${slot}:${p.id}`)),
+      CAPSULE_CATALOG.parts.filter((p) => p.slot === slot && offered(slot, p.id, kept)),
     )?.id;
   }
-  if (keep[ACCESSORY_SLOT]) look[ACCESSORY_SLOT] = keep[ACCESSORY_SLOT];
+  for (const a of GIFT_CATALOG.accessories)
+    if (owned.has(a.id) && random() < ACCESSORY_ON) look = wearAccessory(look, a.id);
   return parse(code(look));
 }

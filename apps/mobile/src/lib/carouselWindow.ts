@@ -14,7 +14,7 @@ export function carouselWindow(
   viewport: number,
   buffer: number = 3,
 ): CarouselWindow {
-  // Called on the UI thread from the row's scroll handler (OptionCarousel.tsx).
+  // Called on the UI thread from the row's scroll handler (motion/SnapStrip.tsx).
   'worklet';
   if (count <= 0 || step <= 0) return { from: 0, to: -1 };
   // The option at the centre is at offset / step; the screen reaches half a viewport either side.
