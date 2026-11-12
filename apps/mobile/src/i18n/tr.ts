@@ -200,12 +200,13 @@ export const tr = {
   },
   consents: {
     title: 'Başlamadan önce',
-    body: 'İkisini de okuyup onaylaman gerekir.',
+    body: 'Devam etmek için ikisini de okuman gerekir.',
     terms: 'Kullanım Koşulları’nı okudum ve kabul ediyorum.',
-    kvkk: 'KVKK Aydınlatma Metni’ni okudum.',
+    // An information notice is read, not approved (KVKK Kurulu, 2026/347): "okudum ve anladım".
+    kvkk: 'KVKK Aydınlatma Metni’ni okudum ve anladım.',
     read: 'Oku',
-    accept: 'Onayla ve devam et',
-    outdated: 'Metinler güncellendi. Lütfen tekrar onayla.',
+    accept: 'Devam et',
+    outdated: 'Metinler güncellendi. Devam etmek için yeniden oku.',
   },
   // Sign-up (docs/SPEC_V3.md §3; docs/SPEC_V4.md §4.C, the v45 report §1): the first screen, then
   // seven steps, the consents first (K-19, K-33).
@@ -271,14 +272,10 @@ export const tr = {
     termsTitle: 'Kullanım Koşulları',
     kvkkTitle: 'KVKK Aydınlatma Metni',
     privacyTitle: 'Gizlilik Politikası',
-    // Placeholder texts (version draft-0). The real texts arrive with legal review before the pilot.
-    draftNotice: 'Bu metin taslaktır ve pilot öncesinde güncellenecektir.',
-    termsBody: `${APP_NAME}, aynı mekandaki masaların birlikte oyun oynayıp sohbet etmesi için bir uygulamadır. Diğer kullanıcılara saygılı davranmayı, taciz, hakaret ve uygunsuz içerik paylaşmamayı kabul edersin.`,
-    kvkkBody:
-      'Hesabını oluşturmak için telefon numaran, görünen adın, doğum tarihin ve cinsiyetin işlenir. Numaran ve doğum tarihin diğer kullanıcılarla paylaşılmaz; profilinde yalnızca yaşın görünür. Cinsiyetin hiçbir kullanıcıya gösterilmez ve kullanım istatistiğine gitmez; yalnızca masalara anonim mi profilinle mi katılabileceğini belirler. Masalara anonim katılım yalnızca kadın beyanıyla mümkün olduğundan, anonim görünmek cinsiyetin hakkında dolaylı bilgi verir. 18 yaşından küçüksen hesap açılmaz ve bilgilerin saklanmaz. Hesabını istediğin zaman uygulama içinden silebilirsin.',
-    // Draft-0 (ui 6.3, the owner's call, 3 Kasım): shown while no hosted privacy URL is set.
-    privacyBody:
-      'Konumun yalnızca check-in anında, mekanda olduğunu doğrulamak için bir kez kullanılır ve saklanmaz; yalnızca seçtiğin mekan ve oturduğun nokta saklanır. Konumun, bulunduğun mekan ve masan hiçbir kullanıcıya, arkadaşlarına da gösterilmez. Yüklediğin fotoğraflardan konum dahil bütün ek bilgiler telefonunda silinir. Anonim oturduğunda takma adınla görünürsün; profilin yalnızca profilinle oturduğunda masadakilere açılır. Mesajlarının telefondaki kopyası çıkış yaptığında ve arkadaşlık bittiğinde silinir. Hata raporlarına ve kullanım istatistiğine yalnızca hesap kimliğin gider; telefon numaran, konumun ve yazdıkların gitmez.',
+    communityTitle: 'Topluluk Kuralları',
+    // The texts themselves are docs/legal/*.md (legalDocs.generated.ts). Shown under the title
+    // until the data controller is named (@shared/legalEntity.ts → legalReady).
+    draftNotice: 'Taslak: veri sorumlusu bilgileri eklenince yürürlüğe girer.',
   },
   tabs: {
     explore: 'Keşfet',
@@ -736,9 +733,10 @@ export const tr = {
     previewName: (name: string, age: number | null) => (age === null ? name : `${name}, ${age}`),
   },
   checkin: {
-    // The consent itself (location consent draft-1, _shared/pure/consent.ts): pressing the button.
+    // A notice, not a consent: the location is needed for the check-in itself (KVKK m. 5/2-c,
+    // docs/decisions/yasal-metinler.md). The version shown is recorded (_shared/pure/consent.ts).
     locationBody:
-      '"Konumumu kullan" düğmesine basarak konumunun yalnızca mekanda olduğunu doğrulamak için bir kez kullanılmasına açık rıza verirsin. Konumun saklanmaz.',
+      '"Konumumu kullan"a bastığında konumun, yalnızca mekanda olduğunu doğrulamak için bir kez alınır. Konumun saklanmaz.',
     useLocation: 'Konumumu kullan',
     // skall tuvali (KesfetKonumIzin, KesfetMekan); approved 27 Ekim.
     deniedTitle: 'Konum izni yok',
@@ -2443,6 +2441,10 @@ export const tr = {
     privacy: 'Gizlilik politikası',
     kvkk: 'KVKK Aydınlatma Metni',
     terms: 'Kullanım Koşulları',
+    community: 'Topluluk Kuralları',
+    // Ayarlar → Gizlilik: usage statistics (PostHog) can be turned off (KVKK m. 11, itiraz).
+    analyticsTitle: 'Kullanım istatistiği',
+    analyticsNote: 'Hangi ekranların kullanıldığını sayar; adın, mesajların ve konumun gitmez',
     contact: 'İletişim',
     version: (v: string) => `Sürüm ${v}`,
     osm: 'Mekan verileri © OpenStreetMap katkıda bulunanlar (ODbL).',

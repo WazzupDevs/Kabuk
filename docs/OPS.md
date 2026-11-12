@@ -35,16 +35,16 @@ Node 22, pnpm 10, Docker (yerel Supabase için). Supabase CLI ve Deno root devDe
 
 ## Yasal sayfalar (skall.world)
 
-`https://skall.world/` web sitesi ve yasal sayfalar tek yerden yayınlanır. Site `web/` klasöründedir (ana sayfa, 404, betikler, görseller; tasarımından geldiği gibi, Prettier ve ESLint dışında). Gizlilik politikası, KVKK metni, kullanım koşulları ve hesap silme talebi `docs/legal/*.md`'den üretilir; Play gizlilik politikası ve hesap silme için web bağlantısı ister. `pnpm site:build` ikisini `site/`'e koyar; yasal sayfaların listesi `yasal.html`'dir (sitenin altbilgisi ona bağlanır). Yayın Cloudflare'den, repo gizliyken de ücretsiz (`docs/decisions/yasal-sayfalar-skall-world.md`). Sayfalar taslaktır; her sayfada "Taslak, hukuki kontrol bekliyor" notu durur, hukuki kontrol bitince kaldırılır.
+`https://skall.world/` web sitesi ve yasal sayfalar tek yerden yayınlanır. Site `web/` klasöründedir (ana sayfa, 404, betikler, görseller; tasarımından geldiği gibi, Prettier ve ESLint dışında). Gizlilik politikası, KVKK aydınlatma metni, kullanım koşulları, topluluk kuralları, çocuk güvenliği standartları ve hesap silme sayfası `docs/legal/*.md`'den üretilir; Play gizlilik politikası, hesap silme ve çocuk güvenliği standartları için web bağlantısı ister. `pnpm site:build` ikisini `site/`'e koyar; yasal sayfaların listesi `yasal.html`'dir (sitenin altbilgisi ona bağlanır). Yayın Cloudflare'den, repo gizliyken de ücretsiz (`docs/decisions/yasal-sayfalar-skall-world.md`). Veri sorumlusunun adı, KEP ve posta adresi tek yerdedir: `supabase/functions/_shared/pure/legalEntity.ts`; ad boşken her sayfada ve uygulamada taslak notu durur, ad yazılınca kendiliğinden kalkar. Uygulama aynı metinleri gösterir: bir metin değişince repo kökünde `node --experimental-strip-types scripts/site/legal-docs.ts` (`apps/mobile/src/i18n/legalDocs.generated.ts`; test eşitliği denetler) ve metnin anlamı değiştiyse `consent.ts`'te onay sürümü artar (`docs/decisions/yasal-metinler.md`).
 
 1. Tek seferlik: Cloudflare paneli → **Workers & Pages → skall** (skall.world'ü taşıyan Worker; adı `wrangler.jsonc` → `name` ile aynı) → **Settings → Builds → Git repository → Connect**: `WazzupDevs/Kabuk`, dal `main`.
    - Build command: `pnpm install --frozen-lockfile && pnpm site:build`
    - Deploy command: `npx wrangler deploy` (ayarlar `wrangler.jsonc`'te: `site/` statik, bulunmayan adres `404.html`)
    - Ortam değişkeni: `NODE_VERSION` = `22`
-   - Yalnızca site değişince derlesin: **Build watch paths** → Include: `web/*`, `docs/legal/*`, `scripts/build-site.ts`, `scripts/site/*`, `supabase/functions/_shared/pure/brand.ts`, `wrangler.jsonc`.
+   - Yalnızca site değişince derlesin: **Build watch paths** → Include: `web/*`, `docs/legal/*`, `scripts/build-site.ts`, `scripts/site/*`, `supabase/functions/_shared/pure/brand.ts`, `supabase/functions/_shared/pure/legalEntity.ts`, `wrangler.jsonc`.
 2. Bağlayınca ilk derleme main'den yayınlar; alan adı aynı Worker'da kaldığı için taşıma yoktur. Elle yükleme (zip) bundan sonra yapılmaz: bir sonraki birleşme onu ezer.
-3. Adresler: `https://skall.world/` (web sitesi), `/yasal.html` (yasal sayfalar), `/gizlilik-politikasi.html`, `/kvkk-aydinlatma-metni.html`, `/kullanim-kosullari.html`, `/hesap-silme.html`.
-4. EAS `preview` ve `production` ortamlarında `EXPO_PUBLIC_PRIVACY_URL` = `https://skall.world/gizlilik-politikasi.html`, sonra `eas update`.
+3. Adresler: `https://skall.world/` (web sitesi), `/yasal.html` (yasal sayfalar), `/gizlilik-politikasi.html`, `/kvkk-aydinlatma-metni.html`, `/kullanim-kosullari.html`, `/topluluk-kurallari.html`, `/cocuk-guvenligi.html`, `/hesap-silme.html`.
+4. Uygulama metinleri kendi içinde gösterir; `EXPO_PUBLIC_PRIVACY_URL` kullanılmaz (12 Kasım).
 5. Yerelde bakmak için `pnpm site:build` ve `site/index.html`'i tarayıcıda aç. Site değişikliği: dosyalar `web/`'e, PR, birleşince Cloudflare kendisi yayınlar.
 
 - Eski GitHub Pages yayını (`wazzupdevs.github.io/Kabuk`) kaldırıldı (9 Kasım); repo Settings → Pages kapalı tutulur.
@@ -99,10 +99,10 @@ Play inceleme hesabının kodu ve değiştirilmesi: `.claude/skills/supabase-ops
 
 ## Analitik, yasal metinler, mağaza (M7)
 
-- Mobil `.env` (hepsi isteğe bağlı): `EXPO_PUBLIC_POSTHOG_KEY` (yoksa analitik hiçbir şey yapmaz), `EXPO_PUBLIC_POSTHOG_HOST` (varsayılan AB), `EXPO_PUBLIC_PRIVACY_URL` (yoksa uygulama içi taslak metin), `EXPO_PUBLIC_CONTACT_EMAIL`.
+- Mobil `.env` (hepsi isteğe bağlı): `EXPO_PUBLIC_POSTHOG_KEY` (yoksa analitik hiçbir şey yapmaz), `EXPO_PUBLIC_POSTHOG_HOST` (varsayılan AB), `EXPO_PUBLIC_CONTACT_EMAIL` (yoksa `legalEntity.ts`'teki adres).
 - Fonksiyon sırları (hesap silmede PostHog kişi silme; yoksa atlanır, bu yüzden üretimde zorunludur: yasal metinler silindiğini söylüyor): `pnpm supabase secrets set POSTHOG_PERSONAL_API_KEY=… POSTHOG_PROJECT_ID=…` (`POSTHOG_HOST` isteğe bağlı). `pnpm admin:ban` aynı değişkenleri ortamdan okur.
 - Event kataloğu ve izinli özellikler: `_shared/pure/analytics.ts`. PostHog'a yalnızca kullanıcı id'si gider.
-- Yasal taslaklar `docs/legal/` (hukuki kontrol gerekli), mağaza metinleri `docs/store/listing-tr.md`, EAS profilleri `apps/mobile/eas.json`.
+- Yasal metinler `docs/legal/` (`docs/decisions/yasal-metinler.md`), mağaza metinleri `docs/store/listing-tr.md`, EAS profilleri `apps/mobile/eas.json`.
 
 ## Mobil (Android fiziksel cihaz, USB hata ayıklama açık)
 

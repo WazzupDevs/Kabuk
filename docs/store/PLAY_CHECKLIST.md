@@ -27,11 +27,11 @@ skall'ı Google Play'de **kapalı test** kanalına çıkarmak için Play Console
 
 ## 3. Uygulama içeriği (Console → Politika → Uygulama içeriği)
 
-Herkese açık sayfalar skall.world'de (`docs/OPS.md` → "Yasal sayfalar (skall.world)"): `https://skall.world/`. Sayfalar taslaktır ve üstlerinde "Taslak, hukuki kontrol bekliyor" notu vardır; hukuki kontrol bitmeden Console'a girilmez.
+Herkese açık sayfalar skall.world'de (`docs/OPS.md` → "Yasal sayfalar (skall.world)"): `https://skall.world/`. Veri sorumlusunun adı `legalEntity.ts`'e yazılana kadar sayfaların üstünde taslak notu durur; not kalkmadan Console'a girilmez (`docs/decisions/yasal-metinler.md`).
 
 ### 3.1 Gizlilik politikası
 
-- [ ] URL: `https://skall.world/gizlilik-politikasi.html`. Aynı URL EAS `production` ortamında `EXPO_PUBLIC_PRIVACY_URL` olur (uygulama içi bağlantı).
+- [ ] URL: `https://skall.world/gizlilik-politikasi.html`. Uygulama aynı metni kendi içinde gösterir (Ayarlar → Gizlilik).
 
 ### 3.2 Hesap silme (Play şartı)
 
@@ -56,7 +56,7 @@ Kullanıcı hesabı olan her uygulama için iki şey gerekir: uygulama içinden 
 ```
 EN
 Sign in: on the first screen tap "Başla", tick the two boxes (Terms, KVKK notice)
-and tap "Onayla ve devam et". Enter the phone number above (without +90 if it is
+and tap "Devam et". Enter the phone number above (without +90 if it is
 pre-filled) and tap "Kod gönder". No SMS is sent to this number; type the 6-digit
 code above on the next screen. Then enter any name ("Devam"), a birth date of 18
 or older (for example 01 01 1995, "Devam"), any gender ("Devam") and tap
@@ -174,6 +174,7 @@ Tanım: cihazdan çıkan her veri "toplanan" sayılır; hizmet sağlayıcıya (S
 ### 3.8 Diğer beyanlar
 
 - [ ] Haber uygulaması, COVID-19, devlet, finans, sağlık: **Hayır**.
+- [ ] Çocuk güvenliği standartları (Sosyal kategorisi için zorunlu): yayımlanan standartların bağlantısı `https://skall.world/cocuk-guvenligi.html`; uygulama içi bildirim yolu var (Şikayet et, Hesap → İletişim); çocuk güvenliği iletişim noktası olarak proje sahibinin adı ve `support@skall.world` girilir; çocuk güvenliği yasalarına uyum beyan edilir.
 
 ## 4. Mağaza girişi (Console → Büyüme → Mağaza varlığı)
 

@@ -1,15 +1,11 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
 
 import { LegalText } from '@/components/LegalText';
-import { tr } from '@/i18n/tr';
+import { LEGAL_DOCS, type LegalDocKey } from '@/i18n/legalDocs.generated';
 
-// The in-app texts (draft-0) when no hosted privacy URL is configured.
+// A legal text from inside the app (Ayarlar → Gizlilik): the same texts as the sign-up's.
 export default function LegalScreen() {
   const { doc } = useLocalSearchParams<{ doc: string }>();
-  if (doc === 'terms') return <LegalText title={tr.legal.termsTitle} body={tr.legal.termsBody} />;
-  if (doc === 'privacy') {
-    return <LegalText title={tr.legal.privacyTitle} body={tr.legal.privacyBody} />;
-  }
-  if (doc === 'kvkk') return <LegalText title={tr.legal.kvkkTitle} body={tr.legal.kvkkBody} />;
+  if (Object.hasOwn(LEGAL_DOCS, doc)) return <LegalText doc={doc as LegalDocKey} />;
   return <Redirect href="/settings" />;
 }
