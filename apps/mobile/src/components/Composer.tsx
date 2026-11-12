@@ -50,6 +50,9 @@ type Props = {
   // iskelet.md → 5.5 (the DM): one capsule, the send button inside it at the right, shown only
   // once there is something to send.
   capsule?: boolean;
+  // Inside a card (Mekan's venue chat card, iskelet.md → 5.11): the capsule without the bar's own
+  // padding round it.
+  flush?: boolean;
 };
 
 // The message bar of a chat screen (v45: .dbar): it floats at the bottom over the chat's wallpaper, a
@@ -78,12 +81,14 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
     inputTestID,
     sendTestID,
     capsule,
+    flush,
   },
   ref,
 ) {
   if (capsule) {
     return (
       <CapsuleBar
+        flush={flush}
         ref={ref}
         value={value}
         onChangeText={onChangeText}
@@ -121,7 +126,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
   );
 });
 
-type BarProps = Omit<Props, 'capsule'>;
+type BarProps = Omit<Props, 'capsule' | 'flush'>;
 
 // The field and the round send button beside it (the masa, venue and district chats).
 const PillBar = forwardRef<TextInput, BarProps>(function PillBar(
@@ -292,8 +297,9 @@ const CAPSULE = KIT.size.composerCapsule;
 const SEND_IN = KIT.size.composerSendIn;
 const SEND_INSET = KIT.size.composerSendInset;
 
-const CapsuleBar = forwardRef<TextInput, BarProps>(function CapsuleBar(
+const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(function CapsuleBar(
   {
+    flush,
     value,
     onChangeText,
     placeholder,
@@ -327,9 +333,9 @@ const CapsuleBar = forwardRef<TextInput, BarProps>(function CapsuleBar(
   return (
     <View
       style={{
-        paddingHorizontal: shape.screenPadding,
-        paddingTop: above ? SPACING[1] : SPACING[2],
-        paddingBottom: SPACING[4] + SPACING[0.5],
+        paddingHorizontal: flush ? 0 : shape.screenPadding,
+        paddingTop: flush ? 0 : above ? SPACING[1] : SPACING[2],
+        paddingBottom: flush ? 0 : SPACING[4] + SPACING[0.5],
         gap: SPACING[1.5],
       }}
     >

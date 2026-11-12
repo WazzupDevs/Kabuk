@@ -5,7 +5,7 @@ import { tableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, type ScrollView, View } from 'react-native';
+import { type ScrollView, View } from 'react-native';
 
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
@@ -27,8 +27,10 @@ import { callLeave } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { PinLayer, Sheet } from '@/motion';
+import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { T } from '@/aura/kit';
+import { Btn, T } from '@/aura/kit';
 
 type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
 
@@ -52,6 +54,7 @@ export default function VenueScreen() {
   const now = useNow(30_000);
   const [lobbySheet, setLobbySheet] = useState<LobbySheet | null>(null);
   const [creating, setCreating] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const scroll = useRef<ScrollView>(null);
   const reduceMotion = useReduceMotion();
 
@@ -60,6 +63,7 @@ export default function VenueScreen() {
     mutationFn: callLeave,
     onSuccess: () => {
       if (checkIn.data) endSession(checkIn.data.id, checkIn.data.created_at);
+      setLeaving(false);
       return queryClient.invalidateQueries();
     },
   });
@@ -125,12 +129,15 @@ export default function VenueScreen() {
   // A profiled person without a visible photo can neither set up a table nor ask (photo_required).
   const needsPhoto = !anonymous && photo.known && !photo.has;
 
-  function confirmLeave() {
-    Alert.alert(tr.venue.leaveConfirmTitle, tr.venue.leaveConfirmBody, [
-      { text: tr.common.cancel, style: 'cancel' },
-      { text: tr.venue.leaveConfirm, style: 'destructive', onPress: () => leave.mutate() },
-    ]);
-  }
+  // How much of the check-in's time has passed (the menu's filling bar).
+  const startedMs = Date.parse(checkIn.data.created_at);
+  const stayShare = expiresAt > startedMs ? (now - startedMs) / (expiresAt - startedMs) : 1;
+  // The folding cards (iskelet.md → 5.11): the venue chat pins under the table card's strip, and
+  // the band reaches under the chat's strip and its fade once the table card is folded.
+  const gap = KIT.size.venueGap;
+  const fold = AURA.venueCollapse;
+  const chatAt = fold.tableStrip + gap;
+  const band = gap + fold.chatStrip + Math.round(AURA.topBar.bandHeight * AURA.topBar.bandFade);
 
   // The spot at the top right; while there is no table a press changes it (the server refuses it
   // at a table).
@@ -139,7 +146,7 @@ export default function VenueScreen() {
     <Screen
       edges={['top']}
       scrollRef={scroll}
-      gap={KIT.size.venueGap}
+      gap={gap}
       top={
         <VenueHead
           spot={spotName}
@@ -147,7 +154,8 @@ export default function VenueScreen() {
           identity={checkIn.data.identity}
           atTable={!!room}
           minutesLeft={minutesLeft}
-          onLeave={confirmLeave}
+          stayShare={stayShare}
+          onLeave={() => setLeaving(true)}
           leaving={leave.isPending}
         />
       }
@@ -164,14 +172,24 @@ export default function VenueScreen() {
           </T>
         ) : null}
       </View>
-      <TableCard
-        checkIn={checkIn.data}
-        room={room}
-        state={state}
-        onCreate={() => setCreating(true)}
-        onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
-      />
-      <VenueChatCard venueId={checkIn.data.venue_id} sessionId={checkIn.data.id} />
+      <PinLayer>
+        <TableCard
+          checkIn={checkIn.data}
+          room={room}
+          state={state}
+          band={band}
+          onCreate={() => setCreating(true)}
+          onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
+        />
+      </PinLayer>
+      <PinLayer>
+        <VenueChatCard
+          venueId={checkIn.data.venue_id}
+          sessionId={checkIn.data.id}
+          identity={checkIn.data.identity.mode}
+          at={chatAt}
+        />
+      </PinLayer>
       <View>
         <Lobby
           venueId={checkIn.data.venue_id}
@@ -203,6 +221,42 @@ export default function VenueScreen() {
             anonymous={anonymous}
           />
         ) : null}
+        {/* "Mekandan ayrıl" asks first (iskelet.md → 3.5): what happens, the red action and
+            "Vazgeç". */}
+        <Sheet
+          visible={leaving}
+          onClose={() => {
+            if (!leave.isPending) setLeaving(false);
+          }}
+          title={tr.venue.leaveConfirmTitle}
+        >
+          <T v="fine">{tr.venue.leaveConfirmBody}</T>
+          {leave.isError ? (
+            <T v="fine" color={KIT.danger}>
+              {errorMessage(leave.error)}
+            </T>
+          ) : null}
+          <View style={{ gap: KIT.size.chipsGap }}>
+            <Btn
+              block
+              tall
+              variant="danger"
+              icon="logout"
+              testID="venue-leave-confirm"
+              label={tr.venue.leaveConfirm}
+              loading={leave.isPending}
+              onPress={() => leave.mutate()}
+            />
+            <Btn
+              block
+              tall
+              variant="glassy"
+              label={tr.common.cancel}
+              disabled={leave.isPending}
+              onPress={() => setLeaving(false)}
+            />
+          </View>
+        </Sheet>
       </View>
     </Screen>
   );

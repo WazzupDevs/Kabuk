@@ -156,3 +156,25 @@ export function tabRowShift(
   const shrunk = shrunkWidth / 2 - (index + 0.5) * tabWidth;
   return pad + (shrunk - pad) * p;
 }
+
+// A card that pins and folds into a strip (Mekan's table card and venue chat, iskelet.md → 5.11):
+// it scrolls with the content until its top reaches its line (`pinAt` the offset it does), then
+// stays there (`lift`) while its foot keeps following the finger, so it is `full − past` high down
+// to `strip`. Below `stripFrom` (or its own height if it is lower) its content gives way to the
+// strip's over `fadePx` (`strip` 0 → 1), never under the strip's own height. -1: not measured yet.
+export function collapseAt(
+  y: number,
+  pinAt: number,
+  full: number,
+  strip: number,
+  stripFrom: number,
+  fadePx: number,
+): { lift: number; height: number; strip: number } {
+  'worklet';
+  if (pinAt < 0 || full <= 0) return { lift: 0, height: full, strip: 0 };
+  const past = Math.max(0, y - pinAt);
+  const height = Math.max(strip, full - past);
+  const from = Math.min(stripFrom, full);
+  const to = Math.max(strip, from - fadePx);
+  return { lift: past, height, strip: 1 - ramp(height, to, from) };
+}

@@ -24,6 +24,7 @@ import {
   useContentHeightFeed,
   useScrollOffset,
 } from '@/motion/ScrollScreen';
+import { PinLayer } from '@/motion/CollapsingCard';
 import { StickyField } from '@/motion/StickyField';
 import {
   BarBand,
@@ -340,7 +341,10 @@ function cascade(children: ReactNode, openings: TabOpenings | null) {
       style={[
         fills(child) ? { flexGrow: 1 } : null,
         // A sticky field is drawn over the parts that scroll under it once it is pinned.
-        isValidElement(child) && child.type === StickyField ? { zIndex: 1 } : null,
+        // A pinned card's strip too (PinLayer).
+        isValidElement(child) && (child.type === StickyField || child.type === PinLayer)
+          ? { zIndex: 1 }
+          : null,
       ]}
     >
       {child}

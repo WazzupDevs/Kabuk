@@ -107,6 +107,17 @@ export const AURA = {
     largeBarTitlePx: 30,
     stickyScale: 0.95,
   },
+  // Mekan's scroll (docs/design/iskelet.md → 5.11): the table card pins under the bar (104 from the
+  // screen's top) and folds into a 72 strip (its picture 52), the venue chat under it into a 54
+  // one; under 170 a card's content gives way to its strip's over 70 px.
+  venueCollapse: {
+    pinTop: 104,
+    tableStrip: 72,
+    stripPicture: 52,
+    chatStrip: 54,
+    stripFrom: 170,
+    stripFadePx: 70,
+  },
   // The tab icons' colours when selected: the mark's (purple back, pink front, amber overlap).
   mark: { back: BRAND.purple, front: BRAND.pink, overlap: BRAND.orange, light: BRAND.white },
   // A scene (Aura v65 ekran.css `.scene`): a soft green-to-pink ground with a white floor glow at

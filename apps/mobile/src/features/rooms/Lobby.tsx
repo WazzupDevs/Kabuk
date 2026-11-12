@@ -6,11 +6,11 @@ import { router } from 'expo-router';
 import { type ReactNode, useEffect, useReducer, useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 
-import { Btn, Li, RowList, Sec, T, Tag, Thumb, useKit } from '@/aura/kit';
+import { Btn, Li, RowList, T, Tag, Thumb, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
 import { Reveal } from '@/aura/Reveal';
-import { RisoPicture } from '@/aura/RisoPicture';
 import { EmptyState } from '@/components/EmptyState';
+import { EmptyCard } from '@/features/explore/EmptyCard';
 import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -292,9 +292,29 @@ export function Lobby({
   );
 }
 
-// No count while the section is empty: its empty state already says so (6.3, X11).
+// The heading with its count beside it (iskelet.md → 5.11: the tables shown in the lobby; never a
+// spot's count, rule 6). No count while the section is empty: its empty card already says so.
 function SectionHead({ title, count }: { title: string; count: number | null }) {
-  return <Sec large title={title} note={count ? tr.lobby.tables(count) : undefined} />;
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        gap: SPACING[2],
+        paddingTop: KIT.size.secPadTop,
+      }}
+    >
+      <T v="secXl" accessibilityRole="header">
+        {title}
+      </T>
+      {count ? (
+        <T v="fineLg" color={c.muted} tabular>
+          {String(count)}
+        </T>
+      ) : null}
+    </View>
+  );
 }
 
 // Under this width (in dp at the text's size) a row's action goes under its words.
@@ -383,18 +403,14 @@ function WaitingSlot() {
 // U19: no open table. The riso 160 × 110, 22 round on the raised shadow; the title on one line, the
 // note at most 280 wide (Mekan).
 const NO_OPEN = require('../../../assets/riso/venue-no-open.webp');
+// No open table: the small empty card (iskelet.md → 3.4, 5.11).
 function NoOpenTables() {
   return (
-    <View testID="lobby-empty" style={{ alignItems: 'center', gap: NO_OPEN_GAP }}>
-      <RisoPicture source={NO_OPEN} width={160} height={110} radius={22} shadow="raised" />
-      <T v="h3" center style={{ marginTop: NO_OPEN_GAP }}>
-        {tr.lobby.emptyTitle}
-      </T>
-      <T v="fine" center style={{ maxWidth: NO_OPEN_NOTE }}>
-        {tr.lobby.emptyBody}
-      </T>
-    </View>
+    <EmptyCard
+      testID="lobby-empty"
+      picture={NO_OPEN}
+      title={tr.lobby.emptyTitle}
+      body={tr.lobby.emptyBody}
+    />
   );
 }
-const NO_OPEN_GAP = 6;
-const NO_OPEN_NOTE = 280;

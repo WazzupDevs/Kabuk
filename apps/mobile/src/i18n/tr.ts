@@ -1997,6 +1997,11 @@ export const tr = {
       'Değiştirince bu girişte geri dönemezsin. Yeni mesajların yeni kimlikle görünür, öncekiler eski kimlikte kalır; mekan sohbetini o an izleyen biri iki kimliği eşleştirebilir.',
     onceTable: ' Masadaki kimliğin bu masa bitene kadar değişmez.',
     used: 'Bu girişteki değişiklik hakkını kullandın',
+    // Mekan's menu (iskelet.md → 5.11): the one change as a row, its note under it.
+    toProfile: 'Profiline geç',
+    toProfileNote: 'Şu an anonimsin. Bir kez değiştirebilirsin.',
+    toAnonymous: 'Anonime geç',
+    toAnonymousNote: 'Şu an profilinle görünüyorsun. Bir kez değiştirebilirsin.',
   },
   venue: {
     here: 'Mekandasın',
@@ -2030,6 +2035,13 @@ export const tr = {
       `${alias}, ${headcountLabel(people)} kişi, ${state}, Masanı aç`,
     openLobby: 'Lobiye aç',
     invite: 'Davet et',
+    // iskelet.md → 5.11: the card's state at its picture's corner and the sentence under the faces.
+    statusFull: 'Dolu',
+    seatsAlone: 'Sadece sen varsın',
+    seated: (n: number) => `${n} kişi oturuyor`,
+    seatsFull: 'Masa dolu. Biri kalkınca yer açılır.',
+    // The menu's first row: the check-in's time, its bar filling as it passes.
+    stay: 'Mekanda kalma süren',
   },
   // The table screen (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F).
   table: {
@@ -2148,9 +2160,11 @@ export const tr = {
   // "Masana davet et" (v46 data-sheet; docs/SPEC_V4.md §4.G): every sent invite looks the same.
   invite: {
     title: 'Masana davet et',
-    how: 'Davet yalnızca şu an bu mekanda olan arkadaşına ulaşır. Kimin burada olduğu görünmez; her davette "Davet gönderildi" yazar. Davet 2 dakika geçerli.',
+    // Two lines (iskelet.md → 5.11): who it reaches, then how long it holds.
+    how: 'Davet yalnızca şu an bu mekanda olan arkadaşına ulaşır; kimin burada olduğu görünmez.',
+    howLong: 'Her davette "Gönderildi" yazar. Davet 2 dakika geçerli.',
     send: 'Davet et',
-    sent: 'Davet gönderildi',
+    sent: 'Gönderildi',
     valid: (seconds: number) =>
       `Geçerli · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`,
     clock: (seconds: number) =>
@@ -2441,15 +2455,18 @@ export const tr = {
       profile: 'Profilli',
       anonymous: 'Anonim',
       nowProfiled:
-        'Bu girişte profilinle görünüyorsun. Değiştirmek için mekan ekranındaki anahtarı kullan; hakkın bir kez.',
+        'Bu girişte profilinle görünüyorsun. Değiştirmek için mekan ekranının menüsünü kullan; hakkın bir kez.',
       nowAnonymous:
-        'Bu girişte anonim görünüyorsun. Değiştirmek için mekan ekranındaki anahtarı kullan; hakkın bir kez.',
+        'Bu girişte anonim görünüyorsun. Değiştirmek için mekan ekranının menüsünü kullan; hakkın bir kez.',
       photoNeeded: 'Profilli başlamak için profil fotoğrafı gerekiyor.',
     },
     notificationSettings: 'Bildirim ayarları',
+    // Ayarlar's first row (iskelet.md → 5.9); its page keeps "Bildirim ayarları".
+    notifications: 'Bildirimler',
     privacyTitle: 'Gizlilik',
     accountTitle: 'Hesap',
-    done: 'Tamam',
+    // The test build's rows at Ayarlar's foot (iskelet.md → 5.9).
+    testSection: 'Test sürümü',
     phone: {
       title: 'Telefon bildirimleri',
       on: 'Açık. Kapatırsan telefonun ayarlarından yeniden açabilirsin.',
