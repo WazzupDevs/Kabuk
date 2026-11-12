@@ -126,10 +126,13 @@ appId: app.kabuk.mobile
 # on the bar's Mesajlar tab (the nightly's failure since 8 Kasım; seen in the run's own picture).
 - scrollUntilVisible:
     element:
-      text: E2E Kafe
+      id: explore-venue-E2E Kafe
     centerElement: true
     timeout: 30000
-- tapOn: E2E Kafe
+# By the row's own id: the text also matched something at the tab bar's Mesajlar tab (the run of
+# 12 Kasım, 788e260: the screen after the tap was Mesajlar, centred or not).
+- tapOn:
+    id: explore-venue-E2E Kafe
 - extendedWaitUntil:
     visible: Buraya giriş yap
     timeout: 10000
@@ -152,7 +155,8 @@ appId: app.kabuk.mobile
     timeout: 30000
 - assertVisible: Liste
 - takeScreenshot: 06b-explore-single
-- tapOn: E2E Kafe
+- tapOn:
+    id: explore-venue-E2E Kafe
 - extendedWaitUntil:
     visible: Buraya giriş yap
     timeout: 10000
