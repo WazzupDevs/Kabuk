@@ -5,7 +5,6 @@ import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
 import { AURA } from './aura';
 import { BUTTON_GLASS } from './buttonGlass';
-import { RISO_BUTTON } from './risoButton';
 import { THEME } from './theme';
 import { type Palette, type PaletteKey } from './tokens';
 
@@ -187,13 +186,6 @@ describe('readableOn', () => {
   it('picks the candidate with the most contrast on the background', () => {
     expect(readableOn('#FFFFFF', ['#FFFFFF', '#14100C'])).toBe('#14100C');
     expect(readableOn('#14100C', ['#FFFFFF', '#14100C'])).toBe('#FFFFFF');
-  });
-});
-
-// Mesajlar's riso "+" (theme/risoButton.ts): its white plus on the ink.
-describe('riso round', () => {
-  it('reads on its ink', () => {
-    expect(contrastRatio(RISO_BUTTON.onInk, RISO_BUTTON.ink)).toBeGreaterThanOrEqual(AA_LARGE);
   });
 });
 

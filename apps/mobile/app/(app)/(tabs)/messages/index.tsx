@@ -1,20 +1,21 @@
 import { inboxStamp } from '@shared/dmInbox.ts';
 import type { DmInboxThread } from '@shared/api/friends.ts';
+import { normalize } from '@shared/trText.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { PopIn } from '@/aura/PopIn';
-import { Av, Badge, Glass, Li, RISO_TEXTURE, RowList, Seg, T, useKit } from '@/aura/kit';
+import { GlassSearch } from '@/aura/GlassSearch';
+import { Av, Badge, Glass, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
-import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarSpace } from '@/components/TabBar';
 import { TypingDots } from '@/components/TypingDots';
+import { EmptyCard } from '@/features/explore/EmptyCard';
 import { pruneDmCache } from '@/features/friends/dmCache';
 import { openDm } from '@/features/friends/openDm';
 import { useSessionStore } from '@/features/auth/session';
@@ -25,18 +26,23 @@ import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
-import { KIT } from '@/theme/auraKit';
+import { PopIn, Rise, StickyField } from '@/motion';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { SPACING } from '@/theme/tokens';
 
 type Tab = 'chats' | 'requests';
 
-// Mesajlar (docs/design/aura → Mesajlar; docs/SPEC_V3.md §18.3; docs/SPEC_V4.md §4.C): "Sohbetler"
-// lists every friend, newest conversation first, from dm/inbox (the function signs the photos); a
-// friend without messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the open
-// friend requests waiting for the caller (RequestList); their count is on its tab (the requests'
-// scene left in aura 31).
+// Mesajlar (docs/design/iskelet.md → 5.4; docs/SPEC_V3.md §18.3; docs/SPEC_V4.md §4.C): the title
+// and the bell stay on top (CLAUDE.md → Ekran davranışı: the top buttons never scroll); under them
+// the glass search capsule (Keşfet's) with "Sohbetler" and "İstekler" under it, pinning under the
+// top as the list scrolls (3.2). "Sohbetler" lists every friend, newest conversation first, from
+// dm/inbox (the function signs the photos); the search narrows them by name on the phone, no call;
+// a friend without messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the
+// open friend requests waiting for the caller (RequestList); their count is on its tab.
 export default function MessagesScreen() {
   const [tab, setTab] = useState<Tab>('chats');
   const [picking, setPicking] = useState(false);
+  const [query, setQuery] = useState('');
   const requests = useRequestCount();
   const now = useNow(60_000);
 
@@ -46,8 +52,6 @@ export default function MessagesScreen() {
         edges={['top']}
         refreshable
         gap={KIT.size.venueGap}
-        // docs/design/aura → Mesajlar: the title and the bell stay on top (the owner's report, 2
-        // Kasım, B2); the two tabs and the conversations as plain rows scroll under them.
         top={
           <View
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
@@ -59,22 +63,36 @@ export default function MessagesScreen() {
           </View>
         }
       >
-        <Seg<Tab>
-          large
-          value={tab}
-          onChange={setTab}
-          accessibilityLabel={tr.messages.tabs}
-          options={[
-            { value: 'chats', label: tr.messages.chatsTab, testID: 'messages-tab-chats' },
-            {
-              value: 'requests',
-              label: tr.messages.requestsTab,
-              badge: requests,
-              testID: 'messages-tab-requests',
-            },
-          ]}
-        />
-        {tab === 'chats' ? <Chats now={new Date(now)} /> : <RequestList now={new Date(now)} />}
+        <StickyField band>
+          <View style={{ gap: SPACING[3] }}>
+            <GlassSearch
+              testID="messages-search"
+              value={query}
+              onChangeText={setQuery}
+              placeholder={tr.messages.search}
+            />
+            <Seg<Tab>
+              large
+              value={tab}
+              onChange={setTab}
+              accessibilityLabel={tr.messages.tabs}
+              options={[
+                { value: 'chats', label: tr.messages.chatsTab, testID: 'messages-tab-chats' },
+                {
+                  value: 'requests',
+                  label: tr.messages.requestsTab,
+                  badge: requests,
+                  testID: 'messages-tab-requests',
+                },
+              ]}
+            />
+          </View>
+        </StickyField>
+        {tab === 'chats' ? (
+          <Chats now={new Date(now)} query={query} />
+        ) : (
+          <RequestList now={new Date(now)} />
+        )}
       </Screen>
       {/* A new message, as Telegram Android's pencil (the owner's call, 30 Ekim): a friend to
           write to. */}
@@ -84,74 +102,42 @@ export default function MessagesScreen() {
   );
 }
 
-// The round "+" at the bottom right, over the list and above the tab bar; it pops in (docs/design/
-// aura → Mesajlar). A riso round as the other buttons, the size of the other round buttons (the
-// bell's): the ink flat, the pink printed a little off under it, the texture over it; pressed, the
-// print settles onto the pink (the owner's call, 8 Kasım).
+// The round "+" at the bottom right, over the list and above the tab bar; it pops in. iskelet.md →
+// 2.1 and 5.4: a prominent glass round.
 function NewMessageButton({ onPress }: { onPress: () => void }) {
   const barSpace = useTabBarSpace();
-  const R = KIT.riso;
-  const [sink] = useState(() => new Animated.Value(0));
-  const settle = (to: number) =>
-    Animated.timing(sink, {
-      toValue: to,
-      duration: R.pressMs,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start();
-  const travel = sink.interpolate({ inputRange: [0, 1], outputRange: [0, R.shift - 1] });
   return (
     <View style={{ position: 'absolute', right: KIT.size.newChatRight, bottom: barSpace }}>
       <PopIn rise={NEW_CHAT_RISE}>
-        <Pressable
+        <Round
+          glass="prominent"
+          side={NEW_CHAT}
           testID="messages-new"
-          accessibilityRole="button"
-          accessibilityLabel={tr.messages.newMessage}
+          label={tr.messages.newMessage}
           onPress={onPress}
-          onPressIn={() => settle(1)}
-          onPressOut={() => settle(0)}
         >
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: R.shift,
-              left: R.shift,
-              width: NEW_CHAT,
-              height: NEW_CHAT,
-              borderRadius: NEW_CHAT / 2,
-              backgroundColor: R.offset,
-            }}
-          />
-          <Animated.View
-            style={{
-              width: NEW_CHAT,
-              height: NEW_CHAT,
-              borderRadius: NEW_CHAT / 2,
-              overflow: 'hidden',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: R.ink,
-              transform: [{ translateX: travel }, { translateY: travel }],
-            }}
-          >
-            <Image
-              source={RISO_TEXTURE.light}
-              resizeMode="repeat"
-              accessibilityIgnoresInvertColors
-              style={{ position: 'absolute', left: 0, top: 0, width: NEW_CHAT, height: NEW_CHAT }}
-            />
-            <CapIcon name="plus" color={R.onInk} soft={NEW_CHAT_SOFT} />
-          </Animated.View>
-        </Pressable>
+          <CapIcon name="plus" color={KIT.onPrimary} soft={NEW_CHAT_SOFT} />
+        </Round>
       </PopIn>
     </View>
   );
 }
 const NEW_CHAT = KIT.size.newChat;
 const NEW_CHAT_RISE = 12;
-// The plus's second stroke on the primary (the board: .62).
+// The plus's second stroke on the prominent glass (as a prominent button's icon: .62).
 const NEW_CHAT_SOFT = 0.62;
+
+// The conversations whose name holds what is searched (@shared/trText.ts → normalize: Turkish
+// lowercase, ç ğ ı ö ş ü folded; CLAUDE.md rule 7).
+function byName(threads: readonly DmInboxThread[], query: string): readonly DmInboxThread[] {
+  const q = normalize(query).replace(/\s+/g, ' ').trim();
+  if (q === '') return threads;
+  return threads.filter((t) =>
+    normalize(t.displayName ?? tr.profile.noName)
+      .replace(/\s+/g, ' ')
+      .includes(q),
+  );
+}
 
 // "Yeni mesaj": the friends to write to, as a list; a row opens the conversation.
 function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => void }) {
@@ -193,7 +179,7 @@ function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => v
   );
 }
 
-function Chats({ now }: { now: Date }) {
+function Chats({ now, query }: { now: Date; query: string }) {
   const { c } = useKit();
   const inbox = useDmInbox();
   const loading = useLoaderHold(inbox.isPending);
@@ -251,12 +237,23 @@ function Chats({ now }: { now: Date }) {
       </View>
     );
   }
+  const shown = byName(inbox.data, query);
+  if (shown.length === 0) {
+    // iskelet.md → 3.4: nothing found, on the small empty card.
+    return (
+      <EmptyCard
+        testID="messages-no-match"
+        title={tr.messages.noMatch}
+        body={tr.messages.noMatchHint}
+      />
+    );
+  }
   return (
     <View style={{ paddingBottom: NEW_CHAT }}>
       {/* The room under the last row for the "+" over it. */}
       {/* U27: the conversations on glass sm, a hairline from 72 to 16 short of the right. */}
       <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
-        {inbox.data.map((t, i) => (
+        {shown.map((t, i) => (
           <Rise key={t.publicId} index={i}>
             {i > 0 ? (
               <View
@@ -284,8 +281,9 @@ const WARM_ROWS = 20;
 const TYPING_ROWS = 30;
 
 // A conversation (U27, docs/design/aura → Mesajlar: `.li`): 72 high, the 44 face, the name (h3) and
-// the read ticks and time (fine) on top, the last message (body, one line) or "yazıyor" below, the
-// unread count as a pink badge.
+// the read ticks and time (fine) on top, the last message (body, one line) or "yazıyor" below.
+// iskelet.md → 5.4: unread, the name and the last line bold, the time green and the count on a green
+// badge at the right.
 function InboxRow({
   thread: t,
   now,
@@ -318,7 +316,7 @@ function InboxRow({
         }}
       >
         <View style={BETWEEN}>
-          <T v="h3" style={{ flexShrink: 1 }}>
+          <T v="h3" style={[{ flexShrink: 1 }, unread ? KIT_TYPE.bold : null]}>
             {name}
           </T>
           {t.lastMessageAt ? (
@@ -327,7 +325,9 @@ function InboxRow({
               {t.lastFromMe && t.lastStatus ? (
                 <DeliveryTicks delivery={t.lastStatus} size={INBOX_TICK} />
               ) : null}
-              <T v="fine">{tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}</T>
+              <T v="fine" tabular color={unread ? KIT.primary : undefined}>
+                {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
+              </T>
             </View>
           ) : null}
         </View>
@@ -341,7 +341,7 @@ function InboxRow({
           )}
           {unread ? (
             <View accessible accessibilityLabel={tr.messages.unread(t.unreadCount)}>
-              <Badge count={t.unreadCount} />
+              <Badge green count={t.unreadCount} />
             </View>
           ) : null}
         </View>
@@ -358,11 +358,18 @@ const BETWEEN = {
   gap: KIT.size.chipsGap,
 };
 
-// The last message, ink while unread (its ticks are by the time).
+// The last message, ink and bold while unread (its ticks are by the time); none yet, "Henüz mesaj
+// yok" slanted and quiet (iskelet.md → 5.4).
 function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
+  const none = t.lastBody === null;
   return (
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
-      <T v="body" ink={unread} strong={unread} lines={1} style={{ flex: 1 }}>
+      <T
+        v="body"
+        ink={unread && !none}
+        lines={1}
+        style={[{ flex: 1 }, none ? KIT_TYPE.italic : unread ? KIT_TYPE.bold : null]}
+      >
         {t.lastBody ?? tr.messages.noMessage}
       </T>
     </View>

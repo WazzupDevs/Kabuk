@@ -53,22 +53,44 @@ const RISO_PEEK = {
   right: { source: require('../../assets/riso/peek-2.webp'), side: 36, turn: '7deg' },
 } as const;
 
+// iskelet.md → 5.4: as the sheet opens they look up over its edge on springs.pop, the second a
+// part's stagger after the first; at once with reduce motion.
 function RisoPeek() {
   const { width, height, up, left, right } = RISO_PEEK;
+  const reduce = useReduceMotion();
+  const [rise] = useState(() => ({
+    left: new Animated.Value(reduce ? 1 : 0),
+    right: new Animated.Value(reduce ? 1 : 0),
+  }));
+  useEffect(() => {
+    if (reduce) return undefined;
+    const anim = Animated.stagger(
+      MOTION.stagger.part,
+      [rise.left, rise.right].map((p) =>
+        Animated.spring(p, { ...springConfig(MOTION.springs.pop), toValue: 1 }),
+      ),
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [reduce, rise]);
   const picture = { position: 'absolute', top: 0, width, height } as const;
+  const lift = (p: Animated.Value) => ({
+    translateY: p.interpolate({ inputRange: [0, 1], outputRange: [up, 0] }),
+  });
   return (
     <View
       pointerEvents="none"
       style={{ position: 'absolute', left: 0, right: 0, top: -up, height: up, overflow: 'hidden' }}
     >
-      <Image
-        source={left.source}
-        style={[picture, { left: left.side, transform: [{ rotate: left.turn }] }]}
-      />
-      <Image
-        source={right.source}
-        style={[picture, { right: right.side, transform: [{ rotate: right.turn }] }]}
-      />
+      <Animated.View style={[picture, { left: left.side, transform: [lift(rise.left)] }]}>
+        <Image source={left.source} style={{ width, height, transform: [{ rotate: left.turn }] }} />
+      </Animated.View>
+      <Animated.View style={[picture, { right: right.side, transform: [lift(rise.right)] }]}>
+        <Image
+          source={right.source}
+          style={{ width, height, transform: [{ rotate: right.turn }] }}
+        />
+      </Animated.View>
     </View>
   );
 }

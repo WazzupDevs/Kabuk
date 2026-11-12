@@ -305,6 +305,10 @@ export const tr = {
     // The "+" and its list of friends (the owner's call, 30 Ekim).
     newMessage: 'Yeni mesaj',
     noMessage: 'Henüz mesaj yok',
+    // iskelet.md → 5.4: the search over the conversations, by name, on the phone.
+    search: 'Sohbet ara',
+    noMatch: 'Sohbet bulunamadı',
+    noMatchHint: 'Başka bir ad dene.',
     // With the dots beside it (v45).
     typing: 'yazıyor',
     stamp: (iso: string, stamp: InboxStamp) =>
@@ -585,12 +589,17 @@ export const tr = {
     earlier: 'Önceki',
     join: 'Katıl',
     writeMessage: 'Mesaj yaz',
-    // One short line under the name, the same height for every kind (the owner's call, 28 Ekim).
+    // iskelet.md → 5.4: a row's sentence after the name in bold ("Furkan isteğini kabul etti"),
+    // its date or state under it.
+    line: {
+      request: 'sana arkadaşlık isteği gönderdi',
+      friends: 'ile arkadaşsınız',
+      accepted: 'isteğini kabul etti',
+      match: 'ile arkadaş oldunuz',
+      invite: 'seni masaya davet etti',
+    },
+    // An invite's minutes or its state under its sentence.
     short: {
-      request: 'Arkadaşlık isteği',
-      friends: 'Arkadaşsınız',
-      accepted: 'Kabul edildi',
-      match: 'Arkadaş oldunuz',
       invite: (clock: string) => `Masa daveti · ${clock}`,
       joined: 'Katıldın',
       declined: 'Reddettin',
