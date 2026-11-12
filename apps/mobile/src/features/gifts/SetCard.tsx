@@ -10,7 +10,7 @@ import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Glass, T, Tag, useKit } from '@/aura/kit';
+import { Glass, T, useKit } from '@/aura/kit';
 import { CachedSvg } from '@/components/CachedSvg';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
@@ -19,6 +19,7 @@ import { tr } from '@/i18n/tr';
 import { Tap } from '@/motion';
 import { SET_BALLOONS } from '@/theme/setBalloons';
 import { TIER_COLOR } from '@/theme/gifts';
+import { OWN_PROFILE, SET_CARD } from '@/theme/ownProfile';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useState } from 'react';
@@ -60,43 +61,68 @@ export function SetCard() {
   const gold = TIER_COLOR[scheme].efsanevi;
   const skin = balloon ? SET_BALLOONS[balloon] : null;
 
+  const k = SET_CARD[scheme];
+  const chip = skin
+    ? { bg: skin.chipOn, fg: skin.name.ink }
+    : mixed
+      ? { bg: k.count, fg: c.warn }
+      : { bg: k.count, fg: c.ink };
+  // tuval Benim: the title and the count's pill on one line, the note under them across the card.
   return (
-    <Glass sm style={{ marginTop: SPACING[4], padding: SPACING[4], gap: SPACING[3] }}>
+    <Glass
+      face={k.card}
+      radius={SET_CARD.radius}
+      style={{
+        marginTop: OWN_PROFILE.gap,
+        paddingTop: SET_CARD.padTop,
+        paddingHorizontal: SET_CARD.padX,
+        paddingBottom: SET_CARD.padBottom,
+        gap: SET_CARD.gap,
+      }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
-        <View style={{ flex: 1, gap: SPACING[0.5] }}>
-          <T v="h3" accessibilityRole="header">
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <T v="setTitle" ink accessibilityRole="header">
             {tr.gifts.setTitle}
           </T>
-          <T v="fine">
-            {balloon && lead.set
-              ? tr.gifts.setOn(lead.set.name)
-              : mixed
-                ? tr.gifts.setMixed
-                : filled > 0 && lead.set
-                  ? tr.gifts.setMore(lead.set.name)
-                  : tr.gifts.setHint}
-          </T>
         </View>
-        <Tag
-          label={
-            balloon && lead.set
+        <View
+          style={{
+            height: SET_CARD.count.height,
+            paddingHorizontal: SET_CARD.count.padX,
+            borderRadius: SET_CARD.count.height / 2,
+            backgroundColor: chip.bg,
+            justifyContent: 'center',
+            flexShrink: 1,
+          }}
+        >
+          <T v="setCount" color={chip.fg} tabular lines={1} fit>
+            {balloon && lead.set
               ? tr.gifts.setChipOn(lead.set.name)
               : mixed
                 ? tr.gifts.setChipMixed
                 : lead.set && lead.n > 0
                   ? tr.gifts.setChipCount(lead.set.name, lead.n, SET_REGION_ORDER.length)
-                  : tr.gifts.setChipNone(SET_REGION_ORDER.length)
-          }
-          colors={
-            skin
-              ? { bg: skin.chipOn, fg: skin.name.ink }
-              : mixed
-                ? { bg: c.raisedRound, fg: c.warn }
-                : { bg: c.raisedRound, fg: c.ink }
-          }
-        />
+                  : tr.gifts.setChipNone(SET_REGION_ORDER.length)}
+          </T>
+        </View>
       </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <T v="setNote" color={k.note}>
+        {balloon && lead.set
+          ? tr.gifts.setOn(lead.set.name)
+          : mixed
+            ? tr.gifts.setMixed
+            : filled > 0 && lead.set
+              ? tr.gifts.setMore(lead.set.name)
+              : tr.gifts.setHint}
+      </T>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: SET_CARD.slotsTop - SET_CARD.gap,
+        }}
+      >
         {SET_REGION_ORDER.map((region) => {
           const piece = pieces[region];
           return (
@@ -107,7 +133,7 @@ export function SetCard() {
                   piece?.name ?? tr.gifts.setEmpty,
                 )}
                 onPress={() => setOpen(region)}
-                style={{ alignItems: 'center', gap: SPACING[1] }}
+                style={{ alignItems: 'center', gap: SET_CARD.slotGap }}
               >
                 {/* An empty slot 62 in the worn one's place (iskelet.md → 5.7). */}
                 <View
@@ -127,17 +153,22 @@ export function SetCard() {
                       justifyContent: 'center',
                       ...(piece
                         ? { boxShadow: `0 0 0 ${RING}px ${gold}, 0 0 14px ${gold}88` }
-                        : { borderWidth: 2, borderStyle: 'dashed', borderColor: c.hair }),
+                        : {
+                            borderWidth: 2,
+                            borderStyle: 'dashed',
+                            borderColor: k.emptyEdge,
+                            backgroundColor: k.emptyFill,
+                          }),
                     }}
                   >
                     {piece ? (
                       <LookAvatar look={pieceLook(piece.id)} size={DISC} />
                     ) : (
-                      <CapIcon name="plus" color={c.muted} size={ICON.lg} />
+                      <CapIcon name="plus" color={k.plus} soft={1} size={SET_CARD.plus} />
                     )}
                   </View>
                 </View>
-                <T v="fine" strong center>
+                <T v="setSlot" ink center>
                   {tr.gifts.setRegion[region]}
                 </T>
                 <T v="fine" center>

@@ -14,11 +14,14 @@ export function ScrollFade({
   fade,
   shrink,
   scaleTo,
+  origin,
   children,
 }: {
   fade: readonly [number, number];
   shrink: readonly [number, number];
   scaleTo: number;
+  // Where it shrinks from (tuval Profil: the photo from its top centre); its centre otherwise.
+  origin?: string;
   children: ReactNode;
 }) {
   const scroll = useScreenScroll();
@@ -31,7 +34,11 @@ export function ScrollFade({
       transform: [{ scale: 1 + (scaleTo - 1) * ramp(y, shrinkFrom, shrinkTo) }],
     };
   });
-  return <Animated.View style={style}>{children}</Animated.View>;
+  return (
+    <Animated.View style={[origin ? { transformOrigin: origin } : null, style]}>
+      {children}
+    </Animated.View>
+  );
 }
 
 // The own profile's upper part (5.7), in the scrolling content: it moves at -`speed` of the scroll,
@@ -41,26 +48,38 @@ export function RiseLayer({
   speed,
   fade,
   scaleTo,
+  shrink,
+  origin,
   height,
   children,
 }: {
   speed: number;
   fade: readonly [number, number];
   scaleTo: number;
+  // Over which part of the scroll it shrinks (tuval Benim: the whole flight), and from where; with
+  // the fade and from its centre otherwise.
+  shrink?: readonly [number, number];
+  origin?: string;
   height: number;
   children: ReactNode;
 }) {
   const scroll = useScreenScroll();
   const [from, to] = fade;
+  const [shrinkFrom, shrinkTo] = shrink ?? fade;
   const style = useAnimatedStyle(() => {
     const y = scroll ? scroll.y.get() : 0;
     const f = fadeAt(y, from, to, scaleTo);
+    const s = fadeAt(y, shrinkFrom, shrinkTo, scaleTo);
     return {
       opacity: f.opacity,
-      transform: [{ translateY: riseInContent(y, speed) }, { scale: f.scale }],
+      transform: [{ translateY: riseInContent(y, speed) }, { scale: s.scale }],
     };
   });
-  return <Animated.View style={[{ height }, style]}>{children}</Animated.View>;
+  return (
+    <Animated.View style={[{ height }, origin ? { transformOrigin: origin } : null, style]}>
+      {children}
+    </Animated.View>
+  );
 }
 
 // Where the photo and the name fly (5.7), in the screen's points: from their place on the upper

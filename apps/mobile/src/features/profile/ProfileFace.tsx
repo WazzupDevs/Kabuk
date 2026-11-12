@@ -61,21 +61,30 @@ export function ProfileFace({
   );
 }
 
-// The page's photo over the cover's foot: the face in its white ring (124, 4 px; iskelet.md → 2.4).
-export function RingedFace({ name, photoUrl }: { name: string; photoUrl: string | null }) {
+// The page's photo over the cover's foot: the face in its white ring (124, 4 px; iskelet.md → 2.4;
+// `side` the ring's own across where a board gives one: tuval Profil 132, Duzenle 116).
+export function RingedFace({
+  name,
+  photoUrl,
+  side = PROFILE_PAGE.face,
+}: {
+  name: string;
+  photoUrl: string | null;
+  side?: number;
+}) {
   const P = PROFILE_PAGE;
   return (
     <View
       style={{
-        width: P.face,
-        height: P.face,
-        borderRadius: P.face / 2,
+        width: side,
+        height: side,
+        borderRadius: side / 2,
         backgroundColor: P.ringColor,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <ProfileFace side={P.face - 2 * P.ring} name={name} photoUrl={photoUrl} />
+      <ProfileFace side={side - 2 * P.ring} name={name} photoUrl={photoUrl} />
     </View>
   );
 }

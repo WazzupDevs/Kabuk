@@ -3,7 +3,7 @@ import { createContext, type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
-import { Round } from '@/aura/kit';
+import { Round, T } from '@/aura/kit';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { AURA, barBandCss, MOTION } from '@/theme/aura';
@@ -188,15 +188,26 @@ export function BarArrive({
 // `kind`'s range, a tab's shrinking from its lower left. Still on a screen that does not scroll.
 // `children` stand for the title where a screen draws its own (Keşfet's line of the day over its
 // question, 5.1); they fade the same way.
+export type LargeTitleLook = {
+  // In from the page's side.
+  titleIn: number;
+  // The line under the title: how far under it, and its colour.
+  subTop?: number;
+  subColor?: string;
+};
+
 export function LargeTitle({
   kind,
   title,
   sub,
+  look,
   children,
 }: {
   kind: TopBarKind;
   title?: string;
   sub?: string;
+  // A board's own title (PageTop → `look`).
+  look?: LargeTitleLook;
   children?: ReactNode;
 }) {
   const scroll = useScreenScroll();
@@ -207,6 +218,24 @@ export function LargeTitle({
     const f = fadeAt(scroll.y.get(), from, to, scaleTo);
     return { opacity: f.opacity, transform: [{ scale: f.scale }] };
   });
+  if (look && !children) {
+    return (
+      <Animated.View
+        style={[{ transformOrigin: 'left bottom', paddingHorizontal: look.titleIn }, style]}
+      >
+        <T v="pageTitle" ink accessibilityRole="header">
+          {title}
+        </T>
+        {sub ? (
+          <View style={{ marginTop: look.subTop }}>
+            <T v="pageSub" color={look.subColor}>
+              {sub}
+            </T>
+          </View>
+        ) : null}
+      </Animated.View>
+    );
+  }
   return (
     <Animated.View style={[{ transformOrigin: 'left bottom' }, style]}>
       {children ?? (

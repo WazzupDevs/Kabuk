@@ -56,7 +56,7 @@ export const PROFILE_COVER = {
 } as const;
 
 // The profile pages (docs/design/iskelet.md → 5.6 and 5.7), on the canvas's phone, 390 wide: the
-// cover 230 from the screen's top, a dark fade over its top 110, its lower half fading into the
+// cover 230 from the screen's top, a dark fade over its top 110 (42 % at its top, tuval Benim), its lower half fading into the
 // ground with a 14 px blurred copy of the picture; the photo 124 in a 4 px white ring, centred at
 // (195, 196), the name's centre at (195, 291). The bar row's centre on the canvas is 73: the kit's
 // bar (8 under the status bar, 46 high) puts it there under a 42 status bar, so a screen moves the
@@ -66,7 +66,7 @@ export const PROFILE_PAGE = {
   canvasStatus: 42,
   cover: 230,
   shade: 110,
-  shadeCss: 'linear-gradient(180deg, rgba(3, 27, 11, 0.38) 0%, rgba(3, 27, 11, 0) 100%)',
+  shadeCss: 'linear-gradient(180deg, rgba(3, 27, 11, 0.42) 0%, rgba(3, 27, 11, 0) 100%)',
   footFrom: 0.5,
   footCss: {
     light: 'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, #EFF7F1 100%)',
@@ -83,14 +83,15 @@ export const PROFILE_PAGE = {
   nameAt: { x: 195, y: 291 },
   barAt: 73,
   // Another person's (5.6): the cover at half the scroll; the photo shrinks to 0.75 over 60–180 and
-  // fades over 120–190; the name comes into the bar as it reaches it (291 − 73 = 218, over the last
-  // 30, the band with it).
+  // fades over 120–190; the band comes in over 190–230 and the name into the bar over 230–260
+  // (tuval Profil).
   other: {
     speed: 0.5,
     faceShrink: [60, 180] as const,
     faceScale: 0.75,
     faceFade: [120, 190] as const,
-    bar: [188, 218] as const,
+    band: [190, 230] as const,
+    bar: [230, 260] as const,
   },
   // The own (5.7): the upper part moves at -0.35 of the scroll, fades over 120–300 and shrinks to
   // 0.92; the panel (34 round, a handle) reaches the bar's foot at 316, where the photo (124 → 30,
@@ -125,24 +126,35 @@ export const RISO_PAPER = {
   dark: { paper: '#1B231E', dots: 'rgba(255, 255, 255, 0.07)' },
 } as const;
 
-// The ticket: paper with a dark-green edge and a pink print a little off under it, a notch at the
-// top and the bottom of the dashed perforation; the stub 96 with the capsule on its ground.
+// The ticket (tuval Benim): paper with a dark-green edge 2.5 and a pink print 4 right and 5 down
+// under it, 26 round, 150 high; a notch 24 across at the top and the bottom of the perforation (2,
+// dashed, the edge's green at 50 %); the stub 112 with the capsule on its ground under a pink
+// halftone (3 apart, 0.8), its parts 8 apart; the words 16 inside (18 at their left), 4 apart, the
+// button 8 more under them, 16 in, its star 15, 6 from the words.
 export const TICKET = {
   paper: '#FBF7EE',
-  edge: '#0F3B22',
-  edgeWidth: 2,
+  edge: '#0B5A2D',
+  edgeWidth: 2.5,
   print: '#FF4F8B',
-  printOffset: 3,
+  printX: 4,
+  printY: 5,
   ink: '#031B0B',
   muted: '#4A6550',
   link: '#0B783D',
-  radius: 18,
-  notch: 10,
-  stub: 96,
+  radius: 26,
+  height: 150,
+  notch: 12,
+  stub: 112,
+  stubGap: 8,
+  stubDots: { cell: 3, dot: 0.8, color: 'rgba(255, 79, 139, 0.20)' },
   capsule: 64,
   dash: [4, 4] as const,
-  padX: 14,
-  padY: 14,
+  dashWidth: 2,
+  dashColor: 'rgba(11, 90, 45, 0.5)',
+  padX: 16,
+  padLeft: 18,
+  padY: 16,
   gap: 4,
-  buttonTop: 10,
+  buttonTop: 8,
+  button: { padX: 16, gap: 6, icon: 15 },
 } as const;

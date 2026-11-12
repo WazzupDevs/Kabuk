@@ -5,6 +5,7 @@ import Svg, { Circle, Defs, Path, Pattern, Rect } from 'react-native-svg';
 import { photoCacheKey } from '@/lib/usePhoto';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
+import { PERSON } from '@/theme/person';
 import { PROFILE_COVER, PROFILE_PAGE, RISO_PAPER } from '@/theme/profileCover';
 
 // The profile cover (docs/SPEC_V4.md §4.W): the person's own picture, cut to fill; without one the
@@ -62,7 +63,10 @@ export function ProfileCoverArt({
 }) {
   const { scheme } = useTheme();
   const P = PROFILE_PAGE;
-  const foot = height * (1 - P.footFrom);
+  // tuval Profil: another person's paper fades into the ground over its last 90, with no dark fade
+  // over its top (the dark fade is for a picture under the status bar).
+  const onPaper = !url && !!paper;
+  const foot = onPaper ? PERSON.paperFoot : height * (1 - P.footFrom);
   const step = foot / P.blurSteps.length;
   const source = url ? { uri: url, cacheKey: photoCacheKey(url) } : null;
   return (
@@ -107,22 +111,53 @@ export function ProfileCoverArt({
           ))}
         </>
       ) : paper ? (
-        <RisoPaper />
+        <PersonPaper />
       ) : (
         <RisoCoverScene />
       )}
       <View
         style={[
           { position: 'absolute', left: 0, right: 0, bottom: 0, height: foot },
-          gradientStyle(P.footCss[scheme]),
+          gradientStyle(onPaper ? PERSON[scheme].paperFootCss : P.footCss[scheme]),
         ]}
       />
-      <View
-        style={[
-          { position: 'absolute', left: 0, right: 0, top: 0, height: P.shade },
-          gradientStyle(P.shadeCss),
-        ]}
-      />
+      {onPaper ? null : (
+        <View
+          style={[
+            { position: 'absolute', left: 0, right: 0, top: 0, height: P.shade },
+            gradientStyle(P.shadeCss),
+          ]}
+        />
+      )}
+    </View>
+  );
+}
+
+// Another person's paper without a cover (tuval Profil): green and pink dots on a 7 grid, half a
+// cell apart, over its wash.
+function PersonPaper() {
+  const { scheme } = useTheme();
+  const k = PERSON[scheme];
+  const c = RISO_PAPER.cell;
+  return (
+    <View style={[StyleSheet.absoluteFill, gradientStyle(k.paper)]}>
+      <Svg
+        width="100%"
+        height="100%"
+        style={StyleSheet.absoluteFill}
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Defs>
+          <Pattern id="person-tram" width={c} height={c} patternUnits="userSpaceOnUse">
+            <Circle cx={c / 2} cy={c / 2} r={PERSON.dot} fill={k.dotGreen} />
+            <Circle cx={0} cy={0} r={PERSON.dot} fill={k.dotPink} />
+            <Circle cx={c} cy={0} r={PERSON.dot} fill={k.dotPink} />
+            <Circle cx={0} cy={c} r={PERSON.dot} fill={k.dotPink} />
+            <Circle cx={c} cy={c} r={PERSON.dot} fill={k.dotPink} />
+          </Pattern>
+        </Defs>
+        <Rect x={0} y={0} width="100%" height="100%" fill="url(#person-tram)" />
+      </Svg>
     </View>
   );
 }

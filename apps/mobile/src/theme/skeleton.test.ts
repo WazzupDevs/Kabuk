@@ -167,8 +167,8 @@ describe("another person's profile (kapak, 5.6)", () => {
     expect(PROFILE_PAGE.face).toBe(124);
     expect(PROFILE_PAGE.ring).toBe(4);
     expect(page).toMatch(/<Cover height=\{coverHeight\} speed=\{O\.speed\}>/);
-    expect(page).toMatch(/<ScrollFade fade=\{O\.faceFade\} shrink=\{O\.faceShrink\}/);
-    expect(page).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}>/);
+    expect(page).toMatch(/<ScrollFade\s+fade=\{O\.faceFade\}\s+shrink=\{O\.faceShrink\}/);
+    expect(page).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}[ >]/);
   });
   it('"Arkadaşlıktan çıkar" in the menu only, the DM menu grown from the three dots', () => {
     expect(page).not.toMatch(/FriendActions/);
@@ -206,7 +206,7 @@ describe('the own profile in two parts (5.7)', () => {
     expect(riseInContent(100, 0.35) - 100).toBeCloseTo(-35);
     expect(riseInContent(-30, 0.35)).toBe(-30);
     expect(page).toMatch(
-      /<RiseLayer speed=\{OWN\.rise\} fade=\{OWN\.riseFade\} scaleTo=\{OWN\.riseScale\}/,
+      /<RiseLayer\s+speed=\{OWN\.rise\}\s+fade=\{OWN\.riseFade\}\s+scaleTo=\{OWN\.riseScale\}/,
     );
   });
 
