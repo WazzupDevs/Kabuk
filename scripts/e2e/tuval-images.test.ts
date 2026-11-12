@@ -21,6 +21,9 @@ describe("the design canvas's images (tuval-goruntu)", () => {
     expect(isShot('light', 'attempt-1/screenshots/04-table.png')).toBe(false);
     expect(isShot('light', 'maestro/.maestro/tests/screenshot-x.png')).toBe(false);
     expect(isShot('light', 'screenshots/commands.json')).toBe(false);
+    expect(isShot('light', 'screenshots/step-217-assertCondition-Buraya_giriş_yap.png')).toBe(
+      false,
+    );
     expect(isShot('visual', 'aday/galeri-sohbet-light-1.png')).toBe(true);
     expect(isShot('visual', 'aday2/galeri-sohbet-light-1.png')).toBe(false);
     expect(isShot('visual', 'fark/galeri-sohbet-light-1.png')).toBe(false);
