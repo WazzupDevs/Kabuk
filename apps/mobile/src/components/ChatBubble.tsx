@@ -21,6 +21,7 @@ import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
+import { useLoopActive } from './Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -1377,6 +1378,8 @@ const TYPING_MS = 400;
 export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: string }) {
   const { shape } = useTheme();
   const reduce = useReduceMotion();
+  // Stopped while another screen or a sheet covers the chat and in the background (A-36).
+  const active = useLoopActive();
   const [dots] = useState(() => [0, 1, 2].map(() => new Animated.Value(0)));
 
   useEffect(() => {
@@ -1384,6 +1387,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
       dots.forEach((d) => d.setValue(0));
       return undefined;
     }
+    if (!active) return undefined;
     const loop = Animated.loop(
       Animated.stagger(
         TYPING_MS / 3,
@@ -1397,7 +1401,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
     );
     loop.start();
     return () => loop.stop();
-  }, [reduce, dots]);
+  }, [reduce, active, dots]);
 
   const { scheme, c } = useKit();
   const kind = useChatKind();
