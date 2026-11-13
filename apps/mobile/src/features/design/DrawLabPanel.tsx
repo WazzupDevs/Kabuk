@@ -114,6 +114,12 @@ export function DrawLabPanel() {
             <Chip label={tr.design.drawLab.hold} on={hold} onPress={toggleLabHold} />
             {/* The whole capsule on one canvas; stays as set when the panel closes. */}
             <Chip label={tr.design.drawLab.wholeSwitch} on={whole} onPress={toggleLabWhole} />
+            {/* Off: the tiles as SVG again while the whole capsule stays Skia's. */}
+            <Chip
+              label={tr.design.drawLab.parts.karo}
+              on={manual.includes('karo')}
+              onPress={() => toggleLabPart('karo')}
+            />
           </>
         )}
       </View>
