@@ -116,84 +116,89 @@ export function TabBar({ items, selected, onPress, opaque = false }: Props) {
   const g = a;
   const shadow = shadowParts(shadowOff, g.shadow || undefined, undefined, s.height / 2);
   return (
-    <Animated.View
-      accessibilityRole="tablist"
-      style={[
-        { height: s.height, borderRadius: s.height / 2, boxShadow: shadow.boxShadow },
-        barStyle,
-      ]}
-    >
-      {shadow.node}
-      <View
+    // The bar's place is as wide as the open bar: shrunk, it stays at that place's left with its
+    // chosen tab (tuval Kesfet: `left: 20`, the width alone goes to 76); centred on its own width it
+    // jumped to the middle of the screen (docs/denetim/pano-fark-2026-11.md → PF-03).
+    <View pointerEvents="box-none" style={{ width, alignItems: 'flex-start' }}>
+      <Animated.View
+        accessibilityRole="tablist"
         style={[
-          StyleSheet.absoluteFill,
-          { borderRadius: s.height / 2, overflow: 'hidden' },
-          gradientStyle(solid ? g.solid : g.fill),
+          { height: s.height, borderRadius: s.height / 2, boxShadow: shadow.boxShadow },
+          barStyle,
         ]}
       >
+        {shadow.node}
         <View
-          pointerEvents="none"
           style={[
             StyleSheet.absoluteFill,
-            {
-              borderRadius: s.height / 2,
-              borderWidth: AURA.card.edgeWidth,
-              borderColor: g.edge,
-              boxShadow: g.inset || undefined,
-            },
-          ]}
-        />
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: tabWidth * items.length,
-              flexDirection: 'row',
-              alignItems: 'center',
-            },
-            rowStyle,
+            { borderRadius: s.height / 2, overflow: 'hidden' },
+            gradientStyle(solid ? g.solid : g.fill),
           ]}
         >
-          <Animated.View
+          <View
             pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                borderRadius: s.height / 2,
+                borderWidth: AURA.card.edgeWidth,
+                borderColor: g.edge,
+                boxShadow: g.inset || undefined,
+              },
+            ]}
+          />
+          <Animated.View
             style={[
               {
                 position: 'absolute',
+                top: 0,
+                bottom: 0,
                 left: 0,
-                top: (s.height - s.pillHeight) / 2,
-                width: tabWidth,
-                height: s.pillHeight,
-                borderRadius: s.pillHeight / 2,
-                backgroundColor: a.pill,
+                width: tabWidth * items.length,
+                flexDirection: 'row',
+                alignItems: 'center',
               },
-              pillStyle,
+              rowStyle,
             ]}
-          />
-          {items.map((item) => (
-            <Tab
-              key={item.key}
-              item={item}
-              width={tabWidth}
-              active={item.key === selected}
-              fold={p}
-              onPress={() => onPress(item.key)}
+          >
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                {
+                  position: 'absolute',
+                  left: 0,
+                  top: (s.height - s.pillHeight) / 2,
+                  width: tabWidth,
+                  height: s.pillHeight,
+                  borderRadius: s.pillHeight / 2,
+                  backgroundColor: a.pill,
+                },
+                pillStyle,
+              ]}
             />
-          ))}
-        </Animated.View>
-      </View>
-      {shrunk ? (
-        // Shrunk, a press anywhere on it opens it again (the chosen tab under it included).
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={tr.tabs.openBar}
-          style={StyleSheet.absoluteFill}
-          onPress={() => shrink.set(0)}
-        />
-      ) : null}
-    </Animated.View>
+            {items.map((item) => (
+              <Tab
+                key={item.key}
+                item={item}
+                width={tabWidth}
+                active={item.key === selected}
+                fold={p}
+                onPress={() => onPress(item.key)}
+              />
+            ))}
+          </Animated.View>
+        </View>
+        {shrunk ? (
+          // Shrunk, a press anywhere on it opens it again (the chosen tab under it included).
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={tr.tabs.openBar}
+            style={StyleSheet.absoluteFill}
+            onPress={() => shrink.set(0)}
+          />
+        ) : null}
+      </Animated.View>
+    </View>
   );
 }
 
