@@ -33,6 +33,8 @@ Düzeltmelerin etkisi bölüm 4.2'de ölçüldü (yalnız 2, 5 ve 6. adımlar); 
 
 İlk ölçüm (bölüm 4.1, Galaxy S23) bu düzeltmelerden önce alındı; sıradaki iş bölüm 5'te: önce 2, 5 ve 6. adımın yeniden ölçümü, sonra büyük kapsülün çizimi (A-01, A-40).
 
+**DM kaydırması (A-06, A-31, A-42) için düzeltme, 13 Kasım gece (bölüm 4.8):** DM hızlı kaydırmada kare kaybetmiyor. 4.1–4.7'deki "takılma" oranı (12,5 ms'den uzun kare) karenin hazırlanmasından bitişine geçen süreye bakıyordu ve DM'de bu sürenin çoğu boş tampon beklemesi; Android'in kendi sayacına göre geç kalan kare %0,14–0,6, ekran 120 kare çiziyor. 4.6'daki "GPU geride kalıyor" çıkarımı yanlış. Duvar kâğıdı, bant, gölge, balon şekli ve ters liste için düzeltme gerekmiyor. Kalan gerçek konular: ilk geçişte yeni satırların bağlanması (JS ve UI) ve uçta gerili dururken esneme efektinin her tazelemede çizmesi (pil). Kapsül düzenleyicideki takılmalar gerçek kare kaybı (Android'in sayacı %8–43).
+
 ## 1. Özet: en çok etki eden bulgular
 
 Ölçüme göre sıralı (bölüm 4.1; Galaxy S23, 120 Hz). Ölçülmeyenler sonda.
@@ -698,6 +700,69 @@ Yavaş kaydırmada aşamalar (tek kaydırma): komut gönderme 2,11 ms, swap ve G
 - **Ölçüldü:** "Ters liste" kapatılınca (liste düz) kare 16,5'ten 25,2 ms'ye çıkıyor, yükü GPU'ya kayıyor (swap 4,4 → 13,2 ms, komut gönderme 7,4 → 2,6 ms). İki koşuda da aynı.
 - **Ölçüldü:** "Balon şekli" tek başına kapatılınca kare değişmiyor (16,4 ms). İkisi birden kapalıyken kare yine 16,6 ms.
 - **Çıkarım:** düz listede balon şekilleri GPU'da daha pahalı çiziliyor; balon şekli de kapalıyken bu pahalılık kalkıyor. Ters listenin kendisi kareyi ucuzlatmıyor, tersine çevirmenin kaldırılması tek başına daha kötü.
+
+## 4.8 DM'de hızlı kaydırmanın 16,5 ms'si nereden (14 Kasım 2026)
+
+- **Derleme ve koşullar:** Galaxy S23, 0.11.0 build 21, release, son OTA. Pil %89, USB'den şarjda (şarjsız sağlanamadı), sıcaklık 36 °C. Rahatsız Etmeyin açıldı, sonra eski hâline (kapalı) alındı. Bütün kaydırmalar adb ile; sohbet 4.3'ün 1. hâlindeki DM.
+- **Yöntem:** `atrace` (gfx, view, sched) ve `debug.hwui.skia_atrace_enabled`; ayar sonra kapatıldı (okundu: false). Her RenderThread karesi (`DrawFrames`) için süre, ek ekran dışı geçiş (birden çok OpsTask), doku yüklemesi ve tampon bekleme okundu. Aynı pencerede UI iş parçacığının `mountViews` süresi, JS (`mqt_v_js`) ve UI'nın CPU süresi sched olaylarından toplandı. Kare zamanı kaydırma konumuyla şöyle eşlendi: liste ucunda Android'in esneme efekti her kareye bir ek ekran dışı geçiş ekliyor; ek geçişli kareler uçtadır (madde 3 bunu doğruluyor).
+- **Uzun sohbet:** ölçülemedi. Hesabın en uzun sohbeti en alttan en üste yaklaşık 9 sürükleme × 1000 piksel, ekranın 3,4 katı. Uzatmak için mesaj yazmak, gerçek bir kişiye mesaj göndermek demek olduğu için yapılmadı. "Ortada" ölçümü bu sohbetin ortasında, uçlara değmeyen kısa savrulmalarla alındı.
+
+### Önce bir düzeltme: 4.2–4.7'deki DM "takılma" oranları kare kaybı değil
+
+- **Önceki tanımın eksiği:** 4.1'den beri "takılma", `gfxinfo` histogramında 12,5 ms'den uzun kareydi. Bu süre karenin dikey eşitlemeden bitişine kadar geçen süredir: içinde uygulamanın boş tampon beklemesi de var.
+- **Android'in ölçtüğü:** Android'in kendi sayacı (`Janky frames`, FrameTimeline: kare ekrana zamanında çıktı mı) DM'nin hızlı kaydırmasında bütün koşularda %0,14. Parmakla %0,5–0,6, ters liste kapalıyken %0. Kaçan son tarih (`Frame deadline missed`) koşu başına 0–8.
+- **Bu ölçümün zaman çizgisi:** RenderThread hızlı kaydırma boyunca saniyede 120 kare çiziyor (her 500 ms'de 60 kare).
+- **Sonuç (ölçüldü):** DM hızlı kaydırmada 120 karede akıyor. 16,5 ms karenin gecikmesi (dokunuştan ekrana iki tazeleme); kaybolan kare değil.
+- **Neden:** 4.6'daki "tampon bekleme" (`dequeueBuffer`, 3,7–4,4 ms) uygulamanın ekrandan önde gidip boş tampon beklemesidir. GPU'nun geride kalması değildir; 4.6'daki o çıkarım yanlış.
+- **Takılma oranının bundan sonraki anlamı:** gecikmenin göstergesi. Kare kaybı için `Janky frames` (FrameTimeline) okunur. Kapsül düzenleyicide (4.2, 4.4, 4.5) bu sayaç da yüksek (%8–43), oradaki takılmalar gerçek kare kaybıdır.
+
+### 1. Uç mu, orta mı
+
+| Kaydırma                                | RT karesi | Saniyede kare | RT kare süresi (ortanca / p95, ms) | Ek geçişli (uç) kare | Uçtaki kare / öbürleri (ortanca, ms) | `Janky frames`        |
+| --------------------------------------- | --------- | ------------- | ---------------------------------- | -------------------- | ------------------------------------ | --------------------- |
+| Hızlı, uçlara değen (4.3'ün kaydırması) | 691       | 120           | 8,23 / 9,87                        | 89                   | 7,98 / 8,26                          | —                     |
+| Hızlı, yalnız ortada (kısa savrulmalar) | 977       | 120           | 7,90 / 10,79                       | 0                    | — / 7,90                             | %0,26 (3 kare / 1164) |
+
+- **Ölçüldü:** uçtaki kareler öbürlerinden pahalı değil; ortadaki hızlı kaydırma da saniyede 120 kare.
+- **Konumla eşleme:** ek geçişli kareler zaman çizgisinde kaydırmanın başına ve sonuna toplanıyor (0,5–1 sn'de 41, 5,5–6 sn'de 29).
+
+### 2. İkinci geçiş, hızlı ve yavaş
+
+"Yalnız ortada" koşusu aynı bölgenin üstünden on iki kez geçer; satırlar ilk geçişten sonra bağlıdır.
+
+| Kare başına              | Hızlı, uçlara değen (ilk geçişler)                          | Hızlı, ortada (aynı bölge tekrar)                              | Yavaş (1,5 sn'lik sürükleme)                                   |
+| ------------------------ | ----------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------- |
+| RT kare süresi (ortanca) | 8,23 ms                                                     | 7,90 ms                                                        | 6,21 ms                                                        |
+| `mountViews` (UI)        | 0,44 ms (1996 çağrı / 691 kare)                             | 0,09 ms                                                        | 0,15 ms                                                        |
+| JS CPU                   | 3,14 ms                                                     | 1,55 ms                                                        | 2,03 ms                                                        |
+| UI CPU                   | 2,13 ms                                                     | 1,25 ms                                                        | 2,04 ms                                                        |
+| RenderThread CPU         | 3,93 ms                                                     | 3,18 ms                                                        | 4,53 ms                                                        |
+| Doku yüklemesi           | 0,10 (67 / 691)                                             | 0,03                                                           | 0,00                                                           |
+| Tampon bekleme (ortanca) | 3,69 ms                                                     | 4,38 ms                                                        | 1,55 ms                                                        |
+| RT'de en uzun üç dilim   | `Drawing` 4,01; `dequeueBuffer` 3,33; `queueBuffer` 2,29 ms | `dequeueBuffer` 4,34; `Drawing` 2,62; `flush commands` 1,34 ms | `Drawing` 3,91; `flush commands` 1,96; `dequeueBuffer` 1,70 ms |
+
+- **Ölçüldü:** ikinci geçiş ucuz. `mountViews` 0,44'ten 0,09 ms'ye, JS 3,1'den 1,6 ms'ye, doku yüklemesi 0,10'dan 0,03'e iniyor; RT karesi aynı (7,9–8,2 ms).
+- **Ölçüldü:** hızlı ile yavaş arasındaki fark çizimde değil. RenderThread'in kendi işi yavaşta bile aynı (`Drawing` 3,9–4,0 ms). Hızlıda fazla olan, tampon beklemesi (`dequeueBuffer`) ve ilk geçişte JS ile UI'daki satır bağlama işi.
+
+### 3. Esneme (uçta basılı tutup germek, 5 sn)
+
+| Ölçüm                          | Değer                                |
+| ------------------------------ | ------------------------------------ |
+| Kare sayısı / saniyede         | 703 / 120 (liste hareketsizken de)   |
+| Ek ekran dışı geçişli kare     | 700 / 703 (kare başına 1 ek OpsTask) |
+| RT kare süresi (ortanca / p95) | 5,02 / 8,92 ms                       |
+| `mountViews`, JS CPU           | 0, 0,01 ms/kare                      |
+| `Janky frames`                 | %0,14                                |
+
+- **Ölçüldü:** liste gerili dururken bile her tazelemede yeniden çiziliyor (saniyede 120 kare) ve her kare bir ek ekran dışı geçiş kullanıyor. 4.6'daki ekran boyu ekran dışı hedef (9,8 MB) budur: Android'in esneme efekti.
+- **Çıkarım:** kare kaybı yok; yalnız basılı tutulduğu sürece pil ve GPU kullanımı var.
+
+### Yanıtlar
+
+- **Ölçüldü:** yavaş kareler ne uçta ne ortada: DM hızlı kaydırmada her yerde saniyede 120 kare. 16,5 ms karenin gecikmesi, kaybı değil (`Janky frames` %0,14–0,26).
+- **Ölçüldü:** ikinci geçiş ucuz: satır bağlama (`mountViews` 0,44 → 0,09 ms/kare) ve JS (3,1 → 1,6 ms/kare) iniyor.
+- **Ölçüldü:** hızlıda fazla olan iş RenderThread'de değil (çizim yavaştakiyle aynı). İlk geçişte JS ile UI'da satır bağlama, her geçişte uygulamanın boş tampon beklemesi (`dequeueBuffer`).
+- **Ölçüldü:** esneme her kareye ek ekran dışı geçiş ekliyor ve gerili listede çizimi sürdürüyor.
 
 ## 5. Düzeltme sırası
 
