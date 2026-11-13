@@ -297,44 +297,49 @@ function ListBody({
         // At least 124 under the list (U13; the bar's room is 92 without a safe area).
         paddingBottom: SPACING[8] + bottomSpace,
       }}
-    >
-      <View testID="explore-head" style={{ marginHorizontal: HEAD_IN }}>
-        <Reveal index={0} openings={openings}>
-          <Question now={now} />
-        </Reveal>
-        {/* 5.1: a buddy looks over the capsule's top edge; it scrolls with the content. */}
-        {ready ? (
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: -EXPLORE.capsuleTop,
-              height: 0,
-            }}
-          >
-            <RisoPeekOver places={EXPLORE_PEEK} />
-          </View>
-        ) : null}
-      </View>
-      {ready ? (
+      // The question, the capsule and the chips stay while the list is pulled (PF-40).
+      head={
         <>
-          {/* Over what scrolls under it once pinned. */}
-          <View style={{ zIndex: 1, marginTop: EXPLORE.capsuleTop, marginHorizontal: HEAD_IN }}>
-            <Reveal index={1} openings={openings}>
-              <StickyField shrink={[X.capsule, X.capsulePinned]} band side={EXPLORE.headSide}>
-                {capsule}
-              </StickyField>
+          <View testID="explore-head" style={{ marginHorizontal: HEAD_IN }}>
+            <Reveal index={0} openings={openings}>
+              <Question now={now} />
             </Reveal>
+            {/* 5.1: a buddy looks over the capsule's top edge; it scrolls with the content. */}
+            {ready ? (
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: -EXPLORE.capsuleTop,
+                  height: 0,
+                }}
+              >
+                <RisoPeekOver places={EXPLORE_PEEK} />
+              </View>
+            ) : null}
           </View>
-          <View style={{ marginTop: EXPLORE.chipsTop, marginHorizontal: HEAD_IN }}>
-            <Reveal index={2} openings={openings}>
-              {chips}
-            </Reveal>
-          </View>
+          {ready ? (
+            <>
+              {/* Over what scrolls under it once pinned. */}
+              <View style={{ zIndex: 1, marginTop: EXPLORE.capsuleTop, marginHorizontal: HEAD_IN }}>
+                <Reveal index={1} openings={openings}>
+                  <StickyField shrink={[X.capsule, X.capsulePinned]} band side={EXPLORE.headSide}>
+                    {capsule}
+                  </StickyField>
+                </Reveal>
+              </View>
+              <View style={{ marginTop: EXPLORE.chipsTop, marginHorizontal: HEAD_IN }}>
+                <Reveal index={2} openings={openings}>
+                  {chips}
+                </Reveal>
+              </View>
+            </>
+          ) : null}
         </>
-      ) : null}
+      }
+    >
       {/* Semte Git 22 under the chips; the body's own spacing in VenueList (tuval Kesfet). */}
       <View style={{ marginTop: EXPLORE.districtTop }}>{children}</View>
     </PullScroll>

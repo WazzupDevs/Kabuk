@@ -35,9 +35,19 @@ type Props = Pick<
   scrollY?: SharedValue<number>;
   // How far down the indicator starts: under a top bar drawn over the list (Screen → PageTop).
   indicatorTop?: number;
+  // What stays in place while the list is pulled (the page's title, its pinned search or tabs): it
+  // scrolls with the list, but the pull moves only what is under it, and the indicator comes out
+  // between the two (the owner's call, 13 Kasım; docs/denetim/pano-fark-2026-11.md → PF-40).
+  head?: ReactNode;
 };
 
 const p = PULL;
+
+// Where the list starts under a head that stays: the content's top padding, the head and the gap.
+function listTop(flat: { paddingTop?: unknown; gap?: unknown }, headHeight: number): number {
+  const n = (v: unknown) => (typeof v === 'number' ? v : 0);
+  return n(flat.paddingTop) + headHeight + n(flat.gap);
+}
 const wait = (ms: number) => new Promise((done) => setTimeout(done, ms));
 // A pull starts once the finger has gone this far down (v46: `d > 6`), and fails this far up.
 const START = 6;
@@ -54,8 +64,10 @@ export function PullScroll({
   contentContainerStyle,
   scrollY,
   indicatorTop = 0,
+  head,
   ...scroll
 }: Props) {
+  const [headHeight, setHeadHeight] = useState(0);
   const reduce = useReduceMotion();
   const scroller = useAnimatedRef<Animated.ScrollView>();
   const atTop = useSharedValue(true);
@@ -64,6 +76,7 @@ export function PullScroll({
   // The finger's pull (the indicator) and the list's offset (which settles).
   const finger = useSharedValue(0);
   const list = useSharedValue(0);
+  const from = useSharedValue(0);
   const [refreshing, setRefreshing] = useState(false);
   const still = reduce && p.settle.offWhenReduced;
   const flat = StyleSheet.flatten(contentContainerStyle) ?? {};
@@ -105,15 +118,18 @@ export function PullScroll({
     .activeOffsetY(START)
     .failOffsetY(-START)
     .simultaneousWithExternalGesture(native)
-    .onStart(() => {
+    .onStart((e) => {
       pulling.set(atTop.get() && !busy.get());
+      // The pull is counted from where it was taken up: the way the finger had already gone was
+      // put on the list in one frame (docs/denetim/pano-fark-2026-11.md → PF-43).
+      from.set(e.translationY);
     })
     // The animated ref is read on the UI thread when the finger moves, not while rendering
     // (Reanimated's scrollTo); the rule takes `useAnimatedRef` for a React ref.
     // eslint-disable-next-line react-hooks/refs
     .onUpdate((e) => {
       if (!pulling.get()) return;
-      const y = pullOffset(e.translationY, p);
+      const y = pullOffset(e.translationY - from.get(), p);
       finger.set(y);
       list.set(y);
       // The list does not scroll while it is pulled.
@@ -132,13 +148,21 @@ export function PullScroll({
       }
     })
     .onFinalize(() => {
+      // A pull that ends any other way leaves nothing behind either.
+      if (pulling.get() && !busy.get()) {
+        finger.set(0);
+        settleTo(0);
+      }
       pulling.set(false);
     });
 
   const listStyle = useAnimatedStyle(() => ({ transform: [{ translateY: list.get() }] }));
   const indicator = useAnimatedStyle(() => {
     const i = pullIndicator(finger.get(), p);
-    return { opacity: i.opacity, transform: [{ translateY: i.y }] };
+    // Only while it is pulled or refreshing: a pull's leftover kept its two capsules over the list
+    // (docs/denetim/pano-fark-2026-11.md → PF-42).
+    const shown = pulling.get() || busy.get();
+    return { opacity: shown ? i.opacity : 0, transform: [{ translateY: i.y }] };
   });
 
   return (
@@ -159,6 +183,15 @@ export function PullScroll({
             >
               {/* The list moves as one view; the screen's gaps are between its children, so they
                   go on it (the content's own gap would sit around this one view only). */}
+              {head ? (
+                <View
+                  // Over the list: a pinned field in it is drawn above what scrolls under it.
+                  style={[gaps, { zIndex: 1 }]}
+                  onLayout={(e) => setHeadHeight(e.nativeEvent.layout.height)}
+                >
+                  {head}
+                </View>
+              ) : null}
               <Animated.View style={[gaps, listStyle]}>{children}</Animated.View>
             </Animated.ScrollView>
           </GestureDetector>
@@ -167,7 +200,13 @@ export function PullScroll({
       <Animated.View
         pointerEvents="none"
         style={[
-          { position: 'absolute', top: indicatorTop, left: 0, right: 0, alignItems: 'center' },
+          {
+            position: 'absolute',
+            top: head ? listTop(flat, headHeight) : indicatorTop,
+            left: 0,
+            right: 0,
+            alignItems: 'center',
+          },
           indicator,
         ]}
       >
