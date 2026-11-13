@@ -365,6 +365,73 @@ Hâl 7 için not: uygulama zaten koyu temadaydı, hâl 1 koyu temada ölçüldü
 
 Telegram Android'in sohbet zeminini nasıl çizdiğine bu oturumda bakılmadı; yöntem seçilmeden önce `telegram-referans` ile bakılır. Açık temanın 12 ms'lik GPU payının hangi katmandan geldiği (açık duvar kâğıdı, camlı çubuklar) ayrıca ölçülmedi.
 
+## 4.4 Bütün kapsül Skia ve DM parçaları (13 Kasım 2026, gece)
+
+- **Derleme:** Galaxy S23, 0.11.0 build 21, release. Uygulama iki kez kapatılıp açıldı. Çalışan güncelleme `preview` kanalında 18.19 UTC'de yayımlanmış (`01a1d622…`): #618 içinde. #620 (18.20 UTC'de birleşti) içinde değil; panelde "Sohbette kapat" yok. A bölümünden sonra uygulama yeniden iki kez kapatılıp açıldı (18.40 UTC), güncelleme değişmedi.
+- **Koşullar:**
+  - Pil %88'den %96'ya USB'den şarj olurken (şarjsız sağlanamadı); sıcaklık 35–39 °C.
+  - Güç tasarrufu kapalı, 120 Hz, animatör ölçeği 1x.
+  - Rahatsız Etmeyin ölçüm için açıldı, sonra eski hâline (kapalı) alındı.
+- **Yöntem:** 4.2 ile aynı koordinatlar ve süreler; her adım 3 koşu, ortanca; takılma 12,5 ms'den uzun kare.
+  - "6 (boşta)" iki hâlde aynı görünüşle ölçüldü: 6a'nın koşuları (sağa 10, sola 10, sağa 10) aynı parçada bitiyor, zar basılmadan önce.
+  - Bu sırada panelin "Skia çizimi" anahtarı açıktı; Süsle'nin Android'deki varsayılanı da bu.
+- **Geri alınanlar:**
+  - "Bütün kapsül Skia" kapatıldı ve panelde kapalı göründüğü okundu.
+  - Düzenleyiciden her seferinde kaydetmeden çıkıldı.
+  - `debug.hwui.overdraw` ve `debug.hwui.profile` kapalı, animatör ölçeği 1.
+  - Ekran görüntüleri ve iz dosyaları repoya girmedi.
+
+### A1. Yan yana görüntü (sol bugünkü çizim, sağ bütün tuval)
+
+Galerideki 17 aksesuar. Her biri için iki ayrı anda ekran görüntüsü alındı.
+
+| Aksesuar                                                                                  | Sonuç                                                                                                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Astronot, Büyücü, Dalgıç, Doktor, Hawaii, Kış, Korsan, Rock, Şef, Yıldız takımları        | Aynı: şekil, renk ve yer aynı. Kayan parlama iki tarafta da var, yalnız iki taraf aynı anda parlamıyor (saatleri ayrı).                                                                                                                            |
+| Gece teni, Gökkuşağı atkı, Kunai kolyesi, Neon gözlük, Orman teni (zemin halkalı olanlar) | Şekil ve renk aynı. Halka ve kapsül iki tarafta farklı boyda görünüyor, ama iki görüntüde büyük olan taraf yer değiştiriyor: halkanın büyüyüp küçülen hareketi iki tarafta farklı anda. Eksik parça, kırpma, boş kare ya da yanıp sönme görülmedi. |
+
+Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı (bilgisayarda kare ayırma aracı yok). Uygulama çökmedi, sağ taraf her aksesuarda çizildi.
+
+### A2. Kapsülünü süsle: anahtar kapalı → açık
+
+| Ölçüm                                                         | Kapalı                                               | Açık                                   |
+| ------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------- |
+| 6a, 10 parça: takılma %                                       | 13,8                                                 | 15,4                                   |
+| 6a: p99 / en uzun kare (ms)                                   | 200 / 450                                            | 32 / 65 (ilk koşu 400)                 |
+| 6a: yavaş bitmap yüklemesi / yavaş çizim komutu (koşu başına) | 15 / 14                                              | 1 / 0                                  |
+| 6a: bellek, toplam PSS / Graphics / Native Heap (MB)          | 798 / 240 / 214                                      | 726 / 247 / 163                        |
+| 6 (boşta, 10 sn, aynı görünüş): takılma %, kare p50           | 17,5; 11 ms                                          | 2,0; 11 ms                             |
+| 6 (boşta): UI animasyon / komut gönderme / swap (ms, ortanca) | 3,4 / 3,1 / 2,8                                      | 6,0 / 2,0 / 1,8                        |
+| 6b, zara 5 kez: takılma %, kare p50                           | 41,2; 11 ms                                          | 78,6; 17 ms                            |
+| 6b: p99 / en uzun kare (ms)                                   | 1100 / 2100–4950                                     | 85 / 150–2100 (ilk koşu 2100)          |
+| 6b: bellek (MB)                                               | 967 / 242 / 301                                      | 821 / 364 / 163                        |
+| 6 (tek zar): en uzun kareler                                  | 498–1726 ms; UI 269–1500 ms, RenderThread 105–277 ms | Son 120 karede 30 ms'yi geçen kare yok |
+| 6 (tek zar): kare ortancası / p95, UI animasyon payı          | 15,1 / 29,2 ms; 4,2 ms                               | 21,3 / 31,3 ms; 8,6 ms                 |
+| atrace, tek zar: en uzun `Record View#draw()`                 | 291 ms                                               | 438 ms (iz başına tek kare)            |
+| atrace: `mountViews` / tek seferde yerleşim güncellemesi      | 101 ms / 2483                                        | 55 ms / 460                            |
+| Düzenleyicide görünüm sayısı / RenderNode belleği             | 1619 / 2843 kB                                       | 794 / 1442 kB                          |
+
+### A3. Anahtar açıkken gözle
+
+- **Parça değişimi:** yeni parça eskisinin üstünde beliriyor; geçişte eski ve yeni bir an birlikte görünüyor.
+- **Kapsül:** yakalanan karelerde boş kalmadı.
+- **Başa dokunma:** yüz ("Mutlu") ve yıldız hareketi geldi.
+- **Profil sekmesi:** kapsül kaydedilmiş hâliyle doğru göründü.
+
+### B. DM kaydırması
+
+Ölçülmedi: OTA gelmedi. Telefondaki güncelleme #620'den önceki (18.19 UTC); panelde "Sohbette kapat", "Duvar kâğıdı", "Duvar bandı", "Gölge" ve "Kapanınca koru" yok. İki kez yeniden başlatma da değiştirmedi.
+
+### Yanıtlar
+
+- **Ölçüldü:** bütün Skia parça değişimindeki donmayı kaldırıyor: en uzun kare 450–550 ms'den 65 ms'ye, yavaş bitmap yüklemesi koşu başına 15'ten 0–1'e iniyor.
+- **Ölçüldü:** zarda saniyelerce süren tek tek donmaları (p99 1,1 sn → 85 ms) büyük ölçüde kaldırıyor; yine de ilk zarda bir kez 2,1 sn'lik kare kalıyor.
+- **Ölçüldü:** zar hareketi sırasında kareler daha ağır: ortanca 11 → 17 ms, takılma %41 → %79. UI iş parçacığındaki animasyon payı iki katına çıkıyor (4,2 → 8,6 ms).
+- **Ölçüldü:** düzenleyicideki görünüm sayısı 1619'dan 794'e, tek seferdeki yerleşim güncellemesi 2483'ten 460'a iniyor. Kalan 794 görünüm şerit, karolar ve ekranın geri kalanı. **Çıkarım:** karoların payı ayrıca sayılmadı.
+- **Ölçüldü:** Graphics belleği zar sonrası 242'den 364 MB'a çıkıyor; Native Heap 301'den 163 MB'a iniyor.
+- **Çizim farkı:** şekil, renk ve yerde fark görülmedi. Zemin halkalı beş aksesuarda (Gece teni, Gökkuşağı atkı, Kunai kolyesi, Neon gözlük, Orman teni) halkanın büyüyüp küçülme anı iki tarafta farklı. Bu, saatlerin ayrı olmasından mı yoksa hareketin farklı çizilmesinden mi geliyor, iki kareyle ayrılamadı (çıkarım: saat farkı).
+- **DM:** ölçülmedi, #620 telefona gelmedi.
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
