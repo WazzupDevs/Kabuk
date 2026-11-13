@@ -8,9 +8,9 @@ import { kinshiArt } from '@/features/games/kinshi/kinshiArt';
 export const kibritArt = {
   buddies: kinshiArt.buddies,
   timer: kinshiArt.timer,
-  // Paper deck back (1480×1973): the match poster, nothing written on it.
+  // Paper deck back (1184×1579): the match poster, nothing written on it.
   back: require('../../../../assets/games/kibrit/b-arka.webp'),
-  // Drawn paper front (1480×1973); the question is written by code. Also the texture of the
+  // Drawn paper front (1184×1579); the question is written by code. Also the texture of the
   // question strip and the writing field (background-size 150%, position 50% 20–22%).
   paper: require('../../../../assets/games/kibrit/b-kagit.webp'),
   // The jar (1080×1080): "Kâğıtlar kavanozda" box and the game-over top scene, cover.

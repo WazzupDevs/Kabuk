@@ -77,7 +77,7 @@ export const KAUPHOLL = {
     // Without the eyebrow, under the keyboard at 320 or above 1× text (`.qc.q13`): 10/14 in.
     tight: { padY: 10, padX: 14 },
   },
-  // The k-soru picture is 1776 × 2368.
+  // The k-soru picture is 3:4 (1184 × 1579, drawn at 1776 × 2368).
   paperRatio: 2368 / 1776,
   // Under the strip: the question 4 lower, what follows it 22 (the field) or 30 (the panel) lower.
   belowStrip: 4,

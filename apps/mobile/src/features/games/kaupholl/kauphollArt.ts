@@ -9,9 +9,9 @@ import { kinshiArt } from '@/features/games/kinshi/kinshiArt';
 export const kauphollArt = {
   buddies: kinshiArt.buddies,
   timer: kinshiArt.timer,
-  // Question card back (1480×1973): the night weighing hall poster, nothing written on it.
+  // Question card back (1184×1579): the night weighing hall poster, nothing written on it.
   back: require('../../../../assets/games/kaupholl/k-arka.webp'),
-  // Question card front (1776×2368): yellow top label and an empty paper panel, both filled by
+  // Question card front (1184×1579): yellow top label and an empty paper panel, both filled by
   // code. Also the question strip's paper (background-size 130%, position 50% 24%).
   question: require('../../../../assets/games/kaupholl/k-soru.webp'),
   // The guess board's ground (1050×1320): green baize, yellow frame, stretched to the box.
