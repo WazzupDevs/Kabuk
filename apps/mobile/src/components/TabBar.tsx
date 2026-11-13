@@ -11,7 +11,7 @@ import {
   useId,
   useState,
 } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
@@ -225,7 +225,20 @@ export function TabBar({
   const hidden = useBarMode((s) => s.hidden > 0);
   const overMap = useBarMode((s) => s.overMap > 0);
   const { scheme } = useTheme();
-  if (hidden) return null;
+  const reduce = useReduceMotion();
+  // Hidden (a DM over the tabs), it goes down and fades with the screen's slide and comes back the
+  // same way: taken off and put back in one frame, it vanished before the slide began and stood
+  // over the leaving screen on the way back (docs/denetim/pano-fark-2026-11.md → PF-44, PF-45).
+  const [out] = useState(() => new Animated.Value(hidden ? 1 : 0));
+  useEffect(() => {
+    const move = Animated.timing(out, {
+      toValue: hidden ? 1 : 0,
+      duration: reduce ? 0 : BAR_LEAVE_MS,
+      useNativeDriver: true,
+    });
+    move.start();
+    return () => move.stop();
+  }, [hidden, reduce, out]);
 
   const focused = state.routes[state.index];
   const tabs = state.routes.flatMap((route) => {
@@ -275,7 +288,20 @@ export function TabBar({
   };
 
   return (
-    <>
+    <Animated.View
+      pointerEvents={hidden ? 'none' : 'box-none'}
+      accessibilityElementsHidden={hidden}
+      importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
+      style={[
+        StyleSheet.absoluteFill,
+        {
+          opacity: out.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+          transform: [
+            { translateY: out.interpolate({ inputRange: [0, 1], outputRange: [0, BAR_LEAVE_Y] }) },
+          ],
+        },
+      ]}
+    >
       {/* Three-button navigation: the rows scrolling under the buttons drew their words through
           them (audit M15-17). The buttons' strip on the ground, as Telegram Android does; the
           gesture line's thin strip stays clear. */}
@@ -311,6 +337,10 @@ export function TabBar({
           opaque={overMap}
         />
       </View>
-    </>
+    </Animated.View>
   );
 }
+
+// The bar's way out and back: as long as a screen's slide begins, a little down.
+const BAR_LEAVE_MS = MOTION.dissolve.inMs;
+const BAR_LEAVE_Y = 24;
