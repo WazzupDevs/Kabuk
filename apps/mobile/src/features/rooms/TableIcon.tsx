@@ -45,6 +45,9 @@ export function TableIcon({ icon, size }: { icon: string | null; size: Size }) {
     <Image
       // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
       fadeDuration={0}
+      // Decoded at the size it shows, not the file's 256 × 256: Masa kur's grid opens 55 at once
+      // (docs/perf/akicilik-denetimi.md → A-32).
+      resizeMethod="resize"
       source={source}
       style={style}
       accessibilityLabel={icon ? NAMES.get(icon) : undefined}

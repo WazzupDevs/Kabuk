@@ -2,7 +2,7 @@ import { inboxStamp } from '@shared/dmInbox.ts';
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { normalize } from '@shared/trText.ts';
 import { useQueryClient } from '@tanstack/react-query';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
@@ -44,6 +44,8 @@ export default function MessagesScreen() {
   const [tab, setTab] = useState<Tab>('chats');
   const [picking, setPicking] = useState(false);
   const [query, setQuery] = useState('');
+  // The field shows each letter at once; the rows follow it a moment later (A-28).
+  const asked = useDeferredValue(query);
   const requests = useRequestCount();
   const now = useNow(60_000);
   const { scheme } = useKit();
@@ -110,7 +112,7 @@ export default function MessagesScreen() {
           </View>
         </StickyField>
         {tab === 'chats' ? (
-          <Chats now={new Date(now)} query={query} />
+          <Chats now={new Date(now)} query={asked} />
         ) : (
           <RequestList now={new Date(now)} />
         )}

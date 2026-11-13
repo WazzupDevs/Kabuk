@@ -118,6 +118,9 @@ export function GameCard({
               source={art}
               fadeDuration={0}
               resizeMode="cover"
+              // Decoded at the card's size, not the file's 1232 × 896 (Android scales it down
+              // before decoding; docs/perf/akicilik-denetimi.md → A-32).
+              resizeMethod="resize"
               style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
               accessible={false}
             />

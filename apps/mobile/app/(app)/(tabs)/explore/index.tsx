@@ -16,7 +16,7 @@ import {
 import { hasActiveTable } from '@shared/navigation.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -120,9 +120,12 @@ export default function ExploreScreen() {
   }, [view]);
 
   const place = useMemo(() => explorePlace(saved, listed), [saved, listed]);
+  // The field shows each letter at once; the list follows it a moment later, so a letter does not
+  // wait for some fifty cards to be drawn again (docs/perf/akicilik-denetimi.md → A-28).
+  const asked = useDeferredValue(query);
   const shown = useMemo(
-    () => sortVenues(filterVenues(listed, { place, kind, query }), now),
-    [listed, place, kind, query, now],
+    () => sortVenues(filterVenues(listed, { place, kind, query: asked }), now),
+    [listed, place, kind, asked, now],
   );
   // Without an event today both orders are the name's: the button stays, its touch off.
   const canSort = shown.sort === 'eventsFirst';
@@ -133,7 +136,7 @@ export default function ExploreScreen() {
     [shown.venues, byName],
   );
   // Why nothing shows, for the list's card and the map (kabul raporu §9.1).
-  const empty = exploreEmpty(listed.length, { kind, query });
+  const empty = exploreEmpty(listed.length, { kind, query: asked });
   const here = hasActiveTable(table.data, now) ? table.data : null;
   const hereCard: Here | null = here
     ? { name: here.venue?.name ?? '', spot: here.spot?.name ?? null }
