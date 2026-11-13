@@ -16,7 +16,7 @@ import {
 import { hasActiveTable } from '@shared/navigation.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -51,7 +51,7 @@ import { useNow } from '@/lib/useNow';
 import { useLabOff } from '@/lib/drawLab';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, ScrollScreen, StickyField, Tap } from '@/motion';
+import { LargeTitle, ScrollScreen, SlideFrom, StickyField, Tap } from '@/motion';
 import { StickyStatusBand } from '@/motion/StickyField';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
@@ -87,6 +87,10 @@ export default function ExploreScreen() {
   const { venues, cities, listed } = useCityVenues();
   const openings = useTabOpenings();
   const [view, setView] = useState<View_>('list');
+  // Where the list's capsule stood under the map's when the map was opened: the map's head comes
+  // from there (PF-08).
+  const capsuleBox = useRef<View>(null);
+  const [mapFrom, setMapFrom] = useState(0);
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<ExploreKind>('all');
   // A kind chosen plays the list's arrival again (hareket.json → dissolve).
@@ -135,6 +139,18 @@ export default function ExploreScreen() {
     ? { name: here.venue?.name ?? '', spot: here.spot?.name ?? null }
     : null;
 
+  // To the map, from where the list's capsule stands on the screen at that moment.
+  const showView = (mode: View_) => {
+    const box = capsuleBox.current;
+    if (mode !== 'map' || !box) {
+      setView(mode);
+      return;
+    }
+    box.measureInWindow((_x, top) => {
+      setMapFrom(Math.max(0, top - (insets.top + KIT.size.stickyTop)));
+      setView(mode);
+    });
+  };
   const capsuleOn = (map: boolean) => (
     <SearchCapsule
       value={query}
@@ -143,7 +159,7 @@ export default function ExploreScreen() {
       map={map}
       onChange={(mode) => {
         haptic('selection');
-        setView(mode);
+        showView(mode);
       }}
     />
   );
@@ -157,7 +173,11 @@ export default function ExploreScreen() {
       }}
     />
   );
-  const capsule = capsuleOn(false);
+  const capsule = (
+    <View ref={capsuleBox} collapsable={false} style={{ flex: 1 }}>
+      {capsuleOn(false)}
+    </View>
+  );
   const chips = chipsOn(false);
   const mapCapsule = capsuleOn(true);
   const mapChips = chipsOn(true);
@@ -195,8 +215,12 @@ export default function ExploreScreen() {
                 gap: EXPLORE.map.headGap,
               }}
             >
-              <View style={{ height: X.capsule }}>{mapCapsule}</View>
-              {mapChips}
+              <SlideFrom dy={mapFrom}>
+                <View style={{ gap: EXPLORE.map.headGap }}>
+                  <View style={{ height: X.capsule }}>{mapCapsule}</View>
+                  {mapChips}
+                </View>
+              </SlideFrom>
             </View>
           </>
         ) : (

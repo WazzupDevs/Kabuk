@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, Easing, type ViewStyle } from 'react-native';
 
+import { springConfig } from '@/aura/motion';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 
@@ -56,4 +57,20 @@ export function Rise({ children, index = 0 }: RiseProps) {
       {children}
     </Animated.View>
   );
+}
+
+// What takes its place from `dy` away on springs.morph (hareket.json): a part that is the same on
+// two views of a screen and stands elsewhere on the second moves there instead of jumping (Keşfet's
+// search capsule from its place in the list to the map's top, docs/denetim/pano-fark-2026-11.md →
+// PF-08). In place at once with reduce motion.
+export function SlideFrom({ dy, children }: { dy: number; children: ReactNode }) {
+  const reduce = useReduceMotion();
+  const [from] = useState(() => new Animated.Value(reduce ? 0 : dy));
+  useEffect(() => {
+    if (reduce) return undefined;
+    const move = Animated.spring(from, { ...springConfig(MOTION.springs.morph), toValue: 0 });
+    move.start();
+    return () => move.stop();
+  }, [from, reduce]);
+  return <Animated.View style={{ transform: [{ translateY: from }] }}>{children}</Animated.View>;
 }

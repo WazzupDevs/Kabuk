@@ -76,7 +76,9 @@ describe("the app's Keşfet", () => {
   });
 
   it('feels a new view, the list or the map (haptics.ts → selection)', () => {
-    expect(screen).toMatch(/onChange=\{\(mode\) => \{\s*haptic\('selection'\);\s*setView\(mode\);/);
+    expect(screen).toMatch(
+      /onChange=\{\(mode\) => \{\s*haptic\('selection'\);\s*showView\(mode\);/,
+    );
   });
 
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {

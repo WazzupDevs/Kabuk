@@ -6,7 +6,7 @@ export { FloatStage } from './Float';
 export { PopIn } from './PopIn';
 export { SNAP_STRIP_HEIGHT, SnapStrip } from './SnapStrip';
 export { Turn } from './Turn';
-export { Rise, usePressScale } from './Rise';
+export { Rise, SlideFrom, usePressScale } from './Rise';
 export { Sheet } from './Sheet';
 export { Menu, MenuItem, measureMenuAnchor } from './Menu';
 export type { MenuAnchor } from './menuPlace';
