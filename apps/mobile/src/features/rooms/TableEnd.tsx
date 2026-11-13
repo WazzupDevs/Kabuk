@@ -123,7 +123,7 @@ export function TableEnd({
                   style={{
                     position: 'absolute',
                     bottom: FACE_BOTTOM * k,
-                    [i === 0 ? 'left' : 'right']: FACE_SIDE * k,
+                    ...(i === 0 ? { left: FACE_SIDE * k } : { right: FACE_SIDE * k }),
                   }}
                 >
                   <Av size="lg" name={name} />

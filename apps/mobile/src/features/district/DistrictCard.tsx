@@ -320,14 +320,10 @@ function CardSkeleton() {
   const c = SEMT.card;
   const sk = SEMT.skeleton[scheme === 'light' ? 'dark' : 'light'];
   const art = EXPLORE.district;
-  const bar = (
-    width: number | `${number}%`,
-    height: number,
-    radius: number = c.skeleton.radius,
-  ) => ({
+  const bar = (width: number | `${number}%`, height: number, radius?: number) => ({
     width,
     height,
-    borderRadius: radius,
+    borderRadius: radius ?? c.skeleton.radius,
     backgroundColor: sk.ground,
     borderWidth: 1,
     borderColor: sk.edge,

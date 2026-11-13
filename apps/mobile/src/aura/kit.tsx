@@ -1088,10 +1088,12 @@ export function GlassList({ children, testID }: { children: ReactNode; testID?: 
 // them from where the text starts to the row's inner right edge (16.2). `inset`: how far in the
 // hairline starts (the row's picture and the gap after it): a settings list's icon 24 + 12 = 36,
 // a person's list `person` (the face 44 + 12 = 56).
+const ROW_INSET = KIT.size.av.row + KIT.size.liGap;
+
 export function RowList({
   children,
   testID,
-  inset = KIT.size.av.row + KIT.size.liGap,
+  inset = ROW_INSET,
   person,
   plain,
 }: {

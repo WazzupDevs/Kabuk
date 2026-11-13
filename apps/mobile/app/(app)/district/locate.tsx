@@ -105,8 +105,7 @@ export default function DistrictLocateScreen() {
   // The screen opens finding.
   useEffect(() => {
     find();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- asked once, when the screen opens
-  }, []);
+  }, [find]);
   const again = () => {
     setStatus('finding');
     find();

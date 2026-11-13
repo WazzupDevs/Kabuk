@@ -240,7 +240,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       const end = Math.min(next + READ_AHEAD, jobs.length);
       do {
         jobs[next]?.();
-        next++;
+        next += 1;
       } while (next < end && deadline.timeRemaining() > 0);
       if (next < jobs.length) handle = requestIdleCallback(step);
     };

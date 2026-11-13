@@ -83,31 +83,37 @@ export default function LocationScreen() {
       return;
     }
     setLocating(true);
+    // Only the read is tried: with the checks inside the `try` too the compiler left this screen
+    // out (docs/perf/akicilik-denetimi.md → A-21).
+    let fix: Location.LocationObject | null = null;
     try {
-      const { coords, mocked } = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      if (!venue) {
-        setLocating(false);
-        return;
-      }
-      const here = { lat: coords.latitude, lng: coords.longitude };
-      const inside = venue.boundary
-        ? withinBoundary(here, venue.boundary, BOUNDARY_TOLERANCE_M)
-        : isWithinCheckinRadius(distanceMeters(here, venue));
-      if (!inside && !skipLocation) {
-        track('checkin_out_of_range', {});
-        setLocating(false);
-        setProblem(venue.boundary ? 'outsideBoundary' : 'tooFar');
-        return;
-      }
-      proceed({ ...here, accuracyM: coords.accuracy, mocked: mocked === true });
+      fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
     } catch {
+      fix = null;
+    }
+    if (!fix) {
       if (!proceedWithoutPosition()) {
         setLocating(false);
         setProblem('failed');
       }
+      return;
     }
+    const { coords, mocked } = fix;
+    if (!venue) {
+      setLocating(false);
+      return;
+    }
+    const here = { lat: coords.latitude, lng: coords.longitude };
+    const inside = venue.boundary
+      ? withinBoundary(here, venue.boundary, BOUNDARY_TOLERANCE_M)
+      : isWithinCheckinRadius(distanceMeters(here, venue));
+    if (!inside && !skipLocation) {
+      track('checkin_out_of_range', {});
+      setLocating(false);
+      setProblem(venue.boundary ? 'outsideBoundary' : 'tooFar');
+      return;
+    }
+    proceed({ ...here, accuracyM: coords.accuracy, mocked: mocked === true });
   }
 
   // A check-in that went through is on its way out: the cleared draft sends it nowhere else.
@@ -146,7 +152,7 @@ export default function LocationScreen() {
             block
             tall
             icon="pin"
-            label={button.busy ? tr.checkin.locating : tr.checkin.useLocation}
+            label={button.busy ? tr.checkin.locating : tr.checkin.shareLocation}
             onPress={() => void locate()}
             disabled={button.off}
             loading={button.busy}
