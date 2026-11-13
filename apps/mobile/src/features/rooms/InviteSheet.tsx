@@ -13,7 +13,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { useNow } from '@/lib/useNow';
+import { useNowUntil } from '@/lib/useNow';
 import { PopIn, Sheet } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -37,15 +37,22 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
   const look = VENUE[scheme];
   const I = VENUE.invite;
   const friends = useFriends();
-  const now = useNow(1000);
   // When each invite went out, by the friend's public id; this sheet's memory only.
   const [sent, setSent] = useState<Record<string, number>>({});
+  // The last invite's end: the clock runs only while the sheet is open and a ring is filling. The
+  // sheet stays mounted with its table, and read the clock every second closed too (A-29).
+  const [runsUntil, setRunsUntil] = useState<string | null>(null);
+  const now = useNowUntil(visible ? runsUntil : null, 1000);
   const full = phones >= MAX_TABLE_PHONES;
 
   const invite = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (publicId: string) => roomsApi.invite(roomId, publicId),
-    onSuccess: (_data, publicId) => setSent((s) => ({ ...s, [publicId]: Date.now() })),
+    onSuccess: (_data, publicId) => {
+      const at = Date.now();
+      setSent((s) => ({ ...s, [publicId]: at }));
+      setRunsUntil(new Date(at + TABLE_INVITE_TTL_SECONDS * 1000).toISOString());
+    },
   });
 
   const left = (publicId: string): number => {

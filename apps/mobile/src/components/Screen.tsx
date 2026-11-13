@@ -130,7 +130,11 @@ export function Screen({
   const openings = useTabOpenings();
   const barSpace = useTabBarSpace();
   const insets = useSafeAreaInsets();
-  const keyboardUp = useKeyboardState((s) => s.isVisible);
+  // Only a screen with a footer moves with the keyboard: every other one read it too, and each
+  // screen alive under the tabs drew again when the keyboard came and went
+  // (docs/perf/akicilik-denetimi.md → A-12).
+  const lifts = !!footer;
+  const keyboardUp = useKeyboardState((s) => lifts && s.isVisible);
   const y = useScrollOffset(scrollY);
   const safe: readonly Edge[] = barSpace
     ? (edges ?? ['top', 'left', 'right', 'bottom']).filter((e) => e !== 'bottom')

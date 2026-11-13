@@ -12,6 +12,18 @@ Kanıt türleri:
 
 Önceki denetim `docs/denetim/performans-2026-11.md` (B1–B36, 9 Kasım) hâlâ geçerli olan maddeleriyle birlikte okunmalı; burada yinelenen yerde B numarası verildi.
 
+## Düzeltme durumu
+
+Düzeltmeler telefonda ölçülmedi; her biri koddaki nedeni giderir, etkisi 4. bölümdeki ölçümle doğrulanır.
+
+| Bulgu | Durum             | Not                                                                                                                |
+| ----- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| A-02  | Düzeltildi (#610) | On iki oyun görseli 1184 x 1579'a indi (kartın en büyük boyu 296 dp, dört katı).                                   |
+| A-12  | Düzeltildi        | Klavyeyi yalnız altlığı olan ekran dinliyor.                                                                       |
+| A-29  | Düzeltildi        | Davet sayfasının saati yalnız sayfa açıkken ve gönderilmiş davet sürerken çalışıyor.                               |
+| A-36  | Düzeltildi        | Semt sahnesinin iki döngüsü ve "yazıyor" balonu ortak durdurma koşuluna bağlandı.                                  |
+| A-16  | Geri çekildi      | Kalemin zamanlayıcıyla dönmesi bilerek: `loopGuard.test.ts` kendi kendine dönen döngüde `withRepeat`'i yasaklıyor. |
+
 ## 1. Özet: en çok etki eden bulgular
 
 1. Kapsül düzenleyicide ağır (destansı, efsanevi) görünüş ilk kez çizilirken ana iş parçacığı 150–540 ms duruyor; düzenleyicinin ana bileşenini React Compiler derleyemiyor, her dokunuşta bütün ekran yeniden çiziliyor (A-01, A-21).

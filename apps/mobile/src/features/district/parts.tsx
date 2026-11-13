@@ -16,6 +16,7 @@ import { boxShadowParts } from '@/components/NativeShadow';
 import { Screen } from '@/components/Screen';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
+import { useLoopActive } from '@/components/Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { RISO_TYPE } from '@/theme/riso';
@@ -310,13 +311,15 @@ export function GecitOpenScene({ label }: { label: string }) {
 // loops on the native driver (loopGuard.test.ts). Reduce motion: the full picture, still.
 export function GecitClosedScene({ label }: { label: string }) {
   const reduce = useReduceMotion();
+  // Stopped while another screen or a sheet covers it and in the background (A-36).
+  const active = useLoopActive();
   const m = MOTION.semteGit.gecitClosed;
   const [v] = useState(() => ({
     lock: new Animated.Value(0),
     drops: Array.from({ length: m.drops.count }, () => new Animated.Value(0)),
   }));
   useEffect(() => {
-    if (reduce) return undefined;
+    if (reduce || !active) return undefined;
     const half = m.lock.periodMs / 2;
     const loops = [
       Animated.loop(
@@ -353,7 +356,7 @@ export function GecitClosedScene({ label }: { label: string }) {
     ];
     loops.forEach((l) => l.start());
     return () => loops.forEach((l) => l.stop());
-  }, [reduce, v, m]);
+  }, [reduce, active, v, m]);
   if (reduce) return <StillScene source={RISO.locked} height={SEMT.scene.gecit} label={label} />;
   const L = SEMT_LAYERS;
   return (
@@ -429,10 +432,11 @@ export function GecitClosedScene({ label }: { label: string }) {
 // SemtOdaBos (semteGit.typingDots): the bench, the buddy's three dots blinking one after another.
 export function BenchScene({ label, width }: { label: string; width?: number }) {
   const reduce = useReduceMotion();
+  const active = useLoopActive();
   const m = MOTION.semteGit.typingDots;
   const [dots] = useState(() => Array.from({ length: m.count }, () => new Animated.Value(0)));
   useEffect(() => {
-    if (reduce) return undefined;
+    if (reduce || !active) return undefined;
     const half = m.periodMs / 2;
     const loops = dots.map((d, i) =>
       Animated.loop(
@@ -446,7 +450,7 @@ export function BenchScene({ label, width }: { label: string; width?: number }) 
     );
     loops.forEach((l) => l.start());
     return () => loops.forEach((l) => l.stop());
-  }, [reduce, dots, m]);
+  }, [reduce, active, dots, m]);
   if (reduce) {
     return <StillScene source={RISO.bench} height={SEMT.scene.short} label={label} width={width} />;
   }
