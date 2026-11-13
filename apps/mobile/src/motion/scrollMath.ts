@@ -27,6 +27,17 @@ export function arriveAt(y: number, from: number, to: number): number {
   return ramp(y, from, to);
 }
 
+// The band behind a sticky field: it comes in over the last `fadePx` before the field pins. A field
+// that already stands at its place when nothing is scrolled (Mesajlar's search under its fixed
+// title) gets no band at rest: it comes in over the first `fadePx` of the scroll instead
+// (docs/denetim/pano-fark-2026-11.md → PF-41). No field measured: none.
+export function stickyBandAt(y: number, pinAt: number, fadePx: number): number {
+  'worklet';
+  if (pinAt < 0) return 0;
+  const to = Math.max(pinAt, fadePx);
+  return ramp(y, to - fadePx, to);
+}
+
 // A sticky field (3.2): `pinAt` the offset at which it reaches its place under the bar; past it,
 // it stays there (moved down by what scrolled past). -1: no field measured yet.
 export function stickyLift(y: number, pinAt: number): number {

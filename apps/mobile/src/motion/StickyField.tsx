@@ -1,13 +1,14 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { runOnJS, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AURA, barBandCss, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
-import { arriveAt, stickyFadeAt, stickyLift, stickyShrinkAt } from './scrollMath';
+import { stickyBandAt, stickyFadeAt, stickyLift, stickyShrinkAt } from './scrollMath';
 import { type ScreenScroll, useScreenScroll } from './ScrollScreen';
 
 // Where the field pins (its top in the content less its place under the bar) and how far the band
@@ -54,6 +55,14 @@ export function StickyField({
   const measure = () => {
     if (scroll && anchor) place(scroll, anchor);
   };
+  // Once more when the screen's parts have arrived: measured while its part was still rising into
+  // place (Reveal), the field pinned that much too high (Keşfet back from its map,
+  // docs/denetim/pano-fark-2026-11.md → PF-02).
+  useEffect(() => {
+    if (!scroll || !anchor) return undefined;
+    const timer = setTimeout(() => place(scroll, anchor), SETTLED_MS);
+    return () => clearTimeout(timer);
+  }, [scroll, anchor]);
   // The content above it may change size without moving it within its own parent.
   useAnimatedReaction(
     () => scroll?.contentHeight.get() ?? 0,
@@ -84,6 +93,9 @@ export function StickyField({
   );
 }
 
+// Long enough for a screen's cascade to have ended (hareket.json → stagger, dissolve).
+const SETTLED_MS = 700;
+
 // The band behind a pinned field: drawn once, only its opacity follows the scroll (2.2).
 function FieldBand({ height, side }: { height: number; side: number }) {
   const scroll = useScreenScroll();
@@ -93,8 +105,7 @@ function FieldBand({ height, side }: { height: number; side: number }) {
   const foot = Math.round(AURA.topBar.bandHeight * AURA.topBar.bandFade);
   const style = useAnimatedStyle(() => {
     if (!scroll) return { opacity: 0 };
-    const pinAt = scroll.stickyAt.get();
-    return { opacity: pinAt < 0 ? 0 : arriveAt(scroll.y.get(), pinAt - fadePx, pinAt) };
+    return { opacity: stickyBandAt(scroll.y.get(), scroll.stickyAt.get(), fadePx) };
   });
   return (
     <Animated.View
@@ -103,6 +114,35 @@ function FieldBand({ height, side }: { height: number; side: number }) {
         { position: 'absolute', left: -side, right: -side, top: -top },
         { bottom: -foot },
         gradientStyle(barBandCss(scheme, top + height + foot)),
+        style,
+      ]}
+    />
+  );
+}
+
+// The band over the status bar, for a screen whose scrolling body starts right under it (Keşfet,
+// Aktiviteler): the field's own band is drawn inside the body and ends at the body's top edge, so
+// what scrolled was cut on a hard line under the status bar with the bare ground above it
+// (docs/denetim/pano-fark-2026-11.md → PF-01, PF-29). It comes in with the field's band. Placed
+// against the screen (inside its safe area view, at its top). Nothing where something stands
+// between the status bar and the body (Mesajlar's fixed title).
+export function StickyStatusBand() {
+  const scroll = useScreenScroll();
+  const insets = useSafeAreaInsets();
+  const { scheme } = useTheme();
+  const fadePx = MOTION.scroll.stickyFadePx;
+  const top = insets.top;
+  const style = useAnimatedStyle(() => {
+    if (!scroll || scroll.viewportTop.get() > top + 1) return { opacity: 0 };
+    return { opacity: stickyBandAt(scroll.y.get(), scroll.stickyAt.get(), fadePx) };
+  });
+  if (!scroll || top <= 0) return null;
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        { position: 'absolute', left: 0, right: 0, top: 0, height: top },
+        { backgroundColor: AURA[scheme].bar.band },
         style,
       ]}
     />

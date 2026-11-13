@@ -16,6 +16,7 @@ import {
   flyY,
   ramp,
   riseInContent,
+  stickyBandAt,
   stickyFadeAt,
   stickyLift,
   stickyShrinkAt,
@@ -96,7 +97,9 @@ describe('the top bar (3.1)', () => {
     // Screen finds it in `top` and draws its parts where they go.
     const screen = code('src/components/Screen.tsx');
     expect(screen).toMatch(/isValidElement\(top\) && top\.type === PageTop/);
-    expect(screen).toMatch(/<ScrollScreen y=\{fixed \? null : y\}>/);
+    // A page scrolls its title with its content even where it is otherwise still (PF-63, PF-73).
+    expect(screen).toMatch(/const overlay = kind !== null && \(!fixed \|\| page !== null\);/);
+    expect(screen).toMatch(/<ScrollScreen y=\{fixed && !overlay \? null : y\}>/);
   });
 });
 
@@ -131,6 +134,22 @@ describe('the sticky field (3.2)', () => {
     expect(stickyShrinkAt(120, 120, fade, capsule, capsulePinned)).toBe(48);
     expect(stickyShrinkAt(400, 120, fade, capsule, capsulePinned)).toBe(48);
     expect(stickyShrinkAt(400, -1, fade, capsule, capsulePinned)).toBe(54);
+  });
+
+  it('its band comes in over the last 80 px before it pins; none at rest where it starts pinned', () => {
+    const fade = MOTION.scroll.stickyFadePx;
+    expect(stickyBandAt(0, -1, fade)).toBe(0);
+    expect(stickyBandAt(120 - fade, 120, fade)).toBe(0);
+    expect(stickyBandAt(120, 120, fade)).toBe(1);
+    // PF-41: a field already at its place (Mesajlar) has no band until the list is scrolled.
+    expect(stickyBandAt(0, 0, fade)).toBe(0);
+    expect(stickyBandAt(fade, 0, fade)).toBe(1);
+  });
+
+  it('a page’s title is drawn once on a scrolling screen (PF-64, PF-71)', () => {
+    expect(code('src/components/Screen.tsx')).toMatch(
+      /const flowTop = overlay\s+\? top === page\s+\? null/,
+    );
   });
 
   it('the band reaches below it as it pins', () => {
