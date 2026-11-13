@@ -16,7 +16,7 @@ import {
 import { hasActiveTable } from '@shared/navigation.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -51,7 +51,7 @@ import { useNow } from '@/lib/useNow';
 import { useLabOff } from '@/lib/drawLab';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, ScrollScreen, StickyField, Tap } from '@/motion';
+import { LargeTitle, ScrollScreen, SlideFrom, StickyField, Tap } from '@/motion';
 import { StickyStatusBand } from '@/motion/StickyField';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
@@ -87,6 +87,10 @@ export default function ExploreScreen() {
   const { venues, cities, listed } = useCityVenues();
   const openings = useTabOpenings();
   const [view, setView] = useState<View_>('list');
+  // Where the list's capsule stood under the map's when the map was opened: the map's head comes
+  // from there (PF-08).
+  const capsuleBox = useRef<View>(null);
+  const [mapFrom, setMapFrom] = useState(0);
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<ExploreKind>('all');
   // A kind chosen plays the list's arrival again (hareket.json → dissolve).
@@ -135,6 +139,18 @@ export default function ExploreScreen() {
     ? { name: here.venue?.name ?? '', spot: here.spot?.name ?? null }
     : null;
 
+  // To the map, from where the list's capsule stands on the screen at that moment.
+  const showView = (mode: View_) => {
+    const box = capsuleBox.current;
+    if (mode !== 'map' || !box) {
+      setView(mode);
+      return;
+    }
+    box.measureInWindow((_x, top) => {
+      setMapFrom(Math.max(0, top - (insets.top + KIT.size.stickyTop)));
+      setView(mode);
+    });
+  };
   const capsuleOn = (map: boolean) => (
     <SearchCapsule
       value={query}
@@ -143,7 +159,7 @@ export default function ExploreScreen() {
       map={map}
       onChange={(mode) => {
         haptic('selection');
-        setView(mode);
+        showView(mode);
       }}
     />
   );
@@ -157,7 +173,11 @@ export default function ExploreScreen() {
       }}
     />
   );
-  const capsule = capsuleOn(false);
+  const capsule = (
+    <View ref={capsuleBox} collapsable={false} style={{ flex: 1 }}>
+      {capsuleOn(false)}
+    </View>
+  );
   const chips = chipsOn(false);
   const mapCapsule = capsuleOn(true);
   const mapChips = chipsOn(true);
@@ -195,8 +215,12 @@ export default function ExploreScreen() {
                 gap: EXPLORE.map.headGap,
               }}
             >
-              <View style={{ height: X.capsule }}>{mapCapsule}</View>
-              {mapChips}
+              <SlideFrom dy={mapFrom}>
+                <View style={{ gap: EXPLORE.map.headGap }}>
+                  <View style={{ height: X.capsule }}>{mapCapsule}</View>
+                  {mapChips}
+                </View>
+              </SlideFrom>
             </View>
           </>
         ) : (
@@ -297,44 +321,49 @@ function ListBody({
         // At least 124 under the list (U13; the bar's room is 92 without a safe area).
         paddingBottom: SPACING[8] + bottomSpace,
       }}
-    >
-      <View testID="explore-head" style={{ marginHorizontal: HEAD_IN }}>
-        <Reveal index={0} openings={openings}>
-          <Question now={now} />
-        </Reveal>
-        {/* 5.1: a buddy looks over the capsule's top edge; it scrolls with the content. */}
-        {ready ? (
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: -EXPLORE.capsuleTop,
-              height: 0,
-            }}
-          >
-            <RisoPeekOver places={EXPLORE_PEEK} />
-          </View>
-        ) : null}
-      </View>
-      {ready ? (
+      // The question, the capsule and the chips stay while the list is pulled (PF-40).
+      head={
         <>
-          {/* Over what scrolls under it once pinned. */}
-          <View style={{ zIndex: 1, marginTop: EXPLORE.capsuleTop, marginHorizontal: HEAD_IN }}>
-            <Reveal index={1} openings={openings}>
-              <StickyField shrink={[X.capsule, X.capsulePinned]} band side={EXPLORE.headSide}>
-                {capsule}
-              </StickyField>
+          <View testID="explore-head" style={{ marginHorizontal: HEAD_IN }}>
+            <Reveal index={0} openings={openings}>
+              <Question now={now} />
             </Reveal>
+            {/* 5.1: a buddy looks over the capsule's top edge; it scrolls with the content. */}
+            {ready ? (
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: -EXPLORE.capsuleTop,
+                  height: 0,
+                }}
+              >
+                <RisoPeekOver places={EXPLORE_PEEK} />
+              </View>
+            ) : null}
           </View>
-          <View style={{ marginTop: EXPLORE.chipsTop, marginHorizontal: HEAD_IN }}>
-            <Reveal index={2} openings={openings}>
-              {chips}
-            </Reveal>
-          </View>
+          {ready ? (
+            <>
+              {/* Over what scrolls under it once pinned. */}
+              <View style={{ zIndex: 1, marginTop: EXPLORE.capsuleTop, marginHorizontal: HEAD_IN }}>
+                <Reveal index={1} openings={openings}>
+                  <StickyField shrink={[X.capsule, X.capsulePinned]} band side={EXPLORE.headSide}>
+                    {capsule}
+                  </StickyField>
+                </Reveal>
+              </View>
+              <View style={{ marginTop: EXPLORE.chipsTop, marginHorizontal: HEAD_IN }}>
+                <Reveal index={2} openings={openings}>
+                  {chips}
+                </Reveal>
+              </View>
+            </>
+          ) : null}
         </>
-      ) : null}
+      }
+    >
       {/* Semte Git 22 under the chips; the body's own spacing in VenueList (tuval Kesfet). */}
       <View style={{ marginTop: EXPLORE.districtTop }}>{children}</View>
     </PullScroll>

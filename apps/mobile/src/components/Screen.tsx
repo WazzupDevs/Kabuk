@@ -171,7 +171,13 @@ export function Screen({
     : kind === null
       ? top
       : (page ?? <LargeTitle kind="buyukBaslik" title={title ?? ''} />);
-  const body = head ? [head, ...cascade(children, openings)] : cascade(children, openings);
+  const parts = cascade(children, openings);
+  const body = head ? [head, ...parts] : parts;
+  // Pulled to refresh, the title and what is down to the screen's pinned field stay; the pull moves
+  // the list under them (PullScroll → `head`).
+  const stays =
+    Children.toArray(children).findIndex((c) => isValidElement(c) && c.type === StickyField) + 1;
+  const still = head ? [head, ...parts.slice(0, stays)] : parts.slice(0, stays);
   // Under a fixed top the page starts 20 below the bar's foot; under the overlaid bar, below its row.
   const content = {
     flexGrow: 1,
@@ -218,8 +224,9 @@ export function Screen({
                 y={y}
                 content={content}
                 indicatorTop={overlay ? TOP_BAR_ROW : 0}
+                head={still.length > 0 ? still : undefined}
               >
-                {body}
+                {still.length > 0 ? parts.slice(stays) : body}
               </PullBody>
             ) : (
               <ScrollBody
@@ -295,12 +302,14 @@ function PullBody({
   y,
   content,
   indicatorTop,
+  head,
   children,
 }: {
   onRefresh: () => Promise<unknown>;
   y: SharedValue<number>;
   content: ViewStyle;
   indicatorTop: number;
+  head?: ReactNode;
   children: ReactNode;
 }) {
   const onContentSizeChange = useContentHeightFeed();
@@ -309,6 +318,7 @@ function PullBody({
       onRefresh={onRefresh}
       scrollY={y}
       indicatorTop={indicatorTop}
+      head={head}
       contentContainerStyle={content}
       keyboardShouldPersistTaps="handled"
       onContentSizeChange={onContentSizeChange}
