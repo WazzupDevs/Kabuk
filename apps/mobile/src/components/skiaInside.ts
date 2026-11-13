@@ -1,11 +1,11 @@
 import { type ComponentType, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
-import { useLabSkia } from '@/lib/drawLab';
+import { useLabSkia, useLabWhole } from '@/lib/drawLab';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
-import { capsulePainter, capsuleSkiaOn } from '@/theme/capsuleSkia';
+import { capsulePainter, capsuleSkiaOn, capsuleWholeOn } from '@/theme/capsuleSkia';
 
-import type { InsidePainter } from './FxSvg';
+import type { InsidePainter, WholePainter } from './FxSvg';
 
 // The capsule's Skia drawing, behind its switch (theme/capsuleSkia.ts → CAPSULE_SKIA, on for
 // Süsle's big capsule on Android; Çizim ölçümü's `skia` on a preview build). Skia is read only when
@@ -19,6 +19,9 @@ export type SkiaKit = {
   painter: InsidePainter;
   prepare: (layer: FxInside, place: FxPlace) => void;
   Warm: ComponentType;
+  // The whole drawing on one canvas (FxSkia.tsx → SkiaWhole) and its still layers read ahead.
+  Whole: WholePainter;
+  prepareStill: (xml: string, width: number, height: number) => void;
 };
 // Kept in an object: a function given to useState would be called as its initial value.
 type Loaded = SkiaKit | 'failed';
@@ -29,7 +32,13 @@ function load(): Promise<Loaded> {
   loading ??= Promise.all([import('@shopify/react-native-skia'), import('./FxSkia')]).then(
     ([lib, mod]): Loaded =>
       typeof lib.Skia === 'object' && lib.Skia !== null
-        ? { painter: mod.SkiaInside, prepare: mod.prepareInside, Warm: mod.SkiaWarm }
+        ? {
+            painter: mod.SkiaInside,
+            prepare: mod.prepareInside,
+            Warm: mod.SkiaWarm,
+            Whole: mod.SkiaWhole,
+            prepareStill: mod.prepareStill,
+          }
         : 'failed',
     (): Loaded => 'failed',
   );
@@ -63,6 +72,15 @@ export function useSkiaKit(where: SkiaWhere = 'stage'): SkiaKit | undefined {
   }, [on, kit]);
   if (!on || kit === null || kit === 'failed') return undefined;
   return kit;
+}
+
+// The kit while the whole capsule is Skia's (theme/capsuleSkia.ts → capsuleWholeOn: its switch, or
+// Çizim ölçümü's on a preview build); undefined while it is off, while Skia loads and when it does
+// not load: the pictures draw then.
+export function useWholeKit(): SkiaKit | undefined {
+  const on = capsuleWholeOn(Platform.OS, useLabWhole());
+  const kit = useSkiaKit(on ? 'always' : 'stage');
+  return on ? kit : undefined;
 }
 
 export function useSkiaInside(where: SkiaWhere = 'stage'): InsidePainter | undefined {

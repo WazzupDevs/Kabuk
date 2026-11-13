@@ -13,8 +13,10 @@ import {
   SWITCH_PARTS,
   toggleLabPart,
   toggleLabSkia,
+  toggleLabWhole,
   useDrawLab,
   useLabSkia,
+  useLabWhole,
 } from '@/lib/drawLab';
 import { type SwitchStats, switchStats } from '@/lib/frameStats';
 import { MOTION } from '@/theme/aura';
@@ -29,6 +31,7 @@ export function DrawLabPanel() {
   const step = useDrawLab((s) => s.step);
   const manual = useDrawLab((s) => s.manual);
   const skia = useLabSkia();
+  const whole = useLabWhole();
   const insets = useSafeAreaInsets();
   const { c } = useKit();
   if (!DRAW_LAB || !open) return null;
@@ -94,6 +97,8 @@ export function DrawLabPanel() {
             <SkiaSmoke />
             {/* The capsule with Skia or the pictures while the panel is open (theme/capsuleSkia.ts). */}
             <Chip label={tr.design.drawLab.skiaSwitch} on={skia === true} onPress={toggleLabSkia} />
+            {/* The whole capsule on one canvas; stays as set when the panel closes. */}
+            <Chip label={tr.design.drawLab.wholeSwitch} on={whole} onPress={toggleLabWhole} />
           </>
         )}
       </View>

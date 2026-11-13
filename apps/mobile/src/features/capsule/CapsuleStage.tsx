@@ -18,7 +18,7 @@ import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg, readFxAhead } from '@/components/FxSvg';
-import { useSkiaKit } from '@/components/skiaInside';
+import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { useLabOff } from '@/lib/drawLab';
@@ -61,9 +61,10 @@ export function readStageAhead(
   size: number,
   moving: boolean,
   prepare?: (layer: FxInside, place: FxPlace) => void,
+  still?: (xml: string, width: number, height: number) => void,
 ): void {
   const { width, height } = figureOf(size);
-  readFxAhead(popOf(look, ''), width, height, moving, prepare);
+  readFxAhead(popOf(look, ''), width, height, moving, prepare, still);
 }
 
 // The capsule large in its circle (skall tuvali, KapsulSusle): a tap on it shows the next feeling
@@ -113,6 +114,8 @@ export function CapsuleStage({
   const skia = useSkiaKit();
   const inside = skia?.painter;
   const Warm = warm ? skia?.Warm : undefined;
+  // The whole capsule on one canvas while its switch is on (theme/capsuleSkia.ts → capsuleWholeOn).
+  const whole = useWholeKit()?.Whole;
   const unit = size / STAGE.circle;
   const ring = ringWidth ?? SPACING[1.5];
   // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
@@ -200,6 +203,16 @@ export function CapsuleStage({
     ...figureOf(size),
   };
 
+  const draw = (text: string) => (
+    <FxSvg
+      xml={text}
+      width={figure.width}
+      height={figure.height}
+      {...(inside ? { inside } : null)}
+      {...(whole ? { whole } : null)}
+    />
+  );
+
   return (
     <View style={{ paddingTop: STAGE.top * unit, alignItems: 'center' }}>
       {Warm ? <Warm /> : null}
@@ -225,20 +238,10 @@ export function CapsuleStage({
             ]}
           >
             {discShadow.node}
-            <Reanimated.View style={[figure, moveStyle]}>
-              {inside ? (
-                <FxSvg xml={xml} width={figure.width} height={figure.height} inside={inside} />
-              ) : (
-                <FxSvg xml={xml} width={figure.width} height={figure.height} />
-              )}
-            </Reanimated.View>
+            <Reanimated.View style={[figure, moveStyle]}>{draw(xml)}</Reanimated.View>
             {oldXml ? (
               <Reanimated.View pointerEvents="none" style={[figure, fadeStyle]}>
-                {inside ? (
-                  <FxSvg xml={oldXml} width={figure.width} height={figure.height} inside={inside} />
-                ) : (
-                  <FxSvg xml={oldXml} width={figure.width} height={figure.height} />
-                )}
+                {draw(oldXml)}
               </Reanimated.View>
             ) : null}
           </Reanimated.View>

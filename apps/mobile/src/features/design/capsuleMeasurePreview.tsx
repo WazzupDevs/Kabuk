@@ -5,9 +5,9 @@ import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
 import { useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
-import { FxMoves, FxSvg } from '@/components/FxSvg';
+import { FxMoves, FxSvg, type WholePainter } from '@/components/FxSvg';
 import { LookAvatar } from '@/components/LookAvatar';
-import { useSkiaInside } from '@/components/skiaInside';
+import { useSkiaInside, useWholeKit } from '@/components/skiaInside';
 import { Text } from '@/components/Text';
 import { CapsuleStage } from '@/features/capsule/CapsuleStage';
 import { tr } from '@/i18n/tr';
@@ -218,30 +218,42 @@ const NAMES = new Map(GIFT_CATALOG.accessories.map((a) => [a.id, a.name]));
 
 function Gallery() {
   const inside = useSkiaInside('always');
+  // With "Bütün kapsül Skia" on, the right side is the whole canvas.
+  const whole = useWholeKit()?.Whole;
   const ids = useMemo(() => skiaAccessories(), []);
   const d = tr.design.drawLab;
   return (
     <FxMoves>
       <View className="gap-4" testID="capsule-measure-skia">
         <Text variant="fine" tone="muted">
-          {inside ? d.skiaSides : d.skiaLoading}
+          {whole ? d.wholeSides : inside ? d.skiaSides : d.skiaLoading}
         </Text>
         {ids.map((id) => (
-          <SideBySide key={id} id={id} inside={inside} />
+          <SideBySide key={id} id={id} inside={inside} whole={whole} />
         ))}
       </View>
     </FxMoves>
   );
 }
 
-function SideBySide({ id, inside }: { id: string; inside: ReturnType<typeof useSkiaInside> }) {
+function SideBySide({
+  id,
+  inside,
+  whole,
+}: {
+  id: string;
+  inside: ReturnType<typeof useSkiaInside>;
+  whole: WholePainter | undefined;
+}) {
   const xml = useMemo(() => lookPop(`c:pembe e:koyu x:${id}`), [id]);
   return (
     <View className="gap-2">
       <Text variant="bodyStrong">{NAMES.get(id) ?? id}</Text>
       <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
         <FxSvg xml={xml} width={SIDE} height={SIDE_HEIGHT} />
-        {inside ? (
+        {whole ? (
+          <FxSvg xml={xml} width={SIDE} height={SIDE_HEIGHT} whole={whole} />
+        ) : inside ? (
           <FxSvg xml={xml} width={SIDE} height={SIDE_HEIGHT} inside={inside} />
         ) : (
           <View style={{ width: SIDE, height: SIDE_HEIGHT }} />

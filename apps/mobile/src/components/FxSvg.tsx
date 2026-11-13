@@ -129,9 +129,34 @@ export function FxMoves({ children, on = true }: { children: ReactNode; on?: boo
 export type InsideProps = { layer: FxInside; place: FxPlace; on: boolean; lane: string };
 export type InsidePainter = ComponentType<InsideProps>;
 
+// What draws the whole drawing on one canvas (Skia's, components/FxSkia.tsx → SkiaWhole): the
+// drawing's layers at its place, and the picture way's drawing to fall back on.
+export type WholeProps = {
+  layers: readonly FxLayer[];
+  place: FxPlace;
+  width: number;
+  height: number;
+  on: boolean;
+  lane: string;
+  fallback: ReactNode;
+};
+export type WholePainter = ComponentType<WholeProps>;
+
+// A still drawing's one layer, the same object for the same text.
+const stillLayers = createLru<FxLayer[]>(64);
+function stillLayersOf(xml: string): FxLayer[] {
+  const hit = stillLayers.get(xml);
+  if (hit !== undefined) return hit;
+  const made: FxLayer[] = [{ kind: 'still', xml }];
+  stillLayers.set(xml, made);
+  return made;
+}
+const NO_PLACE: FxPlace = { unit: 1, dx: 0, dy: 0, bx: 0, by: 0 };
+
 // `still`: drawn still here (a set balloon past the newest few); `paused`: its motion held where it
 // stands (a set balloon while its stream scrolls), on the clocks of its `lane`. `inside`: what draws
-// the motions inside a clip (the pictures in turn when not given).
+// the motions inside a clip (the pictures in turn when not given). `whole`: what draws all of it on
+// one canvas (the views and their pictures when not given).
 export function FxSvg({
   xml,
   width,
@@ -140,6 +165,7 @@ export function FxSvg({
   paused = false,
   lane = 'main',
   inside,
+  whole: Whole,
 }: {
   xml: string;
   width: number;
@@ -148,13 +174,27 @@ export function FxSvg({
   paused?: boolean;
   lane?: string;
   inside?: InsidePainter;
+  whole?: WholePainter;
 }) {
   const moves = useContext(FxMotion);
   const reduceMotion = useReduceMotion();
   // A still drawing holds no focus or app state subscription (useLoopActive); only a moving one.
   // A drawing with no motion's mark in it (a capsule with no moving accessory) is still as well.
   if (!moves || reduceMotion || still || !xml.includes(' data-fx="')) {
-    return <CachedSvg xml={stillOf(xml)} width={width} height={height} />;
+    const drawn = <CachedSvg xml={stillOf(xml)} width={width} height={height} />;
+    return Whole ? (
+      <Whole
+        layers={stillLayersOf(stillOf(xml))}
+        place={NO_PLACE}
+        width={width}
+        height={height}
+        on={false}
+        lane={lane}
+        fallback={drawn}
+      />
+    ) : (
+      drawn
+    );
   }
   return (
     <MovingSvg
@@ -164,6 +204,7 @@ export function FxSvg({
       paused={paused}
       lane={lane}
       inside={inside}
+      whole={Whole}
     />
   );
 }
@@ -216,21 +257,25 @@ export function readFxAhead(
   height: number,
   moving: boolean,
   prepare?: (layer: FxInside, place: FxPlace) => void,
+  // The whole canvas's (FxSkia.tsx → prepareStill): a still layer is read as its canvas draws it,
+  // not as a view's picture.
+  still?: (xml: string, width: number, height: number) => void,
 ): void {
+  const readStill = (text: string) => (still ? still(text, width, height) : readAhead(text));
   if (!moving || !xml.includes(' data-fx="')) {
-    readAhead(stillOf(xml));
+    readStill(stillOf(xml));
     return;
   }
   const tree = treeOf(xml);
   if (!tree) {
-    readAhead(xml);
+    readStill(xml);
     return;
   }
   const place = placeOf(tree.box, width, height);
   const ratio = PixelRatio.get();
   const walk = (layers: readonly FxLayer[]) => {
     for (const l of layers) {
-      if (l.kind === 'still') readAhead(l.xml);
+      if (l.kind === 'still') readStill(l.xml);
       else if (l.kind === 'move') walk(l.layers);
       else if (prepare) prepare(l, place);
       else for (const f of cutsOf(l, place, ratio)) readAhead(f.xml);
@@ -251,6 +296,7 @@ function MovingSvg({
   paused,
   lane,
   inside,
+  whole: Whole,
 }: {
   xml: string;
   width: number;
@@ -258,12 +304,54 @@ function MovingSvg({
   paused: boolean;
   lane: string;
   inside: InsidePainter | undefined;
+  whole: WholePainter | undefined;
 }) {
   const active = useLoopActive();
   const tree = useMemo(() => treeOf(xml), [xml]);
-  if (!tree) return <CachedSvg xml={xml} width={width} height={height} />;
   // The box drawn as react-native-svg draws it (meet, in the middle).
-  const place = placeOf(tree.box, width, height);
+  const place = useMemo(
+    () => (tree ? placeOf(tree.box, width, height) : null),
+    [tree, width, height],
+  );
+  if (!tree || !place) {
+    const drawn = <CachedSvg xml={xml} width={width} height={height} />;
+    return Whole ? (
+      <Whole
+        layers={stillLayersOf(xml)}
+        place={NO_PLACE}
+        width={width}
+        height={height}
+        on={false}
+        lane={lane}
+        fallback={drawn}
+      />
+    ) : (
+      drawn
+    );
+  }
+  if (Whole) {
+    return (
+      <Whole
+        layers={tree.layers}
+        place={place}
+        width={width}
+        height={height}
+        on={active && !paused}
+        lane={lane}
+        fallback={
+          <MovingSvg
+            xml={xml}
+            width={width}
+            height={height}
+            paused={paused}
+            lane={lane}
+            inside={inside}
+            whole={undefined}
+          />
+        }
+      />
+    );
+  }
   return (
     <View style={{ width, height }}>
       <Layers

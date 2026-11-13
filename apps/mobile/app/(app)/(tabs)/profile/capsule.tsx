@@ -19,7 +19,7 @@ import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
-import { useSkiaKit } from '@/components/skiaInside';
+import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
 import { CapsuleStage, type Play, readStageAhead } from '@/features/capsule/CapsuleStage';
 import { accessories, bare, code, dice, type Look, parse } from '@/features/capsule/look';
 import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/motion';
@@ -211,6 +211,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   // Skia's own reading ahead while it draws the big capsule (components/skiaInside.ts: the same
   // one load as the stage's).
   const prepare = useSkiaKit()?.prepare;
+  // The whole canvas's still layers too, while it draws the capsule (useWholeKit).
+  const prepareStill = useWholeKit()?.prepareStill;
   // Read ahead in idle time, a few at a time, while the idle turn lasts: first the big capsule as
   // the options next to the chosen one would draw it (its layers, and Skia's plan and SVGs), so that
   // choosing one draws with nothing left to read (the owner's report, 11 Kasım: a suit's first
@@ -227,7 +229,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     const open = rows.find((r) => r.id === slot);
     const from = open ? open.flat.findIndex((t) => t.o === shown[at]) : 0;
     const jobs: (() => void)[] = [
-      ...near.map((next) => () => readStageAhead(next, stageSize, !reduce, prepare)),
+      ...near.map((next) => () => readStageAhead(next, stageSize, !reduce, prepare, prepareStill)),
       ...tileOrder(rows, slot, Math.max(from, 0)).map((t) => () => {
         const xml = optionArt(t.slot, t.o, color);
         if (xml) readAhead(xml);
@@ -248,7 +250,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     return () => {
       if (handle !== null) cancelIdleCallback(handle);
     };
-  }, [ready, options, shown, chosen, slot, look, color, stageSize, reduce, prepare]);
+  }, [ready, options, shown, chosen, slot, look, color, stageSize, reduce, prepare, prepareStill]);
 
   const E = CAPSULE_EDIT;
   const k = E[scheme];

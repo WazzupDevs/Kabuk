@@ -1,5 +1,5 @@
 import { Canvas, Group, ImageSVG, Paint, Skia, type SkSVG } from '@shopify/react-native-skia';
-import { Component, type ReactNode, useEffect, useMemo } from 'react';
+import { Component, Fragment, type ReactNode, useEffect, useMemo } from 'react';
 import { PixelRatio, View } from 'react-native';
 import {
   cancelAnimation,
@@ -19,11 +19,16 @@ import {
   insideAt,
   insidePlan,
   insidePlanKey,
+  moveMatrixAt,
+  moveOpacityAt,
   skiaAt,
   type SkiaPlan,
+  type WholeLayer,
+  wholeLayers,
+  type WholeMove,
 } from '@/theme/capsuleSkia';
 
-import { Inside, type InsideProps } from './FxSvg';
+import { Inside, type InsideProps, type WholeProps } from './FxSvg';
 
 // Skia's drawing of a motion inside its clip (theme/capsuleSkia.ts; docs/decisions/skia-build-plani.md
 // → P6). Loaded only through components/skiaInside.ts's lazy import: nothing here is read at the
@@ -219,6 +224,144 @@ function Drawn({
         </Group>
       </Canvas>
     </View>
+  );
+}
+
+// The whole drawing on one canvas (theme/capsuleSkia.ts → wholeLayers): every layer Skia's, none a
+// view. A still layer is its SVG over the drawing, a motion inside its clip the mask and the content
+// of P6 at its crop, a moving layer a group moved (and faded) on the UI thread by its clock. The
+// canvas is larger than the drawing by `pad` on every side: a moving layer may leave the drawing's
+// box, as a view does. Anything not read (a plan, an SVG) draws the pictures instead, whole.
+type WholeRead =
+  | { kind: 'still'; svg: SkSVG }
+  | { kind: 'inside'; plan: SkiaPlan; mask: SkSVG; content: SkSVG }
+  | { kind: 'move'; move: WholeMove; layers: WholeRead[] };
+
+function readWhole(
+  layers: readonly WholeLayer[],
+  width: number,
+  height: number,
+): WholeRead[] | null {
+  const out: WholeRead[] = [];
+  for (const l of layers) {
+    if (l.kind === 'still') {
+      const svg = svgOf(l.xml, width, height);
+      if (!svg) return null;
+      out.push({ kind: 'still', svg });
+    } else if (l.kind === 'inside') {
+      const { plan } = l;
+      const mask = svgOf(plan.mask, plan.crop.width, plan.crop.height);
+      const content = svgOf(plan.content, plan.width, plan.height);
+      if (!mask || !content) return null;
+      out.push({ kind: 'inside', plan, mask, content });
+    } else {
+      const inner = readWhole(l.layers, width, height);
+      if (!inner) return null;
+      out.push({ kind: 'move', move: l.move, layers: inner });
+    }
+  }
+  return out;
+}
+
+// Reads a drawing's still layer ahead for the whole canvas, in idle time (prepareInside reads the
+// motions inside a clip): the SVG is parsed once, at the size the canvas draws it.
+export function prepareStill(xml: string, width: number, height: number): void {
+  svgOf(xml, width, height);
+}
+
+const WHOLE_PAD = 0.15;
+
+export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: WholeProps) {
+  const ratio = PixelRatio.get();
+  const read = useMemo(() => {
+    const whole = wholeLayers(layers, place, ratio, planOf);
+    return whole ? readWhole(whole, width, height) : null;
+  }, [layers, place, ratio, width, height]);
+  if (!read) return fallback;
+  const pad = Math.ceil(Math.max(width, height) * WHOLE_PAD);
+  return (
+    <SkiaBoundary fallback={fallback}>
+      <View pointerEvents="none" style={{ width, height }}>
+        <Canvas
+          style={{
+            position: 'absolute',
+            left: -pad,
+            top: -pad,
+            width: width + 2 * pad,
+            height: height + 2 * pad,
+          }}
+        >
+          <Group transform={[{ translateX: pad }, { translateY: pad }]}>
+            <WholeLayers layers={read} width={width} height={height} on={on} lane={lane} />
+          </Group>
+        </Canvas>
+      </View>
+    </SkiaBoundary>
+  );
+}
+
+type WholeDraw = { width: number; height: number; on: boolean; lane: string };
+
+function WholeLayers({ layers, ...draw }: WholeDraw & { layers: readonly WholeRead[] }) {
+  return layers.map((l, i) =>
+    l.kind === 'still' ? (
+      <ImageSVG key={i} svg={l.svg} x={0} y={0} width={draw.width} height={draw.height} />
+    ) : l.kind === 'inside' ? (
+      <WholeInside key={i} plan={l.plan} mask={l.mask} content={l.content} {...draw} />
+    ) : (
+      <WholeMoved key={i} move={l.move} layers={l.layers} {...draw} />
+    ),
+  );
+}
+
+function WholeInside({
+  plan,
+  mask,
+  content,
+  on,
+  lane,
+}: WholeDraw & { plan: SkiaPlan; mask: SkSVG; content: SkSVG }) {
+  const clock = useClock(plan.ms, on, lane);
+  const at = useMemo(() => skiaAt(plan), [plan]);
+  const transform = useDerivedValue(() => {
+    const p = insideAt(at, clock.value);
+    return [{ translateX: p.x }, { translateY: p.y }];
+  });
+  const { crop } = plan;
+  const box = useMemo(() => Skia.XYWHRect(0, 0, crop.width, crop.height), [crop]);
+  return (
+    // Drawn's layers at the crop's corner, cut to the crop (a canvas of its own was its edge).
+    <Group transform={[{ translateX: crop.left }, { translateY: crop.top }]} clip={box}>
+      <Group layer>
+        <ImageSVG svg={mask} x={0} y={0} width={crop.width} height={crop.height} />
+        <Group layer={<Paint blendMode="srcIn" />}>
+          <Group transform={transform}>
+            <ImageSVG svg={content} x={0} y={0} width={plan.width} height={plan.height} />
+          </Group>
+        </Group>
+      </Group>
+    </Group>
+  );
+}
+
+function WholeMoved({
+  move,
+  layers,
+  ...draw
+}: WholeDraw & { move: WholeMove; layers: readonly WholeRead[] }) {
+  const clock = useClock(move.ms, draw.on, draw.lane);
+  const matrix = useDerivedValue(() => moveMatrixAt(move, clock.value));
+  const opacity = useDerivedValue(() => moveOpacityAt(move, clock.value));
+  const inner = <WholeLayers layers={layers} {...draw} />;
+  return (
+    <Group matrix={matrix}>
+      {move.opacity ? (
+        // An SVG's drawing does not take a paint's opacity: faded as a layer.
+        <Group layer={<Paint opacity={opacity} />}>{inner}</Group>
+      ) : (
+        <Fragment>{inner}</Fragment>
+      )}
+    </Group>
   );
 }
 

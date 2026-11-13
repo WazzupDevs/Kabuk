@@ -11,10 +11,13 @@ import {
   type FxBox,
   type FxCrop,
   type FxInside,
+  type FxLayer,
   type FxMotion,
   type FxPlace,
+  type FxProp,
   phaseOf,
   placeKey,
+  sampled,
   valueAt,
 } from './capsuleFx';
 import { defBox } from './svgBox';
@@ -264,4 +267,148 @@ export function insideAt(plan: SkiaAt, t: number): { x: number; y: number } {
 // hold): how long that takes, or null when it starts its cycle from the start.
 export function clockLead(from: number, ms: number): number | null {
   return from <= 0 || from >= 1 ? null : ms * (1 - from);
+}
+
+// ---------------------------------------------------------------------------------------------
+// The whole drawing on one canvas (docs/decisions/skia-build-plani.md → "Bütün kapsül Skia'da"):
+// every layer of fxTree drawn by Skia, none of them a view. The picture way makes a native view of
+// each SVG element and draws each layer's picture on the UI thread the frame it is first shown: a
+// look put on whole (Süsle's dice) held that frame for seconds (docs/perf/akicilik-denetimi.md →
+// 4.2, A-01). Behind its own switch until the two are compared on a phone.
+
+// Off: the pictures (and P6's canvases for the motions inside a clip) as before. Çizim ölçümü's
+// "Bütün kapsül Skia" turns it on for that phone on a preview build (lib/drawLab.ts → useLabWhole).
+export const CAPSULE_SKIA_WHOLE = false;
+
+export function capsuleWholeOn(os: string, lab: boolean): boolean {
+  return lab || (CAPSULE_SKIA_WHOLE && capsuleSkiaOn(os));
+}
+
+// A property along the clock (capsuleFx.ts → sampled), read on the UI thread by curveAt.
+export type WholeCurve = { input: number[]; output: number[] };
+
+// A moving layer's motion in the canvas's points: its pivot, and each property it moves (a
+// translate in points, a turn and a skew in radians).
+export type WholeMove = {
+  ms: number;
+  ox: number;
+  oy: number;
+  tx: WholeCurve | null;
+  ty: WholeCurve | null;
+  rotate: WholeCurve | null;
+  scale: WholeCurve | null;
+  sx: WholeCurve | null;
+  sy: WholeCurve | null;
+  skewX: WholeCurve | null;
+  opacity: WholeCurve | null;
+};
+
+export type WholeLayer =
+  | { kind: 'still'; xml: string }
+  | { kind: 'inside'; plan: SkiaPlan }
+  | { kind: 'move'; move: WholeMove; layers: WholeLayer[] };
+
+const RAD = Math.PI / 180;
+
+function wholeCurve(motion: FxMotion, prop: FxProp, scale: number): WholeCurve | null {
+  if (!motion.keys[prop]) return null;
+  const r = sampled(motion, prop, scale);
+  return { input: r.inputRange, output: r.outputRange };
+}
+
+// The picture way's Move (components/FxSvg.tsx), as numbers: the same pivot, the same samples.
+export function wholeMove(
+  layer: Extract<FxLayer, { kind: 'move' }>,
+  place: FxPlace,
+): WholeMove | null {
+  const motion = FX[layer.fx];
+  if (!motion) return null;
+  const px = layer.k * place.unit;
+  return {
+    ms: motion.ms,
+    ox: place.dx + (layer.x - place.bx) * place.unit,
+    oy: place.dy + (layer.y - place.by) * place.unit,
+    tx: wholeCurve(motion, 'tx', px),
+    ty: wholeCurve(motion, 'ty', px),
+    rotate: wholeCurve(motion, 'rotate', RAD),
+    scale: wholeCurve(motion, 'scale', 1),
+    sx: wholeCurve(motion, 'sx', 1),
+    sy: wholeCurve(motion, 'sy', 1),
+    skewX: wholeCurve(motion, 'skewX', RAD),
+    opacity: wholeCurve(motion, 'opacity', 1),
+  };
+}
+
+type PlanOf = (layer: FxInside, place: FxPlace, ratio: number) => SkiaPlan | null;
+
+// A drawing's layers as the canvas draws them, in the drawing's order. Null when one of them cannot
+// be drawn this way (a motion inside its clip with no plan): the picture way draws the drawing
+// then, whole. A moving layer whose motion is not known is its layers, unmoved (as FxSvg draws it).
+export function wholeLayers(
+  layers: readonly FxLayer[],
+  place: FxPlace,
+  ratio: number,
+  plan: PlanOf = insidePlan,
+): WholeLayer[] | null {
+  const out: WholeLayer[] = [];
+  for (const l of layers) {
+    if (l.kind === 'still') out.push({ kind: 'still', xml: l.xml });
+    else if (l.kind === 'inside') {
+      const p = plan(l, place, ratio);
+      if (!p) return null;
+      out.push({ kind: 'inside', plan: p });
+    } else {
+      const inner = wholeLayers(l.layers, place, ratio, plan);
+      if (!inner) return null;
+      const move = wholeMove(l, place);
+      if (move) out.push({ kind: 'move', move, layers: inner });
+      else out.push(...inner);
+    }
+  }
+  return out;
+}
+
+// The move's matrix when the clock is at `t`, as React Native composes the picture way's style
+// (translateX, translateY, rotate, scale, scaleX, scaleY, skewX, in that order, about the pivot):
+// a 4 × 4 in rows, as Skia's Group takes it. Written out here: Skia's own skewX is the other axis's.
+export function moveMatrixAt(m: WholeMove, t: number): number[] {
+  'worklet';
+  const v = (c: WholeCurve | null, none: number) => (c ? curveAt(c.input, c.output, t) : none);
+  // x' = a·x + c·y + e, y' = b·x + d·y + f; starts as the move to the pivot and the translate.
+  let a = 1;
+  let b = 0;
+  let c = 0;
+  let d = 1;
+  const e = m.ox + v(m.tx, 0);
+  const f = m.oy + v(m.ty, 0);
+  const by = (a2: number, b2: number, c2: number, d2: number) => {
+    const na = a * a2 + c * b2;
+    const nb = b * a2 + d * b2;
+    const nc = a * c2 + c * d2;
+    const nd = b * c2 + d * d2;
+    a = na;
+    b = nb;
+    c = nc;
+    d = nd;
+  };
+  if (m.rotate) {
+    const r = v(m.rotate, 0);
+    by(Math.cos(r), Math.sin(r), -Math.sin(r), Math.cos(r));
+  }
+  if (m.scale) {
+    const s = v(m.scale, 1);
+    by(s, 0, 0, s);
+  }
+  if (m.sx) by(v(m.sx, 1), 0, 0, 1);
+  if (m.sy) by(1, 0, 0, v(m.sy, 1));
+  if (m.skewX) by(1, 0, Math.tan(v(m.skewX, 0)), 1);
+  // Back from the pivot.
+  const tx = e - a * m.ox - c * m.oy;
+  const ty = f - b * m.ox - d * m.oy;
+  return [a, c, 0, tx, b, d, 0, ty, 0, 0, 1, 0, 0, 0, 0, 1];
+}
+
+export function moveOpacityAt(m: WholeMove, t: number): number {
+  'worklet';
+  return m.opacity ? curveAt(m.opacity.input, m.opacity.output, t) : 1;
 }
