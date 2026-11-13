@@ -14,15 +14,24 @@ Kanıt türleri:
 
 ## Düzeltme durumu
 
-Düzeltmeler telefonda ölçülmedi; her biri koddaki nedeni giderir, etkisi 4. bölümdeki ölçümle doğrulanır.
+Düzeltmelerin etkisi telefonda henüz ölçülmedi; her biri koddaki nedeni giderir. Hiçbir efekt kaldırılmadı ya da azaltılmadı.
 
-| Bulgu | Durum             | Not                                                                                                                |
-| ----- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
-| A-02  | Düzeltildi (#610) | On iki oyun görseli 1184 x 1579'a indi (kartın en büyük boyu 296 dp, dört katı).                                   |
-| A-12  | Düzeltildi        | Klavyeyi yalnız altlığı olan ekran dinliyor.                                                                       |
-| A-29  | Düzeltildi        | Davet sayfasının saati yalnız sayfa açıkken ve gönderilmiş davet sürerken çalışıyor.                               |
-| A-36  | Düzeltildi        | Semt sahnesinin iki döngüsü ve "yazıyor" balonu ortak durdurma koşuluna bağlandı.                                  |
-| A-16  | Geri çekildi      | Kalemin zamanlayıcıyla dönmesi bilerek: `loopGuard.test.ts` kendi kendine dönen döngüde `withRepeat`'i yasaklıyor. |
+| Bulgu | Durum               | Not                                                                                                                                     |
+| ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| A-02  | Düzeltildi (#610)   | On iki oyun görseli 1184 x 1579'a indi (kartın en büyük boyu 296 dp, dört katı).                                                        |
+| A-12  | Düzeltildi (#611)   | Klavyeyi yalnız altlığı olan ekran dinliyor.                                                                                            |
+| A-29  | Düzeltildi (#611)   | Davet sayfasının saati yalnız sayfa açıkken ve gönderilmiş davet sürerken çalışıyor.                                                    |
+| A-36  | Düzeltildi (#611)   | Semt sahnesinin iki döngüsü ve "yazıyor" balonu ortak durdurma koşuluna bağlandı.                                                       |
+| A-21  | Düzeltildi (#612)   | On bir üretim işlevinden onu derleniyor. Kalan: `LaunchCurtain` (açılışta bir kez çizilir; açılış bekçisine dokunulmadı).               |
+| A-25  | Kısmen (#613, #615) | Kibrit, Krot, Kaupholl ve Signum'da saniyeyi yalnız süre şeridi okuyor. Kalan: Kinshi (sayaç düğme yazısına ve geri sayıma da giriyor). |
+| A-24  | Düzeltildi (#613)   | Oy sayıları oyun ekrandayken okunmuyor.                                                                                                 |
+| A-32  | Düzeltildi (#614)   | Afiş ve masa simgesi çözülürken gösterildiği boya iniyor. Çözülen boy telefonda doğrulanacak.                                           |
+| A-33  | Kısmen (#614)       | Sahne resimleri bellek önbelleğinde. Kalan: sonraki evrenin önceden yüklenmesi.                                                         |
+| A-28  | Kısmen (#614)       | Keşfet ve Mesajlar'da liste gecikmeli değeri izliyor. Kalan: profil düzenleme, kartların ezberi.                                        |
+| A-16  | Geri çekildi        | Kalemin zamanlayıcıyla dönmesi bilerek: `loopGuard.test.ts` kendi kendine dönen döngüde `withRepeat`'i yasaklıyor.                      |
+| A-22  | Ölçüm bekliyor      | Kanalı sekme odağına bağlamak her sekme gelişinde 30 katılım demek; hangisinin ucuz olduğu ölçülmeden değiştirilmedi.                   |
+
+İlk ölçüm (bölüm 4.1, Galaxy S23) bu düzeltmelerden önce alındı; sıradaki iş bölüm 5'te: önce 2, 5 ve 6. adımın yeniden ölçümü, sonra büyük kapsülün çizimi (A-01, A-40).
 
 ## 1. Özet: en çok etki eden bulgular
 

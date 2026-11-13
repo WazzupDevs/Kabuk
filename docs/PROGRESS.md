@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (13 Kasım 2026, akşam): akıcılık düzeltmeleri
+
+- Rapor `docs/perf/akicilik-denetimi.md` (A-01–A-38); başındaki "Düzeltme durumu" hangi bulgunun hangi PR'la kapandığını tutar.
+- Birleşenler: oyun görselleri #610, klavye aboneliği ve döngüler #611, derleyicinin atladıkları #612, oyun ekranının sayacı ve oy sorgusu #613, afiş ve simge çözme boyu ile arama #614, Signum'un sayacı #615. Hiçbiri telefonda ölçülmedi.
+- Kural: efekt kaldırmak ya da azaltmak çözüm değildir (proje sahibinin kararı).
+- İlk telefon ölçümü raporun 4.1 bölümünde (Galaxy S23; düzeltmelerden önce alındı): en kötüsü kapsül düzenleyicide zar (1,4–5 sn kare, 1 GB bellek) ve DM kaydırması (karelerin %63'ü bütçe üstü). Sıra raporun 5. bölümünde: önce 2, 5 ve 6. adımın yeniden ölçümü, sonra büyük kapsülün çizimi (A-01, A-40).
+
 ## Devir notu (13 Kasım 2026): ekran kayıtlarıyla denetim ve ortak kök düzeltmeleri
 
 - Proje sahibinin on ekran kaydı panolarla ve kodla karşılaştırıldı: `docs/denetim/pano-fark-2026-11.md` (94 numara, 12 ortak kök; #600). Aynı dosyanın başındaki "Düzeltme durumu" hangi bulgunun hangi PR'la kapandığını ve neyin açık kaldığını söyler.
