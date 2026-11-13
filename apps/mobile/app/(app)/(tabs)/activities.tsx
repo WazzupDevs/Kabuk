@@ -362,7 +362,13 @@ function History({ now }: { now: number }) {
                       narrow={narrow}
                       row={{
                         lead: <Kanki index={i} />,
-                        title: <T v="placeName">{record.other_alias}</T>,
+                        // One line, smaller where it does not fit: at 360 dp the name broke in
+                        // its middle (docs/denetim/pano-fark-2026-11.md → PF-27).
+                        title: (
+                          <T v="placeName" lines={1} fit>
+                            {record.other_alias}
+                          </T>
+                        ),
                       }}
                       onMore={() => {
                         setOpen(null);
