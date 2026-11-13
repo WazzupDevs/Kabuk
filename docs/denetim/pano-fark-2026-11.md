@@ -187,6 +187,31 @@ Bulgu sayılmayanlar ve tutanlar:
 - Bilet, Set balonu kartı ve panelin tutamacı panoyla tutuyor; biletteki kapsülün boyu #596 "Kapatılmayanlar".
 - Profili düzenle'de Kaydet değişiklik yokken soluk; kapak 172 ve 28 köşe, fotoğraf 116: tutuyor. Arkadaşlar'daki mesaj düğmesi yaklaşık 34 dp (pano 46): düğme boyları, bilinen sınır.
 
+## Ayarlar'ın alt sayfaları (Bildirim ayarları, Gizlilik, yasal metinler, Hesap, Engellenenler, Sessize alınanlar, Kapsül karakterler)
+
+Kayıt: 29,7 sn, açık tema. Sıra: Ayarlar sayfası (1,9 sn), Bildirim ayarları ve dönüş (3,1–5,4), Gizlilik (5,9), Gizlilik Politikası ve kaydırma (7,8–9,9), KVKK Aydınlatma Metni (11,3–12,8), Kullanım Koşulları (13,9–14,8), Topluluk Kuralları (15,9–17,3), Ayarlar'a dönüş (19,2), Hesap (20,9–21,9), Engellenenler (23,4–24,8), Sessize alınanlar (25,4–26,2), Kapsül karakterler (27,1–28,1), Keşfet sekmesi (28,1). Kayıtta görülmeyenler: anahtar değiştirme, hesap silme ve çıkış onayı, İletişim, dolu Engellenenler ve Sessize alınanlar, koyu tema.
+
+Bu sayfalar tuvalde yok. Ölçüt: `docs/design/iskelet.md` (3.1 "sayfa" türü, 3.4 boş durum, 2.5 kankiler), CLAUDE.md → Ekran davranışı ve akıcılık. Kod: `app/(app)/settings/` altındaki sayfalar (yolu doğrulanmadı), `src/components/PageTop.tsx`, `src/components/Screen.tsx`.
+
+| No  | Durum | Görülen | Pano | Olası neden | Önem | Tür |
+| --- | ----- | ------- | ---- | ----------- | ---- | --- |
+
+| PF-71 | Açıklamalı sayfalar: Gizlilik Politikası, KVKK Aydınlatma Metni, Topluluk Kuralları, Engellenenler, Sessize alınanlar, Kapsül karakterler | Başlık iki kez çiziliyor: üstte sabit büyük başlık, yaklaşık 60–65 dp altında aynı başlık açıklamasıyla yeniden (8,0 sn; 11,5 sn; 16,0 sn; 24,2 sn; 25,5 sn; 27,5–28,0 sn). Yasal metinlerde "Taslak: …" satırı da iki kez. Açıklaması olmayan sayfalarda (Bildirim ayarları, Gizlilik, Hesap) başlık tek. | Tek büyük başlık (34/800), altında açıklama (`iskelet.md` 3.1 "sayfa"). | PF-64 ile aynı kök: başlık hem ekranın sabit üst bölümünde (`src/components/PageTop.tsx`) hem içerikte çiziliyor; açıklaması olan sayfaların hepsi etkileniyor (çıkarım). | Yüksek | Bozukluk |
+| PF-72 | Yasal metin, kaydırılmış | Kaydırınca büyük başlık gidiyor ve barda küçük başlık geliyor (doğru), ama barın altında yaklaşık 85 dp boş bir alan kalıyor: metin ekranın tepesinden yaklaşık 185 dp aşağıda başlıyor, üstü boş bant (8,65–9,9 sn; 12,0–12,5 sn; 14,0–14,5 sn; 16,5 sn). | Bant 118 yüksek; içerik barın hemen altına kadar gelir. | Sabit üst bölüm büyük başlığın yüksekliğini koruyor; başlık sönünce yeri boş kalıyor (`src/components/PageTop.tsx`, `src/components/Screen.tsx` → `top`; çıkarım). | Yüksek | Bozukluk |
+| PF-73 | Gizlilik, kaydırılmış | Büyük başlık "Gizlilik" kaymıyor; liste başlığın altındaki sert çizgide kesiliyor, ilk kartın satırı yarım kalıyor (11,0 sn; 13,0–13,5 sn; 15,0 sn). PF-63 ile aynı. | Başlık kayar ve söner; bant ve barda küçük başlık gelir. | PF-63 ile aynı kök. Yasal metinlerde başlık sönüyor, liste sayfalarında sönmüyor: iki ayrı davranış. | Yüksek | Bozukluk |
+| PF-74 | Gizlilik listesi ve yasal metinler, kanki | Gizlilik'te yarı saydam yeşil kanki "Kullanım Koşulları" satırının üstünde duruyor ve satırın okunu örtüyor (7,2 sn; her Gizlilik karesinde). Yasal metinlerde pembe kanki "Devam" düğmesinin sağ yarısının üstünde ve metnin son satırına biniyor (9,2 sn). | Kanki kartın kenarından bakar; düğmenin ve satırın üstüne binmez (`iskelet.md` 2.5; CLAUDE.md: uyarı ve süs hiçbir düğmenin üstüne binmez). | Kankinin yeri sayfanın köşesine sabit; içerik altından kayıyor (`src/aura/Peek.tsx` ya da sayfanın kendi yerleşimi; çıkarım). | Orta | Bozukluk |
+| PF-75 | Engellenenler, boş | Boş durum büyük: yaklaşık 240 x 165 dp çizim ortada, altında tek satır yazı; ekranın üçte birini kaplıyor (24,2 sn). | Boş durum küçük yatay kart: solda 104 x 72 çizim, sağda başlık ve tek cümle (`iskelet.md` 3.4). | Bu sayfa ortak boş kartı kullanmıyor (`src/features/explore/EmptyCard.tsx` öbür ekranlarda kullanılıyor). | Düşük | Panodan sapma |
+| PF-76 | Ayarlar sayfasından alt sayfaya geçiş | Alt sayfa sağdan gelirken Ayarlar sayfası yerinde, karartmasıyla duruyor; alt sayfa onun üstüne kayıyor (3,15–3,41 sn, yaklaşık 260 ms; başında 45–80 ms'lik kare boşlukları). Dönüşte alt sayfa kayıp gidince Ayarlar sayfası altında hazır. Tutarlı çalışıyor; bulgu yalnız kare boşlukları. | - | PF-32 ile aynı örüntü: itme geçişinin ilk kareleri. | Düşük | Davranış |
+| PF-77 | Sessize alınanlar ve Kapsül karakterler, açılış | Sessize alınanlar'da içerik yerine yükleme göstergesi sol üstte, başlığın altında küçük ve yalnız duruyor (25,5–26,2 sn). Kapsül karakterler'de içerik sayfa oturduktan sonra sönerek geliyor, önce soluk iskelet görünüyor (27,0–27,3 sn). | Yükleme göstergesi içeriğin yerinde, ortada (CLAUDE.md → `Loader`). | Göstergenin hizası sayfanın sol kenarına göre (çıkarım). | Düşük | Davranış |
+
+Bulgu sayılmayanlar ve notlar:
+
+- Yasal metinler "Taslak: veri sorumlusu bilgileri eklenince yürürlüğe girer." satırını ve "[veri sorumlusunun adı ve soyadı eklenecek]" yer tutucusunu taşıyor (8,0 sn; 8,7 sn). Tasarım bulgusu değil; üretim yayınından önce doldurulacak içerik (#593).
+- Yasal metinlerin altında "Devam" düğmesi var; ne yaptığı kayıtta görülmedi.
+- Bildirim ayarları, Gizlilik ve Hesap'ın dinlenme hâli düzenli: kartlar, anahtarlar, satır okları, açıklamalar hizalı; Hesap'ın altında logo ve sürüm.
+- Hayalet (PF-25) bu kayıtta Ayarlar sayfası hiç kapatılmadığı için denetlenemedi.
+- PF-06 (dolu ikonlar) satır ikonlarında da var.
+
 ## Ekranlar arası ortak konular
 
 Tek bir ekrana bağlı olmayan, proje sahibinin sohbette bildirdiği ya da birden çok kayıtta görülen konular.
