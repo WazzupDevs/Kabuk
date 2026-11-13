@@ -14,22 +14,22 @@ Kanıt türleri:
 
 ## Düzeltme durumu
 
-Düzeltmelerin etkisi telefonda henüz ölçülmedi; her biri koddaki nedeni giderir. Hiçbir efekt kaldırılmadı ya da azaltılmadı.
+Düzeltmelerin etkisi bölüm 4.2'de ölçüldü (yalnız 2, 5 ve 6. adımlar); her biri koddaki nedeni giderir. Hiçbir efekt kaldırılmadı ya da azaltılmadı.
 
-| Bulgu | Durum               | Not                                                                                                                                     |
-| ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| A-02  | Düzeltildi (#610)   | On iki oyun görseli 1184 x 1579'a indi (kartın en büyük boyu 296 dp, dört katı).                                                        |
-| A-12  | Düzeltildi (#611)   | Klavyeyi yalnız altlığı olan ekran dinliyor.                                                                                            |
-| A-29  | Düzeltildi (#611)   | Davet sayfasının saati yalnız sayfa açıkken ve gönderilmiş davet sürerken çalışıyor.                                                    |
-| A-36  | Düzeltildi (#611)   | Semt sahnesinin iki döngüsü ve "yazıyor" balonu ortak durdurma koşuluna bağlandı.                                                       |
-| A-21  | Düzeltildi (#612)   | On bir üretim işlevinden onu derleniyor. Kalan: `LaunchCurtain` (açılışta bir kez çizilir; açılış bekçisine dokunulmadı).               |
-| A-25  | Kısmen (#613, #615) | Kibrit, Krot, Kaupholl ve Signum'da saniyeyi yalnız süre şeridi okuyor. Kalan: Kinshi (sayaç düğme yazısına ve geri sayıma da giriyor). |
-| A-24  | Düzeltildi (#613)   | Oy sayıları oyun ekrandayken okunmuyor.                                                                                                 |
-| A-32  | Düzeltildi (#614)   | Afiş ve masa simgesi çözülürken gösterildiği boya iniyor. Çözülen boy telefonda doğrulanacak.                                           |
-| A-33  | Kısmen (#614)       | Sahne resimleri bellek önbelleğinde. Kalan: sonraki evrenin önceden yüklenmesi.                                                         |
-| A-28  | Kısmen (#614)       | Keşfet ve Mesajlar'da liste gecikmeli değeri izliyor. Kalan: profil düzenleme, kartların ezberi.                                        |
-| A-16  | Geri çekildi        | Kalemin zamanlayıcıyla dönmesi bilerek: `loopGuard.test.ts` kendi kendine dönen döngüde `withRepeat`'i yasaklıyor.                      |
-| A-22  | Ölçüm bekliyor      | Kanalı sekme odağına bağlamak her sekme gelişinde 30 katılım demek; hangisinin ucuz olduğu ölçülmeden değiştirilmedi.                   |
+| Bulgu | Durum               | Not                                                                                                                                                                                                                        |
+| ----- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-02  | Düzeltildi (#610)   | On iki oyun görseli 1184 x 1579'a indi (kartın en büyük boyu 296 dp, dört katı).                                                                                                                                           |
+| A-12  | Düzeltildi (#611)   | Klavyeyi yalnız altlığı olan ekran dinliyor. Ölçüm (4.2): DM'de klavye takılması %13,1 → %8,9.                                                                                                                             |
+| A-29  | Düzeltildi (#611)   | Davet sayfasının saati yalnız sayfa açıkken ve gönderilmiş davet sürerken çalışıyor.                                                                                                                                       |
+| A-36  | Düzeltildi (#611)   | Semt sahnesinin iki döngüsü ve "yazıyor" balonu ortak durdurma koşuluna bağlandı.                                                                                                                                          |
+| A-21  | Düzeltildi (#612)   | On bir üretim işlevinden onu derleniyor. Kalan: `LaunchCurtain` (açılışta bir kez çizilir; açılış bekçisine dokunulmadı). Ölçüm (4.2): düzenleyicide etkisi görünmedi; parça değişimi ve zar aynı aralıkta (A-01 kalıyor). |
+| A-25  | Kısmen (#613, #615) | Kibrit, Krot, Kaupholl ve Signum'da saniyeyi yalnız süre şeridi okuyor. Kalan: Kinshi (sayaç düğme yazısına ve geri sayıma da giriyor).                                                                                    |
+| A-24  | Düzeltildi (#613)   | Oy sayıları oyun ekrandayken okunmuyor.                                                                                                                                                                                    |
+| A-32  | Düzeltildi (#614)   | Afiş ve masa simgesi çözülürken gösterildiği boya iniyor. Çözülen boy telefonda doğrulanacak.                                                                                                                              |
+| A-33  | Kısmen (#614)       | Sahne resimleri bellek önbelleğinde. Kalan: sonraki evrenin önceden yüklenmesi.                                                                                                                                            |
+| A-28  | Kısmen (#614)       | Keşfet ve Mesajlar'da liste gecikmeli değeri izliyor. Kalan: profil düzenleme, kartların ezberi. Ölçüm (4.2): Mesajlar aramasında takılma %16,2 → %13,2; Keşfet'te yöntem farkı yüzünden karşılaştırılamadı.               |
+| A-16  | Geri çekildi        | Kalemin zamanlayıcıyla dönmesi bilerek: `loopGuard.test.ts` kendi kendine dönen döngüde `withRepeat`'i yasaklıyor.                                                                                                         |
+| A-22  | Ölçüm bekliyor      | Kanalı sekme odağına bağlamak her sekme gelişinde 30 katılım demek; hangisinin ucuz olduğu ölçülmeden değiştirilmedi.                                                                                                      |
 
 İlk ölçüm (bölüm 4.1, Galaxy S23) bu düzeltmelerden önce alındı; sıradaki iş bölüm 5'te: önce 2, 5 ve 6. adımın yeniden ölçümü, sonra büyük kapsülün çizimi (A-01, A-40).
 
@@ -218,25 +218,110 @@ Her adımda ekran kaydı al (çubuklar görünsün), kaydı sohbete at. Yeşil �
 
 Ölçüm sırasında görülen, performans dışı iki şey: Keşfet'te "Ada göre" düğmesi dokunuşa yanıt vermedi; kapsül düzenleyicide geri düğmesi "Kapsülün" başlığının üstüne biniyor.
 
+## 4.2 Yeniden ölçüm (13 Kasım 2026, akşam; #610–#615 sonrası)
+
+- **Derleme:** aynı telefon ve kurulum (Galaxy S23, 0.11.0 build 21, release). Uygulama iki kez kapatılıp açıldı; çalışan güncelleme `preview` kanalında 16.08 UTC'de yayımlanmış (`01a1d5ab…`, expo-updates günlüğünden), yani #615'ten sonra.
+- **Koşullar:** 120 Hz, güç tasarrufu kapalı, animatör ölçeği 1x, Rahatsız Etmeyin açık. **Sağlanamayan:** pil %40'tan %48'e USB'den şarj olurken ölçüldü (kablosuz adb için kablonun telefonda çıkarılması gerekiyordu, proje sahibi yoktu); pil sıcaklığı 37 °C'den 40 °C'ye çıktı. Hesap aynı (2 mekan, 3 sohbet, check-in yok).
+- **Yöntem:** 4.1 ile aynı adım adları, koordinatlar, koşu sayısı (3, ortanca) ve takılma tanımı (12,5 ms'den uzun kare). Bir fark: 2b'de 10 harfi 4.1'de proje sahibi yazdı, burada `adb shell input text` harf harf yazdı; 2b'nin önce/sonra karşılaştırması bu yüzden kesin değil.
+- **Geri alınan ayarlar:** Çizim ölçümü paneli açıldı, Skia anahtarı denendi, panel kapatıldı (anahtar eski hâline döndü). `debug.hwui.overdraw` kapalı kaldı. Düzenleyiciden her seferinde kaydetmeden çıkıldı. İz dosyaları silindi, repoya girmedi.
+
+### Önce ve sonra
+
+Hücrelerde önce (4.1) → sonra. Bellek: adım sonunda toplam PSS / Graphics / Native Heap (MB).
+
+| Adım                                        | Kare        | Takılma %   | gfxinfo jank % | p95 (ms)  | En uzun kare (ms)             | Bellek (MB)                 |
+| ------------------------------------------- | ----------- | ----------- | -------------- | --------- | ----------------------------- | --------------------------- |
+| 2a Keşfet kaydırma                          | 1269 → 1267 | 1,3 → 0,6   | 1,5 → 1,3      | 11 → 11   | 18 → 15                       | 321/61/100 → 314/61/99      |
+| 2b Keşfet aramasına 10 harf (yöntem farklı) | 387 → 327   | 3,1 → 5,8   | 7,0 → 4,6      | 11 → 13   | 29 → 22                       | 312/60/99 → 316/61/100      |
+| 5a Mesajlar aramasına 10 harf               | 136 → 137   | 16,2 → 13,2 | 10,3 → 9,5     | 15 → 14   | 19 → 19                       | 403/79/145 → 331/60/103     |
+| 5b DM kaydırma (kare p50 14 → 14 ms)        | 1495 → 1525 | 62,9 → 65,2 | 0,6 → 0,6      | 20 → 20   | 24 → 24                       | 690/142/290 → 544/121/190   |
+| 5c DM'de klavye                             | 279 → 279   | 13,1 → 8,9  | 7,5 → 7,9      | 15 → 15   | 22 → 22                       | 611/127/240 → 510/107/163   |
+| 6a Düzenleyici, 10 parça (p99 150 → 150 ms) | 1461 → 1483 | 15,2 → 15,3 | 2,2 → 2,1      | 15 → 15   | 300 → 350                     | 867/216/361 → 797/217/248   |
+| 6b Zara 5 kez (p99 0,6–1,35 → 0,55–3,85 sn) | 359 → 333   | 51,1 → 53,4 | 10,5 → 9,6     | 150 → 150 | 3750 → 3000                   | 1001/219/470 → 1093/256/388 |
+| 6 (boşta), 10 sn                            | 1074 → 1213 | 100 → 58    | 13,0 → 0,2     | 25 → 15   | 40 → 22                       | —                           |
+| 6 (tek zar), ilk karelerde UI iş parçacığı  | —           | —           | —              | —         | 470–1200 → 313–1075 (UI payı) | —                           |
+| Ek: Keşfet dururken 10 sn                   | 688 → 693   | 0,7 → 0,3   | 1,2 → 1,3      | 7 → 7     | 17 → 19                       | —                           |
+
+"6 (boşta)" iki ölçümde aynı görünüş değil: görünüşü zar seçiyor (4.1'de efsanevi set, burada başka bir zar sonucu). Bu satırın farkı düzeltmeye bağlanamaz.
+
+### B. Kapsül: yük nerede (A-01, A-40)
+
+Kare satırlarından aşama dağılımı (`gfxinfo framestats`, son 120 kare, üç koşu birlikte; ms, ortanca / p95):
+
+| Aşama                         | 6 (boşta)     | 6 (tek zar)   | Skia açık, boşta (Astronot) | Skia kapalı, boşta (Astronot) |
+| ----------------------------- | ------------- | ------------- | --------------------------- | ----------------------------- |
+| Gecikme (vsync → giriş)       | 0,64 / 1,02   | 0,64 / 6,99   | 0,66 / 0,84                 | 0,65 / 0,85                   |
+| UI: giriş ve animasyon        | 5,26 / 6,22   | 5,74 / 8,03   | 2,47 / 3,89                 | 1,41 / 1,90                   |
+| UI: ölçü ve yerleşim          | 0,12 / 0,16   | 0,11 / 0,15   | 0,10 / 0,14                 | 0,10 / 0,14                   |
+| UI: Draw (kayıt)              | 0,05 / 0,07   | 0,05 / 0,09   | 0,04 / 0,06                 | 0,03 / 0,04                   |
+| Sync                          | 0,92 / 1,35   | 1,13 / 1,63   | 1,07 / 1,47                 | 1,15 / 1,52                   |
+| Komut gönderme (RenderThread) | 2,92 / 4,12   | 3,22 / 4,10   | 3,82 / 4,54                 | 3,88 / 4,34                   |
+| SwapBuffers ve GPU bitişi     | 3,16 / 3,53   | 3,62 / 4,11   | 3,20 / 3,79                 | 3,38 / 3,99                   |
+| Toplam                        | 13,76 / 16,24 | 15,44 / 21,29 | 11,82 / 13,41               | 10,65 / 12,03                 |
+
+Son 120 kare penceresi zarın ilk uzun karelerini çoğu zaman dışarıda bırakıyor; uzun kareler ayrıca okundu:
+
+- **Kare satırları (tek zar):** basıştan sonraki ilk karelerde UI payı 313 ve 1075 ms, aynı karelerde RenderThread 157–206 ms.
+- **Sistem izi:** Perfetto yerine aynı kategorilerle `atrace` (gfx, view, sched, am, wm, input) iki zar basışı için alındı. UI iş parçacığında en uzun dilimler `Record View#draw()` 3412 ms (birinci basış) ve 308 ms (ikinci basış); altında iz işareti yok. Ayrıca React Native'in görünüm takma işi (`mountViews`) 73–102 ms, tek seferde 2186 yerleşim güncellemesi. RenderThread'de `prepareTree` 133–141 ms, 795 x 753'lük bir doku yüklemesi 13 ms.
+- **Skia açık ve kapalı (panel açık, Astronot takımı, 10 parça değişimi; iki koşu):** açıkken en uzun kare 400 ms, p99 200 ms, takılma %25–29; kapalıyken (SVG yolu) en uzun kare 1800 ms, p99 250–350 ms, takılma %13–19. Boşta açıkken takılma %0,9–10,9, kapalıyken %0,4–0,6. Panel düzenleyicinin üst yarısını örttüğü için zar bu karşılaştırmaya girmedi.
+
+**Yanıt:**
+
+- **Ölçüldü:** donma UI iş parçacığında, `View#draw` kaydında (0,3–3,4 sn). RenderThread payı (130–200 ms) bunun onda biri kadar.
+- **Ölçüldü:** Skia kapatılınca parça değişimindeki en uzun kare 0,4 sn'den 1,8 sn'ye çıkıyor. Yük Skia'ya özgü değil; SVG yolunda daha ağır.
+- **Çıkarım:** kaydı uzatan, iz işareti olmayan uygulama çizim kodu: SVG'nin resim üretimi ya da Skia resminin kaydı.
+- **Ölçüldü:** boşta her kare yaklaşık 12–14 ms sürüyor: UI'da animasyon 1,4–5,3 ms, RenderThread'de komut gönderme ve swap yaklaşık 7 ms. Skia açıkken UI'daki animasyon payı 1 ms kadar daha büyük.
+- **Ölçüldü:** A-21'in (#612) düzenleyicideki etkisi görünmüyor; 6a ve 6b önceki ölçümle aynı aralıkta.
+
+### C. DM kaydırması: yük nerede (A-06, A-31, A-42)
+
+Kare satırları (5b, üç kısa kaydırma koşusu, 358 kare; ms, ortanca / p95):
+
+| Aşama                         | DM kaydırma   |
+| ----------------------------- | ------------- |
+| Gecikme (vsync → giriş)       | 0,45 / 0,81   |
+| UI: giriş ve animasyon        | 0,62 / 1,74   |
+| UI: ölçü ve yerleşim          | 0,08 / 0,12   |
+| UI: Draw (kayıt)              | 0,36 / 1,41   |
+| Sync                          | 0,26 / 0,41   |
+| Komut gönderme (RenderThread) | 7,51 / 8,85   |
+| SwapBuffers ve GPU bitişi     | 3,93 / 5,56   |
+| Toplam                        | 16,43 / 16,97 |
+
+- **Gölge kapalı ölçüm:** ölçülemedi. Panelde gölgenin elle anahtarı yok, gölge yalnız "Başlat"ın zamanlı adımında 5 sn kapanıyor. Panel açıkken Mesajlar listesinin üst yarısını örttüğü için sohbete de girilemedi.
+- **A-41 (bellek):**
+  - Mesajlar'da, sohbete girmeden önce: 331 MB.
+  - Sohbetin içinde: 544–575 MB.
+  - Çıktıktan 30 sn sonra: 513 MB; 60 sn sonra: 504 MB.
+  - Bu turda koşudan koşuya büyüme yok (544, 542, 553 MB).
+
+**Yanıt:**
+
+- **Ölçüldü:** DM kaydırmasındaki sabit maliyet RenderThread'de: çizim komutlarının gönderilmesi her karede yaklaşık 7,5 ms, swap ve GPU yaklaşık 4 ms; ikisi birlikte 8,3 ms'lik bütçeyi aşıyor ve ekran 60 karede kalıyor. UI iş parçacığının payı 1,5 ms'nin altında.
+- **Ölçülmedi:** JS iş parçacığı `framestats`'ta görünmüyor. Kaydırma native olduğu için kareyi bekletmiyor (çıkarım).
+- **Ayrılamadı:** GPU'nun kendi payı swap süresinin içinde.
+- **Çıkarım:** komut sayısını büyüten adaylar ekranın tamamını kaplayan katmanlar (A-42: duvar kâğıdı ve zeminler 4 kat) ve balon gölgeleri. Gölge payı panelle ölçülemedi.
+- **A-41:** büyüme bu turda tekrarlanmadı (ölçüldü); sohbetten çıkınca 170–180 MB geri verilmiyor (ölçüldü). Önbellek mi sızıntı mı, ayrılmadı.
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
 
-| Sıra | Bulgu                                                    | Neden bu sırada                                                                                        | Yayın                                |
-| ---- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| 0    | Yeniden ölçüm: adım 2, 5 ve 6                            | A-21 (#612), A-28 (#614), A-12 (#611) birleşti; A-01'in A-21'den sonra ne kadar kaldığı buradan okunur | Telefon                              |
-| 1    | A-01, A-40 (büyük kapsülün çizimi)                       | En kötü ölçüm: saniyelere varan donma ve 1 GB bellek; büyük iş                                         | OTA                                  |
-| 2    | A-41 teşhisi, A-03 (duvar kâğıdı boyu)                   | DM'de bellek büyüyor; duvar kâğıdı yalnız dosya değişikliği                                            | OTA                                  |
-| 3    | A-06, A-31 (sohbet kaydırması)                           | DM'de karelerin %63'ü bütçe üstü                                                                       | OTA (A-06'nın native kısmı build'de) |
-| 4    | A-42, A-04, A-11 (zemin katmanları, alt sayfa, gölgeler) | Bütün ekranlarda GPU yükü; Ayarlar'da yavaş çizim komutu                                               | OTA                                  |
-| 5    | A-05, A-14 (Profil'in ilk açılışı)                       | Tek kare 93–109 ms, her soğuk açılışta                                                                 | OTA                                  |
-| 6    | A-39 (Keşfet boşta çizim)                                | Kare düşürmüyor; pil ve ısı                                                                            | OTA                                  |
-| 7    | A-13, A-15                                               | Küçük ve bağımsız; ölçülmedi                                                                           | OTA                                  |
-| 8    | A-23, A-22, A-27, A-20 (masa ekranı); A-24, A-25 ölçümü  | Önce adım 8 bir mekanda ölçülür; A-24, A-25 (#613, #615), A-32, A-33 (#614) birleşti                   | OTA                                  |
-| 9    | A-09 (açılış)                                            | Perfetto izi gerekir                                                                                   | OTA                                  |
-| 10   | A-08 (harita), A-07, A-18, A-19, A-26, A-30, A-35, A-37  | Kare düşüşü ölçülmedi ya da yok; liste uzadıkça önem kazanır                                           | OTA                                  |
-| 11   | A-10, A-06'nın native kısmı, A-38                        | Native build ister; bir sonraki build'de birlikte                                                      | Native                               |
-| 12   | A-34 (küçük fotoğraf kopyası)                            | Sunucu ve depolama kararı ister                                                                        | OTA + sunucu                         |
+| Sıra | Bulgu                                                    | Neden bu sırada                                                                      | Yayın                                |
+| ---- | -------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------ |
+| 0    | Yeniden ölçüm: adım 2, 5 ve 6 (yapıldı, 4.2)             | A-12 ve A-28 kısmen düzeldi; A-21 düzenleyicide etki göstermedi, A-01 sıradaki iş    | Telefon                              |
+| 1    | A-01, A-40 (büyük kapsülün çizimi)                       | En kötü ölçüm: saniyelere varan donma ve 1 GB bellek; büyük iş                       | OTA                                  |
+| 2    | A-41 teşhisi, A-03 (duvar kâğıdı boyu)                   | DM'de bellek büyüyor; duvar kâğıdı yalnız dosya değişikliği                          | OTA                                  |
+| 3    | A-06, A-31 (sohbet kaydırması)                           | DM'de karelerin %63'ü bütçe üstü                                                     | OTA (A-06'nın native kısmı build'de) |
+| 4    | A-42, A-04, A-11 (zemin katmanları, alt sayfa, gölgeler) | Bütün ekranlarda GPU yükü; Ayarlar'da yavaş çizim komutu                             | OTA                                  |
+| 5    | A-05, A-14 (Profil'in ilk açılışı)                       | Tek kare 93–109 ms, her soğuk açılışta                                               | OTA                                  |
+| 6    | A-39 (Keşfet boşta çizim)                                | Kare düşürmüyor; pil ve ısı                                                          | OTA                                  |
+| 7    | A-13, A-15                                               | Küçük ve bağımsız; ölçülmedi                                                         | OTA                                  |
+| 8    | A-23, A-22, A-27, A-20 (masa ekranı); A-24, A-25 ölçümü  | Önce adım 8 bir mekanda ölçülür; A-24, A-25 (#613, #615), A-32, A-33 (#614) birleşti | OTA                                  |
+| 9    | A-09 (açılış)                                            | Perfetto izi gerekir                                                                 | OTA                                  |
+| 10   | A-08 (harita), A-07, A-18, A-19, A-26, A-30, A-35, A-37  | Kare düşüşü ölçülmedi ya da yok; liste uzadıkça önem kazanır                         | OTA                                  |
+| 11   | A-10, A-06'nın native kısmı, A-38                        | Native build ister; bir sonraki build'de birlikte                                    | Native                               |
+| 12   | A-34 (küçük fotoğraf kopyası)                            | Sunucu ve depolama kararı ister                                                      | OTA + sunucu                         |
 
 ## 6. Bu taramanın sınırları
 
