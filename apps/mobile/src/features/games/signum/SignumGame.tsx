@@ -431,6 +431,32 @@ function useClock(state: SignumState) {
   };
 }
 
+// The time strip reading its own seconds: only it is drawn again each second, not the phase's
+// screen (docs/perf/akicilik-denetimi.md → A-25). `calm`: never in the late colour.
+function Strip({
+  state,
+  calm,
+  title,
+  line,
+}: {
+  state: SignumState;
+  calm?: boolean;
+  title: string;
+  line: ReactNode;
+}) {
+  const clock = useClock(state);
+  return (
+    <TimeStrip
+      stage={clock.stage}
+      clock={clock.clock}
+      clockLabel={clock.label}
+      late={calm ? false : clock.late}
+      title={title}
+      line={line}
+    />
+  );
+}
+
 const scoreOf = (state: SignumState) => ({
   score: { a: tilesLeftOf(state, 'a'), b: tilesLeftOf(state, 'b') },
 });
@@ -451,7 +477,6 @@ function RoleScreen({
   view: SignumView;
   close: Close;
 }) {
-  const clock = useClock(state);
   const card = useRisoDeck().card;
   const [holding, setHolding] = useState(false);
   const [seen, setSeen] = useState(false);
@@ -505,11 +530,9 @@ function RoleScreen({
         status={
           <>
             <TopBar close={close} middle={{ phase: tr.signum.seeRole }} right={null} />
-            <TimeStrip
-              stage={clock.stage}
-              clock={clock.clock}
-              clockLabel={clock.label}
-              late={false}
+            <Strip
+              state={state}
+              calm
               title={player ? '' : tr.signum.watching}
               line={<T v="fine">{player ? tr.signum.holdHint : tr.signum.watchingNote}</T>}
             />
@@ -581,7 +604,6 @@ function ClueScreen({
   view: Extract<SignumView, { role: 'captain' }>;
   close: Close;
 }) {
-  const clock = useClock(state);
   const [word, setWord] = useState('');
   const [n, setN] = useState<number | null>(null);
   const [keyHeld, setKeyHeld] = useState(false);
@@ -601,11 +623,8 @@ function ClueScreen({
         status={
           <>
             <TopBar close={close} middle={scoreOf(state)} right={{ key: setKeyHeld }} />
-            <TimeStrip
-              stage={clock.stage}
-              clock={clock.clock}
-              clockLabel={clock.label}
-              late={clock.late}
+            <Strip
+              state={state}
               title={tr.signum.giveClue}
               line={<T v="fine">{tr.signum.clueHint}</T>}
             />
@@ -684,7 +703,6 @@ function BoardScreen({
   onChat: () => void;
   lastOpen: number | null;
 }) {
-  const clock = useClock(state);
   const me = faces.me;
   const turn = state.turn;
   const answer = useAnswer(roomId, faces.me);
@@ -755,14 +773,7 @@ function BoardScreen({
         status={
           <>
             <TopBar close={close} middle={scoreOf(state)} right={{ chat: onChat }} />
-            <TimeStrip
-              stage={clock.stage}
-              clock={clock.clock}
-              clockLabel={clock.label}
-              late={clock.late}
-              title={title}
-              line={line}
-            />
+            <Strip state={state} title={title} line={line} />
           </>
         }
         actions={
