@@ -109,6 +109,7 @@ export function TableScene({
       {box && k > 0 ? (
         <>
           <ExpoImage
+            cachePolicy="memory-disk"
             pointerEvents="none"
             source={ROOM_PICTURE[phase]}
             style={StyleSheet.absoluteFill}
@@ -206,6 +207,9 @@ function SceneBack({ look, left, top, k }: { look: Look; left: number; top: numb
   );
 }
 
+// The room's and the table's pictures stay in the memory cache (`memory-disk`): the look before
+// and the look now show the same ones during a change of phase, and a phase that comes back does
+// not decode them again (docs/perf/akicilik-denetimi.md → A-33).
 // One look, in the reference's order: the room, the stools, the table, the candles and the dial,
 // the candles' light (laid on with screen), the flames. The SVG layers are drawn at the size they
 // show (a picture scaled up would blur).
@@ -216,6 +220,7 @@ function Back({ look, k }: { look: Look; k: number }) {
   return (
     <View style={StyleSheet.absoluteFill}>
       <ExpoImage
+        cachePolicy="memory-disk"
         source={ROOM_PICTURE[phase]}
         style={StyleSheet.absoluteFill}
         contentFit="fill"
@@ -226,6 +231,7 @@ function Back({ look, k }: { look: Look; k: number }) {
         <CachedSvg xml={stoolsSvg(phase, count, empty)} width={w} height={h} />
       </View>
       <ExpoImage
+        cachePolicy="memory-disk"
         source={TABLE_PICTURE[phase]}
         style={StyleSheet.absoluteFill}
         contentFit="fill"
