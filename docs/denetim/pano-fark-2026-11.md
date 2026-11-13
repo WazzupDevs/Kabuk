@@ -283,6 +283,32 @@ Bulgu sayılmayanlar ve tutanlar:
 - Ortak kökler: hayalet ve kapanırken içerik değişmesi (K1; PF-25, PF-57 satırlarına eklendi), Arkadaşlar'da çift başlık (K3), DM'ye girerken sekme çubuğu (K4).
 - İçerik kısa olduğu için ekran kaymıyor; adın bara geçmesi ve bant bu kayıtta denetlenemedi.
 
+## Kapsül düzenleyici ("Kapsülün")
+
+Kayıt: 42,5 sn, açık tema. Sıra: profilden düzenleyiciye giriş iki kez (1,0; 3,4 sn), Baş şeridinde kaydırma ve seçim (5,5–20,3: sıradan, nadir, destansı ve efsanevi parçalar), Göz ve Yüz sekmeleri (20,5–32,5), zarla rastgele görünüş dört kez (33,0–41,0). Kayıtta görülmeyenler: Renk, Ağız, Boyun sekmeleri, "Hepsini çıkar", "Kaydet"e basma, tema şeridi (Tümü, Zarif…) seçimi, sahip olunmayan parça, koyu tema.
+
+Pano: Kapsul2 ("seçilen: deneme şeridi"). Kod: `app/(app)/(tabs)/profile/capsule.tsx`, `src/motion/SnapStrip.tsx`, `src/theme/capsuleCanvas.ts`, `capsuleSkia.ts`.
+
+Önemli: panoyla fark kapatma PR'ı #598 açık ve birleşmemiş (proje sahibinin "birleştir"ini bekliyor). Kayıt #598'siz hâli gösteriyor; panodan sapmaların çoğu o PR'ın kapattığını söylediği şeylerdir ve "#598'de" diye işaretlendi. #598 birleşince bu ekran yeniden kaydedilmeli.
+
+| No  | Durum | Görülen | Pano | Olası neden | Kök | Önem | Tür |
+| --- | ----- | ------- | ---- | ----------- | --- | ---- | --- |
+
+| PF-88 | Şeritte parça değiştirme (destansı ve efsanevi parçalar) | Her parça değişiminde 150–540 ms kare boşluğu: 164 ve 355 ms (9,61–9,78 sn), 151 ve 169 (10,52–10,67), 168 ve 175 (11,71–11,88), 194 ve 100 (12,91–13,10), 145 (14,04), 537 ve 208 (15,13–15,67). Sıradan parçalarda boşluk yok ya da 30–40 ms (5,5–8,0 sn). | Parça yaylı düşer; takılma yok. | Büyük kapsülün çizimi ağır görünüşlerde ilk kez hazırlanırken ana iş parçacığı duruyor (`src/theme/capsuleSkia.ts`, `capsuleCanvas.ts`; #569 bu donmayı azaltmıştı, `docs/PROGRESS.md`). Çıkarım. | Ekrana özgü | Yüksek | Bozukluk |
+| PF-89 | Zarla rastgele görünüş | Zara basınca 260–540 ms tek karelik boşluklar (32,99 ve 33,53 sn); efsanevi setin hareketi sırasında yaklaşık 0,8 sn boyunca kareler 57–146 ms arayla geliyor, yaklaşık saniyede 10–15 kare (40,06–40,85 sn). | Akıcı. | PF-88 ile aynı kök; birden çok parça aynı anda değişiyor. | Ekrana özgü | Yüksek | Bozukluk |
+| PF-90 | Sahne | Sahne kare bir kâğıt kartı ve ekrana ortalı değil: solda yaklaşık 18 dp, sağda yaklaşık 42 dp boşluk var. Yüksek parçalar (alev saç, ejder boynuzu, büyücü şapkası) kartın üst kenarında düz kesiliyor (18,5–20,0 sn; 33,5 sn). | Kart yok: 300 yüksek sahne, ortada 270'lik disk; kapsül ve parçalar kesilmez. | Kart ve disk: #598'de. Kesilme ve ortalanmama #598 açıklamasında yok; karta `overflow` kırpması (`profile/capsule.tsx`; çıkarım). | - | Orta | Bozukluk |
+| PF-91 | Ekranın alt yarısı | Şerit ve noktalar ekranın ortasında bitiyor; alt yarı (yaklaşık 330 dp) tamamen boş (bütün kayıt). | Alt panel sahnenin altından ekranın dibine kadar uzanır (beyaz %72, 34 üst köşe); çipler ve şerit panelin içinde. | #598'de ("alt panel … ekranın dibine kadar"). | - | Orta | Panodan sapma |
+| PF-92 | Tema şeridi ve kategori çipleri | İki yatay şerit de sağ kenarda sert kesiliyor: "Ba…", "Yüz" yarım (bütün kayıt). | Yatay şerit iki uçta yumuşak silinir (`iskelet.md` 3.4; panoda maske). | Maske yok (`profile/capsule.tsx`). #598 açıklamasında geçmiyor. | - | Düşük | Panodan sapma |
+| PF-93 | Düzenleyiciye giriş | Sayfa açıldığında şerit boş: yalnız "Baş boş" yazısı ve noktalar var; parçalar yaklaşık 0,4 sn sonra geliyor (1,0→1,5 sn; 3,5→4,0 sn). | - | Şerit parçaları sayfa oturduktan sonra hazırlanıyor. | K12, K7 | Düşük | Davranış |
+| PF-94 | Baş, başlığın altı, çipler | Başlığın altında "kapsul-…, anonim kimliğin" satırı yok; çipler yaklaşık 30 dp (pano 42); "Hepsini çıkar" ve zar küçük (pano 46); panoda olmayan tema şeridi (Tümü, Zarif, Çiçek…) var. | Alt yazı, çipler 42, düğmeler 46. | #598 "Kapatılmayanlar": alt yazılar, çip ve düğme boyları (`iskelet.md` değerleri). Tema şeridi var olan özellik. | - | Düşük | Bilinen sınır |
+
+Bulgu sayılmayanlar ve tutanlar:
+
+- Şeridin kendisi çalışıyor: seçili parça ortada büyüyor ve halka alıyor, ad ve nadirlik hapı altında, noktalar konumu gösteriyor; kaydırma seçimi tek tek ilerletiyor, iki seçenek arasında gidip gelme (#572) bu kayıtta görülmedi.
+- "Kaydet" değişiklik yokken soluk, ilk değişiklikte yeşil (5,5 sn): kurala uygun. Sekme çubuğu düzenleyicide gizli.
+- Göz değişirken bir karede kapsülün gövdesi yarı saydam görünüyor (29,0 sn): geçişin ara karesi, tek kare.
+- Kankilerin süzülmesi ve göz kırpması bilerek eklenmedi.
+
 ## Ekranlar arası ortak konular
 
 Tek bir ekrana bağlı olmayan, proje sahibinin sohbette bildirdiği ya da birden çok kayıtta görülen konular.
