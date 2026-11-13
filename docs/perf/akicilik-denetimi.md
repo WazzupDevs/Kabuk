@@ -535,9 +535,19 @@ Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı
 | Balon şekli kapalı        | 120 Hz %98       | 13            | 81,7      | 7,40 / 9,10                        | 4,57 / 5,65                     | 16,36 / 16,54                    | 368     |
 | İkisi kapalı              | 120 Hz %97       | 13            | 72,2      | 7,24 / 8,78                        | 4,46 / 5,48                     | 16,57 / 17,02                    | 431     |
 
-### Elle kaydırma ve kaydırma hızı
+### Parmakla kaydırma ve kaydırma hızı
 
-Parmakla kaydırma ölçülmedi; proje sahibi sonra yapacak. Yerine aynı DM'de (taban, bütün anahtarlar açık) kaydırma hızı değiştirildi. Bütün kaydırmalar adb'den gönderilen yapay dokunuştur.
+**Parmakla (proje sahibi, aynı DM, bütün anahtarlar açık, iki koşu, yaklaşık 10 sn hızlı yukarı aşağı):**
+
+| Koşu | Kare | Kare p50 (ms) | Takılma % | Komut gönderme / swap ve GPU / kare toplamı (ms, ortanca, son 120 kare) | Ekranın hızı (kaydırma süresi boyunca)                 |
+| ---- | ---- | ------------- | --------- | ----------------------------------------------------------------------- | ------------------------------------------------------ |
+| 1    | 1173 | 12            | 31,4      | 7,23 / 3,32 / 16,78                                                     | Hareket sırasında 120 Hz; pencerede durulan süre 24 Hz |
+| 2    | 1603 | 12            | 40,7      | 7,31 / 3,31 / 16,58                                                     | 120 Hz %54, 60 Hz %1 (0,3 sn), 24 Hz %45               |
+
+- **Ölçüldü:** parmakla kaydırmada da her kare 16,6–16,8 ms, komut gönderme 7,2–7,3 ms; adb'nin hızlı kaydırmasıyla aynı. Takılma oranı daha düşük (%31–41), çünkü parmak kaydırmaları arasında duraklar ve kısa yavaş anlar var.
+- **Ölçüldü:** ekran parmakla da 120 Hz'de; 60 Hz'e yalnız 0,3 sn indi (geçiş anı).
+
+**Kaydırma hızı (adb):** aynı DM'de kaydırma hızı da değiştirildi. Aşağıdakilerin hepsi adb'den gönderilen yapay dokunuştur.
 
 | Kaydırma                                                                         | Kare sayısı | Kare p50 (ms) | Takılma % | Not                                       |
 | -------------------------------------------------------------------------------- | ----------- | ------------- | --------- | ----------------------------------------- |
