@@ -119,6 +119,9 @@ export const KIT_TYPE = {
   pageSub: t(600, 14, 18),
   friendSince: t(600, 13, 17),
   coverBtn: t(700, 13.5, 17),
+  // Kapsülün (tuval Kapsul2): a slot's chip (14, 700) and the chosen option's name (19, 800).
+  capsuleChip: t(700, 14, 18),
+  capsuleName: t(800, 19, 24, -0.02),
   rowTitle: t(700, 15, 19),
   rowNote: t(500, 12.5, 17),
   rowLock: t(700, 13, 17),
@@ -862,23 +865,22 @@ export const KIT = {
     // Kapsülün (U35): the capsule's 4 ring; the chosen option's 2 ring 2 out round its capsule; a
     // chip's close icon 10 in.
     capsuleRing: 4,
-    // Kapsülünü süsle (iskelet.md → 5.10): the capsule 220 on its riso scene, a breathing shadow
-    // under it (60 % of its width, 14 high); a part put on drops it 18 onto its feet. The trying
-    // strip: 84 round options, 96 apart, the centred one 1.14 and ringed in green, the others 0.9;
-    // its art 60 inside, its two ends fading over 28; at most 7 dots under it.
+    // Kapsülünü süsle (iskelet.md → 5.10): the capsule 220 on its riso scene (its shadow and disc:
+    // theme/capsuleEdit.ts); a part put on drops it 18 onto its feet. The trying strip: 84 round
+    // options, 96 apart, the centred one 1.14 and ringed in green, the others 0.9; its art 62
+    // inside, its two ends fading over 86 (22 % of the board's 390); at most 7 dots under it. The
+    // centred option's green ring 3 wide on its edge (tuval Kapsul2).
     capsuleStage: 220,
-    capsuleShadowW: 0.6,
-    capsuleShadowH: 14,
     capsuleDrop: 18,
     stripItem: 84,
     stripStep: 96,
     stripOn: 1.14,
     stripOff: 0.9,
-    stripArt: 60,
-    stripFade: 28,
+    stripArt: 62,
+    stripFade: 86,
     stripDots: 7,
-    boxRing: 2,
-    boxRingGap: 2,
+    boxRing: 3,
+    boxRingGap: 0,
     chipIconPadLeft: 10,
     avRing: 2,
     avRingXs: 1.5,
