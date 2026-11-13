@@ -8,7 +8,7 @@ import {
   voteTally,
   votersFor,
 } from '@shared/vampir.ts';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -82,9 +82,10 @@ function useView(roomId: string, state: VampirState) {
   });
   const vampire = query.data?.role === 'vampir';
   const acted = state.phase === 'night' ? state.acted : 0;
+  // The key is the step's; only `acted` moving reads again.
+  const readAgain = useEffectEvent(() => void queryClient.invalidateQueries({ queryKey: key }));
   useEffect(() => {
-    if (vampire && acted > 0) void queryClient.invalidateQueries({ queryKey: key });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- the key is the step's, `acted` moves
+    if (vampire && acted > 0) readAgain();
   }, [vampire, acted]);
   return query;
 }

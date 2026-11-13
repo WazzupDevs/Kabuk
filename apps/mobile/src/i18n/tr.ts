@@ -739,7 +739,8 @@ export const tr = {
     // docs/decisions/yasal-metinler.md). The version shown is recorded (_shared/pure/consent.ts).
     locationBody:
       '"Konumumu kullan"a bastığında konumun, yalnızca mekanda olduğunu doğrulamak için bir kez alınır. Konumun saklanmaz.',
-    useLocation: 'Konumumu kullan',
+    // Not `use…`: the compiler takes such a name for a hook passed as a value (A-21).
+    shareLocation: 'Konumumu kullan',
     // skall tuvali (KesfetKonumIzin, KesfetMekan); approved 27 Ekim.
     deniedTitle: 'Konum izni yok',
     replaces: (venue: string) => `${venue} girişin biter; bulunduğun masadan ayrılırsın.`,

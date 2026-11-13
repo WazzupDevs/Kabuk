@@ -22,7 +22,9 @@ type Props = {
 // The short notice at the top of a game (v43 report §5, the v45 file's .tg-flash): a white pill,
 // in with a pop, gone after 1.6 s ("1 puan aldın"; "Yasak! Kart geçildi" in red). It sits over the
 // prompt, never over the buttons, and lets touches through. Screen readers hear it once, announced.
-export function GameToast({ message, top = SPACING[16] - SPACING[0.5], testID }: Props) {
+const TOAST_TOP = SPACING[16] - SPACING[0.5];
+
+export function GameToast({ message, top = TOAST_TOP, testID }: Props) {
   const { shape } = useTheme();
   const reduce = useReduceMotion();
   // The notice that timed out; a new id shows again.

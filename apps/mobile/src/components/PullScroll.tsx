@@ -2,6 +2,7 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { type ScrollViewProps, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  type AnimatedRef,
   Easing,
   runOnJS,
   scrollTo,
@@ -58,6 +59,16 @@ const START = 6;
 // mark turns (Dönüş, the loader). Let go earlier and the list settles back. The list settles with
 // v46's transition (none with reduce motion); the indicator follows the finger and goes at once,
 // as in v46. Only the list view has it (v46: `vm === 'list'`).
+// The list held at its top, on the UI thread. In a hook of its own: read where the gesture is
+// built, the animated ref counted as a React ref read while rendering, and the compiler left the
+// whole of PullScroll out (docs/perf/akicilik-denetimi.md → A-21).
+function useHoldAtTop(scroller: AnimatedRef<Animated.ScrollView>) {
+  return useCallback(() => {
+    'worklet';
+    scrollTo(scroller, 0, 0, false);
+  }, [scroller]);
+}
+
 export function PullScroll({
   onRefresh,
   children,
@@ -113,6 +124,7 @@ export function PullScroll({
     scrollY?.set(e.contentOffset.y);
   });
 
+  const holdAtTop = useHoldAtTop(scroller);
   const native = Gesture.Native();
   const pan = Gesture.Pan()
     .activeOffsetY(START)
@@ -124,16 +136,13 @@ export function PullScroll({
       // put on the list in one frame (docs/denetim/pano-fark-2026-11.md → PF-43).
       from.set(e.translationY);
     })
-    // The animated ref is read on the UI thread when the finger moves, not while rendering
-    // (Reanimated's scrollTo); the rule takes `useAnimatedRef` for a React ref.
-    // eslint-disable-next-line react-hooks/refs
     .onUpdate((e) => {
       if (!pulling.get()) return;
       const y = pullOffset(e.translationY - from.get(), p);
       finger.set(y);
       list.set(y);
       // The list does not scroll while it is pulled.
-      if (y > 0) scrollTo(scroller, 0, 0, false);
+      if (y > 0) holdAtTop();
     })
     .onEnd(() => {
       if (!pulling.get()) return;
