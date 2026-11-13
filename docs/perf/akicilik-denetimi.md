@@ -535,15 +535,28 @@ Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı
 | Balon şekli kapalı        | 120 Hz %98       | 13            | 81,7      | 7,40 / 9,10                        | 4,57 / 5,65                     | 16,36 / 16,54                    | 368     |
 | İkisi kapalı              | 120 Hz %97       | 13            | 72,2      | 7,24 / 8,78                        | 4,46 / 5,48                     | 16,57 / 17,02                    | 431     |
 
-### Elle kaydırma
+### Elle kaydırma ve kaydırma hızı
 
-Ölçülmedi: proje sahibinin parmağıyla kaydırması gerekiyor; bu turda telefonda yoktu.
+Parmakla kaydırma ölçülmedi; proje sahibi sonra yapacak. Yerine aynı DM'de (taban, bütün anahtarlar açık) kaydırma hızı değiştirildi. Bütün kaydırmalar adb'den gönderilen yapay dokunuştur.
+
+| Kaydırma                                                                         | Kare sayısı | Kare p50 (ms) | Takılma % | Not                                       |
+| -------------------------------------------------------------------------------- | ----------- | ------------- | --------- | ----------------------------------------- |
+| Hızlı (`swipe` 100 ms, 4.3 ve yukarıdaki tablo)                                  | 695–700     | 13–18         | 74–98     | Bırakınca liste savruluyor                |
+| Orta (`swipe` 300 ms, 1,1 bin piksel)                                            | 1488–1496   | 13–18         | 65–98     |                                           |
+| Yavaş (`swipe` 1500 ms, 1,1 bin piksel)                                          | 2747–2758   | 8             | 11–15     |                                           |
+| Adım adım dokunuş (`motionevent`, kaydırma başına 16 ara nokta, yaklaşık 1,5 sn) | 400–482     | 5–6           | 2,5–4,8   | Parmağa en yakın, ama yine yapay ve yavaş |
+
+Yavaş kaydırmada aşamalar (tek kaydırma): komut gönderme 2,11 ms, swap ve GPU 1,93 ms, kare toplamı 6,87 ms. Hızlı kaydırmada aynı sohbette 7,40, 4,28 ve 16,50 ms.
+
+- **Ölçüldü:** DM'de karenin maliyeti kaydırmanın hızıyla büyüyor. Aynı sohbet ve aynı çizimlerle yavaş kaydırmada kare 6,9 ms (120 Hz bütçesinin içinde), hızlıda 16,5 ms.
+- **Çıkarım:** her karede değişmeyen parçalar (duvar kâğıdı, bant, gölge, balon şekli) yükün kaynağı değil (4.4 B ve yukarıdaki tablo da bunu gösteriyor). Yük, hızlı kaydırmada kare başına ekrana yeni giren satırlarla geliyor: yeni balonların ilk çizimi, resimlerinin hazırlanması ve yüklenmesi. Sonraki ölçüm: savrulma sırasında kare başına kaç satırın bağlandığı ve kaç dokunun yüklendiği (`atrace`, "Texture upload" ve `mountViews` sayısı, hızlıya karşı yavaş).
 
 ### Yanıtlar
 
 - **Ölçüldü:** DM kaydırırken ekran 120 Hz'de, 60 Hz'e inmiyor; hiçbir katman 60 istemiyor, klavye ya da başka pencere yok.
 - **Ölçüldü:** DM'de ve Keşfet'te dururken ekran 24 Hz'e iniyor (Samsung'un hareketsiz içerik modu). Dokunuşla 120'ye çıkıyor; dokunuş bitince yaklaşık 1 sn içinde iniyor.
 - **Çıkarım:** DM'deki 16 ms'lik kare, ekranın hızından değil, karelerin 120 Hz bütçesine (8,3 ms) sığmamasından: her kare iki tazelemeye yayılıyor (4.6: GPU geride, tampon bekleniyor).
+- **Ölçüldü:** yavaş kaydırmada aynı DM'de kare 6,9 ms; 16 ms yalnız hızlı kaydırmada ve savrulmada çıkıyor.
 - **Ölçüldü:** "Ters liste" kapatılınca (liste düz) kare 16,5'ten 25,2 ms'ye çıkıyor, yükü GPU'ya kayıyor (swap 4,4 → 13,2 ms, komut gönderme 7,4 → 2,6 ms). İki koşuda da aynı.
 - **Ölçüldü:** "Balon şekli" tek başına kapatılınca kare değişmiyor (16,4 ms). İkisi birden kapalıyken kare yine 16,6 ms.
 - **Çıkarım:** düz listede balon şekilleri GPU'da daha pahalı çiziliyor; balon şekli de kapalıyken bu pahalılık kalkıyor. Ters listenin kendisi kareyi ucuzlatmıyor, tersine çevirmenin kaldırılması tek başına daha kötü.
