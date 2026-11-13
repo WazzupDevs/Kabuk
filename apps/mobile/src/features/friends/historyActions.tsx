@@ -169,6 +169,11 @@ export function HistoryActions({
   const action = historyAction(h);
   const silent = h.reveal_mutual || h.friend_open;
   const pending = act.isPending && act.variables?.historyId === h.id;
+  // In the game sheet's list a press on one row leaves the other rows as they are (a press on
+  // them is passed over while it waits): shown disabled, every other row's button dimmed and
+  // narrowed for the half second, and the whole list moved twice
+  // (docs/denetim/pano-fark-2026-11.md → PF-28). The stacked card has one record, so it dims.
+  const othersBusy = act.isPending && !row;
   const state = friend?.threadId
     ? 'message'
     : action === 'done'
@@ -213,9 +218,11 @@ export function HistoryActions({
       look={row ? DONE_LOOK : undefined}
       testID="history-added"
       label={tr.tableEnd.added}
-      disabled={act.isPending}
+      disabled={othersBusy}
       loading={pending}
-      onPress={() => act.mutate({ kind: 'withdraw', historyId: h.id })}
+      onPress={() => {
+        if (!act.isPending) act.mutate({ kind: 'withdraw', historyId: h.id });
+      }}
     />
   ) : action === 'done' ? (
     row ? (
@@ -254,9 +261,10 @@ export function HistoryActions({
             : tr.friends.addFriend
           : tr.friends.sendRequest
       }
-      disabled={act.isPending}
+      disabled={othersBusy}
       loading={pending}
       onPress={() =>
+        !act.isPending &&
         act.mutate({
           kind: action === 'add_friend' ? 'add' : 'request',
           historyId: h.id,
@@ -295,13 +303,13 @@ export function HistoryActions({
       <View style={{ gap: SPACING[2] }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SHEET.row.gap }}>
           {row.lead}
-          <View style={{ flex: 1, minWidth: 0, gap: SHEET.row.nameGap }}>
-            {row.title}
-            {hint}
-          </View>
+          <View style={{ flex: 1, minWidth: 0, gap: SHEET.row.nameGap }}>{row.title}</View>
           {narrow ? null : actions}
         </View>
         {narrow ? actions : null}
+        {/* Under the row at its full width: beside the buttons it had the name's narrow column
+            and stood a word to a line (docs/denetim/pano-fark-2026-11.md → PF-26). */}
+        {hint}
       </View>
     );
   }
