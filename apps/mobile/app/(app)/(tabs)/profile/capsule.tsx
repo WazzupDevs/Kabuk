@@ -3,7 +3,7 @@ import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
+import { BackHandler, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -215,6 +215,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const wholeKit = useWholeKit();
   const prepareStill = wholeKit?.prepareStill;
   const prepareInside = wholeKit?.prepareWholeInside ?? prepare;
+  // The strips' tiles as ready pictures while the whole capsule is Skia's (FxSkia.tsx → tileUri).
+  const tile = wholeKit?.tile;
   // Read ahead in idle time, a few at a time, while the idle turn lasts: first the big capsule as
   // the options next to the chosen one would draw it (its layers, and Skia's plan and SVGs), so that
   // choosing one draws with nothing left to read (the owner's report, 11 Kasım: a suit's first
@@ -236,7 +238,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       ),
       ...tileOrder(rows, slot, Math.max(from, 0)).map((t) => () => {
         const xml = optionArt(t.slot, t.o, color);
-        if (xml) readAhead(xml);
+        if (!xml) return;
+        if (tile) tile(xml, KIT.size.stripArt);
+        else readAhead(xml);
       }),
     ];
     let next = 0;
@@ -266,6 +270,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     reduce,
     prepareInside,
     prepareStill,
+    tile,
   ]);
 
   const E = CAPSULE_EDIT;
@@ -470,7 +475,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                 chosen={chosen}
                 keyOf={(i) => shown[i]?.key ?? String(i)}
                 labelOf={(i) => shown[i]?.name ?? ''}
-                renderItem={(i) => <OptionArt slot={slot} option={shown[i]} color={color} />}
+                renderItem={(i) => (
+                  <OptionArt slot={slot} option={shown[i]} color={color} tile={tile} />
+                )}
                 onPick={(i) => {
                   const o = shown[i];
                   if (o) put(o.apply(look), null);
@@ -559,14 +566,27 @@ function OptionArt({
   slot,
   option,
   color,
+  tile,
 }: {
   slot: LookSlot;
   option: Option | undefined;
   color: string | undefined;
+  tile: ((xml: string, size: number) => string | null) | undefined;
 }) {
   const { c } = useKit();
   const xml = option ? optionArt(slot, option, color) : null;
   if (!xml) return <CapIcon name="block" color={c.muted} />;
+  const uri = tile ? tile(xml, KIT.size.stripArt) : null;
+  if (uri) {
+    return (
+      <Image
+        source={{ uri }}
+        fadeDuration={0}
+        accessible={false}
+        style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }}
+      />
+    );
+  }
   return (
     <View style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }}>
       <CachedSvg xml={xml} width="100%" height="100%" />

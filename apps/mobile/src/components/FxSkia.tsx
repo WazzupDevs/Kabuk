@@ -397,6 +397,41 @@ function readWhole(
   return out;
 }
 
+// A small still drawing (an option's tile in Süsle's strips) as a picture's address: drawn once
+// off the screen at the screen's pixels and kept as a PNG's text, which an Image shows in one view.
+// The picture way made a native view of each of the tile's shapes and drew it on the UI thread the
+// frame it came on the screen: a roll of the dice, which moves every strip, held that frame for a
+// second or two (docs/perf/akicilik-denetimi.md → 4.6). Null when it cannot be made: the SVG then.
+const tiles = createLru<{ uri: string | null }>(400);
+
+export function tileUri(xml: string, size: number): string | null {
+  const ratio = PixelRatio.get();
+  const key = `${ratio}|${size}|${xml}`;
+  const hit = tiles.get(key);
+  if (hit !== undefined) return hit.uri;
+  let uri: string | null = null;
+  try {
+    const svg = Skia.SVG.MakeFromString(xml);
+    const px = Math.ceil(size * ratio);
+    const surface = svg ? Skia.Surface.Make(px, px) : null;
+    if (svg && surface) {
+      const canvas = surface.getCanvas();
+      canvas.scale(ratio, ratio);
+      canvas.drawSvg(svg, size, size);
+      surface.flush();
+      const image = surface.makeImageSnapshot();
+      uri = `data:image/png;base64,${image.encodeToBase64()}`;
+      image.dispose();
+    }
+    surface?.dispose();
+    svg?.dispose();
+  } catch {
+    uri = null;
+  }
+  tiles.set(key, { uri });
+  return uri;
+}
+
 function artsOf(layers: readonly WholeRead[]): Art[] {
   return layers.flatMap((l) =>
     l.kind === 'still' ? [l.art] : l.kind === 'inside' ? [l.mask, l.content] : artsOf(l.layers),
