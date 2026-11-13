@@ -11,7 +11,11 @@
 // changes on an opening, so nothing under it draws again).
 // The chat's parts (docs/perf/akicilik-denetimi.md → 4.3: a chat's every frame costs the same
 // whatever its bubbles hold; which full-screen layer costs it is measured with these): `duvar` the
-// wallpaper (the plain ground instead), `bant` the wallpaper's strips under the bars.
+// wallpaper (the plain ground instead), `bant` the wallpaper's strips under the bars. The wall, its
+// strips and the shadows did not move a frame's cost (4.4 B), so two more, which change what the
+// chat shows and are for measuring only: `ters` the list not flipped (a chat's list is drawn from
+// the bottom up, itself and each row mirrored: unflipped it reads newest first), `balon` a bubble
+// as a plain round box (no drawn shape and tail, no skin).
 export type DrawPart =
   | 'cam'
   | 'golge'
@@ -23,7 +27,9 @@ export type DrawPart =
   | 'gelis'
   | 'kademe'
   | 'duvar'
-  | 'bant';
+  | 'bant'
+  | 'ters'
+  | 'balon';
 
 export const DRAW_PARTS: readonly DrawPart[] = [
   'cam',
@@ -37,6 +43,8 @@ export const DRAW_PARTS: readonly DrawPart[] = [
   'kademe',
   'duvar',
   'bant',
+  'ters',
+  'balon',
 ];
 
 // The tab switch's own parts: turned off by hand (the panel's switches) while tabs are switched,
@@ -45,7 +53,7 @@ export const SWITCH_PARTS: readonly DrawPart[] = ['buzlu', 'bulanma', 'gelis', '
 
 // The chat's parts, turned off by hand; with "Kapanınca koru" they stay off when the panel closes
 // (the panel covers the top of the chat it measures).
-export const CHAT_PARTS: readonly DrawPart[] = ['duvar', 'bant', 'golge'];
+export const CHAT_PARTS: readonly DrawPart[] = ['duvar', 'bant', 'golge', 'ters', 'balon'];
 
 export type DrawStepKey =
   'all' | 'cam' | 'buzlu' | 'golge' | 'kart' | 'zemin' | 'four' | 'hareket' | 'end';

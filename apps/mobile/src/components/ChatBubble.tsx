@@ -239,6 +239,8 @@ export function ChatBubble({
   // The words on a coloured bubble are white: another's, and a set's balloon.
   const onColour = !mine || skin !== null;
   const shadowOff = useLabOff('golge');
+  // Çizim ölçümü's `balon` (a preview build only): a plain round box, no drawn shape, no skin.
+  const plain = useLabOff('balon');
   const fg = skin ? skin.ink : mine ? paint.mineInk : paint.themInk;
   const muted = skin
     ? skin.muted
@@ -349,8 +351,8 @@ export function ChatBubble({
     </Pressable>
   );
   function face(lifted: boolean) {
-    const skinned = skin !== null && !big;
-    const shaped = last && !big && box !== null && !skinned;
+    const skinned = skin !== null && !big && !plain;
+    const shaped = last && !big && box !== null && !skinned && !plain;
     return (
       <View
         ref={lifted ? undefined : faceRef}

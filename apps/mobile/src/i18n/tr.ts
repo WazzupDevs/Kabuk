@@ -2253,6 +2253,8 @@ export const tr = {
         kademe: 'Kademe',
         duvar: 'Duvar kâğıdı',
         bant: 'Duvar bandı',
+        ters: 'Ters liste',
+        balon: 'Balon şekli',
       },
       chatParts: 'Sohbette kapat',
       hold: 'Kapanınca koru',

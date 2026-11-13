@@ -1007,18 +1007,21 @@ function ChatList<T extends ChatListItem>({
   useEffect(() => {
     popOpenRef.current = popOpen;
   });
+  // Çizim ölçümü's `ters` (a preview build only): the list not flipped, to measure what the flip
+  // costs a frame; it reads newest first then.
+  const flipped = !useLabOff('ters');
   const renderScroll = useCallback(
     (props: ScrollViewProps) => (
       <KeyboardChatScrollView
         {...props}
-        inverted
+        inverted={flipped}
         // At the end it rises with the keyboard; scrolled up it stays (the reader's place).
         keyboardLiftBehavior="whenAtEnd"
         offset={keyboardOffset}
         freeze={popOpen}
       />
     ),
-    [keyboardOffset, popOpen],
+    [keyboardOffset, popOpen, flipped],
   );
 
   return (
@@ -1026,7 +1029,7 @@ function ChatList<T extends ChatListItem>({
       <ChatBarContext.Provider value={bar}>
         <ChatJumpContext.Provider value={jump}>
           <ChatRowStoreContext.Provider value={store}>
-            <ChatInvertedContext.Provider value>
+            <ChatInvertedContext.Provider value={flipped}>
               <ChatScrollingContext.Provider value={scrolling}>
                 <ChatMoversContext.Provider value={movers}>
                   {items.length === 0 && empty ? (
@@ -1048,7 +1051,7 @@ function ChatList<T extends ChatListItem>({
                           ref={list}
                           testID={testID}
                           data={items}
-                          inverted
+                          inverted={flipped}
                           keyExtractor={(item) => item.key}
                           renderItem={({ item }) => renderItem(item)}
                           renderScrollComponent={renderScroll}
