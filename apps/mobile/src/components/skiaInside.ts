@@ -23,6 +23,8 @@ export type SkiaKit = {
   Whole: WholePainter;
   prepareStill: (xml: string, width: number, height: number) => void;
   prepareWholeInside: (layer: FxInside, place: FxPlace) => void;
+  // A small still drawing as a picture's address (FxSkia.tsx → tileUri), null when not made.
+  tile: (xml: string, size: number) => string | null;
 };
 // Kept in an object: a function given to useState would be called as its initial value.
 type Loaded = SkiaKit | 'failed';
@@ -40,6 +42,7 @@ function load(): Promise<Loaded> {
             Whole: mod.SkiaWhole,
             prepareStill: mod.prepareStill,
             prepareWholeInside: mod.prepareWholeInside,
+            tile: mod.tileUri,
           }
         : 'failed',
     (): Loaded => 'failed',
