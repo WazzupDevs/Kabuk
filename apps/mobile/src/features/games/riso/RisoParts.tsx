@@ -17,11 +17,13 @@ import { shadowParts } from '@/components/NativeShadow';
 import { useProfile } from '@/features/account/useProfile';
 import { useProfileView } from '@/features/profile/queries';
 import type { TablePerson } from '@/features/rooms/queries';
+import { useSecondsLeft } from '@/features/games/useSecondsLeft';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { krotTimer } from '@/theme/krot';
 import { RISO as R, RISO_TYPE, risoDeck, risoDeckHeight, type RisoDeck } from '@/theme/riso';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -172,6 +174,22 @@ export function TimeCapsule({ stage }: { stage: RisoTimer }) {
       />
     </View>
   );
+}
+
+// A phase's clock as its screen hands it down: when it ends and how long it is in all. The seconds
+// are read by the strip alone (`useStageClock`), so the phase's screen is not drawn again every
+// second (docs/perf/akicilik-denetimi.md → A-25). `bare`: the number alone ("12"), else "0:12";
+// `upLabel`: what screen readers hear at 0.
+export type StageClock = { endsAt: number; total: number; bare?: boolean; upLabel?: string };
+
+export function useStageClock(clock: StageClock) {
+  const left = useSecondsLeft(clock.endsAt);
+  return {
+    stage: krotTimer(left, clock.total),
+    text: clock.bare ? String(left) : tr.games.clock(left),
+    label: left === 0 && clock.upLabel ? clock.upLabel : tr.games.clockLabel(left),
+    late: left <= R.lowSeconds,
+  };
 }
 
 // The time strip (`.strip`): the capsule, the time (in --buzz in the last 10 seconds), the title

@@ -65,6 +65,23 @@ import { FxMoves } from '@/components/FxSvg';
 // (its people, name, headcount and lobby state, the owner's "Lobiye aç" or "Lobiden çek"), then the
 // games. The table's end is Masa bitti; a participant who leaves sees "Masadan ayrıldın".
 // The accessories move here (the owner's call, 7 Kasım; components/FxSvg.tsx → FxMoves).
+type Row = Parameters<typeof vampirMode>[0];
+
+// The game that has the table, if one does (its page, its play or its end), and the key one sent
+// back to the table is remembered by.
+function gameModeOf(r: Row) {
+  return (
+    vampirMode(r) ??
+    kinshiMode(r) ??
+    krotMode(r) ??
+    signumMode(r) ??
+    kibritMode(r) ??
+    sprengjaMode(r) ??
+    kauphollMode(r)
+  );
+}
+const gameKeyOf = (r: Row) => `${gameModeOf(r)}:${gameNoOf(r.game_state)}`;
+
 export default function TableScreen() {
   return (
     <FxMoves>
@@ -118,8 +135,13 @@ function TableScreenBody() {
     });
     return () => sub.remove();
   }, [drawer]);
-  const votes = useTableVotes(id, open);
   const hiddenGame = useVampirHidden((s) => s.hidden[id]);
+  // The votes are on the table's posters only: while a game has the screen they are not read (each
+  // move of the game changes the table's row and asked for them again; A-24). Back at the table
+  // the read made stale meanwhile runs at once.
+  const now = room.data;
+  const inGame = !!now && !!gameModeOf(now) && hiddenGame !== gameKeyOf(now);
+  const votes = useTableVotes(id, open && !inGame);
   const hideGame = useVampirHidden((s) => s.hide);
   const showGame = useVampirHidden((s) => s.show);
 
@@ -296,8 +318,8 @@ function TableScreenBody() {
   const signum = signumMode(r);
   const kibrit = kibritMode(r);
   const sprengja = sprengjaMode(r);
-  const gameMode = vampir ?? kinshi ?? krot ?? signum ?? kibrit ?? sprengja ?? kauphollMode(r);
-  const gameKey = `${gameMode}:${gameNoOf(r.game_state)}`;
+  const gameMode = gameModeOf(r);
+  const gameKey = gameKeyOf(r);
   if (gameMode && hiddenGame !== gameKey) {
     const Game = vampir
       ? VampirGame
