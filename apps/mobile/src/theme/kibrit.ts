@@ -44,7 +44,7 @@ export const KIBRIT = {
   // The dark pills over a picture (`.cntb`, `.u span`): rgba(20,16,22,.86), white words.
   pill: 'rgba(20, 16, 22, 0.86)',
   onPill: '#FFFFFF',
-  // The pictures' size (b-kagit 1480 × 1973) for the paper texture.
+  // The pictures' size (b-kagit, 3:4: 1184 × 1579, drawn at 1480 × 1973) for the paper texture.
   paperRatio: 1973 / 1480,
   // Between the strip (106 + 90) and what follows at 206; between the bar (98) and the heading at
   // 110.
