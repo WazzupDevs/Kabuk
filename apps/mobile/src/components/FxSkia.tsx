@@ -248,26 +248,82 @@ function Drawn({
 // each frame, a look's layers took twice the UI thread's time while anything on the canvas moved).
 // Made off the screen, on this thread, where the SVG is read; `image` null (no surface) draws the
 // SVG from its shapes as before.
-type Art = { svg: SkSVG; image: SkImage | null; width: number; height: number };
+type Art = { svg: SkSVG; kept: Kept; width: number; height: number };
 type WholeRead =
   | { kind: 'still'; art: Art }
   | { kind: 'inside'; plan: SkiaPlan; mask: Art; content: Art }
   | { kind: 'move'; move: WholeMove; layers: WholeRead[] };
 
 // The pictures kept: a look's few layers at the stage's size (about 2 MB each at three pixels a
-// point), the look shown, the one fading out and the ones read ahead.
-const images = createLru<{ image: SkImage | null }>(32);
+// point), the look shown, the one fading out and the ones read ahead. A picture's pixels are not
+// the JS heap's: one dropped from here is let go by hand (`dispose`), not left to the collector,
+// which does not see them (docs/perf/akicilik-denetimi.md → 4.5: 1,47 GB after a few rolls of the
+// dice, and not given back on leaving Süsle). One a canvas on the screen still shows is let go
+// when that canvas goes; when no canvas is left, all of them are, a moment later.
+type Kept = { image: SkImage | null; uses: number; cached: boolean };
+const KEEP = 32;
+const kept = new Map<string, Kept>();
+let shown = 0;
+let emptying: ReturnType<typeof setTimeout> | null = null;
+const EMPTY_AFTER_MS = 2000;
+const LET_GO_AFTER_MS = 500;
 
-function imageOf(
-  xml: string,
-  svg: SkSVG,
-  width: number,
-  height: number,
-  ratio: number,
-): SkImage | null {
+function letGo(k: Kept): void {
+  if (k.uses > 0 || k.cached || !k.image) return;
+  k.image.dispose();
+  k.image = null;
+}
+
+function keep(key: string, k: Kept): void {
+  kept.delete(key);
+  kept.set(key, k);
+  while (kept.size > KEEP) {
+    const oldest = kept.entries().next();
+    if (oldest.done) break;
+    const [oldKey, old] = oldest.value;
+    kept.delete(oldKey);
+    old.cached = false;
+    letGo(old);
+  }
+}
+
+// A canvas takes the pictures it shows and gives them back when it goes.
+function holdArts(arts: readonly Art[]): () => void {
+  if (emptying) {
+    clearTimeout(emptying);
+    emptying = null;
+  }
+  for (const a of arts) a.kept.uses += 1;
+  shown += 1;
+  return () => {
+    for (const a of arts) a.kept.uses -= 1;
+    // A little after the canvas went: its last frame may still be on its way to the screen.
+    setTimeout(() => {
+      for (const a of arts) letGo(a.kept);
+    }, LET_GO_AFTER_MS);
+    shown -= 1;
+    if (shown > 0 || emptying) return;
+    // The last canvas went (Süsle closed): everything kept goes too, unless one comes back at once
+    // (a look changed: the old canvas goes before the new one is counted).
+    emptying = setTimeout(() => {
+      emptying = null;
+      if (shown > 0) return;
+      for (const [key, k] of [...kept]) {
+        kept.delete(key);
+        k.cached = false;
+        letGo(k);
+      }
+    }, EMPTY_AFTER_MS);
+  };
+}
+
+function imageOf(xml: string, svg: SkSVG, width: number, height: number, ratio: number): Kept {
   const key = `${ratio}|${width}x${height}|${xml}`;
-  const hit = images.get(key);
-  if (hit !== undefined) return hit.image;
+  const hit = kept.get(key);
+  if (hit) {
+    keep(key, hit);
+    return hit;
+  }
   let image: SkImage | null = null;
   try {
     const surface = Skia.Surface.Make(Math.ceil(width * ratio), Math.ceil(height * ratio));
@@ -277,17 +333,20 @@ function imageOf(
       canvas.drawSvg(svg, width, height);
       surface.flush();
       image = surface.makeImageSnapshot();
+      // The picture keeps its own pixels; the surface it was drawn on is not needed again.
+      surface.dispose();
     }
   } catch {
     image = null;
   }
-  images.set(key, { image });
-  return image;
+  const made: Kept = { image, uses: 0, cached: true };
+  keep(key, made);
+  return made;
 }
 
 function artOf(xml: string, width: number, height: number, ratio: number): Art | null {
   const svg = svgOf(xml, width, height);
-  return svg ? { svg, image: imageOf(xml, svg, width, height, ratio), width, height } : null;
+  return svg ? { svg, kept: imageOf(xml, svg, width, height, ratio), width, height } : null;
 }
 
 // A picture at its pixels (its surface was a whole number of them), or the SVG from its shapes
@@ -295,9 +354,10 @@ function artOf(xml: string, width: number, height: number, ratio: number): Art |
 const SHARP = { filter: FilterMode.Linear, mipmap: MipmapMode.None };
 function ArtAt({ art }: { art: Art }) {
   const ratio = PixelRatio.get();
-  return art.image ? (
+  const image = art.kept.image;
+  return image ? (
     <Image
-      image={art.image}
+      image={image}
       x={0}
       y={0}
       width={Math.ceil(art.width * ratio) / ratio}
@@ -337,6 +397,12 @@ function readWhole(
   return out;
 }
 
+function artsOf(layers: readonly WholeRead[]): Art[] {
+  return layers.flatMap((l) =>
+    l.kind === 'still' ? [l.art] : l.kind === 'inside' ? [l.mask, l.content] : artsOf(l.layers),
+  );
+}
+
 // Reads a drawing's still layer ahead for the whole canvas, in idle time (prepareInside reads the
 // motions inside a clip): the SVG is parsed once, at the size the canvas draws it.
 export function prepareStill(xml: string, width: number, height: number): void {
@@ -361,6 +427,8 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
     const whole = wholeLayers(layers, place, ratio, planOf);
     return whole ? readWhole(whole, width, height, ratio) : null;
   }, [layers, place, ratio, width, height]);
+  // The pictures this canvas shows are its own while it is on the screen.
+  useEffect(() => (read ? holdArts(artsOf(read)) : undefined), [read]);
   if (!read) return fallback;
   const pad = Math.ceil(Math.max(width, height) * WHOLE_PAD);
   return (
