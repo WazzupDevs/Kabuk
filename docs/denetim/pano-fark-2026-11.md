@@ -235,6 +235,32 @@ Bulgu sayılmayanlar ve notlar:
 - Hayalet (PF-25) bu kayıtta Ayarlar sayfası hiç kapatılmadığı için denetlenemedi.
 - PF-06 (dolu ikonlar) satır ikonlarında da var.
 
+## Mekan detayı, mekana giriş, Mekan (masasız ve masalı), Masa kur, masa ekranına geçiş
+
+Kayıt: 44,5 sn, açık tema. Sıra: Mekan detayı (0–0,9 sn), giriş sayfası ve "Konum alınıyor…" (1,0–8,3), Mekan masasız (8,4–15,5; kaydırma 11,6–14,9), Masa kur sayfası (15,5–19,8), masa ekranı (20,2–22,2), Mekan masalı (22,4 sonrası; kaydırma 23,4–34,7), üç nokta menüsü (36,2–41,3). Kayıtta görülmeyenler: Mekan detayında kaydırma, dolu lobi, katılma isteği, davet sayfası, "Lobiye aç", mekan sohbetine yazma, mekandan ayrılma, masa dolu hâli, koyu tema.
+
+Panolar: Detay, DetayUst, Mekan, MekanMasa, MekanMenu. Masa kur sayfası ve masa ekranı tuvalde yok; onlara yalnız geçiş ve akıcılık açısından bakıldı. Kod: Mekan sekmesi ekranı, `src/theme/venue.ts`, `src/theme/aura.ts` → `venueCollapse`, `src/motion/CollapsingCard.tsx`.
+
+| No  | Durum | Görülen | Pano | Olası neden | Kök | Önem | Tür |
+| --- | ----- | ------- | ---- | ----------- | --- | ---- | --- |
+
+| PF-78 | Mekan, kaydırılmış (masalı ve masasız) | Masa kartı şeride küçülmüyor: kaydırma, kart yaklaşık 300 dp'den 195 dp'ye inmişken bitiyor. Bu hâlde görsel, yüzler ve "Sadece sen varsın" kalıyor; "Lobiye aç" ve "Davet et" düğmeleri kartın alt kenarında kesilip kayboluyor (23,5 sn'de düğme yarım kesik; 23,6 sn'den sonra yok). Mekan sohbeti kartı tek satıra inmiyor. Masasızken kart hiç küçülmüyor (12,0–13,0 sn). | Kart 72'lik şeride iner (görsel, ad, durum, "Lobiye aç") ve barın altına yapışır; mekan sohbeti 54'lük tek satıra iner; açık masalar altlarından akar (not mk2). | Çıkarım: kaydırma yolu yetmiyor. İçerik kısa olduğu için liste, kartın katlanması tamamlanmadan sona varıyor (pano 1700 yüksek içerikle çizilmiş). Katlanma `src/theme/aura.ts` → `venueCollapse` ve `src/motion/CollapsingCard.tsx`'te var; açık masa yokken alt boşluk yetersiz. | Ekrana özgü | Yüksek | Bozukluk |
+| PF-79 | Mekana giriş sayfası | Sayfanın başlığı (mekan adı) X düğmesinin altına giriyor ve son harfinde kesiliyor (1,0–8,3 sn boyunca). | Metin kesilmez (CLAUDE.md → Ekran davranışı). | Başlık tek satır ve X için yer ayrılmamış (`src/motion/Sheet.tsx` başlık satırı; çıkarım). Uzun başlıklı her alt sayfada olur. | K1, K8 | Orta | Bozukluk |
+| PF-80 | Girişten Mekan'a geçiş | Konum alınınca sayfa kapanmadan tek karede Mekan sekmesine kesiliyor (8,30→8,43 sn). Mekan açılırken "Mekan sohbeti" kartı üç kez boy değiştiriyor: önce yalnız yazma alanı, sonra iki iskelet satırıyla uzuyor (8,6 sn), sonra yeniden kısalıyor (9,0 sn); "Açık masalar" her seferinde aşağı yukarı itiliyor. | - | Sohbetin yükleniyor hâli ile boş hâli farklı boyda (Mekan ekranındaki sohbet kartı; çıkarım). | K12 | Orta | Bozukluk |
+| PF-81 | Masa kur → masa ekranı | "Masayı kur"dan sonra sayfa tek karede yok oluyor, bir an masalı Mekan görünüyor (19,92 sn), sonra masa ekranı sağdan geliyor; arada yaklaşık 140 ms boş zemin var (20,09 sn). Masa ekranı iskeletle açılıyor: kapak, yüz ve oyun kartları 200–400 ms içinde ayrı ayrı beliriyor (20,23–20,65 sn). | - | Sayfanın kapanışı ile sayfa geçişi sıraya konmamış. | K1, K7 | Orta | Davranış |
+| PF-82 | Mekan, mekan sohbeti kartı | Yazma alanının ipucu ("Henüz kimse yazmadı. İlk mesajı sen…") gönder düğmesinin altında kesiliyor (9,0 sn'den itibaren). | Metin kesilmez; panoda ipucu kısa. | 360 dp'de ipucu sığmıyor (`src/i18n/tr.ts`, Mekan sohbeti kartı). | K8 | Düşük | Bozukluk |
+| PF-83 | Mekan, masasız kart | Kart yaklaşık 200 dp (pano 300); başlık iki satır; yarı saydam yeşil kanki "Masa kur" düğmesinin sağ kenarının üstünde duruyor (8,5 sn). | 300 yüksek; başlık 26/800; kanki masanın yanında, düğmeye değmez. | Kart boyu dar ekranda oranla küçülüyor olabilir (`src/theme/venue.ts`); kankinin yeri sabit. | K8, K9 | Düşük | Panodan sapma |
+| PF-84 | Mekan, masalı kart ve baş | Görselde "MASAN" üst yazısı yok; "Açık masalar" başlığında sayı yok; düğmeler yaklaşık 36 dp; kaydırınca barda küçük mekan adı ve bant yok; logo küçük. | "MASAN" üst yazısı, "Açık masalar 0", düğmeler 50, barda ad, logo 40. | #597 "Kapatılmayanlar": logo 28, bardaki küçük ad ve bant, karşılığı olmayan pano metinleri, küçük düğmeler. | - | Düşük | Bilinen sınır |
+
+Bulgu sayılmayanlar ve tutanlar:
+
+- Üç nokta menüsü panoya uygun: düğmeden büyüyerek açılıyor, yaklaşık 264 dp, yıkıcı seçenek ayrı ve kırmızı, kalan süre canlı güncelleniyor (36,2–41,3 sn). Kapanışı düzgün.
+- Masalı kartın dinlenme hâli panoyla tutuyor: görsel 210, ad görselin sol altında, "Lobide değil" hapı, yüzler ve boş sandalye, doluluk çizgisi.
+- Mekan detayı (yalnız 0,9 sn görüldü): kapak, tutamaçlı kart, bilgi satırı, ana düğme yaklaşık 52, "Etkinlikler" başlığı ve "Bu hafta" tutuyor. Kaydırma kaydı yok.
+- "Masayı kur" basılınca düğme bekleme gösteriyor ve ikinci basış yok (18,0–19,8 sn): kurala uygun. "Konum alınıyor…" 4,3 sn sürdü; ağ ve konum süresi, tasarım bulgusu değil.
+- Ortak kökler burada da görüldü: küçülen sekme çubuğu ortada (K4), sekme çubuğunun içinden "Açık masalar" yazısı okunuyor (K5), dolu ikonlar (K10).
+- Hayalet (K1) bu kayıtta denetlenemedi: iki alt sayfa da başka ekrana geçilerek kapandı.
+
 ## Ekranlar arası ortak konular
 
 Tek bir ekrana bağlı olmayan, proje sahibinin sohbette bildirdiği ya da birden çok kayıtta görülen konular.
