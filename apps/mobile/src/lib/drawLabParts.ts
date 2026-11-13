@@ -9,8 +9,21 @@
 // fade and rise (TabScene: the screen in place at once, the blur stays), `kademe` the screen's
 // cascade played again on each opening (Screen, Keşfet's rows: the tab's focus context no longer
 // changes on an opening, so nothing under it draws again).
+// The chat's parts (docs/perf/akicilik-denetimi.md → 4.3: a chat's every frame costs the same
+// whatever its bubbles hold; which full-screen layer costs it is measured with these): `duvar` the
+// wallpaper (the plain ground instead), `bant` the wallpaper's strips under the bars.
 export type DrawPart =
-  'cam' | 'golge' | 'kart' | 'zemin' | 'hareket' | 'buzlu' | 'bulanma' | 'gelis' | 'kademe';
+  | 'cam'
+  | 'golge'
+  | 'kart'
+  | 'zemin'
+  | 'hareket'
+  | 'buzlu'
+  | 'bulanma'
+  | 'gelis'
+  | 'kademe'
+  | 'duvar'
+  | 'bant';
 
 export const DRAW_PARTS: readonly DrawPart[] = [
   'cam',
@@ -22,11 +35,17 @@ export const DRAW_PARTS: readonly DrawPart[] = [
   'bulanma',
   'gelis',
   'kademe',
+  'duvar',
+  'bant',
 ];
 
 // The tab switch's own parts: turned off by hand (the panel's switches) while tabs are switched,
 // not by the timed steps (a switch is a press, not a few seconds of a still screen).
 export const SWITCH_PARTS: readonly DrawPart[] = ['buzlu', 'bulanma', 'gelis', 'kademe', 'cam'];
+
+// The chat's parts, turned off by hand; with "Kapanınca koru" they stay off when the panel closes
+// (the panel covers the top of the chat it measures).
+export const CHAT_PARTS: readonly DrawPart[] = ['duvar', 'bant', 'golge'];
 
 export type DrawStepKey =
   'all' | 'cam' | 'buzlu' | 'golge' | 'kart' | 'zemin' | 'four' | 'hareket' | 'end';

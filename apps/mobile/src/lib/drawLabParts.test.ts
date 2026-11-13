@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { DRAW_PARTS, DRAW_STEPS, partsOff, SWITCH_PARTS, togglePart } from './drawLabParts';
+import {
+  CHAT_PARTS,
+  DRAW_PARTS,
+  DRAW_STEPS,
+  partsOff,
+  SWITCH_PARTS,
+  togglePart,
+} from './drawLabParts';
 
 describe('Çizim ölçümü parts (B4)', () => {
   it('nothing is off when no step runs and nothing is turned off by hand', () => {
@@ -31,5 +38,8 @@ describe('Çizim ölçümü parts (B4)', () => {
     expect(DRAW_STEPS[0]?.off).toEqual([]);
     expect(DRAW_STEPS[DRAW_STEPS.length - 1]?.off).toEqual([]);
     for (const p of SWITCH_PARTS) expect(DRAW_PARTS).toContain(p);
+    for (const p of CHAT_PARTS) expect(DRAW_PARTS).toContain(p);
+    // No timed step turns the chat's own parts off: by hand only.
+    for (const s of DRAW_STEPS) expect(s.off).not.toContain('duvar');
   });
 });

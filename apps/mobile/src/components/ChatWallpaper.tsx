@@ -40,7 +40,10 @@ export const ChatWallpaper = memo(function ChatWallpaper({
   canvas,
   source,
   veil,
+  onDrawn,
 }: {
+  // The picture is on the screen (decoded and shown): what lies under it is no longer seen.
+  onDrawn?: () => void;
   kind: ChatWallKind;
   canvas: WallpaperCanvas;
   // The chat's own picture in place of its kind's (Masa sohbeti: the table's tall riso card).
@@ -62,6 +65,7 @@ export const ChatWallpaper = memo(function ChatWallpaper({
         resizeMode="cover"
         resizeMethod={WALL_DECODE}
         accessible={false}
+        onLoad={onDrawn}
         style={{ position: 'absolute', left: 0, top: 0, width: canvas.w, height: canvas.h }}
       />
       {veil ? (

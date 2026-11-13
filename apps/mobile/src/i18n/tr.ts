@@ -2251,7 +2251,11 @@ export const tr = {
         bulanma: 'Bulanma',
         gelis: 'Geliş',
         kademe: 'Kademe',
+        duvar: 'Duvar kâğıdı',
+        bant: 'Duvar bandı',
       },
+      chatParts: 'Sohbette kapat',
+      hold: 'Kapanınca koru',
       // Geçiş ölçümü: the last tab switch's frames on the screen (UI) and on JS, and the last ten.
       switchNone: 'Geçiş ölçümü: bir sekmeye geç',
       switchLast: (thread: string, p95: number, jankPct: number, missed: number) =>
