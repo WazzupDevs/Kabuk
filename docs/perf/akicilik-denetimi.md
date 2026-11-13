@@ -496,6 +496,58 @@ Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı
 - **Ölçüldü:** görünüm sayısı 794'ten 1169'a çıktı. Bunun nedeni bu ölçümde ayrılmadı (çıkarım: şerit bu turda daha çok karo bağladı).
 - **Keskinlik:** galeride ve büyük kapsülde bulanıklık ya da pikselleşme görülmedi.
 
+## 4.7 Yenileme hızı: DM ve Keşfet; ters liste ve balon şekli (13 Kasım 2026, gece)
+
+- **Derleme ve koşullar:**
+  - Galaxy S23, 0.11.0 build 21, release.
+  - İlk okumalar #625'ten önceki güncellemede alındı. Uygulama iki kez yeniden başlatılınca panelde "Ters liste" ve "Balon şekli" geldi; anahtarlı ölçümler ve tabanın tekrarı bu güncellemede.
+  - Pil %100, USB'den şarjda (şarjsız sağlanamadı), sıcaklık 39–40 °C. Rahatsız Etmeyin açıldı, sonra eski hâline (kapalı) alındı.
+- **Yöntem:**
+  - **Hızda geçen süre:** SurfaceFlinger'ın her hızda geçen süre sayacı ("120.00 Hz: …"), eylemden önce ve sonra okundu; fark, o pencerede ekranın hangi hızda ne kadar kaldığını verir.
+  - **Kaydırma ortası:** `renderRate`, etkin modun `vsyncRate`'i ve katmanların oy verdiği kare hızı (`frameRate:` satırları).
+  - **Kaydırma:** 4.3'ün 1. hâlindeki DM'de 6 kez yukarı aşağı, `adb shell input swipe`. Keşfet'te 2a'nın kaydırması.
+- **`dumpsys display` güvenilmez:** `mActiveRenderFrameRate` her durumda 120 gösterdi, ekran 24 Hz'deyken de. Bu yüzden kullanılmadı.
+
+### Ekranın hızı
+
+| An                                       | Hızda geçen süre (pencere yaklaşık 6 sn) | Kaydırma ortasında |
+| ---------------------------------------- | ---------------------------------------- | ------------------ |
+| Keşfet, dururken                         | 24 Hz %96, 120 Hz %4                     | 24 Hz              |
+| Keşfet, kaydırırken                      | 120 Hz %96, 24 Hz %4                     | 120 Hz             |
+| Mesajlar, dururken                       | 24 Hz %95, 120 Hz %5                     | 24 Hz              |
+| DM'ye girerken (dokunuş ve açılış, 4 sn) | 120 Hz %29 (1,25 sn), sonra 24 Hz        | —                  |
+| DM, dururken                             | 24 Hz %100                               | 24 Hz              |
+| DM, kaydırırken (iki koşu)               | 120 Hz %97–99                            | 120 Hz             |
+
+- **Katman oyları:** kaydırma sırasında hiçbir katman sıfırdan büyük kare hızı istemiyor (bütün `frameRate:` satırları 0 Hz, NoPreference ya da Default).
+- **Ekrandaki pencereler:** gezinme çubuğu, durum çubuğu, Samsung kenar paneli, uygulamanın tek penceresi ve giriş katmanları. Klavye penceresi yok. Uygulamanın ikinci bir penceresi ya da yüzeyi yok.
+
+### DM kaydırması: ters liste ve balon şekli (#625 sonrası; tam koşu 3 kez, kısa koşu aşamaları)
+
+"Kapanınca koru" açık. Anahtar panelde işaretliyken o parça kapalı.
+
+| Hâl                       | Hızda geçen süre | Kare p50 (ms) | Takılma % | Komut gönderme (ms, ortanca / p95) | Swap ve GPU (ms, ortanca / p95) | Kare toplamı (ms, ortanca / p95) | Görünüm |
+| ------------------------- | ---------------- | ------------- | --------- | ---------------------------------- | ------------------------------- | -------------------------------- | ------- |
+| Taban (hepsi açık)        | 120 Hz %97       | 13            | 89,0      | 7,40 / 9,12                        | 4,28 / 5,51                     | 16,50 / 16,96                    | 379     |
+| Taban, tekrar             | 120 Hz %97       | 13            | 82,6      | 7,36 / 8,88                        | 4,49 / 5,45                     | 16,38 / 16,58                    | 368     |
+| Ters liste kapalı         | 120 Hz %97       | 18            | 100       | 2,61 / 3,85                        | 13,27 / 14,28                   | 25,22 / 25,65                    | 412     |
+| Ters liste kapalı, tekrar | 120 Hz %97       | 18            | 100       | 2,60 / 4,03                        | 13,09 / 14,19                   | 25,25 / 25,67                    | 409     |
+| Balon şekli kapalı        | 120 Hz %98       | 13            | 81,7      | 7,40 / 9,10                        | 4,57 / 5,65                     | 16,36 / 16,54                    | 368     |
+| İkisi kapalı              | 120 Hz %97       | 13            | 72,2      | 7,24 / 8,78                        | 4,46 / 5,48                     | 16,57 / 17,02                    | 431     |
+
+### Elle kaydırma
+
+Ölçülmedi: proje sahibinin parmağıyla kaydırması gerekiyor; bu turda telefonda yoktu.
+
+### Yanıtlar
+
+- **Ölçüldü:** DM kaydırırken ekran 120 Hz'de, 60 Hz'e inmiyor; hiçbir katman 60 istemiyor, klavye ya da başka pencere yok.
+- **Ölçüldü:** DM'de ve Keşfet'te dururken ekran 24 Hz'e iniyor (Samsung'un hareketsiz içerik modu). Dokunuşla 120'ye çıkıyor; dokunuş bitince yaklaşık 1 sn içinde iniyor.
+- **Çıkarım:** DM'deki 16 ms'lik kare, ekranın hızından değil, karelerin 120 Hz bütçesine (8,3 ms) sığmamasından: her kare iki tazelemeye yayılıyor (4.6: GPU geride, tampon bekleniyor).
+- **Ölçüldü:** "Ters liste" kapatılınca (liste düz) kare 16,5'ten 25,2 ms'ye çıkıyor, yükü GPU'ya kayıyor (swap 4,4 → 13,2 ms, komut gönderme 7,4 → 2,6 ms). İki koşuda da aynı.
+- **Ölçüldü:** "Balon şekli" tek başına kapatılınca kare değişmiyor (16,4 ms). İkisi birden kapalıyken kare yine 16,6 ms.
+- **Çıkarım:** düz listede balon şekilleri GPU'da daha pahalı çiziliyor; balon şekli de kapalıyken bu pahalılık kalkıyor. Ters listenin kendisi kareyi ucuzlatmıyor, tersine çevirmenin kaldırılması tek başına daha kötü.
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
