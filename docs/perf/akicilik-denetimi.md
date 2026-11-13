@@ -358,7 +358,24 @@ Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı
 
 ### B. DM kaydırması
 
-Ölçülmedi: OTA gelmedi. Telefondaki güncelleme #620'den önceki (18.19 UTC); panelde "Sohbette kapat", "Duvar kâğıdı", "Duvar bandı", "Gölge" ve "Kapanınca koru" yok. İki kez yeniden başlatma da değiştirmedi.
+İlk denemede ölçülemedi: telefondaki güncelleme #620'den önceydi (18.19 UTC). #620 telefona gelince ölçüldü (19.27–19.39 UTC, uygulama iki kez yeniden başlatıldıktan sonra; panelde "Sohbette kapat" var).
+
+- **Yöntem:** 4.3'ün 1. hâlindeki sohbet; tam koşu (kare p50, takılma) ve kısa koşu (aşama dağılımı) 4.3 ile aynı. "Kapanınca koru" açık, her hâlde anahtar ayarlandı ve panel kapatıldı.
+- **Koşullar:** pil %88'den %93'e USB'den şarj olurken; sıcaklık 37–41 °C; Rahatsız Etmeyin açık.
+
+| Hâl                                              | Kare p50 (ms) | Takılma % | Komut gönderme (ms, ortanca / p95) | Swap ve GPU (ms, ortanca / p95) | Kare toplamı (ms, ortanca / p95) | Aşırı çizim                                         |
+| ------------------------------------------------ | ------------- | --------- | ---------------------------------- | ------------------------------- | -------------------------------- | --------------------------------------------------- |
+| 1. Hepsi açık (yeni taban; 4.3'te 16,46 / 24,85) | 13            | 66,8      | 7,38 / 8,37                        | 4,46 / 5,04                     | 16,32 / 16,49                    | Zemin ve balonlar 4 kat ve üstü                     |
+| 2. Yalnız duvar kâğıdı kapalı                    | 13            | 60,1      | 7,38 / 8,61                        | 3,99 / 5,03                     | 15,72 / 16,09                    | Değişmedi: zemin düz renk ama yine 4 kat ve üstü    |
+| 3. Yalnız duvar bandı kapalı                     | 14            | 70,5      | 7,38 / 8,55                        | 4,46 / 5,50                     | 16,30 / 16,56                    | Değişmedi                                           |
+| 4. Yalnız gölge kapalı                           | 13            | 61,2      | 7,31 / 8,99                        | 4,48 / 5,52                     | 16,25 / 16,43                    | Değişmedi                                           |
+| 5. Üçü birden kapalı                             | 13            | 50,6      | 7,34 / 9,00                        | 3,86 / 5,08                     | 15,62 / 15,84                    | Değişmedi: 4 kat ve üstü                            |
+| 6a. Hepsi açık, açık tema                        | 14            | 71,5      | 7,16 / 8,89                        | 5,08 / 6,11                     | 16,87 / 17,87                    | Açık zeminde kademe kesin okunamadı (kırmızı tonlu) |
+| 6b. Üçü kapalı, açık tema (temaya geçer geçmez)  | 14            | 66,0      | 3,60 / 8,14                        | 12,19 / 13,76                   | 24,16 / 24,41                    | Kırmızı tonlu                                       |
+| 6b, tekrar (6a'dan sonra)                        | 13            | 63,5      | 7,46 / 8,68                        | 4,00 / 4,93                     | 15,84 / 16,00                    | —                                                   |
+
+- **Sıra etkisi:** 6b temaya geçildikten hemen sonra ölçüldüğünde swap 12 ms çıktı; aynı hâl 6a'dan sonra tekrarlanınca 4 ms. 4.3'ün 7. hâli de temaya geçer geçmez ölçülmüştü (swap 12 ms). **Çıkarım:** 4.3'teki "açık temada GPU üç kat" bulgusu temanın kendisinden değil, geçişten hemen sonraki geçici bir durumdan geliyor; açık tema kendi başına kareyi değiştirmiyor (6a ile 1 arasında fark 0,5 ms).
+- **Geri alınanlar:** üç anahtar açıldı, "Kapanınca koru" kapatıldı (panelde okundu); tema Koyu'ya döndü; `debug.hwui.overdraw` ve `debug.hwui.profile` kapalı; animatör ölçeği 1; Rahatsız Etmeyin eski hâline (kapalı) alındı.
 
 ### Yanıtlar
 
@@ -368,7 +385,8 @@ Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı
 - **Ölçüldü:** düzenleyicideki görünüm sayısı 1619'dan 794'e, tek seferdeki yerleşim güncellemesi 2483'ten 460'a iniyor. Kalan 794 görünüm şerit, karolar ve ekranın geri kalanı. **Çıkarım:** karoların payı ayrıca sayılmadı.
 - **Ölçüldü:** Graphics belleği zar sonrası 242'den 364 MB'a çıkıyor; Native Heap 301'den 163 MB'a iniyor.
 - **Çizim farkı:** şekil, renk ve yerde fark görülmedi. Zemin halkalı beş aksesuarda (Gece teni, Gökkuşağı atkı, Kunai kolyesi, Neon gözlük, Orman teni) halkanın büyüyüp küçülme anı iki tarafta farklı. Bu, saatlerin ayrı olmasından mı yoksa hareketin farklı çizilmesinden mi geliyor, iki kareyle ayrılamadı (çıkarım: saat farkı).
-- **DM:** ölçülmedi, #620 telefona gelmedi.
+- **DM, ölçüldü:** duvar kâğıdı, duvar bandı ve gölge kareyi belirgin değiştirmiyor: üçü birden kapalıyken kare 16,3'ten 15,6 ms'ye iniyor (en çok 0,7 ms, swap'ta); komut gönderme her hâlde 7,3–7,5 ms'de aynı kalıyor. Zemin düzeltmesinden (#620) sonra yeni taban 16,3 ms, 4.3'ün 16,5 ms'siyle aynı.
+- **DM, ölçüldü:** üç parça kapalıyken de aşırı çizim zemin ve balonlarda 4 kat ve üstü. **Çıkarım:** her karedeki sabit yük bu üç parçada değil; duvar kâğıdının altında kalan başka tam ekran katmanlarda ya da balon başına çizilen öğelerin sayısında (kare başına yaklaşık 43 doku çizimi, 4.3). Sonraki ölçüm: bir karenin hangi görünümleri çizdiğini Perfetto'da görünüm adıyla okumak.
 
 ## 5. Düzeltme sırası
 
