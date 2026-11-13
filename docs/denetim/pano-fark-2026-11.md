@@ -9,6 +9,22 @@ Ekran ekran: telefondan alınan ekran kaydı, onaylı tuval panosu ve kodla kar�
 - Tür: panodan sapma, bozukluk, davranış, bilinen sınır (PR açıklamasındaki "Kapatılmayanlar"da ya da bilerek eklenmeyenler listesinde olan).
 - Dosya yolları `apps/mobile/` altındadır.
 
+## Düzeltme durumu (13 Kasım)
+
+Aynı oturum, proje sahibinin isteğiyle, bulguların bir bölümünü düzeltti. Hiçbiri telefonda görülmeden yazıldı; her satır telefonda doğrulanmalı. Burada adı geçmeyen bulgu açıktır.
+
+| PR   | Kök    | Düzeltilen bulgular                                                       | Not                                                                                                                            |
+| ---- | ------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| #601 | K1     | PF-25, PF-20, PF-39, PF-57, PF-30 (sayfanın tek karede yok olması), PF-79 | Hayaletin nedeni kodda doğrulandı. Kapanış eğrisi `hareket.json`'ın çıkış eğrisi oldu (önceki: Telegram'a göre yavaşlayan).    |
+| #602 | K2, K3 | PF-64, PF-71, PF-72, PF-63, PF-73, PF-01, PF-29, PF-41, PF-02             | `Screen` bütün sayfaların iskeleti: sabit sayfalarda başlık ile içerik arası boşluk hesapla korundu. PF-02'nin nedeni çıkarım. |
+| #603 | K4     | PF-03, PF-44, PF-45, PF-69                                                | Sekme çubuğu gizlenirken kaldırılmıyor, sönüyor.                                                                               |
+| #604 | K8     | PF-26, PF-27, PF-28                                                       | Oyun sayfasının satırı.                                                                                                        |
+| #605 | K6     | PF-40, PF-42, PF-43, PF-08                                                | PF-40 proje sahibinin kararı: başlık ve yapışan alan yerinde kalır, yalnız liste iner.                                         |
+| #606 | -      | PF-61, PF-62, PF-78                                                       | PF-61'in nedeni çıkarım (stil kaydırmayı izlemiyordu).                                                                         |
+| #598 | -      | PF-90 (kart), PF-91, PF-94'ün bir bölümü                                  | Proje sahibinin onayıyla birleşti; ekran yeniden kaydedilmeli.                                                                 |
+
+Açık kalan yüksek ve orta bulgular: PF-51, PF-58, PF-53 (sohbet listesi, K11); PF-16, PF-17 (harita); PF-88, PF-89 (kapsül çizimi); PF-31; PF-33; PF-52 ve K5 (cam dolguları); PF-80, PF-81; PF-74 (kankiler). Karar bekleyenler: PF-06 (ikon takımı), PF-85 (profilden "Mesaj" sonrası geri: DM Mesajlar sekmesinin yığınında, gezinme yapısı değişikliği ister), Mesajlar'da başlığın kayması, PF-68.
+
 ## Ortak kökler (önce buradan düzeltilir)
 
 Proje sahibinin yönlendirmesi (13 Kasım): ortak bir bileşende görülen hata, o bileşeni kullanan her ekranda var sayılır; tek tek ekranlarda değil bileşende düzeltilir ve bileşeni kullanan bütün ekranlarda doğrulanır. Bir ekranın kaydında görülmemiş olması o ekranda olmadığını göstermez. Aşağıdaki tablo bulguları köklerine bağlar; ekran bölümlerindeki satırlar kanıt ve ayrıntıdır.

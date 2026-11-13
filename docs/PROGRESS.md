@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (13 Kasım 2026): ekran kayıtlarıyla denetim ve ortak kök düzeltmeleri
+
+- Proje sahibinin on ekran kaydı panolarla ve kodla karşılaştırıldı: `docs/denetim/pano-fark-2026-11.md` (94 numara, 12 ortak kök; #600). Aynı dosyanın başındaki "Düzeltme durumu" hangi bulgunun hangi PR'la kapandığını ve neyin açık kaldığını söyler.
+- Birleşen düzeltmeler: alt sayfa #601, üst bölüm ve çift başlık #602, sekme çubuğu #603, oyun sayfası satırı #604, yenileme ve harita geçişi #605, kendi profil ve Mekan #606; Kapsül düzenleyici #598 proje sahibinin onayıyla. Hiçbiri telefonda görülmedi: sıradaki iş, proje sahibinin telefonda bakıp bildirdiğini düzeltmek.
+- Verilen kararlar: yenilemede yalnız liste iner (PF-40). Bekleyenler: ikon takımı (PF-06), profilden "Mesaj" sonrası geri (PF-85), Mesajlar'da başlığın kayması.
+- Açık kalan en önemliler: sohbet listesinin sona tutunması (PF-51, PF-58), yüzen tarih hapı (PF-53), kapsül düzenleyicide ağır parçalarda takılma (PF-88, PF-89), haritadan listeye dönüş (PF-17).
+
 ## Devir notu (12 Kasım 2026, öğleden sonra): panolarla fark kapatma
 
 - Proje sahibi gece yürütmesinin sonucunu "referansın birebir aynısı olmamış" diye bildirdi: ekranlar yalnız `iskelet.md` metninden yazılmış, tuval panoları açılmamıştı. Panolar indirildi ve ekran ekran ölçü farkı kapatıldı: #592 Keşfet ve Harita, #594 Mekan detayı ve Aktiviteler, #595 Mesajlar ve DM, #596 profiller, #597 Ayarlar ve Mekan. #598 Kapsül düzenleyici açık, proje sahibinin "birleştir"ini bekliyor (Süsle kuralı). Hiçbiri telefonda görülmedi.
