@@ -30,7 +30,6 @@ import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T, Tag, useKit } from '@/aura/kit';
 import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
-import { useSecondsLeft } from '@/features/games/useSecondsLeft';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -38,7 +37,7 @@ import { roomsApi, sahtekarApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
-import { KROT as KR, KROT_TYPE as KTY, krotTimer } from '@/theme/krot';
+import { KROT as KR, KROT_TYPE as KTY } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH, risoDeck } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -55,7 +54,9 @@ import {
   GameTopBar,
   nameOf,
   PeekPair,
+  type StageClock,
   TimeStrip,
+  useStageClock,
 } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
 import {
@@ -330,7 +331,7 @@ type Shared = {
   view: SahtekarView | undefined;
   viewError: string | null;
   // The phase's time: the capsule's stage, the number and what screen readers hear.
-  clock: { stage: 'full' | 'half' | 'low'; text: string; label: string; late: boolean };
+  clock: StageClock;
   // "Rolüm" held: the role card in place of the line-up.
   peeking: boolean;
 };
@@ -396,13 +397,10 @@ function Play({
       right={right}
     />
   );
-  const left = useSecondsLeft(Date.parse(state.endsAt));
-  const bare = state.phase === 'role' || state.phase === 'result';
-  const clock = {
-    stage: krotTimer(left, PHASE_SECONDS[state.phase]),
-    text: bare ? String(left) : tr.games.clock(left),
-    label: tr.games.clockLabel(left),
-    late: left <= R.lowSeconds,
+  const clock: StageClock = {
+    endsAt: Date.parse(state.endsAt),
+    total: PHASE_SECONDS[state.phase],
+    bare: state.phase === 'role' || state.phase === 'result',
   };
   const shared: Shared = {
     roomId,
@@ -422,14 +420,15 @@ function Play({
 }
 
 function Strip({
-  clock,
+  clock: phase,
   title,
   line,
 }: {
-  clock: Shared['clock'];
+  clock: StageClock;
   title?: string;
   line: ReactNode;
 }) {
+  const clock = useStageClock(phase);
   return (
     <TimeStrip
       stage={clock.stage}

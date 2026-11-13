@@ -23,7 +23,7 @@ import { Btn, T, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
 import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
-import { useSecondsLeft } from '@/features/games/useSecondsLeft';
+import { useTimeUp } from '@/features/games/useSecondsLeft';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -33,7 +33,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
 import { FIELD_SIZE, fieldType, KAUPHOLL as K } from '@/theme/kaupholl';
-import { KROT, krotTimer } from '@/theme/krot';
+import { KROT } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -47,7 +47,9 @@ import {
   type Faces,
   GameTopBar,
   nameOf,
+  type StageClock,
   TimeStrip,
+  useStageClock,
 } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
 import { PhasePill, ReadyChip } from '../sahtekar/KrotParts';
@@ -423,8 +425,6 @@ function useBackOnline(onBack: () => void) {
 
 // ------------------------------------------------------------------ the running game
 
-type Clock = { stage: 'full' | 'half' | 'low'; text: string; label: string; late: boolean };
-
 type Shared = {
   roomId: string;
   state: KauphollTable;
@@ -433,8 +433,8 @@ type Shared = {
   playing: boolean;
   offline: boolean;
   cover: ReactNode;
-  clock: Clock;
-  left: number;
+  clock: StageClock;
+  timeUp: boolean;
   // This phone's guess locked by time's end (the board's "Kesinleşti").
   autoLocked: boolean;
 };
@@ -489,12 +489,13 @@ function Play({
     was.current = { phase: state.phase, endsAt: state.endsAt, chip: state.chips[me] };
   }, [state.phase, state.endsAt, state.step, state.chips, me]);
 
-  const left = useSecondsLeft(Date.parse(state.endsAt));
-  const clock: Clock = {
-    stage: krotTimer(left, PHASE_SECONDS[state.phase]),
-    text: String(left),
-    label: left === 0 ? tr.kaupholl.timeUp : tr.games.clockLabel(left),
-    late: left <= R.lowSeconds,
+  const endsAt = Date.parse(state.endsAt);
+  const timeUp = useTimeUp(endsAt);
+  const clock: StageClock = {
+    endsAt,
+    total: PHASE_SECONDS[state.phase],
+    bare: true,
+    upLabel: tr.kaupholl.timeUp,
   };
   const scene = state.phase === 'summary';
   const top = (
@@ -521,7 +522,7 @@ function Play({
     offline,
     cover: offline ? <ErrorBox retrying={retrying} onRetry={retry} /> : null,
     clock,
-    left,
+    timeUp,
     autoLocked: autoStep === state.step,
   };
   if (loading) return <CardLoading {...shared} />;
@@ -569,7 +570,21 @@ function Page({
   );
 }
 
-function Strip({ clock, title, line }: { clock: Clock; title: string; line: string }) {
+function OneLine({ clock: phase, title }: { clock: StageClock; title: string }) {
+  const clock = useStageClock(phase);
+  return (
+    <OneLineStrip
+      stage={clock.stage}
+      clock={clock.text}
+      clockLabel={clock.label}
+      late={clock.late}
+      title={title}
+    />
+  );
+}
+
+function Strip({ clock: phase, title, line }: { clock: StageClock; title: string; line: string }) {
+  const clock = useStageClock(phase);
   return (
     <TimeStrip
       stage={clock.stage}
@@ -726,7 +741,7 @@ function GuessScreen(shared: Shared) {
     meta: FEEL_ERROR,
     mutationFn: (value: number) => lane.submit(value, true),
   });
-  const timeUp = shared.left === 0;
+  const timeUp = shared.timeUp;
   const card = state.card;
   const decimals = card?.decimals ?? 0;
 
@@ -840,7 +855,7 @@ function GuessScreen(shared: Shared) {
 
 // The strip of the guess: the time, the title and its line; "Süre doldu" once it is up.
 function guessStrip(shared: Shared, title: string, line: string): ReactNode {
-  const timeUp = shared.left === 0;
+  const timeUp = shared.timeUp;
   return (
     <>
       {shared.top}
@@ -970,11 +985,8 @@ function WriteScreen({
           <View style={{ gap: SPACING[2.5] }}>
             {shared.top}
             {tight && !note ? (
-              <OneLineStrip
-                stage={shared.clock.stage}
-                clock={shared.clock.text}
-                clockLabel={shared.clock.label}
-                late={shared.clock.late}
+              <OneLine
+                clock={shared.clock}
                 title={off ? tr.kaupholl.timeUp : tr.kaupholl.writeTitle}
               />
             ) : (
@@ -1054,7 +1066,7 @@ function SentScreen({
 }: Shared & { value: string; locked: boolean; foot: ReactNode }) {
   const { state, faces } = shared;
   const n = chipCounts(state);
-  const timeUp = shared.left === 0;
+  const timeUp = shared.timeUp;
   const { width } = useWindowDimensions();
   const k = Math.min(1, width / RISO_PANEL_WIDTH);
   const B = K.buddy.sent;
@@ -1163,7 +1175,7 @@ function BoardScreen(shared: Shared) {
     onSettled: done,
   });
   const coins: KauphollCoins = local ?? known?.coins ?? [null, null];
-  const timeUp = shared.left === 0;
+  const timeUp = shared.timeUp;
   const locked = !!known?.locked || timeUp || place.isSuccess;
   const board = state.board;
   const look = useBoardLook(board?.length ?? 0, locked);
@@ -1181,13 +1193,7 @@ function BoardScreen(shared: Shared) {
     <>
       {shared.top}
       {look.compact ? (
-        <OneLineStrip
-          stage={clock.stage}
-          clock={clock.text}
-          clockLabel={clock.label}
-          late={clock.late}
-          title={title}
-        />
+        <OneLine clock={clock} title={title} />
       ) : (
         <Strip clock={clock} title={title} line={line} />
       )}

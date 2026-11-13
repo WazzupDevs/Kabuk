@@ -16,3 +16,21 @@ export function useSecondsLeft(endsAt: number): number {
   }, [endsAt]);
   return left;
 }
+
+// Whether the time is up (the same moment `useSecondsLeft` reaches 0): it changes once, so a
+// screen that only asks this is not drawn again every second
+// (docs/perf/akicilik-denetimi.md → A-25).
+export function useTimeUp(endsAt: number): boolean {
+  const [passed, setPassed] = useState<number | null>(() => (Date.now() >= endsAt ? endsAt : null));
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      const ms = endsAt - Date.now();
+      if (ms <= 0) setPassed(endsAt);
+      else timer = setTimeout(tick, ms + 5);
+    };
+    tick();
+    return () => clearTimeout(timer);
+  }, [endsAt]);
+  return passed === endsAt;
+}

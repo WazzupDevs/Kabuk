@@ -36,7 +36,6 @@ import { Sheet } from '@/components/Sheet';
 import { ScreenStatusBar } from '@/components/StatusScrim';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { StageFit } from '@/features/games/GameStage';
-import { useSecondsLeft } from '@/features/games/useSecondsLeft';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -46,7 +45,6 @@ import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { KIBRIT as KB, KIBRIT_TYPE as KT, kibritPaperType } from '@/theme/kibrit';
-import { krotTimer } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -60,7 +58,9 @@ import {
   type Faces,
   GameTopBar,
   nameOf,
+  type StageClock,
   TimeStrip,
+  useStageClock,
   useRisoDeck,
 } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
@@ -339,7 +339,7 @@ type Shared = {
   playing: boolean;
   view: ViewHandle;
   // The phase's time: the capsule's stage, the number and what screen readers hear.
-  clock: { stage: 'full' | 'half' | 'low'; text: string; label: string; late: boolean };
+  clock: StageClock;
   // The round on the bar: the one being played, or the one whose result shows.
   round: number;
 };
@@ -393,12 +393,10 @@ function Play({
       right={<ChatRound onPress={onChat} />}
     />
   );
-  const left = useSecondsLeft(Date.parse(state.endsAt));
-  const clock = {
-    stage: krotTimer(left, PHASE_SECONDS[state.phase]),
-    text: String(left),
-    label: tr.games.clockLabel(left),
-    late: left <= R.lowSeconds,
+  const clock: StageClock = {
+    endsAt: Date.parse(state.endsAt),
+    total: PHASE_SECONDS[state.phase],
+    bare: true,
   };
   const shared: Shared = {
     roomId,
@@ -420,7 +418,16 @@ function Play({
   return <ResultScreen {...shared} />;
 }
 
-function Strip({ clock, title, line }: { clock: Shared['clock']; title: string; line: ReactNode }) {
+function Strip({
+  clock: phase,
+  title,
+  line,
+}: {
+  clock: StageClock;
+  title: string;
+  line: ReactNode;
+}) {
+  const clock = useStageClock(phase);
   return (
     <TimeStrip
       stage={clock.stage}
