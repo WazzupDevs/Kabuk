@@ -450,6 +450,134 @@ Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı
 - **DM, ölçüldü:** duvar kâğıdı, duvar bandı ve gölge kareyi belirgin değiştirmiyor: üçü birden kapalıyken kare 16,3'ten 15,6 ms'ye iniyor (en çok 0,7 ms, swap'ta); komut gönderme her hâlde 7,3–7,5 ms'de aynı kalıyor. Zemin düzeltmesinden (#620) sonra yeni taban 16,3 ms, 4.3'ün 16,5 ms'siyle aynı.
 - **DM, ölçüldü:** üç parça kapalıyken de aşırı çizim zemin ve balonlarda 4 kat ve üstü. **Çıkarım:** her karedeki sabit yük bu üç parçada değil; duvar kâğıdının altında kalan başka tam ekran katmanlarda ya da balon başına çizilen öğelerin sayısında (kare başına yaklaşık 43 doku çizimi, 4.3). Sonraki ölçüm: bir karenin hangi görünümleri çizdiğini Perfetto'da görünüm adıyla okumak.
 
+## 4.6 Ne çiziliyor: DM, Keşfet tabanı ve kapsülün iki sorusu (13 Kasım 2026, gece)
+
+- **Derleme ve koşullar:** Galaxy S23, 0.11.0 build 21, release, #623 düzeyinde; "Ters liste", "Balon şekli" ve bellek düzeltmesi ölçülmedi. Pil %100, USB'den şarjda (şarjsız sağlanamadı), sıcaklık 39,5–40 °C. Rahatsız Etmeyin ölçüm için açıldı, sonra eski hâline (kapalı) alındı.
+- **Araçlar:**
+  - Görünüm sınıfları `uiautomator dump` ile sayıldı. Bu araç erişilebilirlik ağacını döker; `gfxinfo`'nun görünüm sayısından azdır (DM'de 285 düğüm, 368 görünüm).
+  - `dumpsys activity top` React görünümlerini dökmedi (kökün altında iki görünüm).
+- **Geri alınanlar:**
+  - `debug.hwui.skia_atrace_enabled` açıldı, sonra kapatıldı (okundu: false).
+  - "Bütün kapsül Skia" kapatıldı (panelde okundu).
+  - Düzenleyiciden kaydetmeden çıkıldı.
+  - Dökümler, iz dosyaları ve ekran görüntüleri repoya girmedi.
+
+### A. DM'de ne çiziliyor
+
+**Görünüm sınıfları** (4.3'ün 1. hâlindeki sohbet, en altta; `uiautomator`, 285 düğüm):
+
+| Sınıf                      | Sayı      |
+| -------------------------- | --------- |
+| ViewGroup (React görünümü) | 165       |
+| TextView                   | 30        |
+| ImageView                  | 20        |
+| SVG (kök 16, alt düğüm 27) | 43        |
+| LinearLayout / FrameLayout | 11 / 6    |
+| ScrollView                 | 4         |
+| Button / EditText / View   | 4 / 1 / 1 |
+
+- **Balon başına düğüm:** kısa metin balonu 11–14, tepkili balon 17. Alıntılı balon ekranda yoktu, sayılmadı. Her balonda aynı sınırlarda üst üste 4 sarmalayıcı ViewGroup var.
+- **Tam ekran düğüm:** 38 tanesi ekran boyunda. 4'ü ScrollView; açık tutulan öbür sekmelerin ağaçları da bunlara dahil.
+- **Opaklık, katman türü, ters ölçek ve kırpma:** ölçülemedi. `uiautomator` bu özellikleri vermiyor, release derlemesinde görünüm hata ayıklayıcısı yok.
+
+**Katman ve önbellek** (`dumpsys gfxinfo`):
+
+|                                                | DM                               | Keşfet              |
+| ---------------------------------------------- | -------------------------------- | ------------------- |
+| Görünüm / RenderNode belleği                   | 368 / 682 kB                     | 221 / 437 kB        |
+| GPU doku önbelleği                             | 35,95 MB (117 kayıt)             | 22,72 MB (81 kayıt) |
+| Ekran dışı çizim hedefi (Scratch RenderTarget) | 9,83 MB, 1 adet (tam ekran boyu) | yok                 |
+| Yazı atlası (Glyph Cache)                      | 6,5 MB                           | —                   |
+
+**Kaydırırken RenderThread** (`atrace` gfx, view ve Skia izi; 5 sn, DM 449 kare, Keşfet 550 kare; kare başına):
+
+| İşlem                                               | DM      | Keşfet  |
+| --------------------------------------------------- | ------- | ------- |
+| Doku çizimi (TextureOp)                             | 42,9    | 18,1    |
+| Yuvarlak dikdörtgen (CircularRRectOp + FillRRectOp) | 26,9    | 28,2    |
+| Yazı (AtlasTextOp)                                  | 18,7    | 11,3    |
+| Daire (CircleOp)                                    | 9,7     | 3,1     |
+| Dokuz parça resim (NonAALatticeOp)                  | 2,0     | 2,0     |
+| Çizim işi (OpsTask hazırlık + yürütme + flush)      | 2,75 ms | 2,95 ms |
+| Tampon bekleme (dequeueBuffer + queueBuffer)        | 6,09 ms | 1,19 ms |
+| eglSwapBuffers                                      | 1,84 ms | —       |
+| RenderThread toplamı (DrawFrames)                   | 7,75 ms | —       |
+
+- **Ara katman ve kırpma:** kare başına ek bir OpsTask (ara katman, saveLayer'ın izi) DM'de ortalama 0,1 (1,1 OpsTask/kare), Keşfet'te 0 (1,0). `clipPath` ve gölge ayrı dilim olarak izde görünmüyor.
+
+### B. Keşfet tabanı (2a kaydırması)
+
+| Aşama (ms, ortanca / p95) | DM (4.4 B, hâl 1) | Keşfet      |
+| ------------------------- | ----------------- | ----------- |
+| UI giriş ve animasyon     | 0,68 / 4,69       | 1,40 / 3,42 |
+| Draw (kayıt)              | 0,35 / 0,99       | 0,23 / 0,31 |
+| Sync                      | 0,26 / 0,39       | 0,19 / 0,27 |
+| Komut gönderme            | 7,38 / 8,37       | 1,82 / 2,32 |
+| Swap ve GPU               | 4,46 / 5,04       | 1,61 / 4,23 |
+| Kare toplamı              | 16,32 / 16,49     | 6,38 / 8,24 |
+| Takılma % / kare p50      | 66,8 / 13 ms      | 1,9 / 5 ms  |
+| Görünüm sayısı            | 368               | 221         |
+| Doku çizimi / kare        | 42,9              | 18,1        |
+
+### C. Kapsül
+
+**1. Görünüm sayısı** (`gfxinfo`; aynı giriş, Baş şeridi, aynı parçalar; `uiautomator` düzenleyicide çalışmadı, sınıf dökümü alınamadı):
+
+| An                          | Anahtar kapalı | Anahtar açık |
+| --------------------------- | -------------- | ------------ |
+| Girişte                     | 1062           | 627          |
+| Sağa 10 parça sonra         | 1889           | 1428         |
+| Sola 10 parça, başa dönünce | 839            | 627          |
+| Bir zar sonra               | 1921           | 892          |
+
+**2. İlk zar** (uygulama yeniden başlatıldı, anahtar açıldı, düzenleyiciye girildi; `atrace` gfx, view, sched):
+
+| Basış | En uzun UI karesi | UI'da en uzun dilimler                                        | UI CPU'da | JS (`mqt_v_js`) CPU'da |
+| ----- | ----------------- | ------------------------------------------------------------- | --------- | ---------------------- |
+| 1.    | 127 ms            | `traversal` 88, `Record View#draw()` 81, `mountViews` 36 ms   | 114 ms    | 122 ms                 |
+| 2.    | 1912 ms           | `Record View#draw()` 1848, `animation` 57, `mountViews` 51 ms | 1854 ms   | 533 ms                 |
+| 3.    | 17 ms             | `animation` 15 ms                                             | 16 ms     | 14 ms                  |
+
+Anahtar kapalıyken aynı adımlarda en uzun kareler 1851, 445 ve 581 ms çıktı. Üçünde de `Record View#draw()` 233–1725 ms; UI CPU'da 298–1720 ms, JS 98–388 ms.
+
+**3. Bellek tabanı** (toplam PSS / Native Heap / Graphics / GL mtrack / EGL mtrack, MB):
+
+| An                     | Anahtar açık                | Anahtar kapalı (aynı adımlar) |
+| ---------------------- | --------------------------- | ----------------------------- |
+| Düzenleyiciye girmeden | 428 / 145 / 94 / 54 / 39    | 399 / 126 / 94 / 55 / 39      |
+| 5 zardan sonra         | 1066 / 359 / 424 / 376 / 47 | 646 / 240 / 172 / 132 / 39    |
+| Çıktıktan 30 sn sonra  | 1066 / 362 / 369 / 321 / 47 | 614 / 217 / 165 / 125 / 39    |
+| Çıktıktan 2 dk sonra   | 1050 / 333 / 365 / 318 / 47 | 549 / 177 / 153 / 113 / 39    |
+
+**Not, anahtar:** "Bütün kapsül Skia" uygulama yeniden başlayınca kapanıyor (anahtar bellekte tutuluyor). C2 ve C3'ün ilk koşusu bu yüzden anahtar kapalıyken alındı; sağ sütun odur. Açık hâl, yeniden başlatmadan sonra anahtar açılarak yeniden alındı.
+
+### Yanıtlar
+
+**DM'de Keşfet'e göre fazla olan ne?**
+
+- **Ölçüldü:** komut gönderme 4 kat (7,4'e karşı 1,8 ms); doku çizimi kare başına 43'e karşı 18; yazı 19'a karşı 11; görünüm 368'e karşı 221.
+- **Ölçüldü:** DM'de tam ekran boyunda bir ekran dışı çizim hedefi (9,8 MB) var, Keşfet'te yok.
+- **Ölçüldü:** RenderThread'in DM'deki 7,8 ms'sinin 6,1 ms'si tampon beklemesi (Keşfet'te 1,2 ms); asıl çizim işi iki ekranda aynı (yaklaşık 2,8 ms).
+- **Çıkarım:** yük GPU'nun kare başına doldurduğu piksel ve doku miktarında: tam ekran duvar kâğıdı, ekran dışı hedef ve 43 doku çizimi. GPU geride kaldığı için tampon bekleniyor. Kırpma ve yuvarlak köşe sayısı iki ekranda aynı.
+
+**Görünüm sayısı farkı nereden?**
+
+- **Ölçüldü:** şeridin konumu sayıyı iki hâlde de yaklaşık 800 oynatıyor (sağa 10 parça: kapalı 1062 → 1889, açık 627 → 1428).
+- **Ölçüldü:** aynı konumda bütün Skia görünümü 400–1000 azaltıyor.
+- **Ölçüldü:** 4.4'teki 794 ve 4.5'teki 1169 aynı konumda alınmadı (koşuların sonundaki şerit konumu farklıydı). Fark büyük ölçüde şerit karolarından geliyor.
+
+**İlk zarın saniyesi hangi iş parçacığında?**
+
+- **Ölçüldü:** UI iş parçacığında, `Record View#draw()` içinde (1,85 sn'nin 1,85'i CPU'da). JS aynı karede 0,5 sn çalışıyor ama kareyi tutan o değil.
+- **Ölçüldü:** bu kez uzun kare ilk değil ikinci basışta geldi; üçüncüde yok.
+- **Çıkarım:** her yeni görünüşün ilk çizimi, resmi hazırlanırken UI iş parçacığını bir kez kilitliyor.
+
+**Bellek:**
+
+- **Ölçüldü:** anahtar açıkken 5 zar belleği 428'den 1066 MB'a çıkarıyor; çıktıktan 2 dk sonra 1050 MB'ta kalıyor.
+- **Ölçüldü:** artışın 322 MB'ı GL mtrack'te (GPU dokuları).
+- **Ölçüldü:** anahtar kapalıyken aynı adımlarda 646 MB'a çıkıp 2 dakikada 549 MB'a iniyor.
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
