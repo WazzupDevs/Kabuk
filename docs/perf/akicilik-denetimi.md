@@ -303,6 +303,68 @@ Kare satırları (5b, üç kısa kaydırma koşusu, 358 kare; ms, ortanca / p95)
 - **Çıkarım:** komut sayısını büyüten adaylar ekranın tamamını kaplayan katmanlar (A-42: duvar kâğıdı ve zeminler 4 kat) ve balon gölgeleri. Gölge payı panelle ölçülemedi.
 - **A-41:** büyüme bu turda tekrarlanmadı (ölçüldü); sohbetten çıkınca 170–180 MB geri verilmiyor (ölçüldü). Önbellek mi sızıntı mı, ayrılmadı.
 
+## 4.3 DM kaydırması: parça parça (13 Kasım 2026, akşam)
+
+- **Derleme ve yöntem:** 4.2 ile aynı telefon ve güncelleme (Galaxy S23, 0.11.0 build 21, `preview` 16.08 UTC). Her hâl için iki ölçüm alındı:
+  - "Tam koşu": 5b'nin kaydırması (8 hızlı yukarı, 10 hızlı aşağı; 3 koşu, ortanca). Kare p50 ve takılma bundan.
+  - "Kısa koşu": bir yukarı bir aşağı kaydırmadan hemen sonra `framestats` (3 koşu, son 120'şer kare birlikte). Aşama sayıları bundan.
+- **Koşullar:**
+  - Pil %60'tan %65'e, USB'den şarj olurken; sıcaklık 37–38,5 °C.
+  - Rahatsız Etmeyin kapalıydı (değiştirilmedi); ölçüm sırasında bildirim düştü.
+  - Güç tasarrufu kapalı, 120 Hz.
+- **Hesabın sohbetleri:** üç sohbetin hiçbirinde fotoğraf yok. Hâl 2 için mesaj yazılmadı: hesabın kısa metinli bir sohbeti vardı.
+- **Geri alınan ayarlar:**
+  - Uygulama teması Açık'a alınıp Koyu'ya geri döndürüldü.
+  - Animasyon ölçekleri 0'a alınıp 1'e geri döndürüldü.
+  - `debug.hwui.overdraw` ve `debug.hwui.profile` açılıp kapatıldı.
+  - Hepsinin son durumu okundu.
+- **Repoya girmeyenler:** ekran görüntüleri ve iz dosyaları.
+
+| Hâl                                                    | Ekrandaki parçalar                                                                                                                                         | Kare p50 (ms)                                             | Takılma %    | Komut gönderme (ms, ortanca / p95) | Swap ve GPU (ms, ortanca / p95) | Kare toplamı (ms, ortanca / p95)                                        |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------ | ---------------------------------- | ------------------------------- | ----------------------------------------------------------------------- |
+| 1. DM, 5b'deki sohbet (koyu tema)                      | Görünen 11 metin balonu, 1 tarih hapı. Kaydırılan bölümde 4 yalnız emoji balonu, 2 tepkili, 2 alıntılı balon; fotoğraf yok. 368 görünüm, 682 kB RenderNode | 13                                                        | 53,0 (26–69) | 6,26 / 8,66                        | 4,83 / 13,90                    | 16,46 / 24,85                                                           |
+| 2. DM, yalnız kısa metin (fotoğraf, tepki, alıntı yok) | Görünen 11 metin balonu, 1 tarih hapı. 377 görünüm, 699 kB                                                                                                 | 5 (sohbet kısa, tam koşuda kaydırmanın çoğu uçta kalıyor) | 10,3         | 5,82 / 8,56                        | 4,03 / 13,65                    | 17,09 / 25,51                                                           |
+| 3. DM, tepki ve alıntı bölümü                          | Görünen 9 balon, 2 tepki, 2 alıntı, 1 tarih hapı; fotoğraf yok                                                                                             | 13                                                        | 69,9 (44–72) | 7,28 / 8,80                        | 4,17 / 5,15                     | 16,58 / 17,14                                                           |
+| 4. Mekan ya da masa sohbeti                            | —                                                                                                                                                          | —                                                         | —            | —                                  | —                               | Ölçülemedi: hesapta check-in yok; check-in konum ister                  |
+| 5. Mesajlar listesi (duvar kâğıdı ve balon yok)        | 3 satır; liste ekrana sığıyor, kaydırma yalnız kenarda esniyor. 200 görünüm, 395 kB                                                                        | 5                                                         | 0,5          | 1,98 / 2,88                        | 1,27 / 1,42                     | 4,73 / 6,23                                                             |
+| 6. DM'de klavye açıkken                                | —                                                                                                                                                          | —                                                         | —            | —                                  | —                               | Ölçülemedi: sürükleme klavyeyi kapatıyor (ilk kaydırmada klavye iniyor) |
+| 7. Hâl 1, açık tema                                    | Hâl 1'in balonları, açık duvar kâğıdı, camlı üst çubuk ve yazma alanı                                                                                      | 13                                                        | 54,9 (52–66) | 3,57 / 8,19                        | 12,00 / 14,39                   | 25,23 / 25,62                                                           |
+| 8. Hâl 1, animasyonlar kaldırılmış (üç ölçek 0)        | Hâl 1 ile aynı                                                                                                                                             | 13                                                        | 59,2 (57–61) | 4,17 / 8,53                        | 4,25 / 13,82                    | 16,53 / 24,88                                                           |
+
+Hâl 7 için not: uygulama zaten koyu temadaydı, hâl 1 koyu temada ölçüldü. Karşılaştırma için açık tema ölçüldü.
+
+### Ek okumalar (hâl 1)
+
+- **Görünüm sayısı:** DM 368 görünüm ve 682 kB RenderNode belleği; Mesajlar 200 görünüm ve 395 kB.
+- **`atrace` (gfx, view; 5 sn hızlı kaydırma, 484 kare):** RenderThread'in kare başına payı ortalama 8,05 ms. En uzun üç kalem:
+  - `Drawing` (çizim komutlarının hazırlanması): 3,77 ms.
+  - `dequeueBuffer` (boş tampon beklemek): 3,67 ms.
+  - `flush commands`: 1,65 ms.
+  - Ardından `eglSwapBuffersWithDamageKHR` 1,17 ms.
+  - Kare başına yaklaşık 43 doku çizimi (`TextureOp`) ve 19 yazı atlası çizimi.
+  - Doku yüklemesi her karede değil: 5 sn'de 64 kez, çoğu 48 x 48 (avatar boyu), en büyüğü 480 x 114.
+- **Aşırı çizim (`debug.hwui.overdraw show`):** zeminin tamamı ve balonların hepsi en üst kademede (4 kat ve üstü). Android bu kademeden sonrasını ayırmadığı için daha fazlası sayılamıyor.
+- **Profil çubukları (`debug.hwui.profile`):** kırmızı (komut gönderme) baskın, ikinci turuncu (swap). Çubukların çoğu 16 ms çizgisinin üstünde.
+
+### Yanıt
+
+**Ölçüldü:**
+
+- Kare maliyeti balonun içeriğiyle değişmiyor. Yalnız kısa metin, tepki ve alıntı bölümü, karışık sohbet ve animasyonların kaldırıldığı hâl: dördünde de kare yaklaşık 16,5 ms, komut gönderme 5,8–7,3 ms, swap 4–5 ms.
+- Maliyet duvar kâğıdı ve balon olmayan Mesajlar listesinde dörtte birine iniyor (4,7 ms).
+- Açık temada GPU tarafı üç kat artıyor (swap 4 → 12 ms), kare 25 ms'ye çıkıyor.
+- RenderThread'in yaklaşık yarısı GPU'nun tampon bırakmasını beklemek (`dequeueBuffer` 3,7 ms): GPU önde gitmiyor, geride kalıyor.
+
+**Çıkarım:** maliyet her karede tekrarlanan sabit bir yük: ekranın tamamını kaplayan üst üste katmanlar (duvar kâğıdının katmanları ve altındaki zeminler, aşırı çizimde 4 kat ve üstü) ve kare başına yaklaşık 43 doku çizimi. Balonlar, tepkiler, alıntılar ve hareket bu yükü değiştirmiyor.
+
+**Aynı görüntüyü daha ucuz çizmenin yolları (efekt aynı kalır):**
+
+1. Duvar kâğıdının katmanlarını ekran boyunda tek bir resme bir kez birleştirmek ve kaydırma sırasında o resmi tek doku olarak çizmek.
+2. Duvar kâğıdının altında kalan, görünmeyen tam ekran zeminleri çizmemek.
+3. Balonun gölgesini ve dolgusunu balon başına tek dokuda toplamak.
+
+Telegram Android'in sohbet zeminini nasıl çizdiğine bu oturumda bakılmadı; yöntem seçilmeden önce `telegram-referans` ile bakılır. Açık temanın 12 ms'lik GPU payının hangi katmandan geldiği (açık duvar kâğıdı, camlı çubuklar) ayrıca ölçülmedi.
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
