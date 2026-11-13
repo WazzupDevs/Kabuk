@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { memo, type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import type Reanimated from 'react-native-reanimated';
 import type { AnimatedRef } from 'react-native-reanimated';
@@ -26,6 +26,8 @@ import { useSheetFrost, useSheetMotion } from './useSheetMotion';
 
 // A closing slide that never reports its end: off the screen this long after it should have ended.
 const SLIDE_FALLBACK_MS = 250;
+// What stands over the card's top edge leaves the screen with it (the buddies, Peek).
+const LEAVE_OVER = 96;
 const ICON_DISC = 56;
 const SUBTITLE_GAP = 4;
 // The title's line with a picture (`titleArt`): only the game's sheet has one (tuval Sohbet).
@@ -68,6 +70,17 @@ type Props = {
   children: ReactNode;
 };
 
+// While the sheet leaves it keeps what it last showed: the screen that closes it often clears the
+// state its title and content are read from in the same render, and the sheet slid away empty, or
+// as another sheet (docs/denetim/pano-fark-2026-11.md → PF-57: a block confirmation left as
+// "Arkadaşlıktan çıkar").
+const Held = memo(
+  function Held({ children }: { frozen: boolean; children: ReactNode }) {
+    return children;
+  },
+  (_before, next) => next.frozen,
+);
+
 // A bottom sheet over a scrim (iskelet.md → 3.5): menus, confirmations and the join request.
 // Always a trust surface (`Quiet`): hairlines, one clear action. Its handle and title stay put, the
 // close button at the title's right; no "Tamam" or "Kapat" of its own. It opens on springs.sheet
@@ -97,7 +110,8 @@ export function Sheet({
   const { c: kit } = useKit();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
-  const motion = useSheetMotion();
+  const [travel, setTravel] = useState(0);
+  const motion = useSheetMotion(travel);
   const frost = useSheetFrost();
   const [mounted, setMounted] = useState(visible);
   useLeaveKeyboard(visible);
@@ -124,13 +138,17 @@ export function Sheet({
     return runSheetSlide(
       visible ? show(reduce) : hide(reduce),
       !visible,
-      () => {
-        reset();
-        setMounted(false);
-      },
+      // Only off the screen here: putting the motion back to its start while the sheet is still
+      // drawn showed it once more at the opening's first frame, faded, a moment after it had left
+      // (docs/denetim/pano-fark-2026-11.md → PF-25).
+      () => setMounted(false),
       leaveMs + SLIDE_FALLBACK_MS,
     );
-  }, [visible, mounted, reduce, show, hide, reset, leaveMs]);
+  }, [visible, mounted, reduce, show, hide, leaveMs]);
+  // Gone: the next opening starts from below again.
+  useEffect(() => {
+    if (!mounted) reset();
+  }, [mounted, reset]);
 
   const head =
     title || icon ? (
@@ -219,6 +237,7 @@ export function Sheet({
           />
           <Animated.View
             accessibilityViewIsModal
+            onLayout={(e) => setTravel(Math.ceil(e.nativeEvent.layout.height) + LEAVE_OVER)}
             // iskelet.md → 3.5, down to the screen's foot as Telegram Android's sheets (the owner's
             // call, 30 Ekim). Pulled down, it closes like a tap outside (SheetCard).
             style={{
@@ -227,43 +246,45 @@ export function Sheet({
               transform: [{ translateY: motion.translateY }],
             }}
           >
-            <SheetCard
-              onClose={onClose}
-              bottomInset={insets.bottom}
-              above={peek ? <Peek kind={peek} /> : null}
-              head={
-                head ? (
-                  <InSheet>
-                    <Quiet value>{head}</Quiet>
-                  </InSheet>
-                ) : undefined
-              }
-              balance={centered}
-              frost={frost}
-              fill={top !== undefined}
-              scrollRef={scrollRef}
-              look={look}
-              footer={
-                footer ? (
-                  <InSheet>
-                    <Quiet value>{footer}</Quiet>
-                  </InSheet>
-                ) : undefined
-              }
-            >
-              <InSheet>
-                <Quiet value>
-                  <View
-                    style={{
-                      gap: KIT.size.rowGap,
-                      flexGrow: top !== undefined ? 1 : undefined,
-                    }}
-                  >
-                    {children}
-                  </View>
-                </Quiet>
-              </InSheet>
-            </SheetCard>
+            <Held frozen={!visible}>
+              <SheetCard
+                onClose={onClose}
+                bottomInset={insets.bottom}
+                above={peek ? <Peek kind={peek} /> : null}
+                head={
+                  head ? (
+                    <InSheet>
+                      <Quiet value>{head}</Quiet>
+                    </InSheet>
+                  ) : undefined
+                }
+                balance={centered}
+                frost={frost}
+                fill={top !== undefined}
+                scrollRef={scrollRef}
+                look={look}
+                footer={
+                  footer ? (
+                    <InSheet>
+                      <Quiet value>{footer}</Quiet>
+                    </InSheet>
+                  ) : undefined
+                }
+              >
+                <InSheet>
+                  <Quiet value>
+                    <View
+                      style={{
+                        gap: KIT.size.rowGap,
+                        flexGrow: top !== undefined ? 1 : undefined,
+                      }}
+                    >
+                      {children}
+                    </View>
+                  </Quiet>
+                </InSheet>
+              </SheetCard>
+            </Held>
           </Animated.View>
         </GestureHandlerRootView>
       </InSheetLoops.Provider>

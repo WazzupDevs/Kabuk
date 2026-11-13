@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Animated, useWindowDimensions } from 'react-native';
+import { Animated, Easing, useWindowDimensions } from 'react-native';
 
 import { springConfig } from '@/aura/motion';
 import { SHEET_FROSTED } from '@/components/LiquidGlass';
@@ -7,18 +7,24 @@ import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useReduceTransparency } from '@/lib/useReduceTransparency';
 import { MOTION } from '@/theme/aura';
-import { EASE_OUT } from '@/theme/markMotion';
 
 import { SHEET_OPEN_OPACITY, SHEET_OPEN_Y } from './sheetOpen';
 
-// hareket.md → "Alt sayfa": a sheet leaves in 320 ms on the design system's ease out, down off the
-// screen (Telegram Android's sheets); it opens on springs.sheet (sheetOpen.ts).
+// A sheet leaves in 320 ms on the standard's leaving curve (hareket.json → curves.leave: it starts
+// slowly and speeds up), down by its own height, so it is seen sliding the whole way and the scrim
+// is gone as its top edge leaves the screen (docs/denetim/pano-fark-2026-11.md → K1: on an ease
+// out over the window's height it was off the screen in three frames and the scrim faded after it).
+// It opens on springs.sheet (sheetOpen.ts).
 export const SHEET_LEAVE_MS = 320;
+const LEAVE = Easing.bezier(...MOTION.curves.leave);
 
 // A sheet's motion (Sheet, RouteSheet), on the native driver: `open` springs in, `leave` slides it
 // out; the scrim follows both. With reduce motion (`still`) it appears and goes at once.
-export function useSheetMotion() {
+// `travel`: how far down it leaves (its own height and what stands over it); the window's height
+// until it is known.
+export function useSheetMotion(travel = 0) {
   const { height } = useWindowDimensions();
+  const out = travel > 0 ? Math.min(travel, height) : height;
   const reduce = useReduceMotion();
   // One set of values and plays for the sheet's life, so an effect that plays them runs only when
   // the sheet opens or closes.
@@ -44,7 +50,7 @@ export function useSheetMotion() {
         Animated.timing(leave, {
           toValue: 1,
           duration: still ? 0 : SHEET_LEAVE_MS,
-          easing: (u) => EASE_OUT(u),
+          easing: LEAVE,
           useNativeDriver: true,
         }),
       // Gone: the next opening starts from below again.
@@ -65,7 +71,7 @@ export function useSheetMotion() {
     reset: m.reset,
     translateY: Animated.add(
       open.interpolate({ inputRange: [0, 1], outputRange: [...SHEET_OPEN_Y] }),
-      leave.interpolate({ inputRange: [0, 1], outputRange: [0, height] }),
+      leave.interpolate({ inputRange: [0, 1], outputRange: [0, out] }),
     ),
     opacity: open.interpolate({
       inputRange: [0, 1],
