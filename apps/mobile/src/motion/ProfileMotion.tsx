@@ -114,9 +114,11 @@ export function FlyingFace({
   const scroll = useScreenScroll();
   const { arrive, speed, from, to } = flight;
   const inner = side - 2 * ring;
-  const place = () => {
+  // The offset is read in each style itself: read only inside this helper, the styles did not
+  // follow the scroll, and the photo stayed full size at its place over the panel while the name
+  // flew into the bar (docs/denetim/pano-fark-2026-11.md → PF-61).
+  const place = (y: number) => {
     'worklet';
-    const y = scroll ? scroll.y.get() : 0;
     const t = flightAt(y, arrive);
     return {
       x: flyX(t, from.x, to.x),
@@ -125,7 +127,7 @@ export function FlyingFace({
     };
   };
   const discStyle = useAnimatedStyle(() => {
-    const p = place();
+    const p = place(scroll ? scroll.y.get() : 0);
     return {
       transform: [
         { translateX: p.x - side / 2 },
@@ -135,7 +137,7 @@ export function FlyingFace({
     };
   });
   const faceStyle = useAnimatedStyle(() => {
-    const p = place();
+    const p = place(scroll ? scroll.y.get() : 0);
     return {
       transform: [
         { translateX: p.x - inner / 2 },

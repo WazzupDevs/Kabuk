@@ -5,7 +5,8 @@ import { tableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type ScrollView, View } from 'react-native';
+import { type ScrollView, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
@@ -45,6 +46,8 @@ function endSession(checkInId: string, startedAt: string) {
 // and "Masa kur", or its table), the venue chat and the lobby. Without a check-in it sends the
 // person to Keşfet. The card's head opens the table.
 export default function VenueScreen() {
+  const { height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const currentRoom = useCurrentRoom(checkIn.data);
@@ -145,6 +148,14 @@ export default function VenueScreen() {
   // The spot at the top right; while there is no table a press changes it (the server refuses it
   // at a table).
   const spotName = venueHasSpots ? (checkIn.data.spot?.name ?? tr.venue.chooseSpot) : null;
+  // The window less the pinned strips (the table's under the bar, the chat's under it) and the
+  // room under the page's last row (Screen's own).
+  const lobbyRoom = Math.max(
+    0,
+    windowHeight -
+      (fold.pinTop + fold.tableStrip + gaps.chat + fold.chatStrip + gaps.lobby) -
+      (insets.bottom + UNDER_LAST_ROW),
+  );
   return (
     <Screen
       edges={['top']}
@@ -199,7 +210,10 @@ export default function VenueScreen() {
           />
         </View>
       </PinLayer>
-      <View style={{ marginTop: gaps.lobby }}>
+      {/* At least as tall as what is left under the two strips: with few open tables the page ran
+          out of scroll before the table card had folded, and stopped half folded with its buttons
+          cut at its foot (docs/denetim/pano-fark-2026-11.md → PF-78). */}
+      <View style={{ marginTop: gaps.lobby, minHeight: lobbyRoom }}>
         <Lobby
           venueId={checkIn.data.venue_id}
           sessionId={checkIn.data.id}
@@ -277,3 +291,6 @@ function RoomWatch({ roomId }: { roomId: string }) {
   useRoom(roomId);
   return null;
 }
+
+// Under a tab screen's last row (Screen → SCROLL_PAD).
+const UNDER_LAST_ROW = 90;
