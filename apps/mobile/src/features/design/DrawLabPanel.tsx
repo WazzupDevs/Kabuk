@@ -6,15 +6,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Btn, Chip, T, useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import {
+  CHAT_PARTS,
   DRAW_LAB,
   DRAW_STEPS,
   openDrawLab,
   startDrawLab,
   SWITCH_PARTS,
   toggleLabPart,
+  toggleLabHold,
   toggleLabSkia,
   toggleLabWhole,
   useDrawLab,
+  useLabHold,
   useLabSkia,
   useLabWhole,
 } from '@/lib/drawLab';
@@ -32,6 +35,7 @@ export function DrawLabPanel() {
   const manual = useDrawLab((s) => s.manual);
   const skia = useLabSkia();
   const whole = useLabWhole();
+  const hold = useLabHold();
   const insets = useSafeAreaInsets();
   const { c } = useKit();
   if (!DRAW_LAB || !open) return null;
@@ -97,6 +101,17 @@ export function DrawLabPanel() {
             <SkiaSmoke />
             {/* The capsule with Skia or the pictures while the panel is open (theme/capsuleSkia.ts). */}
             <Chip label={tr.design.drawLab.skiaSwitch} on={skia === true} onPress={toggleLabSkia} />
+            {/* The chat's parts, and whether they stay off when the panel closes. */}
+            <T v="sec">{tr.design.drawLab.chatParts}</T>
+            {CHAT_PARTS.map((part) => (
+              <Chip
+                key={`chat-${part}`}
+                label={tr.design.drawLab.parts[part]}
+                on={manual.includes(part)}
+                onPress={() => toggleLabPart(part)}
+              />
+            ))}
+            <Chip label={tr.design.drawLab.hold} on={hold} onPress={toggleLabHold} />
             {/* The whole capsule on one canvas; stays as set when the panel closes. */}
             <Chip label={tr.design.drawLab.wholeSwitch} on={whole} onPress={toggleLabWhole} />
           </>

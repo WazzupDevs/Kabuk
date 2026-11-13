@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 import { type DrawPart, DRAW_STEPS, type LabParts, partsOff, togglePart } from './drawLabParts';
 
-export { DRAW_PARTS, DRAW_STEPS, SWITCH_PARTS } from './drawLabParts';
+export { CHAT_PARTS, DRAW_PARTS, DRAW_STEPS, SWITCH_PARTS } from './drawLabParts';
 export type { DrawPart, DrawStep, DrawStepKey } from './drawLabParts';
 
 // Ayarlar → Tasarım (test) → Çizim ölçümü: on the owner's own phone, what each part of a screen
@@ -27,6 +27,8 @@ type LabState = LabParts & {
   // The whole capsule on one Skia canvas (theme/capsuleSkia.ts → capsuleWholeOn). It stays as set
   // when the panel closes: the panel covers the top of Süsle, where it is measured.
   whole: boolean;
+  // "Kapanınca koru": the parts turned off by hand stay off when the panel closes.
+  hold: boolean;
 };
 export const useDrawLab = create<LabState>(() => ({
   open: false,
@@ -35,6 +37,7 @@ export const useDrawLab = create<LabState>(() => ({
   switches: 0,
   skia: false,
   whole: false,
+  hold: false,
 }));
 
 export function useLabOff(part: DrawPart): boolean {
@@ -59,6 +62,15 @@ export function useLabWhole(): boolean {
 export function toggleLabWhole() {
   if (!DRAW_LAB) return;
   useDrawLab.setState((s) => ({ whole: !s.whole }));
+}
+
+export function useLabHold(): boolean {
+  return useDrawLab((s) => DRAW_LAB && s.hold);
+}
+
+export function toggleLabHold() {
+  if (!DRAW_LAB) return;
+  useDrawLab.setState((s) => ({ hold: !s.hold }));
 }
 
 export function toggleLabSkia() {
@@ -86,7 +98,9 @@ export function openDrawLab(open: boolean, skia = false) {
   stopDrawLab();
   // Closing the panel turns every part back on (and gives the Skia drawing back to the app's
   // switch); opening it starts from what the app draws.
-  useDrawLab.setState(open ? { open, skia } : { open, manual: [], skia: false });
+  useDrawLab.setState((s) =>
+    open ? { open, skia } : { open, manual: s.hold ? s.manual : [], skia: false },
+  );
 }
 
 export function startDrawLab() {

@@ -1257,6 +1257,19 @@ export function ChatScreen<T extends ChatListItem>({
   // lies in the stream's glass target, so the bar's frosted pills show the wallpaper. The table chat
   // keeps the band under the status bar only.
   const bandUnderBar = wall === 'dm' || wall === 'mekan';
+  // Çizim ölçümü's chat parts (lib/drawLabParts.ts → CHAT_PARTS), a preview build only.
+  const wallOff = useLabOff('duvar');
+  const bandOff = useLabOff('bant');
+  const walled = wall && canvas && !wallOff ? wall : null;
+  const banded = walled && !bandOff ? walled : null;
+  // The wallpaper covers the whole area once it is drawn: the screen's ground under it is never
+  // seen and is not drawn (one full-screen layer less on every frame of a scroll;
+  // docs/perf/akicilik-denetimi.md → 4.3, A-42). Until then, and with no wallpaper, the ground.
+  const [wallDrawn, setWallDrawn] = useState(false);
+  const onWallDrawn = useCallback(() => setWallDrawn(true), []);
+  // Only the kinds' own pictures, which are opaque; a chat's own picture keeps the ground.
+  const covered =
+    walled !== null && !wallSource && wallDrawn && canvas !== null && canvas.h >= areaHeight;
   return (
     <ChatEndContext.Provider value={followEnd}>
       <ChatKindContext.Provider value={wall ?? 'dm'}>
@@ -1266,7 +1279,7 @@ export function ChatScreen<T extends ChatListItem>({
               <JumpSlotContext.Provider value={setJump}>
                 <SafeAreaView
                   edges={['left', 'right']}
-                  style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
+                  style={{ flex: 1, backgroundColor: covered ? undefined : AURA[scheme].ground }}
                   onTouchStart={reactions.onTouchStart}
                   onLayout={(e) => {
                     const { width, height } = e.nativeEvent.layout;
@@ -1277,12 +1290,13 @@ export function ChatScreen<T extends ChatListItem>({
                   {/* The stream and what lies under it: what the frosted pills, the message bar and the
                   down arrow show through their glass. */}
                   <GlassTarget targetId={glassId} backdrop style={StyleSheet.absoluteFill}>
-                    {wall && canvas ? (
+                    {walled && canvas ? (
                       <ChatWallpaper
-                        kind={wall}
+                        kind={walled}
                         canvas={canvas}
                         source={wallSource}
-                        veil={wall === 'masa'}
+                        veil={walled === 'masa'}
+                        onDrawn={onWallDrawn}
                       />
                     ) : null}
                     {wall ? null : <AuraBackground />}
@@ -1297,9 +1311,9 @@ export function ChatScreen<T extends ChatListItem>({
                         endRef={end}
                         keyboardOffset={bottomPad}
                         band={
-                          bandUnderBar && wall && canvas ? (
+                          bandUnderBar && banded && canvas ? (
                             <WallBand
-                              kind={wall}
+                              kind={banded}
                               canvas={canvas}
                               source={wallSource}
                               top={0}
@@ -1347,9 +1361,9 @@ export function ChatScreen<T extends ChatListItem>({
                   </GlassTarget>
                   {/* The wallpaper again under the status bar's words and the navigation bar's buttons,
                   fading into the stream: messages pass under the system bars unseen. */}
-                  {wall && canvas && !(bandUnderBar && list) ? (
+                  {banded && canvas && !(bandUnderBar && list) ? (
                     <WallBand
-                      kind={wall}
+                      kind={banded}
                       canvas={canvas}
                       source={wallSource}
                       top={0}
@@ -1358,9 +1372,9 @@ export function ChatScreen<T extends ChatListItem>({
                       direction="down"
                     />
                   ) : null}
-                  {wall && canvas && bottomPad > 0 && areaHeight > 0 ? (
+                  {banded && canvas && bottomPad > 0 && areaHeight > 0 ? (
                     <WallBand
-                      kind={wall}
+                      kind={banded}
                       canvas={canvas}
                       source={wallSource}
                       top={areaHeight - bottomPad}
