@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { ScrollView, View, type ViewStyle } from 'react-native';
 import { type Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { SharedValue } from 'react-native-reanimated';
+import Animated, { type SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { useTabOpenings } from '@/aura/motion';
@@ -25,7 +25,7 @@ import {
   useScrollOffset,
 } from '@/motion/ScrollScreen';
 import { PinLayer } from '@/motion/CollapsingCard';
-import { StickyField } from '@/motion/StickyField';
+import { StickyField, StickyStatusBand } from '@/motion/StickyField';
 import {
   BarBand,
   LargeTitle,
@@ -145,18 +145,30 @@ export function Screen({
         : null;
   const kind: TopBarKind | null = page ? 'sayfa' : bar === 'buyukBaslik' && title ? bar : null;
   // A scrolling screen with a top bar: the bar stays over the content (its band coming in), and
-  // the large title is the content's first part, scrolling with it. A fixed screen keeps its top
-  // where it was, the large title still under the bar's row.
-  const overlay = !fixed && kind !== null;
+  // the large title is the content's first part, scrolling with it. A fixed page (PageTop) too: it
+  // scrolls once its content does not fit, and with its title standing still over it the content
+  // was cut on a hard line under the title (docs/denetim/pano-fark-2026-11.md → PF-63, PF-73). A
+  // fixed tab screen keeps its large title in place.
+  const overlay = kind !== null && (!fixed || page !== null);
   const head = !overlay ? null : page ? (
-    <PageTopPart.Provider key="top-bar-title" value="title">
-      {page}
-    </PageTopPart.Provider>
+    <View
+      key="top-bar-title"
+      // A fixed page's parts stand as far under its title as they did under its top.
+      style={fixed ? { paddingBottom: Math.max(0, SPACING[1] + TOP_FADE - (gap ?? 0)) } : undefined}
+    >
+      <PageTopPart.Provider value="title">{page}</PageTopPart.Provider>
+    </View>
   ) : (
     <LargeTitle key="top-bar-title" kind="buyukBaslik" title={title ?? ''} />
   );
-  const flowTop =
-    overlay || kind === null
+  // Overlaid, a PageTop given as `top` is drawn by its parts (the row over the content, the title
+  // in it): drawn whole in place as well, the title stood twice and the content was cut under it
+  // (docs/denetim/pano-fark-2026-11.md → PF-64, PF-71, PF-72).
+  const flowTop = overlay
+    ? top === page
+      ? null
+      : top
+    : kind === null
       ? top
       : (page ?? <LargeTitle kind="buyukBaslik" title={title ?? ''} />);
   const body = head ? [head, ...cascade(children, openings)] : cascade(children, openings);
@@ -172,7 +184,7 @@ export function Screen({
   const sticky = head ? stickyHeaderIndices?.map((i) => i + 1) : stickyHeaderIndices;
   const range = kind ? TOP_BAR[kind].title : null;
   return (
-    <ScrollScreen y={fixed ? null : y}>
+    <ScrollScreen y={fixed && !overlay ? null : y}>
       <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
         <AuraBackground />
         {backdrop}
@@ -197,7 +209,9 @@ export function Screen({
         >
           <ScrollViewport>
             {fixed ? (
-              <FixedBody content={content}>{body}</FixedBody>
+              <FixedBody content={content} y={overlay ? y : undefined}>
+                {body}
+              </FixedBody>
             ) : refresh && !scrollRef && !stickyHeaderIndices ? (
               <PullBody
                 onRefresh={refresh}
@@ -243,6 +257,7 @@ export function Screen({
             </View>
           ) : null}
         </KeyboardAvoidingView>
+        <StickyStatusBand />
         {overlay && range ? (
           <>
             {/* The band from the screen's top edge (under the status bar too), then the bar's row
@@ -309,9 +324,12 @@ function PullBody({
 function FixedBody({
   content,
   onOverflow,
+  y,
   children,
 }: {
   content: { flexGrow: number; gap?: number };
+  // A page's offset, for its title and its bar's band (written on the UI thread).
+  y?: SharedValue<number>;
   // Told whether the content overflows (Screen → `footer`'s fade).
   onOverflow?: (overflows: boolean) => void;
   children: ReactNode;
@@ -322,11 +340,16 @@ function FixedBody({
   useEffect(() => {
     onOverflow?.(overflows);
   }, [overflows, onOverflow]);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    y?.set(e.contentOffset.y);
+  });
   return (
-    <ScrollView
+    <Animated.ScrollView
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={content}
       keyboardShouldPersistTaps="handled"
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       scrollEnabled={overflows}
       bounces={false}
       overScrollMode="never"
@@ -335,7 +358,7 @@ function FixedBody({
       onContentSizeChange={(_w, h) => setInner(h)}
     >
       {children}
-    </ScrollView>
+    </Animated.ScrollView>
   );
 }
 
