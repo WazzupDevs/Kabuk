@@ -35,6 +35,18 @@ describe('the sheet (iskelet.md → 3.5, 4.3)', () => {
     expect(kitSize('sheetClose')).toBe(38);
   });
 
+  it('leaves on the leaving curve by its own height, and is not put back while still drawn', () => {
+    const motion = code('src/motion/useSheetMotion.ts');
+    expect(motion).toMatch(/Easing\.bezier\(\.\.\.MOTION\.curves\.leave\)/);
+    expect(motion).toMatch(/outputRange: \[0, out\]/);
+    const sheet = code('src/motion/Sheet.tsx');
+    // PF-25: the motion goes back to its start only once the sheet is off the screen.
+    expect(sheet).toMatch(/\(\) => setMounted\(false\),/);
+    expect(sheet).toMatch(/if \(!mounted\) reset\(\);/);
+    // PF-57: what it shows is held while it leaves.
+    expect(sheet).toMatch(/<Held frozen=\{!visible\}>/);
+  });
+
   it('draws no "Tamam" or "Kapat" button of its own at its foot', () => {
     for (const file of ['src/motion/Sheet.tsx', 'src/components/SheetCard.tsx']) {
       expect(code(file)).not.toMatch(/<(?:Btn|Button)\b/);

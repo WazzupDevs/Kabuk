@@ -128,6 +128,9 @@ export default function LocationScreen() {
     <RouteSheet
       testID="checkin"
       peek="checkin"
+      // The venue's name as the sheet's title, beside its close button: in the content it ran under
+      // the button and was cut (docs/denetim/pano-fark-2026-11.md → PF-79).
+      title={venue.name}
       footer={
         <View style={{ gap: KIT.size.chipGap + 2 }}>
           {problem === 'denied' ? (
@@ -156,12 +159,7 @@ export default function LocationScreen() {
           kullan" and "Vazgeç"; the page it opened from stays behind the sheet. A venue with spots
           also asks "Neredesin?" as glass rows (the owner's call, 31 Ekim): the spot is chosen before
           the position, as the table invite depends on it (CLAUDE.md → Değişmez kurallar 4). */}
-      <View style={{ gap: KIT.size.chipsGap }}>
-        <T v="title" accessibilityRole="header">
-          {venue.name}
-        </T>
-        <T v="body">{tr.checkin.locationBody}</T>
-      </View>
+      <T v="body">{tr.checkin.locationBody}</T>
       {elsewhere ? <Banner tone="warn" body={tr.checkin.replaces(elsewhere)} /> : null}
       {/* Above "Neredesin?": on a short screen a warning under the spots fell below the sheet's
           view (the owner's call, 3 Kasım, docs/decisions/checkin-uyari.md). A try's warning
