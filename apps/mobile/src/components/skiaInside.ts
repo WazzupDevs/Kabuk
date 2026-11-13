@@ -22,6 +22,7 @@ export type SkiaKit = {
   // The whole drawing on one canvas (FxSkia.tsx → SkiaWhole) and its still layers read ahead.
   Whole: WholePainter;
   prepareStill: (xml: string, width: number, height: number) => void;
+  prepareWholeInside: (layer: FxInside, place: FxPlace) => void;
 };
 // Kept in an object: a function given to useState would be called as its initial value.
 type Loaded = SkiaKit | 'failed';
@@ -38,6 +39,7 @@ function load(): Promise<Loaded> {
             Warm: mod.SkiaWarm,
             Whole: mod.SkiaWhole,
             prepareStill: mod.prepareStill,
+            prepareWholeInside: mod.prepareWholeInside,
           }
         : 'failed',
     (): Loaded => 'failed',

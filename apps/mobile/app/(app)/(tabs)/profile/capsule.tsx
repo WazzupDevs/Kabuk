@@ -212,7 +212,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   // one load as the stage's).
   const prepare = useSkiaKit()?.prepare;
   // The whole canvas's still layers too, while it draws the capsule (useWholeKit).
-  const prepareStill = useWholeKit()?.prepareStill;
+  const wholeKit = useWholeKit();
+  const prepareStill = wholeKit?.prepareStill;
+  const prepareInside = wholeKit?.prepareWholeInside ?? prepare;
   // Read ahead in idle time, a few at a time, while the idle turn lasts: first the big capsule as
   // the options next to the chosen one would draw it (its layers, and Skia's plan and SVGs), so that
   // choosing one draws with nothing left to read (the owner's report, 11 Kasım: a suit's first
@@ -229,7 +231,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     const open = rows.find((r) => r.id === slot);
     const from = open ? open.flat.findIndex((t) => t.o === shown[at]) : 0;
     const jobs: (() => void)[] = [
-      ...near.map((next) => () => readStageAhead(next, stageSize, !reduce, prepare, prepareStill)),
+      ...near.map(
+        (next) => () => readStageAhead(next, stageSize, !reduce, prepareInside, prepareStill),
+      ),
       ...tileOrder(rows, slot, Math.max(from, 0)).map((t) => () => {
         const xml = optionArt(t.slot, t.o, color);
         if (xml) readAhead(xml);
@@ -250,7 +254,19 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     return () => {
       if (handle !== null) cancelIdleCallback(handle);
     };
-  }, [ready, options, shown, chosen, slot, look, color, stageSize, reduce, prepare, prepareStill]);
+  }, [
+    ready,
+    options,
+    shown,
+    chosen,
+    slot,
+    look,
+    color,
+    stageSize,
+    reduce,
+    prepareInside,
+    prepareStill,
+  ]);
 
   const E = CAPSULE_EDIT;
   const k = E[scheme];
