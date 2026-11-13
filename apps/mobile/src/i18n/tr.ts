@@ -2268,6 +2268,9 @@ export const tr = {
       // P6: the capsule drawn with Skia (Süsle's big one, Kapsül ölçümü's grid), and the
       // accessories side by side (left the pictures, right Skia).
       skiaSwitch: 'Skia çizimi',
+      // The whole capsule on one Skia canvas (theme/capsuleSkia.ts → capsuleWholeOn).
+      wholeSwitch: 'Bütün kapsül Skia',
+      wholeSides: 'Solda bugünkü çizim, sağda bütün kapsül Skia.',
       skiaGallery: 'Skia yan yana',
       skiaSides: 'Solda bugünkü çizim, sağda Skia.',
     },

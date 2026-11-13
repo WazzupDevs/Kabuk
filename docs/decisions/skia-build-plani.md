@@ -124,6 +124,15 @@ Her paket main'den ayrı dal ve tek PR. Kodu `mobil` ajanı yazar (bu işte kaps
 - Yalnız panel: gerçek ekranlara ve Süsle'ye dokunulmadı (`FxSkia.tsx`'te yalnız `export`).
 - **Doğrulanmadı (telefon yok):** sahnenin çizdiği görüntü (daire kırpması, maske, yerler), Skia'nın SVG oranının react-native-svg ile aynılığı, kare ve bellek sayıları. Ölçüm: `docs/denetim/olcum-protokolu.md` → 4b.
 
+## Bütün kapsül Skia'da (13 Kasım)
+
+- **Neden:** telefon ölçümü (`docs/perf/akicilik-denetimi.md` → 4.2, Galaxy S23): Süsle'de zara basınca UI iş parçacığında `View#draw` kaydı 0,3–3,4 sn, tek seferde 2186 görünüm güncellemesi; Skia kapalıyken parça değişimi daha da ağır (en uzun kare 0,4 → 1,8 sn). Yük resim yolunda: her SVG öğesi yerel görünüm, her katmanın resmi ilk gösterildiği karede UI iş parçacığında üretiliyor. P6 yalnız klip içi hareketi Skia'ya almıştı.
+- **Karar (proje sahibi, 13 Kasım):** büyük kapsül bütünüyle Skia'ya taşınır.
+- **Ne yapıldı:** `theme/capsuleSkia.ts` → `wholeLayers`, `moveMatrixAt` (saf, testli: `capsuleWhole.test.ts`); `components/FxSkia.tsx` → `SkiaWhole`: `fxTree`'nin bütün katmanları tek tuvalde. Durağan katman `ImageSVG`, klip içi hareket P6'nın maskesi ve içeriği, hareketli katman saatine bağlı matrisle taşınan grup (opaklığı katman olarak). `FxSvg` `whole` çizicisi verilince onu kullanır; okunamayan plan ya da SVG'de ve tuval hata verirse resim yoluna döner. Süsle'nin önden okuması durağan katmanları da tuvalin okuyacağı gibi okur.
+- **Anahtar:** `CAPSULE_SKIA_WHOLE = false`. Önizleme derlemesinde Çizim ölçümü → "Bütün kapsül Skia" açar; panel kapanınca da açık kalır (panel Süsle'nin üstünü örtüyor). Aynı anahtar açıkken Kapsül ölçümü → Skia yan yana'nın sağ tarafı bütün tuvaldir.
+- **Kapsam dışı:** seçenek karoları (şeritteki küçük kapsüller) hâlâ resim yolunda; 2186 görünümün ne kadarının karolardan geldiği anahtar açıkken ölçülecek.
+- **Doğrulanmadı (telefon yok):** çizimin resim yoluyla birebirliği (Skia'nın SVG çizimi, hareketli katmanın pivotu ve eğikliği, opaklık), tuvalin ilk karesi, kare ve bellek sayıları. Anahtar bunlar telefonda görülüp ölçülmeden açılmaz.
+
 ## Skia'nın üçüncü taraf lisansları (11 Kasım)
 
 P5'ten önce okundu. Kaynak: `Shopify/react-native-skia` `v2.6.2` etiketi → `packages/skia/scripts/skia-configuration.ts` (derleme bayrakları), Skia'nın o etiketteki commit'i `4502f88` → `DEPS`, `gn/skia.gni` ve `BUILD.gn` (varsayılanlar, hangi kitaplığın bağlandığı). Lisans metinleri her kitaplığın GitHub'daki kendi deposundan, ana daldan okundu (`DEPS`'teki commit'ten değil; `googlesource.com` bu ortamdan açılmıyor). `dng_sdk` AOSP'nin bir GitHub aynasından (`GrapheneOS/platform_external_dng_sdk`, 1.4.0) okundu. `libskia.a`'nın içine gerçekten neyin girdiği ikiliden doğrulanmadı; liste derleme bayraklarından çıkarımdır.
