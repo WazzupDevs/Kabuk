@@ -764,6 +764,106 @@ Yavaş kaydırmada aşamalar (tek kaydırma): komut gönderme 2,11 ms, swap ve G
 - **Ölçüldü:** hızlıda fazla olan iş RenderThread'de değil (çizim yavaştakiyle aynı). İlk geçişte JS ile UI'da satır bağlama, her geçişte uygulamanın boş tampon beklemesi (`dequeueBuffer`).
 - **Ölçüldü:** esneme her kareye ek ekran dışı geçiş ekliyor ve gerili listede çizimi sürdürüyor.
 
+## 4.9 Bütün kapsül Skia: bellek düzeltmesi ve karolar sonrası (14 Kasım 2026)
+
+- **Derleme:** Galaxy S23, 0.11.0 build 21, release. Uygulama iki kez kapatılıp açıldı. Çalışan güncellemenin yayın saati günlükten okunamadı (expo-updates satırı yoktu). #627 ve #628 main'e 21.01 UTC'den önce girdi (#628: 21.01 UTC); karoların hazır resimle çizildiği görüntüde görüldü (görünüm sayısı 1062 → 367), yani #628 telefonda.
+- **Koşullar:** pil %100, USB'den şarjda (şarjsız sağlanamadı); sıcaklık 33–39 °C. Güç tasarrufu kapalı, animatör ölçeği 1x, Rahatsız Etmeyin açık; sonra eski hâline (kapalı) alındı.
+- **Kesinti:** ölçüm sırasında telefonun sesli asistanı kendiliğinden açıldı (bozuk güç tuşu); kapatıldı. O anki anahtar dokunuşu boşa gitti. Anahtarın durumu her ölçümden önce panelde okundu.
+- **Ölçüt (4.8):** asıl sayı Android'in geç kalan kare oranı (`Janky frames`, FrameTimeline) ve en uzun kare. "12,5 ms'den uzun" oranı yalnız eski bölümlerle karşılaştırma için.
+- **Geri alınanlar:** "Bütün kapsül Skia" kapatıldı ve panelde kapalı göründüğü okundu. Düzenleyiciden her seferinde kaydetmeden çıkıldı; Profil'deki kapsül kaydedilmiş hâlinde. Görüntüler repoya girmedi.
+
+### A. Bellek (anahtar açık; toplam PSS / Native Heap / Graphics / GL mtrack / EGL mtrack, MB)
+
+| An                     | 4.6 (açık)                  | 4.9, 1. tur                | 4.9, 2. tur                                       |
+| ---------------------- | --------------------------- | -------------------------- | ------------------------------------------------- |
+| Düzenleyiciye girmeden | 428 / 145 / 94 / 54 / 39    | 418 / 143 / 87 / 48 / 39   | (1. turun 2 dk'sından) 886 / 293 / 360 / 312 / 47 |
+| 5 zardan sonra         | 1066 / 359 / 424 / 376 / 47 | 964 / 321 / 416 / 368 / 47 | 1061 / 448 / 370 / 323 / 47                       |
+| Çıktıktan 30 sn sonra  | 1066 / 362 / 369 / 321 / 47 | 888 / 295 / 360 / 312 / 47 | 1034 / 408 / 364 / 316 / 47                       |
+| Çıktıktan 2 dk sonra   | 1050 / 333 / 365 / 318 / 47 | 886 / 293 / 360 / 312 / 47 | 1033 / 407 / 364 / 316 / 47                       |
+
+### B. Zar ve parça değişimi
+
+**İlk üç zar** (uygulama yeniden başlatıldı, anahtar açıldı, düzenleyiciye girildi; `atrace` gfx, view, sched):
+
+| Basış | Anahtar açık                                                                                                              | Anahtar kapalı (aynı güncelleme)                                    |
+| ----- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 1.    | En uzun kare 108 ms; UI'da `animation` 107 ms, `Record View#draw` 1 ms; UI CPU 101 ms, JS 12 ms; yerleşim güncellemesi 66 | 1375 ms; `Record View#draw` 1342 ms; UI CPU 1327 ms, JS 122 ms; 948 |
+| 2.    | 27 ms; `animation` 26 ms; JS 24 ms; 11                                                                                    | 365 ms; `Record View#draw` 227 ms; JS 212 ms; 1770                  |
+| 3.    | 17 ms; `animation` 15 ms; JS 14 ms; 7                                                                                     | 653 ms; `Record View#draw` 274 ms; JS 312 ms; 2142                  |
+
+**6b ve 6a** (3 koşu, ortanca; koşu aralığı parantezde):
+
+| Ölçüm                             | 4.4 (açık, #623 öncesi) | 4.5 (açık, #623 sonrası) | 4.9 açık          | 4.9 kapalı (taban) |
+| --------------------------------- | ----------------------- | ------------------------ | ----------------- | ------------------ |
+| 6b, zara 5 kez: geç kalan kare %  | 30,6 (15,8–42,7)        | 1,7 (1,6–2,8)            | 19,0 (7,6–36,6)   | 26,8 (24,7–43,6)   |
+| 6b: p99 / en uzun kare (ms)       | 85 / 150–2100           | 101 / 150–800            | 93 / 150–250      | 2200 / 3400–4950   |
+| 6b: >12,5 ms % (eski ölçüt)       | 78,6                    | 4,6                      | 72,9              | 60,2               |
+| 6a, 10 parça: geç kalan kare %    | 3,6 (3,6–4,5)           | 1,9 (1,2–2,9)            | 9,5 (7,5–9,6)     | 1,05 (0,87–1,45)   |
+| 6a: p95 / p99 / en uzun kare (ms) | — / 32 / 65             | — / 40 / 89              | 27 / 57 / 117–150 | 13 / 21 / 46–101   |
+| 6a: >12,5 ms %                    | 15,4                    | 4,5                      | 42,8              | 5,1                |
+
+**Düzenleyici dururken** (8 sn, iki koşu):
+
+|        | Geç kalan kare % | Kare p50 | Parça değişiminde aşamalar (UI animasyon / komut gönderme / swap / kare toplamı, ms) |
+| ------ | ---------------- | -------- | ------------------------------------------------------------------------------------ |
+| Açık   | 0                | 7–8 ms   | 5,52 / 1,86 / 1,88 / 10,86                                                           |
+| Kapalı | 0–0,2            | 10–11 ms | 2,90 / 3,35 / 2,93 / 11,67                                                           |
+
+**Görünüm sayısı** (aynı parça; 4.6'da açıkken 627 ve 1428):
+
+| Şerit konumu        | Açık | Kapalı |
+| ------------------- | ---- | ------ |
+| Girişte             | 367  | 1062   |
+| "Boş" konumunda     | 399  | 639    |
+| Sağa 10 parça sonra | 400  | 1480   |
+
+### C. Karolar, gözle
+
+1. **Kaydırma:** şerit hızlı savrulurken ve durunca yakalanan karelerde karolar dolu, boş karo görülmedi. Ekran kaydı alınamadı (ekran görüntüleri arası yaklaşık 0,4 sn); kaç kare boş kaldığı ölçülemedi. Savrulma sırasında kapsül bir an eski parçayla, şeridin ortasındaki karo yeni parçayla görünüyor; şerit durunca ikisi aynı.
+2. **Açık ile kapalı aynı mı:** aynı şerit konumunda iki hâlin ekran görüntüleri piksel piksel karşılaştırıldı:
+   - Renk, Göz ve Yüz şeritlerinde fark yok (ortalama fark 0,00).
+   - Baş şeridinde Çiçek tacı ve komşuları (Taç, topuz) aynı (fark 0,00).
+   - 3 kat büyütmede kenarlar iki hâlde aynı keskinlikte.
+   - Boyun şeridine ve destansı bir takım karosuna ayrıca bakılmadı.
+3. **"Boş" seçeneği ve çerçeve:** "Boş" karosu çarpı işaretli daire olarak çiziliyor; seçili karonun yeşil çerçevesi doğru.
+4. **Slot değiştirme:** Baş → Renk → Göz → Yüz geçişlerinde şerit o slotun karolarıyla açılıyor.
+5. **Büyük kapsül:**
+   - Parça değişince ve zarda yakalanan karelerde boş kapsül yok.
+   - Başa dokunma bu turda ayrıca denenmedi.
+   - Kaydetmeden çıkınca Profil'deki kapsül kaydedilmiş hâlinde.
+6. **Not, gövdesiz karolar:** Çiçek tacı, Taç ve topuz karolarında kapsülün gövdesi çizilmiyor, yalnız aksesuar görünüyor. Bu anahtar kapalıyken de aynı (piksel farkı 0); #628'den gelmiyor.
+
+### Yanıtlar
+
+**Bellek:**
+
+- **Ölçüldü:** çıkınca girişteki düzeye dönmüyor. 1. turda 418'den 964 MB'a çıkıp 2 dk sonra 886 MB'ta kalıyor; 4.6'da 1050 MB'ta kalıyordu.
+- **Ölçüldü:** ikinci turda birikiyor: 2 dk sonra 1033 MB (+147 MB). Artış Native Heap'te (293 → 407 MB); GPU dokuları (GL mtrack) aynı düzeyde (312–316 MB).
+
+**İlk zar:**
+
+- **Ölçüldü:** uzun kare kalktı. Anahtar açıkken ilk zarda en uzun kare 108 ms (UI iş parçacığında, `animation` içinde); `Record View#draw` 1 ms, yerleşim güncellemesi 66.
+- **Ölçüldü:** anahtar kapalıyken aynı basışta 1375 ms (UI, `Record View#draw` 1342 ms).
+
+**Karolar:**
+
+- **Ölçüldü:** bakılan şeritlerde karolar bugünkü çizimle piksel piksel aynı.
+- **Ölçülemedi:** boş gelen kare sayısı (ekran kaydı yok). Yakalanan karelerde boş karo görülmedi.
+
+**Yeni bulgu, parça değişimi ve zar ağırlaştı:**
+
+- **Ölçüldü:** anahtar açıkken 6a'da geç kalan kare %9,5 (4.5'te %1,9; anahtar kapalıyken bugün %1,05).
+- **Ölçüldü:** 6b'de geç kalan kare %19 (4.5'te %1,7).
+- **Ölçüldü:** parça değişiminde UI iş parçacığındaki animasyon payı 5,5 ms (kapalıyken 2,9 ms).
+- **Çıkarım:** 4.5 ile bugün arasındaki değişiklikler #627 (önbellek belleği geri veriyor) ve #628 (karolar resim). Önbellekten atılan resimlerin yeniden hazırlanması ya da karo resimlerinin çizimi olabilir; hangisi olduğu bu ölçümde ayrılmadı.
+
+**Anahtar herkes için açılabilir mi (karar proje sahibinin):**
+
+- Çizim farkı, çökme ve boş kapsül görülmedi.
+- **Engel olabilecekler:**
+  - Bellek çıkınca inmiyor ve ikinci turda 147 MB birikiyor.
+  - Parça değişiminde ve zarda geç kalan kare oranı 4.5'e göre yükseldi; parça değişiminde anahtar kapalı hâlden kötü (%9,5'e karşı %1,05).
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
