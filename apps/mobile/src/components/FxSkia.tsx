@@ -248,7 +248,7 @@ function Drawn({
 // each frame, a look's layers took twice the UI thread's time while anything on the canvas moved).
 // Made off the screen, on this thread, where the SVG is read; `image` null (no surface) draws the
 // SVG from its shapes as before.
-type Art = { svg: SkSVG; kept: Kept; width: number; height: number };
+type Art = { xml: string; kept: Kept; width: number; height: number };
 type WholeRead =
   | { kind: 'still'; art: Art }
   | { kind: 'inside'; plan: SkiaPlan; mask: Art; content: Art }
@@ -317,7 +317,7 @@ function holdArts(arts: readonly Art[]): () => void {
   };
 }
 
-function imageOf(xml: string, svg: SkSVG, width: number, height: number, ratio: number): Kept {
+function imageOf(xml: string, width: number, height: number, ratio: number): Kept {
   const key = `${ratio}|${width}x${height}|${xml}`;
   const hit = kept.get(key);
   if (hit) {
@@ -326,16 +326,22 @@ function imageOf(xml: string, svg: SkSVG, width: number, height: number, ratio: 
   }
   let image: SkImage | null = null;
   try {
-    const surface = Skia.Surface.Make(Math.ceil(width * ratio), Math.ceil(height * ratio));
-    if (surface) {
+    // The SVG is read for this one drawing and let go with its surface: the picture keeps its own
+    // pixels, and a read SVG held on (in `svgs`) is memory the collector does not see either
+    // (docs/perf/akicilik-denetimi.md → 4.9: the heap grew with every visit to Süsle).
+    const svg = Skia.SVG.MakeFromString(xml);
+    const surface = svg
+      ? Skia.Surface.Make(Math.ceil(width * ratio), Math.ceil(height * ratio))
+      : null;
+    if (svg && surface) {
       const canvas = surface.getCanvas();
       canvas.scale(ratio, ratio);
       canvas.drawSvg(svg, width, height);
       surface.flush();
       image = surface.makeImageSnapshot();
-      // The picture keeps its own pixels; the surface it was drawn on is not needed again.
-      surface.dispose();
     }
+    surface?.dispose();
+    svg?.dispose();
   } catch {
     image = null;
   }
@@ -344,9 +350,11 @@ function imageOf(xml: string, svg: SkSVG, width: number, height: number, ratio: 
   return made;
 }
 
+// Null when there is no picture and the SVG is not read either: the picture way draws then.
 function artOf(xml: string, width: number, height: number, ratio: number): Art | null {
-  const svg = svgOf(xml, width, height);
-  return svg ? { svg, kept: imageOf(xml, svg, width, height, ratio), width, height } : null;
+  const kept = imageOf(xml, width, height, ratio);
+  if (!kept.image && !svgOf(xml, width, height)) return null;
+  return { xml, kept, width, height };
 }
 
 // A picture at its pixels (its surface was a whole number of them), or the SVG from its shapes
@@ -366,8 +374,14 @@ function ArtAt({ art }: { art: Art }) {
       sampling={SHARP}
     />
   ) : (
-    <ImageSVG svg={art.svg} x={0} y={0} width={art.width} height={art.height} />
+    <ArtShapes art={art} />
   );
+}
+
+// No picture (no surface, or let go): the SVG from its shapes, read as P6's canvases read it.
+function ArtShapes({ art }: { art: Art }) {
+  const svg = svgOf(art.xml, art.width, art.height);
+  return svg ? <ImageSVG svg={svg} x={0} y={0} width={art.width} height={art.height} /> : null;
 }
 
 function readWhole(

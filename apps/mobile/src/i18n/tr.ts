@@ -2255,6 +2255,7 @@ export const tr = {
         bant: 'Duvar bandı',
         ters: 'Ters liste',
         balon: 'Balon şekli',
+        karo: 'Karolar SVG',
       },
       chatParts: 'Sohbette kapat',
       hold: 'Kapanınca koru',

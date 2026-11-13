@@ -216,7 +216,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const prepareStill = wholeKit?.prepareStill;
   const prepareInside = wholeKit?.prepareWholeInside ?? prepare;
   // The strips' tiles as ready pictures while the whole capsule is Skia's (FxSkia.tsx → tileUri).
-  const tile = wholeKit?.tile;
+  const tilesOff = useLabOff('karo');
+  const tile = tilesOff ? undefined : wholeKit?.tile;
   // Read ahead in idle time, a few at a time, while the idle turn lasts: first the big capsule as
   // the options next to the chosen one would draw it (its layers, and Skia's plan and SVGs), so that
   // choosing one draws with nothing left to read (the owner's report, 11 Kasım: a suit's first
