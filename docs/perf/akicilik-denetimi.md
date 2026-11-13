@@ -450,6 +450,52 @@ Hareketin yönü ve ekseni iki kareyle karşılaştırılamaz; video alınamadı
 - **DM, ölçüldü:** duvar kâğıdı, duvar bandı ve gölge kareyi belirgin değiştirmiyor: üçü birden kapalıyken kare 16,3'ten 15,6 ms'ye iniyor (en çok 0,7 ms, swap'ta); komut gönderme her hâlde 7,3–7,5 ms'de aynı kalıyor. Zemin düzeltmesinden (#620) sonra yeni taban 16,3 ms, 4.3'ün 16,5 ms'siyle aynı.
 - **DM, ölçüldü:** üç parça kapalıyken de aşırı çizim zemin ve balonlarda 4 kat ve üstü. **Çıkarım:** her karedeki sabit yük bu üç parçada değil; duvar kâğıdının altında kalan başka tam ekran katmanlarda ya da balon başına çizilen öğelerin sayısında (kare başına yaklaşık 43 doku çizimi, 4.3). Sonraki ölçüm: bir karenin hangi görünümleri çizdiğini Perfetto'da görünüm adıyla okumak.
 
+## 4.5 Bütün kapsül Skia, #623 sonrası (13 Kasım 2026, gece)
+
+- **Derleme:** Galaxy S23, 0.11.0 build 21, release. Uygulama iki kez kapatılıp açıldı. #623 (katmanlar bir kez resme çiziliyor) proje sahibine göre telefonda; çalışan güncellemenin kimliği bu kez günlükten okunamadı (expo-updates günlüğünde güncelleme satırı yoktu).
+- **Koşullar:** pil %98–100, USB'den şarjda (şarjsız sağlanamadı); sıcaklık 40–41 °C, önceki ölçümlerden sıcak. Rahatsız Etmeyin ölçüm için açıldı, sonra eski hâline (kapalı) alındı.
+- **Yöntem:** 4.4'ün A2 ve A3'ü, yalnız "Bütün kapsül Skia" açık. Aynı koordinatlar, 3 koşu, ortanca, takılma 12,5 ms'den uzun kare. Önceki sütunlar 4.4'ün aynı anahtarlı ölçümünden.
+- **Geri alınanlar:** "Bütün kapsül Skia" kapatıldı (panelde okundu); düzenleyiciden kaydetmeden çıkıldı; `debug.hwui.*` kapalı, animatör ölçeği 1. Ekran görüntüleri repoya girmedi.
+
+### A2. Kapsülünü süsle, anahtar açık: 4.4 → 4.5
+
+| Ölçüm                                                                    | 4.4 (açık, #623 öncesi) | 4.5 (açık, #623 sonrası)                      |
+| ------------------------------------------------------------------------ | ----------------------- | --------------------------------------------- |
+| 6a, 10 parça: takılma %, kare p50                                        | 15,4; 11 ms             | 4,5; 8 ms                                     |
+| 6a: p99 / en uzun kare (ms)                                              | 32 / 65 (ilk koşu 400)  | 40 / 89 (ilk koşu 300)                        |
+| 6a: yavaş bitmap yüklemesi / yavaş çizim komutu (koşu başına)            | 1 / 0                   | 2 / 4 (bir koşuda 23 / 24)                    |
+| 6 (boşta, 10 sn, aynı görünüş): takılma %, kare p50                      | 2,0; 11 ms              | 0,2; 8 ms (bir koşu %38, ilk koşu)            |
+| 6 (boşta): UI animasyon / komut gönderme / swap (ms, ortanca)            | 6,0 / 2,0 / 1,8         | 2,0 / 2,6 / 2,6                               |
+| 6b, zara 5 kez: takılma %, kare p50                                      | 78,6; 17 ms             | 4,6; 8 ms                                     |
+| 6b: p99 / en uzun kare (ms)                                              | 85 / 150–2100           | 101 / 150–800                                 |
+| 6 (tek zar): kare ortancası / p95, UI animasyon payı                     | 21,3 / 31,3 ms; 8,6 ms  | 9,3 / 11,3 ms; 3,1 ms                         |
+| 6 (tek zar): son 120 karede 20 ms'yi geçen kare                          | yok (30 ms eşiğinde)    | yok                                           |
+| atrace, tek zar: en uzun `Record View#draw()`                            | 438 ms                  | iz başına 10 ms'yi geçmedi (`traversal` 8 ms) |
+| atrace: `mountViews` / tek seferde yerleşim güncellemesi                 | 55 ms / 460             | 66 ms / 420                                   |
+| Düzenleyicide görünüm sayısı                                             | 794                     | 1169                                          |
+| Bellek, düzenleyiciye girerken (toplam PSS / Graphics / Native Heap, MB) | ölçülmedi               | 579 / 194 / 184                               |
+| Bellek, 6a sonu                                                          | 726 / 247 / 163         | 1136 / 420 / 500                              |
+| Bellek, 6b sonu                                                          | 821 / 364 / 163         | 1470 / 426 / 583                              |
+| Bellek, düzenleyiciden çıktıktan 30 sn sonra                             | ölçülmedi               | 1343 / 361 / 386                              |
+
+### A3. Gözle (anahtar açık)
+
+- **Parça değişimi:** yeni parça hemen yerinde; yakalanan karelerde eski ve yeni üst üste görünmedi (4.4'te görünmüştü), kapsül boş kalmadı.
+- **Başa dokunma:** yüz ("Mutlu") ve yıldızlar geldi.
+- **Profil sekmesi:** kapsül kaydedilmiş hâliyle doğru.
+- **Keskinlik:**
+  - Düzenleyicideki büyük kapsül 3 kat büyütmede keskin; kenarlar yumuşatılmış, merdiven görünmüyor.
+  - Galeride sol (bugünkü çizim) ve sağ (bütün tuval) yan yana 3 kat büyütüldü: Büyücü şapkası ve Gece teni halkası. İki taraf eşit keskin; bulanıklık ya da pikselleşme yok.
+
+### Yanıtlar
+
+- **Ölçüldü:** #623 zarı düzeltiyor: hareket sırasında kare ortancası 17'den 8 ms'ye, takılma %79'dan %5'e iniyor; tek zarda kare 21 ms'den 9 ms'ye, UI'daki animasyon payı 8,6'dan 3,1 ms'ye iniyor.
+- **Ölçüldü:** parça değişiminde takılma %15'ten %4,5'e iniyor; en uzun kare 65–300 ms aralığında, 4.4 ile aynı düzeyde.
+- **Ölçüldü:** zarda tek seferlik en uzun kare 2,1 sn'den 0,8 sn'ye iniyor ama kalıyor (ilk zar basışında).
+- **Ölçüldü, yeni sorun:** bellek belirgin büyüdü. 6b sonunda toplam PSS 1,47 GB (4.4'te 821 MB), Graphics 426 MB (364), Native Heap 583 MB (163). Düzenleyiciden çıktıktan 30 sn sonra bile 1,34 GB'ta kalıyor. **Çıkarım:** katmanların bir kez çizilen resimleri bellekte tutuluyor ve düzenleyici kapanınca bırakılmıyor; ucuz telefonda arka planda kapanma riski.
+- **Ölçüldü:** görünüm sayısı 794'ten 1169'a çıktı. Bunun nedeni bu ölçümde ayrılmadı (çıkarım: şerit bu turda daha çok karo bağladı).
+- **Keskinlik:** galeride ve büyük kapsülde bulanıklık ya da pikselleşme görülmedi.
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
