@@ -1,0 +1,1311 @@
+{
+ "sha": "e843360d1d9a8861684159e6faa12cf146dcfafe",
+ "run": "https://github.com/WazzupDevs/Kabuk/actions/runs/43572142396",
+ "date": "2026-11-14T08:03:11.382Z",
+ "images": [
+  {
+   "name": "01-welcome",
+   "theme": "dark",
+   "file": "dark/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "dark",
+   "file": "dark/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "dark",
+   "file": "dark/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01d-signed-out",
+   "theme": "dark",
+   "file": "dark/01d-signed-out.png",
+   "flow": "e2e/maestro/flows/01d-returning.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "dark",
+   "file": "dark/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a-under-age",
+   "theme": "dark",
+   "file": "dark/03a-under-age.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a2-birth-confirm",
+   "theme": "dark",
+   "file": "dark/03a2-birth-confirm.png",
+   "flow": "e2e/maestro/flows/about-you.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03b-name",
+   "theme": "dark",
+   "file": "dark/03b-name.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03c-photo",
+   "theme": "dark",
+   "file": "dark/03c-photo.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03d-photo-sheet",
+   "theme": "dark",
+   "file": "dark/03d-photo-sheet.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04-explore",
+   "theme": "dark",
+   "file": "dark/04-explore.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04b-design",
+   "theme": "dark",
+   "file": "dark/04b-design.png",
+   "flow": "e2e/maestro/flows/01b-design.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-confirm",
+   "theme": "dark",
+   "file": "dark/04c-preview-confirm.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-1",
+   "theme": "dark",
+   "file": "dark/04c-preview-games-1.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-2",
+   "theme": "dark",
+   "file": "dark/04c-preview-games-2.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-3",
+   "theme": "dark",
+   "file": "dark/04c-preview-games-3.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-4",
+   "theme": "dark",
+   "file": "dark/04c-preview-games-4.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-intro",
+   "theme": "dark",
+   "file": "dark/04c-preview-intro.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-clues",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-clues.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-guess-wait",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-guess-wait.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-guess",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-guess.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-imposter",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-imposter.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-pass",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-pass.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-reveal",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-reveal.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-vote",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-vote.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-word",
+   "theme": "dark",
+   "file": "dark/04d-sahtekar-word.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-letters",
+   "theme": "dark",
+   "file": "dark/04e-say-letters.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-object",
+   "theme": "dark",
+   "file": "dark/04e-say-object.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-objected",
+   "theme": "dark",
+   "file": "dark/04e-say-objected.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-song-object",
+   "theme": "dark",
+   "file": "dark/04e-say-song-object.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-song",
+   "theme": "dark",
+   "file": "dark/04e-say-song.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-hold",
+   "theme": "dark",
+   "file": "dark/04f-ibre-hold.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-needle",
+   "theme": "dark",
+   "file": "dark/04f-ibre-needle.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-reveal",
+   "theme": "dark",
+   "file": "dark/04f-ibre-reveal.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-side",
+   "theme": "dark",
+   "file": "dark/04f-ibre-side.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04g-buttons",
+   "theme": "dark",
+   "file": "dark/04g-buttons.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04h-activities-history",
+   "theme": "dark",
+   "file": "dark/04h-activities-history.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04h-activities",
+   "theme": "dark",
+   "file": "dark/04h-activities.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-bubbles",
+   "theme": "dark",
+   "file": "dark/04i-chat-bubbles.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-new-message",
+   "theme": "dark",
+   "file": "dark/04i-chat-new-message.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-reaction-bar",
+   "theme": "dark",
+   "file": "dark/04i-chat-reaction-bar.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-reply",
+   "theme": "dark",
+   "file": "dark/04i-chat-reply.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-legacy-themes",
+   "theme": "dark",
+   "file": "dark/04j-legacy-themes.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-tokens-grounds-2",
+   "theme": "dark",
+   "file": "dark/04j-tokens-grounds-2.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-tokens-grounds",
+   "theme": "dark",
+   "file": "dark/04j-tokens-grounds.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-tokens-themes",
+   "theme": "dark",
+   "file": "dark/04j-tokens-themes.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04k-parts-buttons",
+   "theme": "dark",
+   "file": "dark/04k-parts-buttons.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04k-parts-confetti",
+   "theme": "dark",
+   "file": "dark/04k-parts-confetti.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04k-parts-countin",
+   "theme": "dark",
+   "file": "dark/04k-parts-countin.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04k-parts-timer-ring",
+   "theme": "dark",
+   "file": "dark/04k-parts-timer-ring.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04k-parts-toast",
+   "theme": "dark",
+   "file": "dark/04k-parts-toast.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04l-identity-capsules",
+   "theme": "dark",
+   "file": "dark/04l-identity-capsules.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04l-identity-covers",
+   "theme": "dark",
+   "file": "dark/04l-identity-covers.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04l-identity-icons-wallpaper",
+   "theme": "dark",
+   "file": "dark/04l-identity-icons-wallpaper.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04m-motion-cover-open",
+   "theme": "dark",
+   "file": "dark/04m-motion-cover-open.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04m-motion-deck-out",
+   "theme": "dark",
+   "file": "dark/04m-motion-deck-out.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04m-motion-deck",
+   "theme": "dark",
+   "file": "dark/04m-motion-deck.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04m-motion-role",
+   "theme": "dark",
+   "file": "dark/04m-motion-role.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04m-motion-vinyl-cover",
+   "theme": "dark",
+   "file": "dark/04m-motion-vinyl-cover.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04m-motion-wheel",
+   "theme": "dark",
+   "file": "dark/04m-motion-wheel.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04n-measure",
+   "theme": "dark",
+   "file": "dark/04n-measure.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "05-explore-list",
+   "theme": "dark",
+   "file": "dark/05-explore-list.png",
+   "flow": "e2e/maestro/flows/02-checkin.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01-welcome",
+   "theme": "large",
+   "file": "large/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "large",
+   "file": "large/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "large",
+   "file": "large/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "large",
+   "file": "large/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a-under-age",
+   "theme": "large",
+   "file": "large/03a-under-age.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a2-birth-confirm",
+   "theme": "large",
+   "file": "large/03a2-birth-confirm.png",
+   "flow": "e2e/maestro/flows/about-you.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03b-name",
+   "theme": "large",
+   "file": "large/03b-name.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03c-photo",
+   "theme": "large",
+   "file": "large/03c-photo.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03d-photo-sheet",
+   "theme": "large",
+   "file": "large/03d-photo-sheet.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04-explore",
+   "theme": "large",
+   "file": "large/04-explore.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04b-design",
+   "theme": "large",
+   "file": "large/04b-design.png",
+   "flow": "e2e/maestro/flows/01b-design.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-confirm",
+   "theme": "large",
+   "file": "large/04c-preview-confirm.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-1",
+   "theme": "large",
+   "file": "large/04c-preview-games-1.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-2",
+   "theme": "large",
+   "file": "large/04c-preview-games-2.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-3",
+   "theme": "large",
+   "file": "large/04c-preview-games-3.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-4",
+   "theme": "large",
+   "file": "large/04c-preview-games-4.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-intro",
+   "theme": "large",
+   "file": "large/04c-preview-intro.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-clues",
+   "theme": "large",
+   "file": "large/04d-sahtekar-clues.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-guess-wait",
+   "theme": "large",
+   "file": "large/04d-sahtekar-guess-wait.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-guess",
+   "theme": "large",
+   "file": "large/04d-sahtekar-guess.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-imposter",
+   "theme": "large",
+   "file": "large/04d-sahtekar-imposter.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-pass",
+   "theme": "large",
+   "file": "large/04d-sahtekar-pass.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-reveal",
+   "theme": "large",
+   "file": "large/04d-sahtekar-reveal.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-vote",
+   "theme": "large",
+   "file": "large/04d-sahtekar-vote.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-word",
+   "theme": "large",
+   "file": "large/04d-sahtekar-word.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-letters",
+   "theme": "large",
+   "file": "large/04e-say-letters.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-object",
+   "theme": "large",
+   "file": "large/04e-say-object.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-objected",
+   "theme": "large",
+   "file": "large/04e-say-objected.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-song-object",
+   "theme": "large",
+   "file": "large/04e-say-song-object.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-song",
+   "theme": "large",
+   "file": "large/04e-say-song.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-hold",
+   "theme": "large",
+   "file": "large/04f-ibre-hold.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-needle",
+   "theme": "large",
+   "file": "large/04f-ibre-needle.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-reveal",
+   "theme": "large",
+   "file": "large/04f-ibre-reveal.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-side",
+   "theme": "large",
+   "file": "large/04f-ibre-side.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04g-buttons",
+   "theme": "large",
+   "file": "large/04g-buttons.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-bubbles",
+   "theme": "large",
+   "file": "large/04i-chat-bubbles.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "05-explore-list",
+   "theme": "large",
+   "file": "large/05-explore-list.png",
+   "flow": "e2e/maestro/flows/02-checkin.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01-welcome",
+   "theme": "light",
+   "file": "light/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "light",
+   "file": "light/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "light",
+   "file": "light/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "light",
+   "file": "light/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a-under-age",
+   "theme": "light",
+   "file": "light/03a-under-age.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a2-birth-confirm",
+   "theme": "light",
+   "file": "light/03a2-birth-confirm.png",
+   "flow": "e2e/maestro/flows/about-you.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03b-name",
+   "theme": "light",
+   "file": "light/03b-name.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03c-photo",
+   "theme": "light",
+   "file": "light/03c-photo.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03d-photo-sheet",
+   "theme": "light",
+   "file": "light/03d-photo-sheet.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04-explore",
+   "theme": "light",
+   "file": "light/04-explore.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04b-design",
+   "theme": "light",
+   "file": "light/04b-design.png",
+   "flow": "e2e/maestro/flows/01b-design.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-confirm",
+   "theme": "light",
+   "file": "light/04c-preview-confirm.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-1",
+   "theme": "light",
+   "file": "light/04c-preview-games-1.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-2",
+   "theme": "light",
+   "file": "light/04c-preview-games-2.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-3",
+   "theme": "light",
+   "file": "light/04c-preview-games-3.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-games-4",
+   "theme": "light",
+   "file": "light/04c-preview-games-4.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04c-preview-intro",
+   "theme": "light",
+   "file": "light/04c-preview-intro.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-clues",
+   "theme": "light",
+   "file": "light/04d-sahtekar-clues.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-guess-wait",
+   "theme": "light",
+   "file": "light/04d-sahtekar-guess-wait.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-guess",
+   "theme": "light",
+   "file": "light/04d-sahtekar-guess.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-imposter",
+   "theme": "light",
+   "file": "light/04d-sahtekar-imposter.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-pass",
+   "theme": "light",
+   "file": "light/04d-sahtekar-pass.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-reveal",
+   "theme": "light",
+   "file": "light/04d-sahtekar-reveal.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-vote",
+   "theme": "light",
+   "file": "light/04d-sahtekar-vote.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04d-sahtekar-word",
+   "theme": "light",
+   "file": "light/04d-sahtekar-word.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-letters",
+   "theme": "light",
+   "file": "light/04e-say-letters.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-object",
+   "theme": "light",
+   "file": "light/04e-say-object.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-objected",
+   "theme": "light",
+   "file": "light/04e-say-objected.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-song-object",
+   "theme": "light",
+   "file": "light/04e-say-song-object.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04e-say-song",
+   "theme": "light",
+   "file": "light/04e-say-song.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-hold",
+   "theme": "light",
+   "file": "light/04f-ibre-hold.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-needle",
+   "theme": "light",
+   "file": "light/04f-ibre-needle.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-reveal",
+   "theme": "light",
+   "file": "light/04f-ibre-reveal.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04f-ibre-side",
+   "theme": "light",
+   "file": "light/04f-ibre-side.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04g-buttons",
+   "theme": "light",
+   "file": "light/04g-buttons.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-bubbles",
+   "theme": "light",
+   "file": "light/04i-chat-bubbles.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-new-message",
+   "theme": "light",
+   "file": "light/04i-chat-new-message.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-reaction-bar",
+   "theme": "light",
+   "file": "light/04i-chat-reaction-bar.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04i-chat-reply",
+   "theme": "light",
+   "file": "light/04i-chat-reply.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-legacy-themes",
+   "theme": "light",
+   "file": "light/04j-legacy-themes.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-tokens-grounds-2",
+   "theme": "light",
+   "file": "light/04j-tokens-grounds-2.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-tokens-grounds",
+   "theme": "light",
+   "file": "light/04j-tokens-grounds.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04j-tokens-themes",
+   "theme": "light",
+   "file": "light/04j-tokens-themes.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04k-parts-buttons",
+   "theme": "light",
+   "file": "light/04k-parts-buttons.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "04k-parts-timer-ring",
+   "theme": "light",
+   "file": "light/04k-parts-timer-ring.png",
+   "flow": "e2e/maestro/flows/01c-preview.yaml",
+   "shard": 4,
+   "passed": false
+  },
+  {
+   "name": "05-explore-list",
+   "theme": "light",
+   "file": "light/05-explore-list.png",
+   "flow": "e2e/maestro/flows/02-checkin.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "ekran-dm-dark-1",
+   "theme": "visual",
+   "file": "visual/ekran-dm-dark-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "ekran-dm-light-1",
+   "theme": "visual",
+   "file": "visual/ekran-dm-light-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-kimlik-dark-1",
+   "theme": "visual",
+   "file": "visual/galeri-kimlik-dark-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-kimlik-dark-2",
+   "theme": "visual",
+   "file": "visual/galeri-kimlik-dark-2.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-kimlik-dark-3",
+   "theme": "visual",
+   "file": "visual/galeri-kimlik-dark-3.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-kimlik-light-1",
+   "theme": "visual",
+   "file": "visual/galeri-kimlik-light-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-kimlik-light-2",
+   "theme": "visual",
+   "file": "visual/galeri-kimlik-light-2.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-kimlik-light-3",
+   "theme": "visual",
+   "file": "visual/galeri-kimlik-light-3.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-olcu-dark-1",
+   "theme": "visual",
+   "file": "visual/galeri-olcu-dark-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-olcu-dark-2",
+   "theme": "visual",
+   "file": "visual/galeri-olcu-dark-2.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-olcu-light-1",
+   "theme": "visual",
+   "file": "visual/galeri-olcu-light-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-olcu-light-2",
+   "theme": "visual",
+   "file": "visual/galeri-olcu-light-2.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-renkler-dark-1",
+   "theme": "visual",
+   "file": "visual/galeri-renkler-dark-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-renkler-light-1",
+   "theme": "visual",
+   "file": "visual/galeri-renkler-light-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-sohbet-dark-1",
+   "theme": "visual",
+   "file": "visual/galeri-sohbet-dark-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-sohbet-dark-2",
+   "theme": "visual",
+   "file": "visual/galeri-sohbet-dark-2.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-sohbet-light-1",
+   "theme": "visual",
+   "file": "visual/galeri-sohbet-light-1.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  },
+  {
+   "name": "galeri-sohbet-light-2",
+   "theme": "visual",
+   "file": "visual/galeri-sohbet-light-2.png",
+   "flow": null,
+   "shard": null,
+   "passed": false
+  }
+ ]
+}
