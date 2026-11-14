@@ -864,6 +864,149 @@ Yavaş kaydırmada aşamalar (tek kaydırma): komut gönderme 2,11 ms, swap ve G
   - Bellek çıkınca inmiyor ve ikinci turda 147 MB birikiyor.
   - Parça değişiminde ve zarda geç kalan kare oranı 4.5'e göre yükseldi; parça değişiminde anahtar kapalı hâlden kötü (%9,5'e karşı %1,05).
 
+## 4.10 Bütün kapsül Skia: #633 sonrası bellek ve karoların payı (14 Kasım 2026)
+
+- **Derleme:** Galaxy S23, 0.11.0 build 21, release. Uygulama iki kez kapatılıp açıldı; `preview` güncellemesi `01a1d749…` indirilip uygulandı (expo-updates günlüğü). Panelde "Karolar SVG" var, yani #633 telefonda.
+- **Koşullar:**
+  - Pil %66'dan %95'e, USB'den şarjda (şarjsız sağlanamadı: adb kablosu).
+  - Sıcaklık A'da 32–35 °C, B'de 36–40 °C. Hâl 2, 3 ve tekrar Hâl 1'in başında 39,1–40,4 °C ölçüldü; üçünde de 5 dk beklendi, bekleme sonrası sıcaklık okunmadı.
+  - Güç tasarrufu kapalı, animatör ölçeği 1x, Rahatsız Etmeyin ölçüm için açıldı, sonra eski hâline (kapalı) alındı.
+  - Arka planda Instagram açıktı; iz dosyasında onun iş parçacığı da her vsync'te kare çiziyordu (koşuyla ilgisi yok, ama aynı CPU'yu paylaşıyor).
+- **Yöntem:**
+  - Her dokunuştan önce öndeki pencere denetlendi; asistan bu oturumda açılmadı, koşu yinelenmedi.
+  - Anahtarlar her yeniden başlatmadan sonra panelde açıldı ve ekran görüntüsünün pikselinden okundu; panel kapatılıp ölçüldü.
+  - 6a: Baş şeridinde sağdaki karoya 10, soldakine 10, sağdakine 10 dokunuş, dokunuşlar arası yaklaşık 0,9 sn. Her koşu yeniden başlatmadan sonra "Baş boş"tan başlar, yani ilk "sağa 10" her koşuda yeni görünüşlerdir. 6b: 6a'nın ardından zara 5 kez, 2,5 sn arayla.
+  - Geç kalan kare oranı, p95, p99 ve en uzun kare `gfxinfo`'nun sayacından ve histogramından (histogram kovası, ms). Aşamalar `framestats` 0,8 sn'de bir okunup kareler birleştirilerek (6a ve 6b'nin bütün kareleri; bayraklı kareler dışarıda).
+  - İlk üç zar: ayrı bir yeniden başlatma, düzenleyiciye giriş, `atrace` (gfx, view, sched). Basış pencereleri iz başından sabit sürelerle ayrıldı (girdi kategorisi izlenmedi).
+  - **4.9'dan farkı:** dokunuş aralığı ve `framestats` okuması 4.9'da yoktu ya da kayıtlı değil; bu yüzden bu bölümün sayıları 4.9'unkilere karşı kullanılmaz, yalnız kendi içinde karşılaştırılır.
+- **Geri alınanlar:** "Bütün kapsül Skia", "Karolar SVG" ve "Kapanınca koru" kapalı; yeniden başlatmadan sonra panelde okundu. Düzenleyiciden her seferinde kaydetmeden çıkıldı; Profil'deki kapsül kaydedilmiş hâlinde. `atrace` durduruldu. İz dosyaları ve görüntüler repoya girmedi.
+
+### A. Bellek (toplam PSS / Native Heap / Graphics / GL mtrack / EGL mtrack, MB)
+
+Tur: düzenleyiciye gir, zara 5 kez, kaydetmeden çık, 2 dk bekle. Bir sonraki turun girişi önceki turun 2 dk'sıdır.
+
+| An                     | 4.9 açık, 1. tur           | 4.9 açık, 2. tur            | 4.10 açık, 1. tur          | 4.10 açık, 2. tur          | 4.10 açık, 3. tur          |
+| ---------------------- | -------------------------- | --------------------------- | -------------------------- | -------------------------- | -------------------------- |
+| Düzenleyiciye girmeden | 418 / 143 / 87 / 48 / 39   | 886 / 293 / 360 / 312 / 47  | 407 / 135 / 93 / 54 / 39   | 826 / 238 / 361 / 313 / 47 | 901 / 284 / 365 / 317 / 47 |
+| 5 zardan sonra         | 964 / 321 / 416 / 368 / 47 | 1061 / 448 / 370 / 323 / 47 | 929 / 263 / 419 / 371 / 47 | 913 / 296 / 370 / 322 / 47 | 999 / 283 / 374 / 327 / 47 |
+| Çıktıktan 30 sn sonra  | 888 / 295 / 360 / 312 / 47 | 1034 / 408 / 364 / 316 / 47 | 843 / 247 / 361 / 313 / 47 | 903 / 284 / 365 / 317 / 47 | 963 / 264 / 365 / 317 / 47 |
+| Çıktıktan 2 dk sonra   | 886 / 293 / 360 / 312 / 47 | 1033 / 407 / 364 / 316 / 47 | 826 / 238 / 361 / 313 / 47 | 901 / 284 / 365 / 317 / 47 | 962 / 257 / 365 / 317 / 47 |
+
+Anahtar kapalı (aynı oturum, uygulama yeniden başlatıldı):
+
+| An                     | Kapalı, 1. tur             | Kapalı, 2. tur             | Kapalı, 3. tur             |
+| ---------------------- | -------------------------- | -------------------------- | -------------------------- |
+| Düzenleyiciye girmeden | 418 / 136 / 94 / 54 / 39   | 503 / 145 / 74 / 35 / 39   | 527 / 164 / 76 / 36 / 39   |
+| 5 zardan sonra         | 698 / 266 / 173 / 132 / 41 | 673 / 194 / 174 / 134 / 39 | 983 / 308 / 335 / 294 / 41 |
+| Çıktıktan 30 sn sonra  | 640 / 146 / 175 / 135 / 39 | 636 / 169 / 157 / 118 / 39 | 755 / 277 / 181 / 142 / 39 |
+| Çıktıktan 2 dk sonra   | 503 / 145 / 74 / 35 / 39   | 527 / 164 / 76 / 36 / 39   | 739 / 233 / 181 / 142 / 39 |
+
+### B. Parça değişimi ve zar: üç hâl (3 koşu, ortanca; aralık parantezde)
+
+Hâl 1: "Bütün kapsül Skia" kapalı. Hâl 2: açık, "Karolar SVG" sönük. Hâl 3: açık, "Karolar SVG" ve "Kapanınca koru" yanık. Hâl 1' : Hâl 1 en sonda yeniden.
+
+| Ölçüm                                       | Hâl 1            | Hâl 2            | Hâl 3            | Hâl 1'           |
+| ------------------------------------------- | ---------------- | ---------------- | ---------------- | ---------------- |
+| 6a ilk "sağa 10" (yeni): geç kalan kare %   | 5,37 (3,39–5,97) | 2,34 (2,14–2,36) | 3,23 (2,93–3,91) | 6,58 (4,51–7,15) |
+| 6a "sola 10, sağa 10" (görülmüş): geç kalan | 4,57 (3,94–5,13) | 1,96 (1,89–2,04) | 2,40 (2,03–2,46) | 6,30 (5,40–6,69) |
+| 6a bütün: geç kalan kare %                  | 4,85 (3,75–5,41) | 2,09 (1,97–2,14) | 2,67 (2,33–2,92) | 5,89 (5,80–6,60) |
+| 6a: p95 / p99 (ms)                          | 21 / 250         | 11 / 48          | 16 / 65          | 22 / 300         |
+| 6a: en uzun kare (ms)                       | 550 (500–650)    | 121 (121–125)    | 250 (250–300)    | 750 (600–750)    |
+| 6a: >12,5 ms % (eski ölçüt)                 | 23,6             | 3,5              | 10,1             | 30,1             |
+| 6b zara 5 kez: geç kalan kare %             | 5,74 (4,26–16,2) | 13,6 (10,9–16,8) | 11,9 (8,7–32,3)  | 4,92 (4,72–5,14) |
+| 6b: p95 / p99 (ms)                          | 23 / 550         | 31 / 48          | 29 / 61          | 19 / 700         |
+| 6b: en uzun kare (ms)                       | 3100 (1400–4900) | 150 (150–200)    | 300 (250–850)    | 3100 (650–4950)  |
+| 6b: >12,5 ms % (eski ölçüt)                 | 60,0             | 63,0             | 62,9             | 38,6             |
+
+**Aşamalar** (`framestats`, üç koşunun bütün kareleri; ms, ortanca / p95):
+
+| Aşama                     | Hâl 1, 6a yeni | Hâl 1, 6a görülmüş | Hâl 2, 6a yeni | Hâl 2, 6a görülmüş | Hâl 3, 6a yeni | Hâl 3, 6a görülmüş |
+| ------------------------- | -------------- | ------------------ | -------------- | ------------------ | -------------- | ------------------ |
+| UI: giriş ve animasyon    | 3,30 / 8,28    | 2,93 / 7,66        | 3,00 / 5,95    | 2,36 / 5,52        | 3,02 / 6,55    | 2,37 / 5,70        |
+| UI: Draw (kayıt)          | 0,05 / 0,16    | 0,04 / 0,17        | 0,05 / 0,18    | 0,05 / 0,18        | 0,04 / 0,17    | 0,05 / 0,18        |
+| Sync                      | 0,83 / 1,38    | 0,75 / 1,43        | 0,34 / 0,50    | 0,34 / 0,51        | 0,55 / 1,01    | 0,59 / 0,97        |
+| Komut gönderme            | 2,81 / 3,82    | 2,58 / 3,78        | 1,51 / 2,31    | 1,58 / 2,39        | 1,91 / 3,47    | 2,07 / 3,29        |
+| Swap ve GPU               | 2,77 / 4,13    | 2,64 / 4,74        | 1,90 / 4,31    | 1,93 / 3,93        | 1,88 / 4,13    | 1,92 / 3,98        |
+| Kare toplamı              | 11,69 / 18,67  | 10,18 / 19,57      | 8,59 / 16,42   | 8,17 / 11,94       | 9,29 / 17,19   | 9,01 / 16,42       |
+| En uzun Draw (kayıt), tek | 338            | 373                | 4              | 22                 | 230            | 3                  |
+
+| Aşama (6b, zar)        | Hâl 1         | Hâl 2         | Hâl 3         | Hâl 1'        |
+| ---------------------- | ------------- | ------------- | ------------- | ------------- |
+| UI: giriş ve animasyon | 4,45 / 9,10   | 6,69 / 12,80  | 6,84 / 14,10  | 2,83 / 7,98   |
+| UI: Draw (kayıt)       | 0,04 / 0,08   | 0,03 / 0,09   | 0,03 / 0,09   | 0,04 / 0,08   |
+| Sync                   | 1,10 / 2,11   | 0,28 / 0,43   | 0,48 / 0,76   | 1,10 / 1,65   |
+| Komut gönderme         | 3,18 / 4,29   | 1,25 / 1,77   | 1,61 / 2,49   | 3,49 / 4,36   |
+| Swap ve GPU            | 3,81 / 5,68   | 4,36 / 7,64   | 3,75 / 7,11   | 3,83 / 9,41   |
+| Kare toplamı           | 13,77 / 26,40 | 13,92 / 33,05 | 13,67 / 35,95 | 12,80 / 20,10 |
+| En uzun Draw, tek      | 4617          | 10            | 841           | 3920          |
+
+**İlk üç zar** (yeniden başlatmadan sonra; en uzun kare `gfxinfo`'dan, gerisi `atrace`'ten o basışın en uzun `doFrame`'i için):
+
+| Basış | Hâl 1                                                                      | Hâl 2                                                               | Hâl 3                                               | Hâl 1'                                        |
+| ----- | -------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| 1.    | 1750 ms; `Record View#draw` 999; `mountViews` 34; UI CPU 1016, JS 51; 1871 | 250 ms; `doFrame` 30, `animation` 28; Record 5; 9; UI 27, JS 22; 66 | 1200 ms; Record 1171; 39; UI 1188, JS 56; 460       | 2550 ms; Record 2449; 42; UI 2479, JS 81; 892 |
+| 2.    | 450 ms; Record 184 (`animation` 143); 27; UI 314, JS 190; 2253             | 200 ms; `doFrame` 11; Record 3; 1; UI 11, JS 0; 4                   | 150 ms; `doFrame` 21; Record 4; 4; UI 19, JS 20; 19 | 500 ms; Record 193; 31; UI 242, JS 397; 1953  |
+| 3.    | 550 ms; Record 233; 25; UI 255, JS 300; 2645                               | 150 ms; `doFrame` 57, `animation` 55; Record 5; 4; UI 55, JS 56; 28 | 800 ms; Record 778; 5; UI 783, JS 272; 470          | 750 ms; Record 295; 32; UI 347, JS 318; 2421  |
+
+Hücrede sırayla: en uzun kare; en uzun `Record View#draw` (ms); en uzun `mountViews` (ms); o karede UI ve JS (`mqt_v_js`) iş parçacığının CPU süresi (ms); bir seferdeki en büyük yerleşim güncellemesi (`UPDATE_LAYOUT` sayısı).
+
+**Görünüm sayısı** (`gfxinfo`, Total attached Views):
+
+| Şerit konumu             | Hâl 1       | Hâl 2 | Hâl 3 |
+| ------------------------ | ----------- | ----- | ----- |
+| Girişte, "Boş" konumunda | 1062        | 367   | 627   |
+| Sağa 10 parça sonra      | 1957 (1950) | 399   | 1428  |
+
+### C. Gözle (Hâl 2)
+
+1. **Büyük kapsül, parça değişimi:** üç değişimde, dokunuştan hemen sonra art arda alınan görüntülerde kapsül eski parçadan yeni parçaya geçiyor; boş kare ya da eski ile yeninin üst üste durduğu kare yakalanmadı.
+2. **Zar:** üç basışta aynı; ilk görüntü eski kapsül, sonrakiler yenisi. Boş ya da üst üste kare yok.
+3. **Başa dokunma:** "Mutlu" balonu çıktı, yüz değişti (kalp gözler, yanak); hareket var.
+4. **Şeridi hızlı savurma:** karolar dolu, boş karo yakalanmadı. Savrulma sırasında kapsül bir an eski parçayla, şeridin ortası yeni parçayla görünüyor; Hâl 1'de de aynı (4.9'daki gibi).
+5. **Hâl 1 ile aynı mı:** aynı yoldan gidilip şerit alanı (y 1620–2030) piksel piksel karşılaştırıldı:
+   - Boyun şeridi, "Boş" ve sağa 1 ve 2 karo: ortalama fark 0,00–0,01.
+   - Gece takımının Boyun karosu (Tüy boa) ve takım filtresinin "Boş" karosu: fark 0,00. Bu karonun nadirliği ekranda yazmıyor; "destansı" olduğu doğrulanamadı.
+   - Büyük kapsül alanındaki fark (%5,6 piksel) yıldız ve parıltı hareketinden; görüntüler farklı anlarda alındı.
+6. **Profil sekmesi:** kaydetmeden çıkınca kapsül kaydedilmiş hâlinde.
+
+### Yanıtlar
+
+**Bellek:**
+
+- **Ölçüldü:** anahtar açıkken çıkınca girişteki düzeye dönmüyor: 407 MB'tan 5 zarda 929 MB'a çıkıyor, 2 dk sonra 826 MB. Graphics 361–365 MB'ta kalıyor, inmiyor (girişte 93); GL mtrack 313–317 MB.
+- **Ölçüldü:** turdan tura toplam artıyor ama 4.9'dan az: 826 → 901 → 962 MB (+75, +61; 4.9'da ikinci turda +147). Native Heap birikmiyor: 238 → 284 → 257 MB (4.9'da 293 → 407).
+- **Ölçüldü:** anahtar kapalıyken ilk iki turda Graphics 74–76 MB'a iniyor, toplam 503–527 MB. Açık hâl 2 dk sonra 323, 374 ve 223 MB fazla (üçüncü turda kapalı hâl de 739 MB'ta kaldı, Graphics 181).
+- **Çıkarım:** #633 Native Heap birikimini durdurdu; kalan fark GPU tarafında (Graphics, GL mtrack) ve düzenleyici kapanınca bırakılmıyor.
+
+**Parça değişimi:**
+
+- **Ölçüldü:** bu oturumda Hâl 2, Hâl 1'den kötü değil, iyi: geç kalan kare %2,09'a karşı %4,85 (sonda %5,89), en uzun kare 121'e karşı 550 ms. 4.9'daki "%9,5'e karşı %1,05" bu yöntemle tekrarlanmadı.
+- **Ölçüldü:** Hâl 3 (karolar SVG) %2,67, en uzun kare 250 ms: Hâl 2'den biraz kötü. Fark kapanmıyor, açılıyor; bugün karolar resimle çizilince daha iyi.
+- **Ölçüldü:** yeni görünüşlerde oran her hâlde biraz yüksek (Hâl 2: %2,34'e karşı %1,96; Hâl 1: 5,37'ye karşı 4,57). Hâl 2'de UI animasyonu 3,00'e karşı 2,36 ms.
+- **Ölçüldü:** Hâl 2'de komut gönderme (1,5 ms) ve Sync (0,34 ms) Hâl 1'in (2,8 ve 0,8) yarısı; UI'daki animasyon payı ortancada aynı (3,0 ve 3,3 ms), p95'te düşük (6,0 ve 8,3).
+- **Ölçüldü:** Hâl 1'in uzun kareleri UI'da `Record View#draw` kaydında (tek karede 338–373 ms); Hâl 2'de bu kayıt en çok 22 ms. Hâl 3'te yeni görünüşlerde 230 ms'ye çıkıyor (SVG karolar).
+
+**Zar:**
+
+- **Ölçüldü:** Hâl 2'de 6b'de geç kalan kare %13,6, Hâl 1'de %5,7 (sonda %4,9): oran olarak kötü. Ama en uzun kare 150 ms'ye karşı 3100 ms.
+- **Ölçüldü:** fazla süre UI'da animasyonda (ortanca 6,69'a karşı 4,45 ms, p95 12,8'e karşı 9,1) ve swap ve GPU'da (p95 7,6'ya karşı 5,7). Komut gönderme ve Sync Hâl 2'de düşük.
+- **Ölçüldü:** Hâl 3'te 6b %11,9, UI animasyonu 6,84 ms: zardaki kötüleşme karolardan gelmiyor, büyük kapsülün hareketinden.
+- **İlk zar, ölçüldü:**
+  - Hâl 2: en uzun kare 150–250 ms. UI'daki en uzun `doFrame` 11–57 ms, `Record View#draw` en çok 5 ms, yerleşim güncellemesi 4–66.
+  - Hâl 1: 1750 ms (sonda 2550), `Record View#draw` 999 (2449) ms, yerleşim güncellemesi 1871–2645.
+  - Hâl 3: 1200 ms, `Record View#draw` 1171 ms; üçüncü basışta yine 778 ms. Uzun ilk kare karolar SVG olunca geri geliyor.
+- **Çıkarım:** Hâl 2'nin ilk zarındaki 250 ms'lik kare UI'da değil (UI'nın `doFrame`'i 30 ms); büyük ihtimalle RenderThread'de resim yüklemesi. İzde RenderThread ayrıca okunmadı.
+
+**Isınma:** Hâl 1 sonda tekrarlandığında 6a %4,85 → %5,89, 6b %5,74 → %4,92; sıcaklık 36 °C'den 40 °C'ye çıkmıştı. Fark hâller arasındaki farktan küçük.
+
+**Anahtar herkes için açılabilir mi (karar proje sahibinin; yalnız görülen):**
+
+- Çizim farkı, çökme, boş kapsül ve boş karo görülmedi; karolar Hâl 1 ile piksel piksel aynı.
+- Parça değişimi ve ilk zar Hâl 1'den iyi (bu oturumda).
+- **Engel olabilecekler:**
+  - Bellek: düzenleyiciden çıkınca 220–370 MB fazla kalıyor, Graphics inmiyor.
+  - Zar hareketi sırasında geç kalan kare oranı kapalı hâlin iki katından fazla (%13,6'ya karşı %5,7), yükü UI'daki animasyon payı.
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
