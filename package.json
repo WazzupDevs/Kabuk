@@ -56,7 +56,8 @@
     },
     "patchedDependencies": {
       "react-native-svg@15.15.4": "patches/react-native-svg@15.15.4.patch",
-      "expo-notifications@57.0.21": "patches/expo-notifications@57.0.21.patch"
+      "expo-notifications@57.0.21": "patches/expo-notifications@57.0.21.patch",
+      "@shopify/react-native-skia@2.6.2": "patches/@shopify__react-native-skia@2.6.2.patch"
     }
   },
   "devDependencies": {
