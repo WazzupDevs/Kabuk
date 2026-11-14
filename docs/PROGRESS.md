@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (14 Kasım 2026): bütün kapsül Skia, ölçüm bekliyor
+
+- "Bütün kapsül Skia" (#618, #623, #627, #628, #633): Süsle'nin büyük kapsülü ve şerit karoları tek Skia tuvalinde; anahtarı kapalı (`theme/capsuleSkia.ts` → `CAPSULE_SKIA_WHOLE = false`), önizleme derlemesinde Çizim ölçümü → "Bütün kapsül Skia" açar (yeniden başlatmada kapanır). Ayrıntı `docs/decisions/skia-build-plani.md` → "Bütün kapsül Skia'da".
+- Ölçüm (`docs/perf/akicilik-denetimi.md` → 4.4–4.9): ilk zarın donması 1375 → 108 ms, çizim aynı; açık kalan: bellek Süsle'den çıkınca inmiyor ve birikiyordu (#633 ile ikinci düzeltme, ölçülmedi), parça değişiminde geç kalan kare açıkken %9,5, kapalıyken %1,05 (nedeni ayrılmadı; panelde "Karolar SVG" ile ölçülecek). Sıradaki ölçüm 4.10, dal `akicilik-olcum-10`.
+- DM kaydırması kapandı (4.8): kare kaybı yok; 4.1–4.7'deki DM "takılma" oranları gecikmeyi ölçüyordu. Ölçüt Android'in geç kalan kare sayacıdır. Diğer ekranların eski oranları bu ölçütle yeniden bakılmadan düzeltilmez.
+- Anahtarı herkes için açmak proje sahibinin kararıdır; 4.10'da bellek inmiyor ya da parça değişimi kapalıdan kötüyse önerilmez.
+
 ## Devir notu (13 Kasım 2026, akşam): akıcılık düzeltmeleri
 
 - Rapor `docs/perf/akicilik-denetimi.md` (A-01–A-38); başındaki "Düzeltme durumu" hangi bulgunun hangi PR'la kapandığını tutar.
