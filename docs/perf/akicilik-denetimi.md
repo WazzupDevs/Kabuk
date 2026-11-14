@@ -1007,6 +1007,135 @@ Hücrede sırayla: en uzun kare; en uzun `Record View#draw` (ms); en uzun `mount
   - Bellek: düzenleyiciden çıkınca 220–370 MB fazla kalıyor, Graphics inmiyor.
   - Zar hareketi sırasında geç kalan kare oranı kapalı hâlin iki katından fazla (%13,6'ya karşı %5,7), yükü UI'daki animasyon payı.
 
+## 4.11 Bütün kapsül Skia: bellek sınırı ve zarın yükü (14 Kasım 2026, akşam)
+
+- **Derleme:** Galaxy S23, 0.11.0 build 21, release; 4.10'daki `preview` güncellemesi (`01a1d749…`, iki yeniden başlatmada yeni güncelleme gelmedi). main'de 4.10'dan sonra uygulama değişikliği yok.
+- **Koşullar:**
+  - Pil %18'den %43'e, USB'den şarjda. **Sağlanamayan:** 4.10'un "%50 üstü" koşulu (başta %18) ve şarjsız ölçüm.
+  - Sıcaklık bütün oturumda 31,8–35,6 °C; her hâlin başında okundu, hiçbirinde 37 °C'yi geçmedi, beklemeye gerek olmadı.
+  - Güç tasarrufu kapalı, animatör ölçeği 1x, Rahatsız Etmeyin ölçüm için açıldı, sonra eski hâline (kapalı) alındı.
+- **Yöntem:** 4.10'daki gibi: her dokunuştan önce öndeki pencere denetlendi (asistan açılmadı), anahtarlar her yeniden başlatmadan sonra panelde açılıp ekran görüntüsünün pikselinden okundu.
+  - **İz:** Perfetto yerine aynı kategorilerle `atrace` (gfx, view, sched, input): Perfetto'nun ikili izini okuyacak araç (`trace_processor`) bu makinede yok, indirilmedi. `input` kategorisiyle basışlar izde `deliverInputEvent` olarak bulundu; pencere bir basıştan sonrakine kadar.
+  - **4.10 ile karşılaştırma:** A'nın yöntemi (8 tur çıkmadan) ve B'nin sırası (zar yeni başlatmadan hemen sonra, iz açıkken; 4.10'da 6a'dan sonra) farklı. Bu bölümün sayıları 4.10'unkilere karşı kullanılmaz.
+- **Geri alınanlar:** "Bütün kapsül Skia", "Karolar SVG" ve "Kapanınca koru" kapalı; yeniden başlatmadan sonra panelde okundu. Düzenleyiciden her seferinde kaydetmeden çıkıldı. `atrace` durduruldu. İz dosyaları ve görüntüler silindi, repoya girmedi.
+
+### A. Bellek bir sınırda duruyor mu? (toplam PSS / Native Heap / Graphics / GL mtrack / EGL mtrack, MB)
+
+Yeni başlatma, düzenleyiciye giriş, Süsle'den çıkmadan 8 tur, her tur zara 5 kez (2,5 sn arayla).
+
+| An                                 | Hâl 1 (kapalı)             | Hâl 2 (açık)                |
+| ---------------------------------- | -------------------------- | --------------------------- |
+| Düzenleyiciye girmeden             | 405 / 135 / 84 / 45 / 39   | 415 / 135 / 94 / 55 / 39    |
+| 1. tur                             | 733 / 290 / 245 / 204 / 41 | 956 / 290 / 423 / 375 / 47  |
+| 2. tur                             | 886 / 332 / 307 / 266 / 41 | 1073 / 392 / 422 / 374 / 47 |
+| 3. tur                             | 756 / 310 / 176 / 135 / 41 | 1149 / 458 / 422 / 375 / 47 |
+| 4. tur                             | 810 / 360 / 183 / 142 / 40 | 1102 / 423 / 425 / 378 / 47 |
+| 5. tur                             | 815 / 389 / 178 / 137 / 41 | 1111 / 460 / 415 / 367 / 47 |
+| 6. tur                             | 811 / 382 / 178 / 137 / 40 | 1184 / 511 / 424 / 377 / 47 |
+| 7. tur                             | 838 / 403 / 177 / 137 / 39 | 1231 / 545 / 416 / 368 / 47 |
+| 8. tur                             | 882 / 445 / 178 / 137 / 41 | 1237 / 526 / 420 / 372 / 47 |
+| Kaydetmeden çıktıktan 2 dk sonra   | 735 / 198 / 76 / 37 / 39   | 1129 / 145 / 363 / 315 / 47 |
+| Arka planda 2 dk sonra             | 558 / 2 / 12 / 12 / 0      | 987 / 1 / 290 / 282 / 8     |
+| `RUNNING_CRITICAL`'dan 30 sn sonra | 499 / 35 / 12 / 12 / 0     | 943 / 0 / 290 / 282 / 8     |
+
+### B. Zarın yükü nereden geliyor? (her hâlde 3 koşu, ortanca; aralık parantezde)
+
+**B.1 Boşta** (düzenleyicide 15 sn, dokunmadan):
+
+| Ölçüm                                  | Hâl 1            | Hâl 2            |
+| -------------------------------------- | ---------------- | ---------------- |
+| Geç kalan kare %                       | 0,67 (0,61–0,67) | 0,22 (0,17–0,28) |
+| En uzun kare (ms)                      | 21 (20–21)       | 18 (18–20)       |
+| UI: giriş ve animasyon (ortanca / p95) | 2,55 / 3,27      | 2,50 / 3,58      |
+| Sync                                   | 0,65 / 0,89      | 0,35 / 0,53      |
+| Komut gönderme                         | 2,72 / 3,45      | 2,09 / 2,96      |
+| Swap ve GPU                            | 2,74 / 3,78      | 2,00 / 2,41      |
+| Kare toplamı                           | 10,06 / 12,04    | 8,43 / 10,96     |
+
+**B.2 Zar izi** (yeni başlatma, düzenleyiciye giriş, zara 5 kez 2,5 sn arayla, iz açık):
+
+| Ölçüm                                  | Hâl 1                  | Hâl 2              |
+| -------------------------------------- | ---------------------- | ------------------ |
+| Geç kalan kare %                       | 4,41 (4,21–6,05)       | 7,30 (3,74–24,67)  |
+| p99 / en uzun kare (ms)                | 500 / 2150 (2050–4050) | 36 / 350 (250–450) |
+| Gecikme, vsync → giriş (ortanca / p95) | 0,81 / 5,74            | 1,35 / 10,95       |
+| UI: giriş ve animasyon                 | 2,41 / 8,43            | 7,25 / 12,46       |
+| Sync                                   | 0,81 / 1,35            | 0,28 / 0,41        |
+| Komut gönderme                         | 3,88 / 6,09            | 1,82 / 3,46        |
+| Swap ve GPU                            | 3,39 / 9,35            | 4,13 / 6,84        |
+| Kare toplamı                           | 12,65 / 24,18          | 15,65 / 31,04      |
+
+Hâl 2'nin aynı koşudan bir dördüncüsü (iz saklanarak tekrar alındı): geç kalan kare %13,8, en uzun 350 ms.
+
+**Basış başına, iz** (15 basış, üç koşu birlikte; aralık):
+
+| Ölçüm                                                             | Hâl 1                                                         | Hâl 2                                                               |
+| ----------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| UI `doFrame`, en uzun                                             | 291–3011 ms; 1. basış 1166–3011                               | 18–167 ms                                                           |
+| Onun içinde `animation`                                           | 20–141 ms (kalanı `Record View#draw`)                         | 16–165 ms (`doFrame`'in neredeyse tamamı)                           |
+| O karede JS (`mqt_v_js`) CPU                                      | 20–394 ms                                                     | 0–55 ms                                                             |
+| RenderThread en uzun kare (`DrawFrames`)                          | 95–246 ms; içinde `syncFrameState` 90–239 ms                  | 3,5–11,5 ms                                                         |
+| O karede doku yüklemesi (`Texture upload`)                        | 47–112 yükleme, 82–227 ms; çoğu 795 x 753 (büyük kapsül boyu) | 1. basışta 2–11 yükleme (186 x 186, karo boyu), ≤ 6,4 ms; sonra yok |
+| Basış penceresinde toplam doku yüklemesi                          | 73–877 yükleme, 124–921 ms                                    | 0–21 yükleme, ≤ 7 ms                                                |
+| `saveLayer` dilimi                                                | yok                                                           | yok                                                                 |
+| Skia tuvali (`SurfaceTexture`) / karede `TextureView#draw` en çok | 1–9 / 0–5                                                     | her pencerede 2 / 2 (karede ortalama 1,0)                           |
+
+**B.3 İlk üç zar, RenderThread'in en uzun dilimi** (her koşu yeni başlatmadan sonra; ms):
+
+| Koşu | Hâl 1 (1., 2., 3. basış)                                                    | Hâl 2 (1., 2., 3. basış)                                   |
+| ---- | --------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 1    | 242, 148, 95: hepsi `DrawFrames`, içinde `syncFrameState` ve doku yüklemesi | 10,0 (`DrawFrames`, içinde `syncFrameState` 7,5), 4,6, 3,9 |
+| 2    | 211, 125, 121: aynı                                                         | 8,3 (`syncFrameState` 5,4), 5,8, 3,9                       |
+| 3    | 133, 246, 237: aynı                                                         | 10,9 (içinde `dequeueBuffer` 7,2), 4,9, 3,8                |
+
+**Hâl 2'nin uzun kareleri nerede** (kare satırları ve iz, aynı koşu; iz kare kimliğiyle eşlendi):
+
+| Kare toplamı | Gecikme (vsync → giriş) | UI: giriş ve animasyon | RenderThread ve GPU |
+| ------------ | ----------------------- | ---------------------- | ------------------- |
+| 470 ms       | 435 ms                  | 25 ms                  | 9 ms                |
+| 424 ms       | 370 ms                  | 46 ms                  | 8 ms                |
+| 354 ms       | 330 ms                  | 19 ms                  | 5 ms                |
+| 296 ms       | 125 ms                  | 165 ms                 | 5 ms                |
+
+- 330 ms'lik gecikmede UI iş parçacığı 316 ms çalışıyor (koşuyor), 392 kez CPU'dan iniyor, çoğu `D` (beklemeli uyku) hâlinde; bu sürede iz işaretli hiçbir dilim yok (`doFrame`, `mountViews`, `Record View#draw` değil).
+- Hâl 1'in uzun kareleri ise kayıt (Draw) aşamasında: 2952, 844, 697 ms; ayrıca gecikme 1068–3030 ms.
+
+**B.4 "hareket" adımı** (yalnız tanı):
+
+- **Ölçülemedi, B.2'nin aynısı:** "hareket" panelde ayrı bir anahtar değil, "Başlat"ın 5 sn'lik adımlarından biri (35–40. sn). Panel kapanınca adım duruyor; panel açıkken zar düğmesinin üstünü örtüyor. Zarla birlikte koşulamadı.
+- **Yerine:** panel düzenleyicinin üstünde açıkken "Başlat"a basıldı. Bütün parçaların açık olduğu ilk 5 sn ile "hareket" adımı karşılaştırıldı; ölçüm her adımın 0,6–4,6. saniyesinde. Bir turda boşta, bir turda iki parça değişimiyle (şerit panelin altında kalıyor). Panel büyük kapsülün üstünü örtüyor; kapsül altında çizilmeye devam ediyor.
+
+| Ölçüm (4 sn)                          | Hâl 1, hepsi açık | Hâl 1, hareket kapalı | Hâl 2, hepsi açık | Hâl 2, hareket kapalı |
+| ------------------------------------- | ----------------- | --------------------- | ----------------- | --------------------- |
+| Boşta: kare sayısı                    | 459–465           | 4–5                   | 463–471           | 4–5                   |
+| Boşta: UI animasyon (ortanca / p95)   | 1,81 / 3,39       | 2,87 / 3,52 (5 kare)  | 1,53 / 2,93       | 2,60 / 3,08 (5 kare)  |
+| İki parça değişimi: geç kalan kare %  | 1,63 (1,41–1,97)  | 2,03 (1,61–2,48)      | 1,37 (1,37–1,89)  | 2,44 (1,97–4,00)      |
+| İki parça değişimi: en uzun kare (ms) | 200 (200–200)     | 125 (113–133)         | 117 (89–150)      | 93 (73–113)           |
+| İki parça değişimi: UI animasyon      | 2,97 / 5,14       | 0,83 / 2,80           | 5,02 / 6,26       | 0,91 / 5,90           |
+
+### Yanıtlar
+
+**Bellek:**
+
+- **Ölçüldü:** GL mtrack Hâl 2'de 1. turdan sonra 367–378 MB'ta duruyor; Hâl 1'de 3. turdan sonra 135–142 MB'ta. Graphics de aynı gibi (Hâl 2: 415–425; Hâl 1: 176–183 MB).
+- **Ölçüldü:** Native Heap iki hâlde de 8 tur boyunca artıyor: Hâl 1'de 290 → 445, Hâl 2'de 290 → 526–545 MB. Toplam PSS Hâl 2'de 956 → 1237 MB.
+- **Ölçüldü:** düzenleyiciden çıkınca Native Heap iki hâlde de iniyor (198 ve 145 MB). GPU belleği yalnız Hâl 1'de iniyor: GL mtrack 37 MB; Hâl 2'de 315 MB'ta kalıyor.
+- **Ölçüldü:** arka plana almak iki hâlde de toplamı indiriyor (Hâl 1: 735 → 558, Hâl 2: 1129 → 987 MB). Hâl 2'de GL mtrack 282 MB'ta kalıyor (Hâl 1: 12 MB). `RUNNING_CRITICAL` toplamı 44–59 MB daha indiriyor; GPU belleğini değiştirmiyor (Hâl 2: 282 MB).
+- **Çıkarım:** Native Heap'in arka planda 0–2 MB görünmesi sistemin belleği takas alanına (zram) taşımasından olabilir; `meminfo`'nun takas sütunu okunmadı.
+
+**Zar:**
+
+- **Boşta, ölçüldü:** Hâl 2'nin fazla UI animasyon süresi zarsız yok: boşta UI animasyonu 2,50 ms, Hâl 1'de 2,55 ms. Geç kalan kare Hâl 2'de daha az (%0,22'ye karşı %0,67).
+- **Zar sırasında, ölçüldü:** Hâl 2'de UI animasyonu ortancada 7,25 ms (Hâl 1: 2,41). RenderThread'in payı Hâl 2'de küçük: en uzun kare 11,5 ms, doku yüklemesi ilk basıştan sonra yok.
+- **Ölçüldü:** iki Skia tuvali her basışta ekranda (2 `SurfaceTexture`, karede en çok 2 `TextureView#draw`). Zarda üçüncü bir tuval açılmıyor. Eski kapsülün söndüğü bir tuvalle yenisinin aynı anda durduğu, ayrı bir tuval olarak görülmedi; tek tuvalin içinde iki kapsülün çizilip çizilmediği izden okunamadı.
+- **4.10'daki 250 ms'lik kare, ölçüldü:** RenderThread'de değil. Hâl 2'de RenderThread'in en uzun dilimi 3,5–11,5 ms. Uzun kareler (250–470 ms) karenin başlamasından önceki gecikmede: UI iş parçacığı o sürede çalışıyor ama iz işaretli bir iş yapmıyor.
+- **Çıkarım:** zar basılınca UI iş parçacığında iz işareti taşımayan bir iş 125–435 ms sürüyor; sık `D` hâli bellek ayırma ya da sayfa yüklemesine benziyor. Adaylar: yeni kapsülün resimlerinin UI iş parçacığında hazırlanması, Skia tuvalinin ya da Reanimated'in UI'daki işi. Hangisi olduğu bu izle ayrılmadı; Java ya da yerel yığın örneklemesi (simpleperf) gerekir.
+- **Hareket, ölçüldü (yalnız parça değişimi ve boşta, zar değil):**
+  - Boşta karelerin neredeyse tamamı döngülerden: "hareket" kapalıyken 4 sn'de 4–5 kare (açıkken 459–471).
+  - Parça değişiminde Hâl 2'nin fazla UI animasyonu döngülerle geliyor: açıkken 5,02 ms, kapalıyken 0,91 ms (Hâl 1: 2,97 ve 0,83).
+  - Parça değişiminin en uzun karesi hareket kapalıyken de kalıyor (Hâl 2: 93 ms, Hâl 1: 125 ms).
+- **Çıkarım:** zardaki fazla UI animasyon süresi büyük kapsülün hareket döngülerinden geliyor olabilir. Zarla doğrudan ayrılamadı (B.4'ün ilk maddesi).
+
 ## 5. Düzeltme sırası
 
 Ölçüme göre: önce en çok kare düşüren ve en ucuz olanlar. Her satır ayrı paket (dal ve PR); her paketten sonra aynı adım bölüm 4.1'deki gibi yeniden ölçülür. Bölüm 4.1 #611–#615'ten öncedir; o düzeltmelerin etkisi 0. satırda ölçülür.
