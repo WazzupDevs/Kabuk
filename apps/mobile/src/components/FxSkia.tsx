@@ -11,7 +11,7 @@ import {
   type SkSVG,
 } from '@shopify/react-native-skia';
 import { Component, Fragment, type ReactNode, useEffect, useMemo } from 'react';
-import { PixelRatio, View } from 'react-native';
+import { AppState, PixelRatio, View } from 'react-native';
 import {
   cancelAnimation,
   Easing,
@@ -268,6 +268,29 @@ let emptying: ReturnType<typeof setTimeout> | null = null;
 const EMPTY_AFTER_MS = 2000;
 const LET_GO_AFTER_MS = 500;
 
+// The GPU's copies of the pictures. A picture is copied to the GPU when a canvas first draws it,
+// and that copy stays in Skia's GPU cache after the picture is let go, up to the cache's limit
+// (256 MB by default), and nothing gives it back: not leaving Süsle, not the background, not the
+// system asking for memory (docs/perf/akicilik-denetimi.md → 4.11: 282–378 MB stayed). The
+// patched Skia (patches/@shopify__react-native-skia@2.6.2.patch) lets the app set the limit and
+// empty what is unused, on the main thread the canvases draw on; an older build has no such call.
+type GpuCache = { PurgeGpu?: (limitBytes: number, msNotUsed: number) => void };
+const GPU_CACHE_BYTES = 96 * 1024 * 1024;
+const GPU_KEEP_UNUSED_MS = 60_000;
+
+function purgeGpu(msNotUsed: number): void {
+  try {
+    (Skia.Surface as typeof Skia.Surface & GpuCache).PurgeGpu?.(GPU_CACHE_BYTES, msNotUsed);
+  } catch {
+    // An older build without the call, or no GPU yet: nothing to give back.
+  }
+}
+
+purgeGpu(GPU_KEEP_UNUSED_MS);
+AppState.addEventListener('change', (state) => {
+  if (state === 'background') purgeGpu(0);
+});
+
 function letGo(k: Kept): void {
   if (k.uses > 0 || k.cached || !k.image) return;
   k.image.dispose();
@@ -313,6 +336,7 @@ function holdArts(arts: readonly Art[]): () => void {
         k.cached = false;
         letGo(k);
       }
+      purgeGpu(0);
     }, EMPTY_AFTER_MS);
   };
 }

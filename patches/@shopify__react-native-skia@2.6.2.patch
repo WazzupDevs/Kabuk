@@ -1,0 +1,177 @@
+diff --git a/android/cpp/rnskia-android/OpenGLWindowContext.cpp b/android/cpp/rnskia-android/OpenGLWindowContext.cpp
+index 3916c0d..5111e6f 100644
+--- a/android/cpp/rnskia-android/OpenGLWindowContext.cpp
++++ b/android/cpp/rnskia-android/OpenGLWindowContext.cpp
+@@ -3,6 +3,8 @@
+ 
+ #include "OpenGLContext.h"
+ 
++#include <android/trace.h>
++
+ #pragma clang diagnostic push
+ #pragma clang diagnostic ignored "-Wdocumentation"
+ 
+@@ -53,7 +55,9 @@ sk_sp<SkSurface> OpenGLWindowContext::getSurface() {
+ 
+ void OpenGLWindowContext::present() {
+   _glContext->makeCurrent(_glSurface.get());
++  ATrace_beginSection("RNSkia.flush");
+   _directContext->flushAndSubmit();
++  ATrace_endSection();
+   _glSurface->present();
+ }
+ 
+diff --git a/android/cpp/rnskia-android/RNSkAndroidPlatformContext.h b/android/cpp/rnskia-android/RNSkAndroidPlatformContext.h
+index f9f8a15..e352ec1 100644
+--- a/android/cpp/rnskia-android/RNSkAndroidPlatformContext.h
++++ b/android/cpp/rnskia-android/RNSkAndroidPlatformContext.h
+@@ -3,6 +3,7 @@
+ #if __ANDROID_API__ >= 26
+ #include <android/hardware_buffer.h>
+ #endif
++#include <chrono>
+ #include <exception>
+ #include <functional>
+ #include <memory>
+@@ -178,6 +179,22 @@ public:
+   }
+ 
+ #if !defined(SK_GRAPHITE)
++  void purgeGpuResources(double limitBytes, double msNotUsed) override {
++    runOnMainThread([limitBytes, msNotUsed]() {
++      auto &gl = OpenGLContext::getInstance();
++      gl.makeCurrent();
++      auto context = gl.getDirectContext();
++      if (context == nullptr) {
++        return;
++      }
++      if (limitBytes > 0) {
++        context->setResourceCacheLimit(static_cast<size_t>(limitBytes));
++      }
++      context->performDeferredCleanup(
++          std::chrono::milliseconds(static_cast<int64_t>(msNotUsed)));
++    });
++  }
++
+   GrDirectContext *getDirectContext() override {
+     return OpenGLContext::getInstance().getDirectContext();
+   }
+diff --git a/cpp/api/JsiSkImage.h b/cpp/api/JsiSkImage.h
+index a269ddd..fc8ea27 100644
+--- a/cpp/api/JsiSkImage.h
++++ b/cpp/api/JsiSkImage.h
+@@ -19,6 +19,7 @@
+ #include "include/gpu/graphite/Context.h"
+ #else
+ #include "include/gpu/ganesh/GrDirectContext.h"
++#include "include/gpu/ganesh/SkImageGanesh.h"
+ #endif
+ 
+ #pragma clang diagnostic push
+@@ -342,6 +343,26 @@ public:
+         runtime, hostObjectInstance, getContext());
+   }
+ 
++  JSI_HOST_FUNCTION(makeTextureImage) {
++#if defined(SK_GRAPHITE)
++    return jsi::Value::null();
++#else
++    auto grContext = getContext()->getDirectContext();
++    if (!grContext) {
++      return jsi::Value::null();
++    }
++    auto textureImage = SkImages::TextureFromImage(grContext, getObject().get());
++    if (!textureImage) {
++      return jsi::Value::null();
++    }
++    grContext->flushAndSubmit();
++    auto hostObjectInstance =
++        std::make_shared<JsiSkImage>(getContext(), std::move(textureImage));
++    return JSI_CREATE_HOST_OBJECT_WITH_MEMORY_PRESSURE(
++        runtime, hostObjectInstance, getContext());
++#endif
++  }
++
+   JSI_HOST_FUNCTION(getNativeTextureUnstable) {
+     auto image = getObject();
+     if (!image->isTextureBacked()) {
+@@ -366,6 +387,7 @@ public:
+                        JSI_EXPORT_FUNC(JsiSkImage, encodeToBase64),
+                        JSI_EXPORT_FUNC(JsiSkImage, readPixels),
+                        JSI_EXPORT_FUNC(JsiSkImage, makeNonTextureImage),
++                       JSI_EXPORT_FUNC(JsiSkImage, makeTextureImage),
+                        JSI_EXPORT_FUNC(JsiSkImage, getNativeTextureUnstable),
+                        JSI_EXPORT_FUNC(JsiSkImage, isTextureBacked),
+                        JSI_EXPORT_FUNC(JsiSkImage, dispose))
+diff --git a/cpp/api/JsiSkSurfaceFactory.h b/cpp/api/JsiSkSurfaceFactory.h
+index aad9442..071ecd8 100644
+--- a/cpp/api/JsiSkSurfaceFactory.h
++++ b/cpp/api/JsiSkSurfaceFactory.h
+@@ -62,8 +62,20 @@ public:
+         runtime, hostObjectInstance, getContext());
+   }
+ 
++  JSI_HOST_FUNCTION(PurgeGpu) {
++    auto limitBytes = count >= 1 && arguments[0].isNumber()
++                          ? arguments[0].asNumber()
++                          : 0.0;
++    auto msNotUsed = count >= 2 && arguments[1].isNumber()
++                         ? arguments[1].asNumber()
++                         : 0.0;
++    getContext()->purgeGpuResources(limitBytes, msNotUsed);
++    return jsi::Value::undefined();
++  }
++
+   JSI_EXPORT_FUNCTIONS(JSI_EXPORT_FUNC(JsiSkSurfaceFactory, Make),
+-                       JSI_EXPORT_FUNC(JsiSkSurfaceFactory, MakeOffscreen))
++                       JSI_EXPORT_FUNC(JsiSkSurfaceFactory, MakeOffscreen),
++                       JSI_EXPORT_FUNC(JsiSkSurfaceFactory, PurgeGpu))
+ 
+   size_t getMemoryPressure() const override { return 2048; }
+ 
+diff --git a/cpp/rnskia/RNSkPlatformContext.h b/cpp/rnskia/RNSkPlatformContext.h
+index 596bb93..ac4bf7f 100644
+--- a/cpp/rnskia/RNSkPlatformContext.h
++++ b/cpp/rnskia/RNSkPlatformContext.h
+@@ -63,6 +63,13 @@ public:
+    */
+   virtual void runOnMainThread(std::function<void()> func) = 0;
+ 
++  /**
++   * Sets the GPU resource cache limit (when limitBytes > 0) of the context
++   * views draw with, and lets go of what it has not used in the last msNotUsed
++   * milliseconds. Runs on the main thread; nothing happens where unsupported.
++   */
++  virtual void purgeGpuResources(double limitBytes, double msNotUsed) {}
++
+   /**
+    * Takes a screenshot of a given view represented by the view tag
+    * @param tag React view tag
+diff --git a/cpp/rnskia/RNSkView.h b/cpp/rnskia/RNSkView.h
+index 5181c71..7d09eb6 100644
+--- a/cpp/rnskia/RNSkView.h
++++ b/cpp/rnskia/RNSkView.h
+@@ -1,6 +1,9 @@
+ 
+ #pragma once
+ 
++#if defined(__ANDROID__)
++#include <android/trace.h>
++#endif
+ #include <memory>
+ #include <string>
+ #include <unordered_map>
+@@ -159,7 +162,13 @@ public:
+         if (auto strongThis = weakThis.lock()) {
+           // Only proceed if the object still exists
+           if (strongThis->_renderer && strongThis->_redrawRequested) {
++#if defined(__ANDROID__)
++            ATrace_beginSection("RNSkia.render");
++#endif
+             strongThis->_renderer->renderImmediate(strongThis->_canvasProvider);
++#if defined(__ANDROID__)
++            ATrace_endSection();
++#endif
+             strongThis->_redrawRequested = false;
+           }
+         }
