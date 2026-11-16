@@ -663,6 +663,8 @@ describe('cleanup jobs', () => {
     expect(jobs.map((j) => [j.jobname, j.schedule])).toEqual([
       // The PostHog deletion queue (account.test.ts checks what it deletes).
       ['delete-old-analytics-deletions', '41 3 * * *'],
+      // An edited DM's earlier texts (dmManage.test.ts checks what it deletes).
+      ['delete-old-dm-versions', '29 * * * *'],
       // A closed table's game rows, old requests and invites (D9; its own test below).
       ['delete-old-game-rows', '23 * * * *'],
       ['delete-old-messages', '0 * * * *'],

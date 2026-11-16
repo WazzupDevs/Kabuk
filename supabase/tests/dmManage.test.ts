@@ -6,7 +6,12 @@ import postgres from 'postgres';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 
 import type { DmInboxResponse, DmInboxThread } from '../functions/_shared/pure/api/friends.ts';
-import { DM_EDIT_RATE, DM_EDIT_WINDOW_MS, DM_PIN_MAX } from '../functions/_shared/pure/dmManage.ts';
+import {
+  DM_EDIT_MAX,
+  DM_EDIT_RATE,
+  DM_EDIT_WINDOW_MS,
+  DM_PIN_MAX,
+} from '../functions/_shared/pure/dmManage.ts';
 import { BROADCAST, dmChannel } from '../functions/_shared/pure/rooms.ts';
 import { errorBody, onboarded, waitForBroadcast, waitUntilBlocked } from './helpers.ts';
 import { type Client, dbUrl, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
@@ -324,7 +329,7 @@ describe('dm/edit (§4.X)', () => {
     await heard.received;
     await heard.close();
 
-    // A report afterwards shows the message was edited and its first text (§4.X).
+    // A report afterwards shows the message was edited and its earlier text (§4.X).
     expect(
       (await invoke(b, 'safety', { action: 'report', target: 'dm', threadId, reason: 'spam' }))
         .status,
@@ -335,13 +340,13 @@ describe('dm/edit (§4.X)', () => {
         body: 'Yarın 8de',
         edited: true,
         edited_at: expect.any(String),
-        original_body: 'Yarın 7de',
+        versions: [{ version: 1, body: 'Yarın 7de', saved_at: expect.any(String) }],
       }),
       expect.objectContaining({
         body: 'Olur',
         edited: false,
         edited_at: null,
-        original_body: null,
+        versions: [],
       }),
     ]);
 
@@ -446,35 +451,94 @@ describe('dm/edit (§4.X)', () => {
   });
 });
 
-// The first text of an edited message, kept for a report only (docs/decisions/dm-ilk-hal.md).
-const originalsOf = (messageId: string) => sql`
-  select body from private.dm_message_originals where message_id = ${messageId}
+// The earlier texts of an edited message, kept for a report only (docs/decisions/dm-ilk-hal.md).
+const versionsOf = (messageId: string) => sql`
+  select version, body from private.dm_message_versions
+  where message_id = ${messageId} order by version
 `;
 
-describe('dm/edit first text (§4.X)', () => {
-  it('keeps the text before the first change only, out of every client answer', async () => {
+const reportAs = async (client: Client, threadId: string) =>
+  expect(
+    (await invoke(client, 'safety', { action: 'report', target: 'dm', threadId, reason: 'spam' }))
+      .status,
+  ).toBe(200);
+
+describe('dm/edit versions (§4.X)', () => {
+  it('keeps each replaced text, at most DM_EDIT_MAX real edits; the same text is none', async () => {
+    const { a, threads } = await withFriends(1);
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 's0');
+
+    // The same text: no change, nothing kept, nothing counted.
+    expect((await dm(a, { action: 'edit', messageId, body: 's0' })).status).toBe(200);
+    expect(await versionsOf(messageId)).toEqual([]);
+    for (let i = 1; i <= DM_EDIT_MAX; i++) {
+      expect((await dm(a, { action: 'edit', messageId, body: `s${i}` })).status).toBe(200);
+      // The same text again between edits counts nothing either.
+      if (i === 2)
+        expect((await dm(a, { action: 'edit', messageId, body: 's2' })).status).toBe(200);
+    }
+    expect(await versionsOf(messageId)).toEqual(
+      Array.from({ length: DM_EDIT_MAX }, (_, i) => ({ version: i + 1, body: `s${i}` })),
+    );
+    // One more real edit: refused, nothing written; the same text still answers as before.
+    expect(await dm(a, { action: 'edit', messageId, body: 'fazla' })).toEqual({
+      status: 409,
+      body: errorBody('edit_limit'),
+    });
+    expect(await dm(a, { action: 'edit', messageId, body: `s${DM_EDIT_MAX}` })).toEqual({
+      status: 200,
+      body: { ok: true, body: `s${DM_EDIT_MAX}`, editedAt: expect.any(String) },
+    });
+    const [row] = await sql`select body from public.dm_messages where id = ${messageId}`;
+    expect(row?.body).toBe(`s${DM_EDIT_MAX}`);
+    expect(await versionsOf(messageId)).toHaveLength(DM_EDIT_MAX);
+  });
+
+  it('counts the window from the send; an edit does not lengthen it', async () => {
+    const { a, threads } = await withFriends(1);
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 'ilk');
+    await sql`
+      update public.dm_messages
+      set created_at = now() - make_interval(secs => ${DM_EDIT_WINDOW_MS / 1000 - 30})
+      where id = ${messageId}
+    `;
+    const [before] = await sql`select created_at from public.dm_messages where id = ${messageId}`;
+    expect((await dm(a, { action: 'edit', messageId, body: 'ikinci' })).status).toBe(200);
+    // The edit leaves the send's time as it was.
+    const [after] = await sql`select created_at from public.dm_messages where id = ${messageId}`;
+    expect(after?.created_at).toEqual(before?.created_at);
+    // Past fifteen minutes from the send, though the edit was a moment ago.
+    await sql`
+      update public.dm_messages set created_at = created_at - interval '31 seconds'
+      where id = ${messageId}
+    `;
+    expect(await dm(a, { action: 'edit', messageId, body: 'üçüncü' })).toEqual({
+      status: 409,
+      body: errorBody('edit_expired'),
+    });
+  });
+
+  it('reaches no client answer, page, broadcast or role; a report copies it from the server', async () => {
     const { a, others, threads } = await withFriends(1);
     const b = others[0] as Client;
     const threadId = threads[0] as string;
-    const messageId = await send(a, threadId, 'ilk hal');
-
-    // The same text: no change, nothing kept.
-    expect((await dm(a, { action: 'edit', messageId, body: 'ilk hal' })).status).toBe(200);
-    expect(await originalsOf(messageId)).toEqual([]);
-    // The first change keeps the first text; a later one keeps it as it was.
-    const edited = await dm(a, { action: 'edit', messageId, body: 'ikinci' });
+    const messageId = await send(a, threadId, 'gizli-ilk');
+    const heard = waitForBroadcast(b, dmChannel(threadId), BROADCAST.dmEdit);
+    await heard.subscribed;
+    const edited = await dm(a, { action: 'edit', messageId, body: 'gizli-son' });
     expect(edited).toEqual({
       status: 200,
-      body: { ok: true, body: 'ikinci', editedAt: expect.any(String) },
+      body: { ok: true, body: 'gizli-son', editedAt: expect.any(String) },
     });
-    expect(await originalsOf(messageId)).toEqual([{ body: 'ilk hal' }]);
-    expect((await dm(a, { action: 'edit', messageId, body: 'üçüncü' })).status).toBe(200);
-    expect(await originalsOf(messageId)).toEqual([{ body: 'ilk hal' }]);
+    // The announcement carries no data (dm/index.ts → broadcast(dmChannel, BROADCAST.dmEdit)).
+    await heard.received;
+    await heard.close();
 
-    // No client answer or page carries it.
     for (const client of [a, b]) {
-      expect(JSON.stringify(await page(client, threadId))).not.toContain('ilk hal');
-      expect(JSON.stringify(await inboxOf(client))).not.toContain('ilk hal');
+      expect(JSON.stringify(await page(client, threadId))).not.toContain('gizli-ilk');
+      expect(JSON.stringify(await inboxOf(client))).not.toContain('gizli-ilk');
     }
 
     // No client role reads or writes the table (rule 1, rule 2).
@@ -482,72 +546,123 @@ describe('dm/edit first text (§4.X)', () => {
       await expect(
         sql.begin(async (tx) => {
           await tx.unsafe(`set local role ${role}`);
-          return tx`select body from private.dm_message_originals`;
+          return tx`select body from private.dm_message_versions`;
         }),
       ).rejects.toThrow(/permission denied/);
       await expect(
         sql.begin(async (tx) => {
           await tx.unsafe(`set local role ${role}`);
           return tx`
-            insert into private.dm_message_originals (message_id, body) values (${messageId}, 'x')
+            insert into private.dm_message_versions (message_id, version, body)
+            values (${messageId}, 2, 'x')
           `;
         }),
       ).rejects.toThrow(/permission denied/);
     }
 
-    // The report's copy has it.
-    expect(
-      (await invoke(b, 'safety', { action: 'report', target: 'dm', threadId, reason: 'spam' }))
-        .status,
-    ).toBe(200);
+    await reportAs(b, threadId);
     const [report] = await sql`select messages_snapshot from public.reports`;
     expect(report?.messages_snapshot).toEqual([
-      expect.objectContaining({ body: 'üçüncü', edited: true, original_body: 'ilk hal' }),
+      expect.objectContaining({
+        body: 'gizli-son',
+        edited: true,
+        versions: [{ version: 1, body: 'gizli-ilk', saved_at: expect.any(String) }],
+      }),
     ]);
   });
 
-  it("puts it in a removal's report, then goes with the friendship; the report keeps its copy", async () => {
+  it('adds an edited message older than the last 50 to a report', async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
+    const threadId = threads[0] as string;
+    const [aId, bId] = await Promise.all([userIdOf(a), userIdOf(b)]);
+    const old = await send(a, threadId, 'eski-ilk');
+    expect((await dm(a, { action: 'edit', messageId: old, body: 'eski-son' })).status).toBe(200);
+    // 60 later messages, none edited.
+    await sql`
+      insert into public.dm_messages (thread_id, sender_user_id, body, created_at)
+      select ${threadId}, case when i % 2 = 0 then ${aId}::uuid else ${bId}::uuid end, 'm' || i,
+             now() + make_interval(secs => i)
+      from generate_series(1, 60) i
+    `;
+    await reportAs(b, threadId);
+    const [report] = await sql`select messages_snapshot from public.reports`;
+    const copy = report?.messages_snapshot as { body: string }[];
+    expect(copy).toHaveLength(51);
+    expect(copy[0]).toEqual(
+      expect.objectContaining({
+        body: 'eski-son',
+        versions: [{ version: 1, body: 'eski-ilk', saved_at: expect.any(String) }],
+      }),
+    );
+    expect(copy.map((m) => m.body)).not.toContain('m10');
+    expect(copy.at(-1)?.body).toBe('m60');
+  });
+
+  it('goes with a removal and a block; a report made before keeps its copy', async () => {
     const { a, others, threads } = await withFriends(2);
     const [b, c] = others as [Client, Client];
     const [aId, bId, cId] = await Promise.all([userIdOf(a), userIdOf(b), userIdOf(c)]);
     const publicIdOf = async (id: string) =>
       String((await sql`select public_id from public.profiles where id = ${id}`)[0]?.public_id);
 
-    // "Çıkar + bildir": b removes a and reports.
+    // "Çıkar + bildir": the copy is taken before the thread goes, in the same transaction.
     const ab = threads[0] as string;
     const toB = await send(a, ab, 'önce');
     expect((await dm(a, { action: 'edit', messageId: toB, body: 'sonra' })).status).toBe(200);
     await sql`select public.friends_remove(${bId}, ${await publicIdOf(aId)}, 'harassment')`;
-    expect(await originalsOf(toB)).toEqual([]);
+    expect(await versionsOf(toB)).toEqual([]);
+    expect(await sql`select 1 from public.dm_messages where id = ${toB}`).toHaveLength(0);
     const [removal] = await sql`select messages_snapshot from public.reports`;
     expect(removal?.messages_snapshot).toEqual([
-      expect.objectContaining({ body: 'sonra', original_body: 'önce' }),
+      expect.objectContaining({
+        body: 'sonra',
+        versions: [expect.objectContaining({ body: 'önce' })],
+      }),
     ]);
 
-    // A block with a report: the same.
+    // A report first, then a block without one: the report keeps its copy.
     const ac = threads[1] as string;
     const toC = await send(a, ac, 'eski');
     expect((await dm(a, { action: 'edit', messageId: toC, body: 'yeni' })).status).toBe(200);
-    await sql`select public.safety_block_friend(${cId}, ${await publicIdOf(aId)}, 'spam')`;
-    expect(await originalsOf(toC)).toEqual([]);
+    await reportAs(c, ac);
+    await sql`select public.safety_block_friend(${cId}, ${await publicIdOf(aId)}, null)`;
+    expect(await versionsOf(toC)).toEqual([]);
     const snapshots = await sql`select messages_snapshot from public.reports order by created_at`;
     expect(snapshots).toHaveLength(2);
     expect(snapshots[1]?.messages_snapshot).toEqual([
-      expect.objectContaining({ body: 'yeni', original_body: 'eski' }),
+      expect.objectContaining({
+        body: 'yeni',
+        versions: [expect.objectContaining({ body: 'eski' })],
+      }),
     ]);
   });
 
-  it("goes with the account's deletion", async () => {
-    const { a, threads } = await withFriends(1);
+  it("goes with the account's deletion; a report about it keeps its copy", async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
     const threadId = threads[0] as string;
     const messageId = await send(a, threadId, 'merhaba');
     expect((await dm(a, { action: 'edit', messageId, body: 'selam' })).status).toBe(200);
-    expect(await originalsOf(messageId)).toHaveLength(1);
+    await reportAs(b, threadId);
+    expect(await versionsOf(messageId)).toHaveLength(1);
     await deleteUserByPhone(PHONES[0]);
-    expect(await originalsOf(messageId)).toEqual([]);
+    expect(await versionsOf(messageId)).toEqual([]);
+    const left = await sql`select reported_user_id, messages_snapshot from public.reports`;
+    expect(left).toEqual([
+      {
+        reported_user_id: null,
+        messages_snapshot: [
+          expect.objectContaining({
+            body: 'selam',
+            versions: [expect.objectContaining({ body: 'merhaba' })],
+          }),
+        ],
+      },
+    ]);
   });
 
-  it('is deleted hourly after thirty days, a newer one stays', async () => {
+  it('is deleted hourly once dm_versions_keep() has passed since the edit; a newer one stays', async () => {
     const { a, threads } = await withFriends(1);
     const threadId = threads[0] as string;
     const old = await send(a, threadId, 'eski 1');
@@ -559,13 +674,17 @@ describe('dm/edit first text (§4.X)', () => {
       expect((await dm(a, { action: 'edit', messageId: id, body })).status).toBe(200);
     }
     await sql`
-      update private.dm_message_originals set saved_at = now() - interval '30 days 1 minute'
+      update private.dm_message_versions
+      set saved_at = now() - private.dm_versions_keep() - interval '1 minute'
       where message_id = ${old}
     `;
-    const [run] = await sql`select private.delete_old_dm_originals() as n`;
+    const [run] = await sql`select private.delete_old_dm_versions() as n`;
     expect(run?.n).toBe(1);
-    expect(await originalsOf(old)).toEqual([]);
-    expect(await originalsOf(fresh)).toEqual([{ body: 'yeni 1' }]);
+    expect(await versionsOf(old)).toEqual([]);
+    expect(await versionsOf(fresh)).toEqual([{ version: 1, body: 'yeni 1' }]);
+    expect(
+      await sql`select schedule, command from cron.job where jobname = 'delete-old-dm-versions'`,
+    ).toEqual([{ schedule: '29 * * * *', command: 'select private.delete_old_dm_versions()' }]);
   });
 });
 
@@ -677,25 +796,25 @@ describe('locks', () => {
         const held =
           await tx`select body from public.dm_messages where id = ${messageId} for update`;
         expect(held).toEqual([{ body: 'selam' }]);
-        // The first text is written only after the thread and the message (rule 10).
-        expect(await tx`select 1 from private.dm_message_originals`).toHaveLength(0);
+        // The replaced text is written only after the thread and the message (rule 10).
+        expect(await tx`select 1 from private.dm_message_versions`).toHaveLength(0);
       });
       expect(await edited).toEqual([{ changed: true }]);
-      expect(await originalsOf(messageId)).toEqual([{ body: 'selam' }]);
+      expect(await versionsOf(messageId)).toEqual([{ version: 1, body: 'selam' }]);
     } finally {
       await Promise.all([holder.end(), editing.end()]);
     }
   });
 
-  // delete_old_dm_originals picks its rows `skip locked`: a row held elsewhere is left for the
+  // delete_old_dm_versions picks its rows `skip locked`: a row held elsewhere is left for the
   // next hour, and the job does not wait for it.
-  it('skips a first text held elsewhere when deleting old ones', async () => {
+  it('skips a version held elsewhere when deleting old ones', async () => {
     const { a, threads } = await withFriends(1);
     const threadId = threads[0] as string;
     const messageId = await send(a, threadId, 'selam');
     expect((await dm(a, { action: 'edit', messageId, body: 'merhaba' })).status).toBe(200);
     await sql`
-      update private.dm_message_originals set saved_at = now() - interval '31 days'
+      update private.dm_message_versions set saved_at = now() - private.dm_versions_keep() - interval '1 minute'
       where message_id = ${messageId}
     `;
 
@@ -704,18 +823,18 @@ describe('locks', () => {
     try {
       await holder.begin(async (tx) => {
         await tx`
-          select message_id from private.dm_message_originals where message_id = ${messageId}
+          select message_id from private.dm_message_versions where message_id = ${messageId}
           for update
         `;
         const [run] = await job.begin(async (jt) => {
           await jt`set local lock_timeout = '2s'`;
-          return jt`select private.delete_old_dm_originals() as n`;
+          return jt`select private.delete_old_dm_versions() as n`;
         });
         expect(run?.n).toBe(0);
       });
-      const [run] = await sql`select private.delete_old_dm_originals() as n`;
+      const [run] = await sql`select private.delete_old_dm_versions() as n`;
       expect(run?.n).toBe(1);
-      expect(await originalsOf(messageId)).toEqual([]);
+      expect(await versionsOf(messageId)).toEqual([]);
     } finally {
       await Promise.all([holder.end(), job.end()]);
     }
