@@ -16,13 +16,17 @@ export function canEditDm(sentAt: string, now: number): boolean {
   return Number.isFinite(at) && now - at <= DM_EDIT_WINDOW_MS;
 }
 
-// The pinned conversations first, in the order they were pinned (the earliest first); the rest
+// Edits per account per window (dm_edit_rate_hit, asked before dm_edit; over it: rate_limited).
+export const DM_EDIT_RATE = { windowSeconds: 60, windowMax: 10 } as const;
+
+// The pinned conversations first, the last pinned on top (the project owner's decision, 16 Kasım);
+// the rest
 // keep the order they came in (newest conversation first). An archived conversation is never
 // pinned (dm_thread_prefs' check), so its pinnedAt is null.
 export function pinnedFirst<T extends { pinnedAt: string | null }>(threads: readonly T[]): T[] {
   const pinned = threads
     .filter((t) => t.pinnedAt !== null)
-    .sort((a, b) => Date.parse(a.pinnedAt ?? '') - Date.parse(b.pinnedAt ?? ''));
+    .sort((a, b) => Date.parse(b.pinnedAt ?? '') - Date.parse(a.pinnedAt ?? ''));
   return [...pinned, ...threads.filter((t) => t.pinnedAt === null)];
 }
 

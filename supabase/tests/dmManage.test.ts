@@ -6,7 +6,7 @@ import postgres from 'postgres';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 
 import type { DmInboxResponse, DmInboxThread } from '../functions/_shared/pure/api/friends.ts';
-import { DM_EDIT_WINDOW_MS, DM_PIN_MAX } from '../functions/_shared/pure/dmManage.ts';
+import { DM_EDIT_RATE, DM_EDIT_WINDOW_MS, DM_PIN_MAX } from '../functions/_shared/pure/dmManage.ts';
 import { BROADCAST, dmChannel } from '../functions/_shared/pure/rooms.ts';
 import { errorBody, onboarded, waitForBroadcast, waitUntilBlocked } from './helpers.ts';
 import { type Client, dbUrl, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
@@ -92,11 +92,11 @@ const prefsOf = (threadId: string) => sql`
 `;
 
 describe('dm/pin and dm/archive (§4.X)', () => {
-  it('pins at most five, the earliest pinned first; the same twice changes nothing', async () => {
+  it('pins at most five, the last pinned on top; the same twice changes nothing', async () => {
     const { a, others, threads } = await withFriends(DM_PIN_MAX + 1);
     const [t1, t2, t3, t4, t5, t6] = threads as [string, string, string, string, string, string];
 
-    // Pinned in this order: t3 first, then the others.
+    // Pinned in this order: t3 first, t5 last (on top: the project owner's decision, 16 Kasım).
     for (const threadId of [t3, t1, t2, t4, t5]) {
       expect(await dm(a, { action: 'pin', threadId })).toEqual(OK);
     }
@@ -106,11 +106,11 @@ describe('dm/pin and dm/archive (§4.X)', () => {
     });
     const inbox = await inboxOf(a);
     expect(inbox.threads.map((t) => [t.threadId, t.pinned])).toEqual([
-      [t3, true],
-      [t1, true],
-      [t2, true],
-      [t4, true],
       [t5, true],
+      [t4, true],
+      [t2, true],
+      [t1, true],
+      [t3, true],
       [t6, false],
     ]);
 
@@ -128,11 +128,11 @@ describe('dm/pin and dm/archive (§4.X)', () => {
     expect(byThread(await inboxOf(a), t1)?.pinned).toBe(false);
     expect(await dm(a, { action: 'pin', threadId: t6 })).toEqual(OK);
     expect((await inboxOf(a)).threads.slice(0, 5).map((t) => t.threadId)).toEqual([
-      t3,
-      t2,
-      t4,
-      t5,
       t6,
+      t5,
+      t4,
+      t2,
+      t3,
     ]);
 
     // The other member sees nothing of it: not in its inbox, not in what it can read.
@@ -191,15 +191,15 @@ describe('dm/pin and dm/archive (§4.X)', () => {
     const [b, c] = others as [Client, Client];
     const [tb] = threads as [string];
     for (const action of ['pin', 'unpin', 'archive', 'unarchive', 'clear']) {
-      expect(await dm(c, { action, threadId: tb })).toEqual(NOT_FRIENDS);
-      expect(await dm(a, { action, threadId: randomUUID() })).toEqual(NOT_FRIENDS);
+      expect(await dm(c, { action, threadId: tb, upTo: null })).toEqual(NOT_FRIENDS);
+      expect(await dm(a, { action, threadId: randomUUID(), upTo: null })).toEqual(NOT_FRIENDS);
     }
     await sql`
       insert into public.blocks (blocker_id, blocked_id, blocked_alias)
       values (${await userIdOf(b)}, ${await userIdOf(a)}, 'x')
     `;
     expect(await dm(a, { action: 'pin', threadId: tb })).toEqual(NOT_FRIENDS);
-    expect(await dm(a, { action: 'clear', threadId: tb })).toEqual(NOT_FRIENDS);
+    expect(await dm(a, { action: 'clear', threadId: tb, upTo: null })).toEqual(NOT_FRIENDS);
     expect(
       await sql`select 1 from public.dm_thread_prefs where user_id <> ${await userIdOf(a)}`,
     ).toHaveLength(0);
@@ -212,7 +212,7 @@ describe('dm/clear (§4.X)', () => {
     const b = others[0] as Client;
     const threadId = threads[0] as string;
     const first = await send(a, threadId, 'bir');
-    await send(b, threadId, 'iki');
+    const seen = await send(b, threadId, 'iki');
     expect(await dm(a, { action: 'pin', threadId })).toEqual(OK);
     // A report from before keeps its copy (reports are never touched).
     expect(
@@ -220,9 +220,18 @@ describe('dm/clear (§4.X)', () => {
         .status,
     ).toBe(200);
 
-    expect(await dm(a, { action: 'clear', threadId })).toEqual(OK);
+    // upTo is required (null: none seen) and must be a message of this conversation.
+    expect(await dm(a, { action: 'clear', threadId })).toEqual({
+      status: 400,
+      body: errorBody('bad_request'),
+    });
+    expect(await dm(a, { action: 'clear', threadId, upTo: randomUUID() })).toEqual(NOT_FOUND);
+    expect(await dm(a, { action: 'clear', threadId, upTo: seen })).toEqual(OK);
     const cleared = await prefsOf(threadId);
-    expect(await dm(a, { action: 'clear', threadId })).toEqual(OK);
+    expect(await dm(a, { action: 'clear', threadId, upTo: seen })).toEqual(OK);
+    expect(await prefsOf(threadId)).toEqual(cleared);
+    // An older upTo never moves the mark back.
+    expect(await dm(a, { action: 'clear', threadId, upTo: first })).toEqual(OK);
     expect(await prefsOf(threadId)).toEqual(cleared);
 
     // a: no conversation, no messages, nothing unread; the pin is gone with it.
@@ -260,12 +269,33 @@ describe('dm/clear (§4.X)', () => {
     expect((await page(b, threadId))[0]?.reply_to).toMatchObject({ id: first, body: 'bir' });
   });
 
+  it('keeps a message that came between a clear and its repeat', async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
+    const threadId = threads[0] as string;
+    const seen = await send(b, threadId, 'bir');
+    expect(await dm(a, { action: 'clear', threadId, upTo: seen })).toEqual(OK);
+    await send(b, threadId, 'iki');
+    // (Read after send, which steps the clock back.)
+    const cleared = await prefsOf(threadId);
+    // The same call again (a retry after a 5xx): the mark stays at what a saw.
+    expect(await dm(a, { action: 'clear', threadId, upTo: seen })).toEqual(OK);
+    expect(await prefsOf(threadId)).toEqual(cleared);
+    expect((await page(a, threadId)).map((m) => m.body)).toEqual(['iki']);
+    expect(byThread(await inboxOf(a), threadId)).toMatchObject({ lastBody: 'iki', unreadCount: 1 });
+  });
+
   it('takes a conversation without messages out of the inbox until the first one', async () => {
     const { a, others, threads } = await withFriends(1);
     const b = others[0] as Client;
     const threadId = threads[0] as string;
     expect(await dm(a, { action: 'archive', threadId })).toEqual(OK);
-    expect(await dm(a, { action: 'clear', threadId })).toEqual(OK);
+    expect(await dm(a, { action: 'clear', threadId, upTo: null })).toEqual(OK);
+    const [row] = await sql`
+      select cleared_at = '-infinity'::timestamptz as none from public.dm_thread_prefs
+      where thread_id = ${threadId}
+    `;
+    expect(row?.none).toBe(true);
     expect(byThread(await inboxOf(a), threadId)).toBeUndefined();
     await send(b, threadId, 'selam');
     expect(byThread(await inboxOf(a), threadId)).toMatchObject({
@@ -293,6 +323,17 @@ describe('dm/edit (§4.X)', () => {
     });
     await heard.received;
     await heard.close();
+
+    // A report afterwards shows the message was edited (its earlier text is not kept, §4.X).
+    expect(
+      (await invoke(b, 'safety', { action: 'report', target: 'dm', threadId, reason: 'spam' }))
+        .status,
+    ).toBe(200);
+    const [report] = await sql`select messages_snapshot from public.reports`;
+    expect(report?.messages_snapshot).toEqual([
+      expect.objectContaining({ body: 'Yarın 8de', edited: true, edited_at: expect.any(String) }),
+      expect.objectContaining({ body: 'Olur', edited: false, edited_at: null }),
+    ]);
 
     // Both see the new text and the mark; the quote shows it too; the old text is nowhere.
     const [reply, original] = await page(b, threadId);
@@ -351,6 +392,27 @@ describe('dm/edit (§4.X)', () => {
     );
   });
 
+  it('limits edits per account per window, asked before the edit', async () => {
+    const { a, threads } = await withFriends(1);
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 'selam');
+    for (let i = 1; i <= DM_EDIT_RATE.windowMax; i++) {
+      expect((await dm(a, { action: 'edit', messageId, body: `selam ${i}` })).status).toBe(200);
+    }
+    expect(await dm(a, { action: 'edit', messageId, body: 'selam son' })).toEqual({
+      status: 429,
+      body: errorBody('rate_limited'),
+    });
+    const [row] = await sql`select body from public.dm_messages where id = ${messageId}`;
+    expect(row?.body).toBe(`selam ${DM_EDIT_RATE.windowMax}`);
+    // A new window opens the budget again.
+    await sql`
+      update public.dm_edit_rate
+      set window_started_at = now() - make_interval(secs => ${DM_EDIT_RATE.windowSeconds + 1})
+    `;
+    expect((await dm(a, { action: 'edit', messageId, body: 'selam son' })).status).toBe(200);
+  });
+
   it('answers the same edit twice with the first result and writes nothing', async () => {
     const { a, threads } = await withFriends(1);
     const threadId = threads[0] as string;
@@ -398,6 +460,59 @@ describe('locks', () => {
       expect(byThread(await inboxOf(a), threadId)?.pinned).toBe(true);
     } finally {
       await Promise.all([holder.end(), pinning.end()]);
+    }
+  });
+
+  // dm_send writes its time under the thread's lock, later than the message before: a send that
+  // began first but waited for the lock lands after the other, so a clear up to that other
+  // message never hides it.
+  it('lands a send that waited for the thread after every message before it', async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
+    const threadId = threads[0] as string;
+    const [aId, bId] = await Promise.all([userIdOf(a), userIdOf(b)]);
+
+    const early = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let releaseEarly: () => void = () => {};
+      const mayGo = new Promise<void>((resolve) => (releaseEarly = resolve));
+      let markBegan: () => void = () => {};
+      const began = new Promise<void>((resolve) => (markBegan = resolve));
+      // a's send: its transaction, and so its now(), begins first.
+      const earlySend = early.begin(async (tx) => {
+        await tx`select now()`;
+        markBegan();
+        await mayGo;
+        return tx`
+          select message_id, created_at from public.dm_send_message(${aId}, ${threadId}, 'geç', 0)
+        `;
+      });
+      await began;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      // b's send begins later, takes the thread first and holds it until a's send waits.
+      const held = await holder.begin(async (tx) => {
+        const rows = await tx`
+          select message_id, created_at from public.dm_send_message(${bId}, ${threadId}, 'önce', 0)
+        `;
+        releaseEarly();
+        await waitUntilBlocked('dm_send_message');
+        return rows;
+      });
+      const late = await earlySend;
+      // Compared in the database: the times differ by a microsecond.
+      const [order] = await sql`
+        select (select created_at from public.dm_messages where id = ${late[0]?.message_id})
+             > (select created_at from public.dm_messages where id = ${held[0]?.message_id})
+             as later
+      `;
+      expect(order?.later).toBe(true);
+
+      // a clears up to b's message, the newest it had seen: a's own later message stays.
+      expect(await dm(a, { action: 'clear', threadId, upTo: held[0]?.message_id })).toEqual(OK);
+      expect((await page(a, threadId)).map((m) => m.body)).toEqual(['geç']);
+    } finally {
+      await Promise.all([early.end(), holder.end()]);
     }
   });
 

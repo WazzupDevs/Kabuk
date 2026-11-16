@@ -26,6 +26,7 @@ import type {
 } from '../_shared/pure/api/friends.ts';
 import {
   archivedUnread,
+  DM_EDIT_RATE,
   DM_EDIT_WINDOW_MS,
   DM_PIN_MAX,
   pinnedFirst,
@@ -62,7 +63,8 @@ const Body: z.ZodType<DmRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('unpin'), threadId: z.uuid() }),
   z.object({ action: z.literal('archive'), threadId: z.uuid() }),
   z.object({ action: z.literal('unarchive'), threadId: z.uuid() }),
-  z.object({ action: z.literal('clear'), threadId: z.uuid() }),
+  // upTo: the newest message the caller saw (null: it saw none); the mark goes no further.
+  z.object({ action: z.literal('clear'), threadId: z.uuid(), upTo: z.uuid().nullable() }),
   z.object({ action: z.literal('edit'), messageId: z.uuid(), body: z.string().max(2000) }),
 ]);
 
@@ -188,6 +190,7 @@ Deno.serve(
             target_thread_id: body.threadId,
             change: body.action,
             max_pins: DM_PIN_MAX,
+            ...(body.action === 'clear' && body.upTo ? { up_to: body.upTo } : {}),
           });
           if (error) throw dbError('dm_thread_pref', error);
           return { ok: true };
@@ -195,6 +198,13 @@ Deno.serve(
 
         case 'edit': {
           const text = await checkedText(body.body);
+          // Every edit is a broadcast: a budget per account, asked alone (as reactions are).
+          const limited = await db.rpc('dm_edit_rate_hit', {
+            target_user_id: user.id,
+            window_seconds: DM_EDIT_RATE.windowSeconds,
+            window_max: DM_EDIT_RATE.windowMax,
+          });
+          if (limited.error) throw dbError('dm_edit_rate_hit', limited.error);
           const { data, error } = await db.rpc('dm_edit', {
             target_user_id: user.id,
             target_message_id: body.messageId,

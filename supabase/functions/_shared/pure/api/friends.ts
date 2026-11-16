@@ -120,9 +120,12 @@ export type DmRequest =
   | { action: 'unpin'; threadId: string }
   | { action: 'archive'; threadId: string }
   | { action: 'unarchive'; threadId: string }
-  | { action: 'clear'; threadId: string }
+  // upTo: the newest message the caller saw (null when it saw none): the mark never passes it, so
+  // a message that came meanwhile, or between a call and its repeat, stays visible.
+  | { action: 'clear'; threadId: string; upTo: string | null }
   // The caller's own message, within DM_EDIT_WINDOW_MS of sending (edit_expired); checked like a
-  // send (message_invalid, profanity_rejected); no push.
+  // send (message_invalid, profanity_rejected); at most DM_EDIT_RATE per window (rate_limited); no
+  // push.
   | { action: 'edit'; messageId: string; body: string };
 
 export type DmOkResponse = { ok: true };
@@ -148,7 +151,7 @@ export type DmInboxThread = {
   unreadCount: number;
   // Only when the newest message is the caller's.
   lastStatus: DmStatus | null;
-  // docs/SPEC_V4.md §4.X, the caller's own: the pinned come first, in the order they were pinned.
+  // docs/SPEC_V4.md §4.X, the caller's own: the pinned come first, the last pinned on top.
   // An archived conversation stays in `threads` (an app from before §4.X shows it like any other)
   // and keeps counting its unread; a new message does not take it out of the archive.
   pinned: boolean;

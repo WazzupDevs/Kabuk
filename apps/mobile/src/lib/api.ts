@@ -531,8 +531,9 @@ export const dmApi = {
   unpin: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'unpin', threadId }),
   archive: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'archive', threadId }),
   unarchive: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'unarchive', threadId }),
-  // Everything so far hidden from the caller only.
-  clear: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'clear', threadId }),
+  // Everything up to upTo (the newest message seen; null when none) hidden from the caller only.
+  clear: (threadId: string, upTo: string | null) =>
+    invoke<DmOkResponse>('dm', { action: 'clear', threadId, upTo }),
   // The caller's own message, within 15 minutes of sending (pure/dmManage.ts → canEditDm).
   edit: (messageId: string, body: string) =>
     invoke<DmEditResponse>('dm', { action: 'edit', messageId, body }),

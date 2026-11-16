@@ -416,6 +416,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      dm_edit_rate: {
+        Row: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Insert: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Update: {
+          count?: number;
+          user_id?: string;
+          window_started_at?: string;
+        };
+        Relationships: [];
+      };
       dm_messages: {
         Row: {
           body: string;
@@ -2823,6 +2841,14 @@ export type Database = {
           thread_id: string;
         }[];
       };
+      dm_edit_rate_hit: {
+        Args: {
+          target_user_id: string;
+          window_max: number;
+          window_seconds: number;
+        };
+        Returns: undefined;
+      };
       dm_inbox: {
         Args: { viewer: string };
         Returns: {
@@ -2898,6 +2924,7 @@ export type Database = {
           max_pins: number;
           target_thread_id: string;
           target_user_id: string;
+          up_to?: string;
         };
         Returns: undefined;
       };

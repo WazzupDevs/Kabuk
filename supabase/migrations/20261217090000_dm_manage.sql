@@ -3,13 +3,18 @@
 --
 -- Pin, archive and clear belong to the account (one dm_thread_prefs row per member and thread);
 -- the other member never sees them: no answer, page or Realtime payload carries the other member's
--- row. Clearing is "everything up to now is hidden from me": the clearer's inbox drops the
+-- row. Clearing is "everything up to the newest message I saw is hidden from me": the clearer's
+-- inbox drops the
 -- conversation until a newer message comes, the page and the quotes stop at the mark, and only
 -- messages after it count as unread. Nothing is deleted; the other side, the friendship and the
 -- reports stay as they are (a DM report keeps its own copy of the messages, dm_snapshot).
 --
 -- Editing: one's own message, within the window the dm function passes (15 minutes, by the server's
 -- clock); the old text is not kept; edited_at marks it. No push.
+--
+-- dm_send now writes each message's time under the thread's lock, later than the one before, so no
+-- send can land under a clear mark it was not part of. The edit limit (dm_edit_rate) is asked in
+-- its own call, written alone.
 --
 -- Lock order (rule 10): dm_thread_prefs comes after dm_reads: dm_threads → dm_messages →
 -- dm_reactions, dm_reads, dm_thread_prefs. A pin, archive or clear holds the thread `for key share`
@@ -80,15 +85,17 @@ $$;
 
 -- Pin, archive, clear (service role) --------------------------------------------------------------
 -- change: pin | unpin | archive | unarchive | clear. Each is idempotent: the same change twice
--- leaves the same row. pin keeps an existing pin's time (the order of the pinned stays); a sixth
--- pin answers pin_limit and an archived conversation thread_archived. archive takes the pin off;
--- clear takes the pin and the archive off and moves the mark to the newest message (now() in a
--- conversation without messages), never back.
+-- leaves the same row. pin keeps an existing pin's time; a sixth pin answers pin_limit and an
+-- archived conversation thread_archived. archive takes the pin off. clear takes the pin and the
+-- archive off and moves the mark up to up_to, the newest message the caller saw (not_found when it
+-- is not of this conversation), or to -infinity when it saw none; never back, and never past what
+-- the caller saw: a message that came meanwhile, or between a call and its repeat, stays visible.
 create function public.dm_thread_pref(
   target_user_id uuid,
   target_thread_id uuid,
   change text,
-  max_pins integer
+  max_pins integer,
+  up_to uuid default null
 )
 returns void
 language plpgsql
@@ -98,6 +105,7 @@ as $$
 declare
   t public.dm_threads;
   p public.dm_thread_prefs;
+  mark timestamptz := '-infinity';
 begin
   select * into t from public.dm_threads
   where id = target_thread_id and target_user_id in (user_a, user_b)
@@ -138,16 +146,58 @@ begin
     update public.dm_thread_prefs set archived_at = null
     where thread_id = t.id and user_id = target_user_id and archived_at is not null;
   elsif change = 'clear' then
+    if up_to is not null then
+      select m.created_at into mark from public.dm_messages m
+      where m.id = up_to and m.thread_id = t.id;
+      if mark is null then
+        raise exception using errcode = 'P0001', message = 'not_found';
+      end if;
+    end if;
     update public.dm_thread_prefs
-    set cleared_at = coalesce(
-          greatest(cleared_at, (select max(m.created_at) from public.dm_messages m
-                                where m.thread_id = t.id)),
-          now()),
+    set cleared_at = greatest(cleared_at, mark),
         pinned_at = null,
         archived_at = null
     where thread_id = t.id and user_id = target_user_id;
   else
     raise exception using errcode = 'P0001', message = 'bad_request';
+  end if;
+end;
+$$;
+
+-- The edit limit (§4.X): per account, window_max edits per window, as reaction_rate. The dm
+-- function asks before dm_edit, in its own call (rule 10: written alone, no other lock held).
+create table public.dm_edit_rate (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  window_started_at timestamptz not null,
+  count integer not null
+);
+alter table public.dm_edit_rate enable row level security;
+revoke all on table public.dm_edit_rate from anon, authenticated;
+
+create function public.dm_edit_rate_hit(
+  target_user_id uuid,
+  window_seconds integer,
+  window_max integer
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  rate public.dm_edit_rate;
+begin
+  insert into public.dm_edit_rate (user_id, window_started_at, count)
+  values (target_user_id, '-infinity', 0)
+  on conflict (user_id) do nothing;
+  select * into rate from public.dm_edit_rate where user_id = target_user_id for update;
+  if now() - rate.window_started_at >= make_interval(secs => window_seconds) then
+    update public.dm_edit_rate set window_started_at = now(), count = 1
+    where user_id = target_user_id;
+  elsif rate.count >= window_max then
+    raise exception using errcode = 'P0001', message = 'rate_limited';
+  else
+    update public.dm_edit_rate set count = count + 1 where user_id = target_user_id;
   end if;
 end;
 $$;
@@ -228,13 +278,38 @@ declare
   fn text;
 begin
   foreach fn in array array[
-    'public.dm_thread_pref(uuid, uuid, text, integer)',
+    'public.dm_thread_pref(uuid, uuid, text, integer, uuid)',
+    'public.dm_edit_rate_hit(uuid, integer, integer)',
     'public.dm_edit(uuid, uuid, text, integer)'
   ] loop
     execute format('revoke all on function %s from public, anon, authenticated', fn);
     execute format('grant execute on function %s to service_role', fn);
   end loop;
 end;
+$$;
+
+-- A DM report's copy of the last 50 messages, as before plus whether and when each was edited
+-- (the text is the one at the report; an earlier text is not kept, §4.X).
+create or replace function private.dm_snapshot(target_thread_id uuid, reporter uuid)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'from', case when last50.sender_user_id = reporter then 'reporter' else 'reported' end,
+           'body', last50.body,
+           'created_at', last50.created_at,
+           'edited', last50.edited_at is not null,
+           'edited_at', last50.edited_at
+         ) order by last50.created_at), '[]'::jsonb)
+  from (
+    select sender_user_id, body, created_at, edited_at from public.dm_messages
+    where thread_id = target_thread_id
+    order by created_at desc
+    limit 50
+  ) last50;
 $$;
 
 -- Send and react: a message cleared away from the caller cannot be quoted or reacted to ----------
@@ -253,6 +328,7 @@ as $$
 declare
   t public.dm_threads;
   other uuid;
+  sent_at timestamptz;
 begin
   select * into t from public.dm_threads
   where id = target_thread_id and target_user_id in (user_a, user_b)
@@ -264,6 +340,10 @@ begin
   if private.is_blocked_between(target_user_id, other) then
     raise exception using errcode = 'P0001', message = 'not_friends';
   end if;
+  -- Under the thread's lock, each message is later than the one before (docs/SPEC_V4.md §4.X): a
+  -- send that began before another, or waited for the lock behind a clear, still lands after
+  -- every message a clear mark can name.
+  sent_at := greatest(now(), t.last_message_at + interval '1 microsecond');
   if reply_to is not null and not exists (
     select 1 from public.dm_messages
     where id = reply_to and thread_id = t.id
@@ -279,13 +359,42 @@ begin
     raise exception using errcode = 'P0001', message = 'rate_limited';
   end if;
 
-  insert into public.dm_messages (thread_id, sender_user_id, body, reply_to_id, replied)
-  values (t.id, target_user_id, new_body, reply_to, reply_to is not null);
-  update public.dm_threads set last_message_at = now() where id = t.id;
+  insert into public.dm_messages
+    (thread_id, sender_user_id, body, reply_to_id, replied, created_at)
+  values (t.id, target_user_id, new_body, reply_to, reply_to is not null, sent_at);
+  update public.dm_threads set last_message_at = sent_at where id = t.id;
   insert into public.dm_reads (thread_id, user_id, last_read_at)
-  values (t.id, target_user_id, now())
-  on conflict (thread_id, user_id) do update set last_read_at = excluded.last_read_at;
+  values (t.id, target_user_id, sent_at)
+  on conflict (thread_id, user_id) do update
+    set last_read_at = greatest(public.dm_reads.last_read_at, excluded.last_read_at);
   return other;
+end;
+$$;
+
+-- The row dm_send just wrote: the caller's newest in the thread, whose lock this transaction holds.
+create or replace function public.dm_send_message(
+  target_user_id uuid,
+  target_thread_id uuid,
+  new_body text,
+  min_interval_ms integer,
+  reply_to uuid default null
+)
+returns table (other_user_id uuid, message_id uuid, created_at timestamptz)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  other uuid;
+begin
+  other := public.dm_send(target_user_id, target_thread_id, new_body, min_interval_ms, reply_to);
+  return query
+    select other, m.id, m.created_at
+    from public.dm_messages m
+    where m.thread_id = target_thread_id
+      and m.sender_user_id = target_user_id
+    order by m.created_at desc, m.id
+    limit 1;
 end;
 $$;
 
