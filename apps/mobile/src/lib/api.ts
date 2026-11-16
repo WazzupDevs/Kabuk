@@ -51,6 +51,7 @@ import type {
   SetIdentityResponse,
 } from '@shared/api/checkin.ts';
 import type {
+  DmEditResponse,
   DmInboxResponse,
   DmOkResponse,
   DmSendResponse,
@@ -525,6 +526,16 @@ export const dmApi = {
   inbox: () => invoke<DmInboxResponse>('dm', { action: 'inbox' }),
   // The app is open: messages so far count as delivered, in every conversation.
   delivered: () => invoke<DmOkResponse>('dm', { action: 'delivered' }),
+  // docs/SPEC_V4.md §4.X: the caller's own; the other member never sees them.
+  pin: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'pin', threadId }),
+  unpin: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'unpin', threadId }),
+  archive: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'archive', threadId }),
+  unarchive: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'unarchive', threadId }),
+  // Everything so far hidden from the caller only.
+  clear: (threadId: string) => invoke<DmOkResponse>('dm', { action: 'clear', threadId }),
+  // The caller's own message, within 15 minutes of sending (pure/dmManage.ts → canEditDm).
+  edit: (messageId: string, body: string) =>
+    invoke<DmEditResponse>('dm', { action: 'edit', messageId, body }),
 };
 
 // Vampir Köylü (docs/SPEC_V4.md §4.F "Adım 4.6.6"): targets are table session ids; `step` is the

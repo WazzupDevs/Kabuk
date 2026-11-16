@@ -420,6 +420,7 @@ export type Database = {
         Row: {
           body: string;
           created_at: string;
+          edited_at: string | null;
           id: string;
           replied: boolean;
           reply_to_id: string | null;
@@ -429,6 +430,7 @@ export type Database = {
         Insert: {
           body: string;
           created_at?: string;
+          edited_at?: string | null;
           id?: string;
           replied?: boolean;
           reply_to_id?: string | null;
@@ -438,6 +440,7 @@ export type Database = {
         Update: {
           body?: string;
           created_at?: string;
+          edited_at?: string | null;
           id?: string;
           replied?: boolean;
           reply_to_id?: string | null;
@@ -512,6 +515,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'dm_reads_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'dm_threads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      dm_thread_prefs: {
+        Row: {
+          archived_at: string | null;
+          cleared_at: string | null;
+          pinned_at: string | null;
+          thread_id: string;
+          user_id: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          cleared_at?: string | null;
+          pinned_at?: string | null;
+          thread_id: string;
+          user_id: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          cleared_at?: string | null;
+          pinned_at?: string | null;
+          thread_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'dm_thread_prefs_thread_id_fkey';
             columns: ['thread_id'];
             isOneToOne: false;
             referencedRelation: 'dm_threads';
@@ -2773,15 +2808,32 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      dm_edit: {
+        Args: {
+          new_body: string;
+          target_message_id: string;
+          target_user_id: string;
+          window_ms: number;
+        };
+        Returns: {
+          changed: boolean;
+          edited_at: string;
+          is_last: boolean;
+          other_user_id: string;
+          thread_id: string;
+        }[];
+      };
       dm_inbox: {
         Args: { viewer: string };
         Returns: {
+          archived: boolean;
           display_name: string;
           last_body: string;
           last_from_me: boolean;
           last_message_at: string;
           last_status: string;
           photo_path: string;
+          pinned_at: string;
           public_id: string;
           thread_id: string;
           unread_count: number;
@@ -2797,6 +2849,7 @@ export type Database = {
         Returns: {
           body: string;
           created_at: string;
+          edited_at: string;
           from_me: boolean;
           id: string;
           reactions: Json;
@@ -2838,6 +2891,15 @@ export type Database = {
           message_id: string;
           other_user_id: string;
         }[];
+      };
+      dm_thread_pref: {
+        Args: {
+          change: string;
+          max_pins: number;
+          target_thread_id: string;
+          target_user_id: string;
+        };
+        Returns: undefined;
       };
       end_table_session: { Args: { target_user_id: string }; Returns: boolean };
       explore_venues: {
