@@ -4,7 +4,11 @@ import { createArtStore } from '../../capsule/artStore';
 
 function store(budget: number) {
   const dropped: string[] = [];
-  const s = createArtStore<string>({ budget, drop: (_v, key) => dropped.push(key) });
+  const s = createArtStore<string>({
+    limits: { x: { bytes: budget } },
+    classOf: () => 'x',
+    drop: (_v, key) => dropped.push(key),
+  });
   return { s, dropped };
 }
 
@@ -18,7 +22,7 @@ describe('createArtStore', () => {
     s.put('d', 'D', 40);
     expect(dropped).toEqual(['a']);
     expect(s.has('a')).toBe(false);
-    expect(s.bytes).toBe(90);
+    expect(s.bytes()).toBe(90);
   });
 
   it('keeps what a drawing holds over the limit', () => {
@@ -31,7 +35,7 @@ describe('createArtStore', () => {
     expect(dropped).toEqual(['b']);
     s.put('c', 'C', 60);
     expect(s.has('a')).toBe(true);
-    expect(s.bytes).toBe(60);
+    expect(s.bytes()).toBe(60);
   });
 
   it('holds a key before it is made', () => {
@@ -89,7 +93,7 @@ describe('createArtStore', () => {
   it('drops what nothing holds when asked, and tells its listeners', () => {
     const { s, dropped } = store(1000);
     let told = 0;
-    const off = s.subscribe(() => {
+    const off = s.watch(['a', 'd'], () => {
       told += 1;
     });
     s.put('a', 'image', 10);
@@ -107,12 +111,42 @@ describe('createArtStore', () => {
     expect(told).toBe(1);
   });
 
+  it('tells a listener of its own keys only', () => {
+    const { s } = store(1000);
+    let told = 0;
+    s.watch(['a'], () => {
+      told += 1;
+    });
+    s.put('b', 'B', 1);
+    expect(told).toBe(0);
+    s.put('a', 'A', 1);
+    expect(told).toBe(1);
+  });
+
+  it('a kind under its own limit: tiles read ahead never push the pictures out', () => {
+    const dropped: string[] = [];
+    const s = createArtStore<string>({
+      limits: { picture: { bytes: 100 }, tile: { bytes: 30, entries: 2 } },
+      classOf: (v) => (v.startsWith('uri') ? 'tile' : 'picture'),
+      drop: (_v, key) => dropped.push(key),
+    });
+    s.put('near1', 'image', 50);
+    s.put('near2', 'image', 50);
+    for (let i = 0; i < 10; i++) s.put(`t${i}`, 'uri', 10);
+    expect(s.has('near1')).toBe(true);
+    expect(s.has('near2')).toBe(true);
+    expect(s.bytes('picture')).toBe(100);
+    // The tiles keep to their entries' limit too.
+    expect(s.bytes('tile')).toBe(20);
+    expect(dropped).toEqual(['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7']);
+  });
+
   it('a new value for a key lets the old one go', () => {
     const { s, dropped } = store(100);
     s.put('a', 'A', 10);
     s.put('a', 'A2', 20);
     expect(dropped).toEqual(['a']);
-    expect(s.bytes).toBe(20);
+    expect(s.bytes()).toBe(20);
     expect(s.peek('a')).toBe('A2');
   });
 });

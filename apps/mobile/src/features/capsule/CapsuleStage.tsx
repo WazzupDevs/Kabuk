@@ -20,7 +20,7 @@ import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg, readFxAhead } from '@/components/FxSvg';
 import { type SkiaKit, useSkiaKit, useWholeKit } from '@/components/skiaInside';
 import { stagePasses, TILE_WAIT_MS } from '@/capsule/stageGate';
-import { type ArtNeed, useArtsReady } from '@/capsule/useArt';
+import { type ArtNeed, type CapsuleArt, useArt, useArtsReady } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { useLabOff } from '@/lib/drawLab';
@@ -70,16 +70,22 @@ export function readStageAhead(
 }
 
 // What the whole canvas needs to draw a look (with `feeling`'s face, '' for none) as the stage
-// draws it (FxSkia.tsx → lookNeeds): read ahead by Süsle, waited for by the stage.
-export function stageNeeds(
+// draws it (FxSkia.tsx → lookNeed: itself made in the queue, the list of its plans and pictures):
+// read ahead by Süsle, waited for by the stage.
+export function stageNeed(
   look: string,
   size: number,
   moving: boolean,
-  needsOf: SkiaKit['lookNeeds'],
+  needOf: SkiaKit['lookNeed'],
   feeling = '',
-): ArtNeed[] {
+): ArtNeed {
   const { width, height } = figureOf(size);
-  return needsOf(popOf(look, feeling), width, height, moving);
+  return needOf(popOf(look, feeling), width, height, moving);
+}
+
+// The plans and pictures a look's need lists, once it is made.
+export function neededBy(art: CapsuleArt | undefined): ArtNeed[] | null {
+  return art?.kind === 'needs' ? art.needs : null;
 }
 
 // The capsule large in its circle (skall tuvali, KapsulSusle): a tap on it shows the next feeling
@@ -136,7 +142,7 @@ export function CapsuleStage({
   // The whole capsule on one canvas while its switch is on (theme/capsuleSkia.ts → capsuleWholeOn).
   const wholeKit = useWholeKit();
   const whole = wholeKit?.Whole;
-  const needsOf = wholeKit?.lookNeeds;
+  const needOf = wholeKit?.lookNeed;
   const unit = size / STAGE.circle;
   const ring = ringWidth ?? SPACING[1.5];
   // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
@@ -150,13 +156,17 @@ export function CapsuleStage({
   const [oldLook, setOldLook] = useState<string | null>(null);
   const coming = look !== shownLook;
   const comingFeeling = feeling?.id ?? '';
-  const comingNeeds = useMemo(
-    () => (coming && needsOf ? stageNeeds(look, size, !reduce, needsOf, comingFeeling) : null),
-    [coming, needsOf, look, size, reduce, comingFeeling],
+  // What the look needs (read in the queue, never here), then its plans and pictures.
+  const comingNeed = useMemo(
+    () => (coming && needOf ? stageNeed(look, size, !reduce, needOf, comingFeeling) : null),
+    [coming, needOf, look, size, reduce, comingFeeling],
   );
-  const comingReady = useArtsReady(comingNeeds);
+  const comingList = useArt(comingNeed);
+  const comingNeeds = neededBy(comingList);
+  const comingMade = useArtsReady(comingNeeds);
+  const comingReady = comingNeed === null || (comingNeeds !== null && comingMade);
   // The tiles on the screen, asked for in the same turn as the look's pictures (first).
-  const tilesReady = useArtsReady(coming && needsOf ? tiles : null);
+  const tilesReady = useArtsReady(coming && needOf ? tiles : null);
   const [overdueFor, setOverdueFor] = useState<string | null>(null);
   useEffect(() => {
     if (!coming) return undefined;

@@ -257,7 +257,7 @@ export function readFxAhead(
   height: number,
   moving: boolean,
   prepare?: (layer: FxInside, place: FxPlace) => void,
-  // The whole canvas's (FxSkia.tsx → lookNeeds collects through it): a still layer is read as its
+  // The whole canvas's (FxSkia.tsx → lookNeed collects through it): a still layer is read as its
   // canvas draws it, not as a view's picture.
   still?: (xml: string, width: number, height: number) => void,
 ): void {

@@ -21,9 +21,9 @@ export type SkiaKit = {
   prepare: (layer: FxInside, place: FxPlace) => void;
   Warm: ComponentType;
   // The whole drawing on one canvas (FxSkia.tsx → SkiaWhole) and the resources a drawing needs on
-  // it (FxSkia.tsx → lookNeeds), made by capsule/prepQueue.ts, never in a render.
+  // it, itself made in the queue (FxSkia.tsx → lookNeed): nothing of it is made in a render.
   Whole: WholePainter;
-  lookNeeds: (xml: string, width: number, height: number, moving: boolean) => ArtNeed[];
+  lookNeed: (xml: string, width: number, height: number, moving: boolean) => ArtNeed;
   // A small still drawing as a picture's address (FxSkia.tsx → tileNeed).
   tileNeed: (xml: string, size: number) => ArtNeed;
 };
@@ -41,7 +41,7 @@ function load(): Promise<Loaded> {
             prepare: mod.prepareInside,
             Warm: mod.SkiaWarm,
             Whole: mod.SkiaWhole,
-            lookNeeds: mod.lookNeeds,
+            lookNeed: mod.lookNeed,
             tileNeed: mod.tileNeed,
           }
         : 'failed',

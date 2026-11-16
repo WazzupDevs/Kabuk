@@ -179,4 +179,19 @@ describe('createPrepQueue', () => {
     );
     expect(q.stats().ms).toBe(5);
   });
+
+  it('a once job is not run again in a later generation, until forgotten', () => {
+    const { q, ran, all } = queue();
+    const job = () => ran.push('ahead');
+    q.ahead('ahead|x', job, NEAR, q.next(), true);
+    all();
+    q.ahead('ahead|x', job, NEAR, q.next(), true);
+    q.ahead('ahead|x', job, NEAR, q.next(), true);
+    all();
+    expect(ran).toEqual(['ahead']);
+    q.forget();
+    q.ahead('ahead|x', job, NEAR, q.next(), true);
+    all();
+    expect(ran).toEqual(['ahead', 'ahead']);
+  });
 });

@@ -35,13 +35,14 @@ import {
   type ArtNeed,
   type CapsuleArt,
   capsuleArt,
+  emptyArt,
   type Made,
   prepNow,
   useArts,
   usePinned,
 } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
-import type { FxInside, FxPlace } from '@/theme/capsuleFx';
+import type { FxInside, FxLayer, FxPlace } from '@/theme/capsuleFx';
 import {
   clockLead,
   insideAt,
@@ -306,7 +307,9 @@ AppState.addEventListener('change', (state) => {
   if (state === 'background') purgeGpu(0);
 });
 
-// A canvas on the screen; its going (the last one) empties the pictures a moment later.
+// A canvas on the screen; its going (the last one) empties the pictures a moment later. Taken in a
+// layout effect: a canvas that comes back (Süsle opened again) stops the emptying before anything
+// else can run.
 function holdCanvas(): () => void {
   if (emptying) {
     clearTimeout(emptying);
@@ -321,7 +324,8 @@ function holdCanvas(): () => void {
     emptying = setTimeout(() => {
       emptying = null;
       if (shown > 0) return;
-      capsuleArt.dropUnused((a) => a.kind === 'image' || a.kind === 'shapes');
+      // Pictures, tiles and plans alike (what a drawing still holds stays).
+      emptyArt();
       purgeGpu(0);
     }, EMPTY_AFTER_MS);
   };
@@ -356,6 +360,7 @@ function makeArt(xml: string, width: number, height: number, ratio: number): Mad
   } catch {
     svg = null;
   }
+  // The text's length is a floor for the parsed tree (its native size is not measured).
   return svg
     ? { art: { kind: 'shapes', svg }, bytes: xml.length }
     : { art: { kind: 'none' }, bytes: NONE_BYTES };
@@ -453,29 +458,83 @@ function readWhole(
   return out;
 }
 
-// What the whole canvas will need to draw `xml` at this size (`moving`: in FxMoves and not with
-// reduce motion), as FxSvg gives it its layers (readFxAhead walks them the same way): Süsle reads
-// it ahead, and its stage keeps the look shown until it is made.
-export function lookNeeds(xml: string, width: number, height: number, moving: boolean): ArtNeed[] {
-  const ratio = PixelRatio.get();
-  const out = new Map<string, ArtNeed>();
-  const add = (n: ArtNeed) => {
-    if (!out.has(n.key)) out.set(n.key, n);
-  };
-  readFxAhead(
-    xml,
-    width,
-    height,
-    moving,
-    (layer, place) => {
+// A motion's plan at a place (theme/capsuleSkia.ts → insidePlan): made in the queue, read by the
+// canvas from the store (null: it cannot be drawn on the canvas, the picture way draws).
+function planNeed(layer: FxInside, place: FxPlace, ratio: number): ArtNeed {
+  return {
+    key: `plan|${insidePlanKey(layer, place, ratio)}`,
+    make: () => {
       const plan = planOf(layer, place, ratio);
-      if (!plan) return;
-      add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
-      add(artNeed(plan.content, plan.width, plan.height, ratio));
+      return {
+        art: { kind: 'plan', plan },
+        bytes: plan ? plan.mask.length + plan.content.length : NONE_BYTES,
+      };
     },
-    (text, w, h) => add(artNeed(text, w, h, ratio)),
-  );
+  };
+}
+
+// The plans a drawing's layers need, each once.
+function planNeeds(layers: readonly FxLayer[], place: FxPlace, ratio: number): ArtNeed[] {
+  const out = new Map<string, ArtNeed>();
+  const walk = (ls: readonly FxLayer[]) => {
+    for (const l of ls) {
+      if (l.kind === 'inside') {
+        const n = planNeed(l, place, ratio);
+        if (!out.has(n.key)) out.set(n.key, n);
+      } else if (l.kind === 'move') walk(l.layers);
+    }
+  };
+  walk(layers);
   return [...out.values()];
+}
+
+// The canvas's layers with the plans made (wholeLayers); null when one cannot be drawn.
+function wholeOf(
+  layers: readonly FxLayer[],
+  place: FxPlace,
+  ratio: number,
+  plans: ReadonlyMap<string, CapsuleArt | undefined>,
+): WholeLayer[] | null {
+  return wholeLayers(layers, place, ratio, (l, p, r) => {
+    const a = plans.get(`plan|${insidePlanKey(l, p, r)}`);
+    return a?.kind === 'plan' ? a.plan : null;
+  });
+}
+
+// What the whole canvas will need to draw `xml` at this size (`moving`: in FxMoves and not with
+// reduce motion), as FxSvg gives it its layers (readFxAhead walks them the same way): its plans
+// and its pictures. Itself a resource, made in the queue (reading the drawing's tree and its plans
+// is work too): Süsle reads it ahead, and its stage keeps the look shown until it is made.
+export function lookNeed(xml: string, width: number, height: number, moving: boolean): ArtNeed {
+  const ratio = PixelRatio.get();
+  return {
+    key: `look|${ratio}|${width}x${height}|${moving ? 1 : 0}|${xml}`,
+    make: () => {
+      const out = new Map<string, ArtNeed>();
+      const add = (n: ArtNeed) => {
+        if (!out.has(n.key)) out.set(n.key, n);
+      };
+      readFxAhead(
+        xml,
+        width,
+        height,
+        moving,
+        (layer, place) => {
+          add(planNeed(layer, place, ratio));
+          const plan = planOf(layer, place, ratio);
+          if (!plan) return;
+          add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
+          add(artNeed(plan.content, plan.width, plan.height, ratio));
+        },
+        (text, w, h) => add(artNeed(text, w, h, ratio)),
+      );
+      const needs = [...out.values()];
+      return {
+        art: { kind: 'needs', needs },
+        bytes: needs.reduce((sum, n) => sum + n.key.length, 0),
+      };
+    },
+  };
 }
 
 // A small still drawing (an option's tile in Süsle's strips) as a picture's address: drawn once
@@ -518,12 +577,21 @@ const WHOLE_PAD = 0.15;
 
 export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: WholeProps) {
   const ratio = PixelRatio.get();
-  const whole = useMemo(() => wholeLayers(layers, place, ratio, planOf), [layers, place, ratio]);
+  // Its motions' plans, then its pictures: only what is made is read here (the queue makes them,
+  // the ones missing asked for first).
+  const plansNeeded = useMemo(() => planNeeds(layers, place, ratio), [layers, place, ratio]);
+  const plans = useArts(plansNeeded);
+  // Undefined while a plan is not made; null when one cannot be drawn (the picture way draws).
+  const whole = useMemo(() => {
+    if (!plans) return undefined;
+    const got = new Map<string, CapsuleArt | undefined>();
+    plansNeeded.forEach((n, i) => got.set(n.key, plans[i]));
+    return wholeOf(layers, place, ratio, got);
+  }, [plans, plansNeeded, layers, place, ratio]);
   const needs = useMemo(
     () => (whole ? wholeNeeds(whole, width, height, ratio) : null),
     [whole, width, height, ratio],
   );
-  // Only what is made; the missing ones are asked for, first.
   const arts = useArts(needs);
   const read = useMemo(() => {
     if (!whole || !needs || !arts) return null;
@@ -539,22 +607,38 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
   const [last, setLast] = useState<{ read: WholeRead[]; needs: readonly ArtNeed[] } | null>(null);
   if (read && needs && last?.read !== read) setLast({ read, needs });
   usePinned(last?.needs ?? null);
-  const drawing = read ?? (arts ? null : (last?.read ?? null));
+  const pending = whole === undefined || (whole !== null && !arts);
+  const drawing = read ?? (pending ? (last?.read ?? null) : null);
   // Nothing made and nothing shown before (a canvas that comes with a look not read ahead): made
   // here, before the frame, as the drawing read them before; this commit is not on the screen.
   // The store's own note reaches this canvas only once it listens (after the frame): it listens
   // here too, and is drawn again before the frame.
-  const waiting = !arts && !last && needs !== null;
+  const waiting = pending && !last;
   const [, again] = useState(0);
   useLayoutEffect(() => {
-    if (!waiting || !needs) return undefined;
-    const off = capsuleArt.subscribe(() => again((n) => n + 1));
-    prepNow(needs);
-    return off;
-  }, [waiting, needs]);
+    if (!waiting) return undefined;
+    const offs: (() => void)[] = [];
+    const now = (ns: readonly ArtNeed[]) => {
+      offs.push(
+        capsuleArt.watch(
+          ns.map((n) => n.key),
+          () => again((n) => n + 1),
+        ),
+      );
+      prepNow(ns);
+    };
+    now(plansNeeded);
+    const got = new Map<string, CapsuleArt | undefined>();
+    for (const n of plansNeeded) got.set(n.key, capsuleArt.peek(n.key));
+    const made = wholeOf(layers, place, ratio, got);
+    if (made) now(wholeNeeds(made, width, height, ratio));
+    return () => {
+      for (const off of offs) off();
+    };
+  }, [waiting, plansNeeded, layers, place, ratio, width, height]);
   const showing = drawing !== null;
-  useEffect(() => (showing ? holdCanvas() : undefined), [showing]);
-  if (!whole || (arts && !read)) return fallback;
+  useLayoutEffect(() => (showing ? holdCanvas() : undefined), [showing]);
+  if (whole === null || (arts && !read)) return fallback;
   if (!drawing) return <View pointerEvents="none" style={{ width, height }} />;
   const pad = Math.ceil(Math.max(width, height) * WHOLE_PAD);
   return (

@@ -27,8 +27,12 @@ export type PrepQueue = {
   // A drawing waits for `key`: first, at once. Its return lets go of the wish (a job nothing else
   // wants and no generation reads ahead goes).
   want: (key: string, run: () => void, priority?: Priority) => () => void;
-  // Read ahead in generation `gen` (from `next`).
-  ahead: (key: string, run: () => void, priority: Priority, gen: number) => void;
+  // Read ahead in generation `gen` (from `next`). `once`: a job that leaves nothing in the store
+  // under its key (it finds what to make and queues it): remembered as done (`remember` of them at
+  // most), so the next generations do not run it again.
+  ahead: (key: string, run: () => void, priority: Priority, gen: number, once?: boolean) => void;
+  // Forgets the jobs remembered as done (Süsle closed: what they queued is let go).
+  forget: () => void;
   // A new generation: the older ones' jobs nothing wants are dropped.
   next: () => number;
   // Made here and now unless made already (a drawing with nothing to show yet).
@@ -41,6 +45,7 @@ export type PrepQueue = {
 
 type Job = {
   key: string;
+  once: boolean;
   run: () => void;
   priority: Priority;
   seq: number;
@@ -54,6 +59,7 @@ export function createPrepQueue({
   schedule,
   now: clock,
   perSlice = 8,
+  remember = 2000,
 }: {
   isDone: (key: string) => boolean;
   // Runs `slice` later: at once (`urgent`: a drawing waits) or in idle time.
@@ -61,9 +67,13 @@ export function createPrepQueue({
   // Timing, only where it is read (the drawing lab, development): undefined costs nothing.
   now?: () => number;
   perSlice?: number;
+  remember?: number;
 }): PrepQueue {
   const jobs = new Map<string, Job>();
   const stats: PrepStats = { prepared: 0, cached: 0, cancelled: 0, failed: 0, ms: 0 };
+  // The `once` jobs done, oldest first.
+  const ran = new Set<string>();
+  const done = (key: string) => ran.has(key) || isDone(key);
   let generation = 0;
   let seq = 0;
   let urgentArmed = false;
@@ -85,6 +95,13 @@ export function createPrepQueue({
     try {
       j.run();
       stats.prepared += 1;
+      if (j.once) {
+        ran.add(j.key);
+        if (ran.size > remember) {
+          const oldest = ran.values().next();
+          if (!oldest.done) ran.delete(oldest.value);
+        }
+      }
     } catch {
       // A job lets nothing escape (it keeps its failure as a value); one that does is counted.
       stats.failed += 1;
@@ -122,7 +139,7 @@ export function createPrepQueue({
       const j = pick();
       if (!j) break;
       jobs.delete(j.key);
-      if (isDone(j.key)) {
+      if (done(j.key)) {
         stats.cached += 1;
         continue;
       }
@@ -139,9 +156,10 @@ export function createPrepQueue({
     priority: Priority,
     wants: number,
     gen: number | null,
+    once = false,
   ) => {
     seq += 1;
-    jobs.set(key, { key, run, priority, seq, wants, gen });
+    jobs.set(key, { key, once, run, priority, seq, wants, gen });
   };
 
   return {
@@ -169,12 +187,12 @@ export function createPrepQueue({
         }
       };
     },
-    ahead(key, run, priority, gen) {
+    ahead(key, run, priority, gen, once = false) {
       if (gen < generation) {
         stats.cancelled += 1;
         return;
       }
-      if (isDone(key)) {
+      if (done(key)) {
         stats.cached += 1;
         return;
       }
@@ -182,8 +200,11 @@ export function createPrepQueue({
       if (j) {
         if (priority < j.priority) j.priority = priority;
         if (j.gen === null || j.gen < gen) j.gen = gen;
-      } else add(key, run, priority, 0, gen);
+      } else add(key, run, priority, 0, gen, once);
       arm();
+    },
+    forget() {
+      ran.clear();
     },
     next() {
       generation += 1;
@@ -201,7 +222,7 @@ export function createPrepQueue({
       }
       const j = jobs.get(key);
       jobs.delete(key);
-      runJob(j ?? { key, run, priority: SHOWN, seq: 0, wants: 0, gen: null });
+      runJob(j ?? { key, once: false, run, priority: SHOWN, seq: 0, wants: 0, gen: null });
     },
     stats: () => ({ ...stats }),
     get pending() {
