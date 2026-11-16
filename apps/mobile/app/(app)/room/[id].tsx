@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { type ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BackHandler, Pressable, View } from 'react-native';
 import Reanimated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,7 +10,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
-import { Sheet } from '@/components/Sheet';
 import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -29,6 +28,11 @@ import { conceptOf, GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/Po
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
+import {
+  createDialogError,
+  DialogErrorLine,
+  type DialogErrorHolder,
+} from '@/features/rooms/DialogError';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { TableScene, useDrawerScroll } from '@/features/rooms/TableScene';
 import { TestBots } from '@/features/rooms/TestBots';
@@ -50,13 +54,13 @@ import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { closeAll, confirm } from '@/lib/overlayStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
 import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { AuraBackground, AuraBand, useGroundSize } from '@/aura/AuraBackground';
-import { type CapIconName } from '@/aura/CapIcon';
 import { Btn, Glass, Round, T } from '@/aura/kit';
 import { FxMoves } from '@/components/FxSvg';
 
@@ -113,9 +117,7 @@ function TableScreenBody() {
     id,
     (people.data ?? []).map((p) => p.sessionId).join(','),
   ).data;
-  const [sheet, setSheet] = useState<
-    'people' | 'end' | 'leave' | 'lobby' | 'invite' | 'icon' | null
-  >(null);
+  const [sheet, setSheet] = useState<'people' | 'lobby' | 'invite' | 'icon' | null>(null);
   useMarkTableScreen();
   // The people's drawer on the table's card (MasaCekmece): closed when the screen opens; back and
   // a scroll close it (CLAUDE.md → Ekran davranışı), a scroll under the finger (useDrawerScroll).
@@ -357,6 +359,68 @@ function TableScreenBody() {
             : sprengja
               ? tr.sprengja
               : tr.kaupholl;
+  // "Masayı bitir" is the owner's for everyone (cannot be undone: danger); "Masadan ayrıl" can be
+  // joined again. Both are centred dialogs (lib/overlayStore → confirm), a failed try stays open.
+  const openEnd = () => {
+    const holder = createDialogError();
+    let working = false;
+    const busy = { on: () => working, set: (v: boolean) => (working = v) };
+    confirm({
+      title: tr.table.endTitle,
+      note: tr.table.endBody,
+      icon: 'close',
+      tone: 'danger',
+      confirmLabel: tr.table.endConfirm,
+      confirmIcon: 'close',
+      cancelLabel: tr.common.cancel,
+      testID: 'table-end-confirm',
+      onConfirm: async () => {
+        if (busy.on()) throw new Error('busy');
+        busy.set(true);
+        holder.set(null);
+        try {
+          await end.mutateAsync();
+        } catch (e) {
+          holder.set(e);
+          throw e;
+        } finally {
+          busy.set(false);
+        }
+      },
+      children: (
+        <View className="gap-3">
+          <DialogErrorLine holder={holder} />
+          {r.phones > 1 ? (
+            <OwnerLeave leave={() => leave.mutateAsync()} busy={busy} holder={holder} />
+          ) : null}
+        </View>
+      ),
+    });
+  };
+  const openLeave = () => {
+    const holder = createDialogError();
+    confirm({
+      title: tr.table.leaveTitle,
+      note: tr.table.leaveBody,
+      icon: 'logout',
+      tone: 'plain',
+      confirmLabel: tr.table.leave,
+      confirmIcon: 'logout',
+      cancelLabel: tr.common.cancel,
+      testID: 'table-leave-confirm',
+      onConfirm: async () => {
+        holder.set(null);
+        try {
+          await leave.mutateAsync();
+        } catch (e) {
+          holder.set(e);
+          throw e;
+        }
+      },
+      children: <DialogErrorLine holder={holder} />,
+    });
+  };
+
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 
@@ -419,7 +483,7 @@ function TableScreenBody() {
           variant="danger"
           testID={owner ? 'table-end-open' : 'table-leave-open'}
           label={owner ? tr.table.end : tr.table.leaveShort}
-          onPress={() => setSheet(owner ? 'end' : 'leave')}
+          onPress={owner ? openEnd : openLeave}
         />
       </View>
     </View>
@@ -541,48 +605,6 @@ function TableScreenBody() {
         me={sessionId}
         profiles={profiles}
       />
-      <ConfirmSheet
-        visible={sheet === 'end'}
-        onClose={() => setSheet(null)}
-        title={tr.table.endTitle}
-        body={tr.table.endBody}
-        confirm={tr.table.endConfirm}
-        icon="close"
-        testID="table-end-confirm"
-        pending={end.isPending}
-        busy={leave.isPending}
-        error={end.error ?? leave.error}
-        onConfirm={() => end.mutate()}
-        extra={
-          r.phones > 1 ? (
-            <View className="gap-2.5">
-              <Btn
-                block
-                variant="glassy"
-                icon="logout"
-                testID="table-owner-leave"
-                label={tr.table.leave}
-                loading={leave.isPending}
-                disabled={end.isPending}
-                onPress={() => leave.mutate()}
-              />
-              <T v="fine">{tr.table.leaveNote}</T>
-            </View>
-          ) : null
-        }
-      />
-      <ConfirmSheet
-        visible={sheet === 'leave'}
-        onClose={() => setSheet(null)}
-        title={tr.table.leaveTitle}
-        body={tr.table.leaveBody}
-        confirm={tr.table.leave}
-        icon="logout"
-        testID="table-leave-confirm"
-        pending={leave.isPending}
-        error={leave.error}
-        onConfirm={() => leave.mutate()}
-      />
       {sheet === 'lobby' ? (
         <OpenLobbySheet
           onClose={() => setSheet(null)}
@@ -690,64 +712,49 @@ function TableScreenBody() {
 const BAR_TOP = 16;
 const SOLO_GAP = 6;
 
-// "Masayı bitir" and "Masadan ayrıl" (v46 data-csheet): what it does, the button and "Vazgeç".
-function ConfirmSheet({
-  visible,
-  onClose,
-  title,
-  body,
-  confirm,
-  icon,
-  testID,
-  pending,
+// The owner's other way out in "Masayı bitir"'s dialog (it lies over the screen, so this button
+// holds its own wait and error): the table goes on for the others. `busy` is shared with the
+// dialog's own action so neither runs while the other is on its way.
+function OwnerLeave({
+  leave,
   busy,
-  error,
-  onConfirm,
-  extra,
+  holder,
 }: {
-  visible: boolean;
-  onClose: () => void;
-  title: string;
-  body: string;
-  confirm: string;
-  icon: CapIconName;
-  testID: string;
-  pending: boolean;
-  // The other action of the sheet (`extra`) is on its way: this one waits (audit VEN-9).
-  busy?: boolean;
-  error: unknown;
-  onConfirm: () => void;
-  extra?: ReactNode;
+  leave: () => Promise<unknown>;
+  busy: { on: () => boolean; set: (v: boolean) => void };
+  holder: DialogErrorHolder;
 }) {
-  // While either action is on its way the sheet stays, and neither can be pressed again.
-  const locked = pending || !!busy;
-  const close = () => {
-    if (!locked) onClose();
+  const [pending, setPending] = useState(false);
+  const press = async () => {
+    if (busy.on()) return;
+    busy.set(true);
+    setPending(true);
+    holder.set(null);
+    try {
+      await leave();
+      closeAll();
+    } catch (e) {
+      holder.set(e);
+    } finally {
+      busy.set(false);
+      setPending(false);
+    }
   };
   return (
-    // skall tuvali (MasaBitir): the title, the note, then the red soft action, the other choice and
-    // "Vazgeç", all large.
-    <Sheet visible={visible} onClose={close} title={title}>
-      <T v="fine">{body}</T>
-      {error ? (
-        <T v="fine" color={KIT.danger}>
-          {errorMessage(error)}
-        </T>
-      ) : null}
+    <View className="gap-2.5">
       <Btn
         block
-        variant="danger"
-        icon={icon}
-        testID={testID}
-        label={confirm}
+        variant="glassy"
+        icon="logout"
+        testID="table-owner-leave"
+        label={tr.table.leave}
         loading={pending}
-        disabled={!!busy}
-        onPress={onConfirm}
+        onPress={() => void press()}
       />
-      {extra}
-      <Btn block variant="glassy" label={tr.common.cancel} disabled={locked} onPress={close} />
-      <View style={{ height: SPACING[1] }} />
-    </Sheet>
+      <T v="fine" center>
+        {tr.table.leaveNote}
+      </T>
+    </View>
   );
 }
 
