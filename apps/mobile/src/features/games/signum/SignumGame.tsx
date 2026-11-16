@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
+import { confirmGameExit } from '@/features/games/gameExit';
 import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
 import {
@@ -144,7 +145,6 @@ function SignumScreens({
   const owner = room.owner_session_id === me;
   const faces: Faces = { me, people: new Map(people.map((p) => [p.sessionId, p])), profiles };
   const mode = signumMode(room);
-  const [exit, setExit] = useState(false);
   const queryClient = useQueryClient();
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
@@ -153,14 +153,12 @@ function SignumScreens({
   const endGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.endGame(room.id),
-    onSuccess: () => setExit(false),
     onSettled: reread,
   });
   const leaveGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leaveGame(room.id),
     onSuccess: () => {
-      setExit(false);
       onHide();
     },
     onSettled: reread,
@@ -203,7 +201,13 @@ function SignumScreens({
     : playing
       ? { title: tr.kinshi.leaveTitle, body: tr.kinshi.leaveBody, confirm: tr.signum.exit }
       : { title: tr.kinshi.watchTitle, body: tr.kinshi.watchBody, confirm: tr.signum.backToTable };
-  const pending = endGame.isPending || leaveGame.isPending;
+  const exitGame = () =>
+    confirmGameExit({
+      copy: sheet,
+      danger: owner || playing,
+      testID: 'signum-exit-confirm',
+      run: () => (owner ? endGame.mutateAsync() : playing ? leaveGame.mutateAsync() : onHide()),
+    });
   return (
     <View style={{ flex: 1 }}>
       <Play
@@ -211,40 +215,9 @@ function SignumScreens({
         state={state}
         faces={faces}
         owner={owner}
-        onExit={() => setExit(true)}
+        onExit={exitGame}
         onChat={chat}
       />
-      <Sheet
-        visible={exit}
-        onClose={() => (pending ? undefined : setExit(false))}
-        title={sheet.title}
-      >
-        <T v="fine">{sheet.body}</T>
-        {(endGame.error ?? leaveGame.error) ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(endGame.error ?? leaveGame.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          variant={owner || playing ? 'danger' : 'primary'}
-          icon="logout"
-          testID="signum-exit-confirm"
-          label={sheet.confirm}
-          loading={pending}
-          onPress={() =>
-            owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setExit(false), onHide())
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.cancel}
-          disabled={pending}
-          onPress={() => setExit(false)}
-        />
-        <View style={{ height: SPACING[1] }} />
-      </Sheet>
     </View>
   );
 }

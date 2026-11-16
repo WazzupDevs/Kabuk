@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, T, useKit } from '@/aura/kit';
 import { Reveal } from '@/aura/Reveal';
-import { Sheet } from '@/components/Sheet';
+import { confirmGameExit } from '@/features/games/gameExit';
 import { StageFit } from '@/features/games/GameStage';
 import { useSecondsLeft } from '@/features/games/useSecondsLeft';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
@@ -39,7 +39,6 @@ import {
   SUMMARY_BUDDIES,
 } from '@/theme/kinshi';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
@@ -157,7 +156,6 @@ function KinshiScreens({
     [me, people, profiles],
   );
   const mode = kinshiMode(room);
-  const [exit, setExit] = useState(false);
   const queryClient = useQueryClient();
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
@@ -166,14 +164,12 @@ function KinshiScreens({
   const endGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.endGame(room.id),
-    onSuccess: () => setExit(false),
     onSettled: reread,
   });
   const leaveGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leaveGame(room.id),
     onSuccess: () => {
-      setExit(false);
       onHide();
     },
     onSettled: reread,
@@ -220,7 +216,13 @@ function KinshiScreens({
           body: tr.kinshi.watchBody,
           confirm: tr.kinshi.backToTable,
         };
-  const pending = endGame.isPending || leaveGame.isPending;
+  const exitGame = () =>
+    confirmGameExit({
+      copy: sheet,
+      danger: owner || playing,
+      testID: 'kinshi-exit-confirm',
+      run: () => (owner ? endGame.mutateAsync() : playing ? leaveGame.mutateAsync() : onHide()),
+    });
   return (
     <View style={{ flex: 1 }}>
       <Play
@@ -228,40 +230,9 @@ function KinshiScreens({
         state={state}
         faces={faces}
         owner={owner}
-        onExit={() => setExit(true)}
+        onExit={exitGame}
         onChat={chat}
       />
-      <Sheet
-        visible={exit}
-        onClose={() => (pending ? undefined : setExit(false))}
-        title={sheet.title}
-      >
-        <T v="fine">{sheet.body}</T>
-        {(endGame.error ?? leaveGame.error) ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(endGame.error ?? leaveGame.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          variant={owner || playing ? 'danger' : 'primary'}
-          icon="logout"
-          testID="kinshi-exit-confirm"
-          label={sheet.confirm}
-          loading={pending}
-          onPress={() =>
-            owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setExit(false), onHide())
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.cancel}
-          disabled={pending}
-          onPress={() => setExit(false)}
-        />
-        <View style={{ height: SPACING[1] }} />
-      </Sheet>
     </View>
   );
 }

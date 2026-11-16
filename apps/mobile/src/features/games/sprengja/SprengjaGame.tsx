@@ -20,7 +20,7 @@ import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
-import { Sheet } from '@/components/Sheet';
+import { confirmGameExit } from '@/features/games/gameExit';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -33,7 +33,6 @@ import { gradientStyle } from '@/theme/gradient';
 import { RISO as R } from '@/theme/riso';
 import { SPRENGJA as S, SPRENGJA_TYPE as ST, sprengjaRing } from '@/theme/sprengja';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import { ChatRound, Deck, Face, type Faces, GameTopBar, nameOf } from '../riso/RisoParts';
@@ -145,7 +144,7 @@ function SprengjaScreens({
     profiles,
   };
   const mode = sprengjaMode(room);
-  const [sheet, setSheet] = useState<'exit' | 'rules' | null>(null);
+  const [sheet, setSheet] = useState<'rules' | null>(null);
   const queryClient = useQueryClient();
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
@@ -154,14 +153,12 @@ function SprengjaScreens({
   const endGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.endGame(room.id),
-    onSuccess: () => setSheet(null),
     onSettled: reread,
   });
   const leaveGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leaveGame(room.id),
     onSuccess: () => {
-      setSheet(null);
       onHide();
     },
     onSettled: reread,
@@ -213,7 +210,13 @@ function SprengjaScreens({
           body: tr.sprengja.watchBody,
           confirm: tr.sprengja.backToTable,
         };
-  const pending = endGame.isPending || leaveGame.isPending;
+  const exitGame = () =>
+    confirmGameExit({
+      copy: exit,
+      danger: owner || playing,
+      testID: 'sprengja-exit-confirm',
+      run: () => (owner ? endGame.mutateAsync() : playing ? leaveGame.mutateAsync() : onHide()),
+    });
   return (
     <View style={{ flex: 1 }}>
       <Play
@@ -222,42 +225,11 @@ function SprengjaScreens({
         faces={faces}
         owner={owner}
         loading={people.length === 0}
-        onExit={() => setSheet('exit')}
+        onExit={exitGame}
         onChat={chat}
         onRules={() => setSheet('rules')}
       />
       {rules}
-      <Sheet
-        visible={sheet === 'exit'}
-        onClose={() => (pending ? undefined : setSheet(null))}
-        title={exit.title}
-      >
-        <T v="fine">{exit.body}</T>
-        {(endGame.error ?? leaveGame.error) ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(endGame.error ?? leaveGame.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          variant={owner || playing ? 'danger' : 'primary'}
-          icon="logout"
-          testID="sprengja-exit-confirm"
-          label={exit.confirm}
-          loading={pending}
-          onPress={() =>
-            owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setSheet(null), onHide())
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.cancel}
-          disabled={pending}
-          onPress={() => setSheet(null)}
-        />
-        <View style={{ height: SPACING[1] }} />
-      </Sheet>
     </View>
   );
 }

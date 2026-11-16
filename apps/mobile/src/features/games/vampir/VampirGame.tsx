@@ -8,19 +8,16 @@ import {
   wonGame,
 } from '@shared/vampir.ts';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { View } from 'react-native';
 
-import { Btn, T } from '@/aura/kit';
 import { Button } from '@/components/Button';
-import { Sheet } from '@/components/Sheet';
+import { confirmGameExit } from '@/features/games/gameExit';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi, vampirApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { KIT } from '@/theme/auraKit';
-import { SPACING } from '@/theme/tokens';
 import { TABLE, TABLE_INK as INK, TABLE_SHADOW } from '@/theme/vampirTable';
 
 import {
@@ -84,7 +81,6 @@ export function VampirGame({
     [me, people, profiles],
   );
   const mode = vampirMode(room);
-  const [exit, setExit] = useState(false);
   const queryClient = useQueryClient();
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
@@ -93,14 +89,12 @@ export function VampirGame({
   const endGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.endGame(room.id),
-    onSuccess: () => setExit(false),
     onSettled: reread,
   });
   const leaveGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leaveGame(room.id),
     onSuccess: () => {
-      setExit(false);
       onHide();
     },
     onSettled: reread,
@@ -135,47 +129,16 @@ export function VampirGame({
     : playing
       ? { title: tr.vampir.leaveTitle, body: tr.vampir.leaveBody, confirm: tr.vampir.leaveConfirm }
       : { title: tr.vampir.watchTitle, body: tr.vampir.watchBody, confirm: tr.vampir.watchConfirm };
-  const pending = endGame.isPending || leaveGame.isPending;
+  const exitGame = () =>
+    confirmGameExit({
+      copy: sheet,
+      danger: owner || playing,
+      testID: 'vampir-exit-confirm',
+      run: () => (owner ? endGame.mutateAsync() : playing ? leaveGame.mutateAsync() : onHide()),
+    });
   return (
     <View style={{ flex: 1 }}>
-      <VampirPlay
-        roomId={room.id}
-        state={state}
-        faces={faces}
-        owner={owner}
-        onExit={() => setExit(true)}
-      />
-      <Sheet
-        visible={exit}
-        onClose={() => (pending ? undefined : setExit(false))}
-        title={sheet.title}
-      >
-        <T v="fine">{sheet.body}</T>
-        {(endGame.error ?? leaveGame.error) ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(endGame.error ?? leaveGame.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          variant={owner || playing ? 'danger' : 'primary'}
-          icon="logout"
-          testID="vampir-exit-confirm"
-          label={sheet.confirm}
-          loading={pending}
-          onPress={() =>
-            owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setExit(false), onHide())
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.cancel}
-          disabled={pending}
-          onPress={() => setExit(false)}
-        />
-        <View style={{ height: SPACING[1] }} />
-      </Sheet>
+      <VampirPlay roomId={room.id} state={state} faces={faces} owner={owner} onExit={exitGame} />
     </View>
   );
 }
