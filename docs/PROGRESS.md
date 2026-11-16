@@ -1,6 +1,12 @@
 # İlerleme
 
-## Devir notu (16 Kasım 2026, gece): 4.13 yarım, Süsle'de boş kapsül
+## Devir notu (17 Kasım 2026, gece): 4.13 C ve D ölçüldü
+
+- #661 sonrası bütün kapsül Skia (panelden açık) Süsle'de çiziyor, hata 0. Zar %1,36 geç kare, en uzun 53 ms (4.12: %8,99, 300 ms); parça değişimi %1,99, 65 ms; GL mtrack turlarda 200–203, çıkışta 75 MB (`docs/perf/akicilik-denetimi.md` → 4.13 C).
+- Varsayılanı açmaya engel bulgu ölçülen alanlarda yok; açık: Önceden doku A/B ve görsel doğruluk (hareket yüzünden piksel karşılaştırması ayrılamadı). Karar proje sahibinin.
+- Profil'in ilk açılışı (4.13 D): kapak ya da bilet kapalıyken kayıt 123–131 ms, tabanla aynı; uzun kare ikisinden değil. P3 bu kareyi tek başına düşürmez.
+
+## Devir notu (16 Kasım 2026, gece): 4.13 yarım, Süsle'de boş kapsül (C ve D ile kapandı)
 
 - `preview` `01a1e59b…` (#644, #645, #651): bütün kapsül Skia açıkken (herkes için varsayılan) Süsle'nin büyük kapsülü boş çiziliyor; günlükte `SkiaTextureView` 3 x 3 yüzey. "Önceden doku" açık da kapalı da aynı; bütün Skia kapalıyken çiziliyor (`docs/perf/akicilik-denetimi.md` → 4.13 A).
 - 4.13'te yalnız Profil ölçüldü: ilk açılış %14,65 geç kare, en uzun 133 ms; Skia yok, kayıt 50–57 ms ve animasyon 38–67 ms. Kapak ya da bilet ayrımı için panelde anahtar yok.
