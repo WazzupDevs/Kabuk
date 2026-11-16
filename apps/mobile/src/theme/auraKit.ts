@@ -1072,6 +1072,8 @@ export const KIT = {
       dialogDanger: '#FBE1DB',
       onDialogDanger: '#A8301A',
       dialogDisc: 'rgba(214, 64, 40, 0.10)',
+      // The icon on a danger dialog's disc.
+      dialogIcon: '#C8381F',
       // The dialog's and the sheet's scrim, flat; the long-press menu's over its still copy.
       scrim: 'rgba(3, 27, 11, 0.42)',
       holdScrim: 'rgba(3, 27, 11, 0.30)',
@@ -1099,6 +1101,7 @@ export const KIT = {
       dialogDanger: 'rgba(255, 151, 126, 0.12)',
       onDialogDanger: '#FF977E',
       dialogDisc: 'rgba(255, 151, 126, 0.12)',
+      dialogIcon: '#FF977E',
       scrim: 'rgba(0, 0, 0, 0.70)',
       holdScrim: 'rgba(0, 0, 0, 0.62)',
       menu: '#151A18',
@@ -1117,14 +1120,17 @@ export const KIT = {
       toastShadow: '0px 12px 30px rgba(3, 27, 11, 0.30)',
     },
     size: {
-      // The dialog 28 in from the sides, 28 round, 24 / 20 / 20 inside; its icon's disc 56; its
-      // words 6 under the title and 20 over the buttons; the second button 8 under the first.
+      // The dialog 28 in from the sides, 28 round, 24 / 20 / 20 inside; its icon's disc 56 (the
+      // icon 28), the title 14 under it; its words 6 under the title and 20 over the buttons (and
+      // over what the caller puts between); the second button 8 under the first.
       dialogInset: 28,
       dialogRadius: 28,
       dialogPadTop: 24,
       dialogPadX: 20,
       dialogPadBottom: 20,
       dialogDisc: 56,
+      dialogDiscIcon: 28,
+      dialogTitleGap: 14,
       dialogTextTop: 6,
       dialogTextBottom: 20,
       dialogButtonGap: 8,
