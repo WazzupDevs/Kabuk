@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { menuOpenAt, menuPlace } from '../motion/menuPlace';
 import { sheetOpenAt } from '../motion/sheetOpen';
 import { MOTION } from './aura';
+import { KIT } from './auraKit';
 
 const mobile = join(import.meta.dirname, '..', '..');
 const code = (file: string) => readFileSync(join(mobile, file), 'utf8');
@@ -136,11 +137,12 @@ describe('the centred confirmation (Hareket tablosu A2, Ortak kurallar C1, C2)',
   });
 
   it('a flat scrim, no blur; 28 in and 28 round', () => {
-    const look = code('src/theme/overlay.ts');
-    expect(look).toMatch(/scrim: 'rgba\(3, 27, 11, 0\.42\)'/);
-    expect(look).toMatch(/scrim: 'rgba\(0, 0, 0, 0\.70\)'/);
+    expect(KIT.layer.light.scrim).toBe('rgba(3, 27, 11, 0.42)');
+    expect(KIT.layer.dark.scrim).toBe('rgba(0, 0, 0, 0.70)');
     expect(dialog).not.toMatch(/Blur|SheetScrim/);
-    expect(look).toMatch(/inset: 28,\n {2}radius: 28,/);
+    expect(KIT.layer.size).toMatchObject({ dialogInset: 28, dialogRadius: 28 });
+    expect(dialog).toMatch(/KIT\.layer\[scheme\]/);
+    expect(dialog).not.toMatch(/theme\/overlay/);
   });
 
   it('the action waits and nothing closes it meanwhile; cancel keeps the ConfirmSheet testID', () => {

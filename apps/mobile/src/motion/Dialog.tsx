@@ -15,10 +15,12 @@ import { tr } from '@/i18n/tr';
 import type { ConfirmOptions } from '@/lib/overlayStore';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { type Bezier, MOTION } from '@/theme/aura';
-import { DIALOG } from '@/theme/overlay';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const curve = (b: Bezier) => Easing.bezier(b[0], b[1], b[2], b[3]);
+const L = KIT.layer.size;
+
 const ARRIVE = curve(MOTION.curves.arrive);
 const LEAVE = curve(MOTION.curves.leave);
 
@@ -43,7 +45,7 @@ type Props = {
 export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidden }: Props) {
   const { scheme, colors } = useTheme();
   const { c: kit } = useKit();
-  const look = DIALOG[scheme];
+  const look = KIT.layer[scheme];
   const insets = useSafeAreaInsets();
   const reduce = useReduceMotion();
   const d = MOTION.dissolve;
@@ -95,9 +97,9 @@ export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidde
       style={[
         styles.root,
         {
-          paddingTop: insets.top + DIALOG.inset,
-          paddingBottom: insets.bottom + DIALOG.inset,
-          paddingHorizontal: DIALOG.inset,
+          paddingTop: insets.top + L.dialogInset,
+          paddingBottom: insets.bottom + L.dialogInset,
+          paddingHorizontal: L.dialogInset,
         },
       ]}
     >
@@ -117,9 +119,9 @@ export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidde
         style={[
           styles.card,
           {
-            backgroundColor: look.surface,
-            borderRadius: DIALOG.radius,
-            boxShadow: look.shadow,
+            backgroundColor: look.dialog,
+            borderRadius: L.dialogRadius,
+            boxShadow: look.dialogShadow,
           },
           cardStyle,
         ]}
@@ -130,9 +132,9 @@ export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidde
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: DIALOG.padTop,
-            paddingHorizontal: DIALOG.padX,
-            paddingBottom: DIALOG.padBottom,
+            paddingTop: L.dialogPadTop,
+            paddingHorizontal: L.dialogPadX,
+            paddingBottom: L.dialogPadBottom,
             alignItems: 'center',
           }}
         >
@@ -140,31 +142,37 @@ export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidde
             <View
               style={[
                 styles.disc,
-                { backgroundColor: danger ? look.dangerDisc : colors.surface2 },
-                { marginBottom: DIALOG.titleGap },
+                { backgroundColor: danger ? look.dialogDisc : colors.surface2 },
+                { marginBottom: L.dialogTitleGap },
               ]}
             >
               <CapIcon
                 name={options.icon}
-                size={DIALOG.discIcon}
-                color={danger ? look.dangerIcon : colors.accent}
+                size={L.dialogDiscIcon}
+                color={danger ? look.dialogIcon : colors.accent}
                 soft={1}
               />
             </View>
           ) : null}
-          <T v="title" center color={kit.ink} style={DIALOG.title} accessibilityRole="header">
+          <T
+            v="title"
+            center
+            color={kit.ink}
+            style={KIT_TYPE.pageBarTitle}
+            accessibilityRole="header"
+          >
             {title}
           </T>
-          <T v="body" center style={[DIALOG.note, { marginTop: DIALOG.noteGap }]}>
+          <T v="body" center style={[KIT_TYPE.dialogText, { marginTop: L.dialogTextTop }]}>
             {options.note}
           </T>
           {options.children ? (
-            <View style={{ alignSelf: 'stretch', marginTop: DIALOG.actionsGap }}>
+            <View style={{ alignSelf: 'stretch', marginTop: L.dialogTextBottom }}>
               {options.children}
             </View>
           ) : null}
           <View
-            style={{ alignSelf: 'stretch', marginTop: DIALOG.actionsGap, gap: DIALOG.buttonGap }}
+            style={{ alignSelf: 'stretch', marginTop: L.dialogTextBottom, gap: L.dialogButtonGap }}
           >
             <Btn
               block
@@ -193,9 +201,9 @@ const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: 'center' },
   card: { maxHeight: '100%' },
   disc: {
-    width: DIALOG.disc,
-    height: DIALOG.disc,
-    borderRadius: DIALOG.disc / 2,
+    width: L.dialogDisc,
+    height: L.dialogDisc,
+    borderRadius: L.dialogDisc / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },

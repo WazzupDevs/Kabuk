@@ -1,23 +1,22 @@
 import { LEGAL_ENTITY } from '@shared/legalEntity.ts';
 import { useMutation } from '@tanstack/react-query';
 import Constants from 'expo-constants';
-import { useState } from 'react';
 import { Linking, View } from 'react-native';
 
-import { Btn, Glass, RowList, T, useKit } from '@/aura/kit';
+import { Glass, RowList, T, useKit } from '@/aura/kit';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
-import { Sheet } from '@/components/Sheet';
 import { Wordmark } from '@/components/Wordmark';
 import { useProfile } from '@/features/account/useProfile';
 import { useSessionStore } from '@/features/auth/session';
 import { SettingsRow } from '@/features/settings/SettingsRow';
-import { SignOutSheet } from '@/features/settings/SignOutSheet';
+import { useSignOutConfirm } from '@/features/settings/signOutConfirm';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm } from '@/lib/overlayStore';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { KIT } from '@/theme/auraKit';
@@ -42,8 +41,7 @@ export default function AccountScreen() {
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
   const birthDate = view.data?.birthDate ?? null;
-  const [deleting, setDeleting] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
+  const signOut = useSignOutConfirm();
   const remove = useMutation({
     meta: FEEL_ERROR,
     mutationFn: async () => {
@@ -53,6 +51,22 @@ export default function AccountScreen() {
       queryClient.clear();
     },
   });
+  // Hesabımı sil asks first in the centred confirmation (yeni arayüz tuvali, Ortak kurallar C1):
+  // what goes, when the backups follow, the red action. A failed try closes it and the error is said
+  // under the rows, not behind the scrim.
+  const askDelete = () => {
+    remove.reset();
+    confirm({
+      title: tr.settings.deleteConfirmTitle,
+      note: `${tr.settings.deleteBody} ${tr.settings.deleteBackups}`,
+      tone: 'danger',
+      confirmLabel: tr.settings.deleteAccount,
+      confirmIcon: 'trash',
+      cancelLabel: tr.common.cancel,
+      testID: 'account-delete-confirm',
+      onConfirm: () => remove.mutateAsync().then(noop, noop),
+    });
+  };
   return (
     <Screen top={<PageTop title={tr.settings.accountTitle} />}>
       <View style={{ gap: KIT.size.rowGap }}>
@@ -86,16 +100,26 @@ export default function AccountScreen() {
             icon="logout"
             testID="account-sign-out"
             label={tr.settings.signOut}
-            onPress={() => setSigningOut(true)}
+            onPress={signOut.ask}
           />
           <SettingsRow
             negative
             icon="trash"
             testID="account-delete"
             label={tr.settings.deleteAccount}
-            onPress={() => setDeleting(true)}
+            onPress={askDelete}
           />
         </RowList>
+        {signOut.error ? (
+          <T v="fine" color={c.warn}>
+            {signOut.error}
+          </T>
+        ) : null}
+        {remove.isError ? (
+          <T v="fine" color={c.warn}>
+            {errorMessage(remove.error)}
+          </T>
+        ) : null}
         <View style={{ alignItems: 'center', gap: SPACING[2], marginTop: SPACING[6] }}>
           <Wordmark height={SPACING[5]} />
           <T v="fine" center>
@@ -106,41 +130,8 @@ export default function AccountScreen() {
           </T>
         </View>
       </View>
-      <SignOutSheet visible={signingOut} onClose={() => setSigningOut(false)} />
-      <Sheet
-        visible={deleting}
-        onClose={() => setDeleting(false)}
-        title={tr.settings.deleteConfirmTitle}
-        footer={
-          <View style={{ gap: SPACING[2.5] }}>
-            <Btn
-              block
-              tall
-              variant="danger"
-              icon="trash"
-              testID="account-delete-confirm"
-              label={tr.settings.deleteAccount}
-              loading={remove.isPending}
-              onPress={() => remove.mutate()}
-            />
-            <Btn
-              block
-              tall
-              variant="glassy"
-              label={tr.common.cancel}
-              onPress={() => setDeleting(false)}
-            />
-          </View>
-        }
-      >
-        <T v="fine">{tr.settings.deleteBody}</T>
-        <T v="fine">{tr.settings.deleteBackups}</T>
-        {remove.isError ? (
-          <T v="fine" color={c.warn}>
-            {errorMessage(remove.error)}
-          </T>
-        ) : null}
-      </Sheet>
     </Screen>
   );
 }
+
+function noop(): void {}

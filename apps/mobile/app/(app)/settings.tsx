@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { Platform, View } from 'react-native';
 
 import { Seg, useKit } from '@/aura/kit';
@@ -18,7 +17,7 @@ import {
   SettingsPageRow,
   segBoard,
 } from '@/features/settings/SettingsParts';
-import { SignOutSheet } from '@/features/settings/SignOutSheet';
+import { useSignOutConfirm } from '@/features/settings/signOutConfirm';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -37,7 +36,7 @@ type Participation = 'profile' | 'anonymous';
 // a full page pushed from Profil, sliding in from the right as every page (the owner's call, 16
 // Kasım), its back button and title still on the bar over the content. The pages first
 // (Bildirimler, Gizlilik, Hesap: pushed on the same stack), then "Oyunlara katılım" (the identity
-// each check-in starts with, §4.D) and its note, Görünüm, "Çıkış yap" in red (its confirm sheet),
+// each check-in starts with, §4.D) and its note, Görünüm, "Çıkış yap" in red (its confirmation),
 // and in a test build only the test rows at the foot.
 export default function SettingsScreen() {
   const P = SETTINGS.page;
@@ -77,7 +76,7 @@ function Body() {
     onMutate: (next) => patchProfile(queryClient, { default_participation: next }),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
-  const [signingOut, setSigningOut] = useState(false);
+  const signOut = useSignOutConfirm();
   const open = (path: Parameters<typeof router.push>[0]) => router.push(path);
   const now = identity
     ? identity === 'profiled'
@@ -145,12 +144,16 @@ function Body() {
           testID="settings-sign-out"
           icon="logout"
           label={tr.settings.signOut}
-          onPress={() => setSigningOut(true)}
+          onPress={signOut.ask}
           danger
         />
+        {signOut.error ? (
+          <View style={NOTES}>
+            <Note color={c.warn}>{signOut.error}</Note>
+          </View>
+        ) : null}
       </View>
       {designPickerEnabled ? <TestRows /> : null}
-      <SignOutSheet visible={signingOut} onClose={() => setSigningOut(false)} />
     </View>
   );
 }
