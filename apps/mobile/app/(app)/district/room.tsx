@@ -49,7 +49,7 @@ import { OlderFoot } from '@/features/chat/OlderFoot';
 import { useOlderPages } from '@/features/chat/useOlderPages';
 import { asksToContinue } from '@/features/district/continueNotice';
 import { BenchScene, Foot, TimeChip, WarnRow } from '@/features/district/parts';
-import { DISTRICT_MUTES_KEY, EndSheet, OptionsSheet } from '@/features/district/RoomSheets';
+import { DISTRICT_MUTES_KEY, OptionsSheet, useEndSession } from '@/features/district/RoomSheets';
 import {
   districtKeys,
   putDistrictState,
@@ -64,6 +64,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, districtApi, districtChatApi, friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm } from '@/lib/overlayStore';
 import { requestKey } from '@/lib/requestKey';
 import { useFlash } from '@/lib/useFlash';
 import { useNow } from '@/lib/useNow';
@@ -102,9 +103,8 @@ function DistrictRoomBody() {
   const reactions = useDistrictChatReactions(roomId);
   const [person, setPerson] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
-  const [asking, setAsking] = useState<VenueChatMessage | null>(null);
   const [options, setOptions] = useState(false);
-  const [closing, setClosing] = useState(false);
+  const endSession = useEndSession();
   const older = useOlderPages({
     key: roomId ?? '',
     newest: page.data?.messages,
@@ -233,10 +233,24 @@ function DistrictRoomBody() {
     meta: FEEL_ERROR,
     mutationFn: (id: string) => friendsApi.requestFromDistrictChat(id),
     onSuccess: () => {
-      setAsking(null);
       flash(tr.venueChat.requestSent);
     },
+    onError: (err) => flash(errorMessage(err)),
   });
+  // A thrown error leaves the dialog open; the toast carries the message.
+  const ask = (m: VenueChatMessage) =>
+    confirm({
+      title: tr.venueChat.requestConfirmTitle,
+      note: tr.venueChat.requestConfirmBody,
+      icon: 'invite',
+      tone: 'plain',
+      confirmLabel: tr.venueChat.requestConfirm,
+      cancelLabel: tr.common.cancel,
+      testID: 'district-chat-request-confirm',
+      onConfirm: async () => {
+        await request.mutateAsync(m.id);
+      },
+    });
   const setIdentity = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (mode: VenueChatMode) => districtApi.setIdentity(mode === 'anonymous'),
@@ -415,7 +429,7 @@ function DistrictRoomBody() {
                               label: tr.district.room.friendRequest,
                               icon: 'invite' as const,
                               testID: 'district-chat-request',
-                              onPress: () => setAsking(m),
+                              onPress: () => ask(m),
                             },
                           ]
                         : []),
@@ -558,10 +572,9 @@ function DistrictRoomBody() {
         onChanged={refresh}
         onEnd={() => {
           setOptions(false);
-          setClosing(true);
+          endSession();
         }}
       />
-      <EndSheet visible={closing} onClose={() => setClosing(false)} />
       <Sheet visible={person !== null} onClose={() => setPerson(null)}>
         {person ? (
           <>
@@ -608,24 +621,6 @@ function DistrictRoomBody() {
             <Btn block variant="glassy" label={tr.common.close} onPress={() => setPerson(null)} />
           </>
         ) : null}
-      </Sheet>
-      <Sheet
-        visible={asking !== null}
-        onClose={() => setAsking(null)}
-        title={tr.venueChat.requestConfirmTitle}
-      >
-        <T ink>{tr.venueChat.requestConfirmBody}</T>
-        {request.isError ? <Banner tone="danger" body={errorMessage(request.error)} /> : null}
-        <View className="gap-2.5">
-          <Btn
-            block
-            testID="district-chat-request-confirm"
-            label={tr.venueChat.requestConfirm}
-            onPress={() => asking && !request.isPending && request.mutate(asking.id)}
-            loading={request.isPending}
-          />
-          <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setAsking(null)} />
-        </View>
       </Sheet>
       <ReportModal
         reasons={REPORT_REASONS}

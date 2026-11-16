@@ -20,6 +20,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { districtChatApi, friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm } from '@/lib/overlayStore';
 import { KIT } from '@/theme/auraKit';
 
 // The sender of a profiled district chat message, opened through the message (docs/SPEC_V4.md
@@ -31,7 +32,6 @@ export default function DistrictChatProfileScreen() {
   const friends = useFriends();
   const friendId = view.data?.friendPublicId;
   const friend = friendId ? friends.data?.find((f) => f.publicId === friendId) : undefined;
-  const [confirming, setConfirming] = useState(false);
   const [menu, setMenu] = useState(false);
   const [sent, setSent] = useState(false);
   const [reporting, setReporting] = useState(false);
@@ -40,10 +40,23 @@ export default function DistrictChatProfileScreen() {
     meta: FEEL_ERROR,
     mutationFn: () => friendsApi.requestFromDistrictChat(messageId),
     onSuccess: () => {
-      setConfirming(false);
       setSent(true);
     },
   });
+  // A thrown error leaves the dialog open; the Banner under the button keeps the message.
+  const ask = () =>
+    confirm({
+      title: tr.venueChat.requestConfirmTitle,
+      note: tr.venueChat.requestConfirmBody,
+      icon: 'invite',
+      tone: 'plain',
+      confirmLabel: tr.venueChat.requestConfirm,
+      cancelLabel: tr.common.cancel,
+      testID: 'district-chat-request-confirm',
+      onConfirm: async () => {
+        await request.mutateAsync();
+      },
+    });
   const report = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason) => districtChatApi.report(messageId, reason),
@@ -79,14 +92,19 @@ export default function DistrictChatProfileScreen() {
                 {tr.venueChat.requestSent}
               </T>
             ) : (
-              <Btn
-                block
-                bar={KIT.size.btnRow}
-                testID="district-chat-profile-request"
-                icon="invite"
-                label={tr.venueChat.sendRequest}
-                onPress={() => setConfirming(true)}
-              />
+              <>
+                {request.isError ? (
+                  <Banner tone="danger" body={errorMessage(request.error)} />
+                ) : null}
+                <Btn
+                  block
+                  bar={KIT.size.btnRow}
+                  testID="district-chat-profile-request"
+                  icon="invite"
+                  label={tr.venueChat.sendRequest}
+                  onPress={ask}
+                />
+              </>
             )}
           </ProfileHead>
         </View>
@@ -108,28 +126,6 @@ export default function DistrictChatProfileScreen() {
           />
         </Menu>
         <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
-      </Sheet>
-      <Sheet
-        visible={confirming}
-        onClose={() => setConfirming(false)}
-        title={tr.venueChat.requestConfirmTitle}
-      >
-        <T ink>{tr.venueChat.requestConfirmBody}</T>
-        {request.isError ? <Banner tone="danger" body={errorMessage(request.error)} /> : null}
-        <View className="gap-2.5">
-          <Btn
-            block
-            label={tr.venueChat.requestConfirm}
-            onPress={() => request.mutate()}
-            loading={request.isPending}
-          />
-          <Btn
-            block
-            variant="glassy"
-            label={tr.common.cancel}
-            onPress={() => setConfirming(false)}
-          />
-        </View>
       </Sheet>
       <ReportModal
         reasons={REPORT_REASONS}
