@@ -75,6 +75,20 @@ export async function pruneDmCache(userId: string, keep: ReadonlySet<string>): P
   }
 }
 
+// "Sohbeti sil" (docs/SPEC_V4.md §4.X): what was hidden from the caller leaves the phone's copy
+// too; the conversation is read from the server again when it is opened.
+export async function dropDmCache(userId: string, threadId: string): Promise<void> {
+  const k = key(userId, threadId);
+  const pending = timers.get(k);
+  if (pending) clearTimeout(pending);
+  timers.delete(k);
+  try {
+    await AsyncStorage.removeItem(k);
+  } catch {
+    // Storage away: the inbox's prune takes it when the conversation is not listed.
+  }
+}
+
 export async function clearDmCache(): Promise<void> {
   timers.forEach(clearTimeout);
   timers.clear();

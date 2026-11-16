@@ -331,6 +331,32 @@ export const tr = {
     noRequestsHint: 'Biri seni arkadaş olarak eklemek isterse burada görürsün.',
     decline: (name: string) => `${name} isteğini reddet`,
     accept: (name: string) => `${name} isteğini kabul et`,
+    // DM yönetimi (docs/SPEC_V4.md §4.X; tuval MesajlarUzunBas, MesajlarUzunBasSabit, ArsivUzunBas,
+    // MesajlarSabitDolu, MesajlarSohbetSil): a conversation's menu, a long press on its row.
+    menu: (name: string) => `${name} sohbeti`,
+    pin: 'Sabitle',
+    unpin: 'Sabitlemeyi kaldır',
+    pinFull: (max: number) => `En fazla ${max} sohbet sabitlenir. Önce birini kaldır.`,
+    archive: 'Arşivle',
+    unarchive: 'Arşivden çıkar',
+    clear: 'Sohbeti sil',
+    clearTitle: 'Sohbet silinsin mi?',
+    clearNote: (name: string) =>
+      `${name} ile tüm mesajlar senin listenden silinir. Bu geri alınamaz.`,
+    // The pinned conversations' head (tuval Main; "· 5/5" when full, MesajlarSabitDolu).
+    pinned: 'Sabitlenenler',
+    pinnedFull: (n: number, max: number) => `Sabitlenenler · ${n}/${max}`,
+    pinnedRow: 'sabitlendi',
+    // Arşivlenenler (tuval Arsiv, ArsivBos, MesajlarArsivRozet): a new message keeps them there.
+    archived: 'Arşivlenenler',
+    archivedRow: (count: number, unread: number) =>
+      unread > 0
+        ? `Arşivlenenler, ${count} sohbet, ${unread} okunmamış mesaj`
+        : `Arşivlenenler, ${count} sohbet`,
+    archivedCount: (n: number) => `${n} sohbet`,
+    archivedHint: 'Bir sohbeti geri almak için üstüne uzun bas.',
+    archivedEmpty: 'Arşivde sohbet yok',
+    archivedEmptyHint: 'Bir sohbete uzun basıp Arşivle dediğinde burada durur.',
   },
   // Aktiviteler: the game hub (docs/SPEC_V3.md §18.3). Same games and rules as the room.
   // Aktiviteler (docs/SPEC_V4.md K-15; v44: .acts): today's events and Geçmiş. Each game's rules

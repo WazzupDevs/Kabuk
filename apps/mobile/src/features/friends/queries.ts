@@ -231,7 +231,7 @@ type DmPages = InfiniteData<DmPageRow[], string | null>;
 type Want = 'all' | ReadonlySet<number>;
 const NEWEST: Want = new Set([0]);
 
-async function readDmPage(threadId: string, before: string | null): Promise<DmPageRow[]> {
+export async function readDmPage(threadId: string, before: string | null): Promise<DmPageRow[]> {
   const { data, error } = await supabase.rpc('dm_messages_page', {
     target_thread_id: threadId,
     ...(before ? { before } : {}),
