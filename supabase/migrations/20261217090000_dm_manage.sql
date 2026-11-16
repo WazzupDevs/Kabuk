@@ -35,7 +35,9 @@ create table public.dm_thread_prefs (
   -- An archived conversation is never pinned (archiving takes the pin off).
   check (pinned_at is null or archived_at is null)
 );
-create index dm_thread_prefs_user_idx on public.dm_thread_prefs (user_id) where pinned_at is not null;
+-- Whole, not partial: it also covers the foreign key to auth.users (an account's deletion cascades here;
+-- supabase/tests/indexes.test.ts).
+create index dm_thread_prefs_user_idx on public.dm_thread_prefs (user_id);
 
 alter table public.dm_thread_prefs enable row level security;
 revoke all on table public.dm_thread_prefs from anon, authenticated;
