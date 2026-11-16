@@ -37,7 +37,12 @@ export function tileShown(made: string | null, last: string | null): string | nu
 // CapsuleStage.tsx): on the screen from the first change that fades, and kept there after (a
 // canvas mounted for each change made its surface each time: docs/decisions/skia-build-plani.md →
 // "Bütün kapsül Skia'da"); idle, hidden and drawing nothing, between two fades. Never on the screen
-// with reduce motion (no fade).
-export function fadeCanvas(mounted: boolean, fading: boolean): { mounted: boolean; idle: boolean } {
-  return { mounted: mounted || fading, idle: !fading };
+// with reduce motion (no fade). `keep` false (Çizim ölçümü's "Kalıcı tuval" off): on the screen
+// only while a look fades, as before.
+export function fadeCanvas(
+  mounted: boolean,
+  fading: boolean,
+  keep = true,
+): { mounted: boolean; idle: boolean } {
+  return { mounted: (keep && mounted) || fading, idle: !fading };
 }

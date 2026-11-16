@@ -35,7 +35,7 @@ import {
 } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
-import { useLabOff } from '@/lib/drawLab';
+import { useLabKeep, useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
 // The stage (v46 `.ced-fig` in `.ced-ring`): 60 × 57 units, the circle (48) 6 in from the left and 8
@@ -212,7 +212,7 @@ export function CapsuleStage({
   // changes (a view moved among its siblings is taken off the window, and its canvas's surface
   // with it).
   const [fadeOn, setFadeOn] = useState(false);
-  const fadeSlot = fadeCanvas(fadeOn, oldLook !== null);
+  const fadeSlot = fadeCanvas(fadeOn, oldLook !== null, useLabKeep());
   if (fadeSlot.mounted && !fadeOn) setFadeOn(true);
   // Reanimated, not Animated's native driver: on Android the SVG inside a view moved by the native
   // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle). At

@@ -153,7 +153,9 @@ export const capsulePrep = createPrepQueue({
   now: DRAW_LAB ? () => performance.now() : undefined,
   // A job that threw: counted (artStats → failed) and, in a preview build or development, warned
   // of with its kind only (a key holds the drawing's text).
-  onFail: DRAW_LAB ? (key) => console.warn(`capsulePrep: a job failed (${keyKind(key)})`) : undefined,
+  onFail: DRAW_LAB
+    ? (key) => console.warn(`capsulePrep: a job failed (${keyKind(key)})`)
+    : undefined,
 });
 
 // What a key is of (its first part: look, plan, tile, trim; a picture's ratio otherwise).
@@ -320,9 +322,15 @@ export function useArt(need: ArtNeed | null): CapsuleArt | undefined {
 }
 
 // The queue's counts and the cache's size, for the drawing lab (read nowhere else).
-export function artStats(): PrepStats & { bytes: number; entries: number; texture: TextureStats } {
+export function artStats(): PrepStats & {
+  pending: number;
+  bytes: number;
+  entries: number;
+  texture: TextureStats;
+} {
   return {
     ...capsulePrep.stats(),
+    pending: capsulePrep.pending,
     bytes: capsuleArt.bytes(),
     entries: capsuleArt.size,
     texture: capsuleTex.stats(),

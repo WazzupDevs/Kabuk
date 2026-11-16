@@ -48,6 +48,10 @@ describe('fadeCanvas', () => {
     // The next change fades on the same canvas.
     expect(fadeCanvas(at.mounted, true)).toEqual({ mounted: true, idle: false });
   });
+  it('is on the screen only while a look fades when it is not kept', () => {
+    expect(fadeCanvas(true, false, false)).toEqual({ mounted: false, idle: true });
+    expect(fadeCanvas(true, true, false)).toEqual({ mounted: true, idle: false });
+  });
 });
 
 describe('lookPasses', () => {

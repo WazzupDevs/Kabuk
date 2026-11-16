@@ -4,6 +4,7 @@ import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Btn, Chip, T, useKit } from '@/aura/kit';
+import { artStats } from '@/capsule/useArt';
 import { tr } from '@/i18n/tr';
 import {
   CHAT_PARTS,
@@ -14,13 +15,17 @@ import {
   SWITCH_PARTS,
   toggleLabPart,
   toggleLabHold,
+  toggleLabP2b,
   toggleLabSkia,
   toggleLabTexture,
   toggleLabWhole,
   useDrawLab,
+  useLabFew,
   useLabHold,
+  useLabKeep,
   useLabSkia,
   useLabTexture,
+  useLabTrim,
   useLabWhole,
 } from '@/lib/drawLab';
 import { type SwitchStats, switchStats } from '@/lib/frameStats';
@@ -40,6 +45,9 @@ export function DrawLabPanel() {
   const whole = capsuleWholeOn(Platform.OS, useLabWhole());
   const texture = textureAheadOn(Platform.OS, useLabTexture());
   const hold = useLabHold();
+  const trim = useLabTrim();
+  const few = useLabFew();
+  const keep = useLabKeep();
   const insets = useSafeAreaInsets();
   const { c } = useKit();
   if (!DRAW_LAB || !open) return null;
@@ -128,6 +136,23 @@ export function DrawLabPanel() {
               on={texture}
               onPress={() => toggleLabTexture(texture)}
             />
+            {/* The whole canvas's P2b ways, each on its own; kept as set, as above. */}
+            <Chip
+              label={tr.design.drawLab.trimSwitch}
+              on={trim}
+              onPress={() => toggleLabP2b('trim')}
+            />
+            <Chip
+              label={tr.design.drawLab.fewSwitch}
+              on={few}
+              onPress={() => toggleLabP2b('few')}
+            />
+            <Chip
+              label={tr.design.drawLab.keepSwitch}
+              on={keep}
+              onPress={() => toggleLabP2b('keep')}
+            />
+            <PrepMeter />
             {/* Off: the tiles as SVG again while the whole capsule stays Skia's. */}
             <Chip
               label={tr.design.drawLab.parts.karo}
@@ -137,6 +162,23 @@ export function DrawLabPanel() {
           </>
         )}
       </View>
+    </View>
+  );
+}
+
+// The capsule's preparation queue (capsule/useArt.ts → artStats): made, waiting, thrown. Read
+// once a second while the panel is open.
+function PrepMeter() {
+  const [stats, setStats] = useState(artStats);
+  useEffect(() => {
+    const timer = setInterval(() => setStats(artStats()), METER_MS);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <View style={{ width: '100%', alignItems: 'center' }}>
+      <T v="fine" ink>
+        {tr.design.drawLab.prepStats(stats.prepared, stats.pending, stats.failed)}
+      </T>
     </View>
   );
 }
