@@ -8,20 +8,23 @@ Değişmeyenler: veri, sunucu, mantık ve navigasyon yapısı; renk paleti, Plus
 
 ## 2. Bileşen kuralları
 
-### 2.1 Butonlar: hepsi cam (riso butonlardan kalktı)
+### 2.1 Butonlar
 
-8 Kasım riso buton kararı (`docs/decisions/riso-dugme.md`) geçersiz. Değişiklik ortak Btn bileşeninde (`src/aura/kit.tsx`) yapılır; ekranlara tek tek dokunulmaz. Riso, butonlardan kalkar ama çizimlerde ve kankilerde kalır.
+Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → `.btn`) 12 Kasım'ın cam butonlarının yerini alır. Değişiklik ortak Btn bileşeninde (`src/aura/kit.tsx`, değerler `src/theme/buttonGlass.ts`) yapılır; ekranlara tek tek dokunulmaz. `components/Button` Btn'in ince sarmalayıcısıdır; onu kullanan dosyalar `buttonGuard.allowed.ts`'te, liste yalnız küçülür.
 
-| Tür       | Kullanım                                                                                                    | Görünüm                                                                                                                                                                                                                                                             |
-| --------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| prominent | Ekran gövdesindeki ana eylem (Mesaj, Semte Git, Masa kur, Lobiye aç, Mekana dön, Ekle, Gönder)             | Yeşil cam: dikey geçiş #28AA64 ile #0E8745 arası, yüzde 92 opak. Üst kenarda 1 px beyaz parlama (yüzde 45), alt kenarda 1 px koyu çizgi (#00280F, yüzde 25), 1 px iç beyaz çerçeve (yüzde 18). Gölge 0 8 20, #0E8745 yüzde 30. Yazı beyaz, 800                       |
-| clear     | İkincil eylem (Davet et, Vazgeç, Paketlere bak) ve üst çubuktaki her şey                                   | Beyaz yüzde 62 dolgu, 1 px beyaz çerçeve (yüzde 90), üst kenarda 1 px parlama, gölge 0 8 22, #031B0B yüzde 10. Yazı #031B0B ya da #0B5A2D                                                                                                                           |
-| danger    | Geri alınamayan işlemin onayı (Engelle, Çıkış yap)                                                         | Kırmızı cam: #E24E3A ile #C8331F arası, gölge #C8331F yüzde 30                                                                                                                                                                                                      |
-| disabled  | Her tür                                                                                                     | Aynı buton, yüzde 45 opaklık, dokunuş kapalı                                                                                                                                                                                                                        |
+| Tür       | Kullanım                                                                     | Görünüm                                                                                                                                                                       |
+| --------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| prominent | Ekran gövdesindeki ana eylem (Mesaj, Semte Git, Masa kur, Lobiye aç, Kaydet) | Açıkta #031B0B dolgu, yazı beyaz, gölge 0 8 18 #031B0B yüzde 22, basılıyken #14301C. Koyuda yüzde 94 beyaz, yazı #0B0E0D, gölge yok, basılıyken #D6DED9                        |
+| clear     | İkincil eylem (Davet et, Paketlere bak) ve üst çubuktaki her şey             | Açıkta beyaz yüzde 74 dolgu, 1 px beyaz çerçeve, gölge 0 6 16 #044923 yüzde 10, yazı #031B0B. Koyuda #121614 yüzde 62, çerçeve beyaz yüzde 10                                  |
+| danger    | Geri alınamayan işlemin onayı (Engelle, Çıkış yap)                           | Yumuşak kırmızı: açıkta #FBE1DB, yazı #A8301A; koyuda #FF977E yüzde 12, yazı #FF977E. Gölge yok                                                                                |
+| ghost     | Onayın altındaki "Vazgeç"                                                    | Dolgu yok, yazı metin rengi                                                                                                                                                   |
+| disabled  | Her tür                                                                      | Soluklaşmaz: açıkta #DCE9DE dolgu, yazı #4A6550; koyuda ana buton #1B211F ve yüzde 40 metin rengi, diğerleri #1F2623 ve #A3AEA8. İkon yok, dokunuş kapalı. Ghost dolgusuz kalır |
 
+- Yazı 600 16/20, küçük buton 600 14/18. Üst çubuktaki Kaydet'in değişiklik varken yazısı 800.
+- Yeşil (`--primary`) anahtar, rozet, canlı nokta ve gönder yuvarlağı için kalır (`buttonGlass.ts` → `green`).
 - Basma: Tap davranışı (2.3).
-- Yükseklikler: üst çubuk butonları 46, gövdedeki ana butonlar 50 ile 56, satır içi küçük butonlar 36 ile 40. Sheet başlığındaki X 38.
-- Üst çubuktaki Kaydet de clear cam: değişiklik yokken yazı #9AAEA1, varken #0E8745 ve 800. Kaydedince yazı "Kaydedildi" olur, buton boyu sabit kalır (en az 96 genişlik).
+- Yükseklikler: ana buton ve form alanı 48 (proje sahibinin kararı, 16 Kasım), mekan sayfası ve check-in sayfasının uzun butonu 56, satır içi küçük buton 36, yuvarlak ikon 44, üst çubuk butonları 46. Sheet başlığındaki X 38.
+- Üst çubuktaki Kaydet clear: değişiklik yokken yazı #9AAEA1, varken #0E8745 ve 800. Kaydedince yazı "Kaydedildi" olur, buton boyu sabit kalır (en az 96 genişlik).
 
 ### 2.2 Cam yüzeyler ve performans
 

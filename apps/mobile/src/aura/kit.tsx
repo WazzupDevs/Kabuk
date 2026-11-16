@@ -278,11 +278,13 @@ export function Btn({
   look,
   testID,
   accessibilityLabel,
+  hitSlop,
   style,
 }: {
   label: string;
   onPress?: () => void;
-  variant?: 'primary' | 'glassy' | 'dark' | 'danger';
+  // `ghost`: no fill, the text's colour ("Vazgeç" under a dialog's action).
+  variant?: 'primary' | 'glassy' | 'dark' | 'danger' | 'ghost';
   sm?: boolean;
   // Mekan's "Masa kur": 44 high, 15.
   mid?: boolean;
@@ -316,22 +318,38 @@ export function Btn({
   look?: BtnLook;
   testID?: string;
   accessibilityLabel?: string;
+  // A small button's touch reaching past its face (components/Button: 36 high, touched at 44).
+  hitSlop?: number;
   style?: StyleProp<ViewStyle>;
 }) {
   const { c, scheme } = useKit();
   const inRow = useContext(InRow);
+  const [down, setDown] = useState(false);
   const press = usePress();
   const shadowOff = useLabOff('golge');
   const solid = useReduceTransparency();
-  // Glass (iskelet.md → 2.1): the primary prominent, the glassy clear, the danger red; no live
-  // blur. Disabled is the same button faded, its touch off. "dark" (a chip-like button) stays as it
-  // was.
+  // iskelet.md → 2.1 (the new interface, 16 Kasım): the primary in the ink, darker while pressed;
+  // the glassy the soft white; the danger the soft red; the ghost without a fill; no live blur.
+  // Disabled takes the disabled fill and words, no icon, its touch off (never faded). "dark" (a
+  // chip-like button) stays as it was.
   const off = disabled && !loading;
   const glass = variant !== 'dark';
   const kind: ButtonGlassKind =
-    variant === 'danger' ? 'danger' : variant === 'glassy' ? 'clear' : 'prominent';
+    variant === 'danger'
+      ? 'danger'
+      : variant === 'glassy'
+        ? 'clear'
+        : variant === 'ghost'
+          ? 'ghost'
+          : 'prominent';
   const g = KIT.button[scheme][kind];
-  const fg = tint ?? (variant === 'dark' ? (off ? c.onDisabled : c.onChipOn) : g.ink);
+  const fg =
+    variant === 'dark'
+      ? (tint ?? (off ? c.onDisabled : c.onChipOn))
+      : off
+        ? g.off.ink
+        : (tint ?? g.ink);
+  const pressedFill = down && !off && !fill && g.pressed ? g.pressed : null;
   const height = bar
     ? bar
     : sm
@@ -360,7 +378,7 @@ export function Btn({
   // The soft outer shadow drawn natively (NativeShadow.tsx); the top light, the bottom line and the
   // white edge inside are inset shadows. A flat `fill` has none.
   const shadow =
-    glass && !fill
+    glass && !fill && !off
       ? shadowParts(
           shadowOff,
           g.shadow || undefined,
@@ -378,15 +396,21 @@ export function Btn({
       accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       disabled={disabled || loading}
       onPress={onPress}
+      hitSlop={hitSlop}
       unstable_pressDelay={press.delay}
-      onPressIn={press.onPressIn}
-      onPressOut={press.onPressOut}
+      onPressIn={() => {
+        press.onPressIn();
+        setDown(true);
+      }}
+      onPressOut={() => {
+        press.onPressOut();
+        setDown(false);
+      }}
       // Round like the button: a shadow a screen gives it (Paketler's Aç) drew a box round it.
       style={[
         {
           alignSelf: block ? 'stretch' : inRow ? 'center' : 'flex-start',
           borderRadius: KIT.size.btn,
-          opacity: off && glass ? KIT.button.offOpacity : 1,
         },
         style,
       ]}
@@ -394,14 +418,18 @@ export function Btn({
       <Animated.View
         style={[
           glass
-            ? fill
-              ? { backgroundColor: fill }
-              : {
-                  ...gradientStyle(solid ? g.solid : g.fill),
-                  borderWidth: KIT.size.edge,
-                  borderColor: g.edge,
-                  boxShadow: shadow?.boxShadow,
-                }
+            ? off
+              ? { backgroundColor: g.off.fill }
+              : fill
+                ? { backgroundColor: fill }
+                : {
+                    ...(pressedFill
+                      ? { backgroundColor: pressedFill }
+                      : gradientStyle(solid ? g.solid : g.fill)),
+                    borderWidth: KIT.size.edge,
+                    borderColor: g.edge,
+                    boxShadow: shadow?.boxShadow,
+                  }
             : { backgroundColor: off ? c.disabledOnCard : c.chipOn },
           {
             height,
@@ -426,7 +454,7 @@ export function Btn({
           <CapIcon
             name={icon}
             color={fg}
-            soft={kind === 'clear' ? CLEAR_SOFT : PRIMARY_SOFT}
+            soft={kind === 'prominent' ? PRIMARY_SOFT : CLEAR_SOFT}
             size={look?.icon ?? (sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon)}
           />
         ) : null}
@@ -437,7 +465,7 @@ export function Btn({
           maxFontSizeMultiplier={MAX_FONT_SCALE}
           style={[
             labelType,
-            look?.type ? null : (glass && !fill && kind !== 'clear') || strong ? BTN_STRONG : null,
+            look?.type ? null : strong ? BTN_STRONG : null,
             { color: fg, flexShrink: 1 },
           ]}
         >

@@ -288,7 +288,8 @@ export const VENUE_THUMB = {
 
 export type { ButtonGlassKind } from './buttonGlass';
 
-// A prominent and a danger button's words: 800 (iskelet.md → 2.1).
+// A clear button's words at 800 where asked (the bar's Kaydet with something to save, iskelet.md
+// → 2.1); every other button's 600 (KIT_TYPE.btn).
 export const BTN_STRONG: TextStyle = { fontFamily: F[800] };
 
 export const KIT = {
@@ -754,12 +755,12 @@ export const KIT = {
     glassRadiusSm: 22,
     pad: 18,
     padLg: 22,
-    // The button scale (the owner's call, 2 Kasım, B1): every main button 48, every small one 36,
-    // a round icon button 44, a form field 48, a chip 36; a screen never picks its own (the many-line
-    // field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4). The glass
-    // buttons (docs/design/iskelet.md → 2.1): a main button in a screen's body 50 to 56 (52, the
-    // venue page's and the check-in sheet's 56), a small one in a line 36 to 40.
-    btn: 52,
+    // The button scale (the owner's call, 2 Kasım, B1; the main button 48 again, 16 Kasım): every
+    // main button 48, every small one 36, a round icon button 44, a form field 48, a chip 36; a
+    // screen never picks its own (the many-line field 104, 22 round; the sheet 8 from the edges, 28
+    // round, its handle 40 × 4). The venue page's and the check-in sheet's long one 56
+    // (docs/design/iskelet.md → 2.1).
+    btn: 48,
     btnTall: 56,
     btnSm: 36,
     // Mekan's "Masa kur" and Masa's "Bitir": the small height, 18 inside.

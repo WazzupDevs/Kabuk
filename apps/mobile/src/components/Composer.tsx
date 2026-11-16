@@ -480,7 +480,7 @@ function SendIn({
   }));
   const pressScale = usePressScale();
   const { scheme } = useKit();
-  const prominent = KIT.button[scheme].prominent;
+  const prominent = KIT.button[scheme].green;
   const labOff = useLabOff('golge');
   const sendShadow = dm
     ? boxShadowParts(labOff, DM[scheme].sendShadow || undefined, side / 2)
