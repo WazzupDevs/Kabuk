@@ -87,7 +87,12 @@ type Props = {
   side?: number;
   // The top bar's side where a board gives one (tuval Arkadaslar, Duzenle: 16).
   barSide?: number;
+  // The top's own room over it (tuval Ayarlar: 5 under the status bar); 8 otherwise.
+  barTop?: number;
   padTop?: number;
+  // The flat ground with no colour clouds (yeni arayüz tuvali: `.pg`, the canvas; the dark scheme
+  // has none anyway).
+  plain?: boolean;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
@@ -121,7 +126,9 @@ export function Screen({
   title,
   side,
   barSide,
+  barTop,
   padTop,
+  plain,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -140,9 +147,10 @@ export function Screen({
     ? (edges ?? ['top', 'left', 'right', 'bottom']).filter((e) => e !== 'bottom')
     : (edges ?? ['top', 'left', 'right', 'bottom']);
   const fixed = !(list || refresh || scrollRef || stickyHeaderIndices);
-  // The top bar (iskelet.md → 3.1): a PageTop in `top` is the `sayfa` bar; `bar` names one.
+  // The top bar (iskelet.md → 3.1): a PageTop in `top` is the `sayfa` bar; `bar` names one. A
+  // PageTop with its title on the bar (`inline`) stands still over the content as a plain top.
   const page: ReactElement | null =
-    isValidElement(top) && top.type === PageTop
+    isValidElement(top) && top.type === PageTop && !inlineTop(top)
       ? top
       : bar === 'sayfa' && title
         ? createElement(PageTop, { title })
@@ -196,7 +204,7 @@ export function Screen({
   return (
     <ScrollScreen y={fixed && !overlay ? null : y}>
       <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-        <AuraBackground />
+        {plain ? null : <AuraBackground />}
         {backdrop}
         {flowTop ? (
           <View
@@ -204,7 +212,7 @@ export function Screen({
             // band's hard top edge cut them (the owner's report, 2 Kasım, 6.8).
             style={{
               paddingHorizontal: barSide ?? shape.screenPadding,
-              paddingTop: SPACING[2],
+              paddingTop: barTop ?? SPACING[2],
               paddingBottom: SPACING[1],
               zIndex: 1,
             }}
@@ -297,6 +305,12 @@ export function Screen({
       </SafeAreaView>
     </ScrollScreen>
   );
+}
+
+// A PageTop whose title stands on its bar (PageTop → `inline`).
+function inlineTop(top: ReactElement): boolean {
+  const props = top.props;
+  return typeof props === 'object' && props !== null && 'inline' in props && !!props.inline;
 }
 
 // The refreshing list (PullScroll) inside the screen's scroll holder: its offset is the screen's,

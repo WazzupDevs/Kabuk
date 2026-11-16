@@ -156,7 +156,9 @@ const NO_PLACE: FxPlace = { unit: 1, dx: 0, dy: 0, bx: 0, by: 0 };
 // `still`: drawn still here (a set balloon past the newest few); `paused`: its motion held where it
 // stands (a set balloon while its stream scrolls), on the clocks of its `lane`. `inside`: what draws
 // the motions inside a clip (the pictures in turn when not given). `whole`: what draws all of it on
-// one canvas (the views and their pictures when not given).
+// one canvas (the views and their pictures when not given). `idle`: with `whole`, its canvas kept on
+// the screen drawing nothing, no clock held (Süsle's stage's second canvas between two changes:
+// features/capsule/CapsuleStage.tsx); nothing without it.
 export function FxSvg({
   xml,
   width,
@@ -166,6 +168,7 @@ export function FxSvg({
   lane = 'main',
   inside,
   whole: Whole,
+  idle = false,
 }: {
   xml: string;
   width: number;
@@ -175,27 +178,32 @@ export function FxSvg({
   lane?: string;
   inside?: InsidePainter;
   whole?: WholePainter;
+  idle?: boolean;
 }) {
   const moves = useContext(FxMotion);
   const reduceMotion = useReduceMotion();
-  // A still drawing holds no focus or app state subscription (useLoopActive); only a moving one.
-  // A drawing with no motion's mark in it (a capsule with no moving accessory) is still as well.
-  if (!moves || reduceMotion || still || !xml.includes(' data-fx="')) {
-    const drawn = <CachedSvg xml={stillOf(xml)} width={width} height={height} />;
-    return Whole ? (
-      <Whole
-        layers={stillLayersOf(stillOf(xml))}
-        place={NO_PLACE}
+  const moving = moves && !reduceMotion && !still && xml.includes(' data-fx="');
+  // The whole canvas at one place in the tree whatever the drawing (still or moving, idle): a new
+  // look keeps the canvas there.
+  if (Whole) {
+    return (
+      <WholeSvg
+        xml={xml}
         width={width}
         height={height}
-        on={false}
+        moving={moving}
+        paused={paused}
         lane={lane}
-        fallback={drawn}
+        inside={inside}
+        whole={Whole}
+        idle={idle}
       />
-    ) : (
-      drawn
     );
   }
+  if (idle) return null;
+  // A still drawing holds no focus or app state subscription (useLoopActive); only a moving one.
+  // A drawing with no motion's mark in it (a capsule with no moving accessory) is still as well.
+  if (!moving) return <CachedSvg xml={stillOf(xml)} width={width} height={height} />;
   return (
     <MovingSvg
       xml={xml}
@@ -204,7 +212,68 @@ export function FxSvg({
       paused={paused}
       lane={lane}
       inside={inside}
-      whole={Whole}
+    />
+  );
+}
+
+const NO_LAYERS: FxLayer[] = [];
+
+// The whole canvas's drawing (FxSvg with `whole`): the still drawing's one layer, or the moving
+// one's layers at its place, or none while idle; what it falls back on as FxSvg drew it without.
+function WholeSvg({
+  xml,
+  width,
+  height,
+  moving,
+  paused,
+  lane,
+  inside,
+  whole: Whole,
+  idle,
+}: {
+  xml: string;
+  width: number;
+  height: number;
+  moving: boolean;
+  paused: boolean;
+  lane: string;
+  inside: InsidePainter | undefined;
+  whole: WholePainter;
+  idle: boolean;
+}) {
+  const active = useLoopActive();
+  const tree = useMemo(() => (moving && !idle ? treeOf(xml) : null), [moving, idle, xml]);
+  const place = useMemo(
+    () => (tree ? placeOf(tree.box, width, height) : null),
+    [tree, width, height],
+  );
+  // Drawn still: with no motion its still text, a drawing that could not be cut its own text.
+  const still = idle ? null : !moving ? stillOf(xml) : !tree || !place ? xml : null;
+  const cut = !idle && still === null && tree && place ? { tree, place } : null;
+  return (
+    <Whole
+      layers={cut ? cut.tree.layers : still !== null ? stillLayersOf(still) : NO_LAYERS}
+      place={cut ? cut.place : NO_PLACE}
+      width={width}
+      height={height}
+      on={cut !== null && active && !paused}
+      lane={lane}
+      fallback={
+        !cut ? (
+          still !== null ? (
+            <CachedSvg xml={still} width={width} height={height} />
+          ) : null
+        ) : (
+          <MovingSvg
+            xml={xml}
+            width={width}
+            height={height}
+            paused={paused}
+            lane={lane}
+            inside={inside}
+          />
+        )
+      }
     />
   );
 }
@@ -257,8 +326,8 @@ export function readFxAhead(
   height: number,
   moving: boolean,
   prepare?: (layer: FxInside, place: FxPlace) => void,
-  // The whole canvas's (FxSkia.tsx → prepareStill): a still layer is read as its canvas draws it,
-  // not as a view's picture.
+  // The whole canvas's (FxSkia.tsx → lookNeed collects through it): a still layer is read as its
+  // canvas draws it, not as a view's picture.
   still?: (xml: string, width: number, height: number) => void,
 ): void {
   const readStill = (text: string) => (still ? still(text, width, height) : readAhead(text));
@@ -296,7 +365,6 @@ function MovingSvg({
   paused,
   lane,
   inside,
-  whole: Whole,
 }: {
   xml: string;
   width: number;
@@ -304,7 +372,6 @@ function MovingSvg({
   paused: boolean;
   lane: string;
   inside: InsidePainter | undefined;
-  whole: WholePainter | undefined;
 }) {
   const active = useLoopActive();
   const tree = useMemo(() => treeOf(xml), [xml]);
@@ -313,45 +380,7 @@ function MovingSvg({
     () => (tree ? placeOf(tree.box, width, height) : null),
     [tree, width, height],
   );
-  if (!tree || !place) {
-    const drawn = <CachedSvg xml={xml} width={width} height={height} />;
-    return Whole ? (
-      <Whole
-        layers={stillLayersOf(xml)}
-        place={NO_PLACE}
-        width={width}
-        height={height}
-        on={false}
-        lane={lane}
-        fallback={drawn}
-      />
-    ) : (
-      drawn
-    );
-  }
-  if (Whole) {
-    return (
-      <Whole
-        layers={tree.layers}
-        place={place}
-        width={width}
-        height={height}
-        on={active && !paused}
-        lane={lane}
-        fallback={
-          <MovingSvg
-            xml={xml}
-            width={width}
-            height={height}
-            paused={paused}
-            lane={lane}
-            inside={inside}
-            whole={undefined}
-          />
-        }
-      />
-    );
-  }
+  if (!tree || !place) return <CachedSvg xml={xml} width={width} height={height} />;
   return (
     <View style={{ width, height }}>
       <Layers

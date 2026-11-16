@@ -8,9 +8,19 @@ import {
   Paint,
   Skia,
   type SkImage,
+  type SkRect,
+  type SkSurface,
   type SkSVG,
 } from '@shopify/react-native-skia';
-import { Component, Fragment, type ReactNode, useEffect, useMemo } from 'react';
+import {
+  Component,
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { AppState, PixelRatio, View } from 'react-native';
 import {
   cancelAnimation,
@@ -23,8 +33,26 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
+import {
+  alphaBounds,
+  pointsOf,
+  type PtRect,
+  type PxRect,
+  trimRect,
+  unionRect,
+} from '@/capsule/artBounds';
+import {
+  type ArtNeed,
+  type CapsuleArt,
+  capsuleArt,
+  emptyArt,
+  type Made,
+  prepNow,
+  useArts,
+  usePinned,
+} from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
-import type { FxInside, FxPlace } from '@/theme/capsuleFx';
+import type { FxInside, FxLayer, FxPlace } from '@/theme/capsuleFx';
 import {
   clockLead,
   insideAt,
@@ -39,7 +67,7 @@ import {
   type WholeMove,
 } from '@/theme/capsuleSkia';
 
-import { Inside, type InsideProps, type WholeProps } from './FxSvg';
+import { Inside, type InsideProps, readFxAhead, type WholeProps } from './FxSvg';
 
 // Skia's drawing of a motion inside its clip (theme/capsuleSkia.ts; docs/decisions/skia-build-plani.md
 // → P6). Loaded only through components/skiaInside.ts's lazy import: nothing here is read at the
@@ -246,27 +274,25 @@ function Drawn({
 // Each SVG is drawn once into a picture of its own, at the screen's pixels, and the canvas shows
 // that picture on every frame after (docs/perf/akicilik-denetimi.md → 4.4: drawn from its shapes on
 // each frame, a look's layers took twice the UI thread's time while anything on the canvas moved).
-// Made off the screen, on this thread, where the SVG is read; `image` null (no surface) draws the
-// SVG from its shapes as before.
-type Art = { xml: string; kept: Kept; width: number; height: number };
+// The pictures are made off the screen and outside any render, one a turn (capsule/prepQueue.ts),
+// and kept by their one owner (capsule/artStore.ts, one limit in bytes); a canvas reads only the
+// ones made. No picture (no surface): the SVG drawn from its shapes, as before.
+type Art = {
+  art: Extract<CapsuleArt, { kind: 'image' | 'shapes' }>;
+  width: number;
+  height: number;
+};
 type WholeRead =
   | { kind: 'still'; art: Art }
   | { kind: 'inside'; plan: SkiaPlan; mask: Art; content: Art }
   | { kind: 'move'; move: WholeMove; layers: WholeRead[] };
 
-// The pictures kept: a look's few layers at the stage's size (about 2 MB each at three pixels a
-// point), the look shown, the one fading out and the ones read ahead. A picture's pixels are not
-// the JS heap's: one dropped from here is let go by hand (`dispose`), not left to the collector,
-// which does not see them (docs/perf/akicilik-denetimi.md → 4.5: 1,47 GB after a few rolls of the
-// dice, and not given back on leaving Süsle). One a canvas on the screen still shows is let go
-// when that canvas goes; when no canvas is left, all of them are, a moment later.
-type Kept = { image: SkImage | null; uses: number; cached: boolean };
-const KEEP = 32;
-const kept = new Map<string, Kept>();
+// The pictures are let go by the store (artStore.ts → drop): one dropped over the limit and not
+// shown by a canvas, `dispose`d a moment later; when no canvas is left (Süsle closed), all of them
+// are, a moment later (docs/perf/akicilik-denetimi.md → 4.5).
 let shown = 0;
 let emptying: ReturnType<typeof setTimeout> | null = null;
 const EMPTY_AFTER_MS = 2000;
-const LET_GO_AFTER_MS = 500;
 
 // The GPU's copies of the pictures. A picture is copied to the GPU when a canvas first draws it,
 // and that copy stays in Skia's GPU cache after the picture is let go, up to the cache's limit
@@ -291,39 +317,16 @@ AppState.addEventListener('change', (state) => {
   if (state === 'background') purgeGpu(0);
 });
 
-function letGo(k: Kept): void {
-  if (k.uses > 0 || k.cached || !k.image) return;
-  k.image.dispose();
-  k.image = null;
-}
-
-function keep(key: string, k: Kept): void {
-  kept.delete(key);
-  kept.set(key, k);
-  while (kept.size > KEEP) {
-    const oldest = kept.entries().next();
-    if (oldest.done) break;
-    const [oldKey, old] = oldest.value;
-    kept.delete(oldKey);
-    old.cached = false;
-    letGo(old);
-  }
-}
-
-// A canvas takes the pictures it shows and gives them back when it goes.
-function holdArts(arts: readonly Art[]): () => void {
+// A canvas on the screen; its going (the last one) empties the pictures a moment later. Taken in a
+// layout effect: a canvas that comes back (Süsle opened again) stops the emptying before anything
+// else can run.
+function holdCanvas(): () => void {
   if (emptying) {
     clearTimeout(emptying);
     emptying = null;
   }
-  for (const a of arts) a.kept.uses += 1;
   shown += 1;
   return () => {
-    for (const a of arts) a.kept.uses -= 1;
-    // A little after the canvas went: its last frame may still be on its way to the screen.
-    setTimeout(() => {
-      for (const a of arts) letGo(a.kept);
-    }, LET_GO_AFTER_MS);
     shown -= 1;
     if (shown > 0 || emptying) return;
     // The last canvas went (Süsle closed): everything kept goes too, unless one comes back at once
@@ -331,103 +334,183 @@ function holdArts(arts: readonly Art[]): () => void {
     emptying = setTimeout(() => {
       emptying = null;
       if (shown > 0) return;
-      for (const [key, k] of [...kept]) {
-        kept.delete(key);
-        k.cached = false;
-        letGo(k);
-      }
+      // Pictures, tiles and plans alike (what a drawing still holds stays).
+      emptyArt();
       purgeGpu(0);
     }, EMPTY_AFTER_MS);
   };
 }
 
-function imageOf(xml: string, width: number, height: number, ratio: number): Kept {
-  const key = `${ratio}|${width}x${height}|${xml}`;
-  const hit = kept.get(key);
-  if (hit) {
-    keep(key, hit);
-    return hit;
-  }
-  let image: SkImage | null = null;
+// The pixels a picture drawn on `surface` covers (artBounds.ts), a pixel round them; the whole
+// picture when they cannot be read.
+function drawnRect(surface: SkSurface, px: number, py: number): PxRect {
+  const whole = { x: 0, y: 0, width: px, height: py };
+  const full = surface.makeImageSnapshot();
   try {
-    // The SVG is read for this one drawing and let go with its surface: the picture keeps its own
-    // pixels, and a read SVG held on (in `svgs`) is memory the collector does not see either
-    // (docs/perf/akicilik-denetimi.md → 4.9: the heap grew with every visit to Süsle).
+    const pixels = full.readPixels();
+    if (!(pixels instanceof Uint8Array) || pixels.length < px * py * 4) return whole;
+    return trimRect(alphaBounds(pixels, px, py), px, py);
+  } catch {
+    return whole;
+  } finally {
+    full.dispose();
+  }
+}
+
+// An SVG at a size as the canvas shows it: its picture, made off the screen (the SVG is read for
+// this one drawing and let go with its surface: docs/perf/akicilik-denetimi.md → 4.9), else the
+// SVG read for drawing from its shapes, else nothing (the picture way draws). `trim`: the picture
+// kept to the box of its own pixels (a still layer of the drawing: a part is a small share of the
+// figure's box, docs/decisions/skia-build-plani.md → "Bütün kapsül Skia'da"), drawn at the same
+// pixels; a mask stays whole (its empty pixels cut what is under it).
+function makeArt(xml: string, width: number, height: number, ratio: number, trim: boolean): Made {
+  const px = Math.ceil(width * ratio);
+  const py = Math.ceil(height * ratio);
+  let image: SkImage | null = null;
+  let rect: PxRect = { x: 0, y: 0, width: px, height: py };
+  try {
     const svg = Skia.SVG.MakeFromString(xml);
-    const surface = svg
-      ? Skia.Surface.Make(Math.ceil(width * ratio), Math.ceil(height * ratio))
-      : null;
+    const surface = svg ? Skia.Surface.Make(px, py) : null;
     if (svg && surface) {
       const canvas = surface.getCanvas();
       canvas.scale(ratio, ratio);
       canvas.drawSvg(svg, width, height);
       surface.flush();
-      image = surface.makeImageSnapshot();
+      if (trim) {
+        const kept = drawnRect(surface, px, py);
+        const cut = surface.makeImageSnapshot(
+          Skia.XYWHRect(kept.x, kept.y, kept.width, kept.height),
+        );
+        // A snapshot not of the box asked for (it should be): the whole picture, as before.
+        if (cut.width() === kept.width && cut.height() === kept.height) {
+          image = cut;
+          rect = kept;
+        } else cut.dispose();
+      }
+      image ??= surface.makeImageSnapshot();
     }
     surface?.dispose();
     svg?.dispose();
   } catch {
     image = null;
   }
-  const made: Kept = { image, uses: 0, cached: true };
-  keep(key, made);
-  return made;
+  if (image) return { art: { kind: 'image', image, rect }, bytes: rect.width * rect.height * 4 };
+  let svg: SkSVG | null = null;
+  try {
+    svg = Skia.SVG.MakeFromString(xml);
+  } catch {
+    svg = null;
+  }
+  // The text's length is a floor for the parsed tree (its native size is not measured).
+  return svg
+    ? { art: { kind: 'shapes', svg }, bytes: xml.length }
+    : { art: { kind: 'none' }, bytes: NONE_BYTES };
+}
+// What a resource that could not be made weighs in the limit (its key only, roughly).
+const NONE_BYTES = 64;
+
+// A shared SVG is drawn at its own size only (Skia sets its container's size before each drawing),
+// so the size is in its key.
+function artNeed(xml: string, width: number, height: number, ratio: number, trim = false): ArtNeed {
+  return {
+    key: `${trim ? 'trim|' : ''}${ratio}|${width}x${height}|${xml}`,
+    make: () => makeArt(xml, width, height, ratio, trim),
+  };
 }
 
-// Null when there is no picture and the SVG is not read either: the picture way draws then.
-function artOf(xml: string, width: number, height: number, ratio: number): Art | null {
-  const kept = imageOf(xml, width, height, ratio);
-  if (!kept.image && !svgOf(xml, width, height)) return null;
-  return { xml, kept, width, height };
+// A still layer's picture, kept to its own pixels.
+function stillNeed(xml: string, width: number, height: number, ratio: number): ArtNeed {
+  return artNeed(xml, width, height, ratio, true);
 }
 
-// A picture at its pixels (its surface was a whole number of them), or the SVG from its shapes
-// when there is none.
+// A picture at its pixels (its surface was a whole number of them; a kept box at the whole pixels
+// it was cut at), or the SVG from its shapes when there is none.
+// A picture (not an SVG: its drawing does not take a paint) may be drawn faded (`opacity`) or
+// with a blend (`blend`).
 const SHARP = { filter: FilterMode.Linear, mipmap: MipmapMode.None };
-function ArtAt({ art }: { art: Art }) {
+function ArtAt({
+  art,
+  opacity,
+  blend,
+}: {
+  art: Art;
+  opacity?: SharedValue<number>;
+  blend?: 'dstIn';
+}) {
   const ratio = PixelRatio.get();
-  const image = art.kept.image;
-  return image ? (
-    <Image
-      image={image}
-      x={0}
-      y={0}
-      width={Math.ceil(art.width * ratio) / ratio}
-      height={Math.ceil(art.height * ratio) / ratio}
-      fit="fill"
-      sampling={SHARP}
-    />
-  ) : (
-    <ArtShapes art={art} />
-  );
+  const a = art.art;
+  if (a.kind === 'image') {
+    const at = pointsOf(a.rect, ratio);
+    return (
+      <Image
+        image={a.image}
+        x={at.x}
+        y={at.y}
+        width={at.width}
+        height={at.height}
+        fit="fill"
+        sampling={SHARP}
+        {...(opacity ? { opacity } : null)}
+        {...(blend ? { blendMode: blend } : null)}
+      />
+    );
+  }
+  return <ImageSVG svg={a.svg} x={0} y={0} width={art.width} height={art.height} />;
 }
 
-// No picture (no surface, or let go): the SVG from its shapes, read as P6's canvases read it.
-function ArtShapes({ art }: { art: Art }) {
-  const svg = svgOf(art.xml, art.width, art.height);
-  return svg ? <ImageSVG svg={svg} x={0} y={0} width={art.width} height={art.height} /> : null;
+// Every resource a drawing's layers need, each once, in their order.
+function wholeNeeds(
+  layers: readonly WholeLayer[],
+  width: number,
+  height: number,
+  ratio: number,
+): ArtNeed[] {
+  const out = new Map<string, ArtNeed>();
+  const add = (n: ArtNeed) => {
+    if (!out.has(n.key)) out.set(n.key, n);
+  };
+  const walk = (ls: readonly WholeLayer[]) => {
+    for (const l of ls) {
+      if (l.kind === 'still') add(stillNeed(l.xml, width, height, ratio));
+      else if (l.kind === 'inside') {
+        const { plan } = l;
+        add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
+        add(artNeed(plan.content, plan.width, plan.height, ratio));
+      } else walk(l.layers);
+    }
+  };
+  walk(layers);
+  return [...out.values()];
 }
 
+// The layers with their made resources; null when one could not be made (the picture way draws).
 function readWhole(
   layers: readonly WholeLayer[],
   width: number,
   height: number,
   ratio: number,
+  got: ReadonlyMap<string, CapsuleArt>,
 ): WholeRead[] | null {
+  const artOf = (xml: string, w: number, h: number, trim = false): Art | null => {
+    const a = got.get(artNeed(xml, w, h, ratio, trim).key);
+    return a && (a.kind === 'image' || a.kind === 'shapes')
+      ? { art: a, width: w, height: h }
+      : null;
+  };
   const out: WholeRead[] = [];
   for (const l of layers) {
     if (l.kind === 'still') {
-      const art = artOf(l.xml, width, height, ratio);
+      const art = artOf(l.xml, width, height, true);
       if (!art) return null;
       out.push({ kind: 'still', art });
     } else if (l.kind === 'inside') {
       const { plan } = l;
-      const mask = artOf(plan.mask, plan.crop.width, plan.crop.height, ratio);
-      const content = artOf(plan.content, plan.width, plan.height, ratio);
+      const mask = artOf(plan.mask, plan.crop.width, plan.crop.height);
+      const content = artOf(plan.content, plan.width, plan.height);
       if (!mask || !content) return null;
       out.push({ kind: 'inside', plan, mask, content });
     } else {
-      const inner = readWhole(l.layers, width, height, ratio);
+      const inner = readWhole(l.layers, width, height, ratio, got);
       if (!inner) return null;
       out.push({ kind: 'move', move: l.move, layers: inner });
     }
@@ -435,74 +518,197 @@ function readWhole(
   return out;
 }
 
+// A motion's plan at a place (theme/capsuleSkia.ts → insidePlan): made in the queue, read by the
+// canvas from the store (null: it cannot be drawn on the canvas, the picture way draws).
+function planNeed(layer: FxInside, place: FxPlace, ratio: number): ArtNeed {
+  return {
+    key: `plan|${insidePlanKey(layer, place, ratio)}`,
+    make: () => {
+      const plan = planOf(layer, place, ratio);
+      return {
+        art: { kind: 'plan', plan },
+        bytes: plan ? plan.mask.length + plan.content.length : NONE_BYTES,
+      };
+    },
+  };
+}
+
+// The plans a drawing's layers need, each once.
+function planNeeds(layers: readonly FxLayer[], place: FxPlace, ratio: number): ArtNeed[] {
+  const out = new Map<string, ArtNeed>();
+  const walk = (ls: readonly FxLayer[]) => {
+    for (const l of ls) {
+      if (l.kind === 'inside') {
+        const n = planNeed(l, place, ratio);
+        if (!out.has(n.key)) out.set(n.key, n);
+      } else if (l.kind === 'move') walk(l.layers);
+    }
+  };
+  walk(layers);
+  return [...out.values()];
+}
+
+// The canvas's layers with the plans made (wholeLayers); null when one cannot be drawn.
+function wholeOf(
+  layers: readonly FxLayer[],
+  place: FxPlace,
+  ratio: number,
+  plans: ReadonlyMap<string, CapsuleArt | undefined>,
+): WholeLayer[] | null {
+  return wholeLayers(layers, place, ratio, (l, p, r) => {
+    const a = plans.get(`plan|${insidePlanKey(l, p, r)}`);
+    return a?.kind === 'plan' ? a.plan : null;
+  });
+}
+
+// What the whole canvas will need to draw `xml` at this size (`moving`: in FxMoves and not with
+// reduce motion), as FxSvg gives it its layers (readFxAhead walks them the same way): its plans
+// and its pictures. Itself a resource, made in the queue (reading the drawing's tree and its plans
+// is work too): Süsle reads it ahead, and its stage keeps the look shown until it is made.
+export function lookNeed(xml: string, width: number, height: number, moving: boolean): ArtNeed {
+  const ratio = PixelRatio.get();
+  return {
+    key: `look|${ratio}|${width}x${height}|${moving ? 1 : 0}|${xml}`,
+    make: () => {
+      const out = new Map<string, ArtNeed>();
+      const add = (n: ArtNeed) => {
+        if (!out.has(n.key)) out.set(n.key, n);
+      };
+      readFxAhead(
+        xml,
+        width,
+        height,
+        moving,
+        (layer, place) => {
+          add(planNeed(layer, place, ratio));
+          const plan = planOf(layer, place, ratio);
+          if (!plan) return;
+          add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
+          add(artNeed(plan.content, plan.width, plan.height, ratio));
+        },
+        (text, w, h) => add(stillNeed(text, w, h, ratio)),
+      );
+      const needs = [...out.values()];
+      return {
+        art: { kind: 'needs', needs },
+        bytes: needs.reduce((sum, n) => sum + n.key.length, 0),
+      };
+    },
+  };
+}
+
 // A small still drawing (an option's tile in Süsle's strips) as a picture's address: drawn once
 // off the screen at the screen's pixels and kept as a PNG's text, which an Image shows in one view.
 // The picture way made a native view of each of the tile's shapes and drew it on the UI thread the
 // frame it came on the screen: a roll of the dice, which moves every strip, held that frame for a
-// second or two (docs/perf/akicilik-denetimi.md → 4.6). Null when it cannot be made: the SVG then.
-const tiles = createLru<{ uri: string | null }>(400);
-
-export function tileUri(xml: string, size: number): string | null {
+// second or two (docs/perf/akicilik-denetimi.md → 4.6). Nothing when it cannot be made: the SVG.
+export function tileNeed(xml: string, size: number): ArtNeed {
   const ratio = PixelRatio.get();
-  const key = `${ratio}|${size}|${xml}`;
-  const hit = tiles.get(key);
-  if (hit !== undefined) return hit.uri;
-  let uri: string | null = null;
-  try {
-    const svg = Skia.SVG.MakeFromString(xml);
-    const px = Math.ceil(size * ratio);
-    const surface = svg ? Skia.Surface.Make(px, px) : null;
-    if (svg && surface) {
-      const canvas = surface.getCanvas();
-      canvas.scale(ratio, ratio);
-      canvas.drawSvg(svg, size, size);
-      surface.flush();
-      const image = surface.makeImageSnapshot();
-      uri = `data:image/png;base64,${image.encodeToBase64()}`;
-      image.dispose();
-    }
-    surface?.dispose();
-    svg?.dispose();
-  } catch {
-    uri = null;
-  }
-  tiles.set(key, { uri });
-  return uri;
-}
-
-function artsOf(layers: readonly WholeRead[]): Art[] {
-  return layers.flatMap((l) =>
-    l.kind === 'still' ? [l.art] : l.kind === 'inside' ? [l.mask, l.content] : artsOf(l.layers),
-  );
-}
-
-// Reads a drawing's still layer ahead for the whole canvas, in idle time (prepareInside reads the
-// motions inside a clip): the SVG is parsed once, at the size the canvas draws it.
-export function prepareStill(xml: string, width: number, height: number): void {
-  artOf(xml, width, height, PixelRatio.get());
-}
-
-// The same for a motion inside its clip, for the whole canvas: its mask's and its content's
-// pictures too (prepareInside reads their SVGs only, as P6's own canvases draw them).
-export function prepareWholeInside(layer: FxInside, place: FxPlace): void {
-  const ratio = PixelRatio.get();
-  const plan = planOf(layer, place, ratio);
-  if (!plan) return;
-  artOf(plan.mask, plan.crop.width, plan.crop.height, ratio);
-  artOf(plan.content, plan.width, plan.height, ratio);
+  return {
+    key: `tile|${ratio}|${size}|${xml}`,
+    make: () => {
+      let uri: string | null = null;
+      try {
+        const svg = Skia.SVG.MakeFromString(xml);
+        const px = Math.ceil(size * ratio);
+        const surface = svg ? Skia.Surface.Make(px, px) : null;
+        if (svg && surface) {
+          const canvas = surface.getCanvas();
+          canvas.scale(ratio, ratio);
+          canvas.drawSvg(svg, size, size);
+          surface.flush();
+          const image = surface.makeImageSnapshot();
+          uri = `data:image/png;base64,${image.encodeToBase64()}`;
+          image.dispose();
+        }
+        surface?.dispose();
+        svg?.dispose();
+      } catch {
+        uri = null;
+      }
+      return uri
+        ? { art: { kind: 'uri', uri }, bytes: uri.length }
+        : { art: { kind: 'none' }, bytes: NONE_BYTES };
+    },
+  };
 }
 
 const WHOLE_PAD = 0.15;
+const NO_READ: WholeRead[] = [];
 
 export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: WholeProps) {
   const ratio = PixelRatio.get();
+  // Its motions' plans, then its pictures: only what is made is read here (the queue makes them,
+  // the ones missing asked for first).
+  const plansNeeded = useMemo(() => planNeeds(layers, place, ratio), [layers, place, ratio]);
+  const plans = useArts(plansNeeded);
+  // Undefined while a plan is not made; null when one cannot be drawn (the picture way draws).
+  const whole = useMemo(() => {
+    if (!plans) return undefined;
+    const got = new Map<string, CapsuleArt | undefined>();
+    plansNeeded.forEach((n, i) => got.set(n.key, plans[i]));
+    return wholeOf(layers, place, ratio, got);
+  }, [plans, plansNeeded, layers, place, ratio]);
+  const needs = useMemo(
+    () => (whole ? wholeNeeds(whole, width, height, ratio) : null),
+    [whole, width, height, ratio],
+  );
+  const arts = useArts(needs);
   const read = useMemo(() => {
-    const whole = wholeLayers(layers, place, ratio, planOf);
-    return whole ? readWhole(whole, width, height, ratio) : null;
-  }, [layers, place, ratio, width, height]);
-  // The pictures this canvas shows are its own while it is on the screen.
-  useEffect(() => (read ? holdArts(artsOf(read)) : undefined), [read]);
-  if (!read) return fallback;
+    if (!whole || !needs || !arts) return null;
+    const got = new Map<string, CapsuleArt>();
+    needs.forEach((n, i) => {
+      const a = arts[i];
+      if (a) got.set(n.key, a);
+    });
+    return readWhole(whole, width, height, ratio, got);
+  }, [whole, needs, arts, width, height, ratio]);
+  // The last drawing made stays on the canvas until the next one is (a feeling's face, a look the
+  // stage has not waited for): never an empty canvas. Held while it is shown. No layers (an idle
+  // canvas, FxSvg → idle) draw nothing and keep nothing: what comes after is drawn as on a new
+  // canvas, made before the frame when it is not made yet.
+  const [last, setLast] = useState<{ read: WholeRead[]; needs: readonly ArtNeed[] } | null>(null);
+  const none = read !== null && read.length === 0;
+  if (none && last) setLast(null);
+  if (read && needs && !none && last?.read !== read) setLast({ read, needs });
+  usePinned(last?.needs ?? null);
+  const pending = whole === undefined || (whole !== null && !arts);
+  const drawing = read ?? (pending ? (last?.read ?? null) : null);
+  // Nothing made and nothing shown before (a canvas that comes with a look not read ahead): made
+  // here, before the frame, as the drawing read them before; this commit is not on the screen.
+  // The store's own note reaches this canvas only once it listens (after the frame): it listens
+  // here too, and is drawn again before the frame.
+  const waiting = pending && !last;
+  const [, again] = useState(0);
+  useLayoutEffect(() => {
+    if (!waiting) return undefined;
+    const offs: (() => void)[] = [];
+    const now = (ns: readonly ArtNeed[]) => {
+      offs.push(
+        capsuleArt.watch(
+          ns.map((n) => n.key),
+          () => again((n) => n + 1),
+        ),
+      );
+      prepNow(ns);
+    };
+    now(plansNeeded);
+    const got = new Map<string, CapsuleArt | undefined>();
+    for (const n of plansNeeded) got.set(n.key, capsuleArt.peek(n.key));
+    const made = wholeOf(layers, place, ratio, got);
+    if (made) now(wholeNeeds(made, width, height, ratio));
+    return () => {
+      for (const off of offs) off();
+    };
+  }, [waiting, plansNeeded, layers, place, ratio, width, height]);
+  const showing = drawing !== null;
+  useLayoutEffect(() => (showing ? holdCanvas() : undefined), [showing]);
+  // A canvas once on the screen stays there while nothing is made (an idle canvas given a look:
+  // a new one would make its surface again).
+  const [mounted, setMounted] = useState(false);
+  if (showing && !mounted) setMounted(true);
+  if (whole === null || (arts && !read)) return fallback;
+  if (!drawing && !mounted) return <View pointerEvents="none" style={{ width, height }} />;
   const pad = Math.ceil(Math.max(width, height) * WHOLE_PAD);
   return (
     <SkiaBoundary fallback={fallback}>
@@ -517,7 +723,13 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
           }}
         >
           <Group transform={[{ translateX: pad }, { translateY: pad }]}>
-            <WholeLayers layers={read} width={width} height={height} on={on} lane={lane} />
+            <WholeLayers
+              layers={drawing ?? NO_READ}
+              width={width}
+              height={height}
+              on={on}
+              lane={lane}
+            />
           </Group>
         </Canvas>
       </View>
@@ -554,19 +766,59 @@ function WholeInside({
   });
   const { crop } = plan;
   const box = useMemo(() => Skia.XYWHRect(0, 0, crop.width, crop.height), [crop]);
-  return (
-    // Drawn's layers at the crop's corner, cut to the crop (a canvas of its own was its edge).
-    <Group transform={[{ translateX: crop.left }, { translateY: crop.top }]} clip={box}>
-      <Group layer>
-        <ArtAt art={mask} />
-        <Group layer={<Paint blendMode="srcIn" />}>
-          <Group transform={transform}>
-            <ArtAt art={content} />
-          </Group>
-        </Group>
-      </Group>
+  const moved = (
+    <Group transform={transform}>
+      <ArtAt art={content} />
     </Group>
   );
+  return (
+    // Drawn's layers at the crop's corner, cut to the crop (a canvas of its own was its edge); a
+    // layer here is the crop's size (the clip is set before it).
+    <Group transform={[{ translateX: crop.left }, { translateY: crop.top }]} clip={box}>
+      {mask.art.kind === 'image' ? (
+        // One layer: the content, then the mask drawn over it in dst-in (the content times the
+        // mask's alpha), the same product as the mask's layer with the content's over it in
+        // src-in (the content times the mask's alpha). The mask's picture covers the whole crop:
+        // nothing in the crop is left outside it.
+        <Group layer>
+          {moved}
+          <ArtAt art={mask} blend="dstIn" />
+        </Group>
+      ) : (
+        // The mask from its shapes takes no paint: its own layer, the content's in src-in.
+        <Group layer>
+          <ArtAt art={mask} />
+          <Group layer={<Paint blendMode="srcIn" />}>{moved}</Group>
+        </Group>
+      )}
+    </Group>
+  );
+}
+
+// The one still picture a move draws, or null.
+function onePicture(layers: readonly WholeRead[]): Art | null {
+  const [only] = layers;
+  return layers.length === 1 && only?.kind === 'still' && only.art.art.kind === 'image'
+    ? only.art
+    : null;
+}
+
+// What a move's layers draw, in its own space, a point more on every side (a clip's smoothed edge
+// falls on nothing drawn); null when it is not known: an SVG from its shapes (it may draw past its
+// box) or a move inside (it leaves its box).
+const BOX_ROOM = 1;
+function layersBox(layers: readonly WholeRead[], ratio: number): SkRect | null {
+  const rects: PtRect[] = [];
+  for (const l of layers) {
+    if (l.kind === 'move') return null;
+    if (l.kind === 'inside') {
+      const { crop } = l.plan;
+      rects.push({ x: crop.left, y: crop.top, width: crop.width, height: crop.height });
+    } else if (l.art.art.kind === 'image') rects.push(pointsOf(l.art.art.rect, ratio));
+    else return null;
+  }
+  const box = unionRect(rects, BOX_ROOM);
+  return box ? Skia.XYWHRect(box.x, box.y, box.width, box.height) : null;
 }
 
 function WholeMoved({
@@ -577,10 +829,20 @@ function WholeMoved({
   const clock = useClock(move.ms, draw.on, draw.lane);
   const matrix = useDerivedValue(() => moveMatrixAt(move, clock.value));
   const opacity = useDerivedValue(() => moveOpacityAt(move, clock.value));
+  const ratio = PixelRatio.get();
+  // One picture faded: its own opacity (one drawing: the same as its layer faded).
+  const one = move.opacity ? onePicture(layers) : null;
+  // Else the layer kept to what is drawn in it (a layer with no box is the whole canvas).
+  const bounds = useMemo(
+    () => (move.opacity && !one ? layersBox(layers, ratio) : null),
+    [move.opacity, one, layers, ratio],
+  );
   const inner = <WholeLayers layers={layers} {...draw} />;
   return (
-    <Group matrix={matrix}>
-      {move.opacity ? (
+    <Group matrix={matrix} {...(bounds ? { clip: bounds } : null)}>
+      {one ? (
+        <ArtAt art={one} opacity={opacity} />
+      ) : move.opacity ? (
         // An SVG's drawing does not take a paint's opacity: faded as a layer.
         <Group layer={<Paint opacity={opacity} />}>{inner}</Group>
       ) : (

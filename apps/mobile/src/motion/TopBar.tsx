@@ -75,33 +75,39 @@ export function BarBand({ from, to }: { from: number; to: number }) {
   );
 }
 
-// The bar's glass back button (46, iskelet.md → 2.1).
-export function BarBack({ onBack }: { onBack?: () => void }) {
+// The bar's glass back button (46, iskelet.md → 2.1; a board's own side where it gives one).
+export function BarBack({ onBack, side }: { onBack?: () => void; side?: number }) {
   return (
     <Round
       icon="back"
-      side={KIT.size.topBtn}
+      side={side ?? KIT.size.topBtn}
       label={tr.common.back}
       onPress={onBack ?? (() => router.back())}
     />
   );
 }
 
+// A page whose title stands on the bar beside its back button, still (yeni arayüz tuvali,
+// Ayarlar.dc.html `.ptop`: a 48 row, the 44 round back button, the title 12 beside it at 21/700).
+export type InlineTop = { row: number; back: number; gap: number };
+
 // The bar: the back button at the left, `trailing` at the right and the small title centred
 // between them, coming in over `kind`'s range. Without a scroll the small title never shows (the
-// large one stays in place).
+// large one stays in place). `inline`: the title beside the back button instead, never moving.
 export function TopBarRow({
   kind,
   title,
   back = true,
   onBack,
   trailing,
+  inline,
 }: {
   kind: TopBarKind;
   title: string;
   back?: boolean;
   onBack?: () => void;
   trailing?: ReactNode;
+  inline?: InlineTop;
 }) {
   const scroll = useScreenScroll();
   const [side, setSide] = useState<number>(KIT.size.topBtn);
@@ -109,6 +115,20 @@ export function TopBarRow({
   const titleStyle = useAnimatedStyle(() => ({
     opacity: scroll ? arriveAt(scroll.y.get(), from, to) : 0,
   }));
+  if (inline) {
+    return (
+      <View className="flex-row items-center" style={{ minHeight: inline.row, gap: inline.gap }}>
+        {back ? <BarBack onBack={onBack} side={inline.back} /> : null}
+        {/* Wraps rather than cut at the largest text (CLAUDE.md → Ekran davranışı). */}
+        <View style={{ flex: 1 }}>
+          <T v="pageBarTitle" ink accessibilityRole="header">
+            {title}
+          </T>
+        </View>
+        {trailing}
+      </View>
+    );
+  }
   return (
     <View
       className="flex-row items-center justify-between"

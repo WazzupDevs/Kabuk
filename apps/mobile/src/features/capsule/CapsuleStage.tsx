@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Animated, Easing, Pressable, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import Reanimated, {
   Easing as ReEasing,
   Extrapolation,
@@ -18,7 +18,9 @@ import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg, readFxAhead } from '@/components/FxSvg';
-import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
+import { type SkiaKit, useSkiaKit, useWholeKit } from '@/components/skiaInside';
+import { fadeCanvas, stagePasses, TILE_WAIT_MS } from '@/capsule/stageGate';
+import { type ArtNeed, type CapsuleArt, useArt, useArtsReady } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { useLabOff } from '@/lib/drawLab';
@@ -67,6 +69,25 @@ export function readStageAhead(
   readFxAhead(popOf(look, ''), width, height, moving, prepare, still);
 }
 
+// What the whole canvas needs to draw a look (with `feeling`'s face, '' for none) as the stage
+// draws it (FxSkia.tsx → lookNeed: itself made in the queue, the list of its plans and pictures):
+// read ahead by Süsle, waited for by the stage.
+export function stageNeed(
+  look: string,
+  size: number,
+  moving: boolean,
+  needOf: SkiaKit['lookNeed'],
+  feeling = '',
+): ArtNeed {
+  const { width, height } = figureOf(size);
+  return needOf(popOf(look, feeling), width, height, moving);
+}
+
+// The plans and pictures a look's need lists, once it is made.
+export function neededBy(art: CapsuleArt | undefined): ArtNeed[] | null {
+  return art?.kind === 'needs' ? art.needs : null;
+}
+
 // The capsule large in its circle (skall tuvali, KapsulSusle): a tap on it shows the next feeling
 // (the face, a little move and the things around it, for a moment), the circle beats once. A part
 // put on makes it jump, "Karıştır" wobble while the new look fades in over the old one (the owner's
@@ -85,6 +106,7 @@ export function CapsuleStage({
   ring: ringWidth,
   ringColor,
   warm = false,
+  tiles = null,
 }: {
   look: string;
   // The feeling's id ('' for none) and its name in the bubble.
@@ -105,6 +127,9 @@ export function CapsuleStage({
   // Skia's drawing context made ahead while Skia draws (FxSkia.tsx → SkiaWarm): after the screen's
   // slide in, before the first motion inside a clip needs it.
   warm?: boolean;
+  // The strip's tiles on the screen for `look` (Kapsülünü süsle): a new look waits for them too, up
+  // to TILE_WAIT_MS (capsule/stageGate.ts).
+  tiles?: readonly ArtNeed[] | null;
 }) {
   const { colors, shape } = useTheme();
   const shadowOff = useLabOff('golge');
@@ -115,24 +140,63 @@ export function CapsuleStage({
   const inside = skia?.painter;
   const Warm = warm ? skia?.Warm : undefined;
   // The whole capsule on one canvas while its switch is on (theme/capsuleSkia.ts → capsuleWholeOn).
-  const whole = useWholeKit()?.Whole;
+  const wholeKit = useWholeKit();
+  const whole = wholeKit?.Whole;
+  const needOf = wholeKit?.lookNeed;
   const unit = size / STAGE.circle;
   const ring = ringWidth ?? SPACING[1.5];
   // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
   const discShadow = boxShadowParts(shadowOff, shape.shadow.card, size / 2 + ring, true, ring);
 
-  // The look before a change, fading out over the new one.
+  // The look before a change, fading out over the new one. While the whole canvas draws, a new
+  // look comes once its pictures are made (capsule/prepQueue.ts, asked for first): until then the
+  // look shown stays, and the fade and the move start with it as they did after the drawing read
+  // them in its render.
   const [shownLook, setShownLook] = useState(look);
   const [oldLook, setOldLook] = useState<string | null>(null);
-  if (look !== shownLook) {
+  const coming = look !== shownLook;
+  const comingFeeling = feeling?.id ?? '';
+  // What the look needs (read in the queue, never here), then its plans and pictures.
+  const comingNeed = useMemo(
+    () => (coming && needOf ? stageNeed(look, size, !reduce, needOf, comingFeeling) : null),
+    [coming, needOf, look, size, reduce, comingFeeling],
+  );
+  const comingList = useArt(comingNeed);
+  const comingNeeds = neededBy(comingList);
+  const comingMade = useArtsReady(comingNeeds);
+  const comingReady = comingNeed === null || (comingNeeds !== null && comingMade);
+  // The tiles on the screen, asked for in the same turn as the look's pictures (first).
+  const tilesReady = useArtsReady(coming && needOf ? tiles : null);
+  const [overdueFor, setOverdueFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!coming) return undefined;
+    const timer = setTimeout(() => setOverdueFor(look), TILE_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [coming, look]);
+  const waiting = coming && !stagePasses(comingReady, tilesReady, overdueFor === look);
+  if (coming && !waiting) {
     setOldLook(reduce ? null : shownLook);
     setShownLook(look);
+    setOverdueFor(null);
   }
+  const [shownPlay, setShownPlay] = useState(play);
+  if (!waiting && play !== shownPlay) setShownPlay(play);
+  // The fading look's canvas: kept on the screen from the first fade (capsule/stageGate.ts →
+  // fadeCanvas), idle between fades. Above the look shown always: its place in the tree never
+  // changes (a view moved among its siblings is taken off the window, and its canvas's surface
+  // with it).
+  const [fadeOn, setFadeOn] = useState(false);
+  const fadeSlot = fadeCanvas(fadeOn, oldLook !== null);
+  if (fadeSlot.mounted && !fadeOn) setFadeOn(true);
   // Reanimated, not Animated's native driver: on Android the SVG inside a view moved by the native
-  // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle).
-  const fade = useSharedValue(0);
+  // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle). At
+  // rest 1 (the fading canvas's first drawing, and what it waits at while idle and hidden).
+  const fade = useSharedValue(1);
   useEffect(() => {
-    if (!oldLook) return;
+    if (!oldLook) {
+      fade.set(1);
+      return;
+    }
     fade.set(1);
     fade.set(
       withTiming(0, { duration: FADE_MS, easing: ReEasing.out(ReEasing.quad) }, (done) => {
@@ -146,15 +210,15 @@ export function CapsuleStage({
   // back, since transformOrigin did not hold on Android.
   const t = useSharedValue(1);
   const curves = useMemo(() => {
-    if (!play) return null;
-    const of = (c: Channel) => sample(play.move, c, unit);
+    if (!shownPlay) return null;
+    const of = (c: Channel) => sample(shownPlay.move, c, unit);
     return { tx: of('tx'), ty: of('ty'), rot: of('rot'), sx: of('sx'), sy: of('sy') };
-  }, [play, unit]);
+  }, [shownPlay, unit]);
   useEffect(() => {
-    if (!play || reduce) return;
+    if (!shownPlay || reduce) return;
     t.set(0);
-    t.set(withTiming(1, { duration: play.move.ms, easing: ReEasing.linear }));
-  }, [play, reduce, t]);
+    t.set(withTiming(1, { duration: shownPlay.move.ms, easing: ReEasing.linear }));
+  }, [shownPlay, reduce, t]);
   const pivot = (FEET_Y - 0.5) * STAGE.height * unit;
   const moveStyle = useAnimatedStyle(() => {
     if (!curves) return {};
@@ -203,11 +267,12 @@ export function CapsuleStage({
     ...figureOf(size),
   };
 
-  const draw = (text: string) => (
+  const draw = (text: string, idle = false) => (
     <FxSvg
       xml={text}
       width={figure.width}
       height={figure.height}
+      idle={idle}
       {...(inside ? { inside } : null)}
       {...(whole ? { whole } : null)}
     />
@@ -239,10 +304,13 @@ export function CapsuleStage({
           >
             {discShadow.node}
             <Reanimated.View style={[figure, moveStyle]}>{draw(xml)}</Reanimated.View>
-            {oldXml ? (
-              <Reanimated.View pointerEvents="none" style={[figure, fadeStyle]}>
-                {draw(oldXml)}
-              </Reanimated.View>
+            {fadeSlot.mounted ? (
+              // Hidden while idle by its own view: the faded one's style is never React's.
+              <View pointerEvents="none" style={[figure, { opacity: fadeSlot.idle ? 0 : 1 }]}>
+                <Reanimated.View style={[StyleSheet.absoluteFill, fadeStyle]}>
+                  {draw(oldXml ?? '', fadeSlot.idle)}
+                </Reanimated.View>
+              </View>
             ) : null}
           </Reanimated.View>
         </Pressable>

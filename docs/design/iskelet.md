@@ -55,12 +55,12 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 
 ### 3.1 TopBar türleri (ekranlar kendi başlığını yazmaz)
 
-| Tür         | Ekranlar                                         | Davranış                                                                                                                                                                                                                              |
-| ----------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| buyukBaslik | Sekme ana ekranları                              | Büyük başlık içerikle birlikte kayar ve 5 ile 100 px arasında söner (ölçek 1'den 0.94'e, köşe sol alt). Ana arama ya da filtre alanı varsa o alan tepeye yapışır (3.2); yoksa başlık bara geçer                                       |
-| sayfa       | Arkadaşlar, Profili düzenle, ayar sayfaları      | Üst çubukta geri (46 cam). Altında büyük başlık (34, 800). Kaydırınca başlık 5 ile 50 px arasında söner, bar bandı belirir, bardaki ortalanmış küçük başlık 40 ile 70 px arasında gelir                                               |
-| kapak       | Kendi profilin, başkasının profili, mekan detayı | 5.7, 5.6 ve 5.2'deki gibi                                                                                                                                                                                                             |
-| sohbet      | DM, masa ve mekan sohbeti                        | Geri ve ayrı cam kapsülde avatar, isim, menü                                                                                                                                                                                          |
+| Tür         | Ekranlar                                         | Davranış                                                                                                                                                                                        |
+| ----------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| buyukBaslik | Sekme ana ekranları                              | Büyük başlık içerikle birlikte kayar ve 5 ile 100 px arasında söner (ölçek 1'den 0.94'e, köşe sol alt). Ana arama ya da filtre alanı varsa o alan tepeye yapışır (3.2); yoksa başlık bara geçer |
+| sayfa       | Arkadaşlar, Profili düzenle, ayar sayfaları      | Üst çubukta geri (46 cam). Altında büyük başlık (34, 800). Kaydırınca başlık 5 ile 50 px arasında söner, bar bandı belirir, bardaki ortalanmış küçük başlık 40 ile 70 px arasında gelir         |
+| kapak       | Kendi profilin, başkasının profili, mekan detayı | 5.7, 5.6 ve 5.2'deki gibi                                                                                                                                                                       |
+| sohbet      | DM, masa ve mekan sohbeti                        | Geri ve ayrı cam kapsülde avatar, isim, menü                                                                                                                                                    |
 
 Bar bandı: yükseklik 118, zemin #EFF7F1 yüzde 84 ve 22 blur, alt yüzde 28'i şeffaflaşarak biter (sert çizgi yok). Opaklık kaydırmayla 0'dan 1'e gider.
 
@@ -85,8 +85,8 @@ Bar bandı: yükseklik 118, zemin #EFF7F1 yüzde 84 ve 22 blur, alt yüzde 28'i 
 ### 3.5 Menü ve sheet
 
 - Bir butondan açılan seçenekler o butondan doğan cam bir menüdür: genişlik 256 ile 272, köşe 26, 28 blur, ölçek 0.18'den 1'e, köken butonun konumu, yay (4.3 → `springs.menu`). Dışına basınca kapanır, Vazgeç yok. Yıkıcı seçenek en altta, 6 px'lik bir aralıkla ayrılmış, kırmızı.
-- Alttan açılan sheet sadece içerik ve onay içindir. Kenarlardan 8 px içeride yüzer, köşe 40. Tutamaç ve başlık sabit; sağ üstte 38 X. Altta Tamam ya da Kapat butonu yok. Aşağı çekilerek de kapanır. İçerik başlığın altına bantsız ve yumuşak girer.
-- Geri alınamayan işlemler (Engelle, Arkadaşlıktan çıkar, Çıkış yap, Mekandan ayrıl) ayrı bir onay sheet'inden geçer: kişinin ya da mekanın görseli, ne olacağını anlatan tek cümle, danger buton ve clear Vazgeç.
+- Alttan açılan sheet yalnız içerik, seçim ve form içindir (seçenek listeleri, şikayet nedenleri, oranlar, bildirim ayarı, konum izni); bir şeyi onaylatmaz. Kenarlardan 8 px içeride yüzer, köşe 40. Tutamaç ve başlık sabit; sağ üstte 38 X. Altta Tamam ya da Kapat butonu yok. Aşağı çekilerek de kapanır. İçerik başlığın altına bantsız ve yumuşak girer.
+- Her onay ortada dialogdur (proje sahibinin kararı, 16 Kasım; yeni arayüz tuvali, Ortak kurallar C1): geri alınamayanlar (sohbeti sil, Engelle, hesabı sil, masadan at, Mekandan ayrıl, Çıkış yap) ve kaydetmeden çıkış dahil. Dialog yanlardan 28 içeride, köşe 28, düz yüzey; isteğe bağlı 56'lık ikon diski, başlık, ne olacağını anlatan tek cümle, alt alta ana eylem ve altında "Vazgeç" ya da işin öbür yolu. Kırmızı düğme yalnız geri alınamaz işlemde. Örtü düz karartmadır, bulanıklık yok (C2). Açılış `MOTION.dissolve` (240 ms), kapanış 150 ms; dışarı dokunma, Android geri ve Vazgeç kapatır, işlem sürerken kapanmaz (`src/motion/Dialog.tsx`, `src/lib/overlayStore.ts` → `confirm`).
 
 ## 4. Hareket kuralları
 
@@ -185,10 +185,12 @@ Kaydırmaya bağlı hiçbir harekette yumuşatma eğrisi yoktur; her şey parmak
 - Profili düzenle: sayfa türü. Kapak ve fotoğraf profildeki gibi tek önizlemede. Kapağın üstündeki clear "Kapak" butonu Değiştir ve Kaldır menüsünü açar; fotoğrafta clear kamera butonu var. Alanlarda sayaç ve odakta yeşil halka (3 px, #0E8745 yüzde 18). Doğum tarihi bir ayar satırı: kilit ve "Değiştirilemez". Kaydet üst çubukta clear.
 - Arkadaşlar: sayfa türü, alt başlık "4 arkadaş". Gruplu liste, satırda clear cam mesaj butonu (46). Peek kanki listenin kenarından bakar.
 
-### 5.9 Ayarlar (sheet)
+### 5.9 Ayarlar (sayfa)
 
-- Sıra: Bildirimler, Gizlilik, Hesap (renkli kare ikonlu satırlar); OYUNLARA KATILIM seçimi ve kısa açıklama; GÖRÜNÜM seçimi; ayrı grupta kırmızı Çıkış yap (onay sheet'i); en altta TEST SÜRÜMÜ satırları (sadece test sürümünde).
-- Başlık ve X sabit, Tamam yok.
+- Tam sayfa (proje sahibinin kararı, 16 Kasım; yeni arayüz tuvali `Ayarlar`): Profil'den sağdan iter (yığının varsayılan geçişi, 4.4), geri tuşu ve kenardan kaydırma geri götürür. Bildirim ayarları, Gizlilik, Hesap, Engellenenler ve Sessize alınanlar aynı yığında itilir.
+- Üst: 44'lük yuvarlak geri düğmesi ve yanında 700 21/26 başlık; içerikle kaymaz, büyük başlık yok. Zemin bulutsuz düz canvas (koyuda siyah).
+- Sıra: Bildirimler, Gizlilik, Hesap (kart yok, satırlar zeminde: en az 56, ikon 24 mürekkep renginde, 600 16/20, ok; ince çizgi 38'den); "Oyunlara katılım" seçimi ve kısa açıklama; "Görünüm" seçimi; kırmızı Çıkış yap satırı (onay sheet'i; dialoga geçiş ayrı pakette); en altta "Test sürümü" satırları (sadece test sürümünde).
+- Bölüm başlıkları küçük harf, 700 13/18 muted. Bölmeli seçicinin seçili parçası açıkta mürekkep zemin ve beyaz yazı, koyuda %94 beyaz.
 
 ### 5.10 Kapsülün (düzenleyici)
 
@@ -211,11 +213,11 @@ Kaydırmaya bağlı hiçbir harekette yumuşatma eğrisi yoktur; her şey parmak
 
 ## 6. Tasarımdan bağımsız hatalar
 
-| No  | Hata                                                                                                                                                                                             | Yer                                                    |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| 1   | Geçmiş listesi ve rozetler eski GAME_NAMES listesini kullanıyor ("Sahtekar", "Kapsül Anlat", "Sohbet"). Güncel adlar kullanılmalı: Krot, Kinshi, Sohbet kartları                                 | `supabase/functions/_shared/pure/brand.ts`, `i18n/tr.ts` |
-| 2   | Dolu bir masa lobiye açılabiliyor. Buton pasif olmalı ve sunucu da isteği reddetmeli                                                                                                             | Lobi ve masa uç noktaları                              |
-| 3   | Kapsül düzenleyicide önizlemenin altında boş, gri bir öğe var                                                                                                                                    | Kapsül ekranı                                          |
-| 4   | Kaydırmaya başlarken satırlar basılmış görünüyor                                                                                                                                                 | Tap (2.3)                                              |
-| 5   | iPhone'da 120 Hz kapalı: Info.plist'e `CADisableMinimumFrameDurationOnPhone = true` eklenmeli. Native build ister, OTA ile gelmez; bir sonraki build'e ekle                                      | `app.config.ts`                                        |
-| 6   | Sistemde "saydamlığı azalt" açıksa cam yerine dolu ve tonlu yüzey kullanılmalı                                                                                                                   | Cam bileşenleri                                        |
+| No  | Hata                                                                                                                                                             | Yer                                                      |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 1   | Geçmiş listesi ve rozetler eski GAME_NAMES listesini kullanıyor ("Sahtekar", "Kapsül Anlat", "Sohbet"). Güncel adlar kullanılmalı: Krot, Kinshi, Sohbet kartları | `supabase/functions/_shared/pure/brand.ts`, `i18n/tr.ts` |
+| 2   | Dolu bir masa lobiye açılabiliyor. Buton pasif olmalı ve sunucu da isteği reddetmeli                                                                             | Lobi ve masa uç noktaları                                |
+| 3   | Kapsül düzenleyicide önizlemenin altında boş, gri bir öğe var                                                                                                    | Kapsül ekranı                                            |
+| 4   | Kaydırmaya başlarken satırlar basılmış görünüyor                                                                                                                 | Tap (2.3)                                                |
+| 5   | iPhone'da 120 Hz kapalı: Info.plist'e `CADisableMinimumFrameDurationOnPhone = true` eklenmeli. Native build ister, OTA ile gelmez; bir sonraki build'e ekle      | `app.config.ts`                                          |
+| 6   | Sistemde "saydamlığı azalt" açıksa cam yerine dolu ve tonlu yüzey kullanılmalı                                                                                   | Cam bileşenleri                                          |

@@ -45,6 +45,7 @@ import {
 import { TimeUpOverlay } from '@/features/games/TimeUpOverlay';
 import { tabuStats, TurnReady } from '@/features/games/TurnReady';
 import { tr } from '@/i18n/tr';
+import { confirm as openConfirm } from '@/lib/overlayStore';
 import {
   BADGE,
   CHAT_THEMES,
@@ -136,6 +137,50 @@ function ButtonsBlock() {
   );
 }
 
+// The centred confirmation (motion/Dialog, lib/overlayStore → confirm), not on a screen yet: a
+// danger one with its disc whose action waits a moment, and a plain one.
+const PREVIEW_WAIT_MS = 1200;
+function DialogBlock() {
+  return (
+    <PreviewBlock title="Dialog · danger · plain">
+      <Button
+        variant="neutral"
+        testID="preview-dialog-danger"
+        label={tr.safety.block}
+        onPress={() =>
+          openConfirm({
+            title: tr.safety.blockConfirmTitle,
+            note: tr.venueChat.blockConfirmBody,
+            icon: 'block',
+            tone: 'danger',
+            confirmLabel: tr.safety.blockConfirm,
+            confirmIcon: 'block',
+            cancelLabel: tr.common.cancel,
+            onConfirm: () => new Promise<void>((done) => setTimeout(done, PREVIEW_WAIT_MS)),
+            testID: 'preview-dialog-danger-ok',
+          })
+        }
+      />
+      <Button
+        variant="neutral"
+        testID="preview-dialog-plain"
+        label={tr.settings.signOut}
+        onPress={() =>
+          openConfirm({
+            title: tr.settings.signOutConfirmTitle,
+            note: tr.settings.signOutConfirmBody,
+            tone: 'plain',
+            confirmLabel: tr.settings.signOut,
+            cancelLabel: tr.common.cancel,
+            onConfirm: () => undefined,
+            testID: 'preview-dialog-plain-ok',
+          })
+        }
+      />
+    </PreviewBlock>
+  );
+}
+
 function GamesSet() {
   const [score, setScore] = useState(8);
   const [intro, setIntro] = useState(false);
@@ -218,6 +263,7 @@ function GamesSet() {
           onPress={() => setIntro(true)}
         />
       </PreviewBlock>
+      <DialogBlock />
       <ConfirmSheet
         visible={confirm}
         testID="preview-confirm-ok"

@@ -1,6 +1,7 @@
 import { type ComponentType, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
+import type { ArtNeed } from '@/capsule/useArt';
 import { useLabSkia, useLabWhole } from '@/lib/drawLab';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { capsulePainter, capsuleSkiaOn, capsuleWholeOn } from '@/theme/capsuleSkia';
@@ -19,12 +20,12 @@ export type SkiaKit = {
   painter: InsidePainter;
   prepare: (layer: FxInside, place: FxPlace) => void;
   Warm: ComponentType;
-  // The whole drawing on one canvas (FxSkia.tsx → SkiaWhole) and its still layers read ahead.
+  // The whole drawing on one canvas (FxSkia.tsx → SkiaWhole) and the resources a drawing needs on
+  // it, itself made in the queue (FxSkia.tsx → lookNeed): nothing of it is made in a render.
   Whole: WholePainter;
-  prepareStill: (xml: string, width: number, height: number) => void;
-  prepareWholeInside: (layer: FxInside, place: FxPlace) => void;
-  // A small still drawing as a picture's address (FxSkia.tsx → tileUri), null when not made.
-  tile: (xml: string, size: number) => string | null;
+  lookNeed: (xml: string, width: number, height: number, moving: boolean) => ArtNeed;
+  // A small still drawing as a picture's address (FxSkia.tsx → tileNeed).
+  tileNeed: (xml: string, size: number) => ArtNeed;
 };
 // Kept in an object: a function given to useState would be called as its initial value.
 type Loaded = SkiaKit | 'failed';
@@ -40,9 +41,8 @@ function load(): Promise<Loaded> {
             prepare: mod.prepareInside,
             Warm: mod.SkiaWarm,
             Whole: mod.SkiaWhole,
-            prepareStill: mod.prepareStill,
-            prepareWholeInside: mod.prepareWholeInside,
-            tile: mod.tileUri,
+            lookNeed: mod.lookNeed,
+            tileNeed: mod.tileNeed,
           }
         : 'failed',
     (): Loaded => 'failed',

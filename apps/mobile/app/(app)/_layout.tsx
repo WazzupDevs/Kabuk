@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ConnectionBanner } from '@/components/ConnectionBanner';
+import { OverlayHost } from '@/components/OverlayHost';
 import { useDistrictLaunchLocate } from '@/features/district/launchLocate';
 import { useGiftLogin } from '@/features/gifts/queries';
 import { usePushNavigation, useSilentPushRegistration } from '@/features/push/push';
@@ -35,9 +36,9 @@ export default function GroupLayout() {
       <SafeAreaProvider style={{ flex: 1 }}>
         <Stack screenOptions={stackOptions}>
           {/* Listed first: a group opened by its guard (after sign-up or sign-in, with no address)
-            opens on its first listed screen, which was the Ayarlar sheet. */}
+            opens on its first listed screen, which was the Ayarlar sheet. Ayarlar is a page now
+            (16 Kasım): pushed from the right as every page, its pages on the same stack. */}
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="settings" options={SHEET} />
           <Stack.Screen name="notifications" options={SHEET} />
           <Stack.Screen name="checkin/index" options={SHEET} />
           <Stack.Screen name="spot" options={SHEET} />
@@ -45,6 +46,7 @@ export default function GroupLayout() {
       </SafeAreaProvider>
       {/* A request to the table opens over any screen (docs/SPEC_V3.md §23.C). */}
       <IncomingRequestHost />
+      <OverlayHost />
     </View>
   );
 }
