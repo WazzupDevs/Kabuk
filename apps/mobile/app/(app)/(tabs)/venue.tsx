@@ -15,6 +15,7 @@ import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { CreateTableSheet } from '@/features/rooms/CreateTableSheet';
+import { createDialogError, DialogErrorLine } from '@/features/rooms/DialogError';
 import { Lobby } from '@/features/rooms/Lobby';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { useCurrentRoom, useRoom, useVenueTables } from '@/features/rooms/queries';
@@ -26,13 +27,14 @@ import { tr } from '@/i18n/tr';
 import { trackOnce } from '@/lib/analytics';
 import { callLeave } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm } from '@/lib/overlayStore';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { PinLayer, Sheet } from '@/motion';
+import { PinLayer } from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { VENUE } from '@/theme/venue';
-import { Btn, T } from '@/aura/kit';
+import { T } from '@/aura/kit';
 
 type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
 
@@ -58,7 +60,6 @@ export default function VenueScreen() {
   const now = useNow(30_000);
   const [lobbySheet, setLobbySheet] = useState<LobbySheet | null>(null);
   const [creating, setCreating] = useState(false);
-  const [leaving, setLeaving] = useState(false);
   const scroll = useRef<ScrollView>(null);
   const reduceMotion = useReduceMotion();
 
@@ -67,10 +68,35 @@ export default function VenueScreen() {
     mutationFn: callLeave,
     onSuccess: () => {
       if (checkIn.data) endSession(checkIn.data.id, checkIn.data.created_at);
-      setLeaving(false);
       return queryClient.invalidateQueries();
     },
   });
+
+  // "Mekandan ayrıl" asks first (iskelet.md → 3.5): a centred dialog (lib/overlayStore → confirm);
+  // it can be undone by checking in again, so plain. A failed try stays open with its error.
+  const openLeave = () => {
+    const holder = createDialogError();
+    confirm({
+      title: tr.venue.leaveConfirmTitle,
+      note: tr.venue.leaveConfirmBody,
+      icon: 'logout',
+      tone: 'plain',
+      confirmLabel: tr.venue.leaveConfirm,
+      confirmIcon: 'logout',
+      cancelLabel: tr.common.cancel,
+      testID: 'venue-leave-confirm',
+      onConfirm: async () => {
+        holder.set(null);
+        try {
+          await leave.mutateAsync();
+        } catch (e) {
+          holder.set(e);
+          throw e;
+        }
+      },
+      children: <DialogErrorLine holder={holder} />,
+    });
+  };
 
   const expiresAt = checkIn.data ? Date.parse(checkIn.data.expires_at) : null;
   const expired = expiresAt !== null && expiresAt <= now;
@@ -171,7 +197,7 @@ export default function VenueScreen() {
           atTable={!!room}
           minutesLeft={minutesLeft}
           stayShare={stayShare}
-          onLeave={() => setLeaving(true)}
+          onLeave={openLeave}
           leaving={leave.isPending}
         />
       }
@@ -244,42 +270,6 @@ export default function VenueScreen() {
             anonymous={anonymous}
           />
         ) : null}
-        {/* "Mekandan ayrıl" asks first (iskelet.md → 3.5): what happens, the red action and
-            "Vazgeç". */}
-        <Sheet
-          visible={leaving}
-          onClose={() => {
-            if (!leave.isPending) setLeaving(false);
-          }}
-          title={tr.venue.leaveConfirmTitle}
-        >
-          <T v="fine">{tr.venue.leaveConfirmBody}</T>
-          {leave.isError ? (
-            <T v="fine" color={KIT.danger}>
-              {errorMessage(leave.error)}
-            </T>
-          ) : null}
-          <View style={{ gap: KIT.size.chipsGap }}>
-            <Btn
-              block
-              tall
-              variant="danger"
-              icon="logout"
-              testID="venue-leave-confirm"
-              label={tr.venue.leaveConfirm}
-              loading={leave.isPending}
-              onPress={() => leave.mutate()}
-            />
-            <Btn
-              block
-              tall
-              variant="glassy"
-              label={tr.common.cancel}
-              disabled={leave.isPending}
-              onPress={() => setLeaving(false)}
-            />
-          </View>
-        </Sheet>
       </View>
     </Screen>
   );
