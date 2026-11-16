@@ -634,6 +634,7 @@ export function tileNeed(xml: string, size: number): ArtNeed {
 }
 
 const WHOLE_PAD = 0.15;
+const NO_READ: WholeRead[] = [];
 
 export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: WholeProps) {
   const ratio = PixelRatio.get();
@@ -663,9 +664,13 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
     return readWhole(whole, width, height, ratio, got);
   }, [whole, needs, arts, width, height, ratio]);
   // The last drawing made stays on the canvas until the next one is (a feeling's face, a look the
-  // stage has not waited for): never an empty canvas. Held while it is shown.
+  // stage has not waited for): never an empty canvas. Held while it is shown. No layers (an idle
+  // canvas, FxSvg → idle) draw nothing and keep nothing: what comes after is drawn as on a new
+  // canvas, made before the frame when it is not made yet.
   const [last, setLast] = useState<{ read: WholeRead[]; needs: readonly ArtNeed[] } | null>(null);
-  if (read && needs && last?.read !== read) setLast({ read, needs });
+  const none = read !== null && read.length === 0;
+  if (none && last) setLast(null);
+  if (read && needs && !none && last?.read !== read) setLast({ read, needs });
   usePinned(last?.needs ?? null);
   const pending = whole === undefined || (whole !== null && !arts);
   const drawing = read ?? (pending ? (last?.read ?? null) : null);
@@ -698,8 +703,12 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
   }, [waiting, plansNeeded, layers, place, ratio, width, height]);
   const showing = drawing !== null;
   useLayoutEffect(() => (showing ? holdCanvas() : undefined), [showing]);
+  // A canvas once on the screen stays there while nothing is made (an idle canvas given a look:
+  // a new one would make its surface again).
+  const [mounted, setMounted] = useState(false);
+  if (showing && !mounted) setMounted(true);
   if (whole === null || (arts && !read)) return fallback;
-  if (!drawing) return <View pointerEvents="none" style={{ width, height }} />;
+  if (!drawing && !mounted) return <View pointerEvents="none" style={{ width, height }} />;
   const pad = Math.ceil(Math.max(width, height) * WHOLE_PAD);
   return (
     <SkiaBoundary fallback={fallback}>
@@ -714,7 +723,13 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
           }}
         >
           <Group transform={[{ translateX: pad }, { translateY: pad }]}>
-            <WholeLayers layers={drawing} width={width} height={height} on={on} lane={lane} />
+            <WholeLayers
+              layers={drawing ?? NO_READ}
+              width={width}
+              height={height}
+              on={on}
+              lane={lane}
+            />
           </Group>
         </Canvas>
       </View>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { stagePasses, TILE_WAIT_MS, tileShown } from '../../capsule/stageGate';
+import { fadeCanvas, stagePasses, TILE_WAIT_MS, tileShown } from '../../capsule/stageGate';
 
 describe('tileShown', () => {
   it('a tile on the screen keeps its last picture until the new one is made', () => {
@@ -26,5 +26,19 @@ describe('stagePasses', () => {
   it('waits a few turns at most', () => {
     expect(TILE_WAIT_MS).toBeGreaterThan(0);
     expect(TILE_WAIT_MS).toBeLessThanOrEqual(300);
+  });
+});
+
+describe('fadeCanvas', () => {
+  it('is not on the screen before the first fade', () => {
+    expect(fadeCanvas(false, false)).toEqual({ mounted: false, idle: true });
+  });
+  it('comes with the first fade and stays after it, idle', () => {
+    let at = fadeCanvas(false, true);
+    expect(at).toEqual({ mounted: true, idle: false });
+    at = fadeCanvas(at.mounted, false);
+    expect(at).toEqual({ mounted: true, idle: true });
+    // The next change fades on the same canvas.
+    expect(fadeCanvas(at.mounted, true)).toEqual({ mounted: true, idle: false });
   });
 });
