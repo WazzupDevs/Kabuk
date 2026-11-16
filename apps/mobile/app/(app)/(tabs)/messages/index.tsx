@@ -1,33 +1,32 @@
-import { inboxStamp } from '@shared/dmInbox.ts';
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { normalize } from '@shared/trText.ts';
 import { useQueryClient } from '@tanstack/react-query';
-import { type ReactNode, useDeferredValue, useEffect, useRef, useState } from 'react';
+import { router } from 'expo-router';
+import { useDeferredValue, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { GlassSearch } from '@/aura/GlassSearch';
-import { Av, Badge, Glass, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
-import { DeliveryTicks } from '@/components/ChatBubble';
+import { Av, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarSpace } from '@/components/TabBar';
-import { TypingDots } from '@/components/TypingDots';
 import { EmptyCard } from '@/features/explore/EmptyCard';
 import { pruneDmCache } from '@/features/friends/dmCache';
+import { ArchivedRow, InboxCard, PinnedHead, useThreadMenu } from '@/features/friends/InboxRows';
 import { openDm } from '@/features/friends/openDm';
 import { useSessionStore } from '@/features/auth/session';
 import { restoreDm, useDmInbox, useFriends, useRequestCount } from '@/features/friends/queries';
 import { RequestList } from '@/features/friends/RequestList';
-import { useDmTyping } from '@/features/friends/useDmTyping';
 import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
-import { PopIn, Rise, StickyField } from '@/motion';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { PopIn, StickyField } from '@/motion';
+import { KIT } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
 import { SPACING } from '@/theme/tokens';
 
@@ -210,8 +209,8 @@ function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => v
 }
 
 function Chats({ now, query }: { now: Date; query: string }) {
-  const { scheme } = useKit();
   const inbox = useDmInbox();
+  const menu = useThreadMenu(inbox.data ?? []);
   const loading = useLoaderHold(inbox.isPending);
   // The conversations' copies on the phone into memory (useDmMessages): a DM opened from here
   // shows its messages as it slides in, as Telegram Android opens a chat.
@@ -267,8 +266,14 @@ function Chats({ now, query }: { now: Date; query: string }) {
       </View>
     );
   }
-  const shown = byName(inbox.data, query);
-  if (shown.length === 0) {
+  // Searching: every conversation by name, the archived too. Otherwise the pinned on their own card
+  // under "Sabitlenenler" (the server's order: the last pinned on top), the rest, and Arşivlenenler
+  // under them (tuval Main, MesajlarArsivRozet; docs/SPEC_V4.md §4.X).
+  const searching = normalize(query).trim() !== '';
+  const { chats, archived, archivedUnread } = splitInbox(inbox.data);
+  const pinned = searching ? [] : chats.filter((t) => t.pinned);
+  const rest = searching ? byName(inbox.data, query) : chats.filter((t) => !t.pinned);
+  if (searching && rest.length === 0) {
     // iskelet.md → 3.4: nothing found, on the small empty card.
     return (
       <EmptyCard
@@ -279,174 +284,28 @@ function Chats({ now, query }: { now: Date; query: string }) {
     );
   }
   return (
-    <View style={{ paddingBottom: NEW_CHAT }}>
-      {/* The room under the last row for the "+" over it. */}
-      {/* tuval Mesajlar: the conversations on one `.card`, 26 round, 4 / 6 inside; the hairline
-          over each row's words but the first (InboxRow). */}
-      <Glass
-        face={M[scheme].card}
-        radius={M.card.radius}
-        style={{
-          borderRadius: M.card.radius,
-          paddingVertical: M.card.padY,
-          paddingHorizontal: M.card.padX,
-        }}
-      >
-        {shown.map((t, i) => (
-          <Rise key={t.publicId} index={i}>
-            <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} follows={i > 0} />
-          </Rise>
-        ))}
-      </Glass>
+    // The room under the last row for the "+" over it.
+    <View style={{ paddingBottom: NEW_CHAT, gap: SPACING[2] }}>
+      {pinned.length > 0 ? (
+        <>
+          <PinnedHead count={pinned.length} />
+          <InboxCard threads={pinned} now={now} onHold={menu.open} />
+        </>
+      ) : null}
+      {rest.length > 0 ? (
+        <InboxCard threads={rest} now={now} onHold={menu.open} from={pinned.length} />
+      ) : null}
+      {!searching && archived.length > 0 ? (
+        <ArchivedRow
+          count={archived.length}
+          unread={archivedUnread}
+          onPress={() => router.push('/messages/archive')}
+        />
+      ) : null}
+      {menu.menu}
     </View>
   );
 }
 
 // The conversations brought into memory from the phone: the first screenfuls.
 const WARM_ROWS = 20;
-
-// Rows past this many don't listen for "yazıyor": a Realtime connection carries a limited number
-// of channels, and the rows further down are off screen.
-const TYPING_ROWS = 30;
-
-// A conversation (tuval Mesajlar): 10 / 8 inside, the 54 face in a white ring, 13 from the words;
-// the words 4 above and under, the hairline over them when a row is above; the name (16/700) and
-// the read ticks and time (12.5/600) on top, the last message (14/500, one line) or "yazıyor" 3
-// under it. iskelet.md → 5.4: unread, the name and the last line bold, the time green and the count
-// on a green badge at the right.
-function InboxRow({
-  thread: t,
-  now,
-  listen,
-  follows,
-}: {
-  thread: DmInboxThread;
-  now: Date;
-  listen: boolean;
-  follows: boolean;
-}) {
-  const { scheme } = useKit();
-  const look = M[scheme];
-  const name = t.displayName ?? tr.profile.noName;
-  const unread = t.unreadCount > 0;
-  const threadId = t.threadId;
-  const preview = <Preview thread={t} unread={unread} />;
-  return (
-    <Li
-      testID={`inbox-${name}`}
-      accessibilityLabel={tr.messages.row(name, t.lastBody ?? tr.messages.noMessage, t.unreadCount)}
-      padY={M.row.padY}
-      padX={M.row.padX}
-      gap={M.row.gap}
-      onPress={
-        threadId ? () => openDm({ threadId, publicId: t.publicId, name: t.displayName }) : undefined
-      }
-    >
-      <Av
-        size="inbox"
-        name={name}
-        photoUrl={t.photoUrl}
-        board={{ ring: M.row.ring, ringColor: look.faceRing, shadow: look.faceShadow }}
-      />
-      <View
-        style={{
-          flex: 1,
-          minWidth: 0,
-          gap: M.row.lineGap,
-          paddingVertical: M.row.wordsPadY,
-          borderTopWidth: follows ? KIT.size.hair : 0,
-          borderTopColor: look.hair,
-        }}
-      >
-        <View style={BETWEEN}>
-          <T v="placeName" style={[{ flex: 1 }, unread ? KIT_TYPE.bold : null]}>
-            {name}
-          </T>
-          {t.lastMessageAt ? (
-            // The own last message's ticks by the time (Telegram Android).
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: M.row.metaGap }}>
-              {t.lastFromMe && t.lastStatus ? (
-                <DeliveryTicks delivery={t.lastStatus} size={M.ticks.width} />
-              ) : null}
-              <T v="personLine" tabular color={unread ? KIT.primary : look.time}>
-                {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
-              </T>
-            </View>
-          ) : null}
-        </View>
-        <View style={BETWEEN}>
-          {threadId && listen ? (
-            <TypingOr threadId={threadId} lastMessageAt={t.lastMessageAt}>
-              {preview}
-            </TypingOr>
-          ) : (
-            preview
-          )}
-          {unread ? (
-            <View accessible accessibilityLabel={tr.messages.unread(t.unreadCount)}>
-              <Badge green count={t.unreadCount} />
-            </View>
-          ) : null}
-        </View>
-      </View>
-    </Li>
-  );
-}
-const BETWEEN = {
-  flexDirection: 'row' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'space-between' as const,
-  gap: M.row.metaGap,
-};
-
-// The last message, ink and bold while unread (its ticks are by the time); none yet, "Henüz mesaj
-// yok" slanted and quieter (iskelet.md → 5.4; tuval Mesajlar: #4A6550, none #7C8F82).
-function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
-  const { c, scheme } = useKit();
-  const none = t.lastBody === null;
-  return (
-    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
-      <T
-        v="inboxPreview"
-        color={none ? M[scheme].none : unread ? c.ink : M[scheme].preview}
-        lines={1}
-        style={[{ flex: 1 }, none ? KIT_TYPE.italic : unread ? KIT_TYPE.bold : null]}
-      >
-        {t.lastBody ?? tr.messages.noMessage}
-      </T>
-    </View>
-  );
-}
-
-// "yazıyor" and the dots in place of the last message while the friend types (dm_typing, as in the
-// DM).
-function TypingOr({
-  threadId,
-  lastMessageAt,
-  children,
-}: {
-  threadId: string;
-  lastMessageAt: string | null;
-  children: ReactNode;
-}) {
-  const { typing, clearTyping } = useDmTyping(threadId);
-  // A new message arrived: the dots go at once.
-  const seen = useRef(lastMessageAt);
-  useEffect(() => {
-    if (lastMessageAt === seen.current) return;
-    seen.current = lastMessageAt;
-    clearTyping();
-  }, [lastMessageAt, clearTyping]);
-  if (!typing) return children;
-  return (
-    <View
-      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}
-      testID="inbox-typing"
-    >
-      <TypingDots />
-      <T v="fine" strong color={KIT.primary}>
-        {tr.messages.typing}
-      </T>
-    </View>
-  );
-}
