@@ -6,13 +6,12 @@ import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
-import { Foot, WarnRow } from '@/features/district/parts';
 import { putDistrictState } from '@/features/district/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { districtApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { confirm } from '@/lib/overlayStore';
+import { confirm, type ConfirmOptions } from '@/lib/overlayStore';
 import { SPACING } from '@/theme/tokens';
 
 // The semt room's sheets (app/(app)/district/room.tsx): its options (⋯) and "Oturumu kapat"; apart
@@ -97,7 +96,22 @@ export function OptionsSheet({
 // "Oturumu kapat" (the owner's call, 8 Kasım; §4.V): asked once, in the centred dialog; closed, the
 // room's state has no session and the screen goes to SemtBitti, where [Yeniden gir] starts 2 new
 // hours with no question. It can be undone that way, so the dialog is plain. A thrown error leaves
-// the dialog open for another try (the visual gate's `EndSheet` below still draws the old sheet).
+// the dialog open with its error for another try. The visual gate draws the same options
+// (`endSessionOptions`).
+export function endSessionOptions(run: () => Promise<unknown>): ConfirmOptions {
+  return {
+    title: tr.district.end.title,
+    note: tr.district.end.body,
+    tone: 'plain',
+    confirmLabel: tr.district.end.yes,
+    cancelLabel: tr.common.cancel,
+    testID: 'district-end-yes',
+    onConfirm: async () => {
+      await run();
+    },
+  };
+}
+
 export function useEndSession(): () => void {
   const queryClient = useQueryClient();
   const end = useMutation({
@@ -106,59 +120,6 @@ export function useEndSession(): () => void {
     onSuccess: (next) => putDistrictState(queryClient, next),
   });
   return () => {
-    confirm({
-      title: tr.district.end.title,
-      note: tr.district.end.body,
-      tone: 'plain',
-      confirmLabel: tr.district.end.yes,
-      cancelLabel: tr.common.cancel,
-      testID: 'district-end-yes',
-      onConfirm: async () => {
-        await end.mutateAsync();
-      },
-    });
+    confirm(endSessionOptions(() => end.mutateAsync()));
   };
-}
-
-// "Oturumu kapat" (the owner's call, 8 Kasım; §4.V): asked once; closed, the room's state has no
-// session and the screen goes to SemtBitti, where [Yeniden gir] starts 2 new hours with no question.
-// Out of the sheet (a tap outside, back) is "Vazgeç".
-export function EndSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const queryClient = useQueryClient();
-  const end = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: () => districtApi.leave(),
-    onSuccess: (next) => putDistrictState(queryClient, next),
-  });
-  return (
-    <Sheet
-      visible={visible}
-      onClose={() => {
-        if (!end.isPending) onClose();
-      }}
-      title={tr.district.end.title}
-      footer={
-        <Foot>
-          {end.isError ? <WarnRow tone="danger" text={errorMessage(end.error)} /> : null}
-          <Btn
-            block
-            variant="danger"
-            label={tr.district.end.yes}
-            testID="district-end-yes"
-            loading={end.isPending}
-            onPress={() => !end.isPending && end.mutate()}
-          />
-          <Btn
-            block
-            variant="glassy"
-            label={tr.common.cancel}
-            disabled={end.isPending}
-            onPress={onClose}
-          />
-        </Foot>
-      }
-    >
-      <T v="body">{tr.district.end.body}</T>
-    </Sheet>
-  );
 }

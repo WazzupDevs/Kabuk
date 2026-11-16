@@ -61,7 +61,7 @@ describe('the sheet (iskelet.md → 3.5, 4.3)', () => {
   });
 
   it('a confirmation: danger and a clear cancel', () => {
-    const confirm = code('src/components/ConfirmSheet.tsx');
+    const confirm = code('src/motion/Dialog.tsx');
     expect(confirm).toMatch(/variant="glassy"/);
     expect(confirm).toMatch(/variant=\{danger \? 'danger' : 'primary'\}/);
   });
@@ -146,7 +146,8 @@ describe('the centred confirmation (Hareket tablosu A2, Ortak kurallar C1, C2)',
   });
 
   it('the action waits and nothing closes it meanwhile; cancel keeps the ConfirmSheet testID', () => {
-    expect(dialog).toMatch(/loading=\{pending\}/);
+    expect(dialog).toMatch(/loading=\{running === 'confirm'\}/);
+    expect(dialog).toMatch(/loading=\{running === 'other'\}/);
     expect(dialog).toMatch(/disabled=\{pending\}/);
     expect(dialog).toMatch(/`\$\{testID\}-cancel`/);
     const host = code('src/components/OverlayHost.tsx');

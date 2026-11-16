@@ -9,6 +9,8 @@ import {
   type ConfirmOptions,
   isConfirm,
   openOverlay as openStored,
+  runDialogAction,
+  useDialogRun,
   useOverlay,
 } from './overlayStore';
 
@@ -113,5 +115,33 @@ describe('overlayStore', () => {
     const id = confirm(options());
     expect(useSheetCloser.getState().round).toBe(round + 1);
     expect(useOverlay.getState().open?.id).toBe(id);
+  });
+
+  it('a failed try keeps the dialog open with its error; the next try clears it and closes', async () => {
+    const onCancel = vi.fn();
+    const id = confirm(options({ onCancel }));
+    const failure = new Error('x');
+    expect(await runDialogAction(id, 'confirm', () => Promise.reject(failure))).toBe(false);
+    expect(useOverlay.getState().open?.id).toBe(id);
+    expect(useDialogRun.getState()).toEqual({ id, running: null, error: failure });
+    expect(await runDialogAction(id, 'other', () => undefined)).toBe(true);
+    expect(useOverlay.getState().open).toBeNull();
+    expect(useDialogRun.getState().error).toBeNull();
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('one way at a time; a new dialog starts with no error', async () => {
+    const id = confirm(options());
+    let done: () => void = () => undefined;
+    const first = runDialogAction(id, 'other', () => new Promise<void>((r) => (done = r)));
+    expect(useDialogRun.getState().running).toBe('other');
+    expect(await runDialogAction(id, 'confirm', () => undefined)).toBe(false);
+    done();
+    expect(await first).toBe(true);
+    const next = confirm(options());
+    await runDialogAction(next, 'confirm', () => Promise.reject(new Error('y')));
+    const again = confirm(options());
+    expect(useDialogRun.getState()).toEqual({ id: again, running: null, error: null });
+    expect(await runDialogAction(next, 'confirm', () => undefined)).toBe(false);
   });
 });

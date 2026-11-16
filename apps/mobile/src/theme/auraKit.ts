@@ -1072,8 +1072,8 @@ export const KIT = {
       dialogDanger: '#FBE1DB',
       onDialogDanger: '#A8301A',
       dialogDisc: 'rgba(214, 64, 40, 0.10)',
-      // The icon on a danger dialog's disc.
-      dialogIcon: '#C8381F',
+      // The icon on a danger dialog's disc (EngelleOnay `.ei`: var(--danger), skall.css #A8301A).
+      dialogIcon: '#A8301A',
       // The dialog's and the sheet's scrim, flat; the long-press menu's over its still copy.
       scrim: 'rgba(3, 27, 11, 0.42)',
       holdScrim: 'rgba(3, 27, 11, 0.30)',

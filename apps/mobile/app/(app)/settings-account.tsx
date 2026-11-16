@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { Linking, View } from 'react-native';
 
-import { Glass, RowList, T, useKit } from '@/aura/kit';
+import { Glass, RowList, T } from '@/aura/kit';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { Wordmark } from '@/components/Wordmark';
@@ -12,7 +12,6 @@ import { useSessionStore } from '@/features/auth/session';
 import { SettingsRow } from '@/features/settings/SettingsRow';
 import { useSignOutConfirm } from '@/features/settings/signOutConfirm';
 import { useProfileView } from '@/features/profile/queries';
-import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
@@ -36,7 +35,6 @@ function maskPhone(phone: string | undefined): string {
 // Hesap (skall tuvali, Hesap, HesapSil): the phone number, masked; what cannot be changed here;
 // İletişim, Çıkış yap and Hesabımı sil (asks first, says what goes and when the backups follow).
 export default function AccountScreen() {
-  const { c } = useKit();
   const phone = useSessionStore((s) => s.session?.user.phone);
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
@@ -52,8 +50,7 @@ export default function AccountScreen() {
     },
   });
   // Hesabımı sil asks first in the centred confirmation (yeni arayüz tuvali, Ortak kurallar C1):
-  // what goes, when the backups follow, the red action. A failed try closes it and the error is said
-  // under the rows, not behind the scrim.
+  // what goes, when the backups follow, the red action. A failed try leaves it open with its error.
   const askDelete = () => {
     remove.reset();
     confirm({
@@ -64,7 +61,9 @@ export default function AccountScreen() {
       confirmIcon: 'trash',
       cancelLabel: tr.common.cancel,
       testID: 'account-delete-confirm',
-      onConfirm: () => remove.mutateAsync().then(noop, noop),
+      onConfirm: async () => {
+        await remove.mutateAsync();
+      },
     });
   };
   return (
@@ -110,16 +109,6 @@ export default function AccountScreen() {
             onPress={askDelete}
           />
         </RowList>
-        {signOut.error ? (
-          <T v="fine" color={c.warn}>
-            {signOut.error}
-          </T>
-        ) : null}
-        {remove.isError ? (
-          <T v="fine" color={c.warn}>
-            {errorMessage(remove.error)}
-          </T>
-        ) : null}
         <View style={{ alignItems: 'center', gap: SPACING[2], marginTop: SPACING[6] }}>
           <Wordmark height={SPACING[5]} />
           <T v="fine" center>
@@ -133,5 +122,3 @@ export default function AccountScreen() {
     </Screen>
   );
 }
-
-function noop(): void {}

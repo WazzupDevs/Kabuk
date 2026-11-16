@@ -15,7 +15,6 @@ import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { CreateTableSheet } from '@/features/rooms/CreateTableSheet';
-import { createDialogError, DialogErrorLine } from '@/features/rooms/DialogError';
 import { Lobby } from '@/features/rooms/Lobby';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { useCurrentRoom, useRoom, useVenueTables } from '@/features/rooms/queries';
@@ -75,7 +74,6 @@ export default function VenueScreen() {
   // "Mekandan ayrıl" asks first (iskelet.md → 3.5): a centred dialog (lib/overlayStore → confirm);
   // it can be undone by checking in again, so plain. A failed try stays open with its error.
   const openLeave = () => {
-    const holder = createDialogError();
     confirm({
       title: tr.venue.leaveConfirmTitle,
       note: tr.venue.leaveConfirmBody,
@@ -86,15 +84,8 @@ export default function VenueScreen() {
       cancelLabel: tr.common.cancel,
       testID: 'venue-leave-confirm',
       onConfirm: async () => {
-        holder.set(null);
-        try {
-          await leave.mutateAsync();
-        } catch (e) {
-          holder.set(e);
-          throw e;
-        }
+        await leave.mutateAsync();
       },
-      children: <DialogErrorLine holder={holder} />,
     });
   };
 
