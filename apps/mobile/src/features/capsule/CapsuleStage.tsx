@@ -35,7 +35,7 @@ import {
 } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
-import { useLabOff } from '@/lib/drawLab';
+import { useLabKeep, useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
 // The stage (v46 `.ced-fig` in `.ced-ring`): 60 × 57 units, the circle (48) 6 in from the left and 8
@@ -176,7 +176,10 @@ export function CapsuleStage({
   const comingList = useArt(comingNeed);
   const comingNeeds = neededBy(comingList);
   const comingMade = useArtsReady(comingNeeds);
-  const comingMadeAll = comingNeed === null || (comingNeeds !== null && comingMade);
+  // A look whose list could not be made (its job threw: capsule/useArt.ts → made) is not waited
+  // for: its canvas draws it the picture way.
+  const comingFailed = comingList?.kind === 'none';
+  const comingMadeAll = comingNeed === null || comingFailed || (comingNeeds !== null && comingMade);
   // Its pictures' copies on the GPU, waited for up to TEXTURE_WAIT_MS once they are made
   // (capsule/stageGate.ts → lookPasses).
   const comingTextured = useArtsTextured(coming && comingMadeAll ? comingNeeds : null);
@@ -209,7 +212,7 @@ export function CapsuleStage({
   // changes (a view moved among its siblings is taken off the window, and its canvas's surface
   // with it).
   const [fadeOn, setFadeOn] = useState(false);
-  const fadeSlot = fadeCanvas(fadeOn, oldLook !== null);
+  const fadeSlot = fadeCanvas(fadeOn, oldLook !== null, useLabKeep());
   if (fadeSlot.mounted && !fadeOn) setFadeOn(true);
   // Reanimated, not Animated's native driver: on Android the SVG inside a view moved by the native
   // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle). At

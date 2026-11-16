@@ -2280,6 +2280,14 @@ export const tr = {
       // The whole capsule's pictures copied to the GPU ahead (theme/capsuleSkia.ts →
       // textureAheadOn).
       textureSwitch: 'Önceden doku',
+      // The whole canvas's P2b ways, each on or off for this phone (lib/drawLab.ts → useLabP2b):
+      // a still part's picture cut to its pixels, fewer layers, the fading look's canvas kept.
+      trimSwitch: 'Parça kırpma',
+      fewSwitch: 'Az katman',
+      keepSwitch: 'Kalıcı tuval',
+      // The capsule's preparation queue (capsule/useArt.ts → artStats).
+      prepStats: (prepared: number, pending: number, failed: number) =>
+        `Hazırlanan ${prepared} / bekleyen ${pending} / hata ${failed}`,
       wholeSides: 'Solda bugünkü çizim, sağda bütün kapsül Skia.',
       skiaGallery: 'Skia yan yana',
       skiaSides: 'Solda bugünkü çizim, sağda Skia.',

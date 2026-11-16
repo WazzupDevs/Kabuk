@@ -58,6 +58,32 @@ export function trimRect(bounds: PxRect | null, width: number, height: number, m
   return { x, y, width: r - x, height: b - y };
 }
 
+// The box a still layer's picture of `width` × `height` pixels is cut to, from its pixels as read
+// back (`pixels`, null when they could not be read). The whole picture when they could not be read,
+// when they are fewer than the picture's, and when no pixel of them is drawn: a part's picture has
+// pixels, and none read back is the reading's failure (a surface not read as it was drawn), never
+// a reason to keep nothing. Only a box of the read pixels is ever smaller than the picture.
+export function keptRect(
+  pixels: ArrayLike<number> | null,
+  width: number,
+  height: number,
+  margin = 1,
+): PxRect {
+  const whole = { x: 0, y: 0, width, height };
+  if (!pixels || pixels.length < width * height * 4) return whole;
+  const bounds = alphaBounds(pixels, width, height);
+  return bounds ? trimRect(bounds, width, height, margin) : whole;
+}
+
+// A picture the canvas can draw: its box and its pixels are not empty, and the picture is the
+// box's size (a cut not of the box asked for draws elsewhere). Else the drawing falls back on its
+// SVG (components/FxSkia.tsx → readWhole).
+export function pictureUsable(rect: PxRect, imageWidth: number, imageHeight: number): boolean {
+  return (
+    rect.width > 0 && rect.height > 0 && imageWidth === rect.width && imageHeight === rect.height
+  );
+}
+
 // A kept box in points at the screen's `ratio`: at its whole pixels, so that it draws on the
 // same pixels as the whole picture did.
 export function pointsOf(rect: PxRect, ratio: number): PtRect {

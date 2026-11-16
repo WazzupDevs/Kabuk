@@ -36,11 +36,11 @@ import {
 } from 'react-native-reanimated';
 
 import {
-  alphaBounds,
+  keptRect,
+  pictureUsable,
   pointsOf,
   type PtRect,
   type PxRect,
-  trimRect,
   unionRect,
 } from '@/capsule/artBounds';
 import {
@@ -56,7 +56,7 @@ import {
   useArtValues,
   usePinned,
 } from '@/capsule/useArt';
-import { labTexture } from '@/lib/drawLab';
+import { labTexture, labTrim, useLabFew, useLabKeep, useLabTrim } from '@/lib/drawLab';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxLayer, FxPlace } from '@/theme/capsuleFx';
 import {
@@ -424,14 +424,13 @@ function holdCanvas(): () => void {
 }
 
 // The pixels a picture drawn on `surface` covers (artBounds.ts), a pixel round them; the whole
-// picture when they cannot be read.
+// picture when they cannot be read, or none of them reads as drawn (artBounds.ts → keptRect).
 function drawnRect(surface: SkSurface, px: number, py: number): PxRect {
   const whole = { x: 0, y: 0, width: px, height: py };
   const full = surface.makeImageSnapshot();
   try {
     const pixels = full.readPixels();
-    if (!(pixels instanceof Uint8Array) || pixels.length < px * py * 4) return whole;
-    return trimRect(alphaBounds(pixels, px, py), px, py);
+    return keptRect(pixels instanceof Uint8Array ? pixels : null, px, py);
   } catch {
     return whole;
   } finally {
@@ -464,7 +463,7 @@ function makeArt(xml: string, width: number, height: number, ratio: number, trim
           Skia.XYWHRect(kept.x, kept.y, kept.width, kept.height),
         );
         // A snapshot not of the box asked for (it should be): the whole picture, as before.
-        if (cut.width() === kept.width && cut.height() === kept.height) {
+        if (pictureUsable(kept, cut.width(), cut.height())) {
           image = cut;
           rect = kept;
         } else cut.dispose();
@@ -500,9 +499,16 @@ function artNeed(xml: string, width: number, height: number, ratio: number, trim
   };
 }
 
-// A still layer's picture, kept to its own pixels.
-function stillNeed(xml: string, width: number, height: number, ratio: number): ArtNeed {
-  return artNeed(xml, width, height, ratio, true);
+// A still layer's picture, kept to its own pixels (`trim`: Çizim ölçümü's "Parça kırpma", on
+// unless turned off there; off, the whole picture as before P2b).
+function stillNeed(
+  xml: string,
+  width: number,
+  height: number,
+  ratio: number,
+  trim: boolean,
+): ArtNeed {
+  return artNeed(xml, width, height, ratio, trim);
 }
 
 // A picture at its pixels (its surface was a whole number of them; a kept box at the whole pixels
@@ -546,6 +552,7 @@ function wholeNeeds(
   width: number,
   height: number,
   ratio: number,
+  trim: boolean,
 ): ArtNeed[] {
   const out = new Map<string, ArtNeed>();
   const add = (n: ArtNeed) => {
@@ -553,7 +560,7 @@ function wholeNeeds(
   };
   const walk = (ls: readonly WholeLayer[]) => {
     for (const l of ls) {
-      if (l.kind === 'still') add(stillNeed(l.xml, width, height, ratio));
+      if (l.kind === 'still') add(stillNeed(l.xml, width, height, ratio, trim));
       else if (l.kind === 'inside') {
         const { plan } = l;
         add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
@@ -565,24 +572,37 @@ function wholeNeeds(
   return [...out.values()];
 }
 
+// A picture's size in pixels; none when it cannot be read (a picture already let go).
+function sizeOf(image: SkImage): [number, number] {
+  try {
+    return [image.width(), image.height()];
+  } catch {
+    return [0, 0];
+  }
+}
+
 // The layers with their made resources; null when one could not be made (the picture way draws).
 function readWhole(
   layers: readonly WholeLayer[],
   width: number,
   height: number,
   ratio: number,
+  trim: boolean,
   got: ReadonlyMap<string, CapsuleArt>,
 ): WholeRead[] | null {
   const artOf = (xml: string, w: number, h: number, trim = false): Art | null => {
     const a = got.get(artNeed(xml, w, h, ratio, trim).key);
-    return a && (a.kind === 'image' || a.kind === 'shapes')
+    if (!a) return null;
+    if (a.kind === 'shapes') return { art: a, width: w, height: h };
+    // An empty picture, or one not of its box, is never drawn as nothing: the picture way draws.
+    return a.kind === 'image' && pictureUsable(a.rect, ...sizeOf(a.image))
       ? { art: a, width: w, height: h }
       : null;
   };
   const out: WholeRead[] = [];
   for (const l of layers) {
     if (l.kind === 'still') {
-      const art = artOf(l.xml, width, height, true);
+      const art = artOf(l.xml, width, height, trim);
       if (!art) return null;
       out.push({ kind: 'still', art });
     } else if (l.kind === 'inside') {
@@ -592,7 +612,7 @@ function readWhole(
       if (!mask || !content) return null;
       out.push({ kind: 'inside', plan, mask, content });
     } else {
-      const inner = readWhole(l.layers, width, height, ratio, got);
+      const inner = readWhole(l.layers, width, height, ratio, trim, got);
       if (!inner) return null;
       out.push({ kind: 'move', move: l.move, layers: inner });
     }
@@ -649,8 +669,9 @@ function wholeOf(
 // is work too): Süsle reads it ahead, and its stage keeps the look shown until it is made.
 export function lookNeed(xml: string, width: number, height: number, moving: boolean): ArtNeed {
   const ratio = PixelRatio.get();
+  const trim = labTrim();
   return {
-    key: `look|${ratio}|${width}x${height}|${moving ? 1 : 0}|${xml}`,
+    key: `look|${trim ? 't' : 'w'}|${ratio}|${width}x${height}|${moving ? 1 : 0}|${xml}`,
     make: () => {
       const out = new Map<string, ArtNeed>();
       const add = (n: ArtNeed) => {
@@ -668,7 +689,7 @@ export function lookNeed(xml: string, width: number, height: number, moving: boo
           add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
           add(artNeed(plan.content, plan.width, plan.height, ratio));
         },
-        (text, w, h) => add(stillNeed(text, w, h, ratio)),
+        (text, w, h) => add(stillNeed(text, w, h, ratio, trim)),
       );
       const needs = [...out.values()];
       return {
@@ -725,10 +746,15 @@ type LastDrawing = {
   width: number;
   height: number;
   ratio: number;
+  trim: boolean;
 };
 
 export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: WholeProps) {
   const ratio = PixelRatio.get();
+  // Çizim ölçümü's P2b ways (on unless turned off there).
+  const trim = useLabTrim();
+  const few = useLabFew();
+  const keep = useLabKeep();
   // Its motions' plans, then its pictures: only what is made is read here (the queue makes them,
   // the ones missing asked for first).
   const plansNeeded = useMemo(() => planNeeds(layers, place, ratio), [layers, place, ratio]);
@@ -741,8 +767,8 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
     return wholeOf(layers, place, ratio, got);
   }, [plans, plansNeeded, layers, place, ratio]);
   const needs = useMemo(
-    () => (whole ? wholeNeeds(whole, width, height, ratio) : null),
-    [whole, width, height, ratio],
+    () => (whole ? wholeNeeds(whole, width, height, ratio, trim) : null),
+    [whole, width, height, ratio, trim],
   );
   const arts = useArts(needs);
   const read = useMemo(() => {
@@ -752,8 +778,8 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
       const a = arts[i];
       if (a) got.set(n.key, a);
     });
-    return readWhole(whole, width, height, ratio, got);
-  }, [whole, needs, arts, width, height, ratio]);
+    return readWhole(whole, width, height, ratio, trim, got);
+  }, [whole, needs, arts, width, height, ratio, trim]);
   // The last drawing made stays on the canvas until the next one is (a feeling's face, a look the
   // stage has not waited for): never an empty canvas. Held while it is shown. No layers (an idle
   // canvas, FxSvg → idle) draw nothing and keep nothing: what comes after is drawn as on a new
@@ -762,7 +788,7 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
   const none = read !== null && read.length === 0;
   if (none && last) setLast(null);
   if (read && needs && whole && !none && last?.read !== read)
-    setLast({ read, needs, layers: whole, width, height, ratio });
+    setLast({ read, needs, layers: whole, width, height, ratio, trim });
   usePinned(last?.needs ?? null);
   // The last drawing read again from the store: one of its pictures may have been put again (its
   // GPU copy, capsule/textureQueue.ts) while it waits, and the CPU one is let go a moment later.
@@ -774,7 +800,7 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
       const a = lastArts[i];
       if (a) got.set(n.key, a);
     });
-    return readWhole(last.layers, last.width, last.height, last.ratio, got) ?? last.read;
+    return readWhole(last.layers, last.width, last.height, last.ratio, last.trim, got) ?? last.read;
   }, [last, lastArts]);
   const pending = whole === undefined || (whole !== null && !arts);
   const drawing = read ?? (pending ? lastRead : null);
@@ -800,17 +826,17 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
     const got = new Map<string, CapsuleArt | undefined>();
     for (const n of plansNeeded) got.set(n.key, capsuleArt.peek(n.key));
     const made = wholeOf(layers, place, ratio, got);
-    if (made) now(wholeNeeds(made, width, height, ratio));
+    if (made) now(wholeNeeds(made, width, height, ratio, trim));
     return () => {
       for (const off of offs) off();
     };
-  }, [waiting, plansNeeded, layers, place, ratio, width, height]);
+  }, [waiting, plansNeeded, layers, place, ratio, width, height, trim]);
   const showing = drawing !== null;
   useLayoutEffect(() => (showing ? holdCanvas() : undefined), [showing]);
   // A canvas once on the screen stays there while nothing is made (an idle canvas given a look:
-  // a new one would make its surface again).
+  // a new one would make its surface again). Çizim ölçümü's "Kalıcı tuval" off: as before P2b.
   const [mounted, setMounted] = useState(false);
-  if (showing && !mounted) setMounted(true);
+  if (showing && !mounted && keep) setMounted(true);
   if (whole === null || (arts && !read)) return fallback;
   if (!drawing && !mounted) return <View pointerEvents="none" style={{ width, height }} />;
   const pad = Math.ceil(Math.max(width, height) * WHOLE_PAD);
@@ -833,6 +859,7 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
               height={height}
               on={on}
               lane={lane}
+              few={few}
             />
           </Group>
         </Canvas>
@@ -841,7 +868,8 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
   );
 }
 
-type WholeDraw = { width: number; height: number; on: boolean; lane: string };
+// `few`: Çizim ölçümü's "Az katman" (on unless turned off there; off, the layers as before P2b).
+type WholeDraw = { width: number; height: number; on: boolean; lane: string; few: boolean };
 
 function WholeLayers({ layers, ...draw }: WholeDraw & { layers: readonly WholeRead[] }) {
   return layers.map((l, i) =>
@@ -861,6 +889,7 @@ function WholeInside({
   content,
   on,
   lane,
+  few,
 }: WholeDraw & { plan: SkiaPlan; mask: Art; content: Art }) {
   const clock = useClock(plan.ms, on, lane);
   const at = useMemo(() => skiaAt(plan), [plan]);
@@ -879,7 +908,7 @@ function WholeInside({
     // Drawn's layers at the crop's corner, cut to the crop (a canvas of its own was its edge); a
     // layer here is the crop's size (the clip is set before it).
     <Group transform={[{ translateX: crop.left }, { translateY: crop.top }]} clip={box}>
-      {mask.art.kind === 'image' ? (
+      {mask.art.kind === 'image' && few ? (
         // One layer: the content, then the mask drawn over it in dst-in (the content times the
         // mask's alpha), the same product as the mask's layer with the content's over it in
         // src-in (the content times the mask's alpha). The mask's picture covers the whole crop:
@@ -935,11 +964,11 @@ function WholeMoved({
   const opacity = useDerivedValue(() => moveOpacityAt(move, clock.value));
   const ratio = PixelRatio.get();
   // One picture faded: its own opacity (one drawing: the same as its layer faded).
-  const one = move.opacity ? onePicture(layers) : null;
+  const one = move.opacity && draw.few ? onePicture(layers) : null;
   // Else the layer kept to what is drawn in it (a layer with no box is the whole canvas).
   const bounds = useMemo(
-    () => (move.opacity && !one ? layersBox(layers, ratio) : null),
-    [move.opacity, one, layers, ratio],
+    () => (move.opacity && !one && draw.few ? layersBox(layers, ratio) : null),
+    [move.opacity, one, layers, ratio, draw.few],
   );
   const inner = <WholeLayers layers={layers} {...draw} />;
   return (

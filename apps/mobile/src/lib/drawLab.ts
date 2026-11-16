@@ -31,6 +31,12 @@ type LabState = LabParts & {
   // The whole drawing's pictures copied to the GPU ahead (theme/capsuleSkia.ts → textureAheadOn):
   // on or off for this phone, or null while the app's own switch decides; kept as `whole` is.
   texture: boolean | null;
+  // The whole canvas's P2b ways (components/FxSkia.tsx, features/capsule/CapsuleStage.tsx), on
+  // unless turned off here: a still part's picture cut to its pixels (`trim`), fewer layers
+  // (`few`), the fading look's canvas kept between fades (`keep`). Kept as `whole` is.
+  trim: boolean;
+  few: boolean;
+  keep: boolean;
   // "Kapanınca koru": the parts turned off by hand stay off when the panel closes.
   hold: boolean;
 };
@@ -42,6 +48,9 @@ export const useDrawLab = create<LabState>(() => ({
   skia: false,
   whole: null,
   texture: null,
+  trim: true,
+  few: true,
+  keep: true,
   hold: false,
 }));
 
@@ -84,6 +93,28 @@ export function labTexture(): boolean | null {
 export function toggleLabTexture(now: boolean) {
   if (!DRAW_LAB) return;
   useDrawLab.setState({ texture: !now });
+}
+
+// The whole canvas's P2b ways (on everywhere but a preview build that turned one off).
+export type LabP2b = { trim: boolean; few: boolean; keep: boolean };
+export function useLabTrim(): boolean {
+  return useDrawLab((s) => !DRAW_LAB || s.trim);
+}
+export function useLabFew(): boolean {
+  return useDrawLab((s) => !DRAW_LAB || s.few);
+}
+export function useLabKeep(): boolean {
+  return useDrawLab((s) => !DRAW_LAB || s.keep);
+}
+// The same outside a render (a look's list is made in the queue).
+export function labTrim(): boolean {
+  return !DRAW_LAB || useDrawLab.getState().trim;
+}
+export function toggleLabP2b(way: keyof LabP2b) {
+  if (!DRAW_LAB) return;
+  useDrawLab.setState((s) =>
+    way === 'trim' ? { trim: !s.trim } : way === 'few' ? { few: !s.few } : { keep: !s.keep },
+  );
 }
 
 export function useLabHold(): boolean {

@@ -162,6 +162,24 @@ describe('createPrepQueue', () => {
     expect(q.stats().failed).toBe(1);
   });
 
+  it('tells of a job that throws by its key, now and in a turn', () => {
+    const failed: string[] = [];
+    const turns: ((d: Deadline) => void)[] = [];
+    const q = createPrepQueue({
+      isDone: () => false,
+      schedule: (slice) => turns.push(slice),
+      onFail: (key) => failed.push(key),
+    });
+    const boom = () => {
+      throw new Error('boom');
+    };
+    q.want('w', boom);
+    turns.shift()?.({ timeRemaining: () => 1 });
+    q.now('n', boom);
+    expect(failed).toEqual(['w', 'n']);
+    expect(q.stats().failed).toBe(2);
+  });
+
   it('times its jobs only with a clock', () => {
     let t = 0;
     const q = createPrepQueue({

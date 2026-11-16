@@ -60,6 +60,7 @@ export function createPrepQueue({
   now: clock,
   perSlice = 8,
   remember = 2000,
+  onFail,
 }: {
   isDone: (key: string) => boolean;
   // Runs `slice` later: at once (`urgent`: a drawing waits) or in idle time.
@@ -68,6 +69,8 @@ export function createPrepQueue({
   now?: () => number;
   perSlice?: number;
   remember?: number;
+  // Told of a job that threw (its key only: no text of what it made), after it is counted.
+  onFail?: (key: string) => void;
 }): PrepQueue {
   const jobs = new Map<string, Job>();
   const stats: PrepStats = { prepared: 0, cached: 0, cancelled: 0, failed: 0, ms: 0 };
@@ -103,8 +106,10 @@ export function createPrepQueue({
         }
       }
     } catch {
-      // A job lets nothing escape (it keeps its failure as a value); one that does is counted.
+      // A job lets nothing escape (it keeps its failure as a value); one that does is counted,
+      // and told (the drawing lab, development). The queue goes on with the next one.
       stats.failed += 1;
+      onFail?.(j.key);
     }
     if (clock && t0 !== undefined) stats.ms += clock() - t0;
   };

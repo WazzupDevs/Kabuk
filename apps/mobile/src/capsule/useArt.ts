@@ -5,6 +5,7 @@ import { DRAW_LAB } from '@/lib/drawLab';
 import type { SkiaPlan } from '@/theme/capsuleSkia';
 
 import type { PxRect } from './artBounds';
+import { readArts, stampsOf } from './artRead';
 import { createArtStore } from './artStore';
 import { createPrepQueue, type Deadline, type Priority, type PrepStats, SHOWN } from './prepQueue';
 import { createTextureQueue, type TextureStats } from './textureQueue';
@@ -150,12 +151,34 @@ export const capsulePrep = createPrepQueue({
     else requestIdleCallback(slice, { timeout: IDLE_TIMEOUT_MS });
   },
   now: DRAW_LAB ? () => performance.now() : undefined,
+  // A job that threw: counted (artStats → failed) and, in a preview build or development, warned
+  // of with its kind only (a key holds the drawing's text).
+  onFail: DRAW_LAB
+    ? (key) => console.warn(`capsulePrep: a job failed (${keyKind(key)})`)
+    : undefined,
 });
+
+// What a key is of (its first part: look, plan, tile, trim; a picture's ratio otherwise).
+function keyKind(key: string): string {
+  const head = key.slice(0, key.indexOf('|'));
+  return /^[a-z]+$/.test(head) ? head : 'picture';
+}
+
+// What a resource that could not be made weighs in the limit (its key only, roughly).
+const FAILED_BYTES = 64;
 
 function made(need: ArtNeed, priority: Priority): () => void {
   return () => {
     if (capsuleArt.has(need.key)) return;
-    const m = need.make();
+    let m: Made;
+    try {
+      m = need.make();
+    } catch (e) {
+      // Kept as nothing made: a drawing that waits for it draws its picture way (FxSkia.tsx →
+      // readWhole) instead of waiting for ever; the queue counts the failure.
+      capsuleArt.put(need.key, { kind: 'none' }, FAILED_BYTES);
+      throw e;
+    }
     capsuleArt.put(need.key, m.art, m.bytes);
     texture(need.key, priority);
   };
@@ -241,36 +264,24 @@ export function useArtsReady(needs: readonly ArtNeed[] | null): boolean {
   return ready;
 }
 
-// The store's stamps of `needs` (artStore.ts → stamp), '' for none: a value put again under a key
-// (its GPU copy) is read again.
-function stampsOf(needs: readonly ArtNeed[] | null): string {
-  if (!needs) return '';
-  let out = '';
-  for (const n of needs) out += `${capsuleArt.stamp(n.key)},`;
-  return out;
+function keysOf(needs: readonly ArtNeed[] | null): string[] | null {
+  return needs ? needs.map((n) => n.key) : null;
 }
 
 // `needs`' resources as the store has them now, in their order, once all of them are made;
-// undefined until then. Neither holds nor asks for them (useArts does): what a drawing already
-// holds, read again when one of them is put again (a picture's GPU copy in its place: the CPU one
-// is let go a moment later, and nothing on the screen may draw it after).
+// undefined until then (an empty list is made: a still look's plans). Neither holds nor asks for
+// them (useArts does): what a drawing already holds, read again when one of them is put again (a
+// picture's GPU copy in its place: the CPU one is let go a moment later, and nothing on the screen
+// may draw it after).
 export function useArtValues(needs: readonly ArtNeed[] | null): readonly CapsuleArt[] | undefined {
+  const keys = useMemo(() => keysOf(needs), [needs]);
   const subscribe = useCallback(
-    (listener: () => void) => capsuleArt.watch(needs?.map((n) => n.key) ?? [], listener),
-    [needs],
+    (listener: () => void) => capsuleArt.watch(keys ?? [], listener),
+    [keys],
   );
-  const stamps = useSyncExternalStore(subscribe, () => stampsOf(needs));
-  return useMemo(() => {
-    if (!needs || stamps === '') return undefined;
-    const out: CapsuleArt[] = [];
-    for (const n of needs) {
-      const a = capsuleArt.peek(n.key);
-      if (!a) return undefined;
-      out.push(a);
-    }
-    return out;
-    // `stamps` is what changes when a value does.
-  }, [needs, stamps]);
+  // The stamps are only what changes when a value does (capsule/artRead.ts).
+  const stamps = useSyncExternalStore(subscribe, () => stampsOf(keys, capsuleArt.stamp));
+  return useMemo(() => readArts(keys, capsuleArt.peek, stamps), [keys, stamps]);
 }
 
 // `needs`' resources in their order once all of them are made, undefined until then.
@@ -311,9 +322,15 @@ export function useArt(need: ArtNeed | null): CapsuleArt | undefined {
 }
 
 // The queue's counts and the cache's size, for the drawing lab (read nowhere else).
-export function artStats(): PrepStats & { bytes: number; entries: number; texture: TextureStats } {
+export function artStats(): PrepStats & {
+  pending: number;
+  bytes: number;
+  entries: number;
+  texture: TextureStats;
+} {
   return {
     ...capsulePrep.stats(),
+    pending: capsulePrep.pending,
     bytes: capsuleArt.bytes(),
     entries: capsuleArt.size,
     texture: capsuleTex.stats(),
