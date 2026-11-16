@@ -161,8 +161,9 @@ export function EmptyState({
   );
 }
 
-// MekanYukleniyor: the meeting capsules 40, 18 above; GaleriProfil: "Yükleniyor…" under them. The
-// whole state waits 300 ms, so a quick answer shows nothing.
+// YukleniyorListe, YukleniyorProfil, YukleniyorSohbet (OrtakKurallar C3): the meeting capsules
+// alone in the content's middle, no words and no skeleton lines; screen readers say "Yükleniyor…".
+// The whole state waits 300 ms, so a quick answer shows nothing.
 function Loading({ body, inPage }: { body: string; inPage?: boolean }) {
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -176,15 +177,11 @@ function Loading({ body, inPage }: { body: string; inPage?: boolean }) {
       accessibilityRole="progressbar"
       accessibilityLabel={body}
       style={{
-        gap: inPage ? KIT.size.stateGap : KIT.size.stateLoadGap,
         paddingTop: inPage ? 0 : KIT.size.stateLoadTop,
         opacity: shown ? 1 : 0,
       }}
     >
       <Loader kind="meet" size={KIT.size.stateLoader} label={null} delay={0} />
-      <T v={inPage ? 'fine' : 'body'} center>
-        {body}
-      </T>
     </View>
   );
 }
