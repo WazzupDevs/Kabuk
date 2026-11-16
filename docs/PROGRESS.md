@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (16 Kasım 2026, akşam): 4.12 ölçüldü
+
+- 0.12.0 build 25 + `preview` `01a1e4f7…` (bütün kapsül Skia varsayılan açık) S23'te ölçüldü: `docs/perf/akicilik-denetimi.md` → 4.12, tablo bölüm 5.
+- Bellek: #637'nin sınırı çalışıyor (GL mtrack turlarda 200–207 MB, çıkışta 83, arka planda 48 MB).
+- Zar: 4.11'in iz işaretsiz UI işi `RNSkia.render` (basış başına 1,5–2,6 sn, tek çizim en çok 168 ms). Açık: zar geçişi mi hareket döngüleri mi; sıradaki ölçüm boşta ve "hareket" kapalıyken `RNSkia.render` izi.
+- Profil'in ilk açılışı: %12,87 geç kalan kare, en uzun 150 ms; Skia değil, görünüm kaydı (58–67 ms) ve animasyon (47–49 ms).
+
 ## Devir notu (16 Kasım 2026): karar tablosu ve yeni arayüz aktarımı
 
 - Akıcılığın güncel durumunun tek kaynağı `docs/perf/akicilik-denetimi.md` → bölüm 5 karar tablosu; bütün ölçümler 0.11.0 build 21 (S23), 0.12.0 (#637, #638) ölçülmedi, proje sahibi 0.12.0'da kasmanın sürdüğünü bildirdi (iz yok).
