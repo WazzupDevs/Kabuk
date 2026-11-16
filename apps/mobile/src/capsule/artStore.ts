@@ -26,11 +26,16 @@ export type ArtStore<V> = {
   watch: (keys: readonly string[], listener: () => void) => () => void;
   // Bytes kept: all of them, or one kind's.
   bytes: (kind?: string) => number;
+  // One entry's bytes (0 when there is none).
+  bytesOf: (key: string) => number;
+  // Changes each time `key` is put (0 when there is none): a drawing that read the value before
+  // reads it again (a picture copied to the GPU takes the CPU one's place under the same key).
+  stamp: (key: string) => number;
   readonly size: number;
   uses: (key: string) => number;
 };
 
-type Entry<V> = { value: V; bytes: number; kind: string };
+type Entry<V> = { value: V; bytes: number; kind: string; stamp: number };
 
 export function createArtStore<V>({
   limits,
@@ -48,6 +53,7 @@ export function createArtStore<V>({
   const kindBytes = new Map<string, number>();
   const kindCount = new Map<string, number>();
   let total = 0;
+  let stamps = 0;
 
   const count = (kind: string, bytes: number, n: number) => {
     kindBytes.set(kind, (kindBytes.get(kind) ?? 0) + bytes);
@@ -98,7 +104,8 @@ export function createArtStore<V>({
         if (old.value !== value) drop(old.value, key);
       }
       const kind = classOf(value);
-      entries.set(key, { value, bytes, kind });
+      stamps += 1;
+      entries.set(key, { value, bytes, kind, stamp: stamps });
       count(kind, bytes, 1);
       const gone = trim(kind);
       tell([key, ...gone]);
@@ -147,6 +154,8 @@ export function createArtStore<V>({
       };
     },
     bytes: (kind) => (kind === undefined ? total : (kindBytes.get(kind) ?? 0)),
+    bytesOf: (key) => entries.get(key)?.bytes ?? 0,
+    stamp: (key) => entries.get(key)?.stamp ?? 0,
     get size() {
       return entries.size;
     },

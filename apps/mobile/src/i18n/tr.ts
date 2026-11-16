@@ -2277,6 +2277,9 @@ export const tr = {
       skiaSwitch: 'Skia çizimi',
       // The whole capsule on one Skia canvas (theme/capsuleSkia.ts → capsuleWholeOn).
       wholeSwitch: 'Bütün kapsül Skia',
+      // The whole capsule's pictures copied to the GPU ahead (theme/capsuleSkia.ts →
+      // textureAheadOn).
+      textureSwitch: 'Önceden doku',
       wholeSides: 'Solda bugünkü çizim, sağda bütün kapsül Skia.',
       skiaGallery: 'Skia yan yana',
       skiaSides: 'Solda bugünkü çizim, sağda Skia.',

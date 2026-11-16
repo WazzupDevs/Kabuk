@@ -19,8 +19,20 @@ import { SPACING } from '@/theme/tokens';
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg, readFxAhead } from '@/components/FxSvg';
 import { type SkiaKit, useSkiaKit, useWholeKit } from '@/components/skiaInside';
-import { fadeCanvas, stagePasses, TILE_WAIT_MS } from '@/capsule/stageGate';
-import { type ArtNeed, type CapsuleArt, useArt, useArtsReady } from '@/capsule/useArt';
+import {
+  fadeCanvas,
+  lookPasses,
+  stagePasses,
+  TEXTURE_WAIT_MS,
+  TILE_WAIT_MS,
+} from '@/capsule/stageGate';
+import {
+  type ArtNeed,
+  type CapsuleArt,
+  useArt,
+  useArtsReady,
+  useArtsTextured,
+} from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { useLabOff } from '@/lib/drawLab';
@@ -164,7 +176,17 @@ export function CapsuleStage({
   const comingList = useArt(comingNeed);
   const comingNeeds = neededBy(comingList);
   const comingMade = useArtsReady(comingNeeds);
-  const comingReady = comingNeed === null || (comingNeeds !== null && comingMade);
+  const comingMadeAll = comingNeed === null || (comingNeeds !== null && comingMade);
+  // Its pictures' copies on the GPU, waited for up to TEXTURE_WAIT_MS once they are made
+  // (capsule/stageGate.ts → lookPasses).
+  const comingTextured = useArtsTextured(coming && comingMadeAll ? comingNeeds : null);
+  const [textureOverdueFor, setTextureOverdueFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!coming || !comingMadeAll) return undefined;
+    const timer = setTimeout(() => setTextureOverdueFor(look), TEXTURE_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [coming, comingMadeAll, look]);
+  const comingReady = lookPasses(comingMadeAll, comingTextured, textureOverdueFor === look);
   // The tiles on the screen, asked for in the same turn as the look's pictures (first).
   const tilesReady = useArtsReady(coming && needOf ? tiles : null);
   const [overdueFor, setOverdueFor] = useState<string | null>(null);
@@ -178,6 +200,7 @@ export function CapsuleStage({
     setOldLook(reduce ? null : shownLook);
     setShownLook(look);
     setOverdueFor(null);
+    setTextureOverdueFor(null);
   }
   const [shownPlay, setShownPlay] = useState(play);
   if (!waiting && play !== shownPlay) setShownPlay(play);

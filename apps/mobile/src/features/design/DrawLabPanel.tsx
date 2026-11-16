@@ -15,16 +15,18 @@ import {
   toggleLabPart,
   toggleLabHold,
   toggleLabSkia,
+  toggleLabTexture,
   toggleLabWhole,
   useDrawLab,
   useLabHold,
   useLabSkia,
+  useLabTexture,
   useLabWhole,
 } from '@/lib/drawLab';
 import { type SwitchStats, switchStats } from '@/lib/frameStats';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { capsuleWholeOn } from '@/theme/capsuleSkia';
+import { capsuleWholeOn, textureAheadOn } from '@/theme/capsuleSkia';
 
 // Çizim ölçümü's small panel over every screen (lib/drawLab.ts), at the top so the frame bars at
 // the bottom stay clear: Başlat runs the steps (each a few seconds, its name shown), Kapat hides it.
@@ -36,6 +38,7 @@ export function DrawLabPanel() {
   const manual = useDrawLab((s) => s.manual);
   const skia = useLabSkia();
   const whole = capsuleWholeOn(Platform.OS, useLabWhole());
+  const texture = textureAheadOn(Platform.OS, useLabTexture());
   const hold = useLabHold();
   const insets = useSafeAreaInsets();
   const { c } = useKit();
@@ -118,6 +121,12 @@ export function DrawLabPanel() {
               label={tr.design.drawLab.wholeSwitch}
               on={whole}
               onPress={() => toggleLabWhole(whole)}
+            />
+            {/* The whole capsule's pictures copied to the GPU ahead; kept as set, as above. */}
+            <Chip
+              label={tr.design.drawLab.textureSwitch}
+              on={texture}
+              onPress={() => toggleLabTexture(texture)}
             />
             {/* Off: the tiles as SVG again while the whole capsule stays Skia's. */}
             <Chip
