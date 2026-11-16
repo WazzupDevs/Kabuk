@@ -8,6 +8,7 @@ import {
   Paint,
   Skia,
   type SkImage,
+  type SkSurface,
   type SkSVG,
 } from '@shopify/react-native-skia';
 import {
@@ -31,6 +32,7 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
+import { alphaBounds, pointsOf, type PxRect, trimRect } from '@/capsule/artBounds';
 import {
   type ArtNeed,
   type CapsuleArt,
@@ -331,13 +333,33 @@ function holdCanvas(): () => void {
   };
 }
 
+// The pixels a picture drawn on `surface` covers (artBounds.ts), a pixel round them; the whole
+// picture when they cannot be read.
+function drawnRect(surface: SkSurface, px: number, py: number): PxRect {
+  const whole = { x: 0, y: 0, width: px, height: py };
+  const full = surface.makeImageSnapshot();
+  try {
+    const pixels = full.readPixels();
+    if (!(pixels instanceof Uint8Array) || pixels.length < px * py * 4) return whole;
+    return trimRect(alphaBounds(pixels, px, py), px, py);
+  } catch {
+    return whole;
+  } finally {
+    full.dispose();
+  }
+}
+
 // An SVG at a size as the canvas shows it: its picture, made off the screen (the SVG is read for
 // this one drawing and let go with its surface: docs/perf/akicilik-denetimi.md → 4.9), else the
-// SVG read for drawing from its shapes, else nothing (the picture way draws).
-function makeArt(xml: string, width: number, height: number, ratio: number): Made {
+// SVG read for drawing from its shapes, else nothing (the picture way draws). `trim`: the picture
+// kept to the box of its own pixels (a still layer of the drawing: a part is a small share of the
+// figure's box, docs/decisions/skia-build-plani.md → "Bütün kapsül Skia'da"), drawn at the same
+// pixels; a mask stays whole (its empty pixels cut what is under it).
+function makeArt(xml: string, width: number, height: number, ratio: number, trim: boolean): Made {
   const px = Math.ceil(width * ratio);
   const py = Math.ceil(height * ratio);
   let image: SkImage | null = null;
+  let rect: PxRect = { x: 0, y: 0, width: px, height: py };
   try {
     const svg = Skia.SVG.MakeFromString(xml);
     const surface = svg ? Skia.Surface.Make(px, py) : null;
@@ -346,14 +368,25 @@ function makeArt(xml: string, width: number, height: number, ratio: number): Mad
       canvas.scale(ratio, ratio);
       canvas.drawSvg(svg, width, height);
       surface.flush();
-      image = surface.makeImageSnapshot();
+      if (trim) {
+        const kept = drawnRect(surface, px, py);
+        const cut = surface.makeImageSnapshot(
+          Skia.XYWHRect(kept.x, kept.y, kept.width, kept.height),
+        );
+        // A snapshot not of the box asked for (it should be): the whole picture, as before.
+        if (cut.width() === kept.width && cut.height() === kept.height) {
+          image = cut;
+          rect = kept;
+        } else cut.dispose();
+      }
+      image ??= surface.makeImageSnapshot();
     }
     surface?.dispose();
     svg?.dispose();
   } catch {
     image = null;
   }
-  if (image) return { art: { kind: 'image', image }, bytes: px * py * 4 };
+  if (image) return { art: { kind: 'image', image, rect }, bytes: rect.width * rect.height * 4 };
   let svg: SkSVG | null = null;
   try {
     svg = Skia.SVG.MakeFromString(xml);
@@ -370,32 +403,39 @@ const NONE_BYTES = 64;
 
 // A shared SVG is drawn at its own size only (Skia sets its container's size before each drawing),
 // so the size is in its key.
-function artNeed(xml: string, width: number, height: number, ratio: number): ArtNeed {
+function artNeed(xml: string, width: number, height: number, ratio: number, trim = false): ArtNeed {
   return {
-    key: `${ratio}|${width}x${height}|${xml}`,
-    make: () => makeArt(xml, width, height, ratio),
+    key: `${trim ? 'trim|' : ''}${ratio}|${width}x${height}|${xml}`,
+    make: () => makeArt(xml, width, height, ratio, trim),
   };
 }
 
-// A picture at its pixels (its surface was a whole number of them), or the SVG from its shapes
-// when there is none.
+// A still layer's picture, kept to its own pixels.
+function stillNeed(xml: string, width: number, height: number, ratio: number): ArtNeed {
+  return artNeed(xml, width, height, ratio, true);
+}
+
+// A picture at its pixels (its surface was a whole number of them; a kept box at the whole pixels
+// it was cut at), or the SVG from its shapes when there is none.
 const SHARP = { filter: FilterMode.Linear, mipmap: MipmapMode.None };
 function ArtAt({ art }: { art: Art }) {
   const ratio = PixelRatio.get();
   const a = art.art;
-  return a.kind === 'image' ? (
-    <Image
-      image={a.image}
-      x={0}
-      y={0}
-      width={Math.ceil(art.width * ratio) / ratio}
-      height={Math.ceil(art.height * ratio) / ratio}
-      fit="fill"
-      sampling={SHARP}
-    />
-  ) : (
-    <ImageSVG svg={a.svg} x={0} y={0} width={art.width} height={art.height} />
-  );
+  if (a.kind === 'image') {
+    const at = pointsOf(a.rect, ratio);
+    return (
+      <Image
+        image={a.image}
+        x={at.x}
+        y={at.y}
+        width={at.width}
+        height={at.height}
+        fit="fill"
+        sampling={SHARP}
+      />
+    );
+  }
+  return <ImageSVG svg={a.svg} x={0} y={0} width={art.width} height={art.height} />;
 }
 
 // Every resource a drawing's layers need, each once, in their order.
@@ -411,7 +451,7 @@ function wholeNeeds(
   };
   const walk = (ls: readonly WholeLayer[]) => {
     for (const l of ls) {
-      if (l.kind === 'still') add(artNeed(l.xml, width, height, ratio));
+      if (l.kind === 'still') add(stillNeed(l.xml, width, height, ratio));
       else if (l.kind === 'inside') {
         const { plan } = l;
         add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
@@ -431,8 +471,8 @@ function readWhole(
   ratio: number,
   got: ReadonlyMap<string, CapsuleArt>,
 ): WholeRead[] | null {
-  const artOf = (xml: string, w: number, h: number): Art | null => {
-    const a = got.get(artNeed(xml, w, h, ratio).key);
+  const artOf = (xml: string, w: number, h: number, trim = false): Art | null => {
+    const a = got.get(artNeed(xml, w, h, ratio, trim).key);
     return a && (a.kind === 'image' || a.kind === 'shapes')
       ? { art: a, width: w, height: h }
       : null;
@@ -440,7 +480,7 @@ function readWhole(
   const out: WholeRead[] = [];
   for (const l of layers) {
     if (l.kind === 'still') {
-      const art = artOf(l.xml, width, height);
+      const art = artOf(l.xml, width, height, true);
       if (!art) return null;
       out.push({ kind: 'still', art });
     } else if (l.kind === 'inside') {
@@ -526,7 +566,7 @@ export function lookNeed(xml: string, width: number, height: number, moving: boo
           add(artNeed(plan.mask, plan.crop.width, plan.crop.height, ratio));
           add(artNeed(plan.content, plan.width, plan.height, ratio));
         },
-        (text, w, h) => add(artNeed(text, w, h, ratio)),
+        (text, w, h) => add(stillNeed(text, w, h, ratio)),
       );
       const needs = [...out.values()];
       return {

@@ -4,6 +4,7 @@ import { useCallback, useLayoutEffect, useMemo, useSyncExternalStore } from 'rea
 import { DRAW_LAB } from '@/lib/drawLab';
 import type { SkiaPlan } from '@/theme/capsuleSkia';
 
+import type { PxRect } from './artBounds';
 import { createArtStore } from './artStore';
 import { createPrepQueue, type Deadline, type Priority, type PrepStats, SHOWN } from './prepQueue';
 
@@ -12,11 +13,12 @@ import { createPrepQueue, type Deadline, type Priority, type PrepStats, SHOWN } 
 // `useArts` gives the resources when all of them are, undefined until then, and asks for the
 // missing ones meanwhile. Nothing here loads Skia: its types only.
 
-// A picture at the screen's pixels; the SVG from its shapes when no picture could be made; a
+// A picture at the screen's pixels (`rect`: where in its drawing's box, in pixels: a still layer's
+// picture is kept to its own pixels, artBounds.ts); the SVG from its shapes when no picture could be made; a
 // tile's PNG address; a motion's plan (null: it cannot be drawn on the canvas); what a look needs
 // on the canvas (its plans and pictures); nothing (neither could be read: the picture way draws).
 export type CapsuleArt =
-  | { kind: 'image'; image: SkImage }
+  | { kind: 'image'; image: SkImage; rect: PxRect }
   | { kind: 'shapes'; svg: SkSVG }
   | { kind: 'uri'; uri: string }
   | { kind: 'plan'; plan: SkiaPlan | null }
