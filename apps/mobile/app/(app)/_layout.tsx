@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ConnectionBanner } from '@/components/ConnectionBanner';
+import { OverlayHost } from '@/components/OverlayHost';
 import { useDistrictLaunchLocate } from '@/features/district/launchLocate';
 import { useGiftLogin } from '@/features/gifts/queries';
 import { usePushNavigation, useSilentPushRegistration } from '@/features/push/push';
@@ -45,6 +46,7 @@ export default function GroupLayout() {
       </SafeAreaProvider>
       {/* A request to the table opens over any screen (docs/SPEC_V3.md §23.C). */}
       <IncomingRequestHost />
+      <OverlayHost />
     </View>
   );
 }

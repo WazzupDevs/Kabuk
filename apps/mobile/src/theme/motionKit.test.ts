@@ -125,3 +125,31 @@ describe('one press (iskelet.md → 2.3)', () => {
     expect(kit).not.toMatch(/function usePress\(/);
   });
 });
+
+describe('the centred confirmation (Hareket tablosu A2, Ortak kurallar C1, C2)', () => {
+  const dialog = code('src/motion/Dialog.tsx');
+  it('arrives on MOTION.dissolve and leaves on its out time, at once with reduce motion', () => {
+    expect(MOTION.dissolve).toMatchObject({ rise: 12, fromScale: 0.97, inMs: 240, outMs: 150 });
+    expect(dialog).toMatch(/duration: d\.inMs, easing: ARRIVE/);
+    expect(dialog).toMatch(/duration: d\.outMs, easing: LEAVE/);
+    expect(dialog).toMatch(/if \(reduce\)/);
+  });
+
+  it('a flat scrim, no blur; 28 in and 28 round', () => {
+    const look = code('src/theme/overlay.ts');
+    expect(look).toMatch(/scrim: 'rgba\(3, 27, 11, 0\.42\)'/);
+    expect(look).toMatch(/scrim: 'rgba\(0, 0, 0, 0\.70\)'/);
+    expect(dialog).not.toMatch(/Blur|SheetScrim/);
+    expect(look).toMatch(/inset: 28,\n {2}radius: 28,/);
+  });
+
+  it('the action waits and nothing closes it meanwhile; cancel keeps the ConfirmSheet testID', () => {
+    expect(dialog).toMatch(/loading=\{pending\}/);
+    expect(dialog).toMatch(/disabled=\{pending\}/);
+    expect(dialog).toMatch(/`\$\{testID\}-cancel`/);
+    const host = code('src/components/OverlayHost.tsx');
+    expect(host).toMatch(/statusBarTranslucent/);
+    expect(host).toMatch(/navigationBarTranslucent/);
+    expect(host).toMatch(/onRequestClose=\{cancel\}/);
+  });
+});
