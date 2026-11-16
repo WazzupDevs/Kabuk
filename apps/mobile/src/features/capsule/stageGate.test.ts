@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { fadeCanvas, stagePasses, TILE_WAIT_MS, tileShown } from '../../capsule/stageGate';
+import {
+  fadeCanvas,
+  lookPasses,
+  stagePasses,
+  TEXTURE_WAIT_MS,
+  TILE_WAIT_MS,
+  tileShown,
+} from '../../capsule/stageGate';
 
 describe('tileShown', () => {
   it('a tile on the screen keeps its last picture until the new one is made', () => {
@@ -40,5 +47,21 @@ describe('fadeCanvas', () => {
     expect(at).toEqual({ mounted: true, idle: true });
     // The next change fades on the same canvas.
     expect(fadeCanvas(at.mounted, true)).toEqual({ mounted: true, idle: false });
+  });
+});
+
+describe('lookPasses', () => {
+  it('a made look waits for its pictures on the GPU, up to its limit', () => {
+    expect(lookPasses(true, false, false)).toBe(false);
+    expect(lookPasses(true, true, false)).toBe(true);
+    // Past the limit: the pictures as they are (from the CPU, as before).
+    expect(lookPasses(true, false, true)).toBe(true);
+  });
+  it('a look not made yet never passes', () => {
+    expect(lookPasses(false, true, true)).toBe(false);
+  });
+  it('waits a few frames only', () => {
+    expect(TEXTURE_WAIT_MS).toBeGreaterThan(0);
+    expect(TEXTURE_WAIT_MS).toBeLessThanOrEqual(250);
   });
 });

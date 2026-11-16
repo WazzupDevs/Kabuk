@@ -287,6 +287,24 @@ export function capsuleWholeOn(os: string, lab: boolean | null): boolean {
   return lab ?? (CAPSULE_SKIA_WHOLE && capsuleSkiaOn(os));
 }
 
+// The whole drawing's pictures copied to the GPU ahead, on the UI thread, one a frame, before the
+// stage shows them (capsule/textureQueue.ts; docs/decisions/skia-build-plani.md → "Dokunun önceden
+// yüklenmesi"): a canvas copied a new look's pictures in its first frame (docs/perf/
+// akicilik-denetimi.md → 4.12). Android only (the copy is the patched Skia's, made on the thread
+// the canvases draw on); a build without it draws from the CPU as before. Çizim ölçümü's "Önceden
+// doku" sets it on or off for that phone on a preview build (lib/drawLab.ts → labTexture; null
+// while the panel has not set it: this switch decides).
+// Off by default: a canvas's last recording (Skia's Container keeps it in a picture made on the JS
+// thread) is let go on the JS thread when the canvas is collected, and a GPU picture in it would
+// then be let go off its context's thread; that is not closed from here (it needs a patch to
+// Skia: docs/decisions/skia-build-plani.md → "Dokunun önceden yüklenmesi"). On only from the panel,
+// to measure.
+export const CAPSULE_TEXTURE_AHEAD = false;
+
+export function textureAheadOn(os: string, lab: boolean | null): boolean {
+  return os === 'android' && (lab ?? CAPSULE_TEXTURE_AHEAD);
+}
+
 // A property along the clock (capsuleFx.ts → sampled), read on the UI thread by curveAt.
 export type WholeCurve = { input: number[]; output: number[] };
 

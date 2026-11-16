@@ -150,3 +150,22 @@ describe('createArtStore', () => {
     expect(s.peek('a')).toBe('A2');
   });
 });
+
+describe('stamps', () => {
+  it('a value put again under its key gets a new stamp and keeps its bytes counted once', () => {
+    const { s } = store(100);
+    expect(s.stamp('a')).toBe(0);
+    s.put('a', 'A', 40);
+    const first = s.stamp('a');
+    expect(first).toBeGreaterThan(0);
+    expect(s.bytesOf('a')).toBe(40);
+    s.acquire('a');
+    s.put('a', 'A2', 40);
+    expect(s.stamp('a')).not.toBe(first);
+    expect(s.peek('a')).toBe('A2');
+    expect(s.bytes()).toBe(40);
+    // Still held: the count is the key's, whatever value it has.
+    expect(s.uses('a')).toBe(1);
+    expect(s.bytesOf('b')).toBe(0);
+  });
+});

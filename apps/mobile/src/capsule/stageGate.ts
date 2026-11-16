@@ -14,6 +14,19 @@ export function stagePasses(lookReady: boolean, tilesReady: boolean, overdue: bo
   return lookReady && (tilesReady || overdue);
 }
 
+// How long the stage waits, once the new look's pictures are made, for their copies on the GPU
+// (capsule/textureQueue.ts: one a frame, the look's first; docs/decisions/skia-build-plani.md →
+// "Dokunun önceden yüklenmesi"). A look's dozen pictures at 60 frames a second fit; past this the
+// look comes with the pictures as they are (the canvas copies the rest in its first frame, as
+// before).
+export const TEXTURE_WAIT_MS = 200;
+
+// The new look's pictures are ready to be shown: made, and copied to the GPU (or not to be, or
+// failed), or made and waited TEXTURE_WAIT_MS for their copies.
+export function lookPasses(made: boolean, textured: boolean, textureOverdue: boolean): boolean {
+  return made && (textured || textureOverdue);
+}
+
 // A tile's picture: the one just made, else the last made it showed (the same option in the colour
 // before), else none (its SVG, the first time only).
 export function tileShown(made: string | null, last: string | null): string | null {

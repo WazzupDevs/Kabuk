@@ -28,6 +28,9 @@ type LabState = LabParts & {
   // this phone, or null while the app's own switch decides. It stays as set when the panel closes:
   // the panel covers the top of Süsle, where it is measured.
   whole: boolean | null;
+  // The whole drawing's pictures copied to the GPU ahead (theme/capsuleSkia.ts → textureAheadOn):
+  // on or off for this phone, or null while the app's own switch decides; kept as `whole` is.
+  texture: boolean | null;
   // "Kapanınca koru": the parts turned off by hand stay off when the panel closes.
   hold: boolean;
 };
@@ -38,6 +41,7 @@ export const useDrawLab = create<LabState>(() => ({
   switches: 0,
   skia: false,
   whole: null,
+  texture: null,
   hold: false,
 }));
 
@@ -65,6 +69,21 @@ export function useLabWhole(): boolean | null {
 export function toggleLabWhole(now: boolean) {
   if (!DRAW_LAB) return;
   useDrawLab.setState({ whole: !now });
+}
+
+// The panel's "Önceden doku", panel open or closed (a preview build only); null when it has not
+// been set. In a render, and outside one (the queue reads it before each copy).
+export function useLabTexture(): boolean | null {
+  return useDrawLab((s) => (DRAW_LAB ? s.texture : null));
+}
+export function labTexture(): boolean | null {
+  return DRAW_LAB ? useDrawLab.getState().texture : null;
+}
+
+// `now`: whether the pictures are copied ahead at present (theme/capsuleSkia.ts → textureAheadOn).
+export function toggleLabTexture(now: boolean) {
+  if (!DRAW_LAB) return;
+  useDrawLab.setState({ texture: !now });
 }
 
 export function useLabHold(): boolean {

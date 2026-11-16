@@ -21,11 +21,13 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { AppState, PixelRatio, View } from 'react-native';
+import { AppState, PixelRatio, Platform, View } from 'react-native';
 import {
   cancelAnimation,
   Easing,
   makeMutable,
+  runOnJS,
+  runOnUI,
   type SharedValue,
   useDerivedValue,
   withRepeat,
@@ -47,10 +49,14 @@ import {
   capsuleArt,
   emptyArt,
   type Made,
+  LET_GO_AFTER_MS,
   prepNow,
+  setTexturer,
   useArts,
+  useArtValues,
   usePinned,
 } from '@/capsule/useArt';
+import { labTexture } from '@/lib/drawLab';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxLayer, FxPlace } from '@/theme/capsuleFx';
 import {
@@ -62,6 +68,7 @@ import {
   moveOpacityAt,
   skiaAt,
   type SkiaPlan,
+  textureAheadOn,
   type WholeLayer,
   wholeLayers,
   type WholeMove,
@@ -312,9 +319,84 @@ function purgeGpu(msNotUsed: number): void {
   }
 }
 
+// Now, and again once the GPU copies let go with it are (useArt.ts → drop: a moment later, on
+// the UI thread): a copy let go goes back to the cache, and the cache gives it back here.
+function purgeGpuAll(): void {
+  purgeGpu(0);
+  setTimeout(() => purgeGpu(0), LET_GO_AFTER_MS + PURGE_AFTER_LET_GO_MS);
+}
+const PURGE_AFTER_LET_GO_MS = 250;
+
 purgeGpu(GPU_KEEP_UNUSED_MS);
 AppState.addEventListener('change', (state) => {
-  if (state === 'background') purgeGpu(0);
+  if (state !== 'background') return;
+  // The GPU copies nothing on the screen holds go too (what Süsle shows stays: its canvas draws
+  // it when the app comes back).
+  capsuleArt.dropUnused((a) => a.kind === 'image' && a.gpu === true);
+  purgeGpuAll();
+});
+
+// The pictures' copies to the GPU ahead (capsule/textureQueue.ts; docs/decisions/
+// skia-build-plani.md → "Dokunun önceden yüklenmesi"). Skia's GPU context is the thread's own
+// (Android: OpenGLContext::getInstance, thread_local), and the canvases draw on the main thread;
+// Reanimated's UI runtime runs there too, so the copy is made in a UI worklet, in the context the
+// canvases draw with, and let go there (a Skia picture made on a thread is let go on it). Skia's
+// own textures (its useImageAsTexture) are made the same way. The patched Skia's makeTextureImage
+// uses the thread's context as it is: Skia.Surface.MakeOffscreen makes that context current first
+// (another library may have left its own current on the main thread). One copy a frame of the UI
+// thread at most (the queue sends the next one only after this one has answered; a frame already
+// used waits for the next). A build without the call (0.11.0), or a failure, answers null: the
+// picture is drawn from the CPU as before.
+type GpuImage = SkImage & {
+  makeTextureImage?: () => SkImage | null;
+  isTextureBacked?: () => boolean;
+};
+// The UI frame the last copy was made in.
+const lastCopyFrame = makeMutable(-1);
+
+function copyOnUi(image: SkImage, done: (copy: SkImage | null, unsupported: boolean) => void) {
+  'worklet';
+  const attempt = (frame: number) => {
+    if (frame === lastCopyFrame.value) {
+      requestAnimationFrame(attempt);
+      return;
+    }
+    lastCopyFrame.value = frame;
+    let copy: SkImage | null = null;
+    let unsupported = false;
+    try {
+      const from = image as GpuImage;
+      if (typeof from.makeTextureImage !== 'function') unsupported = true;
+      else {
+        const current = Skia.Surface.MakeOffscreen(1, 1);
+        if (current) {
+          current.dispose();
+          const made = from.makeTextureImage();
+          if (made && (made as GpuImage).isTextureBacked?.() === true) copy = made;
+          else made?.dispose();
+        }
+      }
+    } catch {
+      copy = null;
+    }
+    runOnJS(done)(copy, unsupported);
+  };
+  requestAnimationFrame(attempt);
+}
+
+function disposeOnUi(image: SkImage) {
+  'worklet';
+  try {
+    image.dispose();
+  } catch {
+    // Already let go.
+  }
+}
+
+setTexturer({
+  upload: (image, done) => runOnUI(copyOnUi)(image, done),
+  dispose: (image) => runOnUI(disposeOnUi)(image),
+  on: () => textureAheadOn(Platform.OS, labTexture()),
 });
 
 // A canvas on the screen; its going (the last one) empties the pictures a moment later. Taken in a
@@ -336,7 +418,7 @@ function holdCanvas(): () => void {
       if (shown > 0) return;
       // Pictures, tiles and plans alike (what a drawing still holds stays).
       emptyArt();
-      purgeGpu(0);
+      purgeGpuAll();
     }, EMPTY_AFTER_MS);
   };
 }
@@ -635,6 +717,15 @@ export function tileNeed(xml: string, size: number): ArtNeed {
 
 const WHOLE_PAD = 0.15;
 const NO_READ: WholeRead[] = [];
+// The last drawing made, and what it was read from.
+type LastDrawing = {
+  read: WholeRead[];
+  needs: readonly ArtNeed[];
+  layers: readonly WholeLayer[];
+  width: number;
+  height: number;
+  ratio: number;
+};
 
 export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: WholeProps) {
   const ratio = PixelRatio.get();
@@ -667,13 +758,26 @@ export function SkiaWhole({ layers, place, width, height, on, lane, fallback }: 
   // stage has not waited for): never an empty canvas. Held while it is shown. No layers (an idle
   // canvas, FxSvg → idle) draw nothing and keep nothing: what comes after is drawn as on a new
   // canvas, made before the frame when it is not made yet.
-  const [last, setLast] = useState<{ read: WholeRead[]; needs: readonly ArtNeed[] } | null>(null);
+  const [last, setLast] = useState<LastDrawing | null>(null);
   const none = read !== null && read.length === 0;
   if (none && last) setLast(null);
-  if (read && needs && !none && last?.read !== read) setLast({ read, needs });
+  if (read && needs && whole && !none && last?.read !== read)
+    setLast({ read, needs, layers: whole, width, height, ratio });
   usePinned(last?.needs ?? null);
+  // The last drawing read again from the store: one of its pictures may have been put again (its
+  // GPU copy, capsule/textureQueue.ts) while it waits, and the CPU one is let go a moment later.
+  const lastArts = useArtValues(last?.needs ?? null);
+  const lastRead = useMemo(() => {
+    if (!last || !lastArts) return last?.read ?? null;
+    const got = new Map<string, CapsuleArt>();
+    last.needs.forEach((n, i) => {
+      const a = lastArts[i];
+      if (a) got.set(n.key, a);
+    });
+    return readWhole(last.layers, last.width, last.height, last.ratio, got) ?? last.read;
+  }, [last, lastArts]);
   const pending = whole === undefined || (whole !== null && !arts);
-  const drawing = read ?? (pending ? (last?.read ?? null) : null);
+  const drawing = read ?? (pending ? lastRead : null);
   // Nothing made and nothing shown before (a canvas that comes with a look not read ahead): made
   // here, before the frame, as the drawing read them before; this commit is not on the screen.
   // The store's own note reaches this canvas only once it listens (after the frame): it listens

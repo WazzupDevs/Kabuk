@@ -5,9 +5,11 @@ import { fxTree, placeOf } from './capsuleFx';
 import { lookPop } from './capsuleLook';
 import {
   CAPSULE_SKIA_WHOLE,
+  CAPSULE_TEXTURE_AHEAD,
   capsuleWholeOn,
   moveMatrixAt,
   moveOpacityAt,
+  textureAheadOn,
   type WholeLayer,
   wholeLayers,
   type WholeMove,
@@ -50,6 +52,15 @@ describe('the whole drawing on one canvas', () => {
     expect(capsuleWholeOn('android', false)).toBe(false);
     expect(capsuleWholeOn('android', true)).toBe(true);
     expect(capsuleWholeOn('ios', true)).toBe(true);
+  });
+
+  it('copies its pictures to the GPU ahead only on Android, off until the panel turns it on', () => {
+    expect(CAPSULE_TEXTURE_AHEAD).toBe(false);
+    expect(textureAheadOn('android', null)).toBe(CAPSULE_TEXTURE_AHEAD);
+    expect(textureAheadOn('android', true)).toBe(true);
+    expect(textureAheadOn('android', false)).toBe(false);
+    expect(textureAheadOn('ios', true)).toBe(false);
+    expect(textureAheadOn('ios', null)).toBe(false);
   });
 
   it('draws every accessory: each look that moves gives layers, none left to the pictures', () => {

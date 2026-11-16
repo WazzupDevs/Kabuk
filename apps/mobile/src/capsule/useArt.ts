@@ -7,6 +7,7 @@ import type { SkiaPlan } from '@/theme/capsuleSkia';
 import type { PxRect } from './artBounds';
 import { createArtStore } from './artStore';
 import { createPrepQueue, type Deadline, type Priority, type PrepStats, SHOWN } from './prepQueue';
+import { createTextureQueue, type TextureStats } from './textureQueue';
 
 // Süsle's drawing resources (artStore.ts) and what makes them (prepQueue.ts), for the Skia drawing
 // (components/FxSkia.tsx) and the screen (profile/capsule.tsx). A drawing reads only what is made:
@@ -15,10 +16,11 @@ import { createPrepQueue, type Deadline, type Priority, type PrepStats, SHOWN } 
 
 // A picture at the screen's pixels (`rect`: where in its drawing's box, in pixels: a still layer's
 // picture is kept to its own pixels, artBounds.ts); the SVG from its shapes when no picture could be made; a
-// tile's PNG address; a motion's plan (null: it cannot be drawn on the canvas); what a look needs
+// tile's PNG address; `gpu`: the picture copied to the GPU ahead (textureQueue.ts), the CPU one
+// let go; a motion's plan (null: it cannot be drawn on the canvas); what a look needs
 // on the canvas (its plans and pictures); nothing (neither could be read: the picture way draws).
 export type CapsuleArt =
-  | { kind: 'image'; image: SkImage; rect: PxRect }
+  | { kind: 'image'; image: SkImage; rect: PxRect; gpu?: true }
   | { kind: 'shapes'; svg: SkSVG }
   | { kind: 'uri'; uri: string }
   | { kind: 'plan'; plan: SkiaPlan | null }
@@ -42,7 +44,7 @@ export const TILE_ENTRIES = 400;
 const META_BUDGET_BYTES = 8 * 1024 * 1024;
 const META_ENTRIES = 400;
 // A picture let go a little after it goes: a canvas's last frame may still be on its way.
-const LET_GO_AFTER_MS = 500;
+export const LET_GO_AFTER_MS = 500;
 // A turn for what a drawing waits for: one frame's share.
 const URGENT_SLICE_MS = 8;
 // The longest an idle turn waits: Süsle's loops run all the time, and the JS thread may never be
@@ -57,6 +59,21 @@ function kindOf(art: CapsuleArt): string {
       : 'meta';
 }
 
+// The copy to the GPU (components/FxSkia.tsx, the one file that loads Skia): `upload` copies a
+// picture on the UI thread, the thread the canvases draw on, in a frame of its own, and answers on
+// this one; `dispose` lets a copy go on that thread too (a GPU picture is the UI thread's context's:
+// docs/decisions/skia-build-plani.md → "Dokunun önceden yüklenmesi"); `on` is the switch. None
+// until Skia's drawing is loaded: nothing is copied then.
+export type Texturer = {
+  upload: (image: SkImage, done: (copy: SkImage | null, unsupported: boolean) => void) => void;
+  dispose: (image: SkImage) => void;
+  on: () => boolean;
+};
+let texturer: Texturer | null = null;
+export function setTexturer(t: Texturer): void {
+  texturer = t;
+}
+
 export const capsuleArt = createArtStore<CapsuleArt>({
   limits: {
     picture: { bytes: PICTURE_BUDGET_BYTES },
@@ -69,9 +86,57 @@ export const capsuleArt = createArtStore<CapsuleArt>({
     // 4.5). A read SVG and a text are the collector's, as before.
     if (art.kind !== 'image') return;
     const { image } = art;
-    setTimeout(() => image.dispose(), LET_GO_AFTER_MS);
+    // A GPU copy only on the UI thread (there is one only if a texturer made it).
+    const t = texturer;
+    if (art.gpu) {
+      if (t) setTimeout(() => t.dispose(image), LET_GO_AFTER_MS);
+      return;
+    }
+    // Not while its copy to the GPU reads it (on the UI thread).
+    capsuleTex.whenLanded(art, () => setTimeout(() => image.dispose(), LET_GO_AFTER_MS));
   },
 });
+
+type ImageArt = Extract<CapsuleArt, { kind: 'image' }>;
+// The pictures copied ahead, one at a time (textureQueue.ts): the copy takes the CPU picture's
+// place under its key (the store lets the CPU one go: drop above), its bytes counted the same.
+export const capsuleTex = createTextureQueue<ImageArt>({
+  current: (key) => {
+    const a = capsuleArt.peek(key);
+    return a?.kind === 'image' ? a : undefined;
+  },
+  convert: (art, done) => {
+    const t = texturer;
+    if (!t) {
+      done(null);
+      return;
+    }
+    t.upload(art.image, (copy, unsupported) =>
+      done(copy ? { kind: 'image', image: copy, rect: art.rect, gpu: true } : null, unsupported),
+    );
+  },
+  keep: (key, art, bytes) => capsuleArt.put(key, art, bytes),
+  discard: (art) => texturer?.dispose(art.image),
+  schedule: (run) => setTimeout(run, 0),
+  enabled: () => texturer?.on() ?? false,
+});
+
+// Waiting for its copy, or to be queued for it (a picture made before it was wanted on the
+// screen: queued by useArtsTextured's effect).
+function texturePending(key: string): boolean {
+  if (capsuleTex.waiting(key)) return true;
+  const a = capsuleArt.peek(key);
+  return a?.kind === 'image' && !a.gpu && capsuleTex.wants(a);
+}
+
+// A picture just made, or already made and wanted now: copied ahead unless it is (or is on its
+// way), shown and next to the chosen one only.
+function texture(key: string, priority: Priority): void {
+  const a = capsuleArt.peek(key);
+  if (a?.kind !== 'image' || a.gpu) return;
+  if (capsuleTex.waiting(key)) capsuleTex.bump(key, priority);
+  else capsuleTex.add(key, a, capsuleArt.bytesOf(key), priority, capsulePrep.generation);
+}
 
 function frameDeadline(): Deadline {
   const end = performance.now() + URGENT_SLICE_MS;
@@ -87,28 +152,29 @@ export const capsulePrep = createPrepQueue({
   now: DRAW_LAB ? () => performance.now() : undefined,
 });
 
-function made(need: ArtNeed): () => void {
+function made(need: ArtNeed, priority: Priority): () => void {
   return () => {
     if (capsuleArt.has(need.key)) return;
     const m = need.make();
     capsuleArt.put(need.key, m.art, m.bytes);
+    texture(need.key, priority);
   };
 }
 
 // Made here unless made already, outside the queue's own jobs (a job that finds its text first).
-export function makeArt(need: ArtNeed): void {
-  made(need)();
+export function makeArt(need: ArtNeed, priority: Priority = SHOWN): void {
+  made(need, priority)();
 }
 
 // Read ahead in generation `gen` (capsulePrep.next()), each its own job.
 export function prepAhead(needs: readonly ArtNeed[], priority: Priority, gen: number): void {
-  for (const n of needs) capsulePrep.ahead(n.key, made(n), priority, gen);
+  for (const n of needs) capsulePrep.ahead(n.key, made(n, priority), priority, gen);
 }
 
 // Made here and now, the ones not made yet (a drawing with nothing to show: in its layout effect,
 // before the frame, as the drawing read them before).
 export function prepNow(needs: readonly ArtNeed[]): void {
-  for (const n of needs) capsulePrep.now(n.key, made(n));
+  for (const n of needs) capsulePrep.now(n.key, made(n, SHOWN));
 }
 
 // The last tile picture each option showed (its slot and option), so that a strip opened again
@@ -130,6 +196,7 @@ export function keepTile(id: string, uri: string): void {
 // Süsle closed (its last canvas went): everything nothing holds goes, pictures, tiles and plans,
 // and what the queue remembers as done.
 export function emptyArt(): void {
+  capsuleTex.clear();
   capsuleArt.dropUnused(() => true);
   lastTiles.clear();
   capsulePrep.forget();
@@ -165,7 +232,7 @@ export function useArtsReady(needs: readonly ArtNeed[] | null): boolean {
     for (const n of needs) capsuleArt.acquire(n.key);
     const unwant = needs
       .filter((n) => !capsuleArt.has(n.key))
-      .map((n) => capsulePrep.want(n.key, made(n), SHOWN));
+      .map((n) => capsulePrep.want(n.key, made(n, SHOWN), SHOWN));
     return () => {
       for (const u of unwant) u();
       for (const n of needs) capsuleArt.release(n.key);
@@ -174,11 +241,27 @@ export function useArtsReady(needs: readonly ArtNeed[] | null): boolean {
   return ready;
 }
 
-// `needs`' resources in their order once all of them are made, undefined until then.
-export function useArts(needs: readonly ArtNeed[] | null): readonly CapsuleArt[] | undefined {
-  const ready = useArtsReady(needs);
+// The store's stamps of `needs` (artStore.ts → stamp), '' for none: a value put again under a key
+// (its GPU copy) is read again.
+function stampsOf(needs: readonly ArtNeed[] | null): string {
+  if (!needs) return '';
+  let out = '';
+  for (const n of needs) out += `${capsuleArt.stamp(n.key)},`;
+  return out;
+}
+
+// `needs`' resources as the store has them now, in their order, once all of them are made;
+// undefined until then. Neither holds nor asks for them (useArts does): what a drawing already
+// holds, read again when one of them is put again (a picture's GPU copy in its place: the CPU one
+// is let go a moment later, and nothing on the screen may draw it after).
+export function useArtValues(needs: readonly ArtNeed[] | null): readonly CapsuleArt[] | undefined {
+  const subscribe = useCallback(
+    (listener: () => void) => capsuleArt.watch(needs?.map((n) => n.key) ?? [], listener),
+    [needs],
+  );
+  const stamps = useSyncExternalStore(subscribe, () => stampsOf(needs));
   return useMemo(() => {
-    if (!ready || !needs) return undefined;
+    if (!needs || stamps === '') return undefined;
     const out: CapsuleArt[] = [];
     for (const n of needs) {
       const a = capsuleArt.peek(n.key);
@@ -186,7 +269,40 @@ export function useArts(needs: readonly ArtNeed[] | null): readonly CapsuleArt[]
       out.push(a);
     }
     return out;
-  }, [ready, needs]);
+    // `stamps` is what changes when a value does.
+  }, [needs, stamps]);
+}
+
+// `needs`' resources in their order once all of them are made, undefined until then.
+export function useArts(needs: readonly ArtNeed[] | null): readonly CapsuleArt[] | undefined {
+  const ready = useArtsReady(needs);
+  const values = useArtValues(needs);
+  return ready ? values : undefined;
+}
+
+// True when none of `needs`' pictures waits for its GPU copy (textureQueue.ts; null: nothing
+// needed): copied, failed, or never to be copied. Asks for the ones made and not copied first.
+export function useArtsTextured(needs: readonly ArtNeed[] | null): boolean {
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      const offArt = capsuleArt.watch(needs?.map((n) => n.key) ?? [], listener);
+      const offTex = capsuleTex.watch(listener);
+      return () => {
+        offArt();
+        offTex();
+      };
+    },
+    [needs],
+  );
+  const settled = useSyncExternalStore(
+    subscribe,
+    () => needs === null || !needs.some((n) => texturePending(n.key)),
+  );
+  useLayoutEffect(() => {
+    if (!needs) return;
+    for (const n of needs) texture(n.key, SHOWN);
+  }, [needs]);
+  return settled;
 }
 
 export function useArt(need: ArtNeed | null): CapsuleArt | undefined {
@@ -195,6 +311,11 @@ export function useArt(need: ArtNeed | null): CapsuleArt | undefined {
 }
 
 // The queue's counts and the cache's size, for the drawing lab (read nowhere else).
-export function artStats(): PrepStats & { bytes: number; entries: number } {
-  return { ...capsulePrep.stats(), bytes: capsuleArt.bytes(), entries: capsuleArt.size };
+export function artStats(): PrepStats & { bytes: number; entries: number; texture: TextureStats } {
+  return {
+    ...capsulePrep.stats(),
+    bytes: capsuleArt.bytes(),
+    entries: capsuleArt.size,
+    texture: capsuleTex.stats(),
+  };
 }
