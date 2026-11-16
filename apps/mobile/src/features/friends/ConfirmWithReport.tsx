@@ -1,13 +1,10 @@
 import type { GameFlowReportReason } from '@shared/chat.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
 import { create } from 'zustand';
 
 import type { CapIconName } from '@/aura/CapIcon';
-import { Banner } from '@/components/Banner';
 import { Checkbox } from '@/components/Checkbox';
 import { ReportModal } from '@/features/chat/ReportModal';
-import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { closeOverlay, confirm } from '@/lib/overlayStore';
 
@@ -20,7 +17,8 @@ type Props<R extends GameFlowReportReason> = {
   confirmLabel: string;
   // The confirm button's icon (EngelleOnay: `block`); it also puts the disc over the title.
   confirmIcon?: CapIconName;
-  // The centred dialog has no slot for a picture (EngelleOnay draws a disc); kept so callers stay.
+  // Not drawn: EngelleOnay (61) draws the icon's disc over the title, no picture; kept so callers
+  // stay.
   picture?: ReactNode;
   pending: boolean;
   error: unknown;
@@ -28,24 +26,20 @@ type Props<R extends GameFlowReportReason> = {
   onClose: () => void;
 };
 
-// What the dialog's children read: they are drawn once by the host, so the box and the error live
-// outside React's props here.
-type OptionState = { alsoReport: boolean; error: string | null };
-const useOption = create<OptionState>(() => ({ alsoReport: false, error: null }));
+// What the dialog's children read: they are drawn once by the host, so the box lives outside
+// React's props here.
+type OptionState = { alsoReport: boolean };
+const useOption = create<OptionState>(() => ({ alsoReport: false }));
 
 function ReportOption() {
   const alsoReport = useOption((s) => s.alsoReport);
-  const error = useOption((s) => s.error);
   return (
-    <View>
-      <Checkbox
-        boxed
-        label={tr.friends.alsoReport}
-        checked={alsoReport}
-        onToggle={() => useOption.setState((s) => ({ alsoReport: !s.alsoReport }))}
-      />
-      {error ? <Banner tone="danger" body={error} /> : null}
-    </View>
+    <Checkbox
+      boxed
+      label={tr.friends.alsoReport}
+      checked={alsoReport}
+      onToggle={() => useOption.setState((s) => ({ alsoReport: !s.alsoReport }))}
+    />
   );
 }
 
@@ -55,7 +49,7 @@ type Waiter = { resolve: () => void; reject: (e: unknown) => void; sawPending: b
 // report in the same transaction before anything is deleted. Now the centred dialog (`confirm`,
 // ortak-temel-plan.md paket 4, EngelleOnay): the option's box sits between the sentence and the
 // buttons, the action waits while the mutation runs, and a failed one leaves the dialog open with
-// the error. With the box ticked the action closes the dialog and the reason sheet (ReportModal,
+// the error in its own line. With the box ticked the action closes the dialog and the reason sheet (ReportModal,
 // still a bottom sheet) opens.
 export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R>) {
   const [pickingReason, setPickingReason] = useState(false);
@@ -78,7 +72,6 @@ export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R
     if (!w.sawPending) return;
     waiter.current = null;
     if (props.error) {
-      useOption.setState({ error: errorMessage(props.error) });
       w.reject(props.error);
     } else {
       w.resolve();
@@ -88,7 +81,7 @@ export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R
   const open = props.visible && !pickingReason;
   useEffect(() => {
     if (!open) return;
-    useOption.setState({ alsoReport: false, error: null });
+    useOption.setState({ alsoReport: false });
     dialogId.current = confirm({
       title: props.title,
       note: props.hint,
@@ -104,7 +97,6 @@ export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R
           setPickingReason(true);
           return undefined;
         }
-        useOption.setState({ error: null });
         return new Promise<void>((resolve, reject) => {
           waiter.current = { resolve, reject, sawPending: false };
           latest.current.onConfirm(undefined);

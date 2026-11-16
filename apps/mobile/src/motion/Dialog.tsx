@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Btn, T, useKit } from '@/aura/kit';
 import { CapIcon } from '@/aura/CapIcon';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import type { ConfirmOptions } from '@/lib/overlayStore';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -27,9 +28,13 @@ const LEAVE = curve(MOTION.curves.leave);
 type Props = {
   options: ConfirmOptions;
   visible: boolean;
-  // The action runs: its button waits, nothing else closes the dialog.
-  pending: boolean;
+  // One of its ways runs: that button waits, nothing else closes the dialog.
+  running: 'confirm' | 'other' | null;
+  // The last try's error, written over the buttons (the dialog lies over the screen that holds
+  // the mutation, so it says it itself).
+  error: unknown;
   onConfirm: () => void;
+  onOther: () => void;
   onCancel: () => void;
   // Off the screen after its leave (OverlayHost unmounts its window).
   onHidden: () => void;
@@ -37,12 +42,21 @@ type Props = {
 
 // The centred confirmation (yeni arayüz tuvali, Ortak kurallar C1; AyarlarCikis, MesajlarSohbetSil,
 // EngelleOnay): over a flat scrim (C2, no blur), a card 28 in from either side, the optional icon
-// disc, the title, one sentence, what the caller puts under it, the action and under it the way
-// out. Hareket tablosu A2: it arrives on MOTION.dissolve (the scrim and the card fade in, the card
+// disc, the title, one sentence, what the caller puts under it, the error of a failed try, the
+// action, a third way if any (SusleCikis: 8 under the action) and the way out. Hareket tablosu A2: it arrives on MOTION.dissolve (the scrim and the card fade in, the card
 // from 0.97 and 12 below, 240 on the arriving curve) and leaves in 150 on the leaving curve (faded,
 // back to 0.97); with reduce motion at once. When it does not fit (320 dp, the largest text) the
 // card scrolls inside itself; nothing is cut.
-export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidden }: Props) {
+export function Dialog({
+  options,
+  visible,
+  running,
+  error,
+  onConfirm,
+  onOther,
+  onCancel,
+  onHidden,
+}: Props) {
   const { scheme, colors } = useTheme();
   const { c: kit } = useKit();
   const look = KIT.layer[scheme];
@@ -91,6 +105,8 @@ export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidde
   }));
 
   const danger = options.tone === 'danger';
+  const pending = running !== null;
+  const other = options.other;
   const testID = options.testID;
   return (
     <View
@@ -171,6 +187,17 @@ export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidde
               {options.children}
             </View>
           ) : null}
+          {error ? (
+            <T
+              v="fine"
+              center
+              color={KIT.danger}
+              accessibilityLiveRegion="polite"
+              style={{ alignSelf: 'stretch', marginTop: L.dialogTextBottom }}
+            >
+              {errorMessage(error)}
+            </T>
+          ) : null}
           <View
             style={{ alignSelf: 'stretch', marginTop: L.dialogTextBottom, gap: L.dialogButtonGap }}
           >
@@ -181,8 +208,18 @@ export function Dialog({ options, visible, pending, onConfirm, onCancel, onHidde
               testID={testID}
               label={options.confirmLabel}
               onPress={onConfirm}
-              loading={pending}
+              loading={running === 'confirm'}
             />
+            {other ? (
+              <Btn
+                block
+                variant={other.tone === 'danger' ? 'danger' : 'glassy'}
+                testID={other.testID}
+                label={other.label}
+                onPress={onOther}
+                loading={running === 'other'}
+              />
+            ) : null}
             <Btn
               block
               variant="glassy"

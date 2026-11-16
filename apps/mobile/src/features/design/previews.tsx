@@ -7,7 +7,6 @@ import { Button } from '@/components/Button';
 import { ChatBubble, type ChatQuote, type ChatReaction } from '@/components/ChatBubble';
 import { ChatScroll } from '@/components/ChatScreen';
 import { ChoiceChip } from '@/components/ChoiceChip';
-import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { GameDisc, type GameGlyph } from '@/components/Glyph';
 import { Composer } from '@/components/Composer';
 import { Text } from '@/components/Text';
@@ -184,7 +183,6 @@ function DialogBlock() {
 function GamesSet() {
   const [score, setScore] = useState(8);
   const [intro, setIntro] = useState(false);
-  const [confirm, setConfirm] = useState(false);
   return (
     <View className="gap-4">
       <ButtonsBlock />
@@ -248,13 +246,23 @@ function GamesSet() {
           />
         </View>
       </PreviewBlock>
-      <PreviewBlock title="RematchButton · ConfirmSheet · FirstGameIntro">
+      <PreviewBlock title="RematchButton · Dialog · FirstGameIntro">
         <RematchButton onPress={() => undefined} />
         <Button
           variant="neutral"
           testID="preview-confirm"
           label={tr.games.endGame}
-          onPress={() => setConfirm(true)}
+          onPress={() =>
+            openConfirm({
+              title: tr.games.endGameConfirmTitle,
+              note: tr.games.endGameConfirmBody,
+              tone: 'danger',
+              confirmLabel: tr.games.endGameConfirm,
+              cancelLabel: tr.games.keepPlaying,
+              onConfirm: () => undefined,
+              testID: 'preview-confirm-ok',
+            })
+          }
         />
         <Button
           variant="neutral"
@@ -264,17 +272,6 @@ function GamesSet() {
         />
       </PreviewBlock>
       <DialogBlock />
-      <ConfirmSheet
-        visible={confirm}
-        testID="preview-confirm-ok"
-        title={tr.games.endGameConfirmTitle}
-        body={tr.games.endGameConfirmBody}
-        confirmLabel={tr.games.endGameConfirm}
-        cancelLabel={tr.games.keepPlaying}
-        danger
-        onCancel={() => setConfirm(false)}
-        onConfirm={() => setConfirm(false)}
-      />
       <FirstGameIntro visible={intro} onClose={() => setIntro(false)} />
     </View>
   );

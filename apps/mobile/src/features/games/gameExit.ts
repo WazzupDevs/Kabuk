@@ -3,7 +3,8 @@ import { confirm } from '@/lib/overlayStore';
 
 // The "end the game / leave the game / back to the table" confirmation the seven games share:
 // the centred dialog (motion/Dialog). `run` is the server call (or only closing the cover for a
-// watcher); while its promise is pending the dialog waits, and a thrown error leaves it open.
+// watcher); while its promise is pending the dialog waits, and a thrown error leaves it open with
+// the error written in it (the dialog's own line).
 export type GameExitCopy = { title: string; body: string; confirm: string };
 
 export function confirmGameExit(args: {

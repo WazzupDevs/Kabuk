@@ -25,7 +25,7 @@ import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
-import { closeOverlay, confirm } from '@/lib/overlayStore';
+import { confirm } from '@/lib/overlayStore';
 import { maxLengthFor } from '@/lib/textLimit';
 import { type MenuAnchor, Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
@@ -294,10 +294,11 @@ function EditForm({
   const [tried, setTried] = useState(false);
   const changed = (nameChanged || bioChanged) && !save.isSuccess;
   const dirty = changed;
-  // One pattern with Kapsülün's: "Kaydet ve çık" tries to save; a save that cannot go through
-  // closes the dialog and the error shows on the screen, so the page is not left.
+  // "Kaydet ve çık" tries to save; a save that cannot go through keeps the dialog open with its
+  // error, so the page is not left. A name or a biography that does not pass closes it and says so
+  // on its field. "Kaydetmeden çık" is the dialog's third way, under the action (SusleCikis).
   const askToLeave = useCallback(() => {
-    const id = confirm({
+    confirm({
       title: tr.profile.leaveTitle,
       note: tr.profile.leaveBody,
       tone: 'plain',
@@ -309,24 +310,14 @@ function EditForm({
           setTried(true);
           return;
         }
-        try {
-          await save.mutateAsync();
-        } catch {
-          // The error shows on the screen (save.isError); the dialog closes.
-        }
+        await save.mutateAsync();
       },
-      children: (
-        <Btn
-          block
-          variant="glassy"
-          testID="profile-edit-leave-discard"
-          label={tr.profile.leaveConfirm}
-          onPress={() => {
-            closeOverlay(id, false);
-            router.back();
-          }}
-        />
-      ),
+      other: {
+        label: tr.profile.leaveConfirm,
+        tone: 'danger',
+        testID: 'profile-edit-leave-discard',
+        onPress: () => router.back(),
+      },
     });
   }, [nameValid, bioValid, save]);
   const leave = () => (dirty ? askToLeave() : router.back());
