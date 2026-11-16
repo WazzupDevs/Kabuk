@@ -1,5 +1,13 @@
 # İlerleme
 
+## Devir notu (16 Kasım 2026, gece): yeni arayüz aktarımı, ortak temel ve kapsül hattı
+
+- Kaynaklar: tuval ve kararlar `docs/decisions/yeni-tuval.md` (16 Kasım kararları dahil: her onay ortada dialog, düğme 48, Ayarlar tam sayfa, Ağız altıncı sekme, sabitlerde son sabitlenen üstte); panoların çizmediği davranışlar `docs/design/yeni-arayuz/davranis-eksikleri.md`; panolar `docs/design/yeni-arayuz/project/`; ortak temelin değer farkları ve paket planı `docs/design/yeni-arayuz/ortak-temel-plan.md`. Bu oturumda proje sahibi "aynı anda tek yazan ajan" kuralını kaldırdı ve paket başına ayrı dal ve PR'a izin verdi.
+- Birleşenler: #639–#646 (karar tablosu, bütün kapsül Skia açık, tuval kararı, `profile/save-look`, 4.12, P2 çizim kaynağının tek sahibi, P2b kare başına çizim maliyeti, pencereli ızgara). Hiçbiri telefonda görülmedi.
+- Açık PR'lar (`ci` yeşilse birleştir): #647 overlay deposu ve dialog, #648 temel değerler ve Ayarlar tam sayfa, #649 düğme (#648 ile `auraKit.ts` ve `contrast.test.ts`'te çakışabilir; ikincisine main birleştirilir), #651 doku ön yüklemesi (varsayılan kapalı; açmak Skia yamasına ek ve build ister). #650 DM yönetimi sunucu taslak: `guvenlik` bulguları ve "son sabitlenen üstte" düzeltmesi bekliyor; kural 10 cümlesi proje sahibinin onayıyla.
+- Sıradaki paketler: ortak temel 3b (Ayarlar onayları dialoga; `theme/overlay.ts` → `KIT.layer` eşlemesi), 4 (kalan ≈20 onay), 5 (alt sayfa, ⋮ ve uzun basma aynı depoya; `SCRIM_GLASS` 6), 6 (yükleniyor, hata, üst bildirim, dar ekran); kapsül pilotu ekranları (Süsle `save-look` ve ortak taslakla, altı sekme; Tüm aksesuarlar `GridWindow` ile); profil bileti (P3) 4.13'ün profil sonucundan sonra; Odadakiler kural 4'ü değiştirir (proje sahibinin onayı ve `guvenlik`).
+- Ölçüm 4.13 (P2, P2b OTA'sı telefonda): zarda `RNSkia.render` sayısı, ortalaması, en uzunu; bellek platosu; boşta ve "hareket" kapalı iz; "Önceden doku" açık ve kapalı; yan yana görüntüde piksel farkı; Profil'de kapak kapalı ve bilet kapalı ilk açılış.
+
 ## Devir notu (16 Kasım 2026, akşam): 4.12 ölçüldü
 
 - 0.12.0 build 25 + `preview` `01a1e4f7…` (bütün kapsül Skia varsayılan açık) S23'te ölçüldü: `docs/perf/akicilik-denetimi.md` → 4.12, tablo bölüm 5.
