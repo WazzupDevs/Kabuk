@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (16 Kasım 2026, gece): 4.13 yarım, Süsle'de boş kapsül
+
+- `preview` `01a1e59b…` (#644, #645, #651): bütün kapsül Skia açıkken (herkes için varsayılan) Süsle'nin büyük kapsülü boş çiziliyor; günlükte `SkiaTextureView` 3 x 3 yüzey. "Önceden doku" açık da kapalı da aynı; bütün Skia kapalıyken çiziliyor (`docs/perf/akicilik-denetimi.md` → 4.13 A).
+- 4.13'te yalnız Profil ölçüldü: ilk açılış %14,65 geç kare, en uzun 133 ms; Skia yok, kayıt 50–57 ms ve animasyon 38–67 ms. Kapak ya da bilet ayrımı için panelde anahtar yok.
+- Kök neden düzeltilip anahtar yeniden açılabilir olunca 4.13'ün kalanı (zar, Önceden doku A/B, döngü mü zar mı, bellek, parça değişimi, görsel doğruluk) aynı protokolle ölçülür; proje sahibi haber verir.
+
 ## Devir notu (16 Kasım 2026, gece): yeni arayüz aktarımı, ortak temel ve kapsül hattı
 
 - Kaynaklar: tuval ve kararlar `docs/decisions/yeni-tuval.md` (16 Kasım kararları dahil: her onay ortada dialog, düğme 48, Ayarlar tam sayfa, Ağız altıncı sekme, sabitlerde son sabitlenen üstte); panoların çizmediği davranışlar `docs/design/yeni-arayuz/davranis-eksikleri.md`; panolar `docs/design/yeni-arayuz/project/`; ortak temelin değer farkları ve paket planı `docs/design/yeni-arayuz/ortak-temel-plan.md`. Bu oturumda proje sahibi "aynı anda tek yazan ajan" kuralını kaldırdı ve paket başına ayrı dal ve PR'a izin verdi.
