@@ -111,11 +111,29 @@ export type DmRequest =
   // Mesajlar (docs/SPEC_V3.md §18.2): one row per friend, newest conversation first.
   | { action: 'inbox' }
   // The app is open: the caller's messages so far count as delivered, in every thread.
-  | { action: 'delivered' };
+  | { action: 'delivered' }
+  // docs/SPEC_V4.md §4.X: the caller's own pin, archive and clear; the other member never sees
+  // them. At most DM_PIN_MAX pinned (pin_limit); an archived conversation is not pinned
+  // (thread_archived); archive takes the pin off; clear hides everything so far from the caller
+  // and takes the pin and the archive off.
+  | { action: 'pin'; threadId: string }
+  | { action: 'unpin'; threadId: string }
+  | { action: 'archive'; threadId: string }
+  | { action: 'unarchive'; threadId: string }
+  // upTo: the newest message the caller saw (null when it saw none): the mark never passes it, so
+  // a message that came meanwhile, or between a call and its repeat, stays visible.
+  | { action: 'clear'; threadId: string; upTo: string | null }
+  // The caller's own message, within DM_EDIT_WINDOW_MS of sending (edit_expired); checked like a
+  // send (message_invalid, profanity_rejected); at most DM_EDIT_RATE per window (rate_limited); no
+  // push.
+  | { action: 'edit'; messageId: string; body: string };
 
 export type DmOkResponse = { ok: true };
 // The message as written (adım 9.1): the app puts it into its page at once, with status 'sent'.
 export type DmSendResponse = { ok: true; messageId: string; createdAt: string };
+// The message as edited: the text kept (trimmed) and when it was edited (null when it never was:
+// the same text as the unedited message).
+export type DmEditResponse = { ok: true; body: string; editedAt: string | null };
 
 // Of the caller's own messages only: the other member's times never reach the client.
 export type DmStatus = 'sent' | 'delivered' | 'read';
@@ -133,6 +151,12 @@ export type DmInboxThread = {
   unreadCount: number;
   // Only when the newest message is the caller's.
   lastStatus: DmStatus | null;
+  // docs/SPEC_V4.md §4.X, the caller's own: the pinned come first, the last pinned on top.
+  // An archived conversation stays in `threads` (an app from before §4.X shows it like any other)
+  // and keeps counting its unread; a new message does not take it out of the archive.
+  pinned: boolean;
+  archived: boolean;
 };
 
-export type DmInboxResponse = { threads: DmInboxThread[] };
+// archivedUnread: the unread messages of the archived conversations, together (Arşivlenenler).
+export type DmInboxResponse = { threads: DmInboxThread[]; archivedUnread: number };

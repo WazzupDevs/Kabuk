@@ -66,6 +66,23 @@ export const IDEMPOTENT_CALLS = [
   // friends.test "DM replies and reactions (docs/SPEC_V3.md §21)": "keeps one reaction per
   // account: set, change, take back, and the same twice"
   'dm/react',
+  // dmManage.test "dm/pin and dm/archive (§4.X)": "pins at most five, the last pinned on top;
+  // the same twice changes nothing"
+  'dm/pin',
+  // dmManage.test "dm/pin and dm/archive (§4.X)": "pins at most five, the last pinned on top;
+  // the same twice changes nothing"
+  'dm/unpin',
+  // dmManage.test "dm/pin and dm/archive (§4.X)": "archives and unarchives; the archive keeps its
+  // unread through a new message and takes no pin"
+  'dm/archive',
+  // dmManage.test "dm/pin and dm/archive (§4.X)": "archives and unarchives; the archive keeps its
+  // unread through a new message and takes no pin"
+  'dm/unarchive',
+  // dmManage.test "dm/clear (§4.X)": "keeps a message that came between a clear and its repeat"
+  'dm/clear',
+  // dmManage.test "dm/edit (§4.X)": "answers the same edit twice with the first result and writes
+  // nothing"
+  'dm/edit',
   // chat.test "room chat replies and reactions (docs/SPEC_V3.md §21)": "keeps one reaction per
   // person, named by the seat names, the same when sent twice"
   'chat/react',

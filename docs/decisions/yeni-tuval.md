@@ -27,11 +27,11 @@ a. **Odadakiler (semt sohbeti):** panodaki gibi tam liste: kişi sayısı, profi
 
 b. **Ortak arkadaş:** yalnız zaten arkadaş olunan kişinin profilinde, sayı ve adlarla. Arkadaş olmayanın profilinde (mekan ya da semt sohbetinden açılan) gösterilmez.
 
-c. **Sohbet sabitleme ve arşiv:** sunucuda, hesaba bağlı; en çok 5 sabit. Arşivdeki sohbete yeni mesaj gelince sohbet arşivde kalır, okunmamış sayısı Arşivlenenler satırında görünür.
+c. **Sohbet sabitleme ve arşiv:** sunucuda, hesaba bağlı; en çok 5 sabit. Arşivdeki sohbete yeni mesaj gelince sohbet arşivde kalır, okunmamış sayısı Arşivlenenler satırında görünür. Sunucu: DM yönetimi paketi (`docs/SPEC_V4.md` §4.X).
 
-d. **Sohbeti sil:** yalnız silende; sunucuda "bu andan öncesi bana gizli" işareti. Karşı taraf görmez, arkadaşlık sürer, yeni mesaj sohbeti o mesajdan itibaren yeniden gösterir; şikayet kayıtları etkilenmez.
+d. **Sohbeti sil:** yalnız silende; sunucuda "bu andan öncesi bana gizli" işareti. Karşı taraf görmez, arkadaşlık sürer, yeni mesaj sohbeti o mesajdan itibaren yeniden gösterir; şikayet kayıtları etkilenmez. Sunucu: DM yönetimi paketi (`docs/SPEC_V4.md` §4.X).
 
-e. **DM düzenleme:** kendi metin mesajı, gönderildikten sonraki 15 dakika içinde; karşı tarafta "düzenlendi". Küfür filtresi yeniden uygulanır (kural 7); eski metin saklanmaz.
+e. **DM düzenleme:** kendi metin mesajı, gönderildikten sonraki 15 dakika içinde; karşı tarafta "düzenlendi". Küfür filtresi yeniden uygulanır (kural 7); eski metin saklanmaz. Sunucu: DM yönetimi paketi (`docs/SPEC_V4.md` §4.X).
 
 f. **Kapsül kaydı:** Süsle ve Tüm aksesuarlar tek taslağı paylaşır; Kaydet yalnız Süsle'de; sunucuda tek atomik yazma (`profile/save-look`).
 
