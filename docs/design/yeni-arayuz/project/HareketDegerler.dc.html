@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Hareket: ortak değerler</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F2F8F3;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#031B0B}
+.pg{width:1400px;min-height:1040px;box-sizing:border-box;padding:48px 56px;background:#F2F8F3}
+h1{margin:0;font:800 34px/40px 'Plus Jakarta Sans';letter-spacing:-.6px}
+.lead{margin:10px 0 0;max-width:980px;font:500 16px/24px 'Plus Jakarta Sans';color:#4A6550}
+h2{margin:36px 0 12px;font:800 20px/26px 'Plus Jakarta Sans';letter-spacing:-.2px;display:flex;align-items:baseline;gap:12px}
+h2 small{font:600 13px/18px 'Plus Jakarta Sans';color:#4A6550}
+table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(3,27,11,.06)}
+th{text-align:left;font:700 12px/16px 'Plus Jakarta Sans';letter-spacing:.3px;color:#4A6550;background:#E6F0E8;padding:10px 12px}
+td{vertical-align:top;font:500 14px/20px 'Plus Jakarta Sans';padding:11px 12px;border-top:1px solid rgba(3,27,11,.07)}
+td b{font-weight:700}
+td code,.k code{font:600 12.5px/18px ui-monospace,SFMono-Regular,Menlo,monospace;background:#EEF5F0;border-radius:6px;padding:1px 6px;color:#0B5A30;white-space:nowrap}
+td.n{font:800 13px/20px 'Plus Jakarta Sans';color:#0E8745;white-space:nowrap}
+td.rm{color:#4A6550}
+.ob{font:700 10px/14px 'Plus Jakarta Sans';letter-spacing:.4px;color:#0E8745;background:#E2F2E7;border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:1px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.k{background:#fff;border-radius:20px;padding:18px 20px;box-shadow:0 0 0 1px rgba(3,27,11,.06)}
+.k h3{margin:0 0 10px;font:800 16px/22px 'Plus Jakarta Sans'}
+.k p{margin:6px 0 0;font:500 14px/20px 'Plus Jakarta Sans'}
+.k p span{color:#4A6550}
+.rule{margin-top:16px;background:#031B0B;color:#fff;border-radius:20px;padding:18px 22px;font:500 15px/23px 'Plus Jakarta Sans'}
+.rule b{font-weight:800}
+
+</style>
+</helmet>
+<div class="pg">
+<h1>Hareket: ortak değerler</h1>
+<p class="lead">Uygulamadaki tek kaynak <code>theme/aura.ts → MOTION</code> ve kapsül için <code>features/capsule/motion.ts</code>. Bu sayfadaki her hareket bu adlardan birini kullanır; yeni değer yoktur. Yay değerleri: sertlik / sönüm / kütle.</p>
+<h2>Yaylar <small>Animated.spring, yerel sürücü</small></h2><div class="grid"><div class="k"><h3>Yer değiştiren yüzey</h3><p><code>springs.morph</code> <span>170 / 26 / 1 · kart → ekran, konum değişimi</span></p><p><code>springs.morphBack</code> <span>260 / 30 / 1 · geri dönüş</span></p><p><code>springs.sheet</code> <span>260 / 24 / 1 · alttan sayfa açılışı</span></p></div><div class="k"><h3>Beliren öğe</h3><p><code>springs.pop</code> <span>260 / 17 / 1 · aksesuar takılması, yeni mesaj, gönder düğmesi</span></p><p><code>springs.menu</code> <span>300 / 24 / 1 · menünün düğmesinden büyümesi</span></p><p><code>springs.press</code> <span>500 / 22 / 1 · basılan öğenin geri gelişi</span></p></div><div class="k"><h3>Seçici</h3><p><code>springs.seg</code> <span>380 / 30 / 1 · sekme alt çizgisi, bölmeli seçici</span></p><p><code>springs.tabLead</code> <span>420 / 30 / 1 · alt menü seçili diskin önü</span></p><p><code>springs.tabTrail</code> <span>200 / 24 / 1 · alt menü seçili diskin arkası</span></p></div></div>
+<h2>Eğriler ve süreler <small>cubic-bezier</small></h2><div class="grid"><div class="k"><h3>Eğriler</h3><p><code>curves.arrive</code> <span>.2, .9, .25, 1 · gelen</span></p><p><code>curves.leave</code> <span>.4, 0, 1, 1 · giden</span></p><p><code>curves.swap</code> <span>.4, 0, .2, 1 · yerinde değişen</span></p></div><div class="k"><h3>Çözülme (dissolve)</h3><p>Giriş <span>240 ms arrive · <code>dissolve.inMs</code></span></p><p>Çıkış <span>150 ms leave · <code>dissolve.outMs</code></span></p><p>Ölçek / yükselme / bulanıklık <span>.97 → 1 · 12 px · 12 → 0</span></p></div><div class="k"><h3>Kademe ve diğer</h3><p><code>stagger.row</code> <span>30 ms satır başına, en çok 5 satır</span></p><p><code>stagger.part</code> <span>35 ms parça başına</span></p><p><code>SHEET_LEAVE_MS</code> <span>320 ms leave · sayfanın aşağı çıkışı</span></p><p><code>cardOpen</code> <span>içerik zeminden 150 ms sonra</span></p></div></div>
+<h2>Başlangıç değerleri</h2><div class="grid"><div class="k"><h3>Menü ve sayfa</h3><p><code>menuOpen.fromScale</code> <span>0,18</span></p><p><code>MENU_FADE_UNTIL</code> <span>0,35 · opaklık yayın ilk %35’inde tamamlanır</span></p><p><code>sheetOpen</code> <span>80 px aşağıdan, opaklık 0,3’ten</span></p></div><div class="k"><h3>Basma ve mesaj</h3><p><code>press</code> <span>ölçek 0,96 · 100 ms · 100 ms bekleme</span></p><p><code>messageIn</code> <span>18 px aşağıdan, ölçek 0,86’dan</span></p><p><code>messageIn.sendFromScale</code> <span>0,4</span></p></div><div class="k"><h3>Kapsül</h3><p><code>JUMP</code> <span>500 ms · eğri .3,.7,.4,1 · y 0 → −5 → 0,6 → 0</span></p><p><code>SHUFFLE</code> <span>560 ms · JUMP + dönme 0 → −6 → 5 → −2 → 0°</span></p><p><code>idle</code> <span>süzülme 4 px / 1300 ms · kırpma 160 ms, 4–6 sn</span></p></div></div>
+<div class="rule"><b>Hareketi azalt açıkken</b> hiçbir şey kaymaz, ölçeklenmez ve dönmez: öğeler son yerinde, anında belirir ya da kaybolur (süre 0). Kaydırmaya bağlı hareketler (şerit ölçeği, başlık solması) doğrusaldır ve azaltta durur. Sayfa geçişleri sistemin kendi geçişidir (<code style="background:rgba(255,255,255,.12);color:#9FF0C2">ios_from_right</code>), azaltta sistem karar verir.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

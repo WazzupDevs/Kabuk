@@ -2,7 +2,6 @@
 // canvas's classes: .display, .glass, .btn, .chip, .tag, .round, .av, .thumb, .li, .sec, .badge,
 // .live). Light from `:root`, dark from `.night` (the canvas's dark side). Components in
 // src/aura/kit/ read only these.
-import type { TextStyle } from 'react-native';
 import { BUTTON_GLASS } from './buttonGlass';
 
 const F = {
@@ -11,6 +10,16 @@ const F = {
   700: 'PlusJakartaSans_700Bold',
   800: 'PlusJakartaSans_800ExtraBold',
 } as const;
+
+// The text style's parts the kit sets, as React Native's TextStyle has them. Kept here, not imported:
+// the theme files stay pure, and the root type check (Node's types) reads them through the tests.
+type TextStyle = {
+  fontFamily?: string;
+  fontSize?: number;
+  lineHeight?: number;
+  letterSpacing?: number;
+  fontStyle?: 'normal' | 'italic';
+};
 
 // A text style: the canvas's size and line, its weight's file, letter spacing in em.
 const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
@@ -129,11 +138,17 @@ export const KIT_TYPE = {
   boxField: t(600, 16, 21),
   boxFieldMulti: t(500, 16, 22),
   boxNote: t(500, 12.5, 18),
-  // Ayarlar (tuval Ayarlar): a row's words (16, 600), Çıkış yap (16, 700), the seg's parts (14.5,
-  // 700).
+  // Ayarlar (tuval Ayarlar): a row's words (16, 600).
   settingsRow: t(600, 16, 20),
-  settingsDanger: t(700, 16, 20),
-  segPick: t(700, 14.5, 18),
+  // Yeni arayüz (Ayarlar, 16 Kasım): a page's title beside its back button (21, 700, -0.3 px), a
+  // section's head in small letters (13, 700). The dialog's title is the page's; its words 15/500;
+  // the long-press menu's row 15/600; the toast's title 14/600 and its line 12/500.
+  pageBarTitle: t(700, 21, 26, -0.3 / 21),
+  sectionHead: t(700, 13, 18),
+  dialogText: t(500, 15, 22),
+  holdRow: t(600, 15, 20),
+  toastTitle: t(600, 14, 19),
+  toastSub: t(500, 12, 16),
   // Mekan (tuval Mekan): "Mekandasın" (13, 700); the card's title (26, 800, -0.03em, 1.1) and its
   // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
   // field (14, 600); the invite's name (16, 700) and its button (14, 700).
@@ -333,11 +348,11 @@ export const KIT = {
     // U34: a field on a card: the surface, 1 divider inside.
     fieldOnCard: '#FFFFFF',
     fieldOnCardEdge: '#D6E6DA',
-    // Masa's tabs: the chosen one raised white.
-    segOn: '#FFFFFF',
-    // The chosen part's words: the ink; in the dark #0B0E0D on the 94 % white.
-    segOnInk: '#031B0B',
-    segShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
+    // The seg's chosen part (yeni arayüz, skall.css `.seg span.on`, 16 Kasım): the ink with white
+    // words and a soft shadow; in the dark the 94 % white with #0B0E0D.
+    segOn: '#031B0B',
+    segOnInk: '#FFFFFF',
+    segShadow: '0px 2px 6px rgba(3, 27, 11, 0.18)',
     // In a sheet the track is sunk, so the chosen white shows (the owner's report, 10 Kasım:
     // Ayarlar's two switches were white on white).
     segTrackInSheet: 'linear-gradient(180deg, #E0EDE2, #E0EDE2)',
@@ -1042,6 +1057,119 @@ export const KIT = {
     segGap: 4,
     hair: 1,
     edge: 1,
+  },
+  // The new look's layers (yeni arayüz tuvali, 16 Kasım; docs/design/yeni-arayuz/project:
+  // AyarlarCikis, MesajlarSohbetSil, EngelleOnay, SikayetEt, MekanSecenek, MesajlarUzunBas,
+  // SusleKaydedilemedi, OrtakKurallar C2): the dialog, the sheet, the ⋮ menu, the long-press menu,
+  // the toast and their scrims. Defined here; the dialog, sheet and menu work that follows draws
+  // them. Flat surfaces, no live blur; only the long-press menu's still copy is blurred.
+  layer: {
+    light: {
+      // The dialog: the surface, its shadow; its danger button soft red, its icon's disc red 10 %.
+      dialog: '#FFFFFF',
+      dialogShadow: '0px 18px 48px rgba(3, 27, 11, 0.22)',
+      dialogDanger: '#FBE1DB',
+      onDialogDanger: '#A8301A',
+      dialogDisc: 'rgba(214, 64, 40, 0.10)',
+      // The dialog's and the sheet's scrim, flat; the long-press menu's over its still copy.
+      scrim: 'rgba(3, 27, 11, 0.42)',
+      holdScrim: 'rgba(3, 27, 11, 0.30)',
+      // The ⋮ menu and the long-press menu: the surface, their shadow and ring; the rows' hairline;
+      // the long-press menu's red group apart on a band.
+      menu: '#FFFFFF',
+      menuShadow: '0px 18px 48px rgba(3, 27, 11, 0.22), 0px 0px 0px 1px rgba(3, 27, 11, 0.06)',
+      menuHair: 'rgba(3, 27, 11, 0.10)',
+      holdHair: 'rgba(3, 27, 11, 0.08)',
+      holdBand: 'rgba(3, 27, 11, 0.05)',
+      // The sheet: the surface, its handle and its shadow.
+      sheet: '#FFFFFF',
+      sheetGrab: 'rgba(3, 27, 11, 0.18)',
+      sheetShadow: '0px -8px 40px rgba(3, 27, 11, 0.18)',
+      // The toast: the ink with white words, its button and its shadow.
+      toast: '#031B0B',
+      onToast: '#FFFFFF',
+      toastButton: 'rgba(255, 255, 255, 0.14)',
+      toastShadow: '0px 12px 30px rgba(3, 27, 11, 0.30)',
+    },
+    dark: {
+      dialog: '#151A18',
+      // No shadow in the dark: a 1 px white ring.
+      dialogShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.08)',
+      dialogDanger: 'rgba(255, 151, 126, 0.12)',
+      onDialogDanger: '#FF977E',
+      dialogDisc: 'rgba(255, 151, 126, 0.12)',
+      scrim: 'rgba(0, 0, 0, 0.70)',
+      holdScrim: 'rgba(0, 0, 0, 0.62)',
+      menu: '#151A18',
+      menuShadow: '0px 18px 48px rgba(0, 0, 0, 0.70), 0px 0px 0px 1px rgba(255, 255, 255, 0.08)',
+      menuHair: 'rgba(255, 255, 255, 0.10)',
+      holdHair: 'rgba(255, 255, 255, 0.08)',
+      holdBand: 'rgba(255, 255, 255, 0.05)',
+      // SikayetEt's dark sheet: #121614 and a 1 px white ring.
+      sheet: '#121614',
+      sheetGrab: 'rgba(255, 255, 255, 0.22)',
+      sheetShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.08)',
+      // The toast turned over: white with the ink.
+      toast: '#FFFFFF',
+      onToast: '#031B0B',
+      toastButton: 'rgba(3, 27, 11, 0.08)',
+      toastShadow: '0px 12px 30px rgba(3, 27, 11, 0.30)',
+    },
+    size: {
+      // The dialog 28 in from the sides, 28 round, 24 / 20 / 20 inside; its icon's disc 56; its
+      // words 6 under the title and 20 over the buttons; the second button 8 under the first.
+      dialogInset: 28,
+      dialogRadius: 28,
+      dialogPadTop: 24,
+      dialogPadX: 20,
+      dialogPadBottom: 20,
+      dialogDisc: 56,
+      dialogTextTop: 6,
+      dialogTextBottom: 20,
+      dialogButtonGap: 8,
+      // The ⋮ menu: 292 wide, 28 round, 16 / 8 / 8 inside, 12 from the screen's edge.
+      menuWidth: 292,
+      menuRadius: 28,
+      menuPadTop: 16,
+      menuPadX: 8,
+      menuPadBottom: 8,
+      menuEdge: 12,
+      // The long-press menu: 268 wide, 24 round, 6 inside; a row 44 at least, 12 in, 16 round, its
+      // icon 20 and 14 to the words, the hairline from 46; the red group 6 apart on its band; the
+      // still copy under it blurred 6.
+      holdWidth: 268,
+      holdRadius: 24,
+      holdPad: 6,
+      holdRow: 44,
+      holdRowPadX: 12,
+      holdRowRadius: 16,
+      holdIcon: 20,
+      holdGap: 14,
+      holdHairIn: 46,
+      holdBand: 6,
+      holdBlur: 6,
+      // The sheet: 8 from the edges, 28 round, 10 / 20 / 34 inside; its handle 40 × 5, 16 over
+      // the content.
+      sheetInset: 8,
+      sheetRadius: 28,
+      sheetPadTop: 10,
+      sheetPadX: 20,
+      sheetPadBottom: 34,
+      grabW: 40,
+      grabH: 5,
+      grabGap: 16,
+      // The toast: 20 from the sides, 20 round, 12 / 12 / 12 / 14 inside, 12 between its parts;
+      // its icon 22, its button 36 (14 in); the line under its title at 70 %.
+      toastSide: 20,
+      toastRadius: 20,
+      toastPad: 12,
+      toastPadLeft: 14,
+      toastGap: 12,
+      toastIcon: 22,
+      toastButton: 36,
+      toastButtonPadX: 14,
+      toastSubOpacity: 0.7,
+    },
   },
 } as const;
 

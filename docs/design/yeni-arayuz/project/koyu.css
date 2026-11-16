@@ -1,0 +1,16 @@
+/* Kod: theme/theme.ts palettes.dark ve shadows.dark (koyuda gölge yok). skall koyu tema (onaylı, 1 Kas): A Grafit + düz siyah (15:48–15:49, Gökay).
+   Zemin saf siyah, cam yüzeyler düz #121614, aura ve gren yok, yeşil yalnızca vurgu ve birincil düğmede.
+   skall.css .dark değerlerinin üstüne yazılır; koyu panolar her zaman class="dark pA" taşır. */
+.dark.pA{
+ --canvas:#000000;--surface:#151A18;--surface2:#1B211F;--raised:#151A18;
+ --text:#EEF3F0;--muted:#A3AEA8;--placeholder:#8F9A94;--divider:#232A27;--border:#626D68;--card-line:#1B211F;
+ --accent:#3DDC84;--focus:#3DDC84;--calm:#091F12;--on-calm:#93EBB9;
+ --feature:#EEF3F0;--on-feature:#0B0E0D;--feature-muted:#4A6550;
+ --control:#2A332F;--track:#1B211F;--disabled:#1F2623;--on-disabled:#A3AEA8;
+ --glass-bg:#121614;--glass-line:rgba(255,255,255,.09);--glass-shadow:none;
+ --soft-bg:#121614;--soft-line:rgba(255,255,255,.10);--soft-shadow:none;--hair:rgba(255,255,255,.07);
+ --logo-a:#3DDC84;--logo-b:#FF3478;
+ --shadow-card:none;--shadow-raised:none;--shadow-sheet:none;--shadow-focus:0 0 0 4px rgba(31,220,117,.22);
+ background:var(--canvas)}
+.dark.pA .aura{display:none}
+.dark.pA .chip.on{background:var(--feature);color:var(--on-feature)}

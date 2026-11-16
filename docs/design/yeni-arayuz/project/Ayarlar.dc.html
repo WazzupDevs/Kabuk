@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Ayarlar</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hd{display:flex;align-items:center;justify-content:space-between}
+.acts{display:flex;gap:8px}
+.round{position:relative}
+.round .nd{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--buzz);border:2px solid var(--canvas)}
+.srch{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);color:var(--placeholder);--ci-a:var(--muted);--ci-b:var(--muted)}
+.sg{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);height:44px;padding:4px}
+.sg span{gap:6px}
+.dark .sg span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.cnt{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--buzz);color:var(--on-buzz);font:700 11px/20px var(--font);text-align:center;box-sizing:border-box}
+.lbl{display:flex;align-items:center;gap:6px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted);padding:0 4px;--ci-a:var(--muted);--ci-b:var(--muted)}
+.lst{padding:0;display:flex;flex-direction:column;margin:0 -20px}
+.rw{padding:10px 20px!important}
+.rw+.rw:before{display:none!important}
+.lst+.lst{margin-top:8px}
+.rw{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:72px;position:relative}
+.rw+.rw:before{content:"";position:absolute;top:0;left:76px;right:16px;border-top:1px solid var(--hair)}
+.rw .av{width:48px;height:48px;font-size:17px}
+.mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.l1,.l2{display:flex;align-items:center;gap:8px}
+.nm{font:600 16px/22px var(--font);color:var(--text);flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.tm{font:500 13px/18px var(--font);color:var(--muted);flex:none}
+.tm.new{color:var(--accent);font-weight:700}
+.pv{font:500 15px/22px var(--font);color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);display:flex;align-items:center;gap:4px}
+.pv.un{color:var(--text);font-weight:600}
+.pv.first{font-style:italic}
+.tick{width:18px;height:18px;flex:none;color:var(--read)}
+.mu{width:16px;height:16px;flex:none;--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc{display:flex;align-items:center;gap:12px;height:48px;padding:0 16px;border-radius:999px;color:var(--text);font:600 15px/22px var(--font);--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc .n{margin-left:auto;font:600 13px/18px var(--font);color:var(--muted)}
+.chev{width:18px;height:18px;color:var(--muted)}
+.tb{position:absolute;left:16px;right:16px;bottom:34px;height:68px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:0 6px}
+.ti{width:68px;height:56px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font:600 11px/14px var(--font)}
+.ti .ci{width:22px;height:22px}
+.ti.on{background:#FFFFFF;color:var(--text);box-shadow:var(--shadow-raised)}
+.ti.on .ci{--ci-a:var(--accent);--ci-b:var(--buzz);--ci-bo:1}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#031B0B}
+.dark .ti.on .ci{--ci-a:#0B783D}
+.aura{display:none}
+.tb,.fade{display:none!important}
+.pg{position:absolute;inset:0;z-index:3;background:var(--canvas);overflow:hidden}
+.dark .pg{background:#000}
+.pl{position:absolute;left:0;right:0;top:100px;bottom:0;overflow:hidden}
+.pin{position:absolute;left:0;right:0}
+.ptop{margin:52px 16px 0;display:flex;align-items:center;gap:12px;height:48px}
+.ptop .round{--ci-a:var(--text);color:var(--text)}
+.dark .ptop .round{background:#121614;border-color:rgba(255,255,255,.08);box-shadow:none;color:#EEF3F0}
+.ptop b{font:700 21px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.sl{margin:4px 20px 0;display:flex;flex-direction:column}
+.sr{display:flex;align-items:center;gap:14px;min-height:56px;position:relative;--ci-a:var(--text);--ci-b:var(--text)}
+.dark .sr{--ci-a:#EEF3F0;--ci-b:#EEF3F0}
+.sr+.sr:before{content:"";position:absolute;top:0;left:38px;right:0;border-top:1px solid rgba(3,27,11,.10)}
+.dark .sr+.sr:before{border-top-color:rgba(255,255,255,.10)}
+.sr .ci{width:24px;height:24px}
+.sr p{flex:1;margin:0;font:600 16px/20px var(--font);color:var(--text);display:flex;align-items:center;gap:8px}
+.sr .chev{width:18px;height:18px;color:var(--muted)}
+.sr.dg{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.sr.dg p{color:var(--on-danger-soft)}
+.dark .sr.dg{--ci-a:#FF977E;--ci-b:#FF977E}.dark .sr.dg p{color:#FF977E}
+.sh3{margin:26px 20px 8px;font:700 13px/18px var(--font);color:var(--muted)}
+.seg2{margin:0 20px}
+.dark .seg2 span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.nt{margin:8px 20px 0;font:500 13px/18px var(--font);color:var(--muted)}
+.ob{font:700 8px/11px var(--font);letter-spacing:.4px;color:var(--accent);background:var(--surface2);border-radius:999px;padding:1px 5px}
+.dark .ob{background:#262E2B;color:#3DDC84}
+.ver{margin:22px 20px 0;text-align:center;font:500 12px/16px var(--font);color:var(--muted)}
+.scrim3{position:absolute;inset:0;background:rgba(3,27,11,.42);z-index:8}
+.dark .scrim3{background:rgba(0,0,0,.7)}
+.dlg{position:absolute;left:28px;right:28px;top:280px;z-index:9;background:var(--surface);border-radius:28px;padding:24px 20px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 18px 48px rgba(3,27,11,.22)}
+.dark .dlg{background:#151A18;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.dt{margin:0;font:700 20px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.dx{margin:6px 0 20px;font:500 15px/22px var(--font);color:var(--muted)}
+.dlg .btn{width:100%}
+.dlg .btn.danger{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.dark .dlg .btn.danger{background:rgba(255,151,126,.12);color:#FF977E;--ci-a:#FF977E;--ci-b:#FF977E}
+.dlg .btn.ghost{margin-top:8px;background:none;border:0;box-shadow:none;color:var(--text)}
+
+.fade{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(180deg,rgba(239,247,241,0),var(--canvas) 70%);pointer-events:none}
+.dark .fade{background:linear-gradient(180deg,rgba(0,0,0,0),#000 70%)}
+/*TB2*/
+.tb{left:20px;right:20px;bottom:30px;height:60px;padding:0 5px;gap:2px;box-shadow:0 6px 18px rgba(3,27,11,.08),0 0 0 1px rgba(3,27,11,.04)}
+.dark .tb{box-shadow:0 0 0 1px rgba(255,255,255,.07)}
+.ti{flex:1 1 0;min-width:0;width:auto;height:50px;gap:3px;font:600 10px/13px var(--font);letter-spacing:.1px;white-space:nowrap}
+.ti .ci{width:20px;height:20px}
+.ti.on{flex:1 1 0;padding:0;background:#031B0B;color:#FFFFFF;box-shadow:0 4px 12px rgba(3,27,11,.18)}
+.ti.on .ci{--ci-a:#3DDC84;--ci-b:#FF6FA0}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#0B0E0D;box-shadow:none}
+.dark .ti.on .ci{--ci-a:#0B783D;--ci-b:#FF4F8B}
+.dark .ti{color:rgba(238,243,240,.55)}
+/*TB2END*/
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+<div class="pg"><div class="ptop"><button class="round soft" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><b>Ayarlar</b></div><div class="pl"><div class="pin" style="top:0px"><div class="sl"><div class="sr" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2a6 6 0 0 0-6 6v3.6L4.4 16.4h15.2L18 12.8V9.2a6 6 0 0 0-6-6z" class="b"></path><rect x="9.2" y="17.6" width="5.6" height="3.4" rx="1.7" class="a"></rect></svg><p>Bildirimler</p><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="sr" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.6" y="10" width="14.8" height="11" rx="4" class="b"></rect><path d="M8 10V7.6a4 4 0 0 1 8 0V10" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.6"></path><circle cx="12" cy="15.5" r="1.9" class="a"></circle></svg><p>Gizlilik</p><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="sr" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.4" class="a"></circle><rect x="4.6" y="13.6" width="14.8" height="7.4" rx="3.7" class="b"></rect></svg><p>Hesap</p><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div></div>
+<p class="sh3">Oyunlara katılım</p>
+<div class="seg seg2"><span>Profilli</span><span class="on">Anonim</span></div>
+<p class="nt">Her girişte anonim başlarsın. Girdikten sonra mekân menüsünden bir kez değiştirebilirsin.</p>
+<p class="sh3">Görünüm</p>
+<div class="seg seg2"><span class="on">Sistem</span><span>Açık</span><span>Koyu</span></div>
+<p class="nt">Telefonunun temasını izler.</p>
+<div class="sl" style="margin-top:18px"><div class="sr dg" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="11" height="16" rx="4" class="b"></rect><path d="M10.6 12h10M17.4 8.4 21 12l-3.6 3.6" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg><p>Çıkış yap</p></div></div>
+<p class="sh3">Test sürümü</p>
+<div class="sl"><div class="sr" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.4 12C5 7.4 8.4 5.6 12 5.6s7 1.8 9.6 6.4c-2.6 4.6-6 6.4-9.6 6.4S5 16.6 2.4 12z" class="b"></path><circle cx="12" cy="12" r="3.4" class="a"></circle></svg><p>Bileşen önizlemesini aç</p><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="sr" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6.4" width="12" height="14.6" rx="6" class="b"></rect><circle cx="12" cy="6.4" r="3.4" class="a"></circle><path d="M3.4 12.4H6M18 12.4h2.6M4.4 18l2.4-1.4M19.6 18l-2.4-1.4" stroke="var(--ci-a,currentColor)" stroke-width="2.2" stroke-linecap="round"></path></svg><p>Hata kaydını gönder</p><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div></div>
+</div></div></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>
