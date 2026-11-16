@@ -3,10 +3,9 @@ import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Btn, T } from '@/aura/kit';
+import { T } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 import { Input } from '@/components/Input';
-import { Sheet } from '@/components/Sheet';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
@@ -15,9 +14,10 @@ import { useGoOnce } from '@/features/onboarding/useGoOnce';
 import { signupError, useCompleteSignup } from '@/features/onboarding/useCompleteSignup';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { confirm } from '@/lib/overlayStore';
 
 // The birth date, step 5/7: never shown to anyone, the profile shows the age; it cannot be changed
-// later (rule 11). "Devam" asks once more in a sheet with the age and the date (K-55, K-63; v46
+// later (rule 11). "Devam" asks once more in a dialog with the age and the date (K-55, K-63; v46
 // §6): Onayla goes on, Düzelt stays. The server decides under 18 when the profile is sent, after
 // the gender step: it asks for the gender first (docs/arsiv/DECISIONS.md → "Faz 4 adım 4.3b").
 export default function BirthStep() {
@@ -29,8 +29,6 @@ export default function BirthStep() {
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
   const [error, setError] = useState<string | null>(null);
-  // The date waiting for Onayla, with the age it gives today.
-  const [confirm, setConfirm] = useState<{ birthDate: string; age: number } | null>(null);
   const submit = useCompleteSignup();
   const needsGender = profile.data?.has_gender !== true;
   const friend = useFriend();
@@ -58,16 +56,21 @@ export default function BirthStep() {
       return;
     }
     setError(null);
-    setConfirm({ birthDate, age: check.age });
+    const date = parseIsoDate(birthDate);
+    confirm({
+      title: tr.signup.birthConfirmTitle(check.age),
+      note: date ? tr.signup.birthConfirmBody(date) : '',
+      tone: 'plain',
+      confirmLabel: tr.signup.birthConfirm,
+      cancelLabel: tr.signup.birthFix,
+      testID: 'birth-confirm',
+      onConfirm: () => {
+        useOnboardingStore.setState({ birthDate });
+        if (needsGender) go(() => router.push('/gender'));
+        else submit.mutate(null);
+      },
+    });
   };
-  const onConfirm = () => {
-    if (!confirm) return;
-    setConfirm(null);
-    useOnboardingStore.setState({ birthDate: confirm.birthDate });
-    if (needsGender) go(() => router.push('/gender'));
-    else submit.mutate(null);
-  };
-  const confirmed = confirm ? parseIsoDate(confirm.birthDate) : null;
 
   return (
     <SignupStep
@@ -121,23 +124,6 @@ export default function BirthStep() {
           </T>
         ) : null}
       </View>
-      <Sheet
-        visible={confirm !== null}
-        onClose={() => setConfirm(null)}
-        title={tr.signup.birthConfirmTitle(confirm?.age ?? 0)}
-      >
-        <T v="fine">{confirmed ? tr.signup.birthConfirmBody(confirmed) : ''}</T>
-        <View className="gap-2.5">
-          <Btn block testID="birth-confirm" label={tr.signup.birthConfirm} onPress={onConfirm} />
-          <Btn
-            block
-            variant="glassy"
-            testID="birth-confirm-fix"
-            label={tr.signup.birthFix}
-            onPress={() => setConfirm(null)}
-          />
-        </View>
-      </Sheet>
     </SignupStep>
   );
 }
