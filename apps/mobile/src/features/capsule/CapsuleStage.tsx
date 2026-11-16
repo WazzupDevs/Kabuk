@@ -176,7 +176,10 @@ export function CapsuleStage({
   const comingList = useArt(comingNeed);
   const comingNeeds = neededBy(comingList);
   const comingMade = useArtsReady(comingNeeds);
-  const comingMadeAll = comingNeed === null || (comingNeeds !== null && comingMade);
+  // A look whose list could not be made (its job threw: capsule/useArt.ts → made) is not waited
+  // for: its canvas draws it the picture way.
+  const comingFailed = comingList?.kind === 'none';
+  const comingMadeAll = comingNeed === null || comingFailed || (comingNeeds !== null && comingMade);
   // Its pictures' copies on the GPU, waited for up to TEXTURE_WAIT_MS once they are made
   // (capsule/stageGate.ts → lookPasses).
   const comingTextured = useArtsTextured(coming && comingMadeAll ? comingNeeds : null);

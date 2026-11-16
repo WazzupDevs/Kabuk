@@ -36,11 +36,11 @@ import {
 } from 'react-native-reanimated';
 
 import {
-  alphaBounds,
+  keptRect,
+  pictureUsable,
   pointsOf,
   type PtRect,
   type PxRect,
-  trimRect,
   unionRect,
 } from '@/capsule/artBounds';
 import {
@@ -424,14 +424,13 @@ function holdCanvas(): () => void {
 }
 
 // The pixels a picture drawn on `surface` covers (artBounds.ts), a pixel round them; the whole
-// picture when they cannot be read.
+// picture when they cannot be read, or none of them reads as drawn (artBounds.ts → keptRect).
 function drawnRect(surface: SkSurface, px: number, py: number): PxRect {
   const whole = { x: 0, y: 0, width: px, height: py };
   const full = surface.makeImageSnapshot();
   try {
     const pixels = full.readPixels();
-    if (!(pixels instanceof Uint8Array) || pixels.length < px * py * 4) return whole;
-    return trimRect(alphaBounds(pixels, px, py), px, py);
+    return keptRect(pixels instanceof Uint8Array ? pixels : null, px, py);
   } catch {
     return whole;
   } finally {
@@ -464,7 +463,7 @@ function makeArt(xml: string, width: number, height: number, ratio: number, trim
           Skia.XYWHRect(kept.x, kept.y, kept.width, kept.height),
         );
         // A snapshot not of the box asked for (it should be): the whole picture, as before.
-        if (cut.width() === kept.width && cut.height() === kept.height) {
+        if (pictureUsable(kept, cut.width(), cut.height())) {
           image = cut;
           rect = kept;
         } else cut.dispose();
@@ -565,6 +564,15 @@ function wholeNeeds(
   return [...out.values()];
 }
 
+// A picture's size in pixels; none when it cannot be read (a picture already let go).
+function sizeOf(image: SkImage): [number, number] {
+  try {
+    return [image.width(), image.height()];
+  } catch {
+    return [0, 0];
+  }
+}
+
 // The layers with their made resources; null when one could not be made (the picture way draws).
 function readWhole(
   layers: readonly WholeLayer[],
@@ -575,7 +583,10 @@ function readWhole(
 ): WholeRead[] | null {
   const artOf = (xml: string, w: number, h: number, trim = false): Art | null => {
     const a = got.get(artNeed(xml, w, h, ratio, trim).key);
-    return a && (a.kind === 'image' || a.kind === 'shapes')
+    if (!a) return null;
+    if (a.kind === 'shapes') return { art: a, width: w, height: h };
+    // An empty picture, or one not of its box, is never drawn as nothing: the picture way draws.
+    return a.kind === 'image' && pictureUsable(a.rect, ...sizeOf(a.image))
       ? { art: a, width: w, height: h }
       : null;
   };

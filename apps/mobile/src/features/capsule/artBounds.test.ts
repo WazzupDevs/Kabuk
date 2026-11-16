@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { alphaBounds, pointsOf, trimRect, unionRect } from '../../capsule/artBounds';
+import {
+  alphaBounds,
+  keptRect,
+  pictureUsable,
+  pointsOf,
+  trimRect,
+  unionRect,
+} from '../../capsule/artBounds';
 
 // A picture of `width` × `height` pixels with the alpha of the pixels at `on` set.
 function picture(width: number, height: number, on: readonly [number, number, number?][]) {
@@ -99,6 +106,30 @@ describe('trimRect', () => {
 
   it('keeps one empty pixel for an empty picture', () => {
     expect(trimRect(null, 10, 8)).toEqual({ x: 0, y: 0, width: 1, height: 1 });
+  });
+});
+
+describe('keptRect', () => {
+  it('cuts to the drawn pixels', () => {
+    expect(keptRect(picture(10, 8, [[4, 3]]), 10, 8)).toEqual({ x: 3, y: 2, width: 3, height: 3 });
+  });
+
+  it('keeps the whole picture when nothing reads as drawn, or nothing could be read', () => {
+    const whole = { x: 0, y: 0, width: 10, height: 8 };
+    // All 0 (a surface not read as it was drawn): never cut to one empty pixel.
+    expect(keptRect(new Uint8Array(10 * 8 * 4), 10, 8)).toEqual(whole);
+    expect(keptRect(null, 10, 8)).toEqual(whole);
+    expect(keptRect(new Uint8Array(0), 10, 8)).toEqual(whole);
+    expect(keptRect(new Uint8Array(10 * 8 * 4 - 1), 10, 8)).toEqual(whole);
+  });
+});
+
+describe('pictureUsable', () => {
+  it('is false for an empty box and a picture not of its box', () => {
+    expect(pictureUsable({ x: 0, y: 0, width: 4, height: 3 }, 4, 3)).toBe(true);
+    expect(pictureUsable({ x: 0, y: 0, width: 0, height: 3 }, 0, 3)).toBe(false);
+    expect(pictureUsable({ x: 1, y: 1, width: 4, height: 3 }, 0, 0)).toBe(false);
+    expect(pictureUsable({ x: 1, y: 1, width: 4, height: 3 }, 10, 8)).toBe(false);
   });
 });
 

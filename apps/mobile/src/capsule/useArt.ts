@@ -151,12 +151,32 @@ export const capsulePrep = createPrepQueue({
     else requestIdleCallback(slice, { timeout: IDLE_TIMEOUT_MS });
   },
   now: DRAW_LAB ? () => performance.now() : undefined,
+  // A job that threw: counted (artStats → failed) and, in a preview build or development, warned
+  // of with its kind only (a key holds the drawing's text).
+  onFail: DRAW_LAB ? (key) => console.warn(`capsulePrep: a job failed (${keyKind(key)})`) : undefined,
 });
+
+// What a key is of (its first part: look, plan, tile, trim; a picture's ratio otherwise).
+function keyKind(key: string): string {
+  const head = key.slice(0, key.indexOf('|'));
+  return /^[a-z]+$/.test(head) ? head : 'picture';
+}
+
+// What a resource that could not be made weighs in the limit (its key only, roughly).
+const FAILED_BYTES = 64;
 
 function made(need: ArtNeed, priority: Priority): () => void {
   return () => {
     if (capsuleArt.has(need.key)) return;
-    const m = need.make();
+    let m: Made;
+    try {
+      m = need.make();
+    } catch (e) {
+      // Kept as nothing made: a drawing that waits for it draws its picture way (FxSkia.tsx →
+      // readWhole) instead of waiting for ever; the queue counts the failure.
+      capsuleArt.put(need.key, { kind: 'none' }, FAILED_BYTES);
+      throw e;
+    }
     capsuleArt.put(need.key, m.art, m.bytes);
     texture(need.key, priority);
   };
