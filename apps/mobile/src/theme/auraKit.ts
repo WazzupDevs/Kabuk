@@ -865,7 +865,7 @@ export const KIT = {
     emptyTopSm: 18,
     // U36 (GaleriKesfet, GaleriProfil `.disc`): the error and icon state's disc 64, its icon 26,
     // the disc, the note and the button 12 apart. Loading (MekanYukleniyor): the meeting capsules
-    // 40, 18 above, the note 10 under them.
+    // 50 (YukleniyorListe `.ld` 22 x 50), no visible note (screen readers say it).
     stateDisc: 64,
     stateIcon: 26,
     // Aura v75 E4: a tag when narrow (320 dp or the largest text, src/lib/narrow.ts).
@@ -873,9 +873,8 @@ export const KIT = {
     // Aura v75 AktivitelerHal `.erc .ci`.
     stateIconPage: 28,
     stateGap: 12,
-    stateLoader: 40,
+    stateLoader: 50,
     stateLoadTop: 18,
-    stateLoadGap: 10,
     // Aktiviteler's history rows (iskelet.md → 5.3): a 56 picture.
     historyThumb: 56,
     // Kapsülün (U35): the capsule's 4 ring; the chosen option's 2 ring 2 out round its capsule; a

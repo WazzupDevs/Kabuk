@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Yükleniyor: profil · Başkasının profili</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.cover{position:absolute;left:0;right:0;top:0;height:250px;background:url(/_blob/a84d04f0b90528f2c615940429dab13b) center 40%/cover}
+.cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28) 0,rgba(0,0,0,0) 34%,rgba(239,247,241,0) 55%,var(--canvas) 100%)}
+.dark .cover:after{background:linear-gradient(180deg,rgba(0,0,0,.35) 0,rgba(0,0,0,0) 34%,rgba(0,0,0,0) 55%,#000 100%)}
+.tp{position:absolute;left:16px;right:16px;top:52px;display:flex;justify-content:space-between;z-index:2}
+.tp .round{background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9)}
+.dark .tp .round{background:rgba(18,22,20,.72);border-color:rgba(255,255,255,.12)}
+.body{position:absolute;left:20px;right:20px;top:178px;display:flex;flex-direction:column;align-items:center}
+.pic{width:112px;height:112px;border-radius:50%;border:4px solid var(--canvas);background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;font:700 40px/1 var(--font);box-sizing:border-box}
+.nm{margin-top:12px;font:600 28px/34px var(--font);letter-spacing:-.6px;color:var(--text)}
+.bio{margin-top:4px;font:500 15px/22px var(--font);color:var(--muted);text-align:center}
+.acts{margin-top:20px;display:flex;gap:12px;width:100%}
+.acts .btn{flex:1;padding:0 12px}
+.btn.primary{--ci-a:var(--on-primary);--ci-b:var(--on-primary)}
+.btn.friend{background:var(--success-soft);color:var(--on-success-soft);--ci-a:var(--on-success-soft);--ci-b:var(--on-success-soft)}
+.dark .btn.friend{background:rgba(61,220,132,.14);color:#93EBB9;--ci-a:#93EBB9;--ci-b:#93EBB9}
+.dark .btn.primary{box-shadow:none}
+.sh{align-self:stretch;margin-top:28px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted)}
+.stats{align-self:stretch;margin-top:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.st{border-radius:22px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.st b{font:800 26px/32px var(--font);color:var(--text)}
+.st span{font:500 13px/17px var(--font);color:var(--muted)}
+.mut{align-self:stretch;margin-top:24px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:22px}
+.mut .stack .av{width:36px;height:36px;font-size:13px;margin-left:-10px;border-width:2px;border-color:var(--canvas)}
+.mut .stack .av:first-child{margin-left:0}
+.mut p{flex:1;font:500 15px/20px var(--font);color:var(--text)}
+.mut p span{color:var(--muted)}
+.mut p span{display:block}
+.last p span{display:block}
+.gm{width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex:none}
+.gm svg{width:26px;height:26px}
+.dark .gm{background:#1B211F}
+.chev{width:18px;height:18px;color:var(--muted)}
+
+.ld{position:absolute;left:50%;top:var(--ldy,50%);transform:translate(-50%,-50%);width:22px;height:50px;z-index:3}
+.ld svg{width:100%;height:100%;display:block}
+.ld .ov{fill:#FFB547}
+.dark .ld .ov{fill:#FFFFFF}
+.ld{--ldy:470px}</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="cover"></div>
+<div class="tp">
+<button class="round" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+
+</div>
+
+<div class="ld" role="img" aria-label="Yükleniyor"><svg viewBox="0 0 132 300" aria-hidden="true"><defs><clipPath id="lc{{t.k}}"><rect x="0" y="0" width="80" height="240" rx="40"></rect></clipPath></defs><rect x="0" y="0" width="80" height="240" rx="40" fill="#7B5CFF"></rect><rect x="52" y="60" width="80" height="240" rx="40" fill="#FF4F8B"></rect><rect x="52" y="60" width="80" height="240" rx="40" class="ov" clip-path="url(#lc{{t.k}})"></rect></svg></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>
