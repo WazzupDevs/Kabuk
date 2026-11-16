@@ -281,7 +281,10 @@ export function clockLead(from: number, ms: number): number | null {
 // is Android only). Çizim ölçümü's "Bütün kapsül Skia" now sets the whole drawing on or off for
 // that phone on a preview build, either way, so the two can still be measured (lib/drawLab.ts →
 // useLabWhole; null while the panel has not set it: this switch decides). Off: set this false.
-export const CAPSULE_SKIA_WHOLE = true;
+// Off again since 16 Kasım 2026, night: with it on, the big capsule of Süsle drew blank on the phone after
+// #644 and #645 (found before measure 4.13; the picture way draws). Back on once the cause is fixed and
+// seen on a phone.
+export const CAPSULE_SKIA_WHOLE = false;
 
 export function capsuleWholeOn(os: string, lab: boolean | null): boolean {
   return lab ?? (CAPSULE_SKIA_WHOLE && capsuleSkiaOn(os));
