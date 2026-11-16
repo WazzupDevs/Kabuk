@@ -72,15 +72,20 @@ export type ProfileRequest =
   // K-47 (step 4.4b): the decoration screen's Kaydet. The look is checked against the catalog (an
   // unknown part is dropped) and answered as written; the emotions stay on the phone (K-52). Old
   // messages and a running table's seat keep the look they were written with (K-10).
-  | { action: 'set-look'; look: string };
+  | { action: 'set-look'; look: string }
+  // §4.U: Kaydet in one write: the look's parts and the whole worn set (owned, no two in one slot;
+  // not_owned, slot_conflict). On an error nothing changes, the look included.
+  | { action: 'save-look'; look: string; accessoryIds: string[] };
 
 export type ProfileUploadUrl = { path: string; token: string };
 export type RefreshNickResponse = { capsuleNick: string; nickRefreshAt: string | null };
 export type SetLookResponse = { capsuleLook: string };
+export type SaveLookResponse = { capsuleLook: string; worn: string[] };
 export type ProfileResponse =
   | ProfileView
   | ChatProfileView
   | ProfileUploadUrl
   | RefreshNickResponse
   | SetLookResponse
+  | SaveLookResponse
   | { ok: true };

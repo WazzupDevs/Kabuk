@@ -21,7 +21,7 @@ import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { earnedBadges } from '../_shared/pure/badges.ts';
 import { LOOK_MAX_LENGTH, nickRefreshAt, normalizeLook } from '../_shared/pure/capsule.ts';
 import type { Gender } from '../_shared/pure/gender.ts';
-import { withoutNewRetiredParts } from '../_shared/pure/gifts.ts';
+import { accessoriesOf, slotConflict, withoutNewRetiredParts } from '../_shared/pure/gifts.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
 import {
@@ -61,6 +61,19 @@ const Body: z.ZodType<ProfileRequest> = z.union([
   z.object({ action: z.literal('refresh-nick') }),
   // Only the look: no account and no emotion goes with it (K-47, K-52).
   z.strictObject({ action: z.literal('set-look'), look: z.string().max(LOOK_MAX_LENGTH) }),
+  // §4.U: the look and the whole worn set in one write (one accessory per slot, six slots).
+  z.strictObject({
+    action: z.literal('save-look'),
+    look: z.string().max(LOOK_MAX_LENGTH),
+    accessoryIds: z
+      .array(
+        z
+          .string()
+          .regex(/^[a-z0-9]+$/)
+          .max(64),
+      )
+      .max(6),
+  }),
 ]);
 
 const db = serviceClient();
@@ -312,6 +325,40 @@ Deno.serve(
           if (data !== null) return { capsuleLook: data };
         }
         throw new Error('profile_set_look: the look kept changing');
+      }
+
+      // §4.U: Kaydet in one write, the look as set-look writes it and the worn set as gifts/wear
+      // checks it (owned, no two in one slot). On an error nothing is written, the look included.
+      case 'save-look': {
+        if (slotConflict(body.accessoryIds)) {
+          throw new AppError('slot_conflict', 'Two accessories in one slot.');
+        }
+        const requested = normalizeLook(body.look);
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const current = await db
+            .from('profiles')
+            .select('capsule_look')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (current.error) throw dbError('profiles', current.error);
+          if (!current.data)
+            throw new AppError('onboarding_required', 'Complete onboarding first.');
+          const { data, error } = await db.rpc('profile_save_look', {
+            target_user_id: user.id,
+            new_look: withoutNewRetiredParts(requested, current.data.capsule_look),
+            read_look: current.data.capsule_look ?? '',
+            target_accessory_ids: body.accessoryIds,
+          });
+          if (error?.code === 'P0001' && error.message === 'not_owned') {
+            throw new AppError('not_owned', 'Not an accessory of yours.');
+          }
+          if (error?.code === 'P0001' && error.message === 'slot_conflict') {
+            throw new AppError('slot_conflict', 'Two accessories in one slot.');
+          }
+          if (error) throw dbError('profile_save_look', error);
+          if (data !== null) return { capsuleLook: data, worn: accessoriesOf(data) };
+        }
+        throw new Error('profile_save_look: the look kept changing');
       }
 
       case 'update': {

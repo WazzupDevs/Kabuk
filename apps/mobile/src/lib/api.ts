@@ -65,6 +65,7 @@ import type {
   ProfileUploadUrl,
   ProfileView,
   RefreshNickResponse,
+  SaveLookResponse,
 } from '@shared/api/profile.ts';
 import type {
   VenueChatMuteResponse,
@@ -380,6 +381,14 @@ export const profileApi = {
   refreshNick: () => invoke<RefreshNickResponse>('profile', { action: 'refresh-nick' }),
   // K-46: the capsule's look; unknown parts are dropped on the server.
   setLook: (look: string) => invoke<{ ok: true }>('profile', { action: 'set-look', look }),
+  // §4.U: the look and the whole worn set in one write; on not_owned or slot_conflict nothing
+  // changes.
+  saveLook: (look: string, accessoryIds: readonly string[]) =>
+    invoke<SaveLookResponse>('profile', {
+      action: 'save-look',
+      look,
+      accessoryIds: [...accessoryIds],
+    }),
 };
 
 export const friendsApi = {

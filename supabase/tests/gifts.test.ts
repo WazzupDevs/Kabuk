@@ -279,6 +279,71 @@ describe('gifts/wear', () => {
   });
 });
 
+describe('profile/save-look', () => {
+  it('saves the look and the worn set in one write; the same twice changes nothing', async () => {
+    const a = await onboarded(PHONES[0]);
+    await own(a, ['pervanelisapka', 'yildiztakimi']);
+    const body = {
+      action: 'save-look',
+      // A client "x:" is dropped: only accessoryIds are worn.
+      look: 'c:limon e:koyu h:anten x:ejderboynuzu',
+      accessoryIds: ['pervanelisapka', 'yildiztakimi'],
+    };
+    const res = await invoke(a, 'profile', body);
+    expect(res).toEqual({
+      status: 200,
+      body: {
+        capsuleLook: 'c:limon e:koyu h:anten x:pervanelisapka x:yildiztakimi',
+        worn: ['pervanelisapka', 'yildiztakimi'],
+      },
+    });
+    expect(await lookOf(a)).toBe('c:limon e:koyu h:anten x:pervanelisapka x:yildiztakimi');
+    // Sent twice, the same look (apiRetry.ts).
+    expect(await invoke(a, 'profile', body)).toEqual(res);
+    expect((await stateOf(a)).worn).toEqual(['pervanelisapka', 'yildiztakimi']);
+
+    const none = await invoke(a, 'profile', {
+      action: 'save-look',
+      look: 'c:mor e:klasik',
+      accessoryIds: [],
+    });
+    expect(none).toEqual({ status: 200, body: { capsuleLook: 'c:mor e:klasik', worn: [] } });
+  });
+
+  it('writes nothing, the look included, on an accessory not owned or two in one slot', async () => {
+    const a = await onboarded(PHONES[0]);
+    const userId = await userIdOf(a);
+    await own(a, ['kedibiyiklari', 'yildiztakimi']);
+    const before = await lookOf(a);
+    expect(
+      await invoke(a, 'profile', {
+        action: 'save-look',
+        look: 'c:mor e:klasik',
+        accessoryIds: ['kedibiyiklari', 'pervanelisapka'],
+      }),
+    ).toEqual({ status: 409, body: errorBody('not_owned') });
+    expect(await lookOf(a)).toBe(before);
+    // Yıldız takımı is Yüz + Ağız: Kedi bıyıkları (Ağız) cannot be worn with it.
+    expect(
+      await invoke(a, 'profile', {
+        action: 'save-look',
+        look: 'c:mor e:klasik',
+        accessoryIds: ['kedibiyiklari', 'yildiztakimi'],
+      }),
+    ).toEqual({ status: 409, body: errorBody('slot_conflict') });
+    expect(await lookOf(a)).toBe(before);
+
+    // The database checks the same, before it writes.
+    const save = (ids: string[]) =>
+      sql`select public.profile_save_look(${userId}, 'c:mor e:klasik', ${before ?? ''},
+                                          ${sql.array(ids)})`;
+    await expect(save(['kedibiyiklari', 'yildiztakimi'])).rejects.toThrow(/slot_conflict/);
+    await expect(save(['kedibiyiklari', 'kedibiyiklari'])).rejects.toThrow(/slot_conflict/);
+    await expect(save(['yarabandi'])).rejects.toThrow(/not_owned/);
+    expect(await lookOf(a)).toBe(before);
+  });
+});
+
 describe('Elf and Ninja skin sets (§4.U, 7 Kasım)', () => {
   it('are Efsanevi pieces every tier pack gives; no Elf or Ninja pack opens', async () => {
     const a = await onboarded(PHONES[0]);
@@ -457,6 +522,43 @@ describe('locks', () => {
       expect(await set).toHaveLength(1);
     } finally {
       await Promise.all([holder.end(), wearing.end()]);
+    }
+  });
+
+  // Saving the look and the worn set (profile/save-look) locks only profiles: held gift_progress
+  // and user_accessories rows do not stop it, a held profile does.
+  it('saves the look and the worn set under the profiles lock only', async () => {
+    const a = await onboarded(PHONES[0]);
+    const userId = await userIdOf(a);
+    await own(a, ['tac']);
+    await givePacks(a, 1);
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const saving = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      await holder.begin(async (tx) => {
+        await tx`select user_id from public.gift_progress where user_id = ${userId} for update`;
+        await tx`select user_id from public.user_accessories where user_id = ${userId} for update`;
+        await saving`set lock_timeout = '2s'`;
+        const [row] = await saving`
+          select public.profile_save_look(${userId}, 'c:mor e:klasik', ${(await lookOf(a)) ?? ''},
+                                          ${saving.array(['tac'])}) as look
+        `;
+        expect(row?.look).toBe('c:mor e:klasik x:tac');
+      });
+      let saved: Promise<unknown> = Promise.resolve();
+      await holder.begin(async (tx) => {
+        await tx`select id from public.profiles where id = ${userId} for no key update`;
+        saved = saving`
+          select public.profile_save_look(${userId}, 'c:limon e:klasik', 'c:mor e:klasik x:tac',
+                                          ${saving.array([])}) as look
+        `
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('profile_save_look');
+      });
+      expect(await saved).toEqual([{ look: 'c:limon e:klasik' }]);
+    } finally {
+      await Promise.all([holder.end(), saving.end()]);
     }
   });
 });

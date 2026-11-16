@@ -45,6 +45,9 @@ export const IDEMPOTENT_CALLS = [
   // profile.test "profile/get": "answers a stranger, an ex-member, a blocked and a blocking account
   // like an unknown id"
   'profile/get',
+  // gifts.test "profile/save-look": "saves the look and the worn set in one write; the same twice
+  // changes nothing"
+  'profile/save-look',
   // friends.test "no profile id before a friendship": "lists friends with name, photo, date and
   // thread only"
   'friends/list',

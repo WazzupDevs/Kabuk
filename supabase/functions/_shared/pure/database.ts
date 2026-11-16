@@ -3473,6 +3473,15 @@ export type Database = {
           venue_name: string;
         }[];
       };
+      profile_save_look: {
+        Args: {
+          new_look: string;
+          read_look: string;
+          target_accessory_ids: string[];
+          target_user_id: string;
+        };
+        Returns: string;
+      };
       profile_set_look: {
         Args: { new_look: string; read_look: string; target_user_id: string };
         Returns: string;

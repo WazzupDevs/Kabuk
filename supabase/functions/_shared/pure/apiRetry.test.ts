@@ -36,6 +36,7 @@ describe('IDEMPOTENT_CALLS', () => {
         'kibrit/write',
         'ping',
         'profile/get',
+        'profile/save-look',
         'signum/advance',
         'signum/clue',
         'signum/end-turn',
