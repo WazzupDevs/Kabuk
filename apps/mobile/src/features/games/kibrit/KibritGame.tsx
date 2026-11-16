@@ -32,7 +32,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
-import { Sheet } from '@/components/Sheet';
+import { confirmGameExit } from '@/features/games/gameExit';
 import { ScreenStatusBar } from '@/components/StatusScrim';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { StageFit } from '@/features/games/GameStage';
@@ -158,7 +158,6 @@ function KibritScreens({
     profiles,
   };
   const mode = kibritMode(room);
-  const [exit, setExit] = useState(false);
   const queryClient = useQueryClient();
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
@@ -167,7 +166,6 @@ function KibritScreens({
   const endGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.endGame(room.id),
-    onSuccess: () => setExit(false),
     onSettled: reread,
   });
   const leaveGame = useMutation({
@@ -176,7 +174,6 @@ function KibritScreens({
     onSuccess: () => {
       // Out of the game: its paper and vote are no longer this phone's (rule 3).
       queryClient.removeQueries({ queryKey: viewsOf(room.id) });
-      setExit(false);
       onHide();
     },
     onSettled: reread,
@@ -223,7 +220,13 @@ function KibritScreens({
     : playing
       ? { title: tr.kibrit.leaveTitle, body: tr.kibrit.leaveBody, confirm: tr.kibrit.exit }
       : { title: tr.kibrit.watchTitle, body: tr.kibrit.watchBody, confirm: tr.kibrit.backToTable };
-  const pending = endGame.isPending || leaveGame.isPending;
+  const exitGame = () =>
+    confirmGameExit({
+      copy: sheet,
+      danger: owner || playing,
+      testID: 'kibrit-exit-confirm',
+      run: () => (owner ? endGame.mutateAsync() : playing ? leaveGame.mutateAsync() : onHide()),
+    });
   return (
     <View style={{ flex: 1 }}>
       <Play
@@ -231,40 +234,9 @@ function KibritScreens({
         state={state}
         faces={faces}
         owner={owner}
-        onExit={() => setExit(true)}
+        onExit={exitGame}
         onChat={chat}
       />
-      <Sheet
-        visible={exit}
-        onClose={() => (pending ? undefined : setExit(false))}
-        title={sheet.title}
-      >
-        <T v="fine">{sheet.body}</T>
-        {(endGame.error ?? leaveGame.error) ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(endGame.error ?? leaveGame.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          variant={owner || playing ? 'danger' : 'primary'}
-          icon="logout"
-          testID="kibrit-exit-confirm"
-          label={sheet.confirm}
-          loading={pending}
-          onPress={() =>
-            owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setExit(false), onHide())
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.cancel}
-          disabled={pending}
-          onPress={() => setExit(false)}
-        />
-        <View style={{ height: SPACING[1] }} />
-      </Sheet>
     </View>
   );
 }

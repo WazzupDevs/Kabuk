@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, T, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
-import { Sheet } from '@/components/Sheet';
+import { confirmGameExit } from '@/features/games/gameExit';
 import { StageFit } from '@/features/games/GameStage';
 import { useTimeUp } from '@/features/games/useSecondsLeft';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
@@ -193,7 +193,6 @@ function KauphollScreens({
     profiles,
   };
   const mode = kauphollMode(room);
-  const [exit, setExit] = useState(false);
   const queryClient = useQueryClient();
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
@@ -202,7 +201,6 @@ function KauphollScreens({
   const endGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.endGame(room.id),
-    onSuccess: () => setExit(false),
     onSettled: reread,
   });
   const leaveGame = useMutation({
@@ -211,7 +209,6 @@ function KauphollScreens({
     onSuccess: () => {
       // Out of the game: its guess is no longer this phone's (rule 3).
       queryClient.removeQueries({ queryKey: viewsOf(room.id) });
-      setExit(false);
       onHide();
     },
     onSettled: reread,
@@ -274,7 +271,13 @@ function KauphollScreens({
           body: tr.kaupholl.watchBody,
           confirm: tr.kaupholl.backToTable,
         };
-  const pending = endGame.isPending || leaveGame.isPending;
+  const exitGame = () =>
+    confirmGameExit({
+      copy: sheet,
+      danger: owner || playing,
+      testID: 'kaupholl-exit-confirm',
+      run: () => (owner ? endGame.mutateAsync() : playing ? leaveGame.mutateAsync() : onHide()),
+    });
   return (
     <View style={{ flex: 1 }}>
       <Play
@@ -283,40 +286,9 @@ function KauphollScreens({
         faces={faces}
         owner={owner}
         loading={people.length === 0}
-        onExit={() => setExit(true)}
+        onExit={exitGame}
         onChat={chat}
       />
-      <Sheet
-        visible={exit}
-        onClose={() => (pending ? undefined : setExit(false))}
-        title={sheet.title}
-      >
-        <T v="fine">{sheet.body}</T>
-        {(endGame.error ?? leaveGame.error) ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(endGame.error ?? leaveGame.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          variant={owner || playing ? 'danger' : 'primary'}
-          icon="logout"
-          testID="kaupholl-exit-confirm"
-          label={sheet.confirm}
-          loading={pending}
-          onPress={() =>
-            owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setExit(false), onHide())
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.cancel}
-          disabled={pending}
-          onPress={() => setExit(false)}
-        />
-        <View style={{ height: SPACING[1] }} />
-      </Sheet>
     </View>
   );
 }

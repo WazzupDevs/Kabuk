@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T, Tag, useKit } from '@/aura/kit';
-import { Sheet } from '@/components/Sheet';
+import { confirmGameExit } from '@/features/games/gameExit';
 import { StageFit } from '@/features/games/GameStage';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -164,7 +164,6 @@ function KrotScreens({
     [me, people, profiles],
   );
   const mode = krotMode(room);
-  const [exit, setExit] = useState(false);
   const queryClient = useQueryClient();
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
@@ -173,7 +172,6 @@ function KrotScreens({
   const endGame = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.endGame(room.id),
-    onSuccess: () => setExit(false),
     onSettled: reread,
   });
   const leaveGame = useMutation({
@@ -182,7 +180,6 @@ function KrotScreens({
     onSuccess: () => {
       // Out of the game: its role is no longer this phone's (rule 3).
       queryClient.removeQueries({ queryKey: krotViewsOf(room.id) });
-      setExit(false);
       onHide();
     },
     onSettled: reread,
@@ -229,47 +226,16 @@ function KrotScreens({
     : playing
       ? { title: tr.krot.leaveTitle, body: tr.krot.leaveBody, confirm: tr.krot.exit }
       : { title: tr.krot.watchTitle, body: tr.krot.watchBody, confirm: tr.krot.backToTable };
-  const pending = endGame.isPending || leaveGame.isPending;
+  const exitGame = () =>
+    confirmGameExit({
+      copy: sheet,
+      danger: owner || playing,
+      testID: 'krot-exit-confirm',
+      run: () => (owner ? endGame.mutateAsync() : playing ? leaveGame.mutateAsync() : onHide()),
+    });
   return (
     <View style={{ flex: 1 }}>
-      <Play
-        roomId={room.id}
-        state={state}
-        faces={faces}
-        owner={owner}
-        onExit={() => setExit(true)}
-      />
-      <Sheet
-        visible={exit}
-        onClose={() => (pending ? undefined : setExit(false))}
-        title={sheet.title}
-      >
-        <T v="fine">{sheet.body}</T>
-        {(endGame.error ?? leaveGame.error) ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(endGame.error ?? leaveGame.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          variant={owner || playing ? 'danger' : 'primary'}
-          icon="logout"
-          testID="krot-exit-confirm"
-          label={sheet.confirm}
-          loading={pending}
-          onPress={() =>
-            owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setExit(false), onHide())
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.cancel}
-          disabled={pending}
-          onPress={() => setExit(false)}
-        />
-        <View style={{ height: SPACING[1] }} />
-      </Sheet>
+      <Play roomId={room.id} state={state} faces={faces} owner={owner} onExit={exitGame} />
     </View>
   );
 }
