@@ -2,8 +2,15 @@ import type { LookSlot } from '@shared/capsule.ts';
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  BackHandler,
+  Image,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -19,8 +26,27 @@ import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
+import {
+  type ArtNeed,
+  capsuleArt,
+  capsulePrep,
+  keepTile,
+  lastTile,
+  makeArt,
+  prepAhead,
+  prepNow,
+  useArt,
+} from '@/capsule/useArt';
+import { NEAR, REST } from '@/capsule/prepQueue';
+import { tileShown } from '@/capsule/stageGate';
 import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
-import { CapsuleStage, type Play, readStageAhead } from '@/features/capsule/CapsuleStage';
+import {
+  CapsuleStage,
+  type Play,
+  readStageAhead,
+  neededBy,
+  stageNeed,
+} from '@/features/capsule/CapsuleStage';
 import { accessories, bare, code, dice, type Look, parse } from '@/features/capsule/look';
 import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/motion';
 import {
@@ -41,9 +67,10 @@ import { tr } from '@/i18n/tr';
 import { giftsApi, profileApi } from '@/lib/api';
 import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useAfterTransition } from '@/lib/afterTransition';
+import { carouselWindow } from '@/lib/carouselWindow';
 import { useLabOff } from '@/lib/drawLab';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
-import { useAfterSlide } from '@/lib/useAfterSlide';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip, Tap, Turn } from '@/motion';
 import { KIT } from '@/theme/auraKit';
@@ -54,8 +81,6 @@ import { SPACING } from '@/theme/tokens';
 
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
-// Tiles read ahead in one idle turn.
-const READ_AHEAD = 8;
 const SLOTS = CAPSULE_CATALOG.slots.map((s) => ({ id: s.id as LookSlot, name: s.name }));
 // The slots' chips' icons (the app's one icon family has no hat or mouth of its own).
 const SLOT_ICON: Readonly<Record<LookSlot, CapIconName>> = {
@@ -66,6 +91,19 @@ const SLOT_ICON: Readonly<Record<LookSlot, CapIconName>> = {
   m: 'chat',
   n: 'gift',
 };
+
+// A look read ahead: its list of plans and pictures (made here, in its job), then each of them its
+// own job in the same generation.
+function aheadLook(need: ArtNeed, gen: number): void {
+  makeArt(need);
+  const needs = neededBy(capsuleArt.peek(need.key));
+  if (needs) prepAhead(needs, NEAR, gen);
+}
+
+// The feeling shown (its place in FEELINGS), else the last one shown (-1: none yet).
+function feelingIndex(feeling: { id: string } | null, last: number): number {
+  return feeling ? FEELINGS.findIndex(([id]) => id === feeling.id) : last;
+}
 
 // Kapsülün (docs/SPEC_V4.md §4.D, K-46; docs/design/iskelet.md → 5.10): the `sayfa` bar with the back
 // button and Kaydet (clear, as Profili düzenle's). The capsule large on a riso scene, floating over
@@ -175,7 +213,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   // A tap on the capsule (v46 feel()): the next feeling for a moment; it is never saved.
   const feel = () => {
     haptic('selection');
-    const at = feeling ? FEELINGS.findIndex(([id]) => id === feeling.id) : feelingAt.current;
+    const at = feelingIndex(feeling, feelingAt.current);
     const next = FEELINGS[(at + 1) % FEELINGS.length];
     if (!next) return;
     feelingAt.current = (at + 1) % FEELINGS.length;
@@ -187,7 +225,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     if (move) setPlay({ move, key });
   };
 
-  const ready = useAfterSlide();
+  const ready = useAfterTransition();
   // Every slot's options (options.ts); the open slot's theme packs and the options the strip shows.
   const color = look.c;
   const options = useMemo(
@@ -211,54 +249,59 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   // Skia's own reading ahead while it draws the big capsule (components/skiaInside.ts: the same
   // one load as the stage's).
   const prepare = useSkiaKit()?.prepare;
-  // The whole canvas's still layers too, while it draws the capsule (useWholeKit).
+  // While the whole capsule is Skia's (useWholeKit): what its canvas needs for a look, and the
+  // strips' tiles as ready pictures (FxSkia.tsx → lookNeed, tileNeed).
   const wholeKit = useWholeKit();
-  const prepareStill = wholeKit?.prepareStill;
-  const prepareInside = wholeKit?.prepareWholeInside ?? prepare;
-  // The strips' tiles as ready pictures while the whole capsule is Skia's (FxSkia.tsx → tileUri).
+  const needOf = wholeKit?.lookNeed;
   const tilesOff = useLabOff('karo');
-  const tile = tilesOff ? undefined : wholeKit?.tile;
-  // Read ahead in idle time, a few at a time, while the idle turn lasts: first the big capsule as
-  // the options next to the chosen one would draw it (its layers, and Skia's plan and SVGs), so that
+  const tileNeed = tilesOff ? undefined : wholeKit?.tileNeed;
+  // Read ahead, a few at a time, one resource a job, in idle time (capsule/prepQueue.ts): the look
+  // shown and the tiles on the screen ask for theirs first (CapsuleStage, OptionArt); then the big
+  // capsule as the options next to the chosen one (and the next feeling) would draw it, so that
   // choosing one draws with nothing left to read (the owner's report, 11 Kasım: a suit's first
-  // choice stalled); then every option's art, the open slot's from the chosen one outwards. An idle
-  // call's handle is an object here: only one that was set is cancelled (#570).
+  // choice stalled); then every option's tile, the open slot's from the chosen one outwards. A new
+  // choice drops what the last one read ahead and has not reached yet.
   useEffect(() => {
     if (!ready) return undefined;
+    const gen = capsulePrep.next();
+    const moving = !reduce;
     const at = Math.max(chosen, 0);
     const near = stageAhead(shown.length, at).flatMap((i) => {
       const o = shown[i];
       return o ? [code(o.apply(look))] : [];
     });
+    // A look's own job finds what it needs (its list, kept in the store: read once) and queues each
+    // of its plans and pictures; the views' way reads it all at once (once a look).
+    for (const next of near) {
+      capsulePrep.ahead(
+        `ahead|${needOf ? 'whole' : 'views'}|${moving ? 1 : 0}|${stageSize}|${next}`,
+        () => {
+          if (needOf) aheadLook(stageNeed(next, stageSize, moving, needOf), gen);
+          else readStageAhead(next, stageSize, moving, prepare);
+        },
+        NEAR,
+        gen,
+        !needOf,
+      );
+    }
     const rows = options.map((s) => ({ id: s.id, flat: s.flat.map((o) => ({ slot: s.id, o })) }));
     const open = rows.find((r) => r.id === slot);
     const from = open ? open.flat.findIndex((t) => t.o === shown[at]) : 0;
-    const jobs: (() => void)[] = [
-      ...near.map(
-        (next) => () => readStageAhead(next, stageSize, !reduce, prepareInside, prepareStill),
-      ),
-      ...tileOrder(rows, slot, Math.max(from, 0)).map((t) => () => {
-        const xml = optionArt(t.slot, t.o, color);
-        if (!xml) return;
-        if (tile) tile(xml, KIT.size.stripArt);
-        else readAhead(xml);
-      }),
-    ];
-    let next = 0;
-    let handle: ReturnType<typeof requestIdleCallback> | null = null;
-    const step = (deadline: IdleDeadline) => {
-      handle = null;
-      const end = Math.min(next + READ_AHEAD, jobs.length);
-      do {
-        jobs[next]?.();
-        next += 1;
-      } while (next < end && deadline.timeRemaining() > 0);
-      if (next < jobs.length) handle = requestIdleCallback(step);
-    };
-    handle = requestIdleCallback(step);
-    return () => {
-      if (handle !== null) cancelIdleCallback(handle);
-    };
+    for (const t of tileOrder(rows, slot, Math.max(from, 0))) {
+      // The tile's text is made in its job too: a slot's options are many.
+      capsulePrep.ahead(
+        `tile|${t.slot}|${t.o.key}|${color ?? ''}|${tileNeed ? 'png' : 'svg'}`,
+        () => {
+          const xml = optionArt(t.slot, t.o, color);
+          if (!xml) return;
+          if (tileNeed) makeArt(tileNeed(xml, KIT.size.stripArt));
+          else readAhead(xml);
+        },
+        REST,
+        gen,
+        true,
+      );
+    }
   }, [
     ready,
     options,
@@ -269,10 +312,51 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     color,
     stageSize,
     reduce,
-    prepareInside,
-    prepareStill,
-    tile,
+    prepare,
+    needOf,
+    tileNeed,
   ]);
+  // Leaving Süsle drops what is still queued (a new choice does it in the effect above: once).
+  useEffect(
+    () => () => {
+      capsulePrep.next();
+    },
+    [],
+  );
+  // The feeling a tap on the capsule shows next, in the same generation (dropped with it).
+  useEffect(() => {
+    if (!ready || !needOf || reduce) return;
+    const after = FEELINGS[(feelingIndex(feeling, feelingAt.current) + 1) % FEELINGS.length];
+    if (!after) return;
+    const gen = capsulePrep.generation;
+    capsulePrep.ahead(
+      `ahead|feeling|${after[0]}|${now}`,
+      () => aheadLook(stageNeed(now, stageSize, true, needOf, after[0]), gen),
+      NEAR,
+      gen,
+    );
+  }, [ready, needOf, reduce, feeling, now, stageSize]);
+
+  // The tiles on the screen once the strip is on the chosen option (the strip follows a choice made
+  // elsewhere): the stage's new look waits for their pictures too (CapsuleStage → tiles).
+  const { width: screenWidth } = useWindowDimensions();
+  const w = carouselWindow(
+    Math.max(chosen, 0) * KIT.size.stripStep,
+    KIT.size.stripStep,
+    shown.length,
+    screenWidth,
+    0,
+  );
+  const screenTiles = useMemo(() => {
+    if (!tileNeed) return null;
+    const out: ArtNeed[] = [];
+    for (let i = w.from; i <= w.to; i++) {
+      const o = shown[i];
+      const xml = o ? optionArt(slot, o, color) : null;
+      if (xml) out.push(tileNeed(xml, KIT.size.stripArt));
+    }
+    return out;
+  }, [tileNeed, w.from, w.to, shown, slot, color]);
 
   const E = CAPSULE_EDIT;
   const k = E[scheme];
@@ -363,6 +447,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                   hint={null}
                   onPress={feel}
                   warm={ready}
+                  tiles={screenTiles}
                 />
               </FxMoves>
             </FloatStage>
@@ -477,7 +562,13 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                 keyOf={(i) => shown[i]?.key ?? String(i)}
                 labelOf={(i) => shown[i]?.name ?? ''}
                 renderItem={(i) => (
-                  <OptionArt slot={slot} option={shown[i]} color={color} tile={tile} />
+                  <OptionArt
+                    slot={slot}
+                    option={shown[i]}
+                    color={color}
+                    tileNeed={tileNeed}
+                    visible={i >= w.from && i <= w.to}
+                  />
                 )}
                 onPick={(i) => {
                   const o = shown[i];
@@ -567,17 +658,47 @@ function OptionArt({
   slot,
   option,
   color,
-  tile,
+  tileNeed,
+  visible,
 }: {
   slot: LookSlot;
   option: Option | undefined;
   color: string | undefined;
-  tile: ((xml: string, size: number) => string | null) | undefined;
+  tileNeed: ((xml: string, size: number) => ArtNeed) | undefined;
+  // On the screen (not one of the few bound either side of it).
+  visible: boolean;
 }) {
   const { c } = useKit();
   const xml = option ? optionArt(slot, option, color) : null;
+  // The tile's picture once it is made (asked for first while it is on the screen); the SVG only
+  // when no picture can be made, and off the screen before it ever had one.
+  const need = useMemo(
+    () => (xml && tileNeed ? tileNeed(xml, KIT.size.stripArt) : null),
+    [xml, tileNeed],
+  );
+  const art = useArt(need);
+  // Until the new picture is made (another colour) the last one this option showed stays, also in
+  // a strip opened again (another slot): no SVG, nothing empty (capsule/useArt.ts → lastTile).
+  const made = art?.kind === 'uri' ? art.uri : null;
+  const id = option ? `${slot}|${option.key}` : '';
+  const last = lastTile(id);
+  useLayoutEffect(() => {
+    if (made) keepTile(id, made);
+  }, [id, made]);
+  // On the screen with no picture ever: made here, before the frame (as the stage's canvas does);
+  // this commit is not on the screen. Off the screen (bound either side) it waits in the queue.
+  const waiting = visible && need !== null && art === undefined && last === null;
+  const [, again] = useState(0);
+  useLayoutEffect(() => {
+    if (!waiting || !need) return undefined;
+    const off = capsuleArt.watch([need.key], () => again((n) => n + 1));
+    prepNow([need]);
+    return off;
+  }, [waiting, need]);
   if (!xml) return <CapIcon name="block" color={c.muted} />;
-  const uri = tile ? tile(xml, KIT.size.stripArt) : null;
+  const uri = tileShown(made, last);
+  if (waiting && !uri)
+    return <View style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }} />;
   if (uri) {
     return (
       <Image
