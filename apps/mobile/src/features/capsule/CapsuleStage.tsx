@@ -18,7 +18,8 @@ import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg, readFxAhead } from '@/components/FxSvg';
-import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
+import { type SkiaKit, useSkiaKit, useWholeKit } from '@/components/skiaInside';
+import { type ArtNeed, useArtsReady } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
 import { useLabOff } from '@/lib/drawLab';
@@ -65,6 +66,19 @@ export function readStageAhead(
 ): void {
   const { width, height } = figureOf(size);
   readFxAhead(popOf(look, ''), width, height, moving, prepare, still);
+}
+
+// What the whole canvas needs to draw a look (with `feeling`'s face, '' for none) as the stage
+// draws it (FxSkia.tsx → lookNeeds): read ahead by Süsle, waited for by the stage.
+export function stageNeeds(
+  look: string,
+  size: number,
+  moving: boolean,
+  needsOf: SkiaKit['lookNeeds'],
+  feeling = '',
+): ArtNeed[] {
+  const { width, height } = figureOf(size);
+  return needsOf(popOf(look, feeling), width, height, moving);
 }
 
 // The capsule large in its circle (skall tuvali, KapsulSusle): a tap on it shows the next feeling
@@ -115,19 +129,34 @@ export function CapsuleStage({
   const inside = skia?.painter;
   const Warm = warm ? skia?.Warm : undefined;
   // The whole capsule on one canvas while its switch is on (theme/capsuleSkia.ts → capsuleWholeOn).
-  const whole = useWholeKit()?.Whole;
+  const wholeKit = useWholeKit();
+  const whole = wholeKit?.Whole;
+  const needsOf = wholeKit?.lookNeeds;
   const unit = size / STAGE.circle;
   const ring = ringWidth ?? SPACING[1.5];
   // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
   const discShadow = boxShadowParts(shadowOff, shape.shadow.card, size / 2 + ring, true, ring);
 
-  // The look before a change, fading out over the new one.
+  // The look before a change, fading out over the new one. While the whole canvas draws, a new
+  // look comes once its pictures are made (capsule/prepQueue.ts, asked for first): until then the
+  // look shown stays, and the fade and the move start with it as they did after the drawing read
+  // them in its render.
   const [shownLook, setShownLook] = useState(look);
   const [oldLook, setOldLook] = useState<string | null>(null);
-  if (look !== shownLook) {
+  const coming = look !== shownLook;
+  const comingFeeling = feeling?.id ?? '';
+  const comingNeeds = useMemo(
+    () => (coming && needsOf ? stageNeeds(look, size, !reduce, needsOf, comingFeeling) : null),
+    [coming, needsOf, look, size, reduce, comingFeeling],
+  );
+  const comingReady = useArtsReady(comingNeeds);
+  const waiting = coming && !comingReady;
+  if (coming && !waiting) {
     setOldLook(reduce ? null : shownLook);
     setShownLook(look);
   }
+  const [shownPlay, setShownPlay] = useState(play);
+  if (!waiting && play !== shownPlay) setShownPlay(play);
   // Reanimated, not Animated's native driver: on Android the SVG inside a view moved by the native
   // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle).
   const fade = useSharedValue(0);
@@ -146,15 +175,15 @@ export function CapsuleStage({
   // back, since transformOrigin did not hold on Android.
   const t = useSharedValue(1);
   const curves = useMemo(() => {
-    if (!play) return null;
-    const of = (c: Channel) => sample(play.move, c, unit);
+    if (!shownPlay) return null;
+    const of = (c: Channel) => sample(shownPlay.move, c, unit);
     return { tx: of('tx'), ty: of('ty'), rot: of('rot'), sx: of('sx'), sy: of('sy') };
-  }, [play, unit]);
+  }, [shownPlay, unit]);
   useEffect(() => {
-    if (!play || reduce) return;
+    if (!shownPlay || reduce) return;
     t.set(0);
-    t.set(withTiming(1, { duration: play.move.ms, easing: ReEasing.linear }));
-  }, [play, reduce, t]);
+    t.set(withTiming(1, { duration: shownPlay.move.ms, easing: ReEasing.linear }));
+  }, [shownPlay, reduce, t]);
   const pivot = (FEET_Y - 0.5) * STAGE.height * unit;
   const moveStyle = useAnimatedStyle(() => {
     if (!curves) return {};
