@@ -4,7 +4,7 @@
 
 - Akıcılığın güncel durumunun tek kaynağı `docs/perf/akicilik-denetimi.md` → bölüm 5 karar tablosu; bütün ölçümler 0.11.0 build 21 (S23), 0.12.0 (#637, #638) ölçülmedi, proje sahibi 0.12.0'da kasmanın sürdüğünü bildirdi (iz yok).
 - 14 Kasım notundaki "sıradaki ölçüm 4.10" eskidi: 4.10 ve 4.11 yapıldı; açık ana soru 4.11'in UI iş parçacığındaki iz işaretsiz 125–435 ms'si.
-- Sıradaki paketler: (1) `CAPSULE_SKIA_WHOLE` herkes için açılır (proje sahibinin kararı, 16 Kasım); (2) yeni tasarım kaynağı kararı (yeni tuval https://claude.ai/artifact/7QxRyG1sRhLgkYwGDakRv9) ve pano davranış eksikleri; (3) ortak temel; (4) kapsül pilotu: Profil → Süsle → Tüm aksesuarlar → tek kayıt.
+- Sıradaki paketler: (1) `CAPSULE_SKIA_WHOLE` herkes için açıldı (proje sahibinin kararı, 16 Kasım; ölçümü 4.12); (2) yeni tasarım kaynağı kararı (yeni tuval https://claude.ai/artifact/7QxRyG1sRhLgkYwGDakRv9) ve pano davranış eksikleri; (3) ortak temel; (4) kapsül pilotu: Profil → Süsle → Tüm aksesuarlar → tek kayıt.
 - Kural: efekt azaltma yok.
 
 ## Devir notu (14 Kasım 2026): bütün kapsül Skia, ölçüm bekliyor

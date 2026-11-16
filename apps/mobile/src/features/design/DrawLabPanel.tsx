@@ -1,5 +1,5 @@
 import { Component, type ReactNode, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -24,6 +24,7 @@ import {
 import { type SwitchStats, switchStats } from '@/lib/frameStats';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { capsuleWholeOn } from '@/theme/capsuleSkia';
 
 // Çizim ölçümü's small panel over every screen (lib/drawLab.ts), at the top so the frame bars at
 // the bottom stay clear: Başlat runs the steps (each a few seconds, its name shown), Kapat hides it.
@@ -34,7 +35,7 @@ export function DrawLabPanel() {
   const step = useDrawLab((s) => s.step);
   const manual = useDrawLab((s) => s.manual);
   const skia = useLabSkia();
-  const whole = useLabWhole();
+  const whole = capsuleWholeOn(Platform.OS, useLabWhole());
   const hold = useLabHold();
   const insets = useSafeAreaInsets();
   const { c } = useKit();
@@ -113,7 +114,11 @@ export function DrawLabPanel() {
             ))}
             <Chip label={tr.design.drawLab.hold} on={hold} onPress={toggleLabHold} />
             {/* The whole capsule on one canvas; stays as set when the panel closes. */}
-            <Chip label={tr.design.drawLab.wholeSwitch} on={whole} onPress={toggleLabWhole} />
+            <Chip
+              label={tr.design.drawLab.wholeSwitch}
+              on={whole}
+              onPress={() => toggleLabWhole(whole)}
+            />
             {/* Off: the tiles as SVG again while the whole capsule stays Skia's. */}
             <Chip
               label={tr.design.drawLab.parts.karo}

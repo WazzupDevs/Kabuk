@@ -24,9 +24,10 @@ type LabState = LabParts & {
   // Süsle's big capsule and the measure's grid, either way on the same phone. It opens as the app
   // draws (CAPSULE_SKIA on this system).
   skia: boolean;
-  // The whole capsule on one Skia canvas (theme/capsuleSkia.ts → capsuleWholeOn). It stays as set
-  // when the panel closes: the panel covers the top of Süsle, where it is measured.
-  whole: boolean;
+  // The whole capsule on one Skia canvas (theme/capsuleSkia.ts → capsuleWholeOn): on or off for
+  // this phone, or null while the app's own switch decides. It stays as set when the panel closes:
+  // the panel covers the top of Süsle, where it is measured.
+  whole: boolean | null;
   // "Kapanınca koru": the parts turned off by hand stay off when the panel closes.
   hold: boolean;
 };
@@ -36,7 +37,7 @@ export const useDrawLab = create<LabState>(() => ({
   manual: [],
   switches: 0,
   skia: false,
-  whole: false,
+  whole: null,
   hold: false,
 }));
 
@@ -54,14 +55,16 @@ export function useLabSkia(): boolean | null {
   return useDrawLab((s) => (DRAW_LAB && s.open ? s.skia : null));
 }
 
-// The panel's "Bütün kapsül Skia", panel open or closed (a preview build only).
-export function useLabWhole(): boolean {
-  return useDrawLab((s) => DRAW_LAB && s.whole);
+// The panel's "Bütün kapsül Skia", panel open or closed (a preview build only); null when it has
+// not been set (the app's own switch decides).
+export function useLabWhole(): boolean | null {
+  return useDrawLab((s) => (DRAW_LAB ? s.whole : null));
 }
 
-export function toggleLabWhole() {
+// `now`: what the capsule draws with at present (the panel reads it from capsuleWholeOn).
+export function toggleLabWhole(now: boolean) {
   if (!DRAW_LAB) return;
-  useDrawLab.setState((s) => ({ whole: !s.whole }));
+  useDrawLab.setState({ whole: !now });
 }
 
 export function useLabHold(): boolean {
