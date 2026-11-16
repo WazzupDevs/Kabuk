@@ -12,6 +12,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { districtApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm } from '@/lib/overlayStore';
 import { SPACING } from '@/theme/tokens';
 
 // The semt room's sheets (app/(app)/district/room.tsx): its options (⋯) and "Oturumu kapat"; apart
@@ -91,6 +92,32 @@ export function OptionsSheet({
       <Btn block variant="glassy" label={tr.venueChat.done} onPress={onClose} />
     </Sheet>
   );
+}
+
+// "Oturumu kapat" (the owner's call, 8 Kasım; §4.V): asked once, in the centred dialog; closed, the
+// room's state has no session and the screen goes to SemtBitti, where [Yeniden gir] starts 2 new
+// hours with no question. It can be undone that way, so the dialog is plain. A thrown error leaves
+// the dialog open for another try (the visual gate's `EndSheet` below still draws the old sheet).
+export function useEndSession(): () => void {
+  const queryClient = useQueryClient();
+  const end = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: () => districtApi.leave(),
+    onSuccess: (next) => putDistrictState(queryClient, next),
+  });
+  return () => {
+    confirm({
+      title: tr.district.end.title,
+      note: tr.district.end.body,
+      tone: 'plain',
+      confirmLabel: tr.district.end.yes,
+      cancelLabel: tr.common.cancel,
+      testID: 'district-end-yes',
+      onConfirm: async () => {
+        await end.mutateAsync();
+      },
+    });
+  };
 }
 
 // "Oturumu kapat" (the owner's call, 8 Kasım; §4.V): asked once; closed, the room's state has no

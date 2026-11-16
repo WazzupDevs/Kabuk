@@ -22,6 +22,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm } from '@/lib/overlayStore';
 import { KIT } from '@/theme/auraKit';
 
 // The sender of a profiled venue chat message, opened through the message (docs/SPEC_V3.md §7.5):
@@ -34,7 +35,6 @@ export default function VenueChatProfileScreen() {
   const friends = useFriends();
   const friendId = view.data?.friendPublicId;
   const friend = friendId ? friends.data?.find((f) => f.publicId === friendId) : undefined;
-  const [confirming, setConfirming] = useState(false);
   const [menu, setMenu] = useState(false);
   const [sent, setSent] = useState(false);
   const [reporting, setReporting] = useState(false);
@@ -45,10 +45,23 @@ export default function VenueChatProfileScreen() {
     mutationFn: () => friendsApi.requestFromVenueChat(messageId),
     onSuccess: () => {
       track('friend_request_sent', { source: 'venue_chat' });
-      setConfirming(false);
       setSent(true);
     },
   });
+  // A thrown error leaves the dialog open; the Banner under the button keeps the message.
+  const ask = () =>
+    confirm({
+      title: tr.venueChat.requestConfirmTitle,
+      note: tr.venueChat.requestConfirmBody,
+      icon: 'invite',
+      tone: 'plain',
+      confirmLabel: tr.venueChat.requestConfirm,
+      cancelLabel: tr.common.cancel,
+      testID: 'venue-chat-request-confirm',
+      onConfirm: async () => {
+        await request.mutateAsync();
+      },
+    });
   const queryClient = useQueryClient();
   const report = useMutation({
     meta: FEEL_ERROR,
@@ -102,14 +115,19 @@ export default function VenueChatProfileScreen() {
                 {tr.venueChat.requestSent}
               </T>
             ) : (
-              <Btn
-                block
-                bar={KIT.size.btnRow}
-                testID="venue-chat-request"
-                icon="invite"
-                label={tr.venueChat.sendRequest}
-                onPress={() => setConfirming(true)}
-              />
+              <>
+                {request.isError ? (
+                  <Banner tone="danger" body={errorMessage(request.error)} />
+                ) : null}
+                <Btn
+                  block
+                  bar={KIT.size.btnRow}
+                  testID="venue-chat-request"
+                  icon="invite"
+                  label={tr.venueChat.sendRequest}
+                  onPress={ask}
+                />
+              </>
             )}
           </ProfileHead>
         </View>
@@ -142,29 +160,6 @@ export default function VenueChatProfileScreen() {
           />
         </Menu>
         <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
-      </Sheet>
-      <Sheet
-        visible={confirming}
-        onClose={() => setConfirming(false)}
-        title={tr.venueChat.requestConfirmTitle}
-      >
-        <T ink>{tr.venueChat.requestConfirmBody}</T>
-        {request.isError ? <Banner tone="danger" body={errorMessage(request.error)} /> : null}
-        <View className="gap-2.5">
-          <Btn
-            block
-            testID="venue-chat-request-confirm"
-            label={tr.venueChat.requestConfirm}
-            onPress={() => request.mutate()}
-            loading={request.isPending}
-          />
-          <Btn
-            block
-            variant="glassy"
-            label={tr.common.cancel}
-            onPress={() => setConfirming(false)}
-          />
-        </View>
       </Sheet>
       <ReportModal
         reasons={REPORT_REASONS}
