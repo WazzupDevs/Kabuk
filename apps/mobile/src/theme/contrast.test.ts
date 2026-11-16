@@ -204,7 +204,13 @@ function over(css: string, ground: string): string[] {
   });
 }
 
-describe('glass buttons', () => {
+// A colour as seen over an opaque ground: itself, an rgba() laid over it, or the ground.
+function seen(css: string, ground: string): string {
+  if (css === 'transparent') return ground;
+  return css.startsWith('rgba') ? (over(css, ground)[0] ?? '') : css;
+}
+
+describe('buttons', () => {
   it.each(['light', 'dark'] as const)('the clear one reads (%s)', (scheme) => {
     const b = BUTTON_GLASS[scheme].clear;
     const grounds = [...over(b.fill, AURA[scheme].ground), b.solid];
@@ -214,20 +220,45 @@ describe('glass buttons', () => {
     }
   });
 
-  // The document's greens and reds (not to be changed, the owner's call, 12 Kasım) hold white words
-  // at 4.5:1 only at their deep end: the light top of the green (#28AA64) is 3.0:1 and of the red
-  // (#E24E3A) 3.9:1. Measured here so a change shows; the deep end stays AA.
-  it.each(['light', 'dark'] as const)(
-    'the prominent and the danger at their deep end (%s)',
-    (s) => {
-      for (const kind of ['prominent', 'danger'] as const) {
-        const b = BUTTON_GLASS[s][kind];
-        const [top, deep] = hexes(b.solid);
-        expect(contrastRatio(b.ink, deep ?? '')).toBeGreaterThanOrEqual(AA_TEXT);
-        expect(contrastRatio(b.ink, top ?? '')).toBeCloseTo(kind === 'prominent' ? 2.99 : 3.9, 1);
+  // The new interface (16 Kasım, skall.css `.btn`): the primary's words on its fill, its pressed
+  // fill and its opaque fill; the soft red's; the ghost's on the screen's ground.
+  it.each(['light', 'dark'] as const)('the primary, the danger and the ghost (%s)', (s) => {
+    const ground = AURA[s].ground;
+    for (const kind of ['prominent', 'danger', 'ghost'] as const) {
+      const b = BUTTON_GLASS[s][kind];
+      const fills = [b.fill, b.solid, ...(b.pressed ? [b.pressed] : [])];
+      for (const fill of fills) {
+        expect(contrastRatio(b.ink, seen(fill, ground))).toBeGreaterThanOrEqual(AA_TEXT);
       }
-    },
-  );
+    }
+  });
+
+  // Disabled: the disabled fill and words (`.btn.off`), as text. The dark primary's (the board's
+  // #1B211F and the text at 40 %, `.dark .btn.primary.off`) is 3.5:1: measured so a change shows,
+  // at least the large text's 3:1.
+  it.each(['light', 'dark'] as const)('disabled (%s)', (s) => {
+    const ground = AURA[s].ground;
+    for (const kind of ['prominent', 'clear', 'danger', 'ghost'] as const) {
+      const { fill, ink } = BUTTON_GLASS[s][kind].off;
+      const under = seen(fill, ground);
+      const ratio = contrastRatio(seen(ink, under), under);
+      if (s === 'dark' && kind === 'prominent') {
+        expect(ratio).toBeGreaterThanOrEqual(AA_LARGE);
+        expect(ratio).toBeCloseTo(3.48, 1);
+      } else {
+        expect(ratio).toBeGreaterThanOrEqual(AA_TEXT);
+      }
+    }
+  });
+
+  // The send rounds' green glass (not to be changed, the owner's call, 12 Kasım) holds white at
+  // 4.5:1 only at its deep end: its light top (#28AA64) is 3.0:1.
+  it.each(['light', 'dark'] as const)("the send rounds' green at its deep end (%s)", (s) => {
+    const b = BUTTON_GLASS[s].green;
+    const [top, deep] = hexes(b.solid);
+    expect(contrastRatio(b.ink, deep ?? '')).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio(b.ink, top ?? '')).toBeCloseTo(2.99, 1);
+  });
 });
 
 // Yeni arayüz (16 Kasım, skall.css `.seg span.on`; Ayarlar.dc.html): the seg's chosen part (the ink

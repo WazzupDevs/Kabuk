@@ -231,7 +231,7 @@ export function VenueChatCard({
 // chat.
 function SendRound({ side }: { side: number }) {
   const { scheme } = useKit();
-  const g = KIT.button[scheme].prominent;
+  const g = KIT.button[scheme].green;
   return (
     <View
       accessible={false}
