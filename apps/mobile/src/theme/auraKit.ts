@@ -2,7 +2,6 @@
 // canvas's classes: .display, .glass, .btn, .chip, .tag, .round, .av, .thumb, .li, .sec, .badge,
 // .live). Light from `:root`, dark from `.night` (the canvas's dark side). Components in
 // src/aura/kit/ read only these.
-import type { TextStyle } from 'react-native';
 import { BUTTON_GLASS } from './buttonGlass';
 
 const F = {
@@ -11,6 +10,16 @@ const F = {
   700: 'PlusJakartaSans_700Bold',
   800: 'PlusJakartaSans_800ExtraBold',
 } as const;
+
+// The text style's parts the kit sets, as React Native's TextStyle has them. Kept here, not imported:
+// the theme files stay pure, and the root type check (Node's types) reads them through the tests.
+type TextStyle = {
+  fontFamily?: string;
+  fontSize?: number;
+  lineHeight?: number;
+  letterSpacing?: number;
+  fontStyle?: 'normal' | 'italic';
+};
 
 // A text style: the canvas's size and line, its weight's file, letter spacing in em.
 const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
