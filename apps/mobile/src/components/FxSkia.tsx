@@ -8,6 +8,7 @@ import {
   Paint,
   Skia,
   type SkImage,
+  type SkRect,
   type SkSurface,
   type SkSVG,
 } from '@shopify/react-native-skia';
@@ -32,7 +33,14 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-import { alphaBounds, pointsOf, type PxRect, trimRect } from '@/capsule/artBounds';
+import {
+  alphaBounds,
+  pointsOf,
+  type PtRect,
+  type PxRect,
+  trimRect,
+  unionRect,
+} from '@/capsule/artBounds';
 import {
   type ArtNeed,
   type CapsuleArt,
@@ -417,8 +425,18 @@ function stillNeed(xml: string, width: number, height: number, ratio: number): A
 
 // A picture at its pixels (its surface was a whole number of them; a kept box at the whole pixels
 // it was cut at), or the SVG from its shapes when there is none.
+// A picture (not an SVG: its drawing does not take a paint) may be drawn faded (`opacity`) or
+// with a blend (`blend`).
 const SHARP = { filter: FilterMode.Linear, mipmap: MipmapMode.None };
-function ArtAt({ art }: { art: Art }) {
+function ArtAt({
+  art,
+  opacity,
+  blend,
+}: {
+  art: Art;
+  opacity?: SharedValue<number>;
+  blend?: 'dstIn';
+}) {
   const ratio = PixelRatio.get();
   const a = art.art;
   if (a.kind === 'image') {
@@ -432,6 +450,8 @@ function ArtAt({ art }: { art: Art }) {
         height={at.height}
         fit="fill"
         sampling={SHARP}
+        {...(opacity ? { opacity } : null)}
+        {...(blend ? { blendMode: blend } : null)}
       />
     );
   }
@@ -731,19 +751,59 @@ function WholeInside({
   });
   const { crop } = plan;
   const box = useMemo(() => Skia.XYWHRect(0, 0, crop.width, crop.height), [crop]);
-  return (
-    // Drawn's layers at the crop's corner, cut to the crop (a canvas of its own was its edge).
-    <Group transform={[{ translateX: crop.left }, { translateY: crop.top }]} clip={box}>
-      <Group layer>
-        <ArtAt art={mask} />
-        <Group layer={<Paint blendMode="srcIn" />}>
-          <Group transform={transform}>
-            <ArtAt art={content} />
-          </Group>
-        </Group>
-      </Group>
+  const moved = (
+    <Group transform={transform}>
+      <ArtAt art={content} />
     </Group>
   );
+  return (
+    // Drawn's layers at the crop's corner, cut to the crop (a canvas of its own was its edge); a
+    // layer here is the crop's size (the clip is set before it).
+    <Group transform={[{ translateX: crop.left }, { translateY: crop.top }]} clip={box}>
+      {mask.art.kind === 'image' ? (
+        // One layer: the content, then the mask drawn over it in dst-in (the content times the
+        // mask's alpha), the same product as the mask's layer with the content's over it in
+        // src-in (the content times the mask's alpha). The mask's picture covers the whole crop:
+        // nothing in the crop is left outside it.
+        <Group layer>
+          {moved}
+          <ArtAt art={mask} blend="dstIn" />
+        </Group>
+      ) : (
+        // The mask from its shapes takes no paint: its own layer, the content's in src-in.
+        <Group layer>
+          <ArtAt art={mask} />
+          <Group layer={<Paint blendMode="srcIn" />}>{moved}</Group>
+        </Group>
+      )}
+    </Group>
+  );
+}
+
+// The one still picture a move draws, or null.
+function onePicture(layers: readonly WholeRead[]): Art | null {
+  const [only] = layers;
+  return layers.length === 1 && only?.kind === 'still' && only.art.art.kind === 'image'
+    ? only.art
+    : null;
+}
+
+// What a move's layers draw, in its own space, a point more on every side (a clip's smoothed edge
+// falls on nothing drawn); null when it is not known: an SVG from its shapes (it may draw past its
+// box) or a move inside (it leaves its box).
+const BOX_ROOM = 1;
+function layersBox(layers: readonly WholeRead[], ratio: number): SkRect | null {
+  const rects: PtRect[] = [];
+  for (const l of layers) {
+    if (l.kind === 'move') return null;
+    if (l.kind === 'inside') {
+      const { crop } = l.plan;
+      rects.push({ x: crop.left, y: crop.top, width: crop.width, height: crop.height });
+    } else if (l.art.art.kind === 'image') rects.push(pointsOf(l.art.art.rect, ratio));
+    else return null;
+  }
+  const box = unionRect(rects, BOX_ROOM);
+  return box ? Skia.XYWHRect(box.x, box.y, box.width, box.height) : null;
 }
 
 function WholeMoved({
@@ -754,10 +814,20 @@ function WholeMoved({
   const clock = useClock(move.ms, draw.on, draw.lane);
   const matrix = useDerivedValue(() => moveMatrixAt(move, clock.value));
   const opacity = useDerivedValue(() => moveOpacityAt(move, clock.value));
+  const ratio = PixelRatio.get();
+  // One picture faded: its own opacity (one drawing: the same as its layer faded).
+  const one = move.opacity ? onePicture(layers) : null;
+  // Else the layer kept to what is drawn in it (a layer with no box is the whole canvas).
+  const bounds = useMemo(
+    () => (move.opacity && !one ? layersBox(layers, ratio) : null),
+    [move.opacity, one, layers, ratio],
+  );
   const inner = <WholeLayers layers={layers} {...draw} />;
   return (
-    <Group matrix={matrix}>
-      {move.opacity ? (
+    <Group matrix={matrix} {...(bounds ? { clip: bounds } : null)}>
+      {one ? (
+        <ArtAt art={one} opacity={opacity} />
+      ) : move.opacity ? (
         // An SVG's drawing does not take a paint's opacity: faded as a layer.
         <Group layer={<Paint opacity={opacity} />}>{inner}</Group>
       ) : (
