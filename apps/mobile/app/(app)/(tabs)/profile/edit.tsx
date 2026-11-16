@@ -12,7 +12,6 @@ import { Loader } from '@/components/Loader';
 import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
-import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoSheet, photoErrorMessage } from '@/features/profile/PhotoSheet';
@@ -26,6 +25,7 @@ import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
+import { closeOverlay, confirm } from '@/lib/overlayStore';
 import { maxLengthFor } from '@/lib/textLimit';
 import { type MenuAnchor, Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
@@ -290,23 +290,56 @@ function EditForm({
   });
 
   // skall tuvali (ProfilDuzenleCikis): leaving with changes asks first, back key too.
-  const [leaving, setLeaving] = useState(false);
   // Kaydet (or "Kaydet ve çık") with a name that does not pass: the name's error shows.
   const [tried, setTried] = useState(false);
   const changed = (nameChanged || bioChanged) && !save.isSuccess;
   const dirty = changed;
-  const leave = useCallback(() => (dirty ? setLeaving(true) : router.back()), [dirty]);
-  const askToLeave = useCallback(() => setLeaving(true), []);
+  // One pattern with Kapsülün's: "Kaydet ve çık" tries to save; a save that cannot go through
+  // closes the dialog and the error shows on the screen, so the page is not left.
+  const askToLeave = useCallback(() => {
+    const id = confirm({
+      title: tr.profile.leaveTitle,
+      note: tr.profile.leaveBody,
+      tone: 'plain',
+      confirmLabel: tr.profile.saveAndLeave,
+      cancelLabel: tr.common.cancel,
+      testID: 'profile-edit-leave-save',
+      onConfirm: async () => {
+        if (!nameValid || !bioValid) {
+          setTried(true);
+          return;
+        }
+        try {
+          await save.mutateAsync();
+        } catch {
+          // The error shows on the screen (save.isError); the dialog closes.
+        }
+      },
+      children: (
+        <Btn
+          block
+          variant="glassy"
+          testID="profile-edit-leave-discard"
+          label={tr.profile.leaveConfirm}
+          onPress={() => {
+            closeOverlay(id, false);
+            router.back();
+          }}
+        />
+      ),
+    });
+  }, [nameValid, bioValid, save]);
+  const leave = () => (dirty ? askToLeave() : router.back());
   useAskBeforeLeaving(dirty, askToLeave);
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {
         if (!dirty) return false;
-        setLeaving(true);
+        askToLeave();
         return true;
       });
       return () => sub.remove();
-    }, [dirty]),
+    }, [dirty, askToLeave]),
   );
   // Nothing to save: Kaydet stays quiet and does nothing; a field that does not pass says so.
   const onSave = () => {
@@ -445,40 +478,6 @@ function EditForm({
           </T>
         </View>
       </Glass>
-
-      {/* One pattern with Kapsülün's: "Kaydet ve çık" tries to save; a save that cannot go through
-      closes the sheet and the error shows on the screen, so the page is not left. */}
-      <Sheet
-        visible={leaving}
-        onClose={() => {
-          if (!save.isPending) setLeaving(false);
-        }}
-        title={tr.profile.leaveTitle}
-      >
-        <T v="fine">{tr.profile.leaveBody}</T>
-        <Btn
-          block
-          label={tr.profile.saveAndLeave}
-          loading={save.isPending}
-          onPress={() => {
-            if (!nameValid || !bioValid) {
-              setTried(true);
-              setLeaving(false);
-              return;
-            }
-            save.mutate(undefined, { onError: () => setLeaving(false) });
-          }}
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.profile.leaveConfirm}
-          onPress={() => {
-            setLeaving(false);
-            router.back();
-          }}
-        />
-      </Sheet>
     </Screen>
   );
 }

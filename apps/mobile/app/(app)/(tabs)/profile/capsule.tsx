@@ -23,7 +23,6 @@ import { Loader } from '@/components/Loader';
 import { shadowParts } from '@/components/NativeShadow';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
-import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import {
@@ -71,6 +70,7 @@ import { useAfterTransition } from '@/lib/afterTransition';
 import { carouselWindow } from '@/lib/carouselWindow';
 import { useLabOff } from '@/lib/drawLab';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
+import { closeOverlay, confirm } from '@/lib/overlayStore';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip, Tap, Turn } from '@/motion';
 import { KIT } from '@/theme/auraKit';
@@ -151,7 +151,6 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const [slot, setSlot] = useState<LookSlot>('h');
   // The theme pack the strip shows (null: Tümü).
   const [pack, setPack] = useState<string | null>(null);
-  const [leaving, setLeaving] = useState(false);
   const feelingAt = useRef(-1);
   const now = code(look);
   const changed = now !== code(parse(saved));
@@ -176,11 +175,42 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     },
   });
   const dirty = changed && !save.isSuccess;
+  // Saving, the dialog stays; a failed save closes it and says so on the screen, over the bar
+  // (audit PRO-3).
+  const askToLeave = useCallback(() => {
+    const id = confirm({
+      title: tr.capsule.unsavedTitle,
+      note: tr.capsule.unsavedBody,
+      tone: 'plain',
+      confirmLabel: tr.capsule.saveAndLeave,
+      cancelLabel: tr.common.cancel,
+      testID: 'capsule-leave-save',
+      onConfirm: async () => {
+        try {
+          await save.mutateAsync();
+          router.back();
+        } catch {
+          // The error shows on the screen (save.isError); the dialog closes.
+        }
+      },
+      children: (
+        <Btn
+          block
+          variant="glassy"
+          testID="capsule-leave-discard"
+          label={tr.capsule.leaveUnsaved}
+          onPress={() => {
+            closeOverlay(id, false);
+            router.back();
+          }}
+        />
+      ),
+    });
+  }, [save]);
   const leave = useCallback(() => {
-    if (changed && !save.isSuccess) setLeaving(true);
+    if (changed && !save.isSuccess) askToLeave();
     else router.back();
-  }, [changed, save.isSuccess]);
-  const askToLeave = useCallback(() => setLeaving(true), []);
+  }, [changed, save.isSuccess, askToLeave]);
   useAskBeforeLeaving(changed && !save.isSuccess, askToLeave);
   useFocusEffect(
     useCallback(() => {
@@ -612,43 +642,6 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           </View>
         </View>
       </Screen>
-      {/* Saving, the sheet stays; a failed save says so here, over the bar (audit PRO-3). */}
-      <Sheet
-        visible={leaving}
-        onClose={() => {
-          if (!save.isPending) setLeaving(false);
-        }}
-        title={tr.capsule.unsavedTitle}
-      >
-        <T v="fine">{tr.capsule.unsavedBody}</T>
-        {save.isError ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(save.error)}
-          </T>
-        ) : null}
-        <Btn
-          block
-          label={tr.capsule.saveAndLeave}
-          loading={save.isPending}
-          onPress={() =>
-            save.mutate(undefined, {
-              onSuccess: () => {
-                setLeaving(false);
-                router.back();
-              },
-            })
-          }
-        />
-        <Btn
-          block
-          variant="glassy"
-          label={tr.capsule.leaveUnsaved}
-          onPress={() => {
-            setLeaving(false);
-            router.back();
-          }}
-        />
-      </Sheet>
     </>
   );
 }
