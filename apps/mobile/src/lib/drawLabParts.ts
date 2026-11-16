@@ -30,7 +30,9 @@ export type DrawPart =
   | 'bant'
   | 'ters'
   | 'balon'
-  | 'karo';
+  | 'karo'
+  | 'kapak'
+  | 'bilet';
 
 export const DRAW_PARTS: readonly DrawPart[] = [
   'cam',
@@ -47,6 +49,8 @@ export const DRAW_PARTS: readonly DrawPart[] = [
   'ters',
   'balon',
   'karo',
+  'kapak',
+  'bilet',
 ];
 
 // The tab switch's own parts: turned off by hand (the panel's switches) while tabs are switched,
@@ -55,6 +59,10 @@ export const SWITCH_PARTS: readonly DrawPart[] = ['buzlu', 'bulanma', 'gelis', '
 
 // `karo`: Süsle's option tiles as the picture way's SVG again while the whole capsule is Skia's
 // (FxSkia.tsx → tileNeed), to tell the tiles' cost from the big capsule's (4.9).
+
+// The Profile page's cover and capsule ticket, each not drawn (a blank of its size stays), to tell
+// which of the two the first opening's frames cost.
+export const PROFILE_PARTS: readonly DrawPart[] = ['kapak', 'bilet'];
 
 // The chat's parts, turned off by hand; with "Kapanınca koru" they stay off when the panel closes
 // (the panel covers the top of the chat it measures).

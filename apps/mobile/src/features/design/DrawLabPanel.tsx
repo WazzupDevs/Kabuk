@@ -11,6 +11,7 @@ import {
   DRAW_LAB,
   DRAW_STEPS,
   openDrawLab,
+  PROFILE_PARTS,
   startDrawLab,
   SWITCH_PARTS,
   toggleLabPart,
@@ -118,6 +119,15 @@ export function DrawLabPanel() {
             {CHAT_PARTS.map((part) => (
               <Chip
                 key={`chat-${part}`}
+                label={tr.design.drawLab.parts[part]}
+                on={manual.includes(part)}
+                onPress={() => toggleLabPart(part)}
+              />
+            ))}
+            {/* The Profile page's cover and ticket, each not drawn (a blank of its size stays). */}
+            {PROFILE_PARTS.map((part) => (
+              <Chip
+                key={`profile-${part}`}
                 label={tr.design.drawLab.parts[part]}
                 on={manual.includes(part)}
                 onPress={() => toggleLabPart(part)}

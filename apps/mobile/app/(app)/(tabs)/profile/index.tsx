@@ -21,6 +21,7 @@ import { ProfileFace } from '@/features/profile/ProfileFace';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useLabOff } from '@/lib/drawLab';
 import {
   BarBand,
   type Flight,
@@ -38,7 +39,7 @@ import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { OWN_PROFILE } from '@/theme/ownProfile';
-import { PROFILE_PAGE } from '@/theme/profileCover';
+import { PROFILE_PAGE, TICKET } from '@/theme/profileCover';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -76,6 +77,8 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
   const [preview, setPreview] = useState(false);
+  const coverOff = useLabOff('kapak');
+  const ticketOff = useLabOff('bilet');
   // The upper part's words and buttons: their foot, once laid out (not on a frame).
   const [wordsFoot, setWordsFoot] = useState(0);
   // The status bar's icons: light over the cover, the scheme's once the band is in.
@@ -142,11 +145,15 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
           origin={B.riseOrigin}
           height={panelTop}
         >
-          <ProfileCoverArt
-            url={data?.coverUrl ?? null}
-            height={coverHeight}
-            accessibilityLabel={tr.profile.cover}
-          />
+          {coverOff ? (
+            <View style={{ height: coverHeight }} />
+          ) : (
+            <ProfileCoverArt
+              url={data?.coverUrl ?? null}
+              height={coverHeight}
+              accessibilityLabel={tr.profile.cover}
+            />
+          )}
           {data ? (
             <>
               {/* The photo's place: the flying photo over the page draws it; this keeps its touch
@@ -300,11 +307,15 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
             <>
               {/* The list's head once the panel is under the bar: the ticket. */}
               {data.capsuleNick ? (
-                <IdentityTicket
-                  nick={data.capsuleNick}
-                  look={data.capsuleLook ?? null}
-                  refreshAt={data.nickRefreshAt ?? null}
-                />
+                ticketOff ? (
+                  <View style={{ minHeight: TICKET.height, marginTop: OWN_PROFILE.gap }} />
+                ) : (
+                  <IdentityTicket
+                    nick={data.capsuleNick}
+                    look={data.capsuleLook ?? null}
+                    refreshAt={data.nickRefreshAt ?? null}
+                  />
+                )
               ) : null}
               {data.photoHidden ? (
                 <Glass pad="pad" style={{ marginTop: B.gap }}>

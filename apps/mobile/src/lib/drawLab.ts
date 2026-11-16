@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 import { type DrawPart, DRAW_STEPS, type LabParts, partsOff, togglePart } from './drawLabParts';
 
-export { CHAT_PARTS, DRAW_PARTS, DRAW_STEPS, SWITCH_PARTS } from './drawLabParts';
+export { CHAT_PARTS, DRAW_PARTS, PROFILE_PARTS, DRAW_STEPS, SWITCH_PARTS } from './drawLabParts';
 export type { DrawPart, DrawStep, DrawStepKey } from './drawLabParts';
 
 // Ayarlar → Tasarım (test) → Çizim ölçümü: on the owner's own phone, what each part of a screen

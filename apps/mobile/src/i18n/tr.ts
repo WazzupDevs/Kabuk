@@ -2256,6 +2256,8 @@ export const tr = {
         ters: 'Ters liste',
         balon: 'Balon şekli',
         karo: 'Karolar SVG',
+        kapak: 'Profil kapağı',
+        bilet: 'Kapsül bileti',
       },
       chatParts: 'Sohbette kapat',
       hold: 'Kapanınca koru',
