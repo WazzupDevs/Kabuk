@@ -619,6 +619,12 @@ export const tr = {
     typing: 'yazıyor',
     // Under the name in the DM's top bar (iskelet.md → 5.5).
     typingTitle: 'yazıyor…',
+    // docs/SPEC_V4.md §4.X: a message of one's own, edited within 15 minutes.
+    edit: 'Düzenle',
+    editing: 'Mesajı düzenle',
+    cancelEdit: 'Düzenlemeyi iptal et',
+    saveEdit: 'Düzenlemeyi kaydet',
+    edited: 'düzenlendi',
   },
   // skall tuvali (KapsulSusle…, KapsulGaleri; docs/SPEC_V4.md §4.D, K-46, K-61).
   capsule: {
