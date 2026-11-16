@@ -149,6 +149,8 @@ export const KIT_TYPE = {
   holdRow: t(600, 15, 20),
   toastTitle: t(600, 14, 19),
   toastSub: t(500, 12, 16),
+  // The toast's button (SusleKaydedilemedi): 13/600.
+  toastBtn: t(600, 13, 16),
   // Mekan (tuval Mekan): "Mekandasın" (13, 700); the card's title (26, 800, -0.03em, 1.1) and its
   // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
   // field (14, 600); the invite's name (16, 700) and its button (14, 700).
