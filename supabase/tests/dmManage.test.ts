@@ -414,16 +414,23 @@ describe('dm/edit (§4.X)', () => {
   it('limits edits per account per window, asked before the edit', async () => {
     const { a, threads } = await withFriends(1);
     const threadId = threads[0] as string;
-    const messageId = await send(a, threadId, 'selam');
-    for (let i = 1; i <= DM_EDIT_RATE.windowMax; i++) {
-      expect((await dm(a, { action: 'edit', messageId, body: `selam ${i}` })).status).toBe(200);
+    // Spread over messages: each takes at most DM_EDIT_MAX real edits; the last one is untouched.
+    const messages: string[] = [];
+    for (let m = 0; m <= Math.ceil(DM_EDIT_RATE.windowMax / DM_EDIT_MAX); m++) {
+      messages.push(await send(a, threadId, `selam ${m}`));
     }
+    const target = (i: number) => messages[Math.floor((i - 1) / DM_EDIT_MAX)] as string;
+    for (let i = 1; i <= DM_EDIT_RATE.windowMax; i++) {
+      const res = await dm(a, { action: 'edit', messageId: target(i), body: `düzen ${i}` });
+      expect(res.status).toBe(200);
+    }
+    const messageId = messages.at(-1) as string;
     expect(await dm(a, { action: 'edit', messageId, body: 'selam son' })).toEqual({
       status: 429,
       body: errorBody('rate_limited'),
     });
     const [row] = await sql`select body from public.dm_messages where id = ${messageId}`;
-    expect(row?.body).toBe(`selam ${DM_EDIT_RATE.windowMax}`);
+    expect(row?.body).toBe(`selam ${messages.length - 1}`);
     // A new window opens the budget again.
     await sql`
       update public.dm_edit_rate
