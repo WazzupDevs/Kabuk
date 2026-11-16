@@ -4,7 +4,9 @@ import { BUTTON_VARIANTS, buttonFill } from './buttonFill';
 import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
 import { AURA } from './aura';
+import { KIT } from './auraKit';
 import { BUTTON_GLASS } from './buttonGlass';
+import { SETTINGS } from './settings';
 import { THEME } from './theme';
 import { type Palette, type PaletteKey } from './tokens';
 
@@ -226,4 +228,29 @@ describe('glass buttons', () => {
       }
     },
   );
+});
+
+// Yeni arayüz (16 Kasım, skall.css `.seg span.on`; Ayarlar.dc.html): the seg's chosen part (the ink
+// with white words; in the dark the 94 % white with #0B0E0D) and its other parts' muted words on the
+// sunk track; Ayarlar's rows, section heads, notes and Çıkış yap on the ground.
+describe('the seg and Ayarlar (yeni arayüz)', () => {
+  it.each(['light', 'dark'] as const)('the chosen part reads (%s)', (scheme) => {
+    const k = KIT[scheme];
+    const on = k.segOn.startsWith('#') ? k.segOn : (over(k.segOn, AURA[scheme].ground)[0] ?? '');
+    expect(contrastRatio(k.segOnInk, on)).toBeGreaterThanOrEqual(AA_TEXT);
+  });
+
+  it('the chosen part: the ink with white words; in the dark the 94 % white', () => {
+    expect([KIT.light.segOn, KIT.light.segOnInk]).toEqual(['#031B0B', '#FFFFFF']);
+    expect([KIT.dark.segOn, KIT.dark.segOnInk]).toEqual(['rgba(255, 255, 255, 0.94)', '#0B0E0D']);
+  });
+
+  it.each(['light', 'dark'] as const)('the other parts and the page read (%s)', (scheme) => {
+    const k = KIT[scheme];
+    const ground = AURA[scheme].ground;
+    expect(contrastRatio(k.muted, SETTINGS[scheme].track)).toBeGreaterThanOrEqual(AA_TEXT);
+    for (const ink of [k.ink, k.muted, k.onDangerSoft]) {
+      expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(AA_TEXT);
+    }
+  });
 });

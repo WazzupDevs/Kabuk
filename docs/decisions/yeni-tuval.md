@@ -34,3 +34,14 @@ d. **Sohbeti sil:** yalnız silende; sunucuda "bu andan öncesi bana gizli" işa
 e. **DM düzenleme:** kendi metin mesajı, gönderildikten sonraki 15 dakika içinde; karşı tarafta "düzenlendi". Küfür filtresi yeniden uygulanır (kural 7); eski metin saklanmaz.
 
 f. **Kapsül kaydı:** Süsle ve Tüm aksesuarlar tek taslağı paylaşır; Kaydet yalnız Süsle'de; sunucuda tek atomik yazma (`profile/save-look`).
+
+## Proje sahibinin kararları (16 Kasım, ortak temel)
+
+- **Onaylar:** her onay ortada dialogdur (geri alınamaz olanlar ve kaydetmeden çıkış dahil); alttan sayfa yalnız içerik, seçim ya da form içindir (pano `OrtakKurallar`, C1). iskelet.md 3.5'in "alttan onay sayfası" kuralı dialoga geçişin paketinde değişir.
+- **Süsle:** altıncı sekme Ağız; Takımlar yalnız katalogda. Katalogda "Kapsülüne tak" taslağa uygular, kayıt yalnız Süsle'de.
+- **Odadakiler:** listeden geri dönünce Seçenekler yeniden açılmaz.
+- **Boy:** ana düğme ve form alanı 48 (eski 52/56); CLAUDE.md "Ekran davranışı" ve iskelet.md 2.1 düğme paketinin PR'ında güncellenir.
+- **Ayarlar tam sayfa:** alttan sayfa yerine geri düğmeli sayfa, sağdan iter (yığının varsayılan geçişi); Bildirim ayarları, Gizlilik, Hesap, Engellenenler ve Sessize alınanlar aynı yığında itilir (iskelet.md 5.9).
+- **Atölye:** çizilmiş panolarda Atölye adımı yoktur, onaylı pano doğrudan aktarılır; Atölye (`.claude/skills/ui-workshop-workflow`) yalnız panonun çizmediği yerde.
+
+Panoların kaynağı paketlerle birlikte `docs/design/yeni-arayuz/project/` altına girer (ilk paket: `Ayarlar`, `OrtakKurallar`, `HareketDegerler`, `HareketTablo`, `skall.css`, `ekran.css`, `koyu.css`).

@@ -182,10 +182,12 @@ Kaydırmaya bağlı hiçbir harekette yumuşatma eğrisi yoktur; her şey parmak
 - Profili düzenle: sayfa türü. Kapak ve fotoğraf profildeki gibi tek önizlemede. Kapağın üstündeki clear "Kapak" butonu Değiştir ve Kaldır menüsünü açar; fotoğrafta clear kamera butonu var. Alanlarda sayaç ve odakta yeşil halka (3 px, #0E8745 yüzde 18). Doğum tarihi bir ayar satırı: kilit ve "Değiştirilemez". Kaydet üst çubukta clear.
 - Arkadaşlar: sayfa türü, alt başlık "4 arkadaş". Gruplu liste, satırda clear cam mesaj butonu (46). Peek kanki listenin kenarından bakar.
 
-### 5.9 Ayarlar (sheet)
+### 5.9 Ayarlar (sayfa)
 
-- Sıra: Bildirimler, Gizlilik, Hesap (renkli kare ikonlu satırlar); OYUNLARA KATILIM seçimi ve kısa açıklama; GÖRÜNÜM seçimi; ayrı grupta kırmızı Çıkış yap (onay sheet'i); en altta TEST SÜRÜMÜ satırları (sadece test sürümünde).
-- Başlık ve X sabit, Tamam yok.
+- Tam sayfa (proje sahibinin kararı, 16 Kasım; yeni arayüz tuvali `Ayarlar`): Profil'den sağdan iter (yığının varsayılan geçişi, 4.4), geri tuşu ve kenardan kaydırma geri götürür. Bildirim ayarları, Gizlilik, Hesap, Engellenenler ve Sessize alınanlar aynı yığında itilir.
+- Üst: 44'lük yuvarlak geri düğmesi ve yanında 700 21/26 başlık; içerikle kaymaz, büyük başlık yok. Zemin bulutsuz düz canvas (koyuda siyah).
+- Sıra: Bildirimler, Gizlilik, Hesap (kart yok, satırlar zeminde: en az 56, ikon 24 mürekkep renginde, 600 16/20, ok; ince çizgi 38'den); "Oyunlara katılım" seçimi ve kısa açıklama; "Görünüm" seçimi; kırmızı Çıkış yap satırı (onay sheet'i; dialoga geçiş ayrı pakette); en altta "Test sürümü" satırları (sadece test sürümünde).
+- Bölüm başlıkları küçük harf, 700 13/18 muted. Bölmeli seçicinin seçili parçası açıkta mürekkep zemin ve beyaz yazı, koyuda %94 beyaz.
 
 ### 5.10 Kapsülün (düzenleyici)
 

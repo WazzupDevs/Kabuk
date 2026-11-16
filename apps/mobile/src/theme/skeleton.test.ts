@@ -89,7 +89,7 @@ describe('the top bar (3.1)', () => {
     const page = code('src/components/PageTop.tsx');
     expect(page).toMatch(/<TopBarRow kind="sayfa"/);
     expect(page).toMatch(/<LargeTitle kind="sayfa"/);
-    expect(code('src/motion/TopBar.tsx')).toMatch(/side=\{KIT\.size\.topBtn\}/);
+    expect(code('src/motion/TopBar.tsx')).toMatch(/side=\{side \?\? KIT\.size\.topBtn\}/);
     expect(code('src/theme/auraKit.ts')).toMatch(/\n {4}topBtn: 46,/);
     expect(code('src/theme/tokens.ts')).toMatch(
       /largeTitle: \{ font: 'display', size: 34, lineHeight: 42/,
@@ -314,6 +314,20 @@ describe('page transitions (4.4)', () => {
     expect(stack).toMatch(/animation: 'ios_from_right'/);
     expect(stack).toMatch(/gestureEnabled: true/);
     expect(stack).toMatch(/fullScreenGestureEnabled: true/);
+  });
+  // The owner's call (16 Kasım): Ayarlar is a full page, pushed from the right as every page, its
+  // back button and title still on the bar (yeni arayüz tuvali, Ayarlar).
+  it('Ayarlar is a page on the stack, not a sheet; its top stays over the content (5.9)', () => {
+    const layout = code('app/(app)/_layout.tsx');
+    expect(layout).not.toMatch(/name="settings"/);
+    const settings = code('app/(app)/settings.tsx');
+    expect(settings).not.toMatch(/RouteSheet/);
+    expect(settings).toMatch(/<Screen\b/);
+    expect(settings).toMatch(/<PageTop[\s\S]*inline=/);
+    expect(settings).toMatch(/testID="settings"/);
+    // An inline PageTop is drawn as a still top over the content, never inside its scroll.
+    expect(code('src/components/Screen.tsx')).toMatch(/top\.type === PageTop && !inlineTop\(top\)/);
+    expect(code('src/theme/auraKit.ts')).toMatch(/pageBarTitle: t\(700, 21, 26, -0\.3 \/ 21\)/);
   });
 });
 

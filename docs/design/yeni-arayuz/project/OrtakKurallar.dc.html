@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Ortak kurallar</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F2F8F3;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#031B0B}
+.pg{width:1400px;min-height:2080px;box-sizing:border-box;padding:48px 56px;background:#F2F8F3}
+h1{margin:0;font:800 34px/40px 'Plus Jakarta Sans';letter-spacing:-.6px}
+.lead{margin:10px 0 0;max-width:980px;font:500 16px/24px 'Plus Jakarta Sans';color:#4A6550}
+h2{margin:36px 0 12px;font:800 20px/26px 'Plus Jakarta Sans';letter-spacing:-.2px;display:flex;align-items:baseline;gap:12px}
+h2 small{font:600 13px/18px 'Plus Jakarta Sans';color:#4A6550}
+table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(3,27,11,.06)}
+th{text-align:left;font:700 12px/16px 'Plus Jakarta Sans';letter-spacing:.3px;color:#4A6550;background:#E6F0E8;padding:10px 12px}
+td{vertical-align:top;font:500 14px/20px 'Plus Jakarta Sans';padding:11px 12px;border-top:1px solid rgba(3,27,11,.07)}
+td b{font-weight:700}
+td code,.k code{font:600 12.5px/18px ui-monospace,SFMono-Regular,Menlo,monospace;background:#EEF5F0;border-radius:6px;padding:1px 6px;color:#0B5A30;white-space:nowrap}
+td.n{font:800 13px/20px 'Plus Jakarta Sans';color:#0E8745;white-space:nowrap}
+td.rm{color:#4A6550}
+.ob{font:700 10px/14px 'Plus Jakarta Sans';letter-spacing:.4px;color:#0E8745;background:#E2F2E7;border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:1px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.k{background:#fff;border-radius:20px;padding:18px 20px;box-shadow:0 0 0 1px rgba(3,27,11,.06)}
+.k h3{margin:0 0 10px;font:800 16px/22px 'Plus Jakarta Sans'}
+.k p{margin:6px 0 0;font:500 14px/20px 'Plus Jakarta Sans'}
+.k p span{color:#4A6550}
+.rule{margin-top:16px;background:#031B0B;color:#fff;border-radius:20px;padding:18px 22px;font:500 15px/23px 'Plus Jakarta Sans'}
+.rule b{font-weight:800}
+
+</style>
+</helmet>
+<div class="pg">
+<h1>Ortak kurallar</h1><p class="lead">Bütün ekranlarda aynı davranan beş konu. Var olan panolar değişmedi; kurala uymayan panolar aşağıda “sapma” olarak yazıldı ve uygulamaya aktarılırken kurala göre yapılır.</p><h2>C1 <span>Onay: ortada dialog mu, alttan sayfa mı?</span> <span class="ob">ÖNERİ</span></h2><table><tr><th style="width:260px">Durum</th><th>Kural</th><th style="width:330px">Tuvalde örnek</th></tr><tr><td><b>Her onay</b></td><td>Bir işlemi onaylatan her soru <b>ortada dialog</b>dur: geri alınamaz olanlar (sohbeti sil, engelle, hesabı sil, masadan at, mekândan ayrıl, çıkış yap) ve kaydetmeden çıkış dahil. Kırmızı düğme yalnız geri alınamaz işlemde; ikinci düğme “Vazgeç” ya da işin öbür yolu.</td><td class="rm"><b>01e</b> Sohbeti sil onayı<br><b>61</b> Engelle onayı<br><b>03o</b> Ayarlar · Hesabı sil onayı<br><b>03k</b> Ayarlar · çıkış onayı<br><b>38</b> Masadan at onayı<br><b>26</b> Mekandan ayrıl onayı<br><b>80</b> Kapsülünü süsle · kaydetmeden çıkış onayı</td></tr><tr><td><b>Alttan sayfa</b></td><td>Yalnız içerik, seçim ya da form içindir: seçenek listeleri, şikâyet nedenleri, oranlar, bildirim ayarı, konum izni. Alttan sayfa bir şeyi onaylatmaz.</td><td class="rm"><b>15</b> Semt sohbeti · seçenekler menüsü<br><b>60</b> Şikayet et<br><b>62c</b> Hediye paketi · Oranlar<br><b>03l</b> Ayarlar · Bildirim ayarları<br><b>11b</b> Mekan · konum izni kapalı</td></tr><tr><td><b>Değişen eski kural</b></td><td>iskelet.md 3.5’teki “geri alınamaz işlem alttan onay sayfası” kuralı tuvalde hiç uygulanmadı; tuvaldeki 10 dialog esas alınır, iskelet.md güncellenir.</td><td class="rm">—</td></tr></table><h2>C2 <span>Örtü: bulanık mı, düz karartma mı?</span></h2><table><tr><th style="width:260px">Durum</th><th>Kural</th><th style="width:330px">Tuvalde örnek</th></tr><tr><td><b>Uzun basma menüsü ve ondan açılan onay</b></td><td>Bulanık örtü: ekranın <b>sabit kopyası</b>, bulanıklık <b>6 px</b>, üstünde karartma açık <code>rgba(3,27,11,.30)</code> · koyu <code>rgba(0,0,0,.62)</code>. Canlı bulanıklık yok. Uygulamadaki <code>SCRIM_GLASS</code> 8 px → 6 px olur; tek değer.</td><td class="rm"><b>01c</b> Mesajlar · sohbete uzun basma menüsü<br><b>01g</b> Arşiv · uzun basma menüsü<br><b>02b</b> DM · mesaja uzun basma (gelen mesaj)<br><b>01e</b> Sohbeti sil onayı</td></tr><tr><td><b>Dialog ve alttan sayfa</b></td><td>Düz karartma: açık <code>rgba(3,27,11,.42)</code> · koyu <code>rgba(0,0,0,.70)</code>. Bulanıklık yok.</td><td class="rm"><b>61</b> Engelle onayı<br><b>03k</b> Ayarlar · çıkış onayı<br><b>60</b> Şikayet et<br><b>35</b> Masadakiler · sheet</td></tr><tr><td><b>⋮ menüsü (düğmeden açılan küçük menü)</b></td><td>Örtü yok; menü kendi gölgesiyle durur, dışarı dokununca kapanır.</td><td class="rm"><b>24</b> Mekan · seçenekler menüsü<br><b>34</b> Masa · seçenekler menüsü</td></tr><tr><td><b>Sapma</b></td><td>Koyu karartma 0,66 olan 6 pano 0,70 ile uygulanır: 18, 11c, 11b, 21, 16, 15 numaralı panolar.</td><td class="rm">—</td></tr></table><h2>C3 <span>Yükleniyor</span></h2><table><tr><th style="width:260px">Durum</th><th>Kural</th><th style="width:330px">Tuvalde örnek</th></tr><tr><td><b>Liste, profil, sohbet</b></td><td>Ekranın başlığı ve sabit parçaları (arama, sekme, mesaj kutusu) hemen çizilir; içerik alanının ortasında uygulamanın <b>Buluş</b> yükleyicisi (iki kapsül) durur. 300 ms’den kısa beklemede hiç görünmez, görünürse en az 600 ms kalır. İskelet çizgileri kullanılmaz. Ekran okuyucu “Yükleniyor…” der.</td><td class="rm"><b>86</b> Yükleniyor · liste (Mesajlar)<br><b>87</b> Yükleniyor · profil<br><b>88</b> Yükleniyor · sohbet (DM)</td></tr><tr><td><b>Düğmede bekleme</b></td><td>Düğme genişliğini korur, yazının yerinde dönen halka; düğme basılamaz.</td><td class="rm"><b>78</b> Kapsülünü süsle · kaydediliyor</td></tr></table><h2>C4 <span>Hata ve bağlantı yok</span></h2><table><tr><th style="width:260px">Durum</th><th>Kural</th><th style="width:330px">Tuvalde örnek</th></tr><tr><td><b>Tam ekran içerik</b></td><td>Aktiviteler örneği bütün ekranlarda aynıdır: kendi başlığının altında, ortada küçük riso (210×172), başlık, tek cümle, “Tekrar dene” (yumuşak düğme). Bağlantı yokta başlık “Bağlantı yok”, cümle “İnternete bağlanınca bu sayfa kendiliğinden yenilenir.” Hatada başlık “Bir sorun oldu”, cümle o ekranın içeriğini söyler.</td><td class="rm"><b>66</b> Bağlantı yok (Aktiviteler örneği)<br><b>66a</b> Hata (Aktiviteler örneği)</td></tr><tr><td><b>Bir işlem başarısız</b></td><td>Ekran yerinde kalır; üstte koyu bildirim: başlık, tek cümle, “Tekrar dene”. Örnek: kapsül kaydedilemedi.</td><td class="rm"><b>79</b> Kapsülünü süsle · kaydedilemedi</td></tr></table><h2>C5 <span>320 dp genişlik ve en büyük yazı (1,3 kat)</span></h2><table><tr><th style="width:260px">Durum</th><th>Kural</th><th style="width:330px">Tuvalde örnek</th></tr><tr><td><b>Metin</b></td><td>Hiçbir metin “…” ile kesilmez; sığmayan satır alta geçer. Kişi adları (terra-, luna-, sol-…) bölünmez, satırın tamamını alır.</td><td class="rm"><b>89</b> 320 dp, en büyük yazı · Mesajlar<br><b>92</b> 320 dp, en büyük yazı · Odadakiler<br><b>93</b> 320 dp, en büyük yazı · Oyun lobisi</td></tr><tr><td><b>Düğme</b></td><td>Düğme yazısı iki satıra bölünmez: yan yana iki düğme alt alta geçer, düğme satırın tamamını alır, yüksekliği yazıyla büyür.</td><td class="rm"><b>90</b> 320 dp, en büyük yazı · Profilim<br><b>91</b> 320 dp, en büyük yazı · Kapsülünü süsle</td></tr><tr><td><b>Sabit boyda kalanlar</b></td><td>Alt menü etiketleri ve Süsle’nin sekme etiketleri büyümez (alt menü 10, sekme 13); yerine uzun basınca büyük etiket görünür. Mesaj önizlemesi tek satırdır ve kenar solmasıyla biter (onaylı karar).</td><td class="rm"><b>89</b> 320 dp, en büyük yazı · Mesajlar<br><b>91</b> 320 dp, en büyük yazı · Kapsülünü süsle</td></tr><tr><td><b>Sayfa düzeni</b></td><td>Yer açmak için büyük görseller küçülür (Süsle önizlemesi 340 → 240), iki sütunlu oyuncu listesi tek sütun olur, kimlik bileti uzar ve “Kapsülünü süsle” biletin altına iner; içerik kayar, sabit alt alan yerinde kalır.</td><td class="rm"><b>91</b> 320 dp, en büyük yazı · Kapsülünü süsle<br><b>93</b> 320 dp, en büyük yazı · Oyun lobisi<br><b>90</b> 320 dp, en büyük yazı · Profilim</td></tr></table><h2>B2 <span>Süsle sekmeleri: Ağız ve Takımlar</span> <span class="ob">ÖNERİ</span></h2><table><tr><th style="width:260px">Durum</th><th>Kural</th><th style="width:330px">Tuvalde örnek</th></tr><tr><td><b>Ağız</b></td><td>Uygulamada kendi bölümü var (ağız yuvası); Süsle’ye altıncı sekme olarak eklenir: Renk, Göz, Baş, Yüz, Ağız, Gövde. Ağız boş olabilir; şeritte ilk seçenek “boş”.</td><td class="rm"><b>75</b> Kapsülünü süsle · Ağız sekmesi (ÖNERİ), ağız boş</td></tr><tr><td><b>Takımlar</b></td><td>Takım tek bir yuva değil, birkaç parçayı birden takar; Süsle’de sekmesi yoktur. Takımlar “Tümüne bak” ile açılan katalogda seçilir; seçilen takım Süsle’ye dönünce her sekmede kendi parçası seçili görünür.</td><td class="rm"><b>82</b> Tüm aksesuarlar · takım seçili</td></tr></table>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":2320}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
