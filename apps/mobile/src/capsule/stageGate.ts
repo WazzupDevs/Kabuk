@@ -19,3 +19,12 @@ export function stagePasses(lookReady: boolean, tilesReady: boolean, overdue: bo
 export function tileShown(made: string | null, last: string | null): string | null {
   return made ?? last;
 }
+
+// The stage's second canvas, the look fading out over the new one (features/capsule/
+// CapsuleStage.tsx): on the screen from the first change that fades, and kept there after (a
+// canvas mounted for each change made its surface each time: docs/decisions/skia-build-plani.md →
+// "Bütün kapsül Skia'da"); idle, hidden and drawing nothing, between two fades. Never on the screen
+// with reduce motion (no fade).
+export function fadeCanvas(mounted: boolean, fading: boolean): { mounted: boolean; idle: boolean } {
+  return { mounted: mounted || fading, idle: !fading };
+}

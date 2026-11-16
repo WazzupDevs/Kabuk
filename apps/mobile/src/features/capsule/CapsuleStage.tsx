@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Animated, Easing, Pressable, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import Reanimated, {
   Easing as ReEasing,
   Extrapolation,
@@ -19,7 +19,7 @@ import { SPACING } from '@/theme/tokens';
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg, readFxAhead } from '@/components/FxSvg';
 import { type SkiaKit, useSkiaKit, useWholeKit } from '@/components/skiaInside';
-import { stagePasses, TILE_WAIT_MS } from '@/capsule/stageGate';
+import { fadeCanvas, stagePasses, TILE_WAIT_MS } from '@/capsule/stageGate';
 import { type ArtNeed, type CapsuleArt, useArt, useArtsReady } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
@@ -181,11 +181,22 @@ export function CapsuleStage({
   }
   const [shownPlay, setShownPlay] = useState(play);
   if (!waiting && play !== shownPlay) setShownPlay(play);
+  // The fading look's canvas: kept on the screen from the first fade (capsule/stageGate.ts →
+  // fadeCanvas), idle between fades. Above the look shown always: its place in the tree never
+  // changes (a view moved among its siblings is taken off the window, and its canvas's surface
+  // with it).
+  const [fadeOn, setFadeOn] = useState(false);
+  const fadeSlot = fadeCanvas(fadeOn, oldLook !== null);
+  if (fadeSlot.mounted && !fadeOn) setFadeOn(true);
   // Reanimated, not Animated's native driver: on Android the SVG inside a view moved by the native
-  // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle).
-  const fade = useSharedValue(0);
+  // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle). At
+  // rest 1 (the fading canvas's first drawing, and what it waits at while idle and hidden).
+  const fade = useSharedValue(1);
   useEffect(() => {
-    if (!oldLook) return;
+    if (!oldLook) {
+      fade.set(1);
+      return;
+    }
     fade.set(1);
     fade.set(
       withTiming(0, { duration: FADE_MS, easing: ReEasing.out(ReEasing.quad) }, (done) => {
@@ -256,11 +267,12 @@ export function CapsuleStage({
     ...figureOf(size),
   };
 
-  const draw = (text: string) => (
+  const draw = (text: string, idle = false) => (
     <FxSvg
       xml={text}
       width={figure.width}
       height={figure.height}
+      idle={idle}
       {...(inside ? { inside } : null)}
       {...(whole ? { whole } : null)}
     />
@@ -292,10 +304,13 @@ export function CapsuleStage({
           >
             {discShadow.node}
             <Reanimated.View style={[figure, moveStyle]}>{draw(xml)}</Reanimated.View>
-            {oldXml ? (
-              <Reanimated.View pointerEvents="none" style={[figure, fadeStyle]}>
-                {draw(oldXml)}
-              </Reanimated.View>
+            {fadeSlot.mounted ? (
+              // Hidden while idle by its own view: the faded one's style is never React's.
+              <View pointerEvents="none" style={[figure, { opacity: fadeSlot.idle ? 0 : 1 }]}>
+                <Reanimated.View style={[StyleSheet.absoluteFill, fadeStyle]}>
+                  {draw(oldXml ?? '', fadeSlot.idle)}
+                </Reanimated.View>
+              </View>
             ) : null}
           </Reanimated.View>
         </Pressable>
