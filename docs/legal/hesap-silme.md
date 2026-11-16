@@ -39,7 +39,7 @@ Konumunuz hiçbir zaman saklanmadığı için silinecek bir konum verisi yoktur.
 
 ## Bir süre kalan veriler
 
-- **Şikayet kayıtları:** sizin yaptığınız ya da hakkınızda yapılan şikayetler (ekli içerik kopyaları ve bu mesajların şikayet anında saklanan önceki hâlleri dahil) güvenlik ve moderasyon için, oluşturulduktan sonra 30 gün saklanır, sonra silinir. Hesabınızı silmeniz, önceden yapılmış bir şikayetin kaydını silmez.
+- **Şikayet kayıtları:** sizin yaptığınız ya da hakkınızda yapılan şikayetler (ekli içerik kopyaları dahil; arkadaşlar arası konuşma şikayetinde şikayet anındaki son 50 mesaj ile son 7 günde düzenlenmiş (en çok 200) mesaj ve bunların saklanan önceki hâlleri, iki tarafın mesajları) güvenlik ve moderasyon için, oluşturulduktan sonra 30 gün saklanır, sonra silinir. Hesabınızı silmeniz, önceden yapılmış bir şikayetin kaydını silmez.
 - **Hata raporları:** hesap kimliğine bağlı teknik hata kayıtları en fazla 90 gün sonra silinir.
 - **Giriş ve bağlantı kayıtları:** hesap güvenliği ve yasal yükümlülükler için tutulan giriş zamanı ve IP adresi kayıtları en fazla 2 yıl saklanır.
 - **Başkalarının oyun geçmişi:** karşılaştığınız kişilerin oyun geçmişinde tarih, oyun ve o masadaki adınız (profilliyseniz görünen adınız, anonimseniz kapsül adınız) onlar kendi hesaplarını silene kadar kalır.

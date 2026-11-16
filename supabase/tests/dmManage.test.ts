@@ -606,6 +606,41 @@ describe('dm/edit versions (§4.X)', () => {
     expect(copy.at(-1)?.body).toBe('m60');
   });
 
+  it('takes at most the newest 200 edited messages older than the last 50, of both members', async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
+    const threadId = threads[0] as string;
+    const [aId, bId] = await Promise.all([userIdOf(a), userIdOf(b)]);
+    // 210 edited messages (both members'), then 50 unedited ones.
+    await sql`
+      insert into public.dm_messages (thread_id, sender_user_id, body, created_at, edited_at)
+      select ${threadId}, case when i % 2 = 0 then ${aId}::uuid else ${bId}::uuid end, 'e' || i,
+             now() + make_interval(secs => i), now()
+      from generate_series(1, 210) i
+    `;
+    await sql`
+      insert into private.dm_message_versions (message_id, version, body)
+      select id, 1, 'önce ' || body from public.dm_messages where thread_id = ${threadId}
+    `;
+    await sql`
+      insert into public.dm_messages (thread_id, sender_user_id, body, created_at)
+      select ${threadId}, ${aId}, 'n' || i, now() + make_interval(secs => 300 + i)
+      from generate_series(1, 50) i
+    `;
+    await reportAs(b, threadId);
+    const [report] = await sql`select messages_snapshot from public.reports`;
+    const copy = report?.messages_snapshot as { body: string; from: string }[];
+    expect(copy).toHaveLength(250);
+    const bodies = copy.map((m) => m.body);
+    expect(bodies).not.toContain('e10');
+    expect(bodies[0]).toBe('e11');
+    expect(bodies).toContain('e210');
+    expect(bodies.at(-1)).toBe('n50');
+    expect(new Set(copy.filter((m) => m.body.startsWith('e')).map((m) => m.from))).toEqual(
+      new Set(['reporter', 'reported']),
+    );
+  });
+
   it('goes with a removal and a block; a report made before keeps its copy', async () => {
     const { a, others, threads } = await withFriends(2);
     const [b, c] = others as [Client, Client];
@@ -692,6 +727,37 @@ describe('dm/edit versions (§4.X)', () => {
     expect(
       await sql`select schedule, command from cron.job where jobname = 'delete-old-dm-versions'`,
     ).toEqual([{ schedule: '29 * * * *', command: 'select private.delete_old_dm_versions()' }]);
+  });
+
+  it('goes on past a full batch in the same run, up to its last batch', async () => {
+    const { a, threads } = await withFriends(1);
+    const threadId = threads[0] as string;
+    const aId = await userIdOf(a);
+    // Seven old version rows (written as the edit would; one per message).
+    const ids = await sql`
+      insert into public.dm_messages (thread_id, sender_user_id, body, edited_at)
+      select ${threadId}, ${aId}, 'm' || i, now() from generate_series(1, 7) i
+      returning id
+    `;
+    const seed = async () => {
+      for (const { id } of ids) {
+        await sql`
+          insert into private.dm_message_versions (message_id, version, body, saved_at)
+          values (${id}, 1, 'eski', now() - private.dm_versions_keep() - interval '1 minute')
+          on conflict do nothing
+        `;
+      }
+    };
+    const left = async () =>
+      (await sql`select count(*)::int as n from private.dm_message_versions`)[0]?.n;
+    await seed();
+    // Batches of 2: four batches, the last one not full, all in one run.
+    expect((await sql`select private.delete_old_dm_versions(2, 50) as n`)[0]?.n).toBe(7);
+    expect(await left()).toBe(0);
+    // At most max_batches batches: the rest waits for the next run.
+    await seed();
+    expect((await sql`select private.delete_old_dm_versions(2, 3) as n`)[0]?.n).toBe(6);
+    expect(await left()).toBe(1);
   });
 });
 

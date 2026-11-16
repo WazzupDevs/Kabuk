@@ -126,9 +126,10 @@ $$;
 revoke all on function public.dm_edit(uuid, uuid, text, integer) from public, anon, authenticated;
 grant execute on function public.dm_edit(uuid, uuid, text, integer) to service_role;
 
--- A DM report's copy, from the server's rows: the last 50 messages, and every other message of the
--- conversation that still has versions (an edited message older than the last 50; the report names
--- no message). Each as before, plus its earlier texts (versions: [{version, body, saved_at}], oldest
+-- A DM report's copy, from the server's rows: the last 50 messages, and the newest 200 other
+-- messages of the conversation that still have versions (edited within dm_versions_keep(), older
+-- than the last 50; the report names the conversation, not a message). The 200 bounds the copy:
+-- editing many messages cannot make a report too large to write. Both members' messages. Each as before, plus its earlier texts (versions: [{version, body, saved_at}], oldest
 -- first; [] when never edited). Used by safety_report_dm, friends_remove's report and
 -- safety_block_friend.
 create or replace function private.dm_snapshot(target_thread_id uuid, reporter uuid)
@@ -144,9 +145,11 @@ as $$
      order by m.created_at desc
      limit 50)
     union
-    select m.id from public.dm_messages m
-    where m.thread_id = target_thread_id
-      and exists (select 1 from private.dm_message_versions v where v.message_id = m.id)
+    (select m.id from public.dm_messages m
+     where m.thread_id = target_thread_id
+       and exists (select 1 from private.dm_message_versions v where v.message_id = m.id)
+     order by m.created_at desc
+     limit 200)
   )
   select coalesce(jsonb_agg(jsonb_build_object(
            'from', case when m.sender_user_id = reporter then 'reporter' else 'reported' end,
@@ -167,9 +170,10 @@ $$;
 
 revoke all on function private.dm_snapshot(uuid, uuid) from public, anon, authenticated;
 
--- Hourly: version rows older than dm_versions_keep(), from saved_at, a bounded batch, skipping
--- rows an edit holds (rule 10).
-create function private.delete_old_dm_versions()
+-- Hourly: version rows older than dm_versions_keep(), from saved_at, in batches of `batch`, each
+-- skipping rows an edit holds (rule 10). A full batch goes on to the next in the same run, at most
+-- `max_batches` (50 000 rows an hour by default), so the rows never pile up past their time.
+create function private.delete_old_dm_versions(batch integer default 1000, max_batches integer default 50)
 returns integer
 language plpgsql
 security definer
@@ -177,21 +181,26 @@ set search_path = ''
 as $$
 declare
   n integer;
+  total integer := 0;
 begin
-  delete from private.dm_message_versions
-  where (message_id, version) in (
-    select v.message_id, v.version from private.dm_message_versions v
-    where v.saved_at <= now() - private.dm_versions_keep()
-    order by v.saved_at
-    limit 1000
-    for update skip locked
-  );
-  get diagnostics n = row_count;
-  return n;
+  for i in 1..max_batches loop
+    delete from private.dm_message_versions
+    where (message_id, version) in (
+      select v.message_id, v.version from private.dm_message_versions v
+      where v.saved_at <= now() - private.dm_versions_keep()
+      order by v.saved_at
+      limit batch
+      for update skip locked
+    );
+    get diagnostics n = row_count;
+    total := total + n;
+    exit when n < batch;
+  end loop;
+  return total;
 end;
 $$;
 
-revoke all on function private.delete_old_dm_versions() from public, anon, authenticated;
+revoke all on function private.delete_old_dm_versions(integer, integer) from public, anon, authenticated;
 
 select cron.schedule(
   'delete-old-dm-versions',
