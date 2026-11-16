@@ -274,14 +274,17 @@ export function clockLead(from: number, ms: number): number | null {
 // every layer of fxTree drawn by Skia, none of them a view. The picture way makes a native view of
 // each SVG element and draws each layer's picture on the UI thread the frame it is first shown: a
 // look put on whole (Süsle's dice) held that frame for seconds (docs/perf/akicilik-denetimi.md →
-// 4.2, A-01). Behind its own switch until the two are compared on a phone.
+// 4.2, A-01).
 
-// Off: the pictures (and P6's canvases for the motions inside a clip) as before. Çizim ölçümü's
-// "Bütün kapsül Skia" turns it on for that phone on a preview build (lib/drawLab.ts → useLabWhole).
-export const CAPSULE_SKIA_WHOLE = false;
+// On for everyone on Android (the owner's call, 16 Kasım 2026): the longest frame of the dice fell
+// from 2150 to 350 ms (docs/perf/akicilik-denetimi.md → 4.11). iOS keeps the pictures (CAPSULE_SKIA
+// is Android only). Çizim ölçümü's "Bütün kapsül Skia" now sets the whole drawing on or off for
+// that phone on a preview build, either way, so the two can still be measured (lib/drawLab.ts →
+// useLabWhole; null while the panel has not set it: this switch decides). Off: set this false.
+export const CAPSULE_SKIA_WHOLE = true;
 
-export function capsuleWholeOn(os: string, lab: boolean): boolean {
-  return lab || (CAPSULE_SKIA_WHOLE && capsuleSkiaOn(os));
+export function capsuleWholeOn(os: string, lab: boolean | null): boolean {
+  return lab ?? (CAPSULE_SKIA_WHOLE && capsuleSkiaOn(os));
 }
 
 // A property along the clock (capsuleFx.ts → sampled), read on the UI thread by curveAt.

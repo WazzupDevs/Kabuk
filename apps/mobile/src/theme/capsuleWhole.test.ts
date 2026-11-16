@@ -43,8 +43,10 @@ const through = (m: number[], x: number, y: number) => [
 ];
 
 describe('the whole drawing on one canvas', () => {
-  it('is off until the two are compared on a phone, and on by the panel', () => {
-    expect(CAPSULE_SKIA_WHOLE).toBe(false);
+  it('is on for Android by default, off on iOS, and the panel sets either way', () => {
+    expect(CAPSULE_SKIA_WHOLE).toBe(true);
+    expect(capsuleWholeOn('android', null)).toBe(true);
+    expect(capsuleWholeOn('ios', null)).toBe(false);
     expect(capsuleWholeOn('android', false)).toBe(false);
     expect(capsuleWholeOn('android', true)).toBe(true);
     expect(capsuleWholeOn('ios', true)).toBe(true);
