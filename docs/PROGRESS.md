@@ -1,9 +1,16 @@
 # İlerleme
 
+## Devir notu (16 Kasım 2026): karar tablosu ve yeni arayüz aktarımı
+
+- Akıcılığın güncel durumunun tek kaynağı `docs/perf/akicilik-denetimi.md` → bölüm 5 karar tablosu; bütün ölçümler 0.11.0 build 21 (S23), 0.12.0 (#637, #638) ölçülmedi, proje sahibi 0.12.0'da kasmanın sürdüğünü bildirdi (iz yok).
+- 14 Kasım notundaki "sıradaki ölçüm 4.10" eskidi: 4.10 ve 4.11 yapıldı; açık ana soru 4.11'in UI iş parçacığındaki iz işaretsiz 125–435 ms'si.
+- Sıradaki paketler: (1) `CAPSULE_SKIA_WHOLE` herkes için açılır (proje sahibinin kararı, 16 Kasım); (2) yeni tasarım kaynağı kararı (yeni tuval https://claude.ai/artifact/7QxRyG1sRhLgkYwGDakRv9) ve pano davranış eksikleri; (3) ortak temel; (4) kapsül pilotu: Profil → Süsle → Tüm aksesuarlar → tek kayıt.
+- Kural: efekt azaltma yok.
+
 ## Devir notu (14 Kasım 2026): bütün kapsül Skia, ölçüm bekliyor
 
 - "Bütün kapsül Skia" (#618, #623, #627, #628, #633): Süsle'nin büyük kapsülü ve şerit karoları tek Skia tuvalinde; anahtarı kapalı (`theme/capsuleSkia.ts` → `CAPSULE_SKIA_WHOLE = false`), önizleme derlemesinde Çizim ölçümü → "Bütün kapsül Skia" açar (yeniden başlatmada kapanır). Ayrıntı `docs/decisions/skia-build-plani.md` → "Bütün kapsül Skia'da".
-- Ölçüm (`docs/perf/akicilik-denetimi.md` → 4.4–4.9): ilk zarın donması 1375 → 108 ms, çizim aynı; açık kalan: bellek Süsle'den çıkınca inmiyor ve birikiyordu (#633 ile ikinci düzeltme, ölçülmedi), parça değişiminde geç kalan kare açıkken %9,5, kapalıyken %1,05 (nedeni ayrılmadı; panelde "Karolar SVG" ile ölçülecek). Sıradaki ölçüm 4.10, dal `akicilik-olcum-10`.
+- Ölçüm (`docs/perf/akicilik-denetimi.md` → 4.4–4.9): ilk zarın donması 1375 → 108 ms, çizim aynı; açık kalan: bellek Süsle'den çıkınca inmiyor ve birikiyordu (#633 ile ikinci düzeltme, ölçülmedi), parça değişiminde geç kalan kare açıkken %9,5, kapalıyken %1,05 (nedeni ayrılmadı; panelde "Karolar SVG" ile ölçülecek). Sıradaki ölçüm 4.10, dal `akicilik-olcum-10`. (eskidi, bkz. 16 Kasım)
 - DM kaydırması kapandı (4.8): kare kaybı yok; 4.1–4.7'deki DM "takılma" oranları gecikmeyi ölçüyordu. Ölçüt Android'in geç kalan kare sayacıdır. Diğer ekranların eski oranları bu ölçütle yeniden bakılmadan düzeltilmez.
 - Anahtarı herkes için açmak proje sahibinin kararıdır; 4.10'da bellek inmiyor ya da parça değişimi kapalıdan kötüyse önerilmez.
 
