@@ -257,8 +257,8 @@ export function readFxAhead(
   height: number,
   moving: boolean,
   prepare?: (layer: FxInside, place: FxPlace) => void,
-  // The whole canvas's (FxSkia.tsx → prepareStill): a still layer is read as its canvas draws it,
-  // not as a view's picture.
+  // The whole canvas's (FxSkia.tsx → lookNeeds collects through it): a still layer is read as its
+  // canvas draws it, not as a view's picture.
   still?: (xml: string, width: number, height: number) => void,
 ): void {
   const readStill = (text: string) => (still ? still(text, width, height) : readAhead(text));

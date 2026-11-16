@@ -19,6 +19,7 @@ import { SPACING } from '@/theme/tokens';
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { FxSvg, readFxAhead } from '@/components/FxSvg';
 import { type SkiaKit, useSkiaKit, useWholeKit } from '@/components/skiaInside';
+import { stagePasses, TILE_WAIT_MS } from '@/capsule/stageGate';
 import { type ArtNeed, useArtsReady } from '@/capsule/useArt';
 import { createLru } from '@/lib/lru';
 import type { FxInside, FxPlace } from '@/theme/capsuleFx';
@@ -99,6 +100,7 @@ export function CapsuleStage({
   ring: ringWidth,
   ringColor,
   warm = false,
+  tiles = null,
 }: {
   look: string;
   // The feeling's id ('' for none) and its name in the bubble.
@@ -119,6 +121,9 @@ export function CapsuleStage({
   // Skia's drawing context made ahead while Skia draws (FxSkia.tsx → SkiaWarm): after the screen's
   // slide in, before the first motion inside a clip needs it.
   warm?: boolean;
+  // The strip's tiles on the screen for `look` (Kapsülünü süsle): a new look waits for them too, up
+  // to TILE_WAIT_MS (capsule/stageGate.ts).
+  tiles?: readonly ArtNeed[] | null;
 }) {
   const { colors, shape } = useTheme();
   const shadowOff = useLabOff('golge');
@@ -150,10 +155,19 @@ export function CapsuleStage({
     [coming, needsOf, look, size, reduce, comingFeeling],
   );
   const comingReady = useArtsReady(comingNeeds);
-  const waiting = coming && !comingReady;
+  // The tiles on the screen, asked for in the same turn as the look's pictures (first).
+  const tilesReady = useArtsReady(coming && needsOf ? tiles : null);
+  const [overdueFor, setOverdueFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!coming) return undefined;
+    const timer = setTimeout(() => setOverdueFor(look), TILE_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [coming, look]);
+  const waiting = coming && !stagePasses(comingReady, tilesReady, overdueFor === look);
   if (coming && !waiting) {
     setOldLook(reduce ? null : shownLook);
     setShownLook(look);
+    setOverdueFor(null);
   }
   const [shownPlay, setShownPlay] = useState(play);
   if (!waiting && play !== shownPlay) setShownPlay(play);

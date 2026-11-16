@@ -3,7 +3,14 @@ import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Image, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  BackHandler,
+  Image,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -21,6 +28,7 @@ import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import { type ArtNeed, capsulePrep, makeArt, prepAhead, useArt } from '@/capsule/useArt';
 import { NEAR, REST } from '@/capsule/prepQueue';
+import { tileShown } from '@/capsule/stageGate';
 import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
 import {
   CapsuleStage,
@@ -49,6 +57,7 @@ import { giftsApi, profileApi } from '@/lib/api';
 import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useAfterTransition } from '@/lib/afterTransition';
+import { carouselWindow } from '@/lib/carouselWindow';
 import { useLabOff } from '@/lib/drawLab';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -303,6 +312,27 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     );
   }, [ready, needsOf, reduce, feeling, now, stageSize]);
 
+  // The tiles on the screen once the strip is on the chosen option (the strip follows a choice made
+  // elsewhere): the stage's new look waits for their pictures too (CapsuleStage → tiles).
+  const { width: screenWidth } = useWindowDimensions();
+  const screenTiles = useMemo(() => {
+    if (!tileNeed) return null;
+    const w = carouselWindow(
+      Math.max(chosen, 0) * KIT.size.stripStep,
+      KIT.size.stripStep,
+      shown.length,
+      screenWidth,
+      0,
+    );
+    const out: ArtNeed[] = [];
+    for (let i = w.from; i <= w.to; i++) {
+      const o = shown[i];
+      const xml = o ? optionArt(slot, o, color) : null;
+      if (xml) out.push(tileNeed(xml, KIT.size.stripArt));
+    }
+    return out;
+  }, [tileNeed, chosen, shown, screenWidth, slot, color]);
+
   const E = CAPSULE_EDIT;
   const k = E[scheme];
   const lit = dotAt(shown.length, chosen, KIT.size.stripDots);
@@ -392,6 +422,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                   hint={null}
                   onPress={feel}
                   warm={ready}
+                  tiles={screenTiles}
                 />
               </FxMoves>
             </FloatStage>
@@ -605,15 +636,19 @@ function OptionArt({
 }) {
   const { c } = useKit();
   const xml = option ? optionArt(slot, option, color) : null;
-  // The tile's picture once it is made (asked for first while it is on the screen); the SVG until
-  // then, and when it cannot be made.
+  // The tile's picture once it is made (asked for first while it is on the screen); the SVG only
+  // before it ever had one, and when it cannot be made.
   const need = useMemo(
     () => (xml && tileNeed ? tileNeed(xml, KIT.size.stripArt) : null),
     [xml, tileNeed],
   );
   const art = useArt(need);
+  // Until the new picture is made (another colour) the last one stays: no SVG, nothing empty.
+  const made = art?.kind === 'uri' ? art.uri : null;
+  const [last, setLast] = useState<string | null>(null);
+  if (made && made !== last) setLast(made);
   if (!xml) return <CapIcon name="block" color={c.muted} />;
-  const uri = art?.kind === 'uri' ? art.uri : null;
+  const uri = tileShown(made, last);
   if (uri) {
     return (
       <Image
