@@ -1,24 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { View } from 'react-native';
-
-import { Av, Btn, Li, RowList, T } from '@/aura/kit';
-import { RisoKanki } from '@/aura/RisoKanki';
+import { Av, Btn } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
-import { PageTop } from '@/components/PageTop';
-import { Screen } from '@/components/Screen';
+import {
+  Group,
+  Lede,
+  PERSON_HAIR,
+  PersonRow,
+  SettingsPage,
+} from '@/features/settings/SettingsParts';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { KIT } from '@/theme/auraKit';
-import { PAGE_KANKI } from '@/theme/kankiMotion';
+import { SPACING } from '@/theme/tokens';
+import { View } from 'react-native';
 
 const MUTES_KEY = ['venueChatMutes'] as const;
 
-// Sessize alınanlar (skall tuvali, SessizeAlinanlar; docs/SPEC_V4.md §4.D): the venue chat
+// Sessize alınanlar (yeni arayüz tuvali, SessizAlinanlar, SessizAlinanlarBos; docs/SPEC_V4.md §4.D): the venue chat
 // identities the account muted, each with "Sesi aç". The muted person never learns of it. An
 // anonymous one shows its capsule and nick (docs/decisions/aura-v71-eklenen.md, karar 1).
 export default function MutedScreen() {
@@ -32,13 +35,9 @@ export default function MutedScreen() {
   const now = useNow(60000);
   const list = mutes.data?.mutes ?? [];
   return (
-    <Screen
-      list
-      backdrop={<RisoKanki place={PAGE_KANKI.muted} scale={1} />}
-      top={<PageTop title={tr.settings.muted} />}
-    >
-      <View style={{ gap: KIT.size.rowGap }}>
-        <T v="fine">{tr.settings.mutedNote}</T>
+    <SettingsPage list title={tr.settings.muted}>
+      <Lede>{tr.settings.mutedNote}</Lede>
+      <View style={{ marginTop: SPACING[3] }}>
         {mutes.isPending ? (
           <Loader />
         ) : mutes.isError ? (
@@ -48,37 +47,41 @@ export default function MutedScreen() {
             action={{ label: tr.common.retry, onPress: () => void mutes.refetch() }}
           />
         ) : list.length === 0 ? (
-          <EmptyState kind="empty" riso="muted" body={tr.settings.mutedEmpty} />
+          <EmptyState
+            kind="empty"
+            riso="muted"
+            title={tr.settings.mutedEmptyTitle}
+            body={tr.settings.mutedEmptyBody}
+          />
         ) : (
-          <RowList inset={KIT.size.av.md + KIT.size.liGap}>
+          <Group hairIn={PERSON_HAIR}>
             {list.map((m) => (
-              <Li key={m.id} padY={KIT.size.lrPadY} minHeight={KIT.size.lrMin}>
-                {m.look ? (
-                  <LookAvatar look={m.look} size={KIT.size.av.md} />
-                ) : (
-                  <Av size="md" name={m.label} />
-                )}
-                <View style={{ flex: 1 }}>
-                  <T v="h3" ink>
-                    {m.label}
-                  </T>
-                  <T v="fine">
-                    {`${m.profiled ? tr.settings.mutedProfiled : tr.settings.mutedAnonymous} ${tr.common.separator} ${tr.common.ago(m.createdAt, now)}`}
-                  </T>
-                </View>
-                <Btn
-                  sm
-                  variant="glassy"
-                  label={tr.venueChat.unmute}
-                  loading={unmute.isPending && unmute.variables === m.id}
-                  disabled={unmute.isPending}
-                  onPress={() => unmute.mutate(m.id)}
-                />
-              </Li>
+              <PersonRow
+                key={m.id}
+                face={
+                  m.look ? (
+                    <LookAvatar look={m.look} size={KIT.size.av.md} />
+                  ) : (
+                    <Av size="md" name={m.label} />
+                  )
+                }
+                name={m.label}
+                line={`${m.profiled ? tr.settings.mutedProfiled : tr.settings.mutedAnonymous} ${tr.common.separator} ${tr.common.ago(m.createdAt, now)}`}
+                action={
+                  <Btn
+                    sm
+                    variant="glassy"
+                    label={tr.venueChat.unmute}
+                    loading={unmute.isPending && unmute.variables === m.id}
+                    disabled={unmute.isPending}
+                    onPress={() => unmute.mutate(m.id)}
+                  />
+                }
+              />
             ))}
-          </RowList>
+          </Group>
         )}
       </View>
-    </Screen>
+    </SettingsPage>
   );
 }

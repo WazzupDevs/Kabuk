@@ -2500,6 +2500,13 @@ export const tr = {
       onTag: 'Açık',
       off: 'Kapalı. Masa davetleri 2 dakika geçerli olduğu için kaçırabilirsin.',
       open: 'Telefon ayarlarını aç',
+      // Yeni arayüz tuvali (AyarBildirim, AyarBildirimKapali).
+      onNote: 'Kapatırsan telefonunun ayarlarından yeniden açabilirsin.',
+      offTitle: 'Bildirimler kapalı',
+      offBody:
+        'Telefonunda skall bildirimlerine izin vermedin. Arkadaşlık isteklerini ve masa davetlerini kaçırabilirsin.',
+      offOpen: 'Ayarları aç',
+      offNote: 'İzin verince aşağıdaki seçimlerin geçerli olur.',
     },
     friendsSection: 'Arkadaşlar',
     requestsNote: 'Biri seni arkadaş olarak eklemek istediğinde',
@@ -2523,10 +2530,16 @@ export const tr = {
     deleteBackups: 'Yedeklerden de 7 gün içinde silinir.',
     blockedNote: 'Engellediğin kişi bunu görmez.',
     mutedNote:
-      'Sessize aldığın kişi bunu görmez. Sessize alma o kimliğe bağlıdır: bir kişinin anonim adını sessize almak profilli mesajlarını gizlemez.',
+      'Sessize aldığın kişi bunu görmez. Sessize alma o kimliğe bağlıdır: anonim adını sessize almak profilli mesajlarını gizlemez.',
     mutedEmpty: 'Sessize aldığın kimse yok.',
-    mutedAnonymous: 'Anonim',
-    mutedProfiled: 'Profiliyle',
+    mutedAnonymous: 'Anonim adı',
+    mutedProfiled: 'Profilli',
+    // Yeni arayüz tuvali (EngellenenlerBos, SessizAlinanlarBos).
+    blockedEmptyTitle: 'Engellediğin kimse yok',
+    blockedEmptyBody: 'Birini engellediğinde burada görünür, engeli de buradan kaldırırsın.',
+    mutedEmptyTitle: 'Sessize aldığın kimse yok',
+    mutedEmptyBody: 'Sessize aldığın adlar burada görünür, sesini buradan açarsın.',
+    legalSection: 'Yasal',
   },
   // skall tuvali (Haller): no connection, over any screen.
   connection: {
