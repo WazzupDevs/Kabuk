@@ -57,27 +57,19 @@ export const DRAW_PARTS: readonly DrawPart[] = [
 // not by the timed steps (a switch is a press, not a few seconds of a still screen).
 export const SWITCH_PARTS: readonly DrawPart[] = ['buzlu', 'bulanma', 'gelis', 'kademe', 'cam'];
 
-// `kapak` and `bilet`: the Profile page's cover and its capsule ticket, not drawn (a blank of the
-// same size stays), to tell which of the two the first opening's frames cost.
 // `karo`: Süsle's option tiles as the picture way's SVG again while the whole capsule is Skia's
 // (FxSkia.tsx → tileNeed), to tell the tiles' cost from the big capsule's (4.9).
 
-// The chat's parts, turned off by hand; with "Kapanınca koru" they stay off when the panel closes
-// (the panel covers the top of the chat it measures).
+// The Profile page's cover and capsule ticket, each not drawn (a blank of its size stays), to tell
+// which of the two the first opening's frames cost.
 export const PROFILE_PARTS: readonly DrawPart[] = ['kapak', 'bilet'];
 
+// The chat's parts, turned off by hand; with "Kapanınca koru" they stay off when the panel closes
+// (the panel covers the top of the chat it measures).
 export const CHAT_PARTS: readonly DrawPart[] = ['duvar', 'bant', 'golge', 'ters', 'balon'];
 
 export type DrawStepKey =
-  | 'all'
-  | 'cam'
-  | 'buzlu'
-  | 'golge'
-  | 'kart'
-  | 'zemin'
-  | 'four'
-  | 'hareket'
-  | 'end';
+  'all' | 'cam' | 'buzlu' | 'golge' | 'kart' | 'zemin' | 'four' | 'hareket' | 'end';
 export type DrawStep = { key: DrawStepKey; off: readonly DrawPart[] };
 export const DRAW_STEPS: readonly DrawStep[] = [
   { key: 'all', off: [] },
