@@ -13,6 +13,7 @@ import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarSpace } from '@/components/TabBar';
+import { Toast, type ToastMessage } from '@/components/Toast';
 import { EmptyCard } from '@/features/explore/EmptyCard';
 import { pruneDmCache } from '@/features/friends/dmCache';
 import { ArchivedRow, InboxCard, PinnedHead, useThreadMenu } from '@/features/friends/InboxRows';
@@ -25,7 +26,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
-import { PopIn, StickyField } from '@/motion';
+import { ListMove, ListMoveArea, PopIn, StickyField, useListMoves } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
 import { SPACING } from '@/theme/tokens';
@@ -48,6 +49,9 @@ export default function MessagesScreen() {
   const requests = useRequestCount();
   const now = useNow(60_000);
   const { scheme } = useKit();
+  // "Sohbet silindi" once a conversation is cleared (tuval MesajlarSilindi).
+  const [notice, setNotice] = useState<ToastMessage | null>(null);
+  const onCleared = () => setNotice({ id: Date.now(), title: tr.messages.cleared });
 
   return (
     <View style={{ flex: 1 }}>
@@ -111,7 +115,7 @@ export default function MessagesScreen() {
           </View>
         </StickyField>
         {tab === 'chats' ? (
-          <Chats now={new Date(now)} query={asked} />
+          <Chats now={new Date(now)} query={asked} onCleared={onCleared} />
         ) : (
           <RequestList now={new Date(now)} />
         )}
@@ -120,6 +124,7 @@ export default function MessagesScreen() {
           write to. */}
       {tab === 'chats' ? <NewMessageButton onPress={() => setPicking(true)} /> : null}
       <FriendPicker visible={picking} onClose={() => setPicking(false)} />
+      <Toast message={notice} testID="messages-toast" />
     </View>
   );
 }
@@ -208,9 +213,12 @@ function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => v
   );
 }
 
-function Chats({ now, query }: { now: Date; query: string }) {
+function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared: () => void }) {
   const inbox = useDmInbox();
-  const menu = useThreadMenu(inbox.data ?? []);
+  // The motion table's A3: the rows move for Sabitle, Arşivle and Sohbeti sil.
+  const moves = useListMoves();
+  const menu = useThreadMenu(inbox.data ?? [], { moves, onCleared });
+  const version = inbox.dataUpdatedAt;
   const loading = useLoaderHold(inbox.isPending);
   // The conversations' copies on the phone into memory (useDmMessages): a DM opened from here
   // shows its messages as it slides in, as Telegram Android opens a chat.
@@ -285,25 +293,42 @@ function Chats({ now, query }: { now: Date; query: string }) {
   }
   return (
     // The room under the last row for the "+" over it.
-    <View style={{ paddingBottom: NEW_CHAT, gap: SPACING[2] }}>
+    <ListMoveArea moves={moves} style={{ paddingBottom: NEW_CHAT, gap: SPACING[2] }}>
       {pinned.length > 0 ? (
         <>
-          <PinnedHead count={pinned.length} />
-          <InboxCard threads={pinned} now={now} onHold={menu.open} />
+          <ListMove id="pinned-head" version={version} rise={false}>
+            <PinnedHead count={pinned.length} />
+          </ListMove>
+          <InboxCard
+            threads={pinned}
+            now={now}
+            onHold={menu.open}
+            version={version}
+            raised={menu.lastKind !== 'unpin'}
+          />
         </>
       ) : null}
       {rest.length > 0 ? (
-        <InboxCard threads={rest} now={now} onHold={menu.open} from={pinned.length} />
-      ) : null}
-      {!searching && archived.length > 0 ? (
-        <ArchivedRow
-          count={archived.length}
-          unread={archivedUnread}
-          onPress={() => router.push('/messages/archive')}
+        <InboxCard
+          threads={rest}
+          now={now}
+          onHold={menu.open}
+          from={pinned.length}
+          version={version}
+          raised={menu.lastKind === 'unpin'}
         />
       ) : null}
+      {!searching && archived.length > 0 ? (
+        <ListMove id="archived-row" version={version} rise={false}>
+          <ArchivedRow
+            count={archived.length}
+            unread={archivedUnread}
+            onPress={() => router.push('/messages/archive')}
+          />
+        </ListMove>
+      ) : null}
       {menu.menu}
-    </View>
+    </ListMoveArea>
   );
 }
 

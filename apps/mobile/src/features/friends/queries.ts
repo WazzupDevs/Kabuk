@@ -1,5 +1,5 @@
 import type { DmInboxThread } from '@shared/api/friends.ts';
-import { type DmPageRow, totalUnread, withSentDm, withThreadRead } from '@shared/dmInbox.ts';
+import { type DmPageRow, withSentDm, withThreadRead } from '@shared/dmInbox.ts';
 import { withNewestPage, withSamePage } from '@shared/dmPages.ts';
 import { DM_PAGE_SIZE } from '@shared/friends.ts';
 import { BROADCAST, inboxChannel } from '@shared/rooms.ts';
@@ -18,6 +18,7 @@ import { readDmCache, writeDmCache } from '@/features/friends/dmCache';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { useReactions } from '@/features/chat/messageExtras';
 import { dmApi, friendsApi } from '@/lib/api';
+import { tabUnread } from '@/lib/dmManage';
 import { stablePhoto } from '@/lib/photoUrls';
 import { type FriendEvent, friendReads } from '@/lib/friendRefresh';
 import { supabase } from '@/lib/supabase';
@@ -167,10 +168,11 @@ export function useDmInbox() {
   });
 }
 
-// The Mesajlar tab's badge.
+// The Mesajlar tab's badge (and the launcher's): the archived conversations' unread are not counted
+// (they show on Arşivlenenler).
 export function useUnreadTotal(): number {
   const inbox = useDmInbox();
-  return totalUnread(inbox.data ?? []);
+  return tabUnread(inbox.data ?? []);
 }
 
 // The requests waiting for the caller (the bell's badge): from play history and the venue chat.

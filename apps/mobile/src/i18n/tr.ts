@@ -16,6 +16,7 @@ import { KAUPHOLL } from '@shared/kaupholl.ts';
 import { SIGNUM } from '@shared/signum.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
+import { DM_EDIT_MAX, DM_EDIT_WINDOW_MS } from '@shared/dmManage.ts';
 import { inflectTr } from '@shared/trText.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
 
@@ -355,6 +356,8 @@ export const tr = {
     clearTitle: 'Sohbet silinsin mi?',
     clearNote: (name: string) =>
       `${name} ile tüm mesajlar senin listenden silinir. Bu geri alınamaz.`,
+    // The top notice once a conversation is cleared (tuval MesajlarSilindi).
+    cleared: 'Sohbet silindi',
     // The pinned conversations' head (tuval Main; "· 5/5" when full, MesajlarSabitDolu).
     pinned: 'Sabitlenenler',
     pinnedFull: (n: number, max: number) => `Sabitlenenler · ${n}/${max}`,
@@ -680,6 +683,8 @@ export const tr = {
     cancelEdit: 'Düzenlemeyi iptal et',
     saveEdit: 'Düzenlemeyi kaydet',
     edited: 'düzenlendi',
+    // Under the menu of one's own message once its 15 minutes are over (tuval DmMenuSureDoldu).
+    editWindowNote: `Mesajın ${DM_EDIT_WINDOW_MS / 60_000} dakika içinde düzenlenebilir.`,
   },
   // skall tuvali (KapsulSusle…, KapsulGaleri; docs/SPEC_V4.md §4.D, K-46, K-61).
   capsule: {
@@ -2665,8 +2670,8 @@ export const tr = {
     reply_unavailable: 'Yanıtladığın mesaj artık yok.',
     pin_limit: 'En çok 5 sohbet sabitleyebilirsin.',
     thread_archived: 'Arşivdeki sohbet sabitlenemez.',
-    edit_expired: 'Mesajı yalnızca gönderdikten sonraki 15 dakika içinde düzenleyebilirsin.',
-    edit_limit: 'Bir mesajı en çok 5 kez düzenleyebilirsin.',
+    edit_expired: `Mesajı yalnızca gönderdikten sonraki ${DM_EDIT_WINDOW_MS / 60_000} dakika içinde düzenleyebilirsin.`,
+    edit_limit: `Bir mesaj en çok ${DM_EDIT_MAX} kez düzenlenebilir.`,
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
     anonymous_not_allowed: 'Bu hesapla masalara yalnızca profilinle katılabilirsin.',
     gender_required: 'Devam etmek için önce cinsiyetini seçmen gerekiyor.',
