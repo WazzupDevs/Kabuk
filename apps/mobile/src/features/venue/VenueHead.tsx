@@ -35,6 +35,7 @@ export function VenueHead({
   stayShare,
   onLeave,
   leaving,
+  feed,
 }: {
   venueName: string;
   identity: { mode: 'anonymous' | 'profiled'; switchUsed: boolean };
@@ -44,6 +45,9 @@ export function VenueHead({
   stayShare: number;
   onLeave: () => void;
   leaving: boolean;
+  // The feed view (docs/SPEC_V4.md §4.Y): everyone writes with the profile, so the identity toggle
+  // (the table's and the venue chat's choice) is not shown.
+  feed?: boolean;
 }) {
   const [menu, setMenu] = useState(false);
   const moreRef = useRef<View>(null);
@@ -91,14 +95,16 @@ export function VenueHead({
           </View>
         </View>
         <View className="flex-row items-center" style={{ gap: VENUE.headGap }}>
-          <IdentityToggle
-            testID="venue-identity"
-            size={VENUE.toggle}
-            mode={identity.mode}
-            locked={identity.switchUsed}
-            onPick={() => setAsking(true)}
-            onLocked={() => setUsedNote(true)}
-          />
+          {feed ? null : (
+            <IdentityToggle
+              testID="venue-identity"
+              size={VENUE.toggle}
+              mode={identity.mode}
+              locked={identity.switchUsed}
+              onPick={() => setAsking(true)}
+              onLocked={() => setUsedNote(true)}
+            />
+          )}
           <View ref={moreRef} collapsable={false}>
             <Round
               glass="clear"

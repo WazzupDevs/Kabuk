@@ -32,6 +32,8 @@ export default defineConfig({
       // What a game's phone may draw of its secret role.
       'apps/mobile/src/features/games/**/*.test.ts',
       'apps/mobile/src/features/auth/**/*.test.ts',
+      // The venue feed's age, counter, optimistic like and throttle.
+      'apps/mobile/src/features/venueFeed/**/*.test.ts',
       // The workshop's draft helpers and registry check.
       'apps/mobile/src/features/design/workshop/**/*.test.ts',
     ],
