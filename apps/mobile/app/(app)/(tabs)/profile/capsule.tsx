@@ -23,6 +23,7 @@ import { Loader } from '@/components/Loader';
 import { shadowParts } from '@/components/NativeShadow';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
+import { Toast, TOAST_TOP, type ToastMessage } from '@/components/Toast';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import {
@@ -175,6 +176,18 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     },
   });
   const dirty = changed && !save.isSuccess;
+  const failed: ToastMessage | null = save.isError
+    ? {
+        id: save.submittedAt,
+        title: tr.capsule.saveFailed,
+        sub: errorMessage(save.error),
+        action: {
+          label: tr.common.retry,
+          testID: 'capsule-save-retry',
+          onPress: () => save.mutate(),
+        },
+      }
+    : null;
   // Saving, the dialog stays; a failed save keeps it open and says so in the top notice over it,
   // "Tekrar dene" saving again (Ortak kurallar C4, SusleKaydedilemedi).
   const askToLeave = useCallback(() => {
@@ -432,13 +445,6 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           />
         }
       >
-        {save.isError ? (
-          <View style={{ paddingHorizontal: E.barSide + E.titleIn }}>
-            <T v="fine" color={c.warn}>
-              {errorMessage(save.error)}
-            </T>
-          </View>
-        ) : null}
         {/* The scene on the page's ground: the riso disc, the capsule over its breathing shadow;
         "Hepsini çıkar" and the die at its foot. */}
         <View style={{ height: E.scene.height }}>
@@ -639,6 +645,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           </View>
         </View>
       </Screen>
+      {/* SusleKaydedilemedi (79): the failed save in the top notice, "Tekrar dene" saving again. */}
+      <Toast message={failed} top={insets.top + TOAST_TOP} testID="capsule-save-failed" />
     </>
   );
 }

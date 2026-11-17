@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, Round, T } from '@/aura/kit';
+import { ButtonRow } from '@/components/ButtonRow';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { PhotoPreview } from '@/components/PhotoPreview';
@@ -22,6 +23,7 @@ import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
+import { useNarrow } from '@/lib/useNarrow';
 import {
   BarBand,
   type Flight,
@@ -71,6 +73,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   const insets = useSafeAreaInsets();
   const { width, height, fontScale } = useWindowDimensions();
   const barSpace = useTabBarSpace();
+  const narrow = useNarrow();
   const own = useProfile();
   const publicId = own.data?.public_id;
   const view = useProfileView(publicId, true);
@@ -194,53 +197,48 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                 ) : null}
                 {/* tuval Benim: the two clear buttons as wide as their words, centred, 10 apart;
                     narrower than both, their words shrink (never "…"). */}
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignSelf: 'stretch',
-                    justifyContent: 'center',
-                    gap: B.buttonsGap,
-                  }}
-                >
-                  <Btn
-                    variant="glassy"
-                    bar={KIT.size.btnRow}
-                    icon="edit"
-                    label={hasName ? tr.profile.edit : tr.profile.addName}
-                    look={{
-                      type: 'giftBtn',
-                      padLeft: B.edit.padLeft,
-                      padRight: B.edit.padRight,
-                      gap: B.edit.gap,
-                      icon: B.edit.icon,
-                    }}
-                    onPress={() => router.push('/profile/edit')}
-                    style={{ flexShrink: 1, minWidth: 0 }}
-                  />
-                  <Btn
-                    variant="glassy"
-                    bar={KIT.size.btnRow}
-                    testID="profile-friends"
-                    accessibilityLabel={tr.profile.friendsCount(friendList.length)}
-                    lead={friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined}
-                    label={tr.profile.friendsSub(friendList.length)}
-                    look={{
-                      type: 'giftBtn',
-                      padLeft: friendList.length > 0 ? B.friends.padLeft : B.friends.padLeftBare,
-                      padRight: B.friends.padRight,
-                      gap: B.friends.gap,
-                    }}
-                    trail={
-                      <CapIcon
-                        name="chevron"
-                        color={look.chevron}
-                        soft={1}
-                        size={B.friends.chevron}
-                      />
-                    }
-                    onPress={() => router.push('/profile/friends')}
-                    style={{ flexShrink: 1, minWidth: 0 }}
-                  />
+                <View style={{ alignSelf: 'stretch' }}>
+                  <ButtonRow hug gap={B.buttonsGap}>
+                    <Btn
+                      block={narrow}
+                      variant="glassy"
+                      bar={KIT.size.btnRow}
+                      icon="edit"
+                      label={hasName ? tr.profile.edit : tr.profile.addName}
+                      look={{
+                        type: 'giftBtn',
+                        padLeft: B.edit.padLeft,
+                        padRight: B.edit.padRight,
+                        gap: B.edit.gap,
+                        icon: B.edit.icon,
+                      }}
+                      onPress={() => router.push('/profile/edit')}
+                    />
+                    <Btn
+                      block={narrow}
+                      variant="glassy"
+                      bar={KIT.size.btnRow}
+                      testID="profile-friends"
+                      accessibilityLabel={tr.profile.friendsCount(friendList.length)}
+                      lead={friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined}
+                      label={tr.profile.friendsSub(friendList.length)}
+                      look={{
+                        type: 'giftBtn',
+                        padLeft: friendList.length > 0 ? B.friends.padLeft : B.friends.padLeftBare,
+                        padRight: B.friends.padRight,
+                        gap: B.friends.gap,
+                      }}
+                      trail={
+                        <CapIcon
+                          name="chevron"
+                          color={look.chevron}
+                          soft={1}
+                          size={B.friends.chevron}
+                        />
+                      }
+                      onPress={() => router.push('/profile/friends')}
+                    />
+                  </ButtonRow>
                 </View>
               </View>
             </>
