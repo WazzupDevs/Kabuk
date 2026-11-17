@@ -40,7 +40,8 @@ export function Bucket({ bucket, tall }: { bucket: CityVenue['bucket']; tall?: b
           }}
         />
       ) : (
-        <PulseDot color={tone.dot} ring={KIT.pinkRing} size={b.dot} />
+        // On a venue's page no ring (yeni arayüz tuvali MekanDetay `.stt i`).
+        <PulseDot color={tone.dot} ring={tall ? undefined : KIT.pinkRing} size={b.dot} />
       )}
       <T v={tall ? 'detailPill' : 'bucket'} color={tone.fg}>
         {tr.explore.buckets[bucket]}

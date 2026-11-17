@@ -52,11 +52,11 @@ type Props =
 
 // The face of a table or a person in chats, lists and cards (the skall design system → Avatar).
 export function Avatar(props: Props) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const photo = usePhoto(props.kind === 'profile' ? props.photoUrl : null);
   const side = AVATAR_SIZE[props.size ?? 'md'];
   const shadowOff = useLabOff('golge');
-  const shadow = shadowParts(shadowOff, KIT.avShadow, undefined, side / 2);
+  const shadow = shadowParts(shadowOff, KIT[scheme].faceShadow || undefined, undefined, side / 2);
   const frame = {
     width: side,
     height: side,
@@ -123,7 +123,8 @@ export function Avatar(props: Props) {
       {initials(props.name)}
     </Text>
   );
-  // docs/design/aura (`.av`): a white ring and a soft shadow; without a photo the name's colour.
+  // Yeni arayüz tuvali (ekran.css `.av`): a ring in the surface's colour and a soft shadow (none in
+  // the dark); without a photo the name's flat colour.
   const ring = side >= AVATAR_SIZE.md ? KIT.size.avRing : KIT.size.edge;
   // The face clips its photo, so its native shadow (NativeShadow.tsx) sits beside it in a box of
   // the same size; the same structure with or without it, so the photo never remounts.
@@ -135,8 +136,8 @@ export function Avatar(props: Props) {
           frame,
           photo.url
             ? { backgroundColor: colors.surface2 }
-            : gradientStyle(avatarGround(props.name)),
-          { borderWidth: ring, borderColor: KIT.white, boxShadow: shadow.boxShadow },
+            : gradientStyle(avatarGround(props.name, scheme)),
+          { borderWidth: ring, borderColor: KIT[scheme].faceRing, boxShadow: shadow.boxShadow },
         ]}
       >
         {inner}

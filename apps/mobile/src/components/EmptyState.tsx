@@ -33,11 +33,11 @@ type Props = {
   picture?: { source: ImageSourcePropType; width: number; height: number; radius: number };
   // Every empty state's riso picture (the owner's call, 2 Kasım, 9.1; Aura v76 BosDurumlar).
   riso?: EmptyRiso;
-  // In a card or a sheet: the small picture (160x110, 22 round, the raised shadow) rather than the
-  // screen's (240x165, 28 round, the card shadow).
+  // In a card or a sheet: the smaller picture (120 across rather than the screen's 150; both
+  // unframed, yeni arayüz tuvali `.emp img`).
   compact?: boolean;
-  // Under a page's own heading and switch (Aura v75 AktivitelerHal): the loader 12 over `fine`
-  // words; the error's icon 28 and its words in the text colour, "Tekrar dene" with its refresh.
+  // Under a page's own heading and switch (Aura v75 AktivitelerHal): the loader at the page's top;
+  // the error's icon 28.
   inPage?: boolean;
 };
 
@@ -60,8 +60,20 @@ const EMPTY_RISO = {
   dm: require('../../assets/riso/empty-dm.webp'),
 } as const satisfies Record<string, ImageSourcePropType>;
 export type EmptyRiso = keyof typeof EMPTY_RISO;
-const RISO_FULL = { width: 240, height: 165, radius: 28, shadow: 'card' } as const;
-const RISO_SMALL = { width: 160, height: 110, radius: 22, shadow: 'raised' } as const;
+// Yeni arayüz tuvali (AktivitelerBos, boş hâl panoları 109–112 `.emp img`): small and unframed,
+// no card, no shadow, no corner.
+const RISO_FULL = {
+  width: KIT.size.emptyRiso,
+  height: Math.round(KIT.size.emptyRiso * KIT.size.emptyRisoAspect),
+  radius: 0,
+  shadow: 'none',
+} as const;
+const RISO_SMALL = {
+  width: KIT.size.emptyRisoSm,
+  height: Math.round(KIT.size.emptyRisoSm * KIT.size.emptyRisoAspect),
+  radius: 0,
+  shadow: 'none',
+} as const;
 // The new board's cut-out pictures (`.emp img`): 120 × 98 (the search's drawn 3:2 in that box),
 // no corner, no shadow, at any size of the state.
 const RISO_BOARD: Partial<
@@ -107,7 +119,10 @@ function StateDisc({ icon, iconSize }: { icon: IconName; iconSize: number }) {
 
 // A screen's empty, error, offline or loading state (Aura v65 §6 "Türetme kuralları"), centred on
 // the screen without a card: the disc (or the loader), the note under it and at most one action,
-// "Tekrar dene" btn sm soft.
+// "Tekrar dene" btn sm soft. Yeni arayüz tuvali (AktivitelerHata, AktivitelerBaglantiYok): the
+// title 15/20 600 12 under the disc, the sentence 13/18 500 4 under it (at most 260 wide), the
+// soft button 16 under it. The boards' riso pictures (a broken cup, an unplugged buddy) are not in
+// the repo yet: the disc stays.
 export function EmptyState({
   kind,
   icon,
@@ -146,36 +161,56 @@ export function EmptyState({
     <View
       className="items-center"
       style={{
-        gap: KIT.size.stateGap,
+        justifyContent: 'center',
         paddingTop: inPage ? 0 : SPACING[2],
         paddingBottom: SPACING[1],
-        paddingHorizontal: inPage ? SPACING[3] : SPACING[4],
+        paddingHorizontal: KIT.size.emptyPad,
       }}
     >
       <StateDisc icon={glyph} iconSize={inPage ? KIT.size.stateIconPage : KIT.size.stateIcon} />
-      <View className="items-center self-stretch" style={{ gap: SPACING[1] }}>
-        {title ? (
-          <T v="h3" center accessibilityRole="header">
-            {title}
-          </T>
-        ) : null}
-        <T v="body" center ink={inPage}>
-          {body}
-        </T>
-      </View>
+      <StateWords title={title} body={body} />
       {action ? (
         <Btn
           variant="glassy"
           sm
-          icon={inPage ? 'refresh' : undefined}
           label={action.label}
           onPress={action.onPress}
           loading={action.loading}
           // Under the centred words, not at the left edge (audit M15-21).
-          style={{ alignSelf: 'center' }}
+          style={{ alignSelf: 'center', marginTop: KIT.size.emptyActionTop }}
         />
       ) : null}
     </View>
+  );
+}
+
+// `.et` and `.ed`: the title 12 under the picture, the sentence 4 under it, at most 260 wide; a
+// sentence alone stands in the title's place, in the text colour.
+function StateWords({ title, body }: { title?: string; body: string }) {
+  return (
+    <>
+      {title ? (
+        <T
+          v="stateTitle"
+          center
+          accessibilityRole="header"
+          style={{ marginTop: KIT.size.emptyTitleTop }}
+        >
+          {title}
+        </T>
+      ) : null}
+      <T
+        v="fine"
+        ink={!title}
+        center
+        style={{
+          marginTop: title ? KIT.size.emptyNoteTop : KIT.size.emptyTitleTop,
+          maxWidth: KIT.size.emptyNoteMax,
+        }}
+      >
+        {body}
+      </T>
+    </>
   );
 }
 
@@ -204,8 +239,9 @@ function Loading({ body, inPage }: { body: string; inPage?: boolean }) {
   );
 }
 
-// The empty state (docs/design/aura, aura 31): the still sign, the title and the note centred,
-// on the screen without a card; at most one action under them.
+// The empty state (yeni arayüz tuvali AktivitelerBos `.emp`): the small unframed riso picture (or
+// the still sign), the title and the note centred, on the screen without a card; at most one
+// action under them.
 function Empty({
   title,
   body,
@@ -228,39 +264,21 @@ function Empty({
     <View
       style={{
         alignItems: 'center',
-        // U15 (AktivitelerBos `.empty`): 8 apart, 12 in from the sides.
-        gap: SPACING[2],
+        justifyContent: 'center',
         paddingTop: small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
-        paddingHorizontal: SPACING[3],
+        paddingHorizontal: KIT.size.emptyPad,
       }}
     >
       {picture ? (
-        // AktivitelerBos `.empty img`: the board's shadow, 16 under it (the column's 8 and 8 more).
-        <View
-          style={{ marginBottom: SPACING[2] }}
-          testID={risoId ? `empty-riso-${risoId}` : undefined}
-          collapsable={false}
-        >
+        <View testID={risoId ? `empty-riso-${risoId}` : undefined} collapsable={false}>
           <RisoPicture {...picture} />
         </View>
       ) : (
         <EmptyMark />
       )}
-      {title ? (
-        <T v="h3" center accessibilityRole="header" style={{ marginTop: KIT.size.emptyTitleTop }}>
-          {title}
-        </T>
-      ) : null}
-      <T
-        v="body"
-        strong={!title}
-        center
-        style={title ? null : { marginTop: KIT.size.emptyTitleTop }}
-      >
-        {body}
-      </T>
+      <StateWords title={title} body={body} />
       {action ? (
-        <View style={{ marginTop: SPACING[3] }}>
+        <View style={{ marginTop: KIT.size.emptyActionTop }}>
           <Btn
             variant="glassy"
             label={action.label}

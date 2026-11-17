@@ -154,6 +154,7 @@ function Scene({
           <PulseDot
             color={room ? k.roomDot : k.eyebrow}
             ring={room ? k.roomDotRing : undefined}
+            darkRing
             size={k.dot}
           />
           <T v="kesfetEyebrow" color={eyebrow}>

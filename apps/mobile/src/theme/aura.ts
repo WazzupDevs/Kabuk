@@ -36,12 +36,11 @@ export const AURA = {
       onInk: '#0E8745',
     },
     // iskelet.md → 3.1 and 3.3: the top bar's band (the ground at 84 %, its foot fading out) and the
-    // tab bar's bottom edge (from clear to the ground at 92 %).
+    // tab bar's bottom edge (yeni arayüz tuvali `.fade`: from clear to the solid ground at 70 %).
     bar: {
       band: 'rgba(239, 247, 241, 0.84)',
       clear: 'rgba(239, 247, 241, 0)',
-      edgeMid: 'rgba(239, 247, 241, 0.72)',
-      edge: 'rgba(239, 247, 241, 0.92)',
+      edge: '#EFF7F1',
     },
   },
   // `.dark.pA`: a flat black ground with no clouds, flat glass #121614 with a 9 % white edge and no
@@ -72,8 +71,7 @@ export const AURA = {
     bar: {
       band: 'rgba(0, 0, 0, 0.84)',
       clear: 'rgba(0, 0, 0, 0)',
-      edgeMid: 'rgba(0, 0, 0, 0.72)',
-      edge: 'rgba(0, 0, 0, 0.92)',
+      edge: '#000000',
     },
   },
   // Cards: a frosted pane on the clouds.
@@ -96,11 +94,11 @@ export const AURA = {
     dotTop: 10,
     dotRight: 11,
     // iskelet.md → 3.3: the labelled bar's icon 22 and its pill (the tab's height, round); the
-    // bottom edge band 160 under it.
+    // bottom edge band 150 under it (yeni arayüz tuvali `.fade`).
     iconLabelled: 22,
     labelGap: 2,
     pillHeight: 58,
-    edgeHeight: 160,
+    edgeHeight: 150,
   },
   // iskelet.md → 3.1: the top bar. Its band 118 high (status bar included), the foot `bandFade`
   // of it fading out; a `sayfa` page's large title fades over `pageTitleFade` while the band comes
@@ -324,11 +322,11 @@ export function barBandCss(scheme: AuraScheme, height: number): string {
   return `linear-gradient(180deg, ${b.band} 0%, ${b.band} ${solid}%, ${b.clear} 100%)`;
 }
 
-// The tab bar's bottom edge (iskelet.md → 3.3): from clear to the ground at 92 %;
-// tuval Kesfet: the ground at 72 % 60 % down.
+// The tab bar's bottom edge (iskelet.md → 3.3; yeni arayüz tuvali Kesfet `.fade`): from clear to
+// the solid ground 70 % down, solid to the foot.
 export function barEdgeCss(scheme: AuraScheme): string {
   const b = AURA[scheme].bar;
-  return `linear-gradient(180deg, ${b.clear} 0%, ${b.edgeMid} 60%, ${b.edge} 100%)`;
+  return `linear-gradient(180deg, ${b.clear} 0%, ${b.edge} 70%, ${b.edge} 100%)`;
 }
 
 // The motion standard (docs/design/aura/project/hareket.json, played by the film

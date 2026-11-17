@@ -5,7 +5,7 @@ import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
@@ -18,12 +18,12 @@ type Props = {
   boxed?: boolean;
 };
 
-// The box alone (skall.css `.check`): 24, 8 round; empty a 2 px border line on nothing; filled the
-// primary with a 16 check, and in the dark the accent with the kit's dark ink.
+// The box alone (yeni arayüz tuvali `.cb`: KayitOnay, EngelleOnay): 24, 7 round; empty a 2 line
+// of the ink at 28 % on nothing; filled the ink with an 18 white check, in the dark the 94 % white
+// with the dark ink.
 export function CheckMark({ checked }: { checked: boolean }) {
-  const { colors, scheme } = useTheme();
-  const dark = scheme === 'dark';
-  const fill = dark ? colors.accent : colors.primary;
+  const { scheme } = useTheme();
+  const c = KIT[scheme];
   return (
     <View
       className="items-center justify-center"
@@ -31,14 +31,12 @@ export function CheckMark({ checked }: { checked: boolean }) {
         width: KIT.size.checkBox,
         height: KIT.size.checkBox,
         borderRadius: KIT.size.checkRadius,
-        borderWidth: 2,
-        borderColor: checked ? fill : colors.border,
-        backgroundColor: checked ? fill : 'transparent',
+        borderWidth: checked ? 0 : KIT.size.markLine,
+        borderColor: c.markLine,
+        backgroundColor: checked ? c.markOn : 'transparent',
       }}
     >
-      {checked ? (
-        <AppIcon name="checkmark" size={ICON.sm} color={dark ? KIT.checkInk : colors.onPrimary} />
-      ) : null}
+      {checked ? <AppIcon name="checkmark" size={KIT.size.checkTick} color={c.onMarkOn} /> : null}
     </View>
   );
 }
