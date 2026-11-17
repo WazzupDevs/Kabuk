@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>DM: fotoğraf gönder</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.wall{position:absolute;inset:0;background-size:cover;background-position:center}
+.wall.L{background-image:url(/_blob/564f379c722a959a6f9b0909ac8e9f3a)}
+.wall.D{background-image:url(/_blob/e7ec12ccfd48402845ca6ffd6f895d8b)}
+.band{position:absolute;left:0;right:0;top:0;height:132px;background:linear-gradient(180deg,#D9E8F7 0,#D9E8F7 40%,rgba(217,232,247,0));pointer-events:none}
+.dark .band{background:linear-gradient(180deg,#000 0,#000 40%,rgba(0,0,0,0))}
+.top{position:absolute;left:16px;right:16px;top:52px;display:flex;gap:8px;align-items:center}
+.who{flex:1;min-width:0;height:52px;border-radius:999px;display:flex;align-items:center;gap:10px;padding:0 2px 0 6px}
+.who .ib{width:40px;height:44px}
+.who .av{width:40px;height:40px;font-size:15px}
+.who .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.who .nm b{font:600 16px/20px var(--font);color:var(--text)}
+.who .nm span{font:500 12px/16px var(--font);color:var(--muted)}
+.hb{display:flex;align-items:center;gap:0;flex:none}
+.ib{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:var(--text);flex:none;background:none;border:0}
+.flow{position:absolute;left:12px;right:12px;bottom:114px;display:flex;flex-direction:column;gap:2px}
+.flow .day{margin:10px 0 8px;background:var(--glass-bg);border:1px solid var(--glass-line);color:var(--text)}
+.dark .flow .day{background:#121614}
+.msg{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;max-width:78%}
+.msg .s{margin-left:auto;font:600 11px/14px var(--font);display:flex;align-items:center;gap:2px;padding-top:4px}
+.msg.them .s{color:var(--bubble-them-muted)}
+.msg.me .s{color:var(--bubble-mine-muted)}
+.msg.me .s svg{color:var(--read)}
+.dark .msg.me .s{color:#4A6550}
+.dark .msg.me .s svg{color:#2C63D6}
+.msg.g.them{border-radius:18px}
+.msg.g.me{border-radius:18px}
+.gap{height:8px}
+.phone{--bubble-dm:#0E8745}
+.dark.pA{--bubble-dm:#0B783D}
+.msg.them{box-shadow:0 4px 12px rgba(14,135,69,.22)}
+.dark .msg.them{box-shadow:none}
+.q{width:100%;border-radius:10px;padding:6px 10px;background:rgba(255,255,255,.18);border-left:0;display:flex;flex-direction:column;font:500 13px/17px var(--font);color:rgba(255,255,255,.88)}
+.q b{font:700 12px/16px var(--font);color:#FFFFFF}
+.rxs{align-self:flex-start;display:flex;gap:6px;margin:4px 0 6px 0}
+.rx{height:30px;padding:0 10px 0 4px;border-radius:999px;display:flex;align-items:center;gap:4px;background:var(--surface);box-shadow:var(--shadow-raised);font:600 12px/16px var(--font);color:var(--text);position:relative;z-index:1}
+.dark .rx{background:#1B211F}
+.rx svg{width:22px;height:22px}
+.new{align-self:stretch;display:flex;align-items:center;gap:8px;margin:8px 0;font:600 12px/16px var(--font);color:var(--text)}
+.new span{padding:4px 12px;border-radius:999px;background:var(--glass-bg);border:1px solid var(--glass-line)}
+.dark .new span{background:#121614}
+.new i{flex:1;height:1px;background:var(--hair)}
+.dark .new i{background:rgba(255,255,255,.22)}
+.typing{align-self:flex-start;margin-top:6px;height:34px;padding:0 14px;border-radius:18px 18px 18px 6px;background:var(--bubble-dm);display:flex;align-items:center;gap:5px}
+.typing i{width:8px;height:8px;border-radius:50%;background:#FF4F8B}
+.typing i:nth-child(2){background:#FFB547;transform:translateY(-3px)}.typing i:nth-child(3){background:#7DB2FF}
+.cmp{position:absolute;left:12px;right:12px;bottom:46px;display:flex;gap:8px;align-items:center}
+.cmp .round{width:44px;height:44px}
+.fld{flex:1;min-width:0;height:52px;border-radius:26px;display:flex;align-items:center;gap:2px;padding:0 6px;background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);font:500 15px/22px var(--font);color:var(--placeholder)}
+.fld .ph{flex:1;min-width:0;padding-left:4px}
+.fld .ib{width:40px;height:40px;flex:none;color:var(--muted);--ci-a:var(--muted);--ci-b:var(--muted);--ci-bo:.6}
+.snd{width:44px;height:44px;border-radius:999px;border:0;display:flex;align-items:center;justify-content:center;background:var(--disabled);color:var(--on-disabled);flex:none;--ci-a:var(--on-disabled);--ci-b:var(--on-disabled)}
+.down{position:absolute;right:16px;bottom:166px;display:none}
+.ob{font:700 10px/14px var(--font);letter-spacing:.4px;color:var(--accent);background:var(--surface2);border-radius:999px;padding:2px 7px;margin-left:6px;display:inline-block;vertical-align:1px}
+.dark .ob{background:#1B211F;color:#3DDC84}
+.pv{background:#000!important}
+.pv>*:not(.ptop):not(.pimg):not(.pcmp):not(.pnote){display:none}
+.ptop{position:absolute;left:16px;right:16px;top:52px;display:flex;align-items:center;gap:12px;z-index:2}
+.pvb{width:44px;height:44px;border-radius:22px;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;--ci-a:#fff;--ci-b:#fff}
+.pvb .ci{width:18px;height:18px}
+.pvt{margin:0;font:600 17px/22px var(--font);color:#fff}
+.pvt .ob{background:rgba(255,255,255,.14);color:#3DDC84}
+.pimg{position:absolute;left:0;right:0;top:120px;width:100%;height:520px;object-fit:cover}
+.pcmp{position:absolute;left:12px;right:12px;bottom:66px;display:flex;gap:8px;align-items:center}
+.pfld{background:rgba(255,255,255,.12)!important;border:0!important;box-shadow:none!important;color:rgba(255,255,255,.6)!important;padding-left:18px!important}
+.pv .snd{background:#fff!important;color:#0B0E0D!important;--ci-a:#0B0E0D;--ci-b:#0B0E0D}
+.pnote{position:absolute;left:24px;right:24px;bottom:28px;margin:0;text-align:center;font:500 12px/16px var(--font);color:rgba(255,255,255,.6)}
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}} pv">
+<div class="ptop"><button class="round pvb" aria-label="Kapat"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11m0-11-11 11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"></path></svg></button><p class="pvt">Fevve'ye gönder<span class="ob">ÖNERİ</span></p></div>
+<img class="pimg" src="/_blob/a60104f6960cc480b61c506654fd7f4a" alt="Gönderilecek fotoğraf">
+<div class="pcmp"><label class="fld pfld"><span class="ph">Açıklama ekle</span></label><button class="snd" aria-label="Gönder"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.2 19.6 4.6c.7-.3 1.4.4 1 1.1L13.4 20.6c-.3.7-1.3.6-1.5-.1L10.6 14 4.1 13.6c-.8-.1-1-1.1-.1-1.4Z" class="a"></path></svg></button></div>
+<p class="pnote">Fotoğraf konum bilgisi silinerek gönderilir.</p>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>
