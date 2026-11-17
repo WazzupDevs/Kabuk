@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Semt sohbeti seçenekleri</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.wall{position:absolute;inset:0;background-size:cover;background-position:center}
+.wall.L{background-image:url(/_blob/e07afded341d8b8e323a5e5ac87a919d)}
+.wall.D{background-image:url(/_blob/32631775b8c78548abdf49b8108b63d3)}
+.band{position:absolute;left:0;right:0;top:0;height:132px;background:linear-gradient(180deg,#F5E9D8 0,#F5E9D8 40%,rgba(245,233,216,0));pointer-events:none}
+.dark .band{background:linear-gradient(180deg,#000 0,#000 40%,rgba(0,0,0,0))}
+.top{position:absolute;left:16px;right:16px;top:52px;display:flex;gap:8px;align-items:center}
+.who{flex:1;min-width:0;height:52px;border-radius:999px;display:flex;align-items:center;gap:10px;padding:0 2px 0 6px}
+.who .ib{width:40px;height:44px}
+.who .av{width:40px;height:40px;font-size:15px}
+.who .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.who .nm b{font:600 16px/20px var(--font);color:var(--text)}
+.who .nm span{font:500 12px/16px var(--font);color:var(--muted)}
+.hb{display:flex;align-items:center;gap:0;flex:none}
+.ib{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:var(--text);flex:none;background:none;border:0}
+.flow{position:absolute;left:12px;right:12px;bottom:114px;display:flex;flex-direction:column;gap:2px}
+.flow .day{margin:10px 0 8px;background:var(--glass-bg);border:1px solid var(--glass-line);color:var(--text)}
+.dark .flow .day{background:#121614}
+.msg{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;max-width:78%}
+.msg .s{margin-left:auto;font:600 11px/14px var(--font);display:flex;align-items:center;gap:2px;padding-top:4px}
+.msg.them .s{color:var(--bubble-them-muted)}
+.msg.me .s{color:var(--bubble-mine-muted)}
+.msg.me .s svg{color:var(--read)}
+.dark .msg.me .s{color:#4A6550}
+.dark .msg.me .s svg{color:#2C63D6}
+.msg.g.them{border-radius:18px}
+.msg.g.me{border-radius:18px}
+.gap{height:8px}
+.phone{--bubble-dm:#0E8745}
+.dark.pA{--bubble-dm:#0B783D}
+.msg.them{box-shadow:0 4px 12px rgba(14,135,69,.22)}
+.dark .msg.them{box-shadow:none}
+.q{width:100%;border-radius:10px;padding:6px 10px;background:rgba(255,255,255,.18);border-left:0;display:flex;flex-direction:column;font:500 13px/17px var(--font);color:rgba(255,255,255,.88)}
+.q b{font:700 12px/16px var(--font);color:#FFFFFF}
+.rxs{align-self:flex-start;display:flex;gap:6px;margin:4px 0 6px 0}
+.rx{height:30px;padding:0 10px 0 4px;border-radius:999px;display:flex;align-items:center;gap:4px;background:var(--surface);box-shadow:var(--shadow-raised);font:600 12px/16px var(--font);color:var(--text);position:relative;z-index:1}
+.dark .rx{background:#1B211F}
+.rx svg{width:22px;height:22px}
+.new{align-self:stretch;display:flex;align-items:center;gap:8px;margin:8px 0;font:600 12px/16px var(--font);color:var(--text)}
+.new span{padding:4px 12px;border-radius:999px;background:var(--glass-bg);border:1px solid var(--glass-line)}
+.dark .new span{background:#121614}
+.new i{flex:1;height:1px;background:var(--hair)}
+.dark .new i{background:rgba(255,255,255,.22)}
+.typing{align-self:flex-start;margin-top:6px;height:34px;padding:0 14px;border-radius:18px 18px 18px 6px;background:var(--bubble-dm);display:flex;align-items:center;gap:5px}
+.typing i{width:8px;height:8px;border-radius:50%;background:#FF4F8B}
+.typing i:nth-child(2){background:#FFB547;transform:translateY(-3px)}.typing i:nth-child(3){background:#7DB2FF}
+.cmp{position:absolute;left:12px;right:12px;bottom:46px;display:flex;gap:8px;align-items:center}
+.cmp .round{width:44px;height:44px}
+.fld{flex:1;min-width:0;height:52px;border-radius:26px;display:flex;align-items:center;gap:2px;padding:0 6px;background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);font:500 15px/22px var(--font);color:var(--placeholder)}
+.fld .ph{flex:1;min-width:0;padding-left:4px}
+.fld .ib{width:40px;height:40px;flex:none;color:var(--muted);--ci-a:var(--muted);--ci-b:var(--muted);--ci-bo:.6}
+.snd{width:44px;height:44px;border-radius:999px;border:0;display:flex;align-items:center;justify-content:center;background:var(--disabled);color:var(--on-disabled);flex:none;--ci-a:var(--on-disabled);--ci-b:var(--on-disabled)}
+.down{position:absolute;right:16px;bottom:166px;display:none}
+.sav{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none}
+.tmr{position:absolute;left:50%;top:116px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 8px;border-radius:999px;background:#FFFFFF;box-shadow:var(--glass-shadow);font:700 13px/18px var(--font);color:var(--text);white-space:nowrap;--ci-a:var(--accent);--ci-b:var(--accent)}
+.dark .tmr{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.tmr .ci{width:18px;height:18px}
+.tmr span{font-weight:500;color:var(--muted)}
+.emp{position:absolute;left:40px;right:40px;top:300px;padding:20px 22px 22px;border-radius:24px;background:#FFFFFF;box-shadow:var(--glass-shadow);display:flex;flex-direction:column;align-items:center;text-align:center}
+.dark .emp{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.emp img{width:122px;height:auto;margin-top:-62px}
+.et{margin-top:8px;font:700 16px/22px var(--font);color:var(--text)}
+.ed{margin-top:4px;font:500 13px/18px var(--font);color:var(--muted)}
+.sug{position:absolute;left:12px;right:0;bottom:110px;display:flex;gap:8px;overflow:hidden}
+.sug span{flex:none;height:36px;padding:0 14px;border-radius:999px;display:flex;align-items:center;background:#FFFFFF;box-shadow:var(--glass-shadow);font:600 13px/18px var(--font);color:var(--text)}
+.dark .sug span{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.fld{background:#FFFFFF}
+.dark .fld{background:#121614}
+.snd{width:52px;height:52px}
+.who{padding:0 4px 0 14px!important;gap:6px!important}
+.tog{flex:none;display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--surface2)}
+.dark .tog{background:#1B211F}
+.tog button{width:36px;height:36px;padding:0;border:0;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.tog img,.tog .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1;margin:0;font-size:13px;border:0}
+.tog button:not(.on){opacity:.55}
+.tog .on{box-shadow:0 0 0 2.5px var(--primary)}
+.dark .tog .on{box-shadow:0 0 0 2.5px #3DDC84}
+.who .nm b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scrim{position:absolute;inset:0;background:rgba(3,27,11,.42)}
+.dark .scrim{background:rgba(0,0,0,.66)}
+.ss{position:absolute;left:8px;right:8px;bottom:8px;background:var(--surface);border-radius:28px;padding:10px 20px 38px;gap:0;box-shadow:0 -8px 40px rgba(3,27,11,.18)}
+.dark .ss{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.sh-h{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.sh-t{margin:0;font:700 21px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.sh-s{margin:2px 0 0;font:500 13px/18px var(--font);color:var(--muted)}
+.sh-h .round{width:40px;height:40px}
+.rows{margin:14px -8px 18px;display:flex;flex-direction:column}
+.ss .li.r{border:0;padding:10px 8px;gap:14px}
+.ri{width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex:none;--ci-a:var(--primary);--ci-b:var(--primary)}
+.dark .ri{background:#1B211F;--ci-a:#3DDC84;--ci-b:#3DDC84}
+.ri .ci{width:22px;height:22px}
+.li.r p{flex:1;margin:0;font:600 16px/20px var(--font);color:var(--text)}
+.li.r p span{display:block;font:500 13px/17px var(--font);color:var(--muted)}
+.rv{font:500 14px/18px var(--font);color:var(--muted)}
+.li.r.off p{color:var(--muted)}
+.li.r.off .ri{opacity:.6}
+.chev{width:18px;height:18px;color:var(--muted);flex:none}
+.ss .btn.danger{width:100%;--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.dark .ss .btn.danger{background:rgba(255,151,126,.12)}
+
+.pop{position:absolute;right:12px;top:104px;width:292px;z-index:8;background:var(--surface);border-radius:28px;padding:8px;box-shadow:0 18px 48px rgba(3,27,11,.22),0 0 0 1px rgba(3,27,11,.06)}
+.dark .pop{background:#151A18;box-shadow:0 18px 48px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08)}
+.pt{display:flex;justify-content:space-between;align-items:baseline;padding:0 12px;font:500 13px/18px var(--font);color:var(--muted)}
+.pt b{font:700 14px/18px var(--font);color:var(--text)}
+.pbar{margin:10px 12px 8px;height:5px;border-radius:3px;background:var(--surface2);overflow:hidden}
+.dark .pbar{background:#262E2B}
+.pbar i{display:block;height:100%;width:72%;border-radius:3px;background:var(--primary)}
+.dark .pbar i{background:#3DDC84}
+.pi{display:flex;align-items:center;gap:14px;min-height:48px;padding:6px 12px;border-radius:18px;--ci-a:var(--primary);--ci-b:var(--primary)}
+.dark .pi{--ci-a:#3DDC84;--ci-b:#3DDC84}
+.pi .ci{width:22px;height:22px;flex:none}
+.pi p{flex:1;margin:0;font:600 16px/20px var(--font);color:var(--text)}
+.pi p span{display:block;font:500 13px/17px var(--font);color:var(--muted)}
+.pi .rv{font:500 14px/18px var(--font);color:var(--muted)}
+.pi.off p{color:var(--muted)}
+.pi.off .ci{opacity:.5}
+.ob{font:700 10px/14px var(--font);letter-spacing:.4px;color:var(--accent);background:var(--surface2);border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:2px;display:inline-block}
+.dark .ob{background:#1B211F;color:#3DDC84}
+.pi{position:relative}
+.pi+.pi:before{content:"";position:absolute;top:0;left:48px;right:12px;border-top:1px solid rgba(3,27,11,.10)}
+.dark .pi+.pi:before{border-top-color:rgba(255,255,255,.10)}
+.psep{height:1px;margin:6px 12px;background:rgba(3,27,11,.08)}
+.dark .psep{background:rgba(255,255,255,.08)}
+.pi.dg p{color:var(--danger,#C8381F)}
+.pi.dg{--ci-a:var(--danger,#C8381F);--ci-b:var(--danger,#C8381F)}
+.dark .pi.dg p{color:#FF977E}
+.dark .pi.dg{--ci-a:#FF977E;--ci-b:#FF977E}
+.tg{width:44px;height:26px;border-radius:13px;background:var(--surface2);position:relative;flex:none;box-shadow:inset 0 0 0 1px rgba(3,27,11,.10)}
+.dark .tg{background:#262E2B;box-shadow:none}
+.tg:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:10px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pop{top:112px}
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="wall {{t.k}}"></div>
+<div class="band"></div>
+
+<div class="top">
+<button class="round soft" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+<div class="glass who">
+<div class="nm"><b>Beylikdüzü sohbeti</b><span>Sadece sen buradasın</span></div>
+<div class="tog" role="radiogroup" aria-label="Görünüş"><button class="on" role="radio" aria-checked="true" aria-label="Anonim"><img src="/_blob/5b08ad2794fd1d89773aad25ff20b4e6" alt=""></button><button role="radio" aria-checked="false" aria-label="Profilinle"><span class="av c2">G</span></button></div>
+</div>
+<button class="round soft" aria-label="Seçenekler"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2" class="a"></circle><circle cx="12" cy="12" r="2.2" class="a"></circle><circle cx="12" cy="19" r="2.2" class="a"></circle></svg></button>
+</div>
+<div class="tmr"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.4" class="b"></circle><path d="M12 7v5.4l3.4 2" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><b>2 sa 1 dk</b><span>kaldı</span></div>
+
+<div class="emp"><img src="/_blob/0d0b46ede6a3e4e5329e2f980def8550" alt=""><p class="et">Bugün ilk sen geldin</p><p class="ed">Odaya henüz kimse yazmadı. İlk mesajı sen yaz, gelenler görür.</p></div>
+<div class="sug"><span>Selam Beylikdüzü! 👋</span><span>Bu akşam ne yapıyorsunuz?</span><span>Önerin var mı?</span></div>
+
+<div class="cmp">
+<label class="fld">
+<span class="ib" aria-label="Emoji" role="img"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="b"></circle><circle cx="9" cy="10.4" r="1.5" class="a"></circle><circle cx="15" cy="10.4" r="1.5" class="a"></circle><path d="M8.4 14.2c1.9 2 5.3 2 7.2 0" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.2" stroke-linecap="round"></path></svg></span>
+<span class="ph">Beylikdüzü'ye yaz…</span>
+</label>
+<button class="snd" aria-label="Gönder"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.2 19.6 4.6c.7-.3 1.4.4 1 1.1L13.4 20.6c-.3.7-1.3.6-1.5-.1L10.6 14 4.1 13.6c-.8-.1-1-1.1-.1-1.4Z" class="a"></path></svg></button>
+</div>
+<div class="pop" role="menu" aria-label="Semt sohbeti seçenekleri">
+<div class="pi" role="menuitem"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.4" class="a"></circle><rect x="2.6" y="13" width="12.8" height="7.6" rx="3.8" class="a"></rect><circle cx="16.4" cy="8.6" r="2.8" class="b"></circle><rect x="13.4" y="13.4" width="8.2" height="7" rx="3.5" class="b"></rect></svg><p>Odadakiler</p><span class="rv">1 kişi</span></div>
+<div class="pi off" role="menuitem" aria-disabled="true"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 9.4h3.2L11 5.6c.6-.5 1.5-.1 1.5.7v11.4c0 .8-.9 1.2-1.5.7l-4.2-3.8H3.6c-.6 0-1-.4-1-1V10.4c0-.6.4-1 1-1Z" class="b"></path><path d="M15.8 9.4l5 5.2m0-5.2-5 5.2" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.6" stroke-linecap="round"></path></svg><p>Sessize aldıkların</p><span class="rv">Kimse yok</span></div>
+<div class="pi" role="menuitem"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.4" class="b"></circle><rect x="10.7" y="10.4" width="2.6" height="7" rx="1.3" class="a"></rect><circle cx="12" cy="7.4" r="1.6" class="a"></circle></svg><p>Sohbet kuralları</p></div>
+<div class="pi dg" role="menuitem"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3.6" width="10.4" height="16.8" rx="3.4" class="b"></rect><path d="M10 12h10.4m-3.6-3.8L20.6 12l-3.8 3.8" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><p>Sohbetten çık</p></div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>

@@ -50,6 +50,7 @@ import { usePopHost } from './popHost';
 import { CachedSvg } from './CachedSvg';
 import { FxSvg } from './FxSvg';
 import { gradientStyle } from '@/theme/gradient';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { DM } from '@/theme/dm';
 import type { BalloonCorner, SetBalloon } from '@/theme/setBalloons';
 
@@ -246,7 +247,7 @@ export function ChatBubble({
   const paint = KIT.bubble[scheme];
   // The DM's own look (tuval Dm, theme/dm.ts): its padding, words, time, shadows and tail; the own
   // bubble without a line. A set's balloon keeps its own.
-  const dm = kind === 'dm' && skin === null;
+  const dm = skin === null;
   const D = DM[scheme];
   const pad = dm
     ? {
@@ -292,14 +293,18 @@ export function ChatBubble({
     number,
   ];
   const big = quote ? 0 : emojiOnly(text);
-  const fill = skin ? skin.chipOn : mine ? paint.mine : dm ? D.them : paint[kind];
+  const fill = skin ? skin.chipOn : mine ? paint.mine : kind === 'dm' ? D.them : paint[kind];
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
   const bubbleShadow = shadowParts(
     shadowOff,
     big
       ? undefined
       : dm
-        ? (mine ? D.mineShadow : D.themShadow) || undefined
+        ? (mine
+            ? D.mineShadow
+            : kind === 'dm'
+              ? D.themShadow
+              : CHAT_LOOK.themShadow[kind][scheme]) || undefined
         : mine
           ? paint.mineShadow
           : KIT.chatShadow[kind],
@@ -745,9 +750,11 @@ export function ChatBubble({
                     ? skinName(skin)
                     : {
                         alignSelf: 'flex-start',
-                        paddingHorizontal: SPACING[1.5],
                         borderRadius: KIT.size.chip,
-                        backgroundColor: KIT.venueBubble.nameChip[scheme],
+                        paddingVertical: CHAT_LOOK.name.padY,
+                        paddingHorizontal: CHAT_LOOK.name.padX,
+                        marginLeft: CHAT_LOOK.name.left,
+                        backgroundColor: CHAT_LOOK.name[scheme],
                       }
                 }
               >
@@ -1574,7 +1581,6 @@ const TICK = 15;
 const READ_TICKS = 'M2 12.5l4.2 4.2L14 8.4M10.6 16.7 18.6 8.4';
 const SENT_TICK = 'M5 12.5l4.2 4.2L17 8.4';
 
-const DOT = SPACING[2];
 const TYPING_MS = 400;
 
 // The other side is typing: three dots in a left bubble, rising in turn; still under reduce motion.
@@ -1606,25 +1612,16 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
     return () => loop.stop();
   }, [reduce, active, dots]);
 
-  const { scheme, c } = useKit();
+  const { scheme } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
-  // A DM's (yeni arayüz tuvali, DmSohbet `.typing`): another's bubble 34 high, 14 in, 18 round
-  // with the 6 foot, no shadow; its three dots 8, 5 apart, pink, amber and blue.
-  const dm = kind === 'dm';
+  // Yeni arayüz tuvali (DmSohbet `.typing`; MekanSohbet and SemtSohbet the same in the chat's
+  // colour): another's bubble 34 high, 14 in, 18 round with the 6 foot, no shadow; its three dots
+  // 8, 5 apart, pink, amber and blue.
   const T = DM.typing;
-  // The dots in the bubble's words' colour elsewhere: white on the chat's colour, the ink.
-  const dotInk = dm ? paint.themInk : c.ink;
   const dotsDm = DM[scheme].typingDots;
-  const shadowOff = useLabOff('golge');
-  const typingShadow = shadowParts(shadowOff, dm ? undefined : KIT.chatShadow[kind], undefined, [
-    KIT.size.msgRadius,
-    KIT.size.msgRadius,
-    KIT.size.msgRadius,
-    KIT.size.msgTail,
-  ]);
-  const R = dm ? DM.bubble.radius : KIT.size.msgRadius;
-  const dot = dm ? T.dot : DOT;
+  const dotInk = paint.themInk;
+  const R = DM.bubble.radius;
   return (
     <View
       style={{
@@ -1643,27 +1640,26 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          gap: dm ? T.gap : SPACING[1],
-          paddingHorizontal: dm ? T.padX : SPACING[3] + SPACING[0.5],
-          ...(dm ? { height: T.height, marginTop: T.top } : { paddingVertical: SPACING[3] }),
-          // Another's bubble in the chat's colour with three white dots (the owner's call, 29 Ekim).
-          backgroundColor: dm ? DM[scheme].them : paint[kind],
-          boxShadow: typingShadow.boxShadow,
+          gap: T.gap,
+          paddingHorizontal: T.padX,
+          height: T.height,
+          marginTop: T.top,
+          // Another's bubble in the chat's colour (the owner's call, 29 Ekim).
+          backgroundColor: kind === 'dm' ? DM[scheme].them : paint[kind],
           borderTopLeftRadius: R,
           borderTopRightRadius: R,
           borderBottomRightRadius: R,
-          borderBottomLeftRadius: dm ? DM.bubble.foot : KIT.size.msgTail,
+          borderBottomLeftRadius: DM.bubble.foot,
         }}
       >
-        {typingShadow.node}
         {dots.map((d, i) => (
           <Animated.View
             key={i}
             style={{
-              width: dot,
-              height: dot,
+              width: T.dot,
+              height: T.dot,
               borderRadius: shape.radius.pill,
-              backgroundColor: dm ? (dotsDm[i] ?? dotInk) : dotInk,
+              backgroundColor: dotsDm[i] ?? dotInk,
               opacity: d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
               transform: [
                 {

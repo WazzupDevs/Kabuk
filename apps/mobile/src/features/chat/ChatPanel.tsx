@@ -27,10 +27,10 @@ import {
   DayLine,
   dayLabel,
 } from '@/components/ChatScreen';
+import { ChatEmptyCard } from '@/components/ChatEmptyCard';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
-import { Glass, T } from '@/aura/kit';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi, safetyApi } from '@/lib/api';
@@ -38,7 +38,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { sameRowProps } from '@/lib/rowEqual';
 import { useLatestCallback } from '@/lib/useLatestCallback';
 import { useFlash } from '@/lib/useFlash';
-import { KIT } from '@/theme/auraKit';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -193,6 +193,8 @@ export function useRoomChatList(
   // Each seat's look and identity (table_people): an anonymous seat wearing a set in all three
   // regions writes in the set's balloon (§4.U, 8 Kasım).
   seats?: ReadonlyMap<string, { look: string | null; profiled: boolean }>,
+  // How many people sit at the table (the empty card's "Masadaki N kişi görür").
+  people?: number,
 ): ChatListProps<RoomRow> {
   const balloonOf = (sender: string) => {
     const seat = seats?.get(sender);
@@ -320,18 +322,34 @@ export function useRoomChatList(
         />
       </View>
     ) : (
-      // U25 (MasaSohbeti `.day`): a glass pill over the message bar.
-      <View className="flex-1 items-center justify-end">
-        <Glass
-          radius={KIT.size.chip}
-          style={{ paddingHorizontal: KIT.chatEmptyPad.x, paddingVertical: KIT.chatEmptyPad.y }}
-        >
-          <T v="chip">{tr.chat.empty}</T>
-        </Glass>
+      // MasaSohbet `.emp` (yeni arayüz tuvali): a card of the surface with the riso over its top
+      // edge, 40 from the sides, 72 over the message bar. The board's suggestion chips are not
+      // drawn (no behaviour is given them).
+      <View
+        className="flex-1 justify-end"
+        style={{
+          paddingHorizontal: CHAT_LOOK.empty.side,
+          paddingBottom: CHAT_LOOK.empty.masa.aboveBar,
+        }}
+        testID="room-chat-empty"
+      >
+        <ChatEmptyCard
+          source={TABLE_ART}
+          ratio={TABLE_RATIO}
+          art={CHAT_LOOK.empty.masa.art}
+          lift={CHAT_LOOK.empty.masa.artUp}
+          title={tr.chat.tableEmptyTitle}
+          body={tr.chat.tableEmptyBody(people ?? 1)}
+          label={tr.chat.tableEmptyLabel}
+        />
       </View>
     ),
   };
 }
+
+const TABLE_ART = require('../../../assets/riso/chat-masa-bos.webp') as number;
+// The picture's own 600 x 400.
+const TABLE_RATIO = 400 / 600;
 
 type ReactionsRaw = Parameters<typeof parseReactionCounts>[0];
 type ReplyRaw = Parameters<typeof parseQuote>[0];

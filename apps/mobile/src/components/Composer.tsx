@@ -19,6 +19,7 @@ import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { useKit } from '@/aura/kit';
 import { MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { DM } from '@/theme/dm';
 import { gradientStyle } from '@/theme/gradient';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
@@ -28,6 +29,7 @@ import { useLabOff } from '@/lib/drawLab';
 
 import type { ChatQuote } from './ChatBubble';
 import { useChatEnd } from './ChatScreen';
+import { useChatKind } from './chatKind';
 import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -331,7 +333,10 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   // and shadow, the words 16/500 20 in, the hint in its own grey. In Mekan's card (`flush`) as it
   // was.
   const dm = !flush;
-  const look = DM[k.scheme].composer;
+  // The group chats' field (yeni arayüz tuvali, MekanSohbet, MasaSohbet, SemtSohbet `.fld`): a plain
+  // white (dark: the surface) instead of the glass.
+  const kind = useChatKind();
+  const look = kind === 'dm' ? DM[k.scheme].composer : CHAT_LOOK.composer[k.scheme];
   // In Mekan's card (`flush`, tuval Mekan, theme/venue.ts): a sunk green field 44 high, no edge and
   // no shadow, the words 14/600 16 in, the send round 36 always there, 6 from the right.
   const card = VENUE.chat.field;

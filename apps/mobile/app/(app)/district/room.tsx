@@ -27,7 +27,7 @@ import { Redirect, router } from 'expo-router';
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { Animated, Easing, View } from 'react-native';
 
-import { Btn, T, useKit } from '@/aura/kit';
+import { Btn, Round, T, useKit } from '@/aura/kit';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { ChatBubble, skinMovers } from '@/components/ChatBubble';
@@ -36,7 +36,7 @@ import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
-import { IconButton, MoreDots } from '@/components/IconButton';
+import { ChatEmptyCard } from '@/components/ChatEmptyCard';
 import { IdentityToggle } from '@/components/IdentityToggle';
 import { Loader } from '@/components/Loader';
 import { ChatLookAvatar, LookAvatar } from '@/components/LookAvatar';
@@ -48,7 +48,7 @@ import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageE
 import { OlderFoot } from '@/features/chat/OlderFoot';
 import { useOlderPages } from '@/features/chat/useOlderPages';
 import { asksToContinue } from '@/features/district/continueNotice';
-import { BenchScene, Foot, TimeChip, WarnRow } from '@/features/district/parts';
+import { Foot, TimeChip, WarnRow } from '@/features/district/parts';
 import { DISTRICT_MUTES_KEY, OptionsSheet, useEndSession } from '@/features/district/RoomSheets';
 import {
   districtKeys,
@@ -71,10 +71,12 @@ import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { nameInk } from '@/theme/nameInk';
+import { KIT } from '@/theme/auraKit';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { SEMT } from '@/theme/semt';
 import { SET_BALLOONS, type SetBalloon } from '@/theme/setBalloons';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 
 // The district room (SemtOda, SemtOdaHal, SemtOdaBos, SemtDevam; docs/SPEC_V4.md §4.V): the venue
 // chat's stream, bubbles and bar (venue-chat/index.tsx) for the person's own open session. No head
@@ -457,7 +459,7 @@ function DistrictRoomBody() {
 
   return (
     <ChatScreen
-      wall="mekan"
+      wall="semt"
       testID="district-chat-messages"
       startAtEnd
       newestKey={newest?.key}
@@ -495,6 +497,7 @@ function DistrictRoomBody() {
       top={
         <View style={{ gap: SEMT.timeChip.top }}>
           <ChatTopBar
+            dm
             onBack={() => router.back()}
             title={tr.district.room.title(name)}
             titleLines={1}
@@ -505,6 +508,7 @@ function DistrictRoomBody() {
                   mode={identity}
                   locked={session.identitySwitchUsed}
                   busy={setIdentity.isPending}
+                  size={CHAT_LOOK.toggle}
                   onPick={(mode) => {
                     if (mode === identity || setIdentity.isPending) return;
                     setIdentity.mutate(mode);
@@ -513,10 +517,12 @@ function DistrictRoomBody() {
                 />
               ) : null
             }
-            actions={
-              <IconButton
-                icon="ellipsis-vertical"
-                glyph={<MoreDots />}
+            // The menu is a soft round of its own outside the capsule (`.round.soft`).
+            more={
+              <Round
+                side={KIT.size.round}
+                icon="moreV"
+                iconSize={ICON.md}
                 label={tr.district.room.options}
                 testID="district-chat-options"
                 onPress={() => setOptions(true)}
@@ -527,6 +533,7 @@ function DistrictRoomBody() {
             <View style={{ alignItems: 'center' }}>
               {grace && continues ? (
                 <TimeChip
+                  chat
                   testID="district-time"
                   text={tr.district.continueChip}
                   label={tr.district.continueChipLabel}
@@ -534,8 +541,10 @@ function DistrictRoomBody() {
                 />
               ) : (
                 <TimeChip
+                  chat
                   testID="district-time"
-                  text={tr.district.left(leftH, leftM)}
+                  text={tr.district.leftAmount(leftH, leftM)}
+                  note={tr.district.leftWord}
                   label={tr.district.leftLabel(leftH, leftM)}
                 />
               )}
@@ -636,26 +645,29 @@ function DistrictRoomBody() {
 // After the extra time, the state is read a little later: the server's minute closes it.
 const GRACE_READ_AFTER_MS = 1500;
 
-// SemtOdaBos: the bench, "Bugün ilk sen geldin" and the words.
+// SemtSohbet `.emp` (yeni arayüz tuvali): a card of the surface with the bench riso over its top
+// edge, "Bugün ilk sen geldin" and the words, 40 from the sides, in the middle of the stream. The
+// board's suggestion chips are not drawn (no behaviour is given them).
 function FirstHere() {
-  const [width, setWidth] = useState(0);
   return (
     <View
       className="flex-1 justify-center"
-      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      style={{ gap: SEMT.empty.gap }}
+      style={{ paddingHorizontal: CHAT_LOOK.empty.side }}
       testID="district-chat-empty"
     >
-      {width > 0 ? <BenchScene label={tr.district.room.emptyLabel} width={width} /> : null}
-      <View style={{ marginTop: SEMT.scene.titleTop - SEMT.empty.gap }}>
-        <T v="title" accessibilityRole="header">
-          {tr.district.room.emptyTitle}
-        </T>
-      </View>
-      <T v="body">{tr.district.room.emptyBody}</T>
+      <ChatEmptyCard
+        source={BENCH_ART}
+        ratio={BENCH_RATIO}
+        title={tr.district.room.emptyTitle}
+        body={tr.district.room.emptyBody}
+        label={tr.district.room.emptyLabel}
+      />
     </View>
   );
 }
+const BENCH_ART = require('../../../assets/riso/semt/chat-bos.webp') as number;
+// The picture's own 419 x 320.
+const BENCH_RATIO = 320 / 419;
 
 // SemtDevam: the session's 2 hours are over; Evet gives 2 more in the same room, Hayır closes it.
 // Out of the sheet (a tap outside, back) is no answer: the extra time runs on (§8.3).

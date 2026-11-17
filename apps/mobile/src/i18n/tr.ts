@@ -911,6 +911,12 @@ export const tr = {
     placeholder: 'Mesaj yaz…',
     send: 'Gönder',
     empty: 'Henüz mesaj yok.',
+    // The table chat's capsule and first-message card (MasaSohbet): "Uçan Halı · 12 kişi".
+    tableSub: (name: string | undefined, people: number) =>
+      name ? `${name} · ${people} kişi` : `${people} kişi`,
+    tableEmptyTitle: 'Masada henüz mesaj yok',
+    tableEmptyBody: (people: number) => `İlk mesajı sen yaz. Masadaki ${people} kişi görür.`,
+    tableEmptyLabel: 'Masa sohbeti çizimi',
     sending: 'Gönderiliyor…',
     notSent: 'Gönderilemedi.',
     retry: 'Tekrar dene',
@@ -1020,6 +1026,9 @@ export const tr = {
     },
     // The time left of a session: "1 sa 12 dk kaldı", "9 dk kaldı"; in the extra time "Devam?".
     left: (h: number, m: number) => (h > 0 ? `${h} sa ${m} dk kaldı` : `${m} dk kaldı`),
+    // The chat's time chip (SemtSohbet `.tmr`): the time in bold, then the word.
+    leftAmount: (h: number, m: number) => (h > 0 ? `${h} sa ${m} dk` : `${m} dk`),
+    leftWord: 'kaldı',
     leftLabel: (h: number, m: number) =>
       h > 0 ? `${h} saat ${m} dakika kaldı` : `${m} dakika kaldı`,
     continueChip: 'Devam?',
