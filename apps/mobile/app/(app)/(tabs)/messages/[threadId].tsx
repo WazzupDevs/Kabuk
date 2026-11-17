@@ -162,6 +162,9 @@ export default function DmScreen() {
   useBroadcast(dmChannel(threadId), BROADCAST.dmEdit, onReaction);
   // docs/SPEC_V4.md §4.X: the message being edited, in the message bar.
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
+  // The last message an edit started on: its bubble takes the saved text's size on a spring (the
+  // motion table's A4 4.4), ready before the save lands.
+  const [morphId, setMorphId] = useState<string | null>(null);
   const edit = useEditDm(threadId);
 
   // While the DM slides in it shows what it opened with; what changed meanwhile comes once it is
@@ -221,8 +224,14 @@ export default function DmScreen() {
       {
         onSuccess: () => setEditing(null),
         onError: (err) => {
-          // Past the 15 minutes the edit cannot succeed; the other refusals leave the text to retry.
-          if (err instanceof ApiError && err.code === 'edit_expired') setEditing(null);
+          // Past the 15 minutes or the fifth edit it cannot succeed; the other refusals leave the
+          // text to retry.
+          if (
+            err instanceof ApiError &&
+            (err.code === 'edit_expired' || err.code === 'edit_limit')
+          ) {
+            setEditing(null);
+          }
           Alert.alert(editErrorText(err));
         },
       },
@@ -392,6 +401,7 @@ export default function DmScreen() {
     (m: DmPageRow) => {
       reply.clear();
       setEditing({ id: m.id, text: m.body });
+      setMorphId(m.id);
     },
     [reply],
   );
@@ -409,6 +419,8 @@ export default function DmScreen() {
       last={row.last}
       day={row.day}
       fresh={row.id === freshId}
+      editing={row.id === editing?.id}
+      morph={row.id === morphId}
       name={name}
       view={reactions.view}
       pick={reactions.pick}
@@ -599,6 +611,8 @@ const DmRow = memo(function DmRow({
   last,
   day,
   fresh,
+  editing,
+  morph,
   name,
   view,
   pick,
@@ -615,6 +629,8 @@ const DmRow = memo(function DmRow({
   last: boolean;
   day: number | null;
   fresh: boolean;
+  editing: boolean;
+  morph: boolean;
   name: string;
   view: ReturnType<typeof useDmReactions>['view'];
   pick: ReturnType<typeof useDmReactions>['pick'];
@@ -635,6 +651,8 @@ const DmRow = memo(function DmRow({
               name={name}
               first={first}
               last={last}
+              editing={editing}
+              morph={morph}
               jumpTo={jumpTo}
               view={view}
               pick={pick}
@@ -673,6 +691,8 @@ function ServerBubble({
   name,
   first,
   last,
+  editing,
+  morph,
   jumpTo,
   view,
   pick,
@@ -683,6 +703,8 @@ function ServerBubble({
   name: string;
   first: boolean;
   last: boolean;
+  editing: boolean;
+  morph: boolean;
   jumpTo: (id: string) => void;
   view: ReturnType<typeof useDmReactions>['view'];
   pick: ReturnType<typeof useDmReactions>['pick'];
@@ -707,7 +729,12 @@ function ServerBubble({
       onReply={() => onReply(m)}
       first={first}
       last={last}
-      time={edited ? `${tr.dm.edited} ${clock}` : clock}
+      time={clock}
+      edited={edited ? tr.dm.edited : undefined}
+      editing={editing}
+      morph={morph}
+      // tuval DmMenuSureDoldu: one's own message past its 15 minutes says why "Düzenle" is gone.
+      menuNote={m.from_me && !canEdit ? tr.dm.editWindowNote : undefined}
       actions={
         canEdit
           ? [

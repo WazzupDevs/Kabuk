@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { newestSeen, pinsFull, splitInbox, withManaged } from './dmManage';
+import { newestSeen, pinsFull, splitInbox, tabUnread, withManaged } from './dmManage';
 
 const row = (threadId: string, over: Partial<Row> = {}): Row => ({
   threadId,
@@ -23,6 +23,19 @@ describe('splitInbox', () => {
     expect(split.chats.map((t) => t.threadId)).toEqual(['a', 'c']);
     expect(split.archived.map((t) => t.threadId)).toEqual(['b', 'd']);
     expect(split.archivedUnread).toBe(3);
+  });
+});
+
+describe('tabUnread', () => {
+  it('leaves the archived conversations out of the badge', () => {
+    const rows = [
+      row('a', { unreadCount: 2 }),
+      row('b', { archived: true, unreadCount: 5 }),
+      row('c', { pinned: true, unreadCount: 1 }),
+      row('d', { unreadCount: -1 }),
+    ];
+    expect(tabUnread(rows)).toBe(3);
+    expect(tabUnread([row('e', { archived: true, unreadCount: 4 })])).toBe(0);
   });
 });
 

@@ -16,7 +16,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { type DmManageKind, pinsFull } from '@/lib/dmManage';
 import { confirm } from '@/lib/overlayStore';
-import { Rise, Tap } from '@/motion';
+import { CountSwap, ListMove, type ListMoves, Tap } from '@/motion';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -30,17 +30,39 @@ const TYPING_ROWS = 30;
 
 type Held = { thread: DmInboxThread; at: MenuAnchor };
 
+// A press's change and how the list moves for it (the motion table's A3): Sabitle and its undo move
+// the row; the others take it out of the list.
+const MOVES: Record<DmManageKind, 'move' | 'leave'> = {
+  pin: 'move',
+  unpin: 'move',
+  archive: 'leave',
+  unarchive: 'leave',
+  clear: 'leave',
+};
+
 // One menu a screen (CLAUDE.md → Ekran davranışı: only one open at a time). `all` is the whole
-// inbox: "Sabitle" is off at DM_PIN_MAX pinned (tuval MesajlarSabitDolu).
-export function useThreadMenu(all: readonly DmInboxThread[]) {
+// inbox: "Sabitle" is off at DM_PIN_MAX pinned (tuval MesajlarSabitDolu). `moves`: the list's
+// rows move for the press (ListMove); `onCleared`: a conversation was cleared ("Sohbet silindi",
+// tuval MesajlarSilindi). `lastKind`: the last press, for which card goes over the other as a row
+// moves between them.
+export function useThreadMenu(
+  all: readonly DmInboxThread[],
+  { moves, onCleared }: { moves?: ListMoves; onCleared?: () => void } = {},
+) {
   const [held, setHeld] = useState<Held | null>(null);
+  const [lastKind, setLastKind] = useState<DmManageKind | null>(null);
   const manage = useDmManage();
   const full = pinsFull(all);
   const run = (kind: DmManageKind, t: DmInboxThread) => {
     if (!t.threadId || manage.isPending) return;
+    setLastKind(kind);
+    moves?.arm(MOVES[kind], 'now');
     manage.mutate(
       { kind, threadId: t.threadId, lastMessageAt: t.lastMessageAt },
-      { onError: (e) => Alert.alert(errorMessage(e)) },
+      {
+        onError: (e) => Alert.alert(errorMessage(e)),
+        onSettled: () => moves?.settle(),
+      },
     );
   };
   const askClear = (t: DmInboxThread) => {
@@ -58,7 +80,15 @@ export function useThreadMenu(all: readonly DmInboxThread[]) {
       cancelLabel: tr.common.cancel,
       testID: 'inbox-clear-confirm',
       onConfirm: async () => {
-        await manage.mutateAsync({ kind: 'clear', threadId, lastMessageAt: t.lastMessageAt });
+        setLastKind('clear');
+        // The dialog closes once the call is done: the row goes after it.
+        moves?.arm('leave', 'onChange');
+        try {
+          await manage.mutateAsync({ kind: 'clear', threadId, lastMessageAt: t.lastMessageAt });
+        } finally {
+          moves?.settle();
+        }
+        onCleared?.();
       },
     });
   };
@@ -108,7 +138,7 @@ export function useThreadMenu(all: readonly DmInboxThread[]) {
         />
       </Menu>
     ) : null;
-  return { open, menu };
+  return { open, menu, lastKind };
 }
 
 // The rows on one `.card` (tuval Mesajlar), 26 round, 4 / 6 inside; the hairline over each row's
@@ -118,12 +148,18 @@ export function InboxCard({
   now,
   onHold,
   from = 0,
+  version,
+  raised = false,
 }: {
   threads: readonly DmInboxThread[];
   now: Date;
   onHold: (thread: DmInboxThread, at: MenuAnchor) => void;
   // The rows before these on the screen (the pinned card's): the rise and "yazıyor" go on counting.
   from?: number;
+  // The inbox's read (its time): the rows lay out again for a press's moves (ListMove).
+  version: number;
+  // Over the other card: a row moving into it slides over the card it came from.
+  raised?: boolean;
 }) {
   const { scheme } = useKit();
   return (
@@ -134,10 +170,11 @@ export function InboxCard({
         borderRadius: M.card.radius,
         paddingVertical: M.card.padY,
         paddingHorizontal: M.card.padX,
+        zIndex: raised ? 1 : 0,
       }}
     >
       {threads.map((t, i) => (
-        <Rise key={t.publicId} index={from + i}>
+        <ListMove key={t.publicId} id={t.publicId} version={version} index={from + i}>
           <InboxRow
             thread={t}
             now={now}
@@ -145,7 +182,7 @@ export function InboxCard({
             follows={i > 0}
             onHold={onHold}
           />
-        </Rise>
+        </ListMove>
       ))}
     </Glass>
   );
@@ -204,9 +241,12 @@ export function ArchivedRow({
         {tr.messages.archived}
       </T>
       {unread > 0 ? <Badge count={unread} /> : null}
-      <T v="exploreCount" tabular color={c.muted}>
-        {String(count)}
-      </T>
+      {/* The motion table's A3 3.4: the count's old number fades as the new one comes. */}
+      <CountSwap value={String(count)}>
+        <T v="exploreCount" tabular color={c.muted}>
+          {String(count)}
+        </T>
+      </CountSwap>
       <CapIcon name="chevron" size={ARC_CHEVRON} color={c.muted} soft={1} />
     </Tap>
   );
