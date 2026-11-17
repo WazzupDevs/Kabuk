@@ -47,6 +47,7 @@ export function SnapStrip({
   label,
   reduce,
   ground,
+  ringColor,
   testID,
 }: {
   count: number;
@@ -61,6 +62,8 @@ export function SnapStrip({
   reduce: boolean;
   // The options' circle.
   ground: string;
+  // The centred option's ring (the theme's accent when not given; Süsle's is the kit's pink).
+  ringColor?: string;
   testID?: string;
 }) {
   const { width } = useWindowDimensions();
@@ -152,6 +155,7 @@ export function SnapStrip({
             x={x}
             reduce={reduce}
             ground={ground}
+            ringColor={ringColor}
             onPress={tap}
           >
             {renderItem(index)}
@@ -170,6 +174,7 @@ const Item = memo(function Item({
   x,
   reduce,
   ground,
+  ringColor,
   onPress,
   children,
 }: {
@@ -179,6 +184,7 @@ const Item = memo(function Item({
   x: SharedValue<number>;
   reduce: boolean;
   ground: string;
+  ringColor?: string;
   onPress: (index: number) => void;
   children: ReactNode;
 }) {
@@ -232,7 +238,7 @@ const Item = memo(function Item({
               bottom: 0,
               borderRadius: BOX / 2,
               borderWidth: KIT.size.boxRing,
-              borderColor: colors.accent,
+              borderColor: ringColor ?? colors.accent,
             },
             ring,
           ]}

@@ -3,19 +3,12 @@ import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  BackHandler,
-  Image,
-  ScrollView,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { BackHandler, Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { Btn, Round, T, useKit } from '@/aura/kit';
+import { Btn, T, useKit } from '@/aura/kit';
 import { CachedSvg, readAhead } from '@/components/CachedSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
@@ -47,7 +40,17 @@ import {
   neededBy,
   stageNeed,
 } from '@/features/capsule/CapsuleStage';
-import { accessories, bare, code, dice, type Look, parse } from '@/features/capsule/look';
+import { useLookDraft } from '@/features/capsule/draft';
+import {
+  accessories,
+  accessoryIn,
+  bare,
+  code,
+  dice,
+  type Look,
+  parse,
+  takeAccessoryOff,
+} from '@/features/capsule/look';
 import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/motion';
 import {
   chosenIn,
@@ -57,14 +60,17 @@ import {
   slotOptions,
 } from '@/features/capsule/options';
 import { stageAhead, tileOrder } from '@/features/capsule/readAhead';
-import { dotAt, dotCount, packNames, packOptions } from '@/features/capsule/strip';
+import { saveNoticeShown } from '@/features/capsule/saveNotice';
+import { SusleFilter } from '@/features/capsule/SusleFilter';
+import { SusleTabs } from '@/features/capsule/SusleTabs';
+import { packNames, packOptions } from '@/features/capsule/strip';
 import { optionArt } from '@/features/capsule/tileArt';
 import { TierTag } from '@/features/gifts/parts';
 import { giftKeys, useGiftState } from '@/features/gifts/queries';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { giftsApi, profileApi } from '@/lib/api';
+import { profileApi } from '@/lib/api';
 import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useAfterTransition } from '@/lib/afterTransition';
@@ -73,7 +79,7 @@ import { useLabOff } from '@/lib/drawLab';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { closeOverlay, confirm } from '@/lib/overlayStore';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip, Tap, Turn } from '@/motion';
+import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { CAPSULE_EDIT } from '@/theme/capsuleEdit';
 import { FEELINGS } from '@/theme/capsuleLook';
@@ -82,7 +88,11 @@ import { SPACING } from '@/theme/tokens';
 
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
-const SLOTS = CAPSULE_CATALOG.slots.map((s) => ({ id: s.id as LookSlot, name: s.name }));
+// The tabs' names are the board's (the catalog calls Gövde "Boyun").
+const SLOTS = CAPSULE_CATALOG.slots.map((s) => ({
+  id: s.id as LookSlot,
+  name: tr.capsule.slotNames[s.id as LookSlot] ?? s.name,
+}));
 // The slots' chips' icons (the app's one icon family has no hat or mouth of its own).
 const SLOT_ICON: Readonly<Record<LookSlot, CapIconName>> = {
   c: 'palette',
@@ -141,14 +151,22 @@ export default function CapsuleScreen() {
 
 function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const { scheme } = useTheme();
-  const { c } = useKit();
   const insets = useSafeAreaInsets();
   const reduce = useReduceMotion();
   const queryClient = useQueryClient();
-  const [look, setLook] = useState<Look>(() => parse(saved));
   // What the saved look wears keeps a part that became a pack accessory on offer (§4.U).
   const kept = useMemo(() => parse(saved), [saved]);
-  const [turn, setTurn] = useState(0);
+  // The look being tried on is the draft Tüm aksesuarlar shares (features/capsule/draft.ts); until
+  // something is tried, the saved look. It is dropped when Süsle is left.
+  const draft = useLookDraft((d) => d.look);
+  const setLook = useLookDraft((d) => d.set);
+  const clearDraft = useLookDraft((d) => d.clear);
+  const look: Look = draft ?? kept;
+  useEffect(() => clearDraft, [clearDraft]);
+  // The look last shown, to tell a change made in the catalog on the way back (hareket 6.2).
+  const seen = useRef(code(look));
+  // The failed save's one notice: the dialog's when "Kaydet ve çık" started it (saveNotice.ts).
+  const [viaDialog, setViaDialog] = useState(false);
   const [slot, setSlot] = useState<LookSlot>('h');
   // The theme pack the strip shows (null: Tümü).
   const [pack, setPack] = useState<string | null>(null);
@@ -163,11 +181,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   // gifts/wear when it changed.
   const save = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: async () => {
-      await profileApi.setLook(now);
-      const ids = accessories(look);
-      if (ids.join(' ') !== accessories(kept).join(' ')) await giftsApi.wear(ids);
-    },
+    // The parts and the worn set in one atomic write (`profile/save-look`).
+    mutationFn: () => profileApi.saveLook(now, accessories(look)),
     onSuccess: () => {
       haptic('accountReady');
       // The button ends with the answer; the two re-reads run on their own.
@@ -176,7 +191,10 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     },
   });
   const dirty = changed && !save.isSuccess;
-  const failed: ToastMessage | null = save.isError
+  const failed: ToastMessage | null = saveNoticeShown({
+    failed: save.isError,
+    fromDialog: viaDialog,
+  })
     ? {
         id: save.submittedAt,
         title: tr.capsule.saveFailed,
@@ -200,6 +218,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       testID: 'capsule-leave-save',
       errorTitle: tr.capsule.saveFailed,
       onConfirm: async () => {
+        setViaDialog(true);
         await save.mutateAsync();
         router.back();
       },
@@ -216,7 +235,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         />
       ),
     });
-  }, [save]);
+  }, [save, setViaDialog]);
   const leave = useCallback(() => {
     if (changed && !save.isSuccess) askToLeave();
     else router.back();
@@ -246,10 +265,20 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     haptic('selection');
     save.reset();
     setFeeling(null);
+    seen.current = code(next);
     setLook(next);
     if (move) setPlay({ move, key: Date.now() });
     else setDrop(Date.now());
   };
+  // A piece put on in Tüm aksesuarlar plays the drop on the way back (hareket 6.2).
+  useFocusEffect(
+    useCallback(() => {
+      if (seen.current === now) return;
+      seen.current = now;
+      setFeeling(null);
+      setPlay({ move: JUMP, key: Date.now() });
+    }, [now]),
+  );
   // A tap on the capsule (v46 feel()): the next feeling for a moment; it is never saved.
   const feel = () => {
     haptic('selection');
@@ -400,7 +429,6 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
 
   const E = CAPSULE_EDIT;
   const k = E[scheme];
-  const lit = dotAt(shown.length, chosen, KIT.size.stripDots);
   // The capsule as the board stands it: its shadow's top `shadowTop` down the scene, the capsule
   // its drawing's gap over it.
   const stageGap = SPACING[2];
@@ -411,13 +439,21 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     k.panel.inset || undefined,
     [E.panel.radius, E.panel.radius, 0, 0],
   );
+  // The accessory worn in the open slot (the strip's chosen option is it): "Aksesuarı çıkar".
+  const wornHere = accessoryIn(look, slot);
+  const tabs = options.map((s) => ({
+    id: s.id,
+    name: s.name,
+    icon: SLOT_ICON[s.id],
+    label: shownIn(s.id, look) !== shownIn(s.id, kept) ? tr.capsule.slotChanged(s.name) : s.name,
+  }));
 
   return (
     <>
       <Screen
-        // iskelet.md → 3.1 (`sayfa`) and 2.1: the back button and Kaydet on the bar, clear glass,
-        // the same Kaydet as Profili düzenle's. The page runs from edge to edge and to the screen's
-        // foot (tuval Kapsul2): the panel reaches it.
+        // yeni arayüz tuvali, KapsulSusle `.ptb`: the back button, the title beside it and Kaydet
+        // on one 48 row. The page runs from edge to edge and to the screen's foot: the tray reaches
+        // it.
         edges={['top', 'left', 'right']}
         side={0}
         barSide={E.barSide}
@@ -426,18 +462,21 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           <PageTop
             title={tr.capsule.title}
             onBack={leave}
-            look={{ titleIn: E.titleIn }}
+            inline={{ row: E.bar.row, back: KIT.size.round, gap: E.bar.gap }}
             trailing={
+              // SusleKaydetPasif, SusleKaydediliyor: the solid Kaydet, flat and quiet with nothing
+              // to save, the ring turning in place of its words while it saves.
               <Btn
-                variant="glassy"
-                bar={KIT.size.topBtn}
+                bar={KIT.size.round}
                 testID="capsule-save"
                 label={save.isSuccess ? tr.capsule.savedShort : tr.capsule.save}
-                tint={dirty || save.isSuccess ? KIT.primary : KIT.saveIdle}
-                strong={dirty || save.isSuccess}
+                disabled={!dirty && !save.isPending}
                 loading={save.isPending}
                 onPress={() => {
-                  if (dirty && !save.isPending) save.mutate();
+                  if (dirty && !save.isPending) {
+                    setViaDialog(false);
+                    save.mutate();
+                  }
                 }}
                 style={{ minWidth: KIT.saveMinWidth }}
               />
@@ -446,7 +485,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         }
       >
         {/* The scene on the page's ground: the riso disc, the capsule over its breathing shadow;
-        "Hepsini çıkar" and the die at its foot. */}
+        "Hepsini çıkar" and "Rastgele" side by side at its foot. */}
         <View style={{ height: E.scene.height }}>
           <View
             pointerEvents="none"
@@ -485,7 +524,18 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               </FxMoves>
             </FloatStage>
           </View>
-          <View style={{ position: 'absolute', left: E.scene.side, bottom: 0 }}>
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: E.actions.gap,
+            }}
+          >
             <Btn
               sm
               variant="glassy"
@@ -500,26 +550,25 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               label={tr.capsule.clearAll}
               onPress={() => put(bare(look))}
             />
-          </View>
-          <View style={{ position: 'absolute', right: E.scene.side, bottom: 0 }}>
-            <Round
+            <Btn
+              sm
+              variant="glassy"
+              icon="shuffle"
               testID="capsule-shuffle"
-              label={tr.capsule.shuffle}
-              glass="clear"
-              onPress={() => {
-                setTurn((n) => n + 1);
-                put(dice(Math.floor(Math.random() * 2 ** 32), owned, kept), SHUFFLE);
+              look={{
+                type: 'coverBtn',
+                padLeft: E.clear.padLeft,
+                padRight: E.clear.padRight,
+                gap: E.clear.gap,
+                icon: E.clear.icon,
               }}
-            >
-              <Turn turn={turn}>
-                <CapIcon name="shuffle" color={c.ink} size={E.dieIcon} />
-              </Turn>
-            </Round>
+              label={tr.capsule.shuffleShort}
+              onPress={() => put(dice(Math.floor(Math.random() * 2 ** 32), owned, kept), SHUFFLE)}
+            />
           </View>
         </View>
-        {/* The panel to the screen's foot: the theme packs' thin row over the slots' chips (both
-        scroll sideways, fading at the ends), the trying strip, the chosen option's name and the
-        dots. */}
+        {/* The tray to the screen's foot: the six tabs, the packs and "Tümüne bak", the trying
+        strip, the chosen option's name and, with an accessory on, "Aksesuarı çıkar". */}
         <View
           style={{
             flexGrow: 1,
@@ -535,49 +584,18 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           }}
         >
           {panelShadow.node}
-          <ScrollView
-            horizontal
-            accessibilityLabel={tr.capsule.packs}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            fadingEdgeLength={{ start: E.panel.fadeStart, end: E.panel.fadeEnd }}
-            style={{ flexGrow: 0 }}
-            contentContainerStyle={{ paddingHorizontal: E.panel.side, gap: SPACING[4] }}
-          >
-            {[null, ...packs].map((p) => (
-              <PackTab
-                key={p ?? ''}
-                name={p ?? tr.capsule.allPacks}
-                on={p === openPack}
-                onPress={() => setPack(p)}
-              />
-            ))}
-          </ScrollView>
-          <ScrollView
-            horizontal
-            accessibilityRole="tablist"
+          <SusleTabs
+            tabs={tabs}
+            open={slot}
+            onPick={(id) => setSlot(id as LookSlot)}
             accessibilityLabel={tr.capsule.slots}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            fadingEdgeLength={{ start: E.panel.fadeStart, end: E.panel.fadeEnd }}
-            style={{ flexGrow: 0, marginTop: E.packsGap }}
-            contentContainerStyle={{ paddingHorizontal: E.panel.side, gap: E.panel.gap }}
-          >
-            {options.map((s) => (
-              <SlotChip
-                key={s.id}
-                icon={SLOT_ICON[s.id]}
-                label={s.name}
-                on={s.id === slot}
-                accessibilityLabel={
-                  shownIn(s.id, look) !== shownIn(s.id, kept)
-                    ? tr.capsule.slotChanged(s.name)
-                    : s.name
-                }
-                onPress={() => setSlot(s.id)}
-              />
-            ))}
-          </ScrollView>
+          />
+          <SusleFilter
+            packs={packs}
+            open={openPack}
+            onPick={setPack}
+            onViewAll={() => router.push('/profile/accessories')}
+          />
           {/* The trying strip, from one edge of the panel to the other; a new slot or pack opens on
           the chosen option without motion. The options' middle where the board has it. */}
           <View
@@ -610,39 +628,32 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                 label={current?.name ?? ''}
                 reduce={reduce}
                 ground={k.tile}
+                ringColor={KIT.pink}
               />
             ) : null}
           </View>
-          {/* The chosen option's name (an accessory's tier beside it) and the dots for its place. */}
+          {/* The chosen option's name (an accessory's tier beside it). */}
           <View
             style={{ alignItems: 'center', marginTop: E.nameTop, paddingHorizontal: E.panel.side }}
             accessibilityLiveRegion="polite"
           >
             <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
-              <T v="capsuleName" ink center>
+              <T v="capsuleName" ink center fit lines={1}>
                 {chosenOption?.name ?? ''}
               </T>
               {chosenOption?.tier ? <TierTag tier={chosenOption.tier} /> : null}
             </View>
-            <View
-              className="flex-row items-center"
-              style={{ gap: E.dots.gap, marginTop: E.dots.top }}
-              importantForAccessibility="no-hide-descendants"
-              accessibilityElementsHidden
-            >
-              {Array.from({ length: dotCount(shown.length, KIT.size.stripDots) }, (_, i) => (
-                <View
-                  key={i}
-                  style={{
-                    width: i === lit ? E.dots.on : E.dots.side,
-                    height: E.dots.side,
-                    borderRadius: E.dots.side / 2,
-                    backgroundColor: i === lit ? k.dot.on : k.dot.off,
-                  }}
-                />
-              ))}
-            </View>
           </View>
+          {wornHere ? (
+            <View style={{ alignItems: 'center', marginTop: E.actions.top }}>
+              <Btn
+                icon="block"
+                testID="capsule-remove-accessory"
+                label={tr.capsule.removeAccessory}
+                onPress={() => put(takeAccessoryOff(look, wornHere))}
+              />
+            </View>
+          ) : null}
         </View>
       </Screen>
       {/* SusleKaydedilemedi (79): the failed save in the top notice, "Tekrar dene" saving again. */}
@@ -711,77 +722,6 @@ function OptionArt({
     <View style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }}>
       <CachedSvg xml={xml} width="100%" height="100%" />
     </View>
-  );
-}
-
-// A theme pack in the thin row over the slots: its name, the open one in ink and bold.
-function PackTab({ name, on, onPress }: { name: string; on: boolean; onPress: () => void }) {
-  return (
-    <Tap
-      sink={false}
-      accessibilityRole="tab"
-      accessibilityState={{ selected: on }}
-      accessibilityLabel={name}
-      feel="selection"
-      onPress={onPress}
-      style={{ paddingVertical: SPACING[1] }}
-    >
-      <T v="fine" ink={on} strong={on}>
-        {name}
-      </T>
-    </Tap>
-  );
-}
-
-// A slot's chip (tuval Kapsul2): its icon and name, the open one dark; the kit's chip height
-// (CLAUDE.md → Ekran davranışı).
-function SlotChip({
-  icon,
-  label,
-  on,
-  accessibilityLabel,
-  onPress,
-}: {
-  icon: CapIconName;
-  label: string;
-  on: boolean;
-  accessibilityLabel: string;
-  onPress: () => void;
-}) {
-  const { scheme } = useTheme();
-  const E = CAPSULE_EDIT;
-  const look = E[scheme].chip[on ? 'on' : 'off'];
-  const h = KIT.size.chip;
-  const shadow = shadowParts(
-    useLabOff('golge'),
-    look.shadow || undefined,
-    'inset' in look ? look.inset || undefined : undefined,
-    h / 2,
-  );
-  return (
-    <Tap
-      accessibilityRole="tab"
-      accessibilityState={{ selected: on }}
-      accessibilityLabel={accessibilityLabel}
-      onPress={onPress}
-      style={{
-        height: h,
-        paddingLeft: E.chip.padLeft,
-        paddingRight: E.chip.padRight,
-        borderRadius: h / 2,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: E.chip.gap,
-        backgroundColor: look.fill,
-        boxShadow: shadow.boxShadow,
-      }}
-    >
-      {shadow.node}
-      <CapIcon name={icon} color={look.ink} size={E.chip.icon} />
-      <T v="capsuleChip" color={look.ink} lines={1}>
-        {label}
-      </T>
-    </Tap>
   );
 }
 

@@ -36,7 +36,34 @@ export const CAPSULE_EDIT = {
   nameTop: 4,
   dots: { top: 14, gap: 6, side: 6, on: 18 },
   padBottom: 24,
+  // Yeni arayüz tuvali (KapsulSusle, TumAksesuarlar; 16 Kasım), value for value: the bar's row 48
+  // with the title 12 beside the back button; "Hepsini çıkar" and "Rastgele" side by side 8 apart
+  // under the capsule; the tray's tabs (`.ptabs`: 12 in from the sides, an icon 22 over the name 3
+  // under it, 8 over and 9 under, the open one's underline 3 high from 22 % to 78 % of its tab) and
+  // the filter row under them (`.frow`: 12 over, 20 in; "Tümüne bak" 2 from its chevron 16); the
+  // option's ring is the kit's pink. The catalog's chips 6 apart, its sections' title row 44 and its
+  // rows of four 14 apart, 8 between the pieces (`.gg`), the piece 72 with its name 6 under it
+  // (two lines, 30), the piece's ring 3 off it and 3 wide; "Kapsülüne tak" 20 over the foot.
+  bar: { row: 48, gap: 12 },
+  actions: { top: 12, gap: 8 },
+  tabs: { side: 12, icon: 22, gap: 3, padTop: 8, padBottom: 9, line: 3, lineIn: 0.22 },
+  filter: { top: 12, gap: 6, link: 2, chevron: 16 },
+  catalog: {
+    columns: 4,
+    side: 20,
+    cats: { top: 12, bottom: 10, gap: 6 },
+    head: 44,
+    thumb: 72,
+    nameGap: 6,
+    name: 30,
+    rowGap: 14,
+    colGap: 8,
+    ring: 3,
+    ringGap: 3,
+    action: { bottom: 20, gap: 8 },
+  },
   light: {
+    hair: 'rgba(3, 27, 11, 0.08)',
     disc: { mid: '#FFD6E5', edge: '#FFE3EC', dots: 'rgba(255, 79, 139, 0.22)' },
     shadow: 'rgba(58, 47, 92, 0.35)',
     panel: {
@@ -59,6 +86,7 @@ export const CAPSULE_EDIT = {
   },
   // The dark scheme is not drawn on the board: the kit's dark sheet, chips and inks.
   dark: {
+    hair: 'rgba(255, 255, 255, 0.08)',
     disc: { mid: '#3A1F30', edge: '#2B1826', dots: 'rgba(255, 79, 139, 0.22)' },
     shadow: 'rgba(0, 0, 0, 0.40)',
     panel: { fill: 'rgba(27, 33, 31, 0.92)', inset: '', shadow: '' },

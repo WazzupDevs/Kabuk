@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Profil</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hd{display:flex;align-items:center;justify-content:space-between}
+.acts{display:flex;gap:8px}
+.round{position:relative}
+.round .nd{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--buzz);border:2px solid var(--canvas)}
+.srch{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);color:var(--placeholder);--ci-a:var(--muted);--ci-b:var(--muted)}
+.sg{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);height:44px;padding:4px}
+.sg span{gap:6px}
+.dark .sg span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.cnt{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--buzz);color:var(--on-buzz);font:700 11px/20px var(--font);text-align:center;box-sizing:border-box}
+.lbl{display:flex;align-items:center;gap:6px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted);padding:0 4px;--ci-a:var(--muted);--ci-b:var(--muted)}
+.lst{padding:0;display:flex;flex-direction:column;margin:0 -20px}
+.rw{padding:10px 20px!important}
+.rw+.rw:before{display:none!important}
+.lst+.lst{margin-top:8px}
+.rw{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:72px;position:relative}
+.rw+.rw:before{content:"";position:absolute;top:0;left:76px;right:16px;border-top:1px solid var(--hair)}
+.rw .av{width:48px;height:48px;font-size:17px}
+.mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.l1,.l2{display:flex;align-items:center;gap:8px}
+.nm{font:600 16px/22px var(--font);color:var(--text);flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.tm{font:500 13px/18px var(--font);color:var(--muted);flex:none}
+.tm.new{color:var(--accent);font-weight:700}
+.pv{font:500 15px/22px var(--font);color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);display:flex;align-items:center;gap:4px}
+.pv.un{color:var(--text);font-weight:600}
+.pv.first{font-style:italic}
+.tick{width:18px;height:18px;flex:none;color:var(--read)}
+.mu{width:16px;height:16px;flex:none;--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc{display:flex;align-items:center;gap:12px;height:48px;padding:0 16px;border-radius:999px;color:var(--text);font:600 15px/22px var(--font);--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc .n{margin-left:auto;font:600 13px/18px var(--font);color:var(--muted)}
+.chev{width:18px;height:18px;color:var(--muted)}
+.tb{position:absolute;left:16px;right:16px;bottom:34px;height:68px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:0 6px}
+.ti{width:68px;height:56px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font:600 11px/14px var(--font)}
+.ti .ci{width:22px;height:22px}
+.ti.on{background:#FFFFFF;color:var(--text);box-shadow:var(--shadow-raised)}
+.ti.on .ci{--ci-a:var(--accent);--ci-b:var(--buzz);--ci-bo:1}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#031B0B}
+.dark .ti.on .ci{--ci-a:#0B783D}
+.aura{display:none}
+.pf{position:absolute;left:0;right:0;top:0}
+.cov{height:236px;background:url(/_blob/edc11ca5adcd4b5e9a480c92b598fb36) center 60%/cover;border-radius:0 0 28px 28px}
+.tp{position:absolute;right:16px;top:52px;display:flex;gap:8px;z-index:4}
+.tp .round{background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.9);--ci-a:#031B0B;--ci-b:#4A6550}
+.dark .tp .round{background:rgba(18,22,20,.78);border-color:rgba(255,255,255,.12);--ci-a:#EEF3F0;--ci-b:rgba(238,243,240,.55)}
+.pb{margin:-60px 20px 0;display:flex;flex-direction:column;align-items:center}
+.pic{width:112px;height:112px;border-radius:50%;border:4px solid var(--canvas);background:#0E8745;color:#fff;display:flex;align-items:center;justify-content:center;font:700 40px/1 var(--font);box-sizing:border-box}
+.dark .pic{border-color:#000;background:#0B783D}
+.nm{margin:12px 0 0;font:600 28px/34px var(--font);letter-spacing:-.6px;color:var(--text)}
+.bio{margin:4px 0 0;font:500 15px/22px var(--font);color:var(--muted);text-align:center}
+.pacts{margin-top:20px;display:flex;gap:10px;width:100%}
+.pacts .btn{flex:1 1 0;min-width:0;height:48px;padding:0 12px;white-space:nowrap;font:600 15px/20px var(--font)}
+.pacts .btn .ci{width:18px;height:18px}
+.fr{flex:1 1 0;min-width:0;height:48px;border-radius:999px;display:flex;align-items:center;gap:8px;padding:0 10px 0 6px;text-decoration:none}
+.dark .fr{background:#121614;border-color:rgba(255,255,255,.08)}
+.fr .stack{display:flex}
+.fr .av{width:32px;height:32px;font-size:13px;margin-left:-10px;border:2px solid var(--canvas)}
+.dark .fr .av{border-color:#121614}
+.fr .av:first-child{margin-left:0}
+.fr .pl{background:var(--surface2);color:var(--text);font:700 12px/1 var(--font)}
+.dark .fr .pl{background:#262E2B;color:#EEF3F0}
+.fr .chev{flex:none;width:16px;height:16px;color:var(--muted)}
+.fr{gap:6px;padding-right:12px}
+.fr p{flex:1 1 auto;min-width:0;margin:0;font:600 14px/18px var(--font);color:var(--text);white-space:nowrap}
+.sh{align-self:stretch;margin:28px 0 0;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
+.anon{align-self:stretch;margin-top:12px;display:flex;align-items:center;gap:14px}
+.anon img{width:64px;height:64px;border-radius:50%;flex:none}
+.anon div{flex:1;min-width:0;display:flex;flex-direction:column}
+.anon b{font:700 19px/24px var(--font);letter-spacing:-.2px;color:var(--text)}
+.anon span{font:500 13px/18px var(--font);color:var(--muted)}
+.anon .btn{height:40px;padding:0 14px;font-size:14px;flex:none}
+.anon .btn .ci{width:16px;height:16px;--ci-a:var(--on-primary)}
+.tk{align-self:stretch;margin-top:28px;position:relative;height:128px}
+.tk svg.sh2{position:absolute;left:0;top:0;width:350px;height:128px;overflow:visible;pointer-events:none}
+.tk .shd{fill:#FF4F8B}
+.tk .ol{fill:none;stroke:#0B3D22;stroke-width:2}
+.tkb{position:absolute;inset:0;display:flex;clip-path:path('M24,0 H84 A12,12 0 0 0 108,0 H326 A24,24 0 0 1 350,24 V104 A24,24 0 0 1 326,128 H108 A12,12 0 0 0 84,128 H24 A24,24 0 0 1 0,104 V24 A24,24 0 0 1 24,0 Z');background:#FBF8EE radial-gradient(rgba(11,61,34,.10) 1px,transparent 1.4px) 0 0/7px 7px}
+.tks{width:97px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#FBD9A8 radial-gradient(rgba(224,120,40,.22) 1px,transparent 1.4px) 0 0/6px 6px;border-right:2px dashed rgba(11,61,34,.45)}
+.tks .hw{position:relative;width:80px;height:80px;display:flex;align-items:center;justify-content:center}.tks .hl{position:absolute;inset:0;width:100%;height:100%;stroke-width:1.5}.tks .hw img{position:relative;height:84px;width:auto;display:block}
+.tks span{font:700 12px/16px var(--font);letter-spacing:.2px;color:#031B0B}
+.tkm{flex:1;min-width:0;padding:12px 14px 12px 16px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.tkl{margin:0;font:700 11px/14px var(--font);letter-spacing:1.4px;color:#2C5A3E}
+.tkm b{margin-top:4px;font:800 20px/24px var(--font);letter-spacing:-.4px;color:#031B0B}
+.tkm>span{font:500 13px/18px var(--font);color:#4A6550}
+.tk .tkm .btn.primary{margin-top:10px;height:34px;padding:0 14px;font:600 13px/16px var(--font);background:#031B0B;color:#fff;box-shadow:none;--ci-a:#3DDC84;--ci-b:#3DDC84}
+.tkm .btn .ci{width:16px;height:16px}
+.dark .tk .shd{fill:#7B5CFF}
+.dark .tk .ol{stroke:#3DDC84}
+.dark .tkb{background:#101915 radial-gradient(rgba(147,235,185,.10) 1px,transparent 1.4px) 0 0/7px 7px}
+.dark .tks{background:#2A1F45 radial-gradient(rgba(201,184,255,.18) 1px,transparent 1.4px) 0 0/6px 6px;border-right-color:rgba(147,235,185,.45)}
+.dark .tks span{color:#EEF3F0}
+.dark .tkl{color:#93EBB9}
+.dark .tkm b{color:#EEF3F0}
+.dark .tkm>span{color:rgba(238,243,240,.62)}
+.dark .tk .tkm .btn.primary{background:rgba(255,255,255,.94);color:#0B0E0D;--ci-a:#0B783D;--ci-b:#0B783D}
+.stag{font:600 12px/16px var(--font);letter-spacing:0;padding:4px 10px;border-radius:999px;background:var(--success-soft);color:var(--on-success-soft)}
+.dark .stag{background:rgba(61,220,132,.14);color:#93EBB9}
+.sd{align-self:stretch;margin:6px 0 0;font:500 14px/20px var(--font);color:var(--muted)}
+.parts{align-self:stretch;margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.prt{display:flex;flex-direction:column;align-items:center;text-align:center}
+.prt img{width:84px;height:84px;border-radius:50%}
+.prt b{margin-top:8px;font:600 14px/18px var(--font);color:var(--text)}
+.prt span{font:500 12px/16px var(--font);color:var(--muted)}
+.sbar2{position:absolute;left:0;right:0;top:0;padding:52px 20px 22px;display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.32);-webkit-backdrop-filter:blur(24px) saturate(1.1);backdrop-filter:blur(24px) saturate(1.1);-webkit-mask-image:linear-gradient(#000 calc(100% - 22px),transparent);mask-image:linear-gradient(#000 calc(100% - 22px),transparent);z-index:3}
+.dark .sbar2{background:rgba(0,0,0,.86)}
+.sbr{display:flex;align-items:center;gap:12px;min-height:48px}
+.sbr .pic{width:36px;height:36px;border-width:0;font-size:14px}
+.sbt{flex:1;min-width:0;font:700 17px/22px var(--font);letter-spacing:-.2px;color:var(--text)}
+.sbr .round{--ci-a:var(--text);--ci-b:var(--muted)}
+.dark .sbr .round{background:#121614;border-color:rgba(255,255,255,.08);box-shadow:none}
+
+.fade{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(180deg,rgba(239,247,241,0),var(--canvas) 70%);pointer-events:none}
+.dark .fade{background:linear-gradient(180deg,rgba(0,0,0,0),#000 70%)}
+/*TB2*/
+.tb{left:20px;right:20px;bottom:30px;height:60px;padding:0 5px;gap:2px;box-shadow:0 6px 18px rgba(3,27,11,.08),0 0 0 1px rgba(3,27,11,.04)}
+.dark .tb{box-shadow:0 0 0 1px rgba(255,255,255,.07)}
+.ti{flex:1 1 0;min-width:0;width:auto;height:50px;gap:3px;font:600 10px/13px var(--font);letter-spacing:.1px;white-space:nowrap}
+.ti .ci{width:20px;height:20px}
+.ti.on{flex:1 1 0;padding:0;background:#031B0B;color:#FFFFFF;box-shadow:0 4px 12px rgba(3,27,11,.18)}
+.ti.on .ci{--ci-a:#3DDC84;--ci-b:#FF6FA0}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#0B0E0D;box-shadow:none}
+.dark .ti.on .ci{--ci-a:#0B783D;--ci-b:#FF4F8B}
+.dark .ti{color:rgba(238,243,240,.55)}
+/*TB2END*/
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+<div class="pf" style="transform:translateY(-0px)">
+<div class="cov" role="img" aria-label="Kapak görseli"></div>
+<div class="pb">
+<div class="pic">G</div>
+<p class="nm">Fırat, 26</p>
+<p class="bio">dünyanın en sadık adamı</p>
+<div class="pacts"><button class="btn soft"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.8" y="9.6" width="16.4" height="5" rx="2.5" transform="rotate(-45 11 12.1)" class="a"></rect><rect x="3" y="19" width="18" height="2.6" rx="1.3" class="b"></rect></svg>Profili düzenle</button>
+<a class="glass fr" href="#"><span class="stack"><span class="av c2">F</span><span class="av c4">K</span></span><p>5 arkadaş</p><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></a></div>
+<div class="tk" role="group" aria-label="Anonim kimliğin">
+<svg class="sh2" viewBox="0 0 350 128" aria-hidden="true"><defs><mask id="tkm{{t.k}}" maskUnits="userSpaceOnUse" x="-10" y="-10" width="380" height="160"><rect x="-10" y="-10" width="380" height="160" fill="#fff"></rect><circle cx="96" cy="0" r="13" fill="#000"></circle></mask></defs><g mask="url(#tkm{{t.k}})"><path class="shd" transform="translate(4 5)" d="M24,0 H84 A12,12 0 0 0 108,0 H326 A24,24 0 0 1 350,24 V104 A24,24 0 0 1 326,128 H108 A12,12 0 0 0 84,128 H24 A24,24 0 0 1 0,104 V24 A24,24 0 0 1 24,0 Z"></path></g></svg>
+<div class="tkb">
+<div class="tks"><div class="hw"><svg class="hl" viewBox="-54 -54 108 108" aria-hidden="true"><circle r="54" fill="#8B6CFF" fill-opacity=".22"></circle><circle r="46.44" fill="none" stroke="#8B6CFF" stroke-opacity=".45" stroke-width="1.6" vector-effect="non-scaling-stroke"></circle><circle r="38.88" fill="none" stroke="#8B6CFF" stroke-opacity=".3" stroke-width="1.2" vector-effect="non-scaling-stroke"></circle></svg><img src="/_blob/40ddebf8d65cbaca999a45021a201cb6" alt="Ninja setli anonim kapsülün"></div><span>No. uc44</span></div>
+<div class="tkm"><p class="tkl">ANONİM KİMLİĞİN</p><b>terra-uc44</b><span>Yeni ad · 12 gün sonra</span><button class="btn primary"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" class="a"></path></svg>Kapsülünü süsle</button></div>
+</div>
+<svg class="sh2" viewBox="0 0 350 128" aria-hidden="true"><path class="ol" d="M24,0 H84 A12,12 0 0 0 108,0 H326 A24,24 0 0 1 350,24 V104 A24,24 0 0 1 326,128 H108 A12,12 0 0 0 84,128 H24 A24,24 0 0 1 0,104 V24 A24,24 0 0 1 24,0 Z"></path></svg>
+</div>
+<p class="sh">SET BALONU<span class="stag">Ninja balonu açık</span></p>
+<p class="sd">Anonim yazınca mesajların Ninja balonuyla görünür.</p>
+<div class="parts"><div class="prt"><img src="/_blob/1b0b55da52868f6c0865d39685a48916" alt="Shuriken tokalı kapsül başı"><b>Baş</b><span>Shuriken tokası</span></div><div class="prt"><img src="/_blob/2e08babb4a93f474f041481b099765d6" alt="Şimşek gözlü kapsül yüzü"><b>Yüz</b><span>Şimşek gözler</span></div><div class="prt"><img src="/_blob/9f0048ecc2e6f1c68fc45466627ef9cf" alt="Gece pelerinli kapsül gövdesi"><b>Gövde</b><span>Gece pelerini</span></div></div>
+</div>
+</div>
+<div class="tp"><button class="round" aria-label="Ayarlar"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.6" width="18" height="3" rx="1.5" class="b"></rect><rect x="3" y="15.4" width="18" height="3" rx="1.5" class="b"></rect><rect x="13" y="3" width="5" height="8.2" rx="2.5" class="a"></rect><rect x="6" y="12.8" width="5" height="8.2" rx="2.5" class="a"></rect></svg></button></div>
+<div class="fade"></div>
+<nav class="glass tb">
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="b"></circle><path d="M16.6 7.4 13.9 13.9 7.4 16.6 10.1 10.1Z" class="a"></path><circle cx="12" cy="12" r="1.3" class="w"></circle></svg>Keşfet</span>
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.4" y="5.6" width="17.2" height="15" rx="4.6" class="b"></rect><rect x="4.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 8 5.4)" class="a"></rect><rect x="12.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 16 5.4)" class="a"></rect><rect x="6.5" y="12.1" width="11" height="2.6" rx="1.3" class="a"></rect></svg>Aktiviteler</span>
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mk{{t.k}}" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#mk{{t.k}})"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></g><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></svg>Mekan</span>
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" class="b"></path><circle cx="8.2" cy="10.6" r="1.5" class="a"></circle><circle cx="12" cy="10.6" r="1.5" class="a"></circle><circle cx="15.8" cy="10.6" r="1.5" class="a"></circle></svg>Mesajlar</span>
+<span class="ti on"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.6" r="3.9" class="a"></circle><rect x="4.6" y="13.6" width="14.8" height="7.4" rx="3.7" class="b"></rect></svg>Profil</span>
+</nav>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>

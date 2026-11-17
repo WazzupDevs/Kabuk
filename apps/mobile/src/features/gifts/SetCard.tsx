@@ -7,18 +7,19 @@ import {
   wornSetPieces,
 } from '@shared/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
+import { upperTr } from '@shared/trText.ts';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Glass, T, useKit } from '@/aura/kit';
+import { T, useKit } from '@/aura/kit';
 import { CachedSvg } from '@/components/CachedSvg';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useNarrow } from '@/lib/useNarrow';
 import { Tap } from '@/motion';
 import { SET_BALLOONS } from '@/theme/setBalloons';
-import { TIER_COLOR } from '@/theme/gifts';
 import { OWN_PROFILE, SET_CARD } from '@/theme/ownProfile';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -33,7 +34,9 @@ import { useEquip, useGiftState } from './queries';
 // balloon wherever the person writes anonymously. A slot shows the set piece worn there; a tap
 // opens the region's set pieces, by set, the ones not owned faded under a lock; choosing one wears
 // it (gifts/equip). A new set's pieces join the sheet by themselves (content/gift-packs.json).
-const DISC = 74;
+// yeni arayüz tuvali, ProfilBen `.prt`: the three parts' pictures 84, plain (no ring); in the narrow
+// state two to a row (DarProfilim).
+const DISC = 84;
 const EMPTY = 62;
 const OPTION = 64;
 const RING = 3;
@@ -43,6 +46,7 @@ const pieceLook = (id: string) => `${CAPSULE} x:${id}`;
 
 export function SetCard() {
   const { c, scheme } = useKit();
+  const narrow = useNarrow();
   const gifts = useGiftState();
   const [open, setOpen] = useState<SetRegion | null>(null);
   if (!gifts.data) return null;
@@ -58,7 +62,6 @@ export function SetCard() {
   const lead = counts.reduce((a, b) => (b.n > a.n ? b : a), counts[0] ?? { set: null, n: 0 });
   const filled = SET_REGION_ORDER.filter((r) => pieces[r]).length;
   const mixed = filled === SET_REGION_ORDER.length && !balloon;
-  const gold = TIER_COLOR[scheme].efsanevi;
   const skin = balloon ? SET_BALLOONS[balloon] : null;
 
   const k = SET_CARD[scheme];
@@ -67,23 +70,14 @@ export function SetCard() {
     : mixed
       ? { bg: k.count, fg: c.warn }
       : { bg: k.count, fg: c.ink };
-  // tuval Benim: the title and the count's pill on one line, the note under them across the card.
+  // yeni tuval ProfilBen (`.sh`, `.stag`, `.sd`, `.parts`): the small title and the balloon's tag on one
+  // line, the note under them, the three parts' pictures under it; no card.
   return (
-    <Glass
-      face={k.card}
-      radius={SET_CARD.radius}
-      style={{
-        marginTop: OWN_PROFILE.gap,
-        paddingTop: SET_CARD.padTop,
-        paddingHorizontal: SET_CARD.padX,
-        paddingBottom: SET_CARD.padBottom,
-        gap: SET_CARD.gap,
-      }}
-    >
+    <View style={{ marginTop: OWN_PROFILE.gap, gap: SET_CARD.gap }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <T v="setTitle" ink accessibilityRole="header">
-            {tr.gifts.setTitle}
+          <T v="eyebrow" accessibilityRole="header">
+            {upperTr(tr.gifts.setTitle)}
           </T>
         </View>
         <View
@@ -119,14 +113,15 @@ export function SetCard() {
       <View
         style={{
           flexDirection: 'row',
-          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          rowGap: SET_CARD.slotsTop,
           marginTop: SET_CARD.slotsTop - SET_CARD.gap,
         }}
       >
         {SET_REGION_ORDER.map((region) => {
           const piece = pieces[region];
           return (
-            <View key={region} style={{ flex: 1 }}>
+            <View key={region} style={{ width: narrow ? '50%' : '33.33%' }}>
               <Tap
                 accessibilityLabel={tr.gifts.setSlotLabel(
                   tr.gifts.setRegion[region],
@@ -152,7 +147,7 @@ export function SetCard() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       ...(piece
-                        ? { boxShadow: `0 0 0 ${RING}px ${gold}, 0 0 14px ${gold}88` }
+                        ? null
                         : {
                             borderWidth: 2,
                             borderStyle: 'dashed',
@@ -185,7 +180,7 @@ export function SetCard() {
         worn={new Set(worn)}
         onClose={() => setOpen(null)}
       />
-    </Glass>
+    </View>
   );
 }
 

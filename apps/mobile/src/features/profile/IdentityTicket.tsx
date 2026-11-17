@@ -19,7 +19,8 @@ import { Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { lookGround } from '@/theme/capsuleLook';
 import { OWN_PROFILE } from '@/theme/ownProfile';
-import { RISO_PAPER, TICKET } from '@/theme/profileCover';
+import { RISO_PAPER, TICKET, TICKET_TONE } from '@/theme/profileCover';
+import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import { LivingLook } from './LivingLook';
@@ -63,6 +64,8 @@ export function IdentityTicket({
   look: string | null;
   refreshAt: string | null;
 }) {
+  const { scheme } = useTheme();
+  const tone = TICKET_TONE[scheme];
   const [box, setBox] = useState({ w: 0, h: 0 });
   // The capsule's layers each on one Skia canvas (docs/perf/akicilik-denetimi.md → 4.13 D: some
   // 6300 native views of its SVG shapes and pictures in turn were the first opening's long frame).
@@ -76,7 +79,7 @@ export function IdentityTicket({
     <View
       testID="profile-capsule"
       onLayout={(ev) => setBox({ w: ev.nativeEvent.layout.width, h: ev.nativeEvent.layout.height })}
-      // tuval Benim: 150 high (more at the largest text), 4 clear of the panel's right for its print.
+      // yeni tuval ProfilBen: 128 high (more at the largest text), 4 clear of the panel's right for its print.
       style={{
         flexDirection: 'row',
         minHeight: TICKET.height,
@@ -97,13 +100,8 @@ export function IdentityTicket({
             </ClipPath>
             {/* The riso halftone on the paper (iskelet.md → 2.5). */}
             <Pattern id="ticket-tram" width={cell} height={cell} patternUnits="userSpaceOnUse">
-              <Circle cx={cell / 4} cy={cell / 4} r={RISO_PAPER.dot} fill={RISO_PAPER.light.dots} />
-              <Circle
-                cx={(3 * cell) / 4}
-                cy={(3 * cell) / 4}
-                r={RISO_PAPER.dot}
-                fill={RISO_PAPER.light.dots}
-              />
+              <Circle cx={cell / 4} cy={cell / 4} r={RISO_PAPER.dot} fill={tone.dots} />
+              <Circle cx={(3 * cell) / 4} cy={(3 * cell) / 4} r={RISO_PAPER.dot} fill={tone.dots} />
             </Pattern>
             {/* The stub's pink halftone over the capsule's ground. */}
             <Pattern
@@ -115,8 +113,8 @@ export function IdentityTicket({
               <Circle cx={dots.cell / 2} cy={dots.cell / 2} r={dots.dot} fill={dots.color} />
             </Pattern>
           </Defs>
-          <Path d={ticketPath(ox + e, oy + e, box.w - 2 * e, box.h - 2 * e)} fill={TICKET.print} />
-          <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill={TICKET.paper} />
+          <Path d={ticketPath(ox + e, oy + e, box.w - 2 * e, box.h - 2 * e)} fill={tone.print} />
+          <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill={tone.paper} />
           <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill="url(#ticket-tram)" />
           {look ? (
             <Rect
@@ -139,7 +137,7 @@ export function IdentityTicket({
           <Path
             d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)}
             fill="none"
-            stroke={TICKET.edge}
+            stroke={tone.edge}
             strokeWidth={TICKET.edgeWidth}
           />
           <Line
@@ -147,7 +145,7 @@ export function IdentityTicket({
             y1={TICKET.notch + SPACING[1]}
             x2={TICKET.stub}
             y2={box.h - TICKET.notch - SPACING[1]}
-            stroke={TICKET.dashColor}
+            stroke={tone.dash}
             strokeWidth={TICKET.dashWidth}
             strokeDasharray={[...TICKET.dash]}
           />
@@ -179,7 +177,7 @@ export function IdentityTicket({
             )}
           </View>
         ) : null}
-        <T v="ticketNo" color={TICKET.ink} center>
+        <T v="ticketNo" color={tone.ink} center>
           {tr.profile.ticketNo(nick.slice(-4))}
         </T>
       </View>
@@ -192,13 +190,13 @@ export function IdentityTicket({
           paddingRight: TICKET.padX,
         }}
       >
-        <T v="ticketKicker" color={TICKET.muted}>
+        <T v="ticketKicker" color={tone.kicker}>
           {upperTr(tr.profile.ticketKicker)}
         </T>
-        <T v="ticketNick" color={TICKET.ink} testID="nick">
+        <T v="ticketNick" color={tone.ink} testID="nick">
           {nick}
         </T>
-        <NickRefresh refreshAt={refreshAt} />
+        <NickRefresh refreshAt={refreshAt} tone={tone} />
         <View style={{ marginTop: TICKET.buttonTop, alignSelf: 'flex-start' }}>
           <Btn
             sm
@@ -220,7 +218,13 @@ export function IdentityTicket({
 }
 
 // "Yenile" while it can be renewed; "Yenile · n gün sonra" while it waits (K-9).
-function NickRefresh({ refreshAt }: { refreshAt: string | null }) {
+function NickRefresh({
+  refreshAt,
+  tone,
+}: {
+  refreshAt: string | null;
+  tone: (typeof TICKET_TONE)[keyof typeof TICKET_TONE];
+}) {
   const queryClient = useQueryClient();
   const now = useNow(60_000);
   const waitMs = refreshAt ? Date.parse(refreshAt) - now : 0;
@@ -232,7 +236,7 @@ function NickRefresh({ refreshAt }: { refreshAt: string | null }) {
   });
   if (waiting) {
     return (
-      <T v="ticketNote" color={TICKET.muted}>
+      <T v="ticketNote" color={tone.muted}>
         {tr.profile.nickRenewIn(Math.ceil(waitMs / DAY_MS))}
       </T>
     );
@@ -251,9 +255,9 @@ function NickRefresh({ refreshAt }: { refreshAt: string | null }) {
         {refresh.isPending ? (
           <Loader size={ICON.sm} delay={0} />
         ) : (
-          <CapIcon name="refresh" color={TICKET.link} size={ICON.sm} />
+          <CapIcon name="refresh" color={tone.link} size={ICON.sm} />
         )}
-        <T v="ticketNote" color={TICKET.link}>
+        <T v="ticketNote" color={tone.link}>
           {tr.profile.nickRenew}
         </T>
       </Tap>
