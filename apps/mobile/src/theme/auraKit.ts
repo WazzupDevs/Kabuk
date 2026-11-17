@@ -113,17 +113,20 @@ export const KIT_TYPE = {
   // what happened in it 500, `light`).
   inboxPreview: t(500, 14, 18),
   notice: t(700, 15.5, 20),
-  // The DM (tuval Dm): a message (16, 500, 1.36), its time (11.5, 600), the day's pill (12.5, 700),
-  // the bar's name (16.5, 800, -0.015em), the menu's rows (15.5, 600), the block's sheet: its title
-  // (21, 800, -0.02em), its sentence (14, 500, 1.45) and its buttons (16.5, 800).
-  msgDm: t(500, 16, 22),
-  msgTime: t(600, 11.5, 15),
-  // "düzenlendi" by it (tuval DmDuzenlendi: 500) and the held message's menu's note (DmMenuSureDoldu:
-  // 12/16, 500).
-  msgEdited: t(500, 11.5, 15),
+  // The DM (yeni arayüz tuvali, DmSohbet): what is typed in its bar (`.fld`, 15/22), the bar's name
+  // (`.who b`, 16/20, 600) and the line under it (`.who span`, 12/16); the strip over the message
+  // bar (`.eb`: its title 13/17 at 700, its words 13/17). Its bubbles are `msg`, their time `stamp`,
+  // the day `day`. The old board's: the menu's rows (15.5, 600), the block's sheet: its title (21,
+  // 800, -0.02em), its sentence (14, 500, 1.45) and its buttons (16.5, 800).
+  msgDm: t(500, 15, 22),
+  dmName: t(600, 16, 20),
+  dmSub: t(500, 12, 16),
+  stripTitle: t(700, 13, 17),
+  stripText: t(500, 13, 17),
+  // "düzenlendi" by the time (DmDuzenlendi `.s .edt`: the time's 11/14 at 500) and the held
+  // message's menu's note (DmMenuSureDoldu: 12/16, 500).
+  msgEdited: t(500, 11, 14),
   menuNote: t(500, 12, 16),
-  dayPill: t(700, 12.5, 16),
-  dmName: t(800, 16.5, 21, -0.015),
   menuRow: t(600, 15.5, 20),
   confirmTitle: t(800, 21, 27, -0.02),
   confirmNote: t(500, 14, 20),
@@ -240,6 +243,8 @@ export const KIT_TYPE = {
   strong: { fontFamily: F[600] } as TextStyle,
   // A conversation's name and last line while unread (iskelet.md → 5.4).
   bold: { fontFamily: F[800] } as TextStyle,
+  // An unread conversation's time (yeni arayüz tuvali, Main `.tm.new`: 700).
+  heavy: { fontFamily: F[700] } as TextStyle,
   // "Henüz mesaj yok" (5.4): slanted (the face has no italic file; Android slants it).
   italic: { fontStyle: 'italic' } as TextStyle,
   // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
@@ -872,8 +877,8 @@ export const KIT = {
       xs: 18,
       sm: 32,
       member: 36,
-      // The DM's top bar (tuval Dm: 38).
-      bar: 38,
+      // The DM's top bar (yeni arayüz tuvali, DmSohbet `.who .av`: 40).
+      bar: 40,
       list: 40,
       md: 44,
       row: 48,

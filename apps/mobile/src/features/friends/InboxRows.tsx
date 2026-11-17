@@ -5,7 +5,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Av, Badge, Glass, Li, T, useKit } from '@/aura/kit';
+import { Av, Badge, Li, T, useKit } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { type MenuAnchor, measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { TypingDots } from '@/components/TypingDots';
@@ -21,8 +21,8 @@ import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
 import { ICON, SPACING } from '@/theme/tokens';
 
-// Mesajlar's and Arşivlenenler's conversations (docs/SPEC_V4.md §4.X): the rows on one glass card,
-// a long press on a row opens its menu (tuval MesajlarUzunBas: grown from the row, Menu → anchor).
+// Mesajlar's and Arşivlenenler's conversations (docs/SPEC_V4.md §4.X): flat rows on the ground, a
+// long press on a row opens its menu (tuval MesajlarUzunBas: grown from the row, Menu → anchor).
 
 // Rows past this many don't listen for "yazıyor": a Realtime connection carries a limited number
 // of channels, and the rows further down are off screen.
@@ -141,50 +141,37 @@ export function useThreadMenu(
   return { open, menu, lastKind };
 }
 
-// The rows on one `.card` (tuval Mesajlar), 26 round, 4 / 6 inside; the hairline over each row's
-// words but the first (InboxRow).
-export function InboxCard({
+// The rows lying flat on the ground (yeni arayüz tuvali, Main `.lst`): no card and no hairline, the
+// rows running to the screen's edges (`margin: 0 -20px`), each 20 in.
+export function InboxList({
   threads,
   now,
   onHold,
   from = 0,
   version,
   raised = false,
+  above = 0,
 }: {
   threads: readonly DmInboxThread[];
   now: Date;
   onHold: (thread: DmInboxThread, at: MenuAnchor) => void;
-  // The rows before these on the screen (the pinned card's): the rise and "yazıyor" go on counting.
+  // The rows before these on the screen (the pinned list's): the rise and "yazıyor" go on counting.
   from?: number;
   // The inbox's read (its time): the rows lay out again for a press's moves (ListMove).
   version: number;
-  // Over the other card: a row moving into it slides over the card it came from.
+  // Over the other list: a row moving into it slides over the list it came from.
   raised?: boolean;
+  // More room over it than the page's gap (`.lst+.lst`: 8).
+  above?: number;
 }) {
-  const { scheme } = useKit();
   return (
-    <Glass
-      face={M[scheme].card}
-      radius={M.card.radius}
-      style={{
-        borderRadius: M.card.radius,
-        paddingVertical: M.card.padY,
-        paddingHorizontal: M.card.padX,
-        zIndex: raised ? 1 : 0,
-      }}
-    >
+    <View style={{ marginHorizontal: -M.side, marginTop: above, zIndex: raised ? 1 : 0 }}>
       {threads.map((t, i) => (
         <ListMove key={t.publicId} id={t.publicId} version={version} index={from + i}>
-          <InboxRow
-            thread={t}
-            now={now}
-            listen={from + i < TYPING_ROWS}
-            follows={i > 0}
-            onHold={onHold}
-          />
+          <InboxRow thread={t} now={now} listen={from + i < TYPING_ROWS} onHold={onHold} />
         </ListMove>
       ))}
-    </Glass>
+    </View>
   );
 }
 
@@ -254,25 +241,23 @@ export function ArchivedRow({
 // tuval Main: `.chev` 18.
 const ARC_CHEVRON = ICON.sm + SPACING[0.5];
 
-// A conversation (tuval Mesajlar): 10 / 8 inside, the 54 face in a white ring, 13 from the words;
-// the words 4 above and under, the hairline over them when a row is above; the name (16/700) and
-// the read ticks and time (12.5/600) on top, the last message (14/500, one line) or "yazıyor" 3
-// under it. iskelet.md → 5.4: unread, the name and the last line bold, the time green and the count
-// on a green badge at the right. A long press opens its menu (docs/SPEC_V4.md §4.X).
+// A conversation (yeni arayüz tuvali, Main `.rw`): 10 above and under, 20 in, the 48 face in a 2
+// ring, 12 from the words; the name (16/600) and the time (13/500) on top, the last message
+// (15/500, one line) or "yazıyor" 2 under it. Unread, the time in the accent at 700, the last line
+// in the ink at 600 and the count on the pink badge at the right; the own last message's read ticks
+// (18) before it. A long press opens its menu (docs/SPEC_V4.md §4.X).
 function InboxRow({
   thread: t,
   now,
   listen,
-  follows,
   onHold,
 }: {
   thread: DmInboxThread;
   now: Date;
   listen: boolean;
-  follows: boolean;
   onHold: (thread: DmInboxThread, at: MenuAnchor) => void;
 }) {
-  const { scheme } = useKit();
+  const { c, scheme } = useKit();
   const look = M[scheme];
   const box = useRef<View>(null);
   const name = t.displayName ?? tr.profile.noName;
@@ -288,6 +273,7 @@ function InboxRow({
         padY={M.row.padY}
         padX={M.row.padX}
         gap={M.row.gap}
+        minHeight={M.row.minHeight}
         onPress={
           threadId
             ? () => openDm({ threadId, publicId: t.publicId, name: t.displayName })
@@ -298,35 +284,25 @@ function InboxRow({
         }
       >
         <Av
-          size="inbox"
+          size="row"
           name={name}
           photoUrl={t.photoUrl}
           board={{ ring: M.row.ring, ringColor: look.faceRing, shadow: look.faceShadow }}
         />
-        <View
-          style={{
-            flex: 1,
-            minWidth: 0,
-            gap: M.row.lineGap,
-            paddingVertical: M.row.wordsPadY,
-            borderTopWidth: follows ? KIT.size.hair : 0,
-            borderTopColor: look.hair,
-          }}
-        >
+        <View style={{ flex: 1, minWidth: 0, gap: M.row.lineGap }}>
           <View style={BETWEEN}>
-            <T v="placeName" style={[{ flex: 1 }, unread ? KIT_TYPE.bold : null]}>
+            <T v="h3" style={{ flex: 1 }}>
               {name}
             </T>
             {t.lastMessageAt ? (
-              // The own last message's ticks by the time (Telegram Android).
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: M.row.metaGap }}>
-                {t.lastFromMe && t.lastStatus ? (
-                  <DeliveryTicks delivery={t.lastStatus} size={M.ticks.width} />
-                ) : null}
-                <T v="personLine" tabular color={unread ? KIT.primary : look.time}>
-                  {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
-                </T>
-              </View>
+              <T
+                v="fine"
+                tabular
+                color={unread ? look.fresh : c.muted}
+                style={unread ? KIT_TYPE.heavy : null}
+              >
+                {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
+              </T>
             ) : null}
           </View>
           <View style={BETWEEN}>
@@ -339,7 +315,7 @@ function InboxRow({
             )}
             {unread ? (
               <View accessible accessibilityLabel={tr.messages.unread(t.unreadCount)}>
-                <Badge green count={t.unreadCount} />
+                <Badge count={t.unreadCount} />
               </View>
             ) : null}
           </View>
@@ -355,18 +331,21 @@ const BETWEEN = {
   gap: M.row.metaGap,
 };
 
-// The last message, ink and bold while unread (its ticks are by the time); none yet, "Henüz mesaj
-// yok" slanted and quieter (iskelet.md → 5.4; tuval Mesajlar: #4A6550, none #7C8F82).
+// The last message (`.pv`): muted, in the ink at 600 while unread; the own one after its read ticks
+// (`.tick`, 4 apart); none yet, "Henüz mesaj yok" slanted (`.pv.first`).
 function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
-  const { c, scheme } = useKit();
+  const { c } = useKit();
   const none = t.lastBody === null;
   return (
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
+      {t.lastFromMe && t.lastStatus && !none ? (
+        <DeliveryTicks delivery={t.lastStatus} size={M.ticks.width} />
+      ) : null}
       <T
-        v="inboxPreview"
-        color={none ? M[scheme].none : unread ? c.ink : M[scheme].preview}
+        v="body"
+        color={unread ? c.ink : c.muted}
         lines={1}
-        style={[{ flex: 1 }, none ? KIT_TYPE.italic : unread ? KIT_TYPE.bold : null]}
+        style={[{ flex: 1 }, none ? KIT_TYPE.italic : unread ? KIT_TYPE.strong : null]}
       >
         {t.lastBody ?? tr.messages.noMessage}
       </T>

@@ -15,7 +15,7 @@ import Svg, { Path } from 'react-native-svg';
 import { tr } from '@/i18n/tr';
 import { haptic, noteTyping } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { CapIcon } from '@/aura/CapIcon';
+import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { useKit } from '@/aura/kit';
 import { MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
@@ -23,12 +23,11 @@ import { DM } from '@/theme/dm';
 import { gradientStyle } from '@/theme/gradient';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { VENUE } from '@/theme/venue';
-import { ICON, SPACING } from '@/theme/tokens';
+import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
 
 import type { ChatQuote } from './ChatBubble';
 import { useChatEnd } from './ChatScreen';
-import { AppIcon } from './AppIcon';
 import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -353,98 +352,205 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   const send = flush ? card.send : SEND_IN;
   const sendRight = flush ? card.padRight : SEND_INSET;
   const sendBottom = flush ? (card.height - card.send) / 2 : SEND_INSET;
+  const sendButton = (
+    <SendIn
+      dm={dm}
+      side={dm ? DM.composer.send : send}
+      shown={shown}
+      sending={!!sending}
+      disabled={!!sendDisabled || !!sending}
+      label={sendLabel}
+      testID={sendTestID}
+      confirm={editing}
+      onPress={() => {
+        haptic('sent');
+        onSend();
+        // The stream goes to its end with the message (every chat); an edit leaves it be.
+        if (!editing) followEnd?.();
+      }}
+    />
+  );
   return (
     <View
       style={{
         paddingHorizontal: flush ? 0 : DM.composer.side,
         paddingTop: flush ? 0 : above ? SPACING[1] : SPACING[2],
         paddingBottom: flush ? 0 : SPACING[4] + SPACING[0.5],
-        gap: SPACING[1.5],
+        gap: dm ? DM.composer.gap : SPACING[1.5],
       }}
     >
       {above}
-      {replyTo ? <ReplyStrip quote={replyTo} onCancel={onCancelReply} /> : null}
-      <View
-        style={{
-          minHeight: height,
-          borderRadius: height / 2,
-          justifyContent: 'center',
-          ...(dm ? gradientStyle(look.fill) : { backgroundColor: cardLook.field }),
-          borderWidth: dm ? KIT.size.edge : 0,
-          borderColor: dm ? look.edge : undefined,
-          boxShadow: capsuleShadow.boxShadow,
-          paddingLeft: padLeft,
-          // The words stop short of the send button's place, shown or not.
-          paddingRight: send + 2 * sendRight,
-        }}
-      >
-        {capsuleShadow.node}
-        <TextInput
-          ref={ref}
-          testID={inputTestID}
-          value={value}
-          onChangeText={(text) => {
-            // No touch while the person types (K-30).
-            noteTyping();
-            onChangeText(text);
-          }}
-          accessibilityLabel={placeholder}
-          selectionColor={colors.accent}
-          maxLength={maxLength}
-          multiline
-          style={[
-            dm ? KIT_TYPE.msgDm : KIT_TYPE.chatField,
-            {
-              color: colors.text,
-              paddingVertical: dm ? SPACING[3] : (card.height - FIELD_LINE) / 2,
-              paddingHorizontal: 0,
-              maxHeight: SPACING[16] * 2,
-              includeFontPadding: false,
-              textAlignVertical: 'center',
-            },
-          ]}
-        />
-        {value.length === 0 ? (
-          <View
-            pointerEvents="none"
-            className="absolute inset-0 justify-center"
-            style={{ paddingLeft: padLeft }}
-          >
-            <RNText
-              numberOfLines={dm ? undefined : 2}
-              adjustsFontSizeToFit={!dm}
-              style={
-                dm
-                  ? [KIT_TYPE.msgDm, { color: DM[k.scheme].hint }]
-                  : [KIT_TYPE.chatField, { color: cardLook.hint }]
-              }
-            >
-              {placeholder}
-            </RNText>
-          </View>
-        ) : null}
-        <View style={{ position: 'absolute', right: sendRight, bottom: sendBottom }}>
-          <SendIn
-            dm={dm}
-            side={send}
-            shown={shown}
-            sending={!!sending}
-            disabled={!!sendDisabled || !!sending}
-            label={sendLabel}
-            testID={sendTestID}
-            confirm={editing}
-            onPress={() => {
-              haptic('sent');
-              onSend();
-              // The stream goes to its end with the message (every chat); an edit leaves it be.
-              if (!editing) followEnd?.();
-            }}
+      {replyTo ? (
+        dm ? (
+          // Yeni arayüz tuvali, DmYanit `.eb`: the edit's strip, for the answered message.
+          <DmStrip
+            testID="reply-strip"
+            icon="reply"
+            title={tr.chat.replyingTo(replyTo.name)}
+            text={replyTo.text}
+            closeLabel={tr.chat.cancelReply}
+            closeTestID="reply-cancel"
+            onClose={onCancelReply}
           />
+        ) : (
+          <ReplyStrip quote={replyTo} onCancel={onCancelReply} />
+        )
+      ) : null}
+      {/* DmSohbet, DmKlavye `.cmp`: the field and, once there is something to send, the send
+          beside it, 8 apart. */}
+      <View
+        style={dm ? { flexDirection: 'row', alignItems: 'flex-end', gap: DM.composer.gap } : null}
+      >
+        <View
+          style={{
+            flex: dm ? 1 : undefined,
+            minHeight: height,
+            borderRadius: height / 2,
+            justifyContent: 'center',
+            ...(dm ? gradientStyle(look.fill) : { backgroundColor: cardLook.field }),
+            borderWidth: dm ? KIT.size.edge : 0,
+            borderColor: dm ? look.edge : undefined,
+            boxShadow: capsuleShadow.boxShadow,
+            paddingLeft: padLeft,
+            // The words stop short of the send button's place, shown or not.
+            paddingRight: dm ? padLeft : send + 2 * sendRight,
+          }}
+        >
+          {capsuleShadow.node}
+          <TextInput
+            ref={ref}
+            testID={inputTestID}
+            value={value}
+            onChangeText={(text) => {
+              // No touch while the person types (K-30).
+              noteTyping();
+              onChangeText(text);
+            }}
+            accessibilityLabel={placeholder}
+            selectionColor={colors.accent}
+            maxLength={maxLength}
+            multiline
+            style={[
+              dm ? KIT_TYPE.msgDm : KIT_TYPE.chatField,
+              {
+                color: colors.text,
+                paddingVertical: dm ? SPACING[3] : (card.height - FIELD_LINE) / 2,
+                paddingHorizontal: 0,
+                maxHeight: SPACING[16] * 2,
+                includeFontPadding: false,
+                textAlignVertical: 'center',
+              },
+            ]}
+          />
+          {value.length === 0 ? (
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 justify-center"
+              style={{ paddingLeft: padLeft }}
+            >
+              <RNText
+                numberOfLines={dm ? undefined : 2}
+                adjustsFontSizeToFit={!dm}
+                style={
+                  dm
+                    ? [KIT_TYPE.msgDm, { color: DM[k.scheme].hint }]
+                    : [KIT_TYPE.chatField, { color: cardLook.hint }]
+                }
+              >
+                {placeholder}
+              </RNText>
+            </View>
+          ) : null}
+          {dm ? null : (
+            <View style={{ position: 'absolute', right: sendRight, bottom: sendBottom }}>
+              {sendButton}
+            </View>
+          )}
         </View>
+        {dm && shown ? sendButton : null}
       </View>
     </View>
   );
 });
+
+// The strip over the DM's message bar (yeni arayüz tuvali, DmYanit and DmDuzenle `.eb`): a glass
+// strip 20 round, its icon (20) in the ink, the title (13/700) over one line of the message
+// (13/500, muted), a × (36) at the right.
+function DmStrip({
+  icon,
+  title,
+  text,
+  closeLabel,
+  closeTestID,
+  onClose,
+  testID,
+}: {
+  icon: CapIconName;
+  title: string;
+  text: string;
+  closeLabel: string;
+  closeTestID: string;
+  onClose?: () => void;
+  testID: string;
+}) {
+  const { c, scheme } = useKit();
+  const look = DM[scheme].strip;
+  const S = DM.strip;
+  const shadow = shadowParts(
+    useLabOff('golge'),
+    look.shadow || undefined,
+    look.inset || undefined,
+    S.radius,
+    true,
+    KIT.size.edge,
+  );
+  return (
+    <View
+      testID={testID}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: S.gap,
+        paddingLeft: S.padLeft,
+        paddingRight: S.padRight,
+        paddingVertical: S.padY,
+        borderRadius: S.radius,
+        ...gradientStyle(look.fill),
+        borderWidth: KIT.size.edge,
+        borderColor: look.edge,
+        boxShadow: shadow.boxShadow,
+      }}
+    >
+      {shadow.node}
+      <CapIcon name={icon} color={c.ink} soft={1} size={S.icon} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <RNText style={[KIT_TYPE.stripTitle, { color: c.ink }]}>{title}</RNText>
+        {/* An excerpt of the message: one line. */}
+        <RNText style={[KIT_TYPE.stripText, { color: DM[scheme].stripMuted }]} numberOfLines={1}>
+          {text}
+        </RNText>
+      </View>
+      {onClose ? (
+        <Pressable
+          testID={closeTestID}
+          accessibilityRole="button"
+          accessibilityLabel={closeLabel}
+          onPress={onClose}
+          hitSlop={(TOUCH.min - S.close) / 2}
+          style={{
+            width: S.close,
+            height: S.close,
+            borderRadius: S.close / 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <CapIcon name="close" color={DM[scheme].stripMuted} soft={1} size={S.x} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
 
 // The capsule's send button: hidden while there is nothing to send, grown on springs.pop when
 // there is.
@@ -474,7 +580,8 @@ function SendIn({
 }) {
   const reduce = useReduceMotion();
   const from = MOTION.messageIn.sendFromScale;
-  const scale = useSharedValue(shown ? 1 : from);
+  // The DM's send is laid out only while shown: it grows in as it comes.
+  const scale = useSharedValue(shown && !dm ? 1 : from);
   const seen = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
     if (!shown) {
@@ -497,6 +604,9 @@ function SendIn({
     ? boxShadowParts(labOff, DM[scheme].sendShadow || undefined, side / 2)
     : shadowParts(labOff, prominent.shadow || undefined, prominent.inset || undefined, side / 2);
   const arrow = dm ? DM.composer.arrow : VENUE.chat.field.arrow;
+  // Yeni arayüz tuvali (DmKlavye, DmDuzenle `.snd`): the DM's send the ink round, its paper plane
+  // (22) and the edit's tick in the ground's colour.
+  const ink = dm ? DM[scheme].sendInk : KIT.onPrimary;
   return (
     <Pressable
       testID={testID}
@@ -518,7 +628,7 @@ function SendIn({
                 borderRadius: side / 2,
                 alignItems: 'center',
                 justifyContent: 'center',
-                ...(dm ? { backgroundColor: KIT.primary } : gradientStyle(prominent.fill)),
+                ...(dm ? { backgroundColor: DM[scheme].send } : gradientStyle(prominent.fill)),
                 boxShadow: sendShadow.boxShadow,
               },
               pressScale(pressed),
@@ -537,16 +647,24 @@ function SendIn({
                   entering={reduce ? undefined : sendIconIn}
                   exiting={reduce ? undefined : sendIconOut}
                 >
-                  <Svg width={arrow} height={arrow} viewBox="0 0 24 24">
-                    <Path
-                      d={confirm ? TICK : dm ? ARROW_UP_DM : ARROW_UP}
-                      fill="none"
-                      stroke={KIT.onPrimary}
-                      strokeWidth={dm ? ARROW_STROKE : ARROW_STROKE_CARD}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </Svg>
+                  {dm && !confirm ? (
+                    <CapIcon name="send" color={ink} soft={1} size={DM.composer.plane} />
+                  ) : (
+                    <Svg
+                      width={dm ? DM.composer.plane : arrow}
+                      height={dm ? DM.composer.plane : arrow}
+                      viewBox="0 0 24 24"
+                    >
+                      <Path
+                        d={confirm ? TICK : ARROW_UP}
+                        fill="none"
+                        stroke={ink}
+                        strokeWidth={dm ? TICK_STROKE_DM : ARROW_STROKE_CARD}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </Svg>
+                  )}
                 </Animated.View>
               </LayoutAnimationConfig>
             )}
@@ -578,11 +696,9 @@ const sendIconOut = () => {
 };
 // iskelet.md → 2.4: the line icons' stroke, round ends.
 const ARROW_UP = 'M12 19V5M5.5 11.5 12 5l6.5 6.5';
-// tuval Dm: the shaft from 19 to 6, the head 5.5 to either side.
-const ARROW_UP_DM = 'M12 19V6M6.5 11.5 12 6l5.5 5.5';
-// The edit's confirm tick.
-const TICK = 'M5 12.5l4.5 4.5L19 7.5';
-const ARROW_STROKE = 2.2;
+// The edit's confirm tick (DmDuzenle `.snd`: its stroke 3).
+const TICK = 'M5 12.6l4.6 4.6L19 7.6';
+const TICK_STROKE_DM = 3;
 const ARROW_STROKE_CARD = 2.8;
 // The card's field's line (KIT_TYPE.chatField: 14 on 18).
 const FIELD_LINE = 18;
@@ -688,41 +804,22 @@ const editStripOut = () => {
 // The message being edited, over the message bar (docs/SPEC_V4.md §4.X; the motion table's A4 4.1
 // and 4.3; still with reduce motion).
 function EditStrip({ text, onCancel }: { text: string; onCancel: () => void }) {
-  const { colors, shape } = useTheme();
-  const k = useKit();
-  const look = DM[k.scheme].composer;
   const reduce = useReduceMotion();
-  // Board 02d: a glass strip, the pencil, the title over the old text, a × at the right.
+  // DmDuzenle `.eb`: the pencil, the title over the old text, a × at the right.
   return (
     <Animated.View
       entering={reduce ? undefined : editStripIn}
       exiting={reduce ? undefined : editStripOut}
-      testID="edit-strip"
-      style={[
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: SPACING[2.5],
-          paddingLeft: SPACING[4],
-          paddingRight: SPACING[1.5],
-          paddingVertical: SPACING[2],
-          borderRadius: shape.radius.lg,
-          ...gradientStyle(look.fill),
-          borderWidth: KIT.size.edge,
-          borderColor: look.edge,
-        },
-      ]}
     >
-      <AppIcon name="pencil" color={colors.text} size={ICON.md} />
-      <View className="flex-1">
-        <Text variant="label" tone="text">
-          {tr.dm.editing}
-        </Text>
-        <Text variant="fine" tone="muted" numberOfLines={1}>
-          {text}
-        </Text>
-      </View>
-      <IconButton icon="close" label={tr.dm.cancelEdit} onPress={onCancel} testID="edit-cancel" />
+      <DmStrip
+        testID="edit-strip"
+        icon="edit"
+        title={tr.dm.editing}
+        text={text}
+        closeLabel={tr.dm.cancelEdit}
+        closeTestID="edit-cancel"
+        onClose={onCancel}
+      />
     </Animated.View>
   );
 }

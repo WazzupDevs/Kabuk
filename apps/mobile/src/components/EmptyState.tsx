@@ -54,10 +54,23 @@ const EMPTY_RISO = {
   venues: require('../../assets/riso/empty-venues.webp'),
   chat: require('../../assets/riso/history-sohbet.webp'),
   events: require('../../assets/riso/empty-events.webp'),
+  // Yeni arayüz tuvali (MesajlarBos, MesajlarAraBos, DmBos): cut out, no frame.
+  messages: require('../../assets/riso/empty-messages.webp'),
+  search: require('../../assets/riso/empty-search.webp'),
+  dm: require('../../assets/riso/empty-dm.webp'),
 } as const satisfies Record<string, ImageSourcePropType>;
 export type EmptyRiso = keyof typeof EMPTY_RISO;
 const RISO_FULL = { width: 240, height: 165, radius: 28, shadow: 'card' } as const;
 const RISO_SMALL = { width: 160, height: 110, radius: 22, shadow: 'raised' } as const;
+// The new board's cut-out pictures (`.emp img`): 120 × 98 (the search's drawn 3:2 in that box),
+// no corner, no shadow, at any size of the state.
+const RISO_BOARD: Partial<
+  Record<EmptyRiso, { width: number; height: number; radius: number; shadow: 'none' }>
+> = {
+  messages: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  search: { width: 120, height: 80, radius: 0, shadow: 'none' },
+  dm: { width: 120, height: 98, radius: 0, shadow: 'none' },
+};
 
 // GaleriKesfet, GaleriProfil `.disc`: 64 round, the soft fill and edge (`.btn.soft`), the icon 26
 // muted.
@@ -116,7 +129,12 @@ export function EmptyState({
         small={small || compact}
         risoId={riso}
         picture={
-          riso ? { source: EMPTY_RISO[riso], ...(compact ? RISO_SMALL : RISO_FULL) } : picture
+          riso
+            ? {
+                source: EMPTY_RISO[riso],
+                ...(RISO_BOARD[riso] ?? (compact ? RISO_SMALL : RISO_FULL)),
+              }
+            : picture
         }
       />
     );

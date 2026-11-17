@@ -13,14 +13,12 @@ export function NotificationsBell() {
   const count = useUnseenCount();
   const { scheme } = useKit();
   const b = MESSAGES.bell;
-  // iskelet.md → 2.1 and 5.4: a top bar's clear glass round (46); something unseen, a pink dot (the
-  // count is read out). tuval Mesajlar: the icon 21, the dot 10 in a white ring.
+  // Yeni arayüz tuvali, Main (`.round.soft`, `.nd`): the soft round 44; something unseen, a pink dot
+  // 9 in a ring of the ground (the count is read out).
   return (
     <Round
-      glass="clear"
-      side={KIT.size.topBtn}
+      side={KIT.size.round}
       icon="bell"
-      iconSize={b.icon}
       label={count > 0 ? tr.notifications.withCount(count) : tr.notifications.title}
       dot={count > 0}
       dotLook={{

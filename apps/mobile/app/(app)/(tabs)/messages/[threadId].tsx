@@ -11,14 +11,12 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Alert, BackHandler, View } from 'react-native';
 
-import { Av, Btn } from '@/aura/kit';
+import { Av, Btn, Round } from '@/aura/kit';
 import { ChatBubble, type ChatQuote, type Delivery, TypingBubble } from '@/components/ChatBubble';
 import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { AppIcon } from '@/components/AppIcon';
-import { IconButton } from '@/components/IconButton';
 import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { Loader } from '@/components/Loader';
 import type { MenuAnchor } from '@/motion';
@@ -45,9 +43,10 @@ import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useSeen } from '@/lib/useSeen';
+import { KIT } from '@/theme/auraKit';
 import { DM } from '@/theme/dm';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 import { useAfterTransition } from '@/lib/afterTransition';
 
 type Params = { threadId: string; publicId: string; name: string };
@@ -90,7 +89,7 @@ function backToInbox(): void {
 
 export default function DmScreen() {
   const { threadId, publicId, name } = useLocalSearchParams<Params>();
-  const { colors, scheme } = useTheme();
+  const { scheme } = useTheme();
   useHideTabBar();
   const queryClient = useQueryClient();
   const friend = useFriends().data?.find((f) => f.publicId === publicId);
@@ -477,8 +476,30 @@ export default function DmScreen() {
             />
           </View>
         ) : (
-          <View className="flex-1 justify-center">
-            <EmptyState kind="empty" riso="chat" compact body={tr.friends.noMessagesYet} />
+          // Yeni arayüz tuvali, DmBos: the riso, its title and sentence on a card of the surface,
+          // 44 from the sides.
+          <View className="flex-1 justify-center" style={{ paddingHorizontal: DM.empty.side }}>
+            <View
+              testID="dm-empty"
+              style={{
+                borderRadius: DM.empty.radius,
+                paddingTop: DM.empty.padTop,
+                paddingHorizontal: DM.empty.padX,
+                paddingBottom: DM.empty.padBottom,
+                backgroundColor: DM[scheme].emptyCard.fill,
+                boxShadow: DM[scheme].emptyCard.shadow || undefined,
+                borderWidth: DM[scheme].emptyCard.edge ? KIT.size.edge : 0,
+                borderColor: DM[scheme].emptyCard.edge || undefined,
+              }}
+            >
+              <EmptyState
+                kind="empty"
+                riso="dm"
+                compact
+                title={tr.dm.emptyTitle}
+                body={tr.dm.emptyHint}
+              />
+            </View>
           </View>
         ),
       }}
@@ -487,19 +508,31 @@ export default function DmScreen() {
           dm
           onBack={backToInbox}
           title={name}
-          // iskelet.md → 5.5: "yazıyor…" under the name while the friend types, nothing otherwise.
-          subtitle={typing ? tr.dm.typingTitle : undefined}
-          leading={<Av size="bar" name={name} photoUrl={photoUrl} />}
+          // iskelet.md → 5.5: "yazıyor…" under the name while the friend types; otherwise "Profili
+          // gör" (yeni arayüz tuvali, DmSohbet `.who span`), the capsule opening the profile.
+          subtitle={typing ? tr.dm.typingTitle : tr.dm.seeProfile}
+          leading={
+            <Av
+              size="bar"
+              name={name}
+              photoUrl={photoUrl}
+              board={{
+                ring: DM.bar.ring,
+                ringColor: DM[scheme].faceRing,
+                shadow: DM[scheme].faceShadow,
+              }}
+            />
+          }
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
           actions={
             <View ref={moreRef} collapsable={false}>
-              <IconButton
-                // U29: moreV; tuval Dm: the dots 18 in the ink.
-                icon="ellipsis-vertical"
-                glyph={
-                  <AppIcon name="ellipsis-vertical" size={DM.bar.moreIcon} color={colors.text} />
-                }
+              {/* DmSohbet `.ib`: a bare 44 round, the dots 20 in the ink. */}
+              <Round
+                glassy={false}
+                side={DM.bar.more}
+                icon="moreV"
+                iconSize={ICON.md}
                 label={tr.friends.more}
                 onPress={openMenu}
               />
