@@ -5,37 +5,30 @@ import { useState } from 'react';
 import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
-import { useFriend } from '@/features/onboarding/useFriend';
 import { useGoOnce } from '@/features/onboarding/useGoOnce';
 import { tr } from '@/i18n/tr';
 
 // "Başlamadan önce", step 1/7, before the phone (K-19, K-33): the two consents are kept on the
-// phone and sent with the profile (account/complete-onboarding), as before. Back goes to the first
-// screen.
+// phone and sent with the profile (account/complete-onboarding), as before. The first step has no back button
+// (KayitOnay); the system's back goes to the first screen.
 export default function ConsentsStep() {
   // Always unticked: each person ticks the boxes for themselves.
   const [terms, setTerms] = useState(false);
   const [kvkk, setKvkk] = useState(false);
-  const friend = useFriend();
   const { go, going } = useGoOnce();
-  // The friend nods at each box and jumps when both are ticked.
-  const toggle = (other: boolean, set: (v: boolean) => void, now: boolean) => {
-    set(!now);
-    friend.react(!now && other ? 'ok' : 'nod');
-  };
+  const toggle = (set: (v: boolean) => void, now: boolean) => set(!now);
 
   return (
     <SignupStep
       step="consents"
+      picture="consents"
       testID="signup-consents"
       title={tr.consents.title}
       body={tr.consents.body}
-      onBack={() => router.back()}
-      friend={friend}
+      footnote={tr.consents.both}
       action={{
         testID: 'consents-accept',
         label: tr.consents.accept,
-        icon: 'check',
         disabled: !(terms && kvkk),
         loading: going,
         onPress: () =>
@@ -50,8 +43,8 @@ export default function ConsentsStep() {
       <ConsentBoxes
         terms={terms}
         kvkk={kvkk}
-        onTerms={() => toggle(kvkk, setTerms, terms)}
-        onKvkk={() => toggle(terms, setKvkk, kvkk)}
+        onTerms={() => toggle(setTerms, terms)}
+        onKvkk={() => toggle(setKvkk, kvkk)}
       />
     </SignupStep>
   );

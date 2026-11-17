@@ -182,15 +182,17 @@ export const tr = {
   },
   auth: {
     phoneTitle: 'Telefon numaran',
-    phoneHint: 'Giriş için sana SMS ile kod göndereceğiz. Numaran kimseye görünmez.',
+    // KayitTelefon: the two lines under the field.
+    phoneInfoSms: 'Sana SMS ile 6 haneli bir kod göndereceğiz.',
+    phoneInfoPrivate: 'Numaran kimseye görünmez.',
     phonePrefix: '+90',
+    phoneCountry: 'TR',
     phonePlaceholder: '5xx xxx xx xx',
     sendCode: 'Kod gönder',
     otpTitle: 'Kodu gir',
     otpHint: (phone: string) => `${formatTrMobile(phone)} numarasına 6 haneli bir kod gönderdik.`,
     verify: 'Doğrula',
     resend: 'Yeniden gönder',
-    resendIn: (seconds: number) => `Yeniden gönder (${seconds} sn)`,
     changeNumber: 'Numarayı değiştir',
     errors: {
       invalidPhone: 'Geçerli bir cep telefonu numarası gir (5xx xxx xx xx).',
@@ -207,6 +209,8 @@ export const tr = {
     kvkk: 'KVKK Aydınlatma Metni’ni okudum ve anladım.',
     read: 'Oku',
     accept: 'Devam et',
+    // KayitOnay, KayitMetinler: under the title and over the button.
+    both: 'İkisini de okuman gerekir.',
     outdated: 'Metinler güncellendi. Devam etmek için yeniden oku.',
   },
   // Sign-up (docs/SPEC_V3.md §3; docs/SPEC_V4.md §4.C, the v45 report §1): the first screen, then
@@ -229,27 +233,34 @@ export const tr = {
     nameLabel: 'Görünen ad',
     namePlaceholder: 'Adın',
     nameHint: '2–24 karakter.',
-    // The name step's friend (v45 §3): "Selam Elif!", or "Selam!" for a long name.
-    hello: (name: string) => `Selam ${name}!`,
-    helloPlain: 'Selam!',
     birthTitle: 'Doğum tarihin',
-    birthBody: `${APP_NAME} 18 yaş ve üzeri içindir. Doğum tarihin kimseye görünmez, profilinde yalnızca yaşın görünür. Sonra değiştiremezsin.`,
+    // KayitDogum: the lines under the date.
+    birthPrivate: 'Doğum tarihin kimseye görünmez.',
+    birthPrivateSub: 'Profilinde yalnızca yaşın görünür.',
+    birthLocked: 'Sonra değiştiremezsin.',
     day: 'Gün',
     month: 'Ay',
     year: 'Yıl',
     birthInvalid: 'Geçerli bir tarih gir.',
-    // The confirmation after "Devam" (K-55, K-63; v46 §6).
-    birthConfirmTitle: (age: number) => `${age} yaşındasın`,
-    birthConfirmBody: (d: CalendarDate) =>
-      `Doğum tarihin ${d.day} ${MONTHS[d.month - 1] ?? ''} ${d.year}. Sonra değiştiremezsin.`,
-    birthConfirm: 'Onayla',
+    // The confirmation after "Devam" (K-55, K-63; KayitDogumOnay).
+    birthConfirmTitle: (d: CalendarDate) =>
+      `${d.day} ${MONTHS[d.month - 1] ?? ''} ${d.year} doğru mu?`,
+    birthConfirmBody: (age: number) =>
+      `Profilinde ${age} yaşında görünürsün. Doğum tarihini sonra değiştiremezsin.`,
+    birthConfirm: 'Evet, doğru',
     birthFix: 'Düzelt',
     // The gender (docs/SPEC_V3.md §23.D; canvas: Faz 3 · 23.2): asked at sign-up, and once on a
     // separate screen for an account from before the step. Shown to nobody (rule 12).
     genderLabel: 'Cinsiyetin',
     genders: { female: 'Kadın', male: 'Erkek', unspecified: 'Belirtmek istemiyorum' },
-    genderHint:
-      'Kimseye gösterilmez ve sonradan değiştirilemez. Masalara katılırken kadınlar anonim ya da profille katılabilir; erkekler ve belirtmek istemeyenler profilleriyle katılır.',
+    // KayitCinsiyet: what each answer means for the tables, and the two lines under them.
+    genderNotes: {
+      female: 'Masalara anonim ya da profilinle katılabilirsin.',
+      male: 'Masalara profilinle katılırsın.',
+      unspecified: 'Masalara profilinle katılırsın.',
+    },
+    genderPrivate: 'Kimseye gösterilmez.',
+    genderLocked: 'Sonradan değiştirilemez.',
     genderGateTitle: 'Cinsiyetini seç',
     genderGateBody: 'Masalara nasıl katılacağın buna bağlı. Bir kez sorulur.',
     genderSave: 'Kaydet',
@@ -258,9 +269,10 @@ export const tr = {
     photoBody:
       'Profilinle göründüğün yerlerde adınla birlikte görünür. Yüzünün görünmesi gerekmez.',
     // Only for a man and "Belirtmek istemiyorum", who always join with the profile; every account
-    // sends the same events from this step (docs/SPEC_V3.md §23.L).
-    photoNeededNote:
-      'Fotoğrafın yoksa masalara katılamazsın, masanı da lobiye açamazsın. Fotoğrafı sonra Profil’den de ekleyebilirsin.',
+    // sends the same events from this step (docs/SPEC_V3.md §23.L). KayitFoto: the warning, and the
+    // line every account gets.
+    photoWarn: 'Fotoğrafın yoksa masalara katılamazsın, masanı da lobiye açamazsın.',
+    photoLater: 'Fotoğrafı sonra Profil’den de ekleyebilirsin.',
     // K-29: the last step's button.
     finish: 'Bitir',
     finishNoPhoto: 'Fotoğrafsız bitir',

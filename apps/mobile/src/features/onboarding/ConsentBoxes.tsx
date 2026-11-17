@@ -1,16 +1,12 @@
-import { T } from '@/aura/kit';
 import { Link } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import { CheckMark } from '@/components/Checkbox';
-import { haptic } from '@/lib/haptics';
+import { CapIcon } from '@/aura/CapIcon';
 import { tr } from '@/i18n/tr';
-import { KIT } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING, TOUCH } from '@/theme/tokens';
-import { useLabOff } from '@/lib/drawLab';
-import { shadowParts } from '@/components/NativeShadow';
+import { haptic } from '@/lib/haptics';
+import { SIGNUP, SIGNUP_TYPE } from '@/theme/signup';
+
+import { SIGNUP_FONT_SCALE, useSignupLook } from './look';
 
 type Props = {
   terms: boolean;
@@ -19,12 +15,13 @@ type Props = {
   onKvkk: () => void;
 };
 
-// The two consents (skall tuvali, KayitOnay): each a choice box with its check, its line and "Oku".
+// The two consents (yeni arayüz tuvali, KayitOnay `.cr.big`): rows on the ground with a hairline
+// between them, each a 24 box with its check, its line and "Oku".
 export function ConsentBoxes({ terms, kvkk, onTerms, onKvkk }: Props) {
   return (
-    <View style={{ gap: SPACING[2] }}>
+    <View style={{ marginTop: SIGNUP.row.listTop }}>
       <ConsentBox label={tr.consents.terms} checked={terms} onToggle={onTerms} href="/terms" />
-      <ConsentBox label={tr.consents.kvkk} checked={kvkk} onToggle={onKvkk} href="/kvkk" />
+      <ConsentBox label={tr.consents.kvkk} checked={kvkk} onToggle={onKvkk} href="/kvkk" first />
     </View>
   );
 }
@@ -34,66 +31,85 @@ function ConsentBox({
   checked,
   onToggle,
   href,
+  first = false,
 }: {
   label: string;
   checked: boolean;
   onToggle: () => void;
   href: '/terms' | '/kvkk';
+  // The second row: the hairline over it.
+  first?: boolean;
 }) {
-  const { scheme, colors } = useTheme();
-  const dark = scheme === 'dark';
-  const ring = dark ? colors.accent : KIT.primary;
-  // Its soft shadow natively (NativeShadow.tsx).
-  const shadow = shadowParts(
-    useLabOff('golge'),
-    KIT[scheme].glassShadow,
-    undefined,
-    KIT.size.glassRadiusSm,
-    true,
-    checked ? 2 : KIT.size.edge,
-  );
+  const look = useSignupLook();
+  const R = SIGNUP.row;
   return (
     <View
-      className="flex-row items-center"
       style={{
-        gap: SPACING[3],
-        // Aura v71 (KayitOnay): 64 at least, 12 / 16 in; ticked, the 2 px line takes 1 from the room.
-        minHeight: TOUCH.large,
-        paddingVertical: checked ? KIT.size.consentPadY - 1 : KIT.size.consentPadY,
-        paddingHorizontal: checked ? SPACING[4] - 1 : SPACING[4],
-        // docs/design/aura (CheckIn's rows): a glass row; ticked, ringed in the primary.
-        ...gradientStyle(KIT[scheme].glass),
-        borderRadius: KIT.size.glassRadiusSm,
-        borderWidth: checked ? 2 : KIT.size.edge,
-        borderColor: checked ? ring : KIT[scheme].glassEdge,
-        boxShadow: shadow.boxShadow,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: R.gap,
+        minHeight: R.big,
       }}
     >
-      {shadow.node}
-      <View className="flex-1">
-        <Pressable
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked }}
-          onPress={() => {
-            haptic('selection');
-            onToggle();
+      {first ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: R.hairIn,
+            right: 0,
+            borderTopWidth: 1,
+            borderTopColor: look.hair,
           }}
-          className="flex-row items-center"
-          style={{ gap: SPACING[3], minHeight: TOUCH.button }}
+        />
+      ) : null}
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked }}
+        onPress={() => {
+          haptic('selection');
+          onToggle();
+        }}
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: R.gap,
+          minHeight: R.big,
+        }}
+      >
+        <View
+          style={{
+            width: R.mark,
+            height: R.mark,
+            borderRadius: R.boxRadius,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: checked ? look.markOn : undefined,
+            boxShadow: checked ? undefined : `inset 0px 0px 0px 2px ${look.markLine}`,
+          }}
         >
-          <CheckMark checked={checked} />
-          <View className="flex-1">
-            <T v="fine" ink>
-              {label}
-            </T>
-          </View>
-        </Pressable>
-      </View>
+          {checked ? <CapIcon name="check" color={look.onMarkOn} size={R.check} /> : null}
+        </View>
+        <Text
+          maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+          style={[SIGNUP_TYPE.rowTitle, { color: look.ink, flex: 1 }]}
+        >
+          {label}
+        </Text>
+      </Pressable>
       <Link href={href} asChild>
-        <Pressable accessibilityRole="link" className="min-h-11 justify-center px-1">
-          <T v="btnSm" color={dark ? colors.accent : colors.primaryPressed}>
+        <Pressable accessibilityRole="link" style={{ minHeight: 44, justifyContent: 'center' }}>
+          <Text
+            maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+            style={[
+              SIGNUP_TYPE.read,
+              { color: look.ink, textDecorationLine: 'underline', textDecorationColor: look.link },
+            ]}
+          >
             {tr.consents.read}
-          </T>
+          </Text>
         </Pressable>
       </Link>
     </View>

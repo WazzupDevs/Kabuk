@@ -1,199 +1,186 @@
-import { type ReactNode, useState } from 'react';
-import { Text, View } from 'react-native';
+import { type ReactNode } from 'react';
+import { Image, Text, View } from 'react-native';
 
-import { Btn, Round, T, useKit } from '@/aura/kit';
-import { RisoFieldPeek, RisoSayScene } from '@/aura/Peek';
-import { RisoKanki } from '@/aura/RisoKanki';
-import { type CapIconName } from '@/aura/CapIcon';
+import { Btn, Round } from '@/aura/kit';
 import { Screen } from '@/components/Screen';
 import { tr } from '@/i18n/tr';
 import { SIGNUP_STEPS, SIGNUP_TOTAL, type SignupStep as Step, stepNumber } from '@/lib/signupSteps';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { RECONSENT_KANKI, RECONSENT_KANKI_FOOT, SIGNUP_KANKI } from '@/theme/kankiMotion';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { SIGNUP, SIGNUP_TYPE } from '@/theme/signup';
 
-import { type FriendReaction } from './useFriend';
+import { ErrorLine } from './ErrorLine';
+import { SIGNUP_PICTURES, type SignupPicture } from './pictures';
+import { SIGNUP_FONT_SCALE, useSignupLook } from './look';
 
 type Action = {
   label: string;
-  // Aura v71: "Devam" and "Kod gönder" go forward, the last of a part (Onayla, Doğrula, Bitir) ticks.
-  icon?: CapIconName;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
   testID?: string;
 };
 
-// What the step's friend does.
-export type FriendState = {
-  reaction?: FriendReaction | null;
-  looking?: boolean;
-  bubble?: string | null;
-  puffKey?: number;
-};
-
 type Props = {
-  // The step this screen is (its dots, its buddies); none for a one-time question outside
-  // sign-up (the gender gate, new consents).
+  // The step this screen is (its bar and "n/7"); none for a one-time question outside sign-up
+  // (the gender gate, new consents, under 18).
   step?: Step;
+  // The riso picture over the title.
+  picture?: SignupPicture;
   title: string;
-  body?: string;
+  // The line under the title (`.kd`); a node where a part of it is a link (the code's number).
+  body?: ReactNode;
   onBack?: () => void;
   action: Action;
-  // An error the step shows above its button.
+  // The quiet button under the main one (KayitFoto's "Fotoğrafsız bitir").
+  secondary?: Action;
+  // A line at the foot, over the buttons (KayitOnay `.nt2`).
+  footnote?: string;
+  // An error the step shows under its fields.
   error?: string | null;
-  friend?: FriendState;
-  // KayitMetinler: one riso buddy standing over the button (outside sign-up only).
-  standing?: boolean;
   children?: ReactNode;
   testID?: string;
 };
 
-const STEP_ON = 22;
-const STEP_DOT = 6;
-const STEP_SCALE = 1.3;
-
-// One sign-up step (docs/design/aura → Telefon, Kod; Aura v71 KayitOnay … KayitFoto): the round back
-// button and the step's dots; the title; the step's fields with the riso buddies looking over them
-// (each step its own distance under the title); the riso scene where the step's buddy says the
-// step's line (or its own words: "Merhaba"), jumping when it goes right and shaking when it goes
-// wrong; the button at the bottom. The dots are decoration: a screen reader hears "Adım 2/7".
-// Outside sign-up (the gender gate, new consents) no dots and no scene: the line stays under the
-// title, and without a back button no top row either (KayitMetinler: the title 8 down).
+// One sign-up step (yeni arayüz tuvali: KayitOnay … KayitFoto): on the flat ground the top row (the
+// round back button, the seven-part step bar and "n/7"), the title and the line under it, the
+// step's fields, and the buttons at the foot, which rise with the keyboard. The bar is decoration:
+// a screen reader hears "Adım 2/7".
 export function SignupStep({
   step,
+  picture,
   title,
   body,
   onBack,
   action,
+  secondary,
+  footnote,
   error,
-  friend,
-  standing,
   children,
   testID,
 }: Props) {
-  const k = useKit();
-  const { colors, scheme } = useTheme();
+  const look = useSignupLook();
   const n = step ? stepNumber(step) : 0;
-  const say = friend?.bubble ?? body ?? null;
-  // Done and current dots: the primary, in dark the accent (#3DDC84).
-  const dotOn = scheme === 'dark' ? colors.accent : KIT.primary;
   const topRow = !!step || !!onBack;
-  const [room, setRoom] = useState(0);
 
-  return (
-    <Screen>
-      <View testID={testID} collapsable={false} className="flex-1">
-        {topRow ? (
-          <View className="flex-row items-center gap-2.5" style={{ minHeight: KIT.size.round }}>
-            {onBack ? (
-              <Round icon="back" label={tr.common.back} onPress={onBack} />
-            ) : (
-              <View style={{ width: KIT.size.round }} />
-            )}
-            {step ? (
-              <>
-                {/* Aura v71: no "n/7" beside the dots, the room kept; a screen reader hears the step. */}
-                <View
-                  className="flex-1 flex-row items-center justify-center"
-                  style={{ gap: KIT.size.chipGap }}
-                  accessible
-                  accessibilityLabel={tr.signup.stepLabel(n, SIGNUP_TOTAL)}
-                >
-                  {SIGNUP_STEPS.map((s, i) => (
-                    <View
-                      key={s}
-                      style={{
-                        width: i === n - 1 ? STEP_ON : STEP_DOT,
-                        height: STEP_DOT,
-                        borderRadius: STEP_DOT / 2,
-                        backgroundColor: i < n ? dotOn : k.c.stepDot,
-                      }}
-                    />
-                  ))}
-                </View>
-                <View style={{ width: KIT.size.round }} />
-              </>
-            ) : null}
-          </View>
-        ) : null}
-        <View className="flex-1" style={{ paddingTop: topRow ? SPACING[7] : SPACING[2] }}>
-          <Text
-            accessibilityRole="header"
-            maxFontSizeMultiplier={STEP_SCALE}
-            style={[KIT_TYPE.display, { color: k.c.ink }]}
-          >
-            {title}
-          </Text>
-          {/* Outside sign-up (the gender gate, new consents) the line stays under the title. */}
-          {!step && body ? (
-            <T v="body" style={{ marginTop: SPACING[2.5] }}>
-              {body}
-            </T>
-          ) : null}
-          <View style={{ marginTop: step ? SIGNUP_KANKI[step].fieldTop : SPACING[6] }}>
-            {step ? <RisoFieldPeek kind={step} /> : null}
-            {children}
-          </View>
-          {error ? (
-            <View className="mt-4">
-              <T v="fine" color={KIT.danger}>
-                {error}
-              </T>
-            </View>
-          ) : null}
-          {step ? (
-            <View style={{ flexGrow: 1, marginTop: SPACING[3] }}>
-              <RisoSayScene kind={step} text={say ?? ''} reaction={friend?.reaction ?? null} />
-            </View>
-          ) : (
-            <View
-              style={{ flexGrow: 1 }}
-              onLayout={standing ? (e) => setRoom(e.nativeEvent.layout.height) : undefined}
-            >
-              {/* Only where it fits whole: never over the boxes. */}
-              {standing && room >= RECONSENT_KANKI.height + RECONSENT_KANKI_FOOT ? (
-                <Standing />
-              ) : null}
-            </View>
-          )}
-          <View style={{ paddingTop: SPACING[5] }}>
-            <Btn
-              block
-              testID={action.testID}
-              label={action.label}
-              icon={action.icon}
-              onPress={action.onPress}
-              disabled={action.disabled}
-              loading={action.loading}
-            />
-          </View>
-        </View>
-      </View>
-    </Screen>
-  );
-}
-
-// KayitMetinler: the buddy in the middle, its feet 28 over the button (the button's row starts 20
-// over it).
-function Standing() {
-  const over = RECONSENT_KANKI_FOOT - SPACING[5];
-  return (
+  const top = topRow ? (
     <View
-      pointerEvents="none"
       style={{
-        position: 'absolute',
-        bottom: over,
-        left: 0,
-        right: 0,
-        height: RECONSENT_KANKI.height,
+        flexDirection: 'row',
         alignItems: 'center',
+        gap: SIGNUP.rowGap,
+        minHeight: SIGNUP.topRow,
+        paddingRight: SIGNUP.side - SIGNUP.barSide,
       }}
     >
-      <View style={{ width: RECONSENT_KANKI.width, height: RECONSENT_KANKI.height }}>
-        <RisoKanki place={{ ...RECONSENT_KANKI, left: 0, bottom: 0 }} scale={1} />
-      </View>
+      {onBack ? <Round icon="back" label={tr.common.back} onPress={onBack} /> : null}
+      {step ? (
+        <>
+          <View
+            accessible
+            accessibilityLabel={tr.signup.stepLabel(n, SIGNUP_TOTAL)}
+            style={{ flex: 1, flexDirection: 'row', gap: SIGNUP.step.gap }}
+          >
+            {SIGNUP_STEPS.map((s, i) => (
+              <View
+                key={s}
+                style={{
+                  flex: 1,
+                  height: SIGNUP.step.height,
+                  borderRadius: SIGNUP.step.radius,
+                  backgroundColor: i < n ? look.stepDone : look.stepTrack,
+                }}
+              />
+            ))}
+          </View>
+          <Text
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+            style={[SIGNUP_TYPE.stepCount, { color: look.muted }]}
+          >
+            {`${n}/${SIGNUP_TOTAL}`}
+          </Text>
+        </>
+      ) : null}
     </View>
+  ) : undefined;
+
+  const foot = (
+    <>
+      {footnote ? (
+        <Text
+          maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+          style={[SIGNUP_TYPE.foot, { color: look.muted, textAlign: 'center' }]}
+        >
+          {footnote}
+        </Text>
+      ) : null}
+      <Btn
+        block
+        tall
+        testID={action.testID}
+        label={action.label}
+        onPress={action.onPress}
+        disabled={action.disabled}
+        loading={action.loading}
+      />
+      {secondary ? (
+        <Btn
+          block
+          tall
+          variant="ghost"
+          testID={secondary.testID}
+          label={secondary.label}
+          onPress={secondary.onPress}
+          disabled={secondary.disabled}
+          loading={secondary.loading}
+        />
+      ) : null}
+    </>
+  );
+
+  return (
+    <Screen
+      plain
+      top={top}
+      footer={foot}
+      side={SIGNUP.side}
+      barSide={SIGNUP.barSide}
+      barTop={SIGNUP.barTop}
+      padTop={topRow ? SIGNUP.contentTop : SIGNUP.contentTopBare}
+    >
+      <View testID={testID} collapsable={false} style={{ flexGrow: 1 }}>
+        {picture ? (
+          <Image
+            source={SIGNUP_PICTURES[picture]}
+            accessible={false}
+            fadeDuration={0}
+            resizeMode="contain"
+            style={{
+              width: SIGNUP.picture.width,
+              height: SIGNUP.picture.height,
+              marginLeft: SIGNUP.picture.left,
+              marginBottom: SIGNUP.picture.bottom,
+            }}
+          />
+        ) : null}
+        <Text
+          accessibilityRole="header"
+          maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+          style={[SIGNUP_TYPE.title, { color: look.ink }]}
+        >
+          {title}
+        </Text>
+        {body ? (
+          <Text
+            maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+            style={[SIGNUP_TYPE.body, { color: look.muted, marginTop: SIGNUP.titleGap }]}
+          >
+            {body}
+          </Text>
+        ) : null}
+        {children}
+        {error ? <ErrorLine text={error} /> : null}
+      </View>
+    </Screen>
   );
 }
