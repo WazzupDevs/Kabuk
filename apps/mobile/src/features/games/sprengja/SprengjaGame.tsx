@@ -32,6 +32,7 @@ import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { RISO as R } from '@/theme/riso';
 import { SPRENGJA as S, SPRENGJA_TYPE as ST, sprengjaRing } from '@/theme/sprengja';
+import { LOBBY } from '@/theme/lobby';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
@@ -805,9 +806,10 @@ function Pregame({
   });
   const person = (s: string, i?: number): LobbyPerson => ({
     key: s,
-    face: <Face faces={faces} sid={s} size={R.person.face} />,
+    face: <Face faces={faces} sid={s} size={LOBBY.people.face} />,
     name: nameOf(faces, s),
     me: s === faces.me,
+    owner: faces.people.get(s)?.owner,
     mark: i === undefined ? undefined : String(i + 1),
   });
   return (

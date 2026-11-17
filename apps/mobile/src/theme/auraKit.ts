@@ -321,6 +321,15 @@ export const KIT_TYPE = {
   roomPerson: t(600, 13, 17),
   roomOwner: t(600, 11, 14),
   roomNote: t(500, 12, 16),
+  // A game's pre-game page (yeni arayüz tuvali, OyunLobi, TakimLobi): the game's name (`.ln b`,
+  // 21/26 700, -0.3 px), a person (`.pr p`, 14/18 600), a row's title (`.lr p`, 16/20 600) and a
+  // team's name (`.th3 p`, 15/20 700) and count (13/18 700).
+  lobbyName: t(700, 21, 26, -0.3 / 21),
+  lobbyPerson: t(600, 14, 18),
+  lobbyQuiet: t(500, 14, 18),
+  lobbyRow: t(600, 16, 20),
+  lobbyTeam: t(700, 15, 20),
+  lobbyTeamCount: t(700, 13, 18),
   av: {
     // A face in Masa's row of faces (`.fcs .av`, 10 700).
     roomFace: t(700, 10, 12),

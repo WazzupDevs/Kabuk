@@ -187,6 +187,7 @@ function Pregame({
     face: <Face faces={faces} sid={s} size="sm" />,
     name: nameOf(faces, s),
     me: s === faces.me,
+    owner: faces.people.get(s)?.owner,
   });
   return (
     <GameLobby

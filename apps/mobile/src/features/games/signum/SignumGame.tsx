@@ -28,6 +28,7 @@ import {
   type Faces,
   nameOf,
   TeamBar,
+  teamKey,
   TeamTag,
   TimeStrip,
   useKinshiDeck,
@@ -67,6 +68,7 @@ import { KIT } from '@/theme/auraKit';
 import { KINSHI as K, kinshiScene } from '@/theme/kinshi';
 import { SIGNUM as S, SIGNUM_PEEK_PAIRS as PEEK_PAIRS } from '@/theme/signum';
 import { gradientStyle } from '@/theme/gradient';
+import { LOBBY } from '@/theme/lobby';
 import { DarkGameScope } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
@@ -78,6 +80,8 @@ import {
   type LobbyPerson,
   LobbyPeople,
   LobbyRules,
+  LobbyTeam,
+  LobbyTeams,
   LobbyWatchers,
 } from '../GameLobby';
 import { signumArt } from './signumArt';
@@ -915,23 +919,29 @@ function Teams({
     const seat = markOf(s);
     return {
       key: s,
-      face: <Face faces={faces} sid={s} size={K.person.face} />,
+      face: <Face faces={faces} sid={s} size={LOBBY.people.smallFace} />,
       name: seat ? `${nameOf(faces, s)} · ${seat}` : nameOf(faces, s),
       me: s === faces.me,
+      owner: faces.people.get(s)?.owner,
     };
   };
   const teamBox = (team: SignumTeam, sids: string[]) => (
-    <TeamBox
+    <LobbyTeam
       key={team}
-      team={team}
-      count={sids.length}
+      team={teamKey(team)}
+      title={tr.signum.team[team]}
+      count={String(sids.length)}
       joined={mine === team}
-      loading={pick.isPending && pick.variables === team}
-      disabled={busy}
-      onJoin={() => pick.mutate(team)}
+      join={{
+        label: tr.signum.join,
+        testID: `signum-join-${team}`,
+        loading: pick.isPending && pick.variables === team,
+        disabled: busy,
+        onPress: () => pick.mutate(team),
+      }}
     >
-      <LobbyPeople people={sids.map(person)} />
-    </TeamBox>
+      <LobbyPeople people={sids.map(person)} single small />
+    </LobbyTeam>
   );
   const offered = myTeam && page.offers[myTeam] === faces.me ? myTeam : null;
   const candidate = myTeam ? page.candidates[myTeam].includes(faces.me) : false;
@@ -967,15 +977,40 @@ function Teams({
         },
       }}
     >
-      {teamBox('a', a)}
-      {teamBox('b', b)}
+      <LobbyTeams
+        right={
+          owner ? (
+            <Btn
+              sm
+              variant="glassy"
+              icon="shuffle"
+              testID="signum-shuffle"
+              label={tr.signum.shuffle}
+              loading={shuffle.isPending}
+              disabled={start.isPending}
+              onPress={() => shuffle.mutate()}
+            />
+          ) : null
+        }
+      >
+        {teamBox('a', a)}
+        {teamBox('b', b)}
+      </LobbyTeams>
       {unpicked.length > 0 ? (
-        <LobbyCard title={tr.signum.unpicked} note={tr.signum.unpickedNote}>
-          <LobbyPeople people={unpicked.map(person)} />
+        <LobbyCard
+          title={tr.signum.unpicked}
+          count={tr.signum.count(unpicked.length)}
+          note={tr.signum.unpickedNote}
+        >
+          <LobbyPeople people={unpicked.map(person)} small />
         </LobbyCard>
       ) : null}
       {offered ? (
-        <Glass radius={K.box.radius} style={boxStyle} testID="signum-offer">
+        <Glass
+          radius={K.box.radius}
+          style={[boxStyle, { marginTop: KIT.size.rowGap }]}
+          testID="signum-offer"
+        >
           <View>
             <T v="h3">{tr.signum.offerTitle}</T>
             <T v="fine">{tr.signum.offerBody[offered]}</T>
@@ -1006,28 +1041,15 @@ function Teams({
       {owner || (myTeam && !isCaptain) ? (
         <LobbyActions>
           {owner ? (
-            <>
-              <Btn
-                sm
-                variant="glassy"
-                icon="shuffle"
-                testID="signum-shuffle"
-                label={tr.signum.shuffle}
-                loading={shuffle.isPending}
-                disabled={start.isPending}
-                onPress={() => shuffle.mutate()}
-                style={{ flex: 1 }}
-              />
-              <Btn
-                sm
-                variant="glassy"
-                icon="flag"
-                testID="signum-captains"
-                label={tr.signum.chooseCaptains}
-                onPress={() => setCaptainsOpen(true)}
-                style={{ flex: 1 }}
-              />
-            </>
+            <Btn
+              sm
+              variant="glassy"
+              icon="flag"
+              testID="signum-captains"
+              label={tr.signum.chooseCaptains}
+              onPress={() => setCaptainsOpen(true)}
+              style={{ flex: 1 }}
+            />
           ) : (
             <Btn
               sm
@@ -1070,48 +1092,6 @@ const boxStyle = {
   paddingHorizontal: K.box.padX,
   gap: K.box.gap,
 } as const;
-
-// A team's box: its bar, name and headcount, "Katıl" in the team's colour, its people.
-function TeamBox({
-  team,
-  count,
-  joined,
-  loading,
-  disabled,
-  onJoin,
-  children,
-}: {
-  team: SignumTeam;
-  count: number;
-  joined: boolean;
-  loading: boolean;
-  disabled: boolean;
-  onJoin: () => void;
-  children: ReactNode;
-}) {
-  const tone = useTeamTone(team);
-  return (
-    <LobbyCard
-      title={tr.signum.team[team]}
-      count={tr.signum.count(count)}
-      icon={<TeamBar team={team} />}
-      right={
-        <Btn
-          sm
-          testID={`signum-join-${team}`}
-          label={tr.signum.join}
-          fill={tone.fill}
-          tint={tone.onFill}
-          disabled={disabled || joined}
-          loading={loading}
-          onPress={onJoin}
-        />
-      }
-    >
-      {children}
-    </LobbyCard>
-  );
-}
 
 // Kaptanları seç (the owner's): each team's people with Onayla for a volunteer, Öner for the
 // others, Rastgele seç for the team; the owner's own "Kaptan ol". Only the owner makes a captain.
