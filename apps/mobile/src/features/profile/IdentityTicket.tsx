@@ -7,6 +7,7 @@ import Svg, { Circle, ClipPath, Defs, Line, Path, Pattern, Rect } from 'react-na
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, T } from '@/aura/kit';
+import { CapsuleHale } from '@/components/CapsuleHale';
 import { FxMoves } from '@/components/FxSvg';
 import { Loader } from '@/components/Loader';
 import { useTicketWhole } from '@/components/skiaInside';
@@ -17,7 +18,6 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
-import { lookGround } from '@/theme/capsuleLook';
 import { OWN_PROFILE } from '@/theme/ownProfile';
 import { RISO_PAPER, TICKET, TICKET_TONE } from '@/theme/profileCover';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -103,14 +103,14 @@ export function IdentityTicket({
               <Circle cx={cell / 4} cy={cell / 4} r={RISO_PAPER.dot} fill={tone.dots} />
               <Circle cx={(3 * cell) / 4} cy={(3 * cell) / 4} r={RISO_PAPER.dot} fill={tone.dots} />
             </Pattern>
-            {/* The stub's pink halftone over the capsule's ground. */}
+            {/* The stub's orange halftone over its fixed fill. */}
             <Pattern
               id="ticket-stub-tram"
               width={dots.cell}
               height={dots.cell}
               patternUnits="userSpaceOnUse"
             >
-              <Circle cx={dots.cell / 2} cy={dots.cell / 2} r={dots.dot} fill={dots.color} />
+              <Circle cx={dots.cell / 2} cy={dots.cell / 2} r={dots.dot} fill={tone.stub.dots} />
             </Pattern>
           </Defs>
           <Path d={ticketPath(ox + e, oy + e, box.w - 2 * e, box.h - 2 * e)} fill={tone.print} />
@@ -122,7 +122,7 @@ export function IdentityTicket({
               y={0}
               width={TICKET.stub}
               height={box.h}
-              fill={lookGround(look)}
+              fill={tone.stub.fill}
               clipPath="url(#ticket)"
             />
           ) : null}
@@ -162,6 +162,9 @@ export function IdentityTicket({
       >
         {look ? (
           <View style={{ width: TICKET.capsule, height: TICKET.capsule }}>
+            <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0 }}>
+              <CapsuleHale side={TICKET.capsule} />
+            </View>
             {/* While Skia is being read (read ahead after the launch: features/profile/ahead.ts)
                 the place stays blank: the picture way would make the views the canvas is for. */}
             {ticket.waiting ? null : (

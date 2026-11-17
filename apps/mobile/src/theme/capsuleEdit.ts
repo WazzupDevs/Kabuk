@@ -4,24 +4,34 @@
 // button's 36 and the round's 44 (CLAUDE.md → Ekran davranışı) are iskelet's and the kit's; the
 // capsule's own size is its drawing's (KIT.size.capsuleStage).
 
+// The purple hale behind the capsule (KapsulSusle `.hero .hl`, ProfilBen `.tks .hl`; the same in
+// both schemes): a disc at 22 % and two rings (86 % and 72 % of its radius, 1.6 and 1.2 wide at
+// 45 % and 30 %). It is as wide as the capsule's box times `ratio` (the board's 340 box round a 290
+// picture); on the ticket it is the capsule's own 80 box.
+export const CAPSULE_HALE = {
+  color: '#8B6CFF',
+  fill: 0.22,
+  ratio: 340 / 290,
+  rings: [
+    { at: 0.86, width: 1.6, opacity: 0.45 },
+    { at: 0.72, width: 1.2, opacity: 0.3 },
+  ],
+} as const;
+
 export const CAPSULE_EDIT = {
   // The bar's row 16 from the sides, the title 6 more in; the scene 16 under the title's block.
   barSide: 16,
   titleIn: 6,
   padTop: 16,
-  // The scene: 300 high on the page's ground (no card), a 270 riso disc in its middle; the
+  // The scene: 300 high on the page's ground (no card), the purple hale (CAPSULE_HALE, 258 round the 220 capsule) in its middle; the
   // capsule's shadow's top 262 down; "Hepsini çıkar" and the die at its foot, 16 from the sides.
   // "Hepsini çıkar" 12 in at its left and 14 at its right, its arrow 16 and 6 from the words; the
   // die's icon 20.
-  scene: { height: 300, disc: 270, shadowTop: 262, side: 16 },
+  scene: { height: 300, hale: Math.round(220 * CAPSULE_HALE.ratio), shadowTop: 262, side: 16 },
   clear: { padLeft: 12, padRight: 14, gap: 6, icon: 16 },
   dieIcon: 20,
   // The shadow under the capsule: 120 by 16.
   shadow: { width: 120, height: 16 },
-  // The disc's halftone: a dot 1.25 every 6 on the diagonal; its light from the middle, the second
-  // stop at 70 %.
-  dot: { cell: 6, r: 1.25 },
-  discMid: '70%',
   // The panel 18 under the scene to the screen's foot: 34 round at its top. Its chips' row 16 under
   // its top, 22 in, fading over 22 at its left and 40 at its right, the chips 8 apart; a chip 12 in
   // at its left and 15 at its right, its icon 17, 6 from the words. The theme packs (iskelet.md →
@@ -68,7 +78,6 @@ export const CAPSULE_EDIT = {
   },
   light: {
     hair: 'rgba(3, 27, 11, 0.08)',
-    disc: { mid: '#FFD6E5', edge: '#FFE3EC', dots: 'rgba(255, 79, 139, 0.22)' },
     shadow: 'rgba(58, 47, 92, 0.35)',
     panel: {
       fill: 'rgba(255, 255, 255, 0.72)',
@@ -91,7 +100,6 @@ export const CAPSULE_EDIT = {
   // The dark scheme is not drawn on the board: the kit's dark sheet, chips and inks.
   dark: {
     hair: 'rgba(255, 255, 255, 0.08)',
-    disc: { mid: '#3A1F30', edge: '#2B1826', dots: 'rgba(255, 79, 139, 0.22)' },
     shadow: 'rgba(0, 0, 0, 0.40)',
     panel: { fill: 'rgba(27, 33, 31, 0.92)', inset: '', shadow: '' },
     chip: {
