@@ -1205,6 +1205,8 @@ export const KIT = {
       dialogTextTop: 6,
       dialogTextBottom: 20,
       dialogButtonGap: 8,
+      // A soft pill of words between the sentence and the buttons (SemtSureBitti `.dw`).
+      dialogPill: { radius: 14, padY: 6, padX: 12 },
       // The ⋮ menu: 292 wide, 28 round, 16 / 8 / 8 inside, 12 from the screen's edge; a row 48 at
       // least, 6 / 12 in, 18 round, its icon 22 and 14 to the words, the hairline from 48.
       menuWidth: 292,

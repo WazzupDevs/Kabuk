@@ -1,13 +1,6 @@
-// The sign-up screen's riso buddies (Aura v65 report §13, §13.1; KayitKanki, approved 1 Kas 21:34):
-// where each stands in the scene and how it moves. The ground stays still; each buddy breathes,
-// sways, blinks and two of them hop, on a 6 s loop, transforms only, turning and scaling about the
-// picture's bottom middle (50 % / 96 %). Pure: the frame function is a worklet (src/aura/RisoKanki.tsx
-// drives it on the UI thread) and kankiMotion.test.ts pins it.
-
-export const KANKI_LOOP_S = 6;
-
-// Where the turn and the scale are centred, in the picture (50 % / 96 %).
-export const KANKI_ORIGIN = { x: 0.5, y: 0.96 } as const;
+// The riso buddies (Aura v65 report §13; KayitKanki): where each stands in its scene. They stand
+// still: the breathing, blinking and hopping of §13.1 is not drawn anywhere and its code is gone
+// (17 Kasım).
 
 // The shadow under its feet (`.stand i`): half as wide, 7 % as high, 2.5 % from the bottom.
 export const KANKI_SHADOW = {
@@ -36,27 +29,6 @@ export type KankiId =
   // The two half-length ones looking over a field (assets/riso/peek-*.webp, 160x200).
   | 'peek-1'
   | 'peek-2';
-
-export type KankiBeat = {
-  // The breath's period (s) and phase.
-  period: number;
-  phase: number;
-  // When the eyes close, each for 125 ms (s into the loop).
-  blinks: readonly number[];
-  // When a hop starts (s into the loop); none for most.
-  hop: number | null;
-};
-
-// §13.1's table.
-export const KANKI_BEATS: Partial<Record<KankiId, KankiBeat>> = {
-  b83534: { period: 2, phase: 0, blinks: [0.9, 4.1], hop: null },
-  '7d5ef2': { period: 3, phase: 1.1, blinks: [2.3], hop: null },
-  '3c95b1': { period: 2, phase: 2.2, blinks: [1.6, 1.85, 5.0], hop: null },
-  '4957ac': { period: 3, phase: 3.0, blinks: [3.2], hop: 5.15 },
-  '1a80a9': { period: 2, phase: 4.0, blinks: [0.4, 3.9], hop: null },
-  '6f419d': { period: 3, phase: 5.0, blinks: [2.8], hop: null },
-  f280a5: { period: 2, phase: 0.6, blinks: [1.2, 4.6, 4.85], hop: 3.4 },
-};
 
 // A riso buddy's picture, 320x420: its width for a height.
 export const RISO_ASPECT = 320 / 420;
@@ -122,62 +94,3 @@ export const CHECKIN_KANKI: readonly KankiPlace[] = [
 
 // The peek strip over the field: 58 over its top edge, 120 high (`.behind > .peek`).
 export const KANKI_PEEK = { up: 58, height: 120 } as const;
-
-export type KankiFrame = {
-  translateY: number;
-  rotate: number;
-  scaleX: number;
-  scaleY: number;
-  // The closed-eye picture shows.
-  closed: boolean;
-  // The shadow's scale and opacity.
-  shadow: number;
-};
-
-const BREATH_Y = 0.022;
-const BREATH_X = 0.012;
-const SWAY_DEG = 2.2;
-const SWAY_S = 3;
-const SWAY_PHASE = 0.9;
-const BLINK_S = 0.125;
-const HOP_S = 0.6;
-const HOP_SQUAT = 0.15;
-const HOP_LAND = 0.85;
-const HOP_RISE = 12;
-const SHADOW_PER = 30;
-
-// One buddy's frame `t` seconds into the loop (0 ≤ t < 6).
-export function kankiFrame(beat: KankiBeat, t: number): KankiFrame {
-  'worklet';
-  const tau = 2 * Math.PI;
-  const breath = Math.sin((tau * t) / beat.period + beat.phase);
-  let scaleY = 1 + BREATH_Y * breath;
-  let scaleX = 1 - BREATH_X * breath;
-  let translateY = 0;
-  let sway = 1;
-  if (beat.hop !== null && t >= beat.hop && t < beat.hop + HOP_S) {
-    const u = (t - beat.hop) / HOP_S;
-    sway = 0.3;
-    if (u < HOP_SQUAT) {
-      const s = Math.sin((Math.PI * u) / HOP_SQUAT);
-      scaleY -= 0.07 * s;
-      scaleX += 0.05 * s;
-    } else if (u < HOP_LAND) {
-      const s = Math.sin((Math.PI * (u - HOP_SQUAT)) / (HOP_LAND - HOP_SQUAT));
-      translateY = -HOP_RISE * s;
-      scaleY += 0.04 * s;
-      scaleX -= 0.02 * s;
-    } else {
-      const s = Math.sin((Math.PI * (u - HOP_LAND)) / (1 - HOP_LAND));
-      scaleY -= 0.05 * s;
-      scaleX += 0.04 * s;
-    }
-  }
-  const rotate = sway * SWAY_DEG * Math.sin((tau * t) / SWAY_S + SWAY_PHASE * beat.phase);
-  let closed = false;
-  for (let i = 0; i < beat.blinks.length; i += 1) {
-    const at = beat.blinks[i];
-    if (at !== undefined && t >= at && t < at + BLINK_S) closed = true;
-  }
-  return { translateY, rotate, scaleX, scaleY, closed, shadow: 1 + translateY / SHADOW_PER };
-}

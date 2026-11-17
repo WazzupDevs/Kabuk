@@ -39,8 +39,9 @@ export type ConfirmOptions = {
   tone: 'danger' | 'plain';
   confirmLabel: string;
   confirmIcon?: CapIconName;
-  // "Vazgeç" or the other way out, under the action.
-  cancelLabel: string;
+  // "Vazgeç" or the other way out, under the action. Without it there is no such button (both
+  // buttons are answers, SemtSureBitti); outside and back still close it.
+  cancelLabel?: string;
   // While it runs the action shows it waits and nothing closes the dialog; it closes when it ends.
   // A thrown error leaves it open for another try and says so in the top notice over it (Ortak
   // kurallar C4: the toast, "Tekrar dene" runs the same way again), not in the dialog.
