@@ -718,6 +718,12 @@ export const tr = {
     saveEdit: 'Düzenlemeyi kaydet',
     edited: 'düzenlendi',
     // Under the menu of one's own message once its 15 minutes are over (tuval DmMenuSureDoldu).
+    // docs/SPEC_V4.md §4.X: deleting one's own message (both members' copies).
+    delete: 'Sil',
+    deleted: 'Mesaj silindi',
+    deleteTitle: 'Mesaj silinsin mi?',
+    deleteNote: 'Mesaj ikinizde de silinir.',
+    deleteConfirm: 'Sil',
     editWindowNote: `Mesajın ${DM_EDIT_WINDOW_MS / 60_000} dakika içinde düzenlenebilir.`,
   },
   // skall tuvali (KapsulSusle…, KapsulGaleri; docs/SPEC_V4.md §4.D, K-46, K-61).

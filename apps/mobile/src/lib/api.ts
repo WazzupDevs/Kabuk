@@ -583,6 +583,8 @@ export const dmApi = {
   // The caller's own message, within 15 minutes of sending (pure/dmManage.ts → canEditDm).
   edit: (messageId: string, body: string) =>
     invoke<DmEditResponse>('dm', { action: 'edit', messageId, body }),
+  // The caller's own message, at any time; it reads "Mesaj silindi" for both members.
+  delete: (messageId: string) => invoke<DmOkResponse>('dm', { action: 'delete', messageId }),
 };
 
 // Vampir Köylü (docs/SPEC_V4.md §4.F "Adım 4.6.6"): targets are table session ids; `step` is the

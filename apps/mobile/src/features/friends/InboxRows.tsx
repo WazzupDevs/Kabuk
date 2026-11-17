@@ -265,7 +265,8 @@ function InboxRow({
   const unread = t.unreadCount > 0;
   const threadId = t.threadId;
   const preview = <Preview thread={t} unread={unread} />;
-  const label = tr.messages.row(name, t.lastBody ?? tr.messages.noMessage, t.unreadCount);
+  const lastText = t.lastDeleted === true ? tr.dm.deleted : (t.lastBody ?? tr.messages.noMessage);
+  const label = tr.messages.row(name, lastText, t.unreadCount);
   return (
     <View ref={box} collapsable={false}>
       <Li
@@ -348,7 +349,7 @@ function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean
         lines={1}
         style={[{ flex: 1 }, none ? KIT_TYPE.italic : unread ? KIT_TYPE.strong : null]}
       >
-        {t.lastBody ?? tr.messages.noMessage}
+        {t.lastDeleted === true ? tr.dm.deleted : (t.lastBody ?? tr.messages.noMessage)}
       </T>
     </View>
   );

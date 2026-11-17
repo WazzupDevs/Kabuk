@@ -28,6 +28,11 @@ export function useCanEdit(createdAt: string, mine: boolean): boolean {
   return open;
 }
 
+// A message its sender deleted (dm_messages_page `deleted`); an older server sends no field: false.
+export function isDeleted(m: DmPageRow): boolean {
+  return 'deleted' in m && m.deleted === true;
+}
+
 // What the person reads for a refused edit. A code this build does not know (a newer server's) gets
 // the general text.
 export function editErrorText(err: unknown): string {
@@ -58,6 +63,31 @@ export function useEditDm(threadId: string) {
                   m.id === messageId
                     ? { ...m, body: res.body, edited_at: res.editedAt ?? editedAt(m) }
                     : m,
+                ),
+              ),
+            }
+          : data,
+      );
+      void queryClient.invalidateQueries({ queryKey: friendKeys.inbox });
+    },
+  });
+}
+
+// docs/SPEC_V4.md §4.X: deleting one's own message. The cached pages show it gone at once (empty
+// text, no reactions); the other member's phone reads it on the dm_edit broadcast.
+export function useDeleteDm(threadId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (messageId: string) => dmApi.delete(messageId),
+    onSuccess: (_res, messageId) => {
+      queryClient.setQueryData<Pages>(friendKeys.dm(threadId), (data) =>
+        data
+          ? {
+              ...data,
+              pages: data.pages.map((page) =>
+                page.map((m) =>
+                  m.id === messageId ? { ...m, body: '', deleted: true, reactions: [] } : m,
                 ),
               ),
             }
