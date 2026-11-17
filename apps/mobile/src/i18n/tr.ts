@@ -561,8 +561,8 @@ export const tr = {
     goToVenue: 'Mekana git',
     notFound: 'Bu mekan artık listede değil.',
     back: 'Geri dön',
-    checkInHint:
-      'Mekanı sen seçtin; konumun yalnızca mekanda olduğunu doğrulamak için bir kez alınır.',
+    // Under the venue page's button (tuval MekanDetay).
+    checkInHint: 'Konumun yalnızca bir kez doğrulanır, saklanmaz.',
     checkInHere: 'Buraya giriş yap',
     // Keşfet's question (docs/design/aura → Keşfet), by the part of the day (lib/dayPart.ts; the
     // owner's call, 30 Ekim); its last word in green (iskelet.md → 5.1).
@@ -591,9 +591,9 @@ export const tr = {
     mapInfo: 'Harita bilgisi',
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
-    noEvents: 'Bu hafta planlı etkinlik yok.',
-    // Its small empty card's title (iskelet.md → 3.4, 5.2).
-    noEventsTitle: 'Etkinlik yok',
+    noEvents: 'Plan eklenince burada görünür.',
+    // The empty week's title (tuval MekanDetay).
+    noEventsTitle: 'Bu hafta etkinlik yok',
     // The venue page's line over its name (5.2): the kind, the district and the city.
     venueInfo: (parts: readonly string[]) => parts.join(' · '),
     // The same line drawn as the board draws it (tuval Detay): the kind in its pill, then the
@@ -827,23 +827,28 @@ export const tr = {
   checkin: {
     // A notice, not a consent: the location is needed for the check-in itself (KVKK m. 5/2-c,
     // docs/decisions/yasal-metinler.md). The version shown is recorded (_shared/pure/consent.ts).
-    locationBody:
-      '"Konumumu kullan"a bastığında konumun, yalnızca mekanda olduğunu doğrulamak için bir kez alınır. Konumun saklanmaz.',
+    locationBody: 'Mekanda olduğunu doğrulamak için konumun yalnızca bir kez alınır ve saklanmaz.',
+    // The sheet's title; the venue's name stands under it (tuval MekanKonum).
+    sheetTitle: 'Konumunu doğrula',
     // Not `use…`: the compiler takes such a name for a hook passed as a value (A-21).
     shareLocation: 'Konumumu kullan',
     // skall tuvali (KesfetKonumIzin, KesfetMekan); approved 27 Ekim.
-    deniedTitle: 'Konum izni yok',
+    deniedTitle: 'Konum izni kapalı',
     replaces: (venue: string) => `${venue} girişin biter; bulunduğun masadan ayrılırsın.`,
     locating: 'Konum alınıyor…',
     permissionDenied:
-      'Konum izni olmadan mekanda olduğunu doğrulayamıyoruz. İzni ayarlardan verebilirsin.',
+      "İzin olmadan mekanda olduğunu doğrulayamıyoruz. Konum iznini Ayarlar'dan açabilirsin.",
     openSettings: 'Ayarları aç',
     locationFailed: 'Konum alınamadı. Açık bir alanda tekrar dene.',
     retry: 'Tekrar dene',
-    outsideBoundary: (kind: VenueKind) =>
-      kind === 'campus'
-        ? 'Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.'
-        : 'Mekanın içinde görünmüyorsun. Mekana girince tekrar dene.',
+    // Outside the venue's boundary: the title and its words (tuval MekanKonumDisari).
+    outsideTitle: (kind: VenueKind) =>
+      kind === 'campus' ? 'Kampüsün içinde görünmüyorsun' : 'Mekanın içinde görünmüyorsun',
+    outsideNote: (kind: VenueKind) =>
+      kind === 'campus' ? 'Kampüse girince tekrar dene.' : 'Mekana girince tekrar dene.',
+    // Too far from a venue with no boundary (the same notice).
+    tooFarTitle: 'Bu mekana çok uzaktasın',
+    tooFarNote: 'Mekandayken tekrar dene.',
     spotTitle: 'Neredesin?',
     spotHint: 'Aynı noktadaki masalarla oynarsın. Noktanı sonra da değiştirebilirsin.',
     open: 'Masayı aç',

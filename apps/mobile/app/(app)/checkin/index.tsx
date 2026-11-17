@@ -9,10 +9,11 @@ import { Linking, View } from 'react-native';
 import { Btn, T } from '@/aura/kit';
 import { Reveal } from '@/aura/Reveal';
 import { Banner } from '@/components/Banner';
-import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
+import { RouteSheet } from '@/components/RouteSheet';
 import { type Position, useCheckinDraft } from '@/features/checkin/draft';
 import { useSkipLocation } from '@/features/checkin/locationMode';
 import { checkinButton } from '@/features/checkin/checkinButton';
+import { LocateNotice } from '@/features/checkin/LocateNotice';
 import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -22,6 +23,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
+import { LOCATE_SHEET as L } from '@/theme/venueDetail';
 
 type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 
@@ -130,34 +132,37 @@ export default function LocationScreen() {
 
   const elsewhere =
     active.data && active.data.venue_id !== venue.id ? (active.data.venue?.name ?? null) : null;
+  const away = problem === 'tooFar' || problem === 'outsideBoundary';
+  const denied = problem === 'denied';
   return (
     <RouteSheet
       testID="checkin"
-      peek="checkin"
-      // The venue's name as the sheet's title, beside its close button: in the content it ran under
-      // the button and was cut (docs/denetim/pano-fark-2026-11.md → PF-79).
-      title={venue.name}
+      peek={denied ? 'locateDenied' : away ? 'locateAway' : 'locate'}
+      // tuval MekanKonum: "Konumunu doğrula" with the venue's name under it, no close button; the
+      // scrim, back and a pull down close it, and there is no "Vazgeç".
+      title={tr.checkin.sheetTitle}
+      titleType="locateTitle"
+      subtitle={venue.name}
+      closeButton={false}
       footer={
-        <View style={{ gap: KIT.size.chipGap + 2 }}>
-          {problem === 'denied' ? (
+        <View style={{ gap: L.buttonsGap }}>
+          {denied ? (
             <Btn
               block
-              tall
-              variant="glassy"
+              icon="settings"
               label={tr.checkin.openSettings}
               onPress={() => void Linking.openSettings()}
             />
           ) : null}
           <Btn
             block
-            tall
             icon="pin"
+            variant={denied ? 'glassy' : 'primary'}
             label={button.busy ? tr.checkin.locating : tr.checkin.shareLocation}
             onPress={() => void locate()}
             disabled={button.off}
             loading={button.busy}
           />
-          <CancelButton />
         </View>
       }
     >
@@ -165,24 +170,32 @@ export default function LocationScreen() {
           kullan" and "Vazgeç"; the page it opened from stays behind the sheet. A venue with spots
           also asks "Neredesin?" as glass rows (the owner's call, 31 Ekim): the spot is chosen before
           the position, as the table invite depends on it (CLAUDE.md → Değişmez kurallar 4). */}
-      <T v="body">{tr.checkin.locationBody}</T>
+      {denied || away ? null : <T v="body">{tr.checkin.locationBody}</T>}
       {elsewhere ? <Banner tone="warn" body={tr.checkin.replaces(elsewhere)} /> : null}
       {/* Above "Neredesin?": on a short screen a warning under the spots fell below the sheet's
           view (the owner's call, 3 Kasım, docs/decisions/checkin-uyari.md). A try's warning
           arrives 70 ms after the button turns idle (aktarim-37 → hareket 4). */}
       {problem === 'denied' ? (
         <Reveal index={1}>
-          <Banner tone="danger" title={tr.checkin.deniedTitle} body={tr.checkin.permissionDenied} />
+          <LocateNotice
+            tone="danger"
+            title={tr.checkin.deniedTitle}
+            body={tr.checkin.permissionDenied}
+          />
         </Reveal>
       ) : null}
       {problem === 'tooFar' ? (
         <Reveal index={1}>
-          <Banner tone="warn" body={tr.errors.too_far} />
+          <LocateNotice tone="warn" title={tr.checkin.tooFarTitle} body={tr.checkin.tooFarNote} />
         </Reveal>
       ) : null}
       {problem === 'outsideBoundary' ? (
         <Reveal index={1}>
-          <Banner tone="warn" body={tr.checkin.outsideBoundary(venue.kind)} />
+          <LocateNotice
+            tone="warn"
+            title={tr.checkin.outsideTitle(venue.kind)}
+            body={tr.checkin.outsideNote(venue.kind)}
+          />
         </Reveal>
       ) : null}
       {problem === 'failed' ? (
@@ -210,9 +223,4 @@ export default function LocationScreen() {
       ) : null}
     </RouteSheet>
   );
-}
-
-function CancelButton() {
-  const close = useCloseSheet();
-  return <Btn block tall variant="glassy" label={tr.common.cancel} onPress={close} />;
 }

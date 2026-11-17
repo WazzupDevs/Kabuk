@@ -45,6 +45,8 @@ export function RouteSheet({
   footer,
   look,
   titleType = 'title',
+  subtitle,
+  closeButton,
 }: {
   title?: string;
   children: ReactNode;
@@ -57,6 +59,10 @@ export function RouteSheet({
   // A board's own sheet (SheetCard → look) and its title's type (tuval Mesajlar: 22/800).
   look?: SheetLook;
   titleType?: KitTextVariant;
+  // A quiet line under the title (the location sheet: the venue's name).
+  subtitle?: string;
+  // False: no close button at the title's right; the scrim, back and a pull still close it.
+  closeButton?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const motion = useSheetMotion();
@@ -132,12 +138,16 @@ export function RouteSheet({
               above={showPeek && peek ? <Peek kind={peek} fit={!!footer} /> : null}
               head={
                 title ? (
-                  <T v={titleType} accessibilityRole="header">
-                    {title}
-                  </T>
+                  <View>
+                    <T v={titleType} accessibilityRole="header">
+                      {title}
+                    </T>
+                    {subtitle ? <T v="venueHint">{subtitle}</T> : null}
+                  </View>
                 ) : undefined
               }
               look={look}
+              closeButton={closeButton}
               footer={
                 footer ? (
                   <InSheet>
