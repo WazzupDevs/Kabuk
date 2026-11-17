@@ -39,6 +39,10 @@ type LabState = LabParts & {
   keep: boolean;
   // "Kapanınca koru": the parts turned off by hand stay off when the panel closes.
   hold: boolean;
+  // The long-press menu's scrim over a still copy of the screen blurred at SCRIM_GLASS
+  // (MessagePop, Menu → hold): off unless turned on here (the owner's call, 17 Kasım,
+  // docs/decisions/scrim-glass.md); kept as `whole` is. Off, the scrim's colour alone.
+  scrimGlass: boolean;
 };
 export const useDrawLab = create<LabState>(() => ({
   open: false,
@@ -52,6 +56,7 @@ export const useDrawLab = create<LabState>(() => ({
   few: true,
   keep: true,
   hold: false,
+  scrimGlass: false,
 }));
 
 export function useLabOff(part: DrawPart): boolean {
@@ -124,6 +129,16 @@ export function useLabHold(): boolean {
 export function toggleLabHold() {
   if (!DRAW_LAB) return;
   useDrawLab.setState((s) => ({ hold: !s.hold }));
+}
+
+// The panel's "Uzun basma bulanıklığı", panel open or closed; never on in production.
+export function useLabScrimGlass(): boolean {
+  return useDrawLab((s) => DRAW_LAB && s.scrimGlass);
+}
+
+export function toggleLabScrimGlass() {
+  if (!DRAW_LAB) return;
+  useDrawLab.setState((s) => ({ scrimGlass: !s.scrimGlass }));
 }
 
 export function toggleLabSkia() {

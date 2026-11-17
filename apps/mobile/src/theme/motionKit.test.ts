@@ -7,6 +7,7 @@ import { menuOpenAt, menuPlace } from '../motion/menuPlace';
 import { sheetOpenAt } from '../motion/sheetOpen';
 import { MOTION } from './aura';
 import { KIT } from './auraKit';
+import { SCRIM_GLASS } from './glass';
 
 const mobile = join(import.meta.dirname, '..', '..');
 const code = (file: string) => readFileSync(join(mobile, file), 'utf8');
@@ -28,11 +29,11 @@ describe('the sheet (iskelet.md → 3.5, 4.3)', () => {
     expect(over.opacity).toBe(1);
   });
 
-  it('opens on springs.sheet and floats 8 in, 40 round, its close button 38', () => {
+  it('opens on springs.sheet and floats 8 in, 28 round, its close button 38', () => {
     expect(MOTION.springs.sheet).toEqual({ stiffness: 260, damping: 24, mass: 1 });
     expect(code('src/motion/useSheetMotion.ts')).toMatch(/springConfig\(MOTION\.springs\.sheet\)/);
     expect(kitSize('sheetInset')).toBe(8);
-    expect(kitSize('sheetRadius')).toBe(40);
+    expect(KIT.layer.size.sheetRadius).toBe(28);
     expect(kitSize('sheetClose')).toBe(38);
   });
 
@@ -73,10 +74,29 @@ describe('the menu grown from its button (iskelet.md → 3.5)', () => {
   const menu = { width: 264, height: 200 };
   const gap = kitSize('menuGap');
 
-  it('is 256 to 272 wide, 26 round, a destructive row 6 apart', () => {
-    expect([kitSize('menuMinW'), kitSize('menuMaxW')]).toEqual([256, 272]);
-    expect(kitSize('menuRadius')).toBe(26);
-    expect(kitSize('menuDangerGap')).toBe(6);
+  it('the ⋮ menu 292 wide, 28 round, flat and without a scrim; the long-press menu 268, 24', () => {
+    expect(KIT.layer.size).toMatchObject({ menuWidth: 292, menuRadius: 28, menuPadTop: 16 });
+    expect(KIT.layer.size).toMatchObject({ holdWidth: 268, holdRadius: 24, holdBand: 6 });
+    const menu = code('src/motion/Menu.tsx');
+    expect(menu).not.toMatch(/MENU_GLASS|BackdropBlur|useSheetFrost/);
+    expect(menu).toMatch(/\{hold \? \(\s*<SheetScrim/);
+  });
+
+  it('sheets, menus and the held message hold their place in the one store', () => {
+    expect(code('src/motion/Sheet.tsx')).toMatch(/useOverlaySlot\('sheet', visible, onClose\)/);
+    expect(code('src/motion/Menu.tsx')).toMatch(/useOverlaySlot\(hold \? 'hold' : 'menu'/);
+    expect(code('src/components/MessagePop.tsx')).toMatch(
+      /useOverlaySlot\('hold', true, onClose\)/,
+    );
+    expect(code('src/components/RouteSheet.tsx')).toMatch(/useOverlaySlot\('sheet', true\)/);
+  });
+
+  it('the long-press scrim blurs only with the lab switch on; the others are flat', () => {
+    expect(SCRIM_GLASS.blur).toBe(6);
+    const scrim = code('src/components/SheetScrim.tsx');
+    expect(scrim).toMatch(/!!hold && glassOn && HAS_BACKDROP && !solid/);
+    expect(KIT.layer.light.holdScrim).toBe('rgba(3, 27, 11, 0.30)');
+    expect(KIT.layer.dark.holdScrim).toBe('rgba(0, 0, 0, 0.62)');
   });
 
   it('grows from 0.18 on springs.menu', () => {

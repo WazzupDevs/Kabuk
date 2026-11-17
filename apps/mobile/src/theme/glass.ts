@@ -66,14 +66,12 @@ export const GLASS_FACE = {
   },
 } as const;
 
-// The scrim behind a sheet (U8, docs/design/aura → `.scrim`: backdrop-filter blur(8px)): the screen
-// behind, copied once when the sheet opens, blurred by `blur` (the deviation in dp) under the
-// scrim's colour (modules/skall-glass → BackdropBlurView; components/SheetScrim.tsx).
-export const SCRIM_GLASS = { blur: 8 } as const;
+// The long-press menu's scrim (MesajlarUzunBas `.ubs`: backdrop-filter blur(6px)): the screen
+// behind, copied once when it opens, blurred by `blur` (the deviation in dp) under the scrim's
+// colour (modules/skall-glass → BackdropBlurView; components/SheetScrim.tsx → hold). Off unless
+// Çizim ölçümü's switch turns it on (lib/drawLab.ts → scrimGlass; docs/decisions/scrim-glass.md).
+// The sheets' and the dialog's scrims are flat (ortak-temel-plan.md A.8).
+export const SCRIM_GLASS = { blur: 6 } as const;
 
-// The live glass of the sheets and the menus (iskelet.md → 2.2), apart from the tab bar's switch:
-// a sheet's card frosts the screen copied once behind it (SheetScrim's still picture, through the
-// glass module), so a scroll inside it never blurs again; a menu frosts its own still copy at
-// `menuBlur`. Off, or with "reduce transparency", both are drawn on their solid ground.
-export const SHEET_GLASS = true;
-export const MENU_GLASS = { blur: 28 } as const;
+// The sheets' and the menus' cards are flat surfaces (yeni arayüz tuvali, ortak-temel-plan.md
+// A.9–A.11): no live glass on them (it was SHEET_GLASS and MENU_GLASS, 28, until 17 Kasım).

@@ -19,50 +19,47 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { T, useKit } from '@/aura/kit';
+import { T } from '@/aura/kit';
 import { LEAVE_RN, springConfig } from '@/aura/motion';
 import { AppIcon } from '@/components/AppIcon';
 import type { IconName } from '@/components/Button';
-import { BackdropBlur, HAS_BACKDROP } from '@/components/LiquidGlass';
 import { Loader } from '@/components/Loader';
-import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
+import { boxShadowParts } from '@/components/NativeShadow';
+import { SheetScrim } from '@/components/SheetScrim';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useLeaveKeyboard } from '@/lib/modalKeyboard';
+import { useOverlaySlot } from '@/lib/useOverlaySlot';
 import { runSheetSlide } from '@/lib/sheetSlide';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useSinglePress } from '@/lib/useSinglePress';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { DM } from '@/theme/dm';
-import { MENU_GLASS } from '@/theme/glass';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
 import { MENU_FADE_UNTIL, MENU_SCALE, type MenuAnchor, menuPlace } from './menuPlace';
-import { useSheetFrost } from './useSheetMotion';
 
 // skall tuvali (skall.css → "Menü"): a sheet's actions as rows of one soft card, a hairline
 // between them; a negative row is written red.
-// float: over a scrim, beside a held message (skall.css → `.pop .menu`): the surface on the float
-// shadow, 210 wide; as Telegram Android's message menu, its rows lower and without hairlines (the
-// owner's call, 30 Ekim).
-// anchor: grown out of the button at `anchor` (iskelet.md → 3.5; MenuPop).
-const Floating = createContext(false);
+// float: beside a held message (MessagePop), the long-press menu's look (MesajlarUzunBas).
+// anchor: grown out of the button at `anchor` (iskelet.md → 3.5; MenuPop): the ⋮ menu's look
+// (SikayetEt, MekanSecenek), or with `hold` the long-press menu's over its scrim (InboxRows).
+type RowLook = 'sheet' | 'pop' | 'hold';
+const Look = createContext<RowLook>('sheet');
 // Whether a row follows another: it draws the hairline over itself, from the words (U29).
 const Follows = createContext(false);
 // In a menu grown from a button: a row's press closes the menu first.
 const PopClose = createContext<(() => void) | null>(null);
-// In a menu grown from a button (tuval Dm, `menu`): its rows 50 high, 16 in, the icon 20 and 12 from
-// the words (15.5/600).
-const Grown = createContext(false);
 
 export function Menu({
   children,
   float,
   anchor,
+  hold,
   visible = true,
   onClose,
 }: {
@@ -70,49 +67,100 @@ export function Menu({
   float?: boolean;
   // The button the menu grows out of (measureMenuAnchor). Unset: the rows stand where they are.
   anchor?: MenuAnchor;
+  // With `anchor`: a long press's menu (MesajlarUzunBas) rather than a ⋮ button's.
+  hold?: boolean;
   // With `anchor`: whether the menu is open, and what a tap outside, back or a row does to it.
   visible?: boolean;
   onClose?: () => void;
 }) {
-  const { colors, shape, scheme } = useTheme();
+  const { scheme } = useTheme();
   const rows = Children.toArray(children).filter(Boolean);
   const shadowOff = useLabOff('golge');
-  const shadow = boxShadowParts(shadowOff, float ? shape.shadow.sheet : null, shape.radius.lg);
+  const L = KIT.layer.size;
+  const shadow = boxShadowParts(
+    shadowOff,
+    float ? KIT.layer[scheme].menuShadow : null,
+    L.holdRadius,
+  );
   if (anchor) {
     return (
-      <MenuPop anchor={anchor} visible={visible} onClose={onClose ?? noop}>
+      <MenuPop anchor={anchor} visible={visible} hold={!!hold} onClose={onClose ?? noop}>
         {rows}
       </MenuPop>
     );
   }
-  const card = (
+  if (float) {
+    return (
+      <View style={{ width: L.holdWidth, borderRadius: L.holdRadius, boxShadow: shadow.boxShadow }}>
+        {shadow.node}
+        <MenuCard look="hold">{rows}</MenuCard>
+      </View>
+    );
+  }
+  return (
     <View
       // docs/design/aura (`.glass.list`): the rows in one glass card, a hairline between them.
       style={[
         // U2: in a sheet the card is the sheet's card colour (#1B211F in the dark).
-        float ? { backgroundColor: colors.surface } : gradientStyle(KIT[scheme].glassInSheet),
+        gradientStyle(KIT[scheme].glassInSheet),
         {
           borderRadius: KIT.size.glassRadiusSm,
-          borderWidth: float ? 0 : KIT.size.edge,
+          borderWidth: KIT.size.edge,
           borderColor: KIT[scheme].glassInSheetEdge,
           overflow: 'hidden',
         },
       ]}
     >
       {rows.map((row, i) => (
-        <Follows.Provider key={i} value={i > 0 && !float}>
+        <Follows.Provider key={i} value={i > 0}>
           {row}
         </Follows.Provider>
       ))}
     </View>
   );
-  if (!float) return card;
+}
+
+// The ⋮ menu's and the long-press menu's card (KIT.layer): the flat surface, no glass. The ⋮ menu
+// 16 / 8 / 8 inside, its red row last after a hairline (MekanSecenek); the long-press menu 6
+// inside, its red rows apart under a 6 band across it (MesajlarUzunBas `.psep`).
+function MenuCard({ look, children }: { look: 'pop' | 'hold'; children: ReactNode[] }) {
+  const { scheme } = useTheme();
+  const layer = KIT.layer[scheme];
+  const L = KIT.layer.size;
+  const hold = look === 'hold';
+  const plain = children.filter((row) => !isNegative(row));
+  const negative = children.filter(isNegative);
+  const banded = hold && negative.length > 0 && plain.length > 0;
+  const group = (rows: ReactNode[], from: number) =>
+    rows.map((row, i) => (
+      <Follows.Provider key={from + i} value={i > 0 || (!banded && from > 0)}>
+        {row}
+      </Follows.Provider>
+    ));
   return (
     <View
-      style={{ width: FLOAT_WIDTH, borderRadius: shape.radius.lg, boxShadow: shadow.boxShadow }}
+      style={{
+        backgroundColor: layer.menu,
+        borderRadius: hold ? L.holdRadius : L.menuRadius,
+        overflow: 'hidden',
+        paddingTop: hold ? L.holdPad : L.menuPadTop,
+        paddingHorizontal: hold ? L.holdPad : L.menuPadX,
+        paddingBottom: hold ? L.holdPad : L.menuPadBottom,
+      }}
     >
-      {shadow.node}
-      <Floating.Provider value>{card}</Floating.Provider>
+      <Look.Provider value={look}>
+        {group(plain, 0)}
+        {banded ? (
+          <View
+            style={{
+              height: L.holdBand,
+              marginHorizontal: -L.holdPad,
+              backgroundColor: layer.holdBand,
+            }}
+          />
+        ) : null}
+        {group(negative, plain.length)}
+      </Look.Provider>
     </View>
   );
 }
@@ -152,30 +200,29 @@ function isNegative(row: ReactNode): boolean {
 
 // A closing that never reports its end: gone this long after it should have ended.
 const LEAVE_FALLBACK_MS = 250;
-// The still copy of the screen frosts in over the opening's last part, as the menu reaches its size
-// (its blurred patch stands at the menu's full box from the start).
-const BLUR_FROM = 0.6;
 
-// iskelet.md → 3.5: a glass menu grown out of its button, 256 to 272 wide, 26 round, frosted at 28,
-// scaled from 0.18 to 1 from the button's centre on springs.menu (menuPlace.ts); a tap outside or
-// Android's back closes it, no "Vazgeç" row; a destructive row stands at the foot, apart by 6, red.
-// The frost is the screen copied once as the menu opens (LiquidGlass → BackdropBlur) in the
-// menu's box; with reduce transparency or below Android 12 the card's solid ground. Measured first
-// (unseen), then placed and grown; with reduce motion it appears and goes at once.
+// iskelet.md → 3.5: a menu grown out of its button, scaled from 0.18 to 1 from the button's centre
+// on springs.menu (menuPlace.ts); a tap outside or Android's back closes it, no "Vazgeç" row; a
+// destructive row stands at the foot, red. The ⋮ menu (SikayetEt, MekanSecenek): 292 wide, 28
+// round, the flat surface, no scrim. The long-press menu (`hold`, MesajlarUzunBas): 268 wide, 24
+// round, over its scrim (SheetScrim → hold). One open at a time with the sheets, the dialog and the
+// held message (lib/overlayStore.ts). Measured first (unseen), then placed and grown; with reduce
+// motion it appears and goes at once.
 function MenuPop({
   anchor,
   visible,
+  hold,
   onClose,
   children,
 }: {
   anchor: MenuAnchor;
   visible: boolean;
+  hold: boolean;
   onClose: () => void;
   children: ReactNode[];
 }) {
-  const k = useKit();
+  const { scheme } = useTheme();
   const reduce = useReduceMotion();
-  const frost = useSheetFrost() && HAS_BACKDROP;
   const screen = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const shadowOff = useLabOff('golge');
@@ -183,6 +230,7 @@ function MenuPop({
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [p] = useState(() => new Animated.Value(0));
   useLeaveKeyboard(visible);
+  useOverlaySlot(hold ? 'hold' : 'menu', visible, onClose);
   if (visible && !mounted) setMounted(true);
   // Closed before it was measured: nothing to play out.
   if (!visible && mounted && size === null) setMounted(false);
@@ -216,61 +264,32 @@ function MenuPop({
   const place = size
     ? menuPlace(anchor, size, screen, { top: topInset, bottom: insets.bottom }, KIT.size.menuGap)
     : null;
-  const radius = KIT.size.menuRadius;
-  // tuval Dm (`menu`): a whiter glass, a white edge, a deep soft shadow and a faint scrim.
-  const look = DM[k.scheme].menu;
-  const shadow = shadowParts(shadowOff, look.shadow, undefined, radius);
-  const plain = children.filter((row) => !isNegative(row));
-  const negative = children.filter(isNegative);
+  const L = KIT.layer.size;
+  const radius = hold ? L.holdRadius : L.menuRadius;
+  // At most the screen less its edges (320 dp: 292 still fits).
+  const width = Math.min(hold ? L.holdWidth : L.menuWidth, screen.width - 2 * KIT.size.menuGap);
+  const shadow = boxShadowParts(shadowOff, KIT.layer[scheme].menuShadow, radius);
   return (
     <Modal
       transparent
       visible={mounted}
       animationType="none"
       statusBarTranslucent
+      navigationBarTranslucent
       onRequestClose={onClose}
     >
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            backgroundColor: look.scrim,
-            opacity: p.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 1],
-              extrapolate: 'clamp',
-            }),
-          },
-        ]}
-      />
+      {hold ? (
+        <SheetScrim
+          hold
+          opacity={p.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' })}
+        />
+      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={tr.common.close}
         onPress={onClose}
         style={StyleSheet.absoluteFill}
       />
-      {frost && place && size ? (
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: place.left,
-            top: place.top,
-            width: size.width,
-            height: size.height,
-            borderRadius: radius,
-            overflow: 'hidden',
-            opacity: p.interpolate({
-              inputRange: [0, BLUR_FROM, 1],
-              outputRange: [0, 0, 1],
-              extrapolate: 'clamp',
-            }),
-          }}
-        >
-          <BackdropBlur blur={MENU_GLASS.blur} style={StyleSheet.absoluteFill} />
-        </Animated.View>
-      ) : null}
       <Animated.View
         accessibilityRole="menu"
         onLayout={
@@ -283,8 +302,7 @@ function MenuPop({
           position: 'absolute',
           left: place?.left ?? 0,
           top: place?.top ?? 0,
-          minWidth: KIT.size.menuMinW,
-          maxWidth: KIT.size.menuMaxW,
+          width,
           opacity: place
             ? p.interpolate({
                 inputRange: [0, MENU_FADE_UNTIL, 1],
@@ -300,36 +318,9 @@ function MenuPop({
       >
         <View style={{ borderRadius: radius, boxShadow: shadow.boxShadow }}>
           {shadow.node}
-          <View
-            style={{
-              ...gradientStyle(frost ? look.fill : look.solid),
-              borderRadius: radius,
-              borderWidth: KIT.size.edge,
-              borderColor: look.edge,
-              overflow: 'hidden',
-              paddingVertical: DM.menu.padY,
-            }}
-          >
-            <PopClose.Provider value={onClose}>
-              <Floating.Provider value>
-                <Grown.Provider value>
-                  {plain}
-                  {/* iskelet.md → 3.5: the destructive row apart under a 6 band (tuval Dm: 6
-                      above and under it). */}
-                  {negative.length > 0 && plain.length > 0 ? (
-                    <View
-                      style={{
-                        height: KIT.size.menuDangerGap,
-                        marginVertical: DM.menu.bandGap,
-                        backgroundColor: look.band,
-                      }}
-                    />
-                  ) : null}
-                  {negative}
-                </Grown.Provider>
-              </Floating.Provider>
-            </PopClose.Provider>
-          </View>
+          <PopClose.Provider value={onClose}>
+            <MenuCard look={hold ? 'hold' : 'pop'}>{children}</MenuCard>
+          </PopClose.Provider>
         </View>
       </Animated.View>
     </Modal>
@@ -338,7 +329,6 @@ function MenuPop({
 
 const ROW_HEIGHT = 56;
 const ROW_GAP = 14;
-const FLOAT_WIDTH = SPACING[16] * 3 + SPACING[4] + SPACING[0.5];
 
 export function MenuItem({
   label,
@@ -370,12 +360,52 @@ export function MenuItem({
   count?: number;
 }) {
   const { colors, scheme } = useTheme();
-  const floating = useContext(Floating);
+  const look = useContext(Look);
   const follows = useContext(Follows);
   const popClose = useContext(PopClose);
-  const grown = useContext(Grown);
-  const menuLook = DM[scheme].menu;
-  const iconSize = grown ? DM.menu.icon : floating ? ICON.md : ICON.lg;
+  const layer = KIT.layer[scheme];
+  const L = KIT.layer.size;
+  // The ⋮ menu's row (MekanSecenek `.pi`), the long-press menu's (MesajlarUzunBas `.pi`), a sheet's
+  // (U21: 56, 16 in, 14 between the icon and the words, `.srow`).
+  const row =
+    look === 'pop'
+      ? {
+          icon: L.menuIcon,
+          gap: L.menuRowGap,
+          min: L.menuRow,
+          padX: L.menuRowPadX,
+          padY: L.menuRowPadY,
+          radius: L.menuRowRadius,
+          hairIn: L.menuHairIn,
+          hairOut: L.menuRowPadX,
+          hair: layer.menuHair,
+        }
+      : look === 'hold'
+        ? {
+            icon: L.holdIcon,
+            gap: L.holdGap,
+            min: L.holdRow,
+            padX: L.holdRowPadX,
+            padY: 0,
+            radius: L.holdRowRadius,
+            hairIn: L.holdHairIn,
+            hairOut: L.holdRowPadX,
+            hair: layer.holdHair,
+          }
+        : {
+            icon: ICON.lg,
+            gap: ROW_GAP,
+            min: ROW_HEIGHT,
+            padX: SPACING[4],
+            padY: 0,
+            radius: 0,
+            // U29 (`.srow + .srow:before`): the hairline starts where the words do, 16 in from
+            // the right.
+            hairIn: SPACING[4] + (cap || icon ? ICON.lg + ROW_GAP : 0),
+            hairOut: SPACING[4],
+            hair: KIT[scheme].hair,
+          };
+  const iconSize = row.icon;
   const press = useSinglePress(
     popClose
       ? () => {
@@ -384,8 +414,25 @@ export function MenuItem({
         }
       : onPress,
   );
-  const ink = negative ? (grown ? menuLook.danger : colors.onDangerSoft) : colors.text;
-  const iconInk = negative ? ink : grown ? menuLook.icon : colors.muted;
+  const sheet = look === 'sheet';
+  const ink = negative ? (sheet ? colors.onDangerSoft : layer.menuDanger) : colors.text;
+  // The ⋮ menu's icons --primary; the long-press menu's the ink, their body muted (the red's at
+  // 35 %); a sheet's muted.
+  const iconInk = negative
+    ? ink
+    : look === 'pop'
+      ? layer.menuIcon
+      : look === 'hold'
+        ? layer.holdIcon
+        : colors.muted;
+  const iconBody =
+    look === 'hold'
+      ? negative
+        ? { second: layer.holdDangerBody, soft: layer.holdDangerSoft }
+        : { second: layer.holdIconBody, soft: layer.holdIconSoft }
+      : look === 'pop'
+        ? { second: iconInk, soft: 1 }
+        : null;
   return (
     <Pressable
       testID={testID}
@@ -398,33 +445,34 @@ export function MenuItem({
         <View
           className="flex-row items-center"
           style={{
-            // U21: a sheet's row 56, 16 in, 14 between the icon and the words (`.srow`).
-            gap: grown ? DM.menu.gap : floating ? SPACING[4] : ROW_GAP,
-            minHeight: grown ? DM.menu.row : floating ? SPACING[11] : ROW_HEIGHT,
-            paddingHorizontal: grown
-              ? DM.menu.padX
-              : floating
-                ? SPACING[4] + SPACING[0.5]
-                : SPACING[4],
+            gap: row.gap,
+            minHeight: row.min,
+            paddingHorizontal: row.padX,
+            paddingVertical: row.padY,
+            borderRadius: row.radius,
             opacity: pressed ? OPACITY.pressed : 1,
           }}
         >
           {follows ? (
             <View
-              // U29 (`.srow + .srow:before`): the hairline starts where the words do, 16 in from
-              // the right.
               style={{
                 position: 'absolute',
                 top: 0,
-                left: SPACING[4] + (cap || icon ? iconSize + ROW_GAP : 0),
-                right: SPACING[4],
+                left: row.hairIn,
+                right: row.hairOut,
                 borderTopWidth: KIT.size.hair,
-                borderTopColor: KIT[scheme].hair,
+                borderTopColor: row.hair,
               }}
             />
           ) : null}
           {cap ? (
-            <CapIcon name={cap} size={iconSize} color={iconInk} />
+            <CapIcon
+              name={cap}
+              size={iconSize}
+              color={iconInk}
+              second={iconBody?.second}
+              soft={iconBody?.soft}
+            />
           ) : icon ? (
             <AppIcon name={icon} size={iconSize} color={iconInk} />
           ) : null}
@@ -432,14 +480,10 @@ export function MenuItem({
             className="flex-1"
             style={{ gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }}
           >
-            {grown ? (
-              <T v="menuRow" color={ink}>
+            {!sheet ? (
+              <T v={look === 'pop' ? 'popRow' : 'holdRow'} color={ink}>
                 {label}
               </T>
-            ) : floating ? (
-              <Text variant="button" color={ink}>
-                {label}
-              </Text>
             ) : (
               <T v="h3" color={ink}>
                 {label}

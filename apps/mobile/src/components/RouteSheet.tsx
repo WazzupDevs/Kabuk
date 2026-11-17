@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { InSheet, T } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
-import { useSheetFrost, useSheetMotion } from '@/motion/useSheetMotion';
+import { useOverlaySlot } from '@/lib/useOverlaySlot';
+import { useSheetMotion } from '@/motion/useSheetMotion';
 import { KIT, type KitTextVariant } from '@/theme/auraKit';
 import { peekShown, SHEET_MAX } from '@/lib/sheetFit';
 
@@ -59,7 +60,10 @@ export function RouteSheet({
 }) {
   const insets = useSafeAreaInsets();
   const motion = useSheetMotion();
-  const frost = useSheetFrost();
+  // A route stays a route (a screen pushed from it opens on top of it): it holds its place in the
+  // one store (lib/overlayStore.ts) while it is drawn, so it closes what was open, but nothing
+  // opening over it closes it.
+  useOverlaySlot('sheet', true);
   const closing = useRef(false);
   const [area, setArea] = useState(0);
   const [sheetH, setSheetH] = useState(0);
@@ -94,7 +98,7 @@ export function RouteSheet({
   return (
     <CloseContext.Provider value={close}>
       <View style={StyleSheet.absoluteFill}>
-        <SheetScrim opacity={motion.scrim} glass={frost} />
+        <SheetScrim opacity={motion.scrim} />
         {/* The status bar over the scrim: a fade and light icons; the light scheme's dark ones were
             lost on it (audit M15-12). */}
         <StatusScrim opacity={motion.scrim} />
@@ -133,7 +137,6 @@ export function RouteSheet({
                   </T>
                 ) : undefined
               }
-              frost={frost}
               look={look}
               footer={
                 footer ? (

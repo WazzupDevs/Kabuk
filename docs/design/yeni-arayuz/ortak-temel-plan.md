@@ -50,6 +50,7 @@ ConfirmSheet önce Dialog'a alias, sonra kaldırılır. Screen/TopBar 'sayfa' t�
    Panolar AyarlarCikis, MesajlarSohbetSil. Test: overlayStore.test.ts, motionGuard, motionKit.test.ts.
 4. Kalan onaylar dialoga (B listesi). Pano EngelleOnay. E2E testID ve -cancel adları korunur.
 5. Sayfa, ⋮ ve uzun basma depoya: motion/Sheet, motion/Menu, MessagePop, SheetScrim; SCRIM_GLASS 6; MENU_GLASS ⋮'den kalkar. Panolar SikayetEt, MekanSecenek, Masadakiler, MesajlarUzunBas.
+   Yapıldı (17 Kasım, `claude/ortak-temel-5`): `useOverlaySlot` ile tek depo, `closeAllSheets` = `closeAll`; uzun basma bulanıklığı Çizim ölçümü anahtarıyla, varsayılan kapalı (`docs/decisions/scrim-glass.md`). Koyu sayfa panodaki gibi #121614 (A.11'deki #151A18 değil).
 6. Yükleniyor, hata, 320 dp: EmptyState, RouteError, Toast, ButtonRow. Panolar YukleniyorListe, AktivitelerHata, AktivitelerBaglantiYok, SusleKaydedilemedi, SusleKaydediliyor, DarSusle.
 Kapsül pilotuna ait (bu paketlerde değil): Ağız sekmesi, Takımlar, "Kapsülüne tak".
 
