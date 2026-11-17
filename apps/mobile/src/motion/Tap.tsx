@@ -40,6 +40,8 @@ export function usePress() {
 type Props = {
   onPress?: () => void;
   onLongPress?: () => void;
+  // Pressed and held: true while a finger is on it, false when it lifts (Krot's "Rolüm").
+  onHold?: (on: boolean) => void;
   disabled?: boolean;
   // The touch its role makes as it is pressed (lib/hapticMoments.ts: a choice changed is
   // `selection`); none by default, a touch confirms an outcome, never every press.
@@ -61,6 +63,7 @@ type Props = {
 export function Tap({
   onPress,
   onLongPress,
+  onHold,
   disabled,
   feel,
   sink = true,
@@ -82,8 +85,22 @@ export function Tap({
       hitSlop={hitSlop}
       disabled={disabled}
       unstable_pressDelay={press.delay}
-      onPressIn={sink ? press.onPressIn : undefined}
-      onPressOut={sink ? press.onPressOut : undefined}
+      onPressIn={
+        sink || onHold
+          ? () => {
+              if (sink) press.onPressIn();
+              onHold?.(true);
+            }
+          : undefined
+      }
+      onPressOut={
+        sink || onHold
+          ? () => {
+              if (sink) press.onPressOut();
+              onHold?.(false);
+            }
+          : undefined
+      }
       onLongPress={onLongPress}
       onPress={
         onPress

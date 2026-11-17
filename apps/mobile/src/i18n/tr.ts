@@ -1808,6 +1808,11 @@ export const tr = {
     yourTurn: 'Sıra sende',
     listen: 'Dinle. Kelimeyi bilmeyeni yakalamaya çalış.',
     sayOne: 'Kelimeyle ilgili tek kelime söyle. Kelimeyi söyleme.',
+    sayShort: 'Tek kelime söyle',
+    spoke: 'Söyledi',
+    speakingNow: 'Söylüyor',
+    upNext: 'Sıradaki',
+    waiting: 'Bekliyor',
     next: 'Sıradaki: ',
     said: 'Söyledim',
     // The vote.
