@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { View } from 'react-native';
 
-import { Btn, Round, T } from '@/aura/kit';
+import { T } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 import { Avatar } from '@/components/Avatar';
 import { EmptyState } from '@/components/EmptyState';
@@ -13,10 +13,11 @@ import { type HistoryConcept, tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { useNarrow } from '@/lib/useNarrow';
 import { FLAT } from '@/theme/flatLists';
 
 import { refreshFriends, useIncomingFriendRequests, useVenueChatRequests } from './queries';
+import { MasaSection, useMasaRequestData } from './MasaRequests';
+import { RequestRowView } from './RequestRowView';
 import { useRetryAfterName } from './useRetryAfterName';
 
 // The last game of the encounter, or the chat (docs/SPEC_V3.md §5.5), as on Bildirimler.
@@ -37,13 +38,15 @@ type Answer = { requestId: string; accept: boolean };
 // Mesajlar → İstekler (docs/SPEC_V4.md §4.C; yeni arayüz tuvali: IsteklerBos, IsteklerDolu): the
 // open friend requests waiting for the caller under "Arkadaşlık · N", newest first, from the venue
 // chat (the sender's name and photo, rule 4) and from play history (the table's name); a flat row
-// each with its decline and "Kabul et". A decline is silent (rule 5). The board's "Masa" section
-// (join requests and invites) and "Gönderdiğin" have no data here: they are not drawn.
+// each with its decline and "Kabul et". A decline is silent (rule 5). The board's "Masa · N"
+// section over it is MasaRequests.tsx (join requests and table invites); "Gönderdiğin" waits for
+// the server and is not drawn.
 export function RequestList({ now }: { now: Date }) {
   const queryClient = useQueryClient();
   const fromTables = useIncomingFriendRequests();
   const fromChat = useVenueChatRequests();
-  const pending = fromTables.isPending || fromChat.isPending;
+  const masa = useMasaRequestData(now.getTime());
+  const pending = fromTables.isPending || fromChat.isPending || masa.pending;
   const loading = useLoaderHold(pending);
 
   const respond = useMutation({
@@ -68,16 +71,17 @@ export function RequestList({ now }: { now: Date }) {
     );
   }
   // A failed refresh keeps the lists (audit PRO-2).
-  if (!fromTables.data || !fromChat.data) {
+  if (!fromTables.data || !fromChat.data || masa.error) {
     return (
       <EmptyState
         icon="cloud-offline-outline"
-        body={errorMessage(fromTables.error ?? fromChat.error)}
+        body={errorMessage(fromTables.error ?? fromChat.error ?? masa.error)}
         action={{
           label: tr.common.retry,
           onPress: () => {
             void fromTables.refetch();
             void fromChat.refetch();
+            masa.refetch();
           },
         }}
       />
@@ -101,7 +105,7 @@ export function RequestList({ now }: { now: Date }) {
     })),
   ].sort((a, b) => b.at.localeCompare(a.at));
 
-  if (rows.length === 0) {
+  if (rows.length === 0 && !masa.any) {
     return (
       // IsteklerBos: the riso and its two lines in the middle, no card.
       <View className="flex-1 justify-center">
@@ -119,14 +123,18 @@ export function RequestList({ now }: { now: Date }) {
   const R = FLAT.request;
   return (
     <View style={{ marginTop: R.listTop }}>
+      {/* IsteklerDolu: "Masa · N" over "Arkadaşlık · N". */}
+      <MasaSection data={masa} nowMs={now.getTime()} />
       {/* `.rqh`: "Arkadaşlık · 3", 13/700, the muted ink, 14 over and 4 under. */}
-      <T
-        v="sectionHead"
-        accessibilityRole="header"
-        style={{ marginTop: R.headTop, marginBottom: R.headBottom }}
-      >
-        {tr.friends.requestsHead(rows.length)}
-      </T>
+      {rows.length > 0 ? (
+        <T
+          v="sectionHead"
+          accessibilityRole="header"
+          style={{ marginTop: R.headTop, marginBottom: R.headBottom }}
+        >
+          {tr.friends.requestsHead(rows.length)}
+        </T>
+      ) : null}
       {rows.map((r) => (
         <RequestRow
           key={r.id}
@@ -145,8 +153,7 @@ export function RequestList({ now }: { now: Date }) {
   );
 }
 
-// `.rq`: the face, the name over its line and its date, the decline round and "Kabul et" at the
-// right; at 320 dp or the largest text they stand under the words.
+// `.rq` (RequestRowView) of a friend request.
 function RequestRow({
   row: r,
   now,
@@ -158,50 +165,36 @@ function RequestRow({
   busy: Answer | null;
   onAnswer: (accept: boolean) => void;
 }) {
-  const R = FLAT.request;
-  const narrow = useNarrow();
   const mine = busy?.requestId === r.id;
-  const actions = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
-      <Round
-        icon="close"
-        label={tr.messages.decline(r.name)}
-        testID={`request-decline-${r.name}`}
-        disabled={busy !== null}
-        loading={mine && busy?.accept === false}
-        onPress={() => onAnswer(false)}
-      />
-      <Btn
-        sm
-        icon="check"
-        label={tr.friends.accept}
-        accessibilityLabel={tr.messages.accept(r.name)}
-        testID={`request-accept-${r.name}`}
-        disabled={busy !== null}
-        loading={mine && busy?.accept === true}
-        onPress={() => onAnswer(true)}
-      />
-    </View>
-  );
   return (
-    <View
+    <RequestRowView
       testID={`request-${r.name}`}
-      style={{ gap: KIT.size.chipsGap, paddingVertical: R.rowPadY }}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.gap }}>
-        {r.face.kind === 'table' ? (
+      label={r.label}
+      name={r.name}
+      kind={tr.messages.requestKind}
+      stamp={{ text: tr.messages.stamp(r.at, inboxStamp(r.at, now)) }}
+      face={
+        r.face.kind === 'table' ? (
           <Avatar kind="table" alias={r.face.alias} size="xl" />
         ) : (
           <Avatar kind="profile" name={r.name} photoUrl={r.face.photoUrl} size="xl" />
-        )}
-        <View style={{ flex: 1, minWidth: 0 }} accessible accessibilityLabel={r.label}>
-          <T v="h3">{r.name}</T>
-          <T v="fine">{tr.messages.requestKind}</T>
-          <T v="stamp">{tr.messages.stamp(r.at, inboxStamp(r.at, now))}</T>
-        </View>
-        {narrow ? null : actions}
-      </View>
-      {narrow ? actions : null}
-    </View>
+        )
+      }
+      decline={{
+        label: tr.messages.decline(r.name),
+        testID: `request-decline-${r.name}`,
+        disabled: busy !== null,
+        loading: mine && busy?.accept === false,
+        onPress: () => onAnswer(false),
+      }}
+      accept={{
+        text: tr.friends.accept,
+        label: tr.messages.accept(r.name),
+        testID: `request-accept-${r.name}`,
+        disabled: busy !== null,
+        loading: mine && busy?.accept === true,
+        onPress: () => onAnswer(true),
+      }}
+    />
   );
 }
