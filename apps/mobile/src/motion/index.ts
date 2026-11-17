@@ -5,7 +5,7 @@ export { Arrive, ArriveLater } from './Arrive';
 export { FloatStage } from './Float';
 export { FadeMark, PopScale, SlideLine } from './CatalogMotion';
 export { PopIn } from './PopIn';
-export { SNAP_STRIP_HEIGHT, SnapStrip } from './SnapStrip';
+export { SNAP_STRIP_HEIGHT, SnapStrip, snapStripNameHeight } from './SnapStrip';
 export { Turn } from './Turn';
 export { Rise, SlideFrom, usePressScale } from './Rise';
 export {

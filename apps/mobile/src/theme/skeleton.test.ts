@@ -206,13 +206,13 @@ describe('the own profile in two parts (5.7)', () => {
     return {
       t,
       face: {
-        x: flyX(t, PROFILE_PAGE.faceAt.x, OWN.faceTo.x),
-        y: flyY(y, t, PROFILE_PAGE.faceAt.y, OWN.faceTo.y, OWN.rise),
-        side: PROFILE_PAGE.face * flyFace(t, 124, 30, 4, 1.5).disc,
+        x: flyX(t, OWN.photoAt.x, OWN.faceTo.x),
+        y: flyY(y, t, OWN.photoAt.y, OWN.faceTo.y, OWN.rise),
+        side: OWN.photo * flyFace(t, OWN.photo, 30, 4, 1.5).disc,
       },
       name: {
-        x: flyX(t, PROFILE_PAGE.nameAt.x, OWN.nameTo.x),
-        y: flyY(y, t, PROFILE_PAGE.nameAt.y, OWN.nameTo.y, OWN.rise),
+        x: flyX(t, OWN.nameAt.x, OWN.nameTo.x),
+        y: flyY(y, t, OWN.nameAt.y, OWN.nameTo.y, OWN.rise),
       },
     };
   };
@@ -232,8 +232,8 @@ describe('the own profile in two parts (5.7)', () => {
   it('the photo and the name fly into the bar by t = clamp(y / 316), linearly', () => {
     expect(OWN.arrive).toBe(316);
     const start = flyAt(0);
-    expect(start.face).toEqual({ x: 195, y: 196, side: 124 });
-    expect(start.name).toEqual({ x: 195, y: 291 });
+    expect(start.face).toEqual({ x: 195, y: 232, side: 112 });
+    expect(start.name).toEqual({ x: 195, y: 317 });
     const end = flyAt(316);
     expect(end.face.x).toBeCloseTo(152);
     expect(end.face.y).toBeCloseTo(73);
@@ -241,13 +241,13 @@ describe('the own profile in two parts (5.7)', () => {
     expect(end.name.x).toBeCloseTo(214);
     expect(end.name.y).toBeCloseTo(73);
     expect(flyAt(500)).toEqual(end);
-    // Half way: (196 − 0.35·158·0.5)·0.5 + 73·0.5.
+    // Half way: (232 − 0.35·158·0.5)·0.5 + 73·0.5.
     const mid = flyAt(158);
     expect(mid.t).toBe(0.5);
-    expect(mid.face.y).toBeCloseTo((196 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
+    expect(mid.face.y).toBeCloseTo((232 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
     // The ring 4 → 1.5: the face in it is the disc less twice the ring.
-    const k = flyFace(1, 124, 30, 4, 1.5);
-    expect(116 * k.face).toBeCloseTo(27);
+    const k = flyFace(1, 112, 30, 4, 1.5);
+    expect(104 * k.face).toBeCloseTo(27);
     expect(OWN.nameScale).toBe(0.516);
   });
 

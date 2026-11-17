@@ -56,7 +56,7 @@ export const PROFILE_COVER = {
 } as const;
 
 // The profile pages (docs/design/iskelet.md → 5.6 and 5.7), on the canvas's phone, 390 wide: the
-// cover 230 from the screen's top, a dark fade over its top 110 (42 % at its top, tuval Benim), its lower half fading into the
+// cover 230 (the own profile's: own.cover) from the screen's top, a dark fade over its top 110 (42 % at its top, tuval Benim), its lower half fading into the
 // ground with a 14 px blurred copy of the picture; the photo 124 in a 4 px white ring, centred at
 // (195, 196), the name's centre at (195, 291). The bar row's centre on the canvas is 73: the kit's
 // bar (8 under the status bar, 46 high) puts it there under a 42 status bar, so a screen moves the
@@ -97,7 +97,14 @@ export const PROFILE_PAGE = {
   // 0.92; the panel (34 round, a handle) reaches the bar's foot at 316, where the photo (124 → 30,
   // its ring 4 → 1.5) and the name (1 → 0.516) arrive in the bar at (152, 73) and (214, 73). The
   // band comes in over the panel's last 60 before the bar.
+  // The own profile's cover and photo are the board's (ProfilBen, 17 Kasım): the cover 236 from the
+  // screen's top, the photo 112 (its 4 ring inside) overlapping it by 60: centred at (195, 232), the
+  // name 12 under it, centred at (195, 317).
   own: {
+    cover: 236,
+    photo: 112,
+    photoAt: { x: 195, y: 232 },
+    nameAt: { x: 195, y: 317 },
     arrive: 316,
     rise: 0.35,
     riseFade: [120, 300] as const,
