@@ -363,6 +363,10 @@ describe('venue feed: a post lives a day', () => {
     await sql`update public.venue_posts
               set created_at = now() - make_interval(hours => ${VENUE_FEED.keepHours + 1})
               where id = ${old}`;
+    // Past its day it is gone for every reader at once, before the job runs.
+    expect((await page(b)).map((p) => p.body)).toEqual(['yeni']);
+    expect(await replies(b, old)).toEqual([]);
+    expect(await feed(b, { action: 'unlike', postId: old })).toEqual(NOT_FOUND);
     await sql`select private.delete_old_venue_posts(${VENUE_FEED.keepHours})`;
     expect(await sql`select id from public.venue_posts`).toEqual([{ id: fresh }]);
     expect(await sql`select 1 from public.venue_post_likes`).toHaveLength(0);
@@ -425,6 +429,36 @@ describe('locks (rule 10)', () => {
       expect(await liked).toEqual([{ changed: true }]);
     } finally {
       await Promise.all([holder.end(), liker.end()]);
+    }
+  });
+
+  // table_sessions → venue_posts → venue_post_reports → reports: a report waits on the check-in
+  // before it touches the post.
+  it('locks the check-in before the post when reporting', async () => {
+    const { a, b } = await threeAtVenue();
+    const id = await post(a, 'Selam');
+    const userId = await userIdOf(b);
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const reporter = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let reported: Promise<unknown> = Promise.resolve();
+      await holder.begin(async (tx) => {
+        await tx`select id from public.table_sessions
+                 where user_id = ${userId} and status = 'active' for update`;
+        reported = reporter`
+          select public.safety_report_venue_post(${userId}, ${id}, 'spam', 3) as hidden
+        `
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('safety_report_venue_post');
+        // While it waits on the check-in, the post is not locked.
+        await tx`set local lock_timeout = '1s'`;
+        await tx`select id from public.venue_posts where id = ${id} for update`;
+      });
+      expect(await reported).toEqual([{ hidden: false }]);
+      expect(await sql`select 1 from public.reports where venue_post_id = ${id}`).toHaveLength(1);
+    } finally {
+      await Promise.all([holder.end(), reporter.end()]);
     }
   });
 });

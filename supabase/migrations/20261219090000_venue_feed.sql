@@ -21,7 +21,7 @@
 --   (every campus of the scope); no new channel kind, the policy is unchanged.
 --
 -- Lock order (rule 10): table_sessions → venue_post_rate → venue_post_like_rate → venue_posts →
--- venue_post_likes → reports → venue_post_reports. A mute writes venue_chat_mutes alone. The
+-- venue_post_likes → venue_post_reports → reports. A mute writes venue_chat_mutes alone. The
 -- hourly delete picks its rows with skip locked.
 
 -- 1. Tables ---------------------------------------------------------------------------------------
@@ -107,8 +107,9 @@ alter table public.reports
 create index reports_venue_post_id_idx on public.reports (venue_post_id);
 
 -- 2. Helpers --------------------------------------------------------------------------------------
--- A post or reply the reader may see now: it exists, it was not deleted, the reader has a live
--- check-in in its feed, there is no block either way, and it is not hidden (its author still
+-- A post or reply the reader may see now: it exists, it was not deleted, it is younger than a day
+-- (the hourly job deletes it later; until then no reader's call reaches it or locks it), the
+-- reader has a live check-in in its feed, there is no block either way, and it is not hidden (its author still
 -- sees it). A reply is seen only while its post is.
 create function private.visible_venue_post(target_user_id uuid, target_post_id uuid)
 returns public.venue_posts
@@ -121,6 +122,7 @@ as $$
   left join public.venue_posts parent on parent.id = p.parent_id
   where p.id = target_post_id
     and p.deleted_at is null
+    and p.created_at > now() - interval '24 hours'
     and (private.venue_chat_session(target_user_id, p.venue_id)).id is not null
     and not private.is_blocked_between(target_user_id, p.author_user_id)
     and (p.hidden_at is null or p.author_user_id = target_user_id)
@@ -128,6 +130,7 @@ as $$
       p.parent_id is null
       or (
         parent.deleted_at is null
+        and parent.created_at > now() - interval '24 hours'
         and not private.is_blocked_between(target_user_id, parent.author_user_id)
         and (parent.hidden_at is null or parent.author_user_id = target_user_id)
       )
@@ -135,27 +138,6 @@ as $$
 $$;
 
 revoke all on function private.visible_venue_post(uuid, uuid) from public, anon, authenticated;
-
--- A row of a page: as above without the check-in (the page checks it once), and never an
--- identity the reader muted.
-create function private.venue_post_listed(target_user_id uuid, p public.venue_posts)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select p.deleted_at is null
-    and (p.hidden_at is null or p.author_user_id = target_user_id)
-    and not private.is_blocked_between(target_user_id, p.author_user_id)
-    and not exists (
-      select 1 from public.venue_chat_mutes mu
-      where mu.user_id = target_user_id and mu.muted_user_id = p.author_user_id and mu.profiled
-    );
-$$;
-
-revoke all on function private.venue_post_listed(uuid, public.venue_posts)
-  from public, anon, authenticated;
 
 -- 3. Write (service role) -------------------------------------------------------------------------
 -- The body is trimmed and filtered in the Edge Function (pure/venueFeed.ts, pure/profanity.ts).
@@ -314,14 +296,9 @@ begin
   on conflict (user_id) do nothing;
   select * into rate from public.venue_post_like_rate r where r.user_id = target_user_id
   for update;
-  if now() - rate.window_started_at >= make_interval(secs => window_seconds) then
-    update public.venue_post_like_rate r
-    set window_started_at = now(), count = 1
-    where r.user_id = target_user_id;
-  elsif rate.count >= window_max then
+  if now() - rate.window_started_at < make_interval(secs => window_seconds)
+    and rate.count >= window_max then
     raise exception using errcode = 'P0001', message = 'rate_limited';
-  else
-    update public.venue_post_like_rate r set count = r.count + 1 where r.user_id = target_user_id;
   end if;
 
   select * into p from public.venue_posts x
@@ -338,6 +315,19 @@ begin
     delete from public.venue_post_likes l where l.post_id = p.id and l.user_id = target_user_id;
   end if;
   get diagnostics moved = row_count;
+  -- Only a real change counts: the same call again (a retry) is never refused for the first.
+  if moved > 0 then
+    update public.venue_post_like_rate r
+    set window_started_at = case
+          when now() - r.window_started_at >= make_interval(secs => window_seconds) then now()
+          else r.window_started_at
+        end,
+        count = case
+          when now() - r.window_started_at >= make_interval(secs => window_seconds) then 1
+          else r.count + 1
+        end
+    where r.user_id = target_user_id;
+  end if;
   post_venue_id := p.venue_id;
   changed := moved > 0;
   return next;
@@ -402,10 +392,20 @@ begin
   select * into ts from public.table_sessions s
   where s.id = (private.venue_chat_session(target_user_id, p.venue_id)).id
   for no key update;
+  -- Only hidden_at changes: likes and replies of the post (key share) do not wait.
   select * into p from public.venue_posts x
   where x.id = target_post_id and x.deleted_at is null
-  for update;
+  for no key update;
   if p.id is null then
+    return false;
+  end if;
+
+  -- One report per reporter per post: the same one again writes nothing.
+  insert into public.venue_post_reports (post_id, reporter_user_id)
+  values (p.id, target_user_id)
+  on conflict do nothing;
+  get diagnostics added = row_count;
+  if added = 0 then
     return false;
   end if;
 
@@ -426,11 +426,7 @@ begin
                               messages_snapshot)
   values (target_user_id, p.author_user_id, new_reason, 'venue_post', p.id, snapshot);
 
-  insert into public.venue_post_reports (post_id, reporter_user_id)
-  values (p.id, target_user_id)
-  on conflict do nothing;
-  get diagnostics added = row_count;
-  if added = 0 or p.hidden_at is not null then
+  if p.hidden_at is not null then
     return false;
   end if;
   select count(*) into reporters from public.venue_post_reports r
@@ -444,8 +440,10 @@ end;
 $$;
 
 -- 4. Read (service role) --------------------------------------------------------------------------
--- One page of posts, newest first. Empty without a live check-in in the feed. The counts are
--- what this reader would see: a reply of a blocked or muted person is not counted.
+-- One page of posts, newest first. Empty without a live check-in in the feed. Never a deleted or
+-- hidden post (its author still sees a hidden one), a blocked person's either way, or an identity
+-- the reader muted; the conditions are written out so the planner sees them. The counts are what
+-- this reader would see: a reply of a blocked or muted person is not counted.
 create function public.venue_feed_page_for(
   target_user_id uuid,
   target_venue_id uuid,
@@ -477,14 +475,29 @@ as $$
            where l.post_id = p.id and l.user_id = target_user_id
          ),
          (select count(*)::integer from public.venue_posts r
-          where r.parent_id = p.id and private.venue_post_listed(target_user_id, r))
+          where r.parent_id = p.id
+            and r.deleted_at is null
+            and (r.hidden_at is null or r.author_user_id = target_user_id)
+            and not private.is_blocked_between(target_user_id, r.author_user_id)
+            and not exists (
+              select 1 from public.venue_chat_mutes mu
+              where mu.user_id = target_user_id and mu.muted_user_id = r.author_user_id
+                and mu.profiled
+            ))
   from public.venue_posts p
   join public.profiles pr on pr.id = p.author_user_id
   where p.venue_id in (select private.venue_chat_venues(target_venue_id))
     and (private.venue_chat_session(target_user_id, target_venue_id)).id is not null
     and p.parent_id is null
     and (before is null or p.created_at < before)
-    and private.venue_post_listed(target_user_id, p)
+    and p.created_at > now() - interval '24 hours'
+    and p.deleted_at is null
+    and (p.hidden_at is null or p.author_user_id = target_user_id)
+    and not private.is_blocked_between(target_user_id, p.author_user_id)
+    and not exists (
+      select 1 from public.venue_chat_mutes mu
+      where mu.user_id = target_user_id and mu.muted_user_id = p.author_user_id and mu.profiled
+    )
   order by p.created_at desc
   limit least(greatest(page_size, 1), 100);
 $$;
@@ -532,7 +545,13 @@ as $$
       where parent.id = target_post_id
     )
     and (before is null or r.created_at < before)
-    and private.venue_post_listed(target_user_id, r)
+    and r.deleted_at is null
+    and (r.hidden_at is null or r.author_user_id = target_user_id)
+    and not private.is_blocked_between(target_user_id, r.author_user_id)
+    and not exists (
+      select 1 from public.venue_chat_mutes mu
+      where mu.user_id = target_user_id and mu.muted_user_id = r.author_user_id and mu.profiled
+    )
   order by r.created_at desc
   limit least(greatest(page_size, 1), 100);
 $$;
@@ -547,8 +566,21 @@ as $$
 declare
   deleted integer;
 begin
-  -- A post takes its replies and the likes with it (cascade); a reply on a younger post goes at
-  -- its own age.
+  -- The rate rows first (rule 10: they come before the posts), and only the ones nobody holds.
+  delete from public.venue_post_rate
+  where user_id in (
+    select r.user_id from public.venue_post_rate r
+    where r.last_sent_at < now() - make_interval(hours => keep_hours)
+    for update skip locked
+  );
+  delete from public.venue_post_like_rate
+  where user_id in (
+    select r.user_id from public.venue_post_like_rate r
+    where r.window_started_at < now() - make_interval(hours => keep_hours)
+    for update skip locked
+  );
+  -- A post takes its replies and the likes with it (cascade). No reader's call reaches a post
+  -- this old (visible_venue_post), so nothing waits on these rows.
   delete from public.venue_posts
   where id in (
     select x.id from public.venue_posts x
@@ -556,10 +588,6 @@ begin
     for update skip locked
   );
   get diagnostics deleted = row_count;
-  delete from public.venue_post_rate
-  where last_sent_at < now() - make_interval(hours => keep_hours);
-  delete from public.venue_post_like_rate
-  where window_started_at < now() - make_interval(hours => keep_hours);
   return deleted;
 end;
 $$;

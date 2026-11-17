@@ -7,9 +7,10 @@ export const VENUE_FEED = {
   minIntervalMs: 3000,
   windowSeconds: 600,
   windowMax: 10,
-  // Likes and their takebacks, per account: at most this many requests per window.
+  // Likes and their takebacks, per account: at most this many changes per window (each one is a
+  // broadcast the whole venue reads the page on). A call that changes nothing is not counted.
   likeWindowSeconds: 10,
-  likeWindowMax: 20,
+  likeWindowMax: 10,
   // A post reported by this many different accounts is hidden from everyone but its author.
   hideAfterReports: 3,
   // Posts are deleted after a day (hourly job).

@@ -10,7 +10,7 @@ describe('VENUE_FEED rules', () => {
       windowSeconds: 600,
       windowMax: 10,
       likeWindowSeconds: 10,
-      likeWindowMax: 20,
+      likeWindowMax: 10,
       hideAfterReports: 3,
       keepHours: 24,
       pageSize: 30,
