@@ -7,8 +7,18 @@
 -- room, whether they are the caller's friend and whether the caller muted their profiled messages.
 -- An anonymous person is a row with a time and nothing else: no nick, no look, no key that a
 -- message carries, no friendship and no mute, so the row is tied to no account, no nick and no
--- message. No profile id, no account id. Someone blocked either way is not in the list (and so
--- not in its count). Reads only, takes no lock; nothing is broadcast when someone comes or goes.
+-- message. No profile id, no account id.
+--
+-- Two things a list must not do (rule 4; the security review of 17 Kasım):
+--   * A block does not filter it. A block is on the account and a nick is fixed to the account:
+--     a row that left when a nick was blocked (or came back when it was unblocked) would name the
+--     nick, and an anonymous row that left would say that person is here anonymously. The list
+--     and its count are the same for everyone in the room.
+--   * A session that changed its identity carries no time: the same minute on the anonymous row
+--     that went and the profiled row that came would tie what it wrote before to its name.
+-- What stays (accepted, docs/SPEC_V4.md §4.V): a reader comparing two readings sees that one
+-- anonymous row went as one profiled row came.
+-- Reads only, takes no lock; nothing is broadcast when someone comes or goes.
 create function public.district_people_for(target_user_id uuid)
 returns table (
   me boolean,
@@ -33,7 +43,7 @@ as $$
          case when s.identity_mode = 'profiled' then p.display_name end,
          case when s.identity_mode = 'profiled' then p.birth_date end,
          case when s.identity_mode = 'profiled' and p.photo_hidden_at is null then p.photo_path end,
-         date_trunc('minute', s.joined_at),
+         case when s.identity_switches = 0 then date_trunc('minute', s.joined_at) end,
          s.identity_mode = 'profiled' and s.user_id <> target_user_id
            and private.are_friends(target_user_id, s.user_id),
          s.identity_mode = 'profiled' and exists (
@@ -44,10 +54,10 @@ as $$
   join mine on mine.room_id = s.room_id
   left join public.profiles p on p.id = s.user_id
   where s.status = 'open' and s.grace_ends_at > now() and s.day = mine.day
-    and (s.user_id = target_user_id
-         or not private.is_blocked_between(target_user_id, s.user_id))
   order by (s.user_id = target_user_id) desc, (s.identity_mode = 'profiled') desc,
-           date_trunc('minute', s.joined_at) desc, md5(s.id::text || mine.id::text);
+           case when s.identity_switches = 0 then date_trunc('minute', s.joined_at) end
+             desc nulls last,
+           md5(s.id::text || mine.id::text);
 $$;
 
 revoke all on function public.district_people_for(uuid) from public, anon, authenticated;

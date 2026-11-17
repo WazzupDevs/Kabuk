@@ -353,7 +353,7 @@ describe('the room chat', () => {
   });
 
   // Odadakiler (rule 4's district paragraph): the whole room, a time alone for an anonymous one.
-  it('lists the room: the profile of a profiled one, a time alone for an anonymous one, nobody blocked', async () => {
+  it('lists the room: the profile of a profiled one, a time alone for an anonymous one, the same across a block', async () => {
     const a = await inRoom(0, 'Ayşe');
     const b = await inRoom(1, 'Burak');
     const c = await inRoom(2, 'Can');
@@ -375,7 +375,8 @@ describe('the room chat', () => {
           displayName: 'Ayşe',
           age: expect.any(Number),
           photoUrl: expect.any(String),
-          joinedAt: expect.any(String),
+          // It changed identity here: no time, or the row it left would name it.
+          joinedAt: null,
           friend: false,
           muted: false,
         },
@@ -399,13 +400,13 @@ describe('the room chat', () => {
     expect((await people(b.c)).profiled[0]).toMatchObject({ friend: true, muted: true });
     expect((await people(c.c)).profiled[0]).toMatchObject({ friend: false, muted: false });
 
-    // Blocked either way: not in the list, not in its count.
+    // A block filters nothing (it is on the account: a row that left would name a nick).
+    const before = [await people(c.c), await people(a.c)];
     await sql`
       insert into public.blocks (blocker_id, blocked_id, blocked_alias)
       values (${c.userId}, ${a.userId}, 'x')
     `;
-    expect(await people(c.c)).toMatchObject({ count: 2, profiled: [] });
-    expect(await people(a.c)).toMatchObject({ count: 2, anonymous: [expect.anything()] });
+    expect([await people(c.c), await people(a.c)]).toEqual(before);
     await sql`delete from public.blocks`;
 
     // Someone who left is gone; without a session the list is empty.
