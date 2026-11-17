@@ -2,7 +2,8 @@ import type { NotificationItem } from '@shared/api/friends.ts';
 import { upperTr } from '@shared/trText.ts';
 import { inviteState, seenMark } from '@shared/notifications.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { router } from 'expo-router';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { Av, Btn, Round, T, useKit } from '@/aura/kit';
@@ -17,12 +18,10 @@ import {
   useFriends,
   useNotifications,
 } from '@/features/friends/queries';
-import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { roomKeys } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { track } from '@/lib/analytics';
-import { callAccount, friendsApi, roomsApi } from '@/lib/api';
+import { callAccount, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { KIT } from '@/theme/auraKit';
@@ -35,9 +34,10 @@ import { Tap } from '@/motion';
 // the new ones (after the list was last opened) under "YENİ" with a dot at their left, the rest
 // under "ÖNCEKİ". A friend request is answered here, a table invite too (Reddet, Katıl, its
 // minutes); an accepted request, a match and a friendship offer "Mesaj yaz". Opening the list
-// marks it seen (account/notifications-seen); what was new stays under "YENİ" until the list
-// closes or "Tümünü okundu say" is pressed (it moves them under "ÖNCEKİ" on this phone; the mark
-// itself went when the list opened).
+// "Bak" on a friend request opens Mesajlar → İstekler. The list is marked seen
+// (account/notifications-seen: the newest row shown) when it closes or "Tümünü okundu say" is
+// pressed; what was new stays under "YENİ" until then ("Tümünü okundu say" moves it under
+// "ÖNCEKİ").
 export default function NotificationsScreen() {
   const queryClient = useQueryClient();
   const list = useNotifications();
@@ -56,13 +56,32 @@ export default function NotificationsScreen() {
     });
   }
   const newest = items?.[0]?.createdAt;
+  // The mark goes when the list closes (the newest row it showed), or with the button below.
+  const newestRef = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (!newest) return;
-    void callAccount({ action: 'notifications-seen', seenAt: seenMark(newest, Date.now()) });
+    newestRef.current = newest;
   }, [newest]);
-  // The bell's count goes when the list closes.
+  const markSeen = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (shownAt: string) =>
+      callAccount({ action: 'notifications-seen', seenAt: seenMark(shownAt, Date.now()) }),
+    onSuccess: () => {
+      setAllSeen(true);
+      void queryClient.invalidateQueries({ queryKey: friendKeys.notifications });
+    },
+  });
+  // The bell's count goes when the list closes, after the mark.
   useEffect(
-    () => () => void queryClient.invalidateQueries({ queryKey: friendKeys.notifications }),
+    () => () => {
+      const shownAt = newestRef.current;
+      const done = shownAt
+        ? callAccount({
+            action: 'notifications-seen',
+            seenAt: seenMark(shownAt, Date.now()),
+          }).catch(() => undefined)
+        : Promise.resolve();
+      void done.then(() => queryClient.invalidateQueries({ queryKey: friendKeys.notifications }));
+    },
     [queryClient],
   );
 
@@ -133,13 +152,15 @@ export default function NotificationsScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={tr.notifications.markAllSeen}
                 hitSlop={KIT.size.chipGap}
-                onPress={() => setAllSeen(true)}
+                disabled={markSeen.isPending || !newest}
+                onPress={() => newest && markSeen.mutate(newest)}
               >
                 <T v="btnSm" color={c.link}>
                   {tr.notifications.markAllSeen}
                 </T>
               </Tap>
             </View>
+            {markSeen.isError ? <Error error={markSeen.error} /> : null}
             {newer.map((n) => (
               <Row key={keyOf(n)} item={n} fresh />
             ))}
@@ -180,23 +201,6 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   const checkIn = useActiveTable();
   const settle = () => void refreshFriends(queryClient, 'friendship');
 
-  const respond = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: ({ requestId, accept }: { requestId: string; accept: boolean }) =>
-      friendsApi.respond(requestId, accept),
-    onSuccess: (_data, { accept }) => {
-      if (!accept) return;
-      track('friend_request_accepted', {});
-      track('friendship_created', { source: 'request' });
-    },
-    onError: (err, answer) => void askName(err, answer),
-    onSettled: settle,
-  });
-  const run = useCallback(
-    (a: { requestId: string; accept: boolean }) => respond.mutate(a),
-    [respond],
-  );
-  const askName = useRetryAfterName(run);
   const answer = useMutation({
     meta: FEEL_ERROR,
     mutationFn: ({ inviteId, accept }: { inviteId: string; accept: boolean }) =>
@@ -228,8 +232,7 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
         item.source === 'venue_chat'
           ? tr.participation.previewName(item.displayName ?? '', item.age)
           : (item.otherAlias ?? item.displayName ?? '');
-      const accepted = item.state === 'accepted' || (respond.isSuccess && respond.variables.accept);
-      if (accepted) {
+      if (item.state === 'accepted') {
         line = tr.notifications.line.friends;
         actions = item.publicId ? (
           <MessageRound onPress={() => message(item.publicId ?? '', item.displayName)} />
@@ -237,26 +240,14 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
       } else {
         line = tr.notifications.line.request;
         actions = (
-          <>
-            <Round
-              icon="close"
-              label={tr.friends.decline}
-              disabled={respond.isPending}
-              onPress={() => respond.mutate({ requestId: item.requestId, accept: false })}
-            />
-            <Round
-              primary
-              icon="check"
-              testID="notification-accept"
-              label={tr.friends.accept}
-              loading={respond.isPending && respond.variables.accept}
-              disabled={respond.isPending}
-              onPress={() => respond.mutate({ requestId: item.requestId, accept: true })}
-            />
-          </>
+          <Btn
+            sm
+            testID="notification-look"
+            label={tr.notifications.look}
+            onPress={() => router.navigate({ pathname: '/messages', params: { tab: 'requests' } })}
+          />
         );
       }
-      if (respond.isError) error = respond.error;
       break;
     }
     case 'accepted':

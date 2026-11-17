@@ -19,6 +19,8 @@ import { useLabOff } from '@/lib/drawLab';
 import { useLoopActive } from '@/components/Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
+import { KIT } from '@/theme/auraKit';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { RISO_TYPE } from '@/theme/riso';
 import { SEMT, SEMT_LAYERS } from '@/theme/semt';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -559,38 +561,60 @@ export function WarnRow({
   );
 }
 
-// `.tchip`: the time left, on glass, 36 high; in the extra time "Devam?" and it opens the sheet.
+// `.tchip`: the time left, on glass, 36 high; in the extra time "Devam?" and it opens the sheet. In
+// the district chat (`chat`, yeni arayüz tuvali SemtSohbet `.tmr`): a plain chip of the surface, 32
+// high, the time in bold and `note` ("kaldı") after it in the muted ink.
 export function TimeChip({
   text,
+  note,
+  chat,
   label,
   onPress,
   testID,
 }: {
   text: string;
+  note?: string;
+  chat?: boolean;
   label: string;
   onPress?: () => void;
   testID?: string;
 }) {
   const { scheme } = useKit();
-  const c = SEMT.timeChip;
-  const body = (
-    <Glass
-      sm
-      radius={c.height / 2}
-      style={{
-        height: c.height,
-        borderRadius: c.height / 2,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: c.gap,
-        paddingLeft: c.padLeft,
-        paddingRight: c.padRight,
-      }}
-    >
+  const c = chat ? { ...SEMT.timeChip, ...CHAT_LOOK.timeChip } : SEMT.timeChip;
+  const look = CHAT_LOOK[scheme].emptyCard;
+  const content = (
+    <>
       <CapIcon name="clock" color={SEMT.eyebrow[scheme]} size={c.icon} />
       <T v="fine" strong>
         {text}
       </T>
+      {note ? <T v="fine">{note}</T> : null}
+    </>
+  );
+  const row = {
+    height: c.height,
+    borderRadius: c.height / 2,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: c.gap,
+    paddingLeft: c.padLeft,
+    paddingRight: c.padRight,
+  };
+  const body = chat ? (
+    <View
+      style={{
+        ...row,
+        backgroundColor: look.fill,
+        boxShadow: look.shadow || undefined,
+        borderWidth: look.edge ? KIT.size.edge : 0,
+        borderColor: look.edge || undefined,
+      }}
+    >
+      {content}
+    </View>
+  ) : (
+    <Glass sm radius={c.height / 2} style={row}>
+      {content}
     </Glass>
   );
   return onPress ? (
