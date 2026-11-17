@@ -66,6 +66,7 @@ const Body: z.ZodType<DmRequest> = z.discriminatedUnion('action', [
   // upTo: the newest message the caller saw (null: it saw none); the mark goes no further.
   z.object({ action: z.literal('clear'), threadId: z.uuid(), upTo: z.uuid().nullable() }),
   z.object({ action: z.literal('edit'), messageId: z.uuid(), body: z.string().max(2000) }),
+  z.strictObject({ action: z.literal('delete'), messageId: z.uuid() }),
 ]);
 
 const db = serviceClient();
@@ -87,6 +88,7 @@ async function inbox(userId: string): Promise<DmInboxResponse> {
       displayName: t.display_name,
       photoUrl: t.photo_path ? (urls.get(t.photo_path) ?? null) : null,
       lastBody: t.last_body,
+      lastDeleted: t.last_deleted === true,
       lastFromMe: t.last_from_me === true,
       lastMessageAt: t.last_message_at,
       unreadCount: t.unread_count,
@@ -219,6 +221,29 @@ Deno.serve(
             if (row.is_last) notifyInbox([row.other_user_id], BROADCAST.dm);
           }
           return { ok: true, body: text, editedAt: (row.edited_at as string | null) ?? null };
+        }
+
+        // 17 Kasım (§4.X): the sender's own message, for both members. Announced like an edit
+        // (dm_edit, no data): the readers read their loaded pages again and get the trace.
+        case 'delete': {
+          const limited = await db.rpc('dm_edit_rate_hit', {
+            target_user_id: user.id,
+            window_seconds: DM_EDIT_RATE.windowSeconds,
+            window_max: DM_EDIT_RATE.windowMax,
+          });
+          if (limited.error) throw dbError('dm_edit_rate_hit', limited.error);
+          const { data, error } = await db.rpc('dm_delete', {
+            target_user_id: user.id,
+            target_message_id: body.messageId,
+          });
+          if (error) throw dbError('dm_delete', error);
+          const row = data[0];
+          if (!row) throw new Error('dm_delete returned no row');
+          if (row.changed) {
+            inBackground(broadcast(dmChannel(row.thread_id), BROADCAST.dmEdit));
+            if (row.is_last) notifyInbox([row.other_user_id], BROADCAST.dm);
+          }
+          return { ok: true };
         }
       }
     },

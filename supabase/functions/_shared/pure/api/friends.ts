@@ -126,7 +126,11 @@ export type DmRequest =
   // The caller's own message, within DM_EDIT_WINDOW_MS of sending (edit_expired); checked like a
   // send (message_invalid, profanity_rejected); at most DM_EDIT_RATE per window (rate_limited) and
   // DM_EDIT_MAX real edits per message (edit_limit); no push.
-  | { action: 'edit'; messageId: string; body: string };
+  | { action: 'edit'; messageId: string; body: string }
+  // The caller's own message, at any time, for both members (17 Kasım, §4.X): the row stays as a
+  // trace without its text ("Mesaj silindi"), its reactions go. The same twice answers the same.
+  // Shares the edit's budget (rate_limited).
+  | { action: 'delete'; messageId: string };
 
 export type DmOkResponse = { ok: true };
 // The message as written (adım 9.1): the app puts it into its page at once, with status 'sent'.
@@ -146,6 +150,8 @@ export type DmInboxThread = {
   photoUrl: string | null;
   // The newest message, cut to 80 characters on the server; null without messages.
   lastBody: string | null;
+  // The newest message was deleted by its sender: lastBody is empty, the row says "Mesaj silindi".
+  lastDeleted: boolean;
   lastFromMe: boolean;
   lastMessageAt: string | null;
   unreadCount: number;

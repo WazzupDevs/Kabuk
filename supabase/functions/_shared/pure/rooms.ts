@@ -116,7 +116,7 @@ export const BROADCAST = {
   dmStatus: 'dm_status',
   // docs/SPEC_V3.md §21.3: a reaction moved; no data. dm:{thread_id} and messages:{room_id}.
   dmReaction: 'dm_reaction',
-  // dm:{thread_id}: a message was edited by its sender (docs/SPEC_V4.md §4.X); no data. It may be
+  // dm:{thread_id}: a message was edited or deleted by its sender (docs/SPEC_V4.md §4.X); no data. It may be
   // an older one: the reader reads its loaded pages again.
   dmEdit: 'dm_edit',
   reaction: 'reaction',

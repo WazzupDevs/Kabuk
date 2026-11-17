@@ -15,6 +15,7 @@ describe('IDEMPOTENT_CALLS', () => {
         'checkin/leave',
         'dm/archive',
         'dm/clear',
+        'dm/delete',
         'dm/delivered',
         'dm/edit',
         'dm/inbox',

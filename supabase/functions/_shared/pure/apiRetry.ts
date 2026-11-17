@@ -104,6 +104,9 @@ export const IDEMPOTENT_CALLS = [
   // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
   // new until the list is opened"
   'friends/notifications',
+  // dmManage.test "dm/delete (§4.X)": "deletes one's own message for both, leaves a trace without
+  // the text, the same when sent twice"
+  'dm/delete',
   // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
   // new until the list is opened"
   'account/notifications-seen',
