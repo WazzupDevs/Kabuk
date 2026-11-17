@@ -36,6 +36,7 @@ import {
   useMarkThreadRead,
   useSendDm,
 } from '@/features/friends/queries';
+import { editedAt, editErrorText, useCanEdit, useEditDm } from '@/features/dm/edit';
 import { useDmTyping } from '@/features/friends/useDmTyping';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { errorMessage } from '@/i18n/errors';
@@ -157,6 +158,11 @@ export default function DmScreen() {
     [queryClient, threadId],
   );
   useBroadcast(dmChannel(threadId), BROADCAST.dmReaction, onReaction);
+  // A message was edited (by either side's phone): any loaded page may hold it.
+  useBroadcast(dmChannel(threadId), BROADCAST.dmEdit, onReaction);
+  // docs/SPEC_V4.md §4.X: the message being edited, in the message bar.
+  const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
+  const edit = useEditDm(threadId);
 
   // While the DM slides in it shows what it opened with; what changed meanwhile comes once it is
   // in (Telegram Android holds a chat's updates during its opening animation).
@@ -208,7 +214,25 @@ export default function DmScreen() {
         dispatch({ type: 'failed', localId, errorCode: err instanceof ApiError ? err.code : null }),
       );
   };
+  const submitEdit = (body: string) => {
+    if (!editing || edit.isPending) return;
+    edit.mutate(
+      { messageId: editing.id, body },
+      {
+        onSuccess: () => setEditing(null),
+        onError: (err) => {
+          // Past the 15 minutes the edit cannot succeed; the other refusals leave the text to retry.
+          if (err instanceof ApiError && err.code === 'edit_expired') setEditing(null);
+          Alert.alert(editErrorText(err));
+        },
+      },
+    );
+  };
   const submit = (body: string, clear: () => void) => {
+    if (editing) {
+      submitEdit(body);
+      return;
+    }
     nextLocalId += 1;
     const localId = `dm-${nextLocalId}`;
     const replyTo = reply.target?.id;
@@ -247,11 +271,13 @@ export default function DmScreen() {
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-        backToInbox();
+        // An edit in the bar goes first, then the conversation.
+        if (editing) setEditing(null);
+        else backToInbox();
         return true;
       });
       return () => sub.remove();
-    }, []),
+    }, [editing]),
   );
   const end = useMutation({
     meta: FEEL_ERROR,
@@ -362,6 +388,13 @@ export default function DmScreen() {
       setReply({ id: m.id, quote: { name: m.from_me ? tr.chat.you : name, text: m.body } }),
     [setReply, name],
   );
+  const onEdit = useCallback(
+    (m: DmPageRow) => {
+      reply.clear();
+      setEditing({ id: m.id, text: m.body });
+    },
+    [reply],
+  );
   const onDiscard = useCallback(
     (m: OutboxMessage) => dispatch({ type: 'remove', localId: m.localId }),
     [],
@@ -380,6 +413,7 @@ export default function DmScreen() {
       view={reactions.view}
       pick={reactions.pick}
       onReply={onReply}
+      onEdit={onEdit}
       onRetry={onRetry}
       onDiscard={onDiscard}
     />
@@ -474,6 +508,12 @@ export default function DmScreen() {
           onSend={submit}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
+          sending={edit.isPending}
+          edit={
+            editing
+              ? { id: editing.id, text: editing.text, onCancel: () => setEditing(null) }
+              : undefined
+          }
         />
       }
     >
@@ -563,6 +603,7 @@ const DmRow = memo(function DmRow({
   view,
   pick,
   onReply,
+  onEdit,
   onRetry,
   onDiscard,
 }: {
@@ -578,6 +619,7 @@ const DmRow = memo(function DmRow({
   view: ReturnType<typeof useDmReactions>['view'];
   pick: ReturnType<typeof useDmReactions>['pick'];
   onReply: (m: DmPageRow) => void;
+  onEdit: (m: DmPageRow) => void;
   onRetry: (m: OutboxMessage) => void;
   onDiscard: (m: OutboxMessage) => void;
 }) {
@@ -597,6 +639,7 @@ const DmRow = memo(function DmRow({
               view={view}
               pick={pick}
               onReply={onReply}
+              onEdit={onEdit}
             />
           ) : out ? (
             <ChatBubble
@@ -634,6 +677,7 @@ function ServerBubble({
   view,
   pick,
   onReply,
+  onEdit,
 }: {
   m: DmPageRow;
   name: string;
@@ -643,7 +687,12 @@ function ServerBubble({
   view: ReturnType<typeof useDmReactions>['view'];
   pick: ReturnType<typeof useDmReactions>['pick'];
   onReply: (m: DmPageRow) => void;
+  onEdit: (m: DmPageRow) => void;
 }) {
+  // "Düzenle" only on one's own message, in the 15 minutes after it was sent (docs/SPEC_V4.md §4.X).
+  const canEdit = useCanEdit(m.created_at, m.from_me);
+  const edited = editedAt(m) !== null;
+  const clock = tr.chat.time(m.created_at);
   const counts = parseDmReactions(m.reactions);
   const quote = parseQuote(m.reply_to);
   return (
@@ -658,7 +707,19 @@ function ServerBubble({
       onReply={() => onReply(m)}
       first={first}
       last={last}
-      time={tr.chat.time(m.created_at)}
+      time={edited ? `${tr.dm.edited} ${clock}` : clock}
+      actions={
+        canEdit
+          ? [
+              {
+                label: tr.dm.edit,
+                icon: 'create-outline',
+                onPress: () => onEdit(m),
+                testID: 'dm-edit',
+              },
+            ]
+          : undefined
+      }
       delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
       // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar says who it is
       // and opens the profile.

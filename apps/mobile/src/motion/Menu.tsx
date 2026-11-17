@@ -325,6 +325,7 @@ export function MenuItem({
   onPress,
   negative,
   loading,
+  disabled,
   note,
   testID,
   chevron,
@@ -337,6 +338,8 @@ export function MenuItem({
   onPress: () => void;
   negative?: boolean;
   loading?: boolean;
+  // Off, with its reason in `note` (tuval MesajlarSabitDolu: "Sabitle" at five pinned).
+  disabled?: boolean;
   // A line under the label (skall tuvali, MasaKisiSecenekler: what "Engelle" does).
   note?: string;
   testID?: string;
@@ -365,8 +368,8 @@ export function MenuItem({
     <Pressable
       testID={testID}
       accessibilityRole={popClose ? 'menuitem' : 'button'}
-      accessibilityState={{ disabled: !!loading, busy: !!loading }}
-      disabled={loading}
+      accessibilityState={{ disabled: !!loading || !!disabled, busy: !!loading }}
+      disabled={loading || disabled}
       onPress={press}
     >
       {({ pressed }) => (

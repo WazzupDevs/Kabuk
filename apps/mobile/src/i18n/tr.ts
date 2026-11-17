@@ -331,6 +331,32 @@ export const tr = {
     noRequestsHint: 'Biri seni arkadaş olarak eklemek isterse burada görürsün.',
     decline: (name: string) => `${name} isteğini reddet`,
     accept: (name: string) => `${name} isteğini kabul et`,
+    // DM yönetimi (docs/SPEC_V4.md §4.X; tuval MesajlarUzunBas, MesajlarUzunBasSabit, ArsivUzunBas,
+    // MesajlarSabitDolu, MesajlarSohbetSil): a conversation's menu, a long press on its row.
+    menu: (name: string) => `${name} sohbeti`,
+    pin: 'Sabitle',
+    unpin: 'Sabitlemeyi kaldır',
+    pinFull: (max: number) => `En fazla ${max} sohbet sabitlenir. Önce birini kaldır.`,
+    archive: 'Arşivle',
+    unarchive: 'Arşivden çıkar',
+    clear: 'Sohbeti sil',
+    clearTitle: 'Sohbet silinsin mi?',
+    clearNote: (name: string) =>
+      `${name} ile tüm mesajlar senin listenden silinir. Bu geri alınamaz.`,
+    // The pinned conversations' head (tuval Main; "· 5/5" when full, MesajlarSabitDolu).
+    pinned: 'Sabitlenenler',
+    pinnedFull: (n: number, max: number) => `Sabitlenenler · ${n}/${max}`,
+    pinnedRow: 'sabitlendi',
+    // Arşivlenenler (tuval Arsiv, ArsivBos, MesajlarArsivRozet): a new message keeps them there.
+    archived: 'Arşivlenenler',
+    archivedRow: (count: number, unread: number) =>
+      unread > 0
+        ? `Arşivlenenler, ${count} sohbet, ${unread} okunmamış mesaj`
+        : `Arşivlenenler, ${count} sohbet`,
+    archivedCount: (n: number) => `${n} sohbet`,
+    archivedHint: 'Bir sohbeti geri almak için üstüne uzun bas.',
+    archivedEmpty: 'Arşivde sohbet yok',
+    archivedEmptyHint: 'Bir sohbete uzun basıp Arşivle dediğinde burada durur.',
   },
   // Aktiviteler: the game hub (docs/SPEC_V3.md §18.3). Same games and rules as the room.
   // Aktiviteler (docs/SPEC_V4.md K-15; v44: .acts): today's events and Geçmiş. Each game's rules
@@ -619,6 +645,12 @@ export const tr = {
     typing: 'yazıyor',
     // Under the name in the DM's top bar (iskelet.md → 5.5).
     typingTitle: 'yazıyor…',
+    // docs/SPEC_V4.md §4.X: a message of one's own, edited within 15 minutes.
+    edit: 'Düzenle',
+    editing: 'Mesajı düzenle',
+    cancelEdit: 'Düzenlemeyi iptal et',
+    saveEdit: 'Düzenlemeyi kaydet',
+    edited: 'düzenlendi',
   },
   // skall tuvali (KapsulSusle…, KapsulGaleri; docs/SPEC_V4.md §4.D, K-46, K-61).
   capsule: {
@@ -2500,6 +2532,13 @@ export const tr = {
       onTag: 'Açık',
       off: 'Kapalı. Masa davetleri 2 dakika geçerli olduğu için kaçırabilirsin.',
       open: 'Telefon ayarlarını aç',
+      // Yeni arayüz tuvali (AyarBildirim, AyarBildirimKapali).
+      onNote: 'Kapatırsan telefonunun ayarlarından yeniden açabilirsin.',
+      offTitle: 'Bildirimler kapalı',
+      offBody:
+        'Telefonunda skall bildirimlerine izin vermedin. Arkadaşlık isteklerini ve masa davetlerini kaçırabilirsin.',
+      offOpen: 'Ayarları aç',
+      offNote: 'İzin verince aşağıdaki seçimlerin geçerli olur.',
     },
     friendsSection: 'Arkadaşlar',
     requestsNote: 'Biri seni arkadaş olarak eklemek istediğinde',
@@ -2523,10 +2562,16 @@ export const tr = {
     deleteBackups: 'Yedeklerden de 7 gün içinde silinir.',
     blockedNote: 'Engellediğin kişi bunu görmez.',
     mutedNote:
-      'Sessize aldığın kişi bunu görmez. Sessize alma o kimliğe bağlıdır: bir kişinin anonim adını sessize almak profilli mesajlarını gizlemez.',
+      'Sessize aldığın kişi bunu görmez. Sessize alma o kimliğe bağlıdır: anonim adını sessize almak profilli mesajlarını gizlemez.',
     mutedEmpty: 'Sessize aldığın kimse yok.',
-    mutedAnonymous: 'Anonim',
-    mutedProfiled: 'Profiliyle',
+    mutedAnonymous: 'Anonim adı',
+    mutedProfiled: 'Profilli',
+    // Yeni arayüz tuvali (EngellenenlerBos, SessizAlinanlarBos).
+    blockedEmptyTitle: 'Engellediğin kimse yok',
+    blockedEmptyBody: 'Birini engellediğinde burada görünür, engeli de buradan kaldırırsın.',
+    mutedEmptyTitle: 'Sessize aldığın kimse yok',
+    mutedEmptyBody: 'Sessize aldığın adlar burada görünür, sesini buradan açarsın.',
+    legalSection: 'Yasal',
   },
   // skall tuvali (Haller): no connection, over any screen.
   connection: {
@@ -2590,6 +2635,7 @@ export const tr = {
     pin_limit: 'En çok 5 sohbet sabitleyebilirsin.',
     thread_archived: 'Arşivdeki sohbet sabitlenemez.',
     edit_expired: 'Mesajı yalnızca gönderdikten sonraki 15 dakika içinde düzenleyebilirsin.',
+    edit_limit: 'Bir mesajı en çok 5 kez düzenleyebilirsin.',
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
     anonymous_not_allowed: 'Bu hesapla masalara yalnızca profilinle katılabilirsin.',
     gender_required: 'Devam etmek için önce cinsiyetini seçmen gerekiyor.',

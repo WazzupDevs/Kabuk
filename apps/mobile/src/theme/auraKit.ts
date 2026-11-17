@@ -149,6 +149,8 @@ export const KIT_TYPE = {
   holdRow: t(600, 15, 20),
   toastTitle: t(600, 14, 19),
   toastSub: t(500, 12, 16),
+  // The toast's button (SusleKaydedilemedi): 13/600.
+  toastBtn: t(600, 13, 16),
   // Mekan (tuval Mekan): "Mekandasın" (13, 700); the card's title (26, 800, -0.03em, 1.1) and its
   // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
   // field (14, 600); the invite's name (16, 700) and its button (14, 700).
@@ -865,7 +867,7 @@ export const KIT = {
     emptyTopSm: 18,
     // U36 (GaleriKesfet, GaleriProfil `.disc`): the error and icon state's disc 64, its icon 26,
     // the disc, the note and the button 12 apart. Loading (MekanYukleniyor): the meeting capsules
-    // 40, 18 above, the note 10 under them.
+    // 50 (YukleniyorListe `.ld` 22 x 50), no visible note (screen readers say it).
     stateDisc: 64,
     stateIcon: 26,
     // Aura v75 E4: a tag when narrow (320 dp or the largest text, src/lib/narrow.ts).
@@ -873,9 +875,8 @@ export const KIT = {
     // Aura v75 AktivitelerHal `.erc .ci`.
     stateIconPage: 28,
     stateGap: 12,
-    stateLoader: 40,
+    stateLoader: 50,
     stateLoadTop: 18,
-    stateLoadGap: 10,
     // Aktiviteler's history rows (iskelet.md → 5.3): a 56 picture.
     historyThumb: 56,
     // Kapsülün (U35): the capsule's 4 ring; the chosen option's 2 ring 2 out round its capsule; a
@@ -1072,8 +1073,8 @@ export const KIT = {
       dialogDanger: '#FBE1DB',
       onDialogDanger: '#A8301A',
       dialogDisc: 'rgba(214, 64, 40, 0.10)',
-      // The icon on a danger dialog's disc.
-      dialogIcon: '#C8381F',
+      // The icon on a danger dialog's disc (EngelleOnay `.ei`: var(--danger), skall.css #A8301A).
+      dialogIcon: '#A8301A',
       // The dialog's and the sheet's scrim, flat; the long-press menu's over its still copy.
       scrim: 'rgba(3, 27, 11, 0.42)',
       holdScrim: 'rgba(3, 27, 11, 0.30)',

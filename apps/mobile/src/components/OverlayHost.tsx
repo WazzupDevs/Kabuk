@@ -9,6 +9,8 @@ import {
   type ConfirmOptions,
   isConfirm,
   type OverlayEntryOf,
+  runDialogAction,
+  useDialogRun,
   useOverlay,
 } from '@/lib/overlayStore';
 
@@ -17,7 +19,8 @@ type DialogEntry = OverlayEntryOf<ConfirmOptions>;
 // What opens over every screen, drawn once in one window (app/(app)/_layout.tsx): for now the
 // centred confirmation (`confirm`, overlayStore.ts). Its window stays while the dialog leaves; the
 // last one it showed is kept for that. Android's back button and a tap outside close it as
-// "Vazgeç" does; while its action runs none of them does, and a second press of it is ignored.
+// "Vazgeç" does; while one of its ways runs none of them does, and a second press is ignored
+// (`runDialogAction`). A failed try keeps it open and it writes the error itself.
 export function OverlayHost() {
   const open = useOverlay((s) => s.open);
   const dialog: DialogEntry | null =
@@ -25,27 +28,24 @@ export function OverlayHost() {
       ? { ...open, payload: open.payload }
       : null;
   const [shown, setShown] = useState<DialogEntry | null>(dialog);
-  const [pendingId, setPendingId] = useState<string | null>(null);
   if (dialog && dialog.id !== shown?.id) setShown(dialog);
+  const run = useDialogRun();
   useLeaveKeyboard(dialog !== null);
 
-  const pending = shown !== null && pendingId === shown.id;
+  // What the shown one is doing (kept while it leaves).
+  const mine = shown !== null && run.id === shown.id;
+  const running = mine ? run.running : null;
+  const error = mine ? run.error : null;
   const cancel = () => {
-    if (!dialog || pendingId === dialog.id) return;
+    if (!dialog || (run.id === dialog.id && run.running)) return;
     closeOverlay(dialog.id);
   };
-  const run = async () => {
-    if (!dialog || pendingId === dialog.id) return;
-    const { id, payload } = dialog;
-    setPendingId(id);
-    try {
-      await payload.onConfirm();
-      closeOverlay(id, false);
-    } catch {
-      // The screen shows the error (its mutation); the dialog stays for another try.
-    } finally {
-      setPendingId((p) => (p === id ? null : p));
-    }
+  const confirmIt = () => {
+    if (dialog) void runDialogAction(dialog.id, 'confirm', dialog.payload.onConfirm);
+  };
+  const other = dialog?.payload.other;
+  const otherIt = () => {
+    if (dialog && other) void runDialogAction(dialog.id, 'other', other.onPress);
   };
   const hidden = () => {
     if (useOverlay.getState().open?.kind !== 'dialog') setShown(null);
@@ -65,8 +65,10 @@ export function OverlayHost() {
         <Dialog
           options={shown.payload}
           visible={dialog !== null}
-          pending={pending}
-          onConfirm={() => void run()}
+          running={running}
+          error={error}
+          onConfirm={confirmIt}
+          onOther={otherIt}
           onCancel={cancel}
           onHidden={hidden}
         />

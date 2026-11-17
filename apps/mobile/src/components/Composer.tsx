@@ -1,4 +1,4 @@
-import { forwardRef, type ReactNode, useEffect, useState } from 'react';
+import { forwardRef, type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, Text as RNText, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
@@ -26,6 +26,7 @@ import { useLabOff } from '@/lib/drawLab';
 
 import type { ChatQuote } from './ChatBubble';
 import { useChatEnd } from './ChatScreen';
+import { AppIcon } from './AppIcon';
 import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -55,6 +56,9 @@ type Props = {
   // Inside a card (Mekan's venue chat card, iskelet.md → 5.11): the capsule without the bar's own
   // padding round it.
   flush?: boolean;
+  // The DM's message edit (docs/SPEC_V4.md §4.X): the send button turns into a tick and the stream
+  // does not follow the press.
+  editing?: boolean;
 };
 
 // The message bar of a chat screen (v45: .dbar): it floats at the bottom over the chat's wallpaper, a
@@ -315,6 +319,7 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
     onCancelReply,
     inputTestID,
     sendTestID,
+    editing,
   },
   ref,
 ) {
@@ -425,11 +430,12 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
             disabled={!!sendDisabled || !!sending}
             label={sendLabel}
             testID={sendTestID}
+            confirm={editing}
             onPress={() => {
               haptic('sent');
               onSend();
-              // The stream goes to its end with the message (every chat).
-              followEnd?.();
+              // The stream goes to its end with the message (every chat); an edit leaves it be.
+              if (!editing) followEnd?.();
             }}
           />
         </View>
@@ -448,6 +454,7 @@ function SendIn({
   disabled,
   label,
   testID,
+  confirm,
   onPress,
 }: {
   // The DM's (tuval Dm): its green shadow, the arrow 18. Otherwise Mekan's card's (tuval Mekan):
@@ -459,6 +466,8 @@ function SendIn({
   disabled: boolean;
   label: string;
   testID?: string;
+  // The arrow is a tick (a message being edited).
+  confirm?: boolean;
   onPress: () => void;
 }) {
   const reduce = useReduceMotion();
@@ -519,7 +528,7 @@ function SendIn({
             ) : (
               <Svg width={arrow} height={arrow} viewBox="0 0 24 24">
                 <Path
-                  d={dm ? ARROW_UP_DM : ARROW_UP}
+                  d={confirm ? TICK : dm ? ARROW_UP_DM : ARROW_UP}
                   fill="none"
                   stroke={KIT.onPrimary}
                   strokeWidth={dm ? ARROW_STROKE : ARROW_STROKE_CARD}
@@ -538,6 +547,8 @@ function SendIn({
 const ARROW_UP = 'M12 19V5M5.5 11.5 12 5l6.5 6.5';
 // tuval Dm: the shaft from 19 to 6, the head 5.5 to either side.
 const ARROW_UP_DM = 'M12 19V6M6.5 11.5 12 6l5.5 5.5';
+// The edit's confirm tick.
+const TICK = 'M5 12.5l4.5 4.5L19 7.5';
 const ARROW_STROKE = 2.2;
 const ARROW_STROKE_CARD = 2.8;
 // The card's field's line (KIT_TYPE.chatField: 14 on 18).
@@ -554,29 +565,115 @@ type DraftProps = Omit<Props, 'value' | 'onChangeText' | 'onSend' | 'sendDisable
   // Sends the prepared text; `clear` empties the bar: at once, or once the server took it. Typed
   // on meanwhile, the bar keeps the new text (audit CHAT-13).
   onSend: (body: string, clear: () => void) => void;
+  // A message being edited (docs/SPEC_V4.md §4.X): the field holds its text under a strip with a
+  // ×; the draft typed before comes back when it ends. Nothing else about the bar changes.
+  edit?: { id: string; text: string; onCancel: () => void };
 };
 
 // The message bar holding what is typed itself (performance audit, 28 Ekim): with the draft on the
 // chat screen, every key drew the whole screen again with its hundred messages; here a key draws
 // the bar only.
-export function DraftComposer({ prepare, blocked, onDraftChange, onSend, ...props }: DraftProps) {
+export function DraftComposer({
+  prepare,
+  blocked,
+  onDraftChange,
+  onSend,
+  edit,
+  ...props
+}: DraftProps) {
   const [draft, setDraft] = useState('');
   const body = prepare(draft);
+  // Starting, switching and leaving an edit: the typed draft is put aside and comes back.
+  const [editId, setEditId] = useState<string | null>(null);
+  const [aside, setAside] = useState('');
+  const wantId = edit?.id ?? null;
+  if (wantId !== editId) {
+    setEditId(wantId);
+    if (edit) {
+      if (editId === null) setAside(draft);
+      setDraft(edit.text);
+    } else {
+      setDraft(aside);
+    }
+  }
+  const input = useRef<TextInput>(null);
+  useEffect(() => {
+    if (editId) input.current?.focus();
+  }, [editId]);
   return (
     <Composer
       {...props}
+      ref={input}
+      editing={!!edit}
+      sendLabel={edit ? tr.dm.saveEdit : props.sendLabel}
+      above={edit ? <EditStrip text={edit.text} onCancel={edit.onCancel} /> : props.above}
       value={draft}
       onChangeText={(text) => {
         setDraft(text);
         onDraftChange?.(text);
       }}
-      sendDisabled={!body || !!blocked}
+      sendDisabled={!body || !!blocked || (!!edit && body === edit.text)}
       onSend={() => {
         if (!body || blocked) return;
         const sent = draft;
         onSend(body, () => setDraft((now) => (now === sent ? '' : now)));
       }}
     />
+  );
+}
+
+// The message being edited, over the message bar (docs/SPEC_V4.md §4.X; the motion table's A4 4.1:
+// it arrives in dissolve.inMs, rising dissolve.rise; still with reduce motion).
+function EditStrip({ text, onCancel }: { text: string; onCancel: () => void }) {
+  const { colors, shape } = useTheme();
+  const k = useKit();
+  const look = DM[k.scheme].composer;
+  const reduce = useReduceMotion();
+  const p = useSharedValue(reduce ? 1 : 0);
+  useEffect(() => {
+    if (reduce) return;
+    p.set(
+      withTiming(1, {
+        duration: MOTION.dissolve.inMs,
+        easing: Easing.bezier(...MOTION.curves.arrive),
+      }),
+    );
+  }, [reduce, p]);
+  const style = useAnimatedStyle(() => ({
+    opacity: p.get(),
+    transform: [{ translateY: (1 - p.get()) * MOTION.dissolve.rise }],
+  }));
+  // Board 02d: a glass strip, the pencil, the title over the old text, a × at the right.
+  return (
+    <Animated.View
+      testID="edit-strip"
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING[2.5],
+          paddingLeft: SPACING[4],
+          paddingRight: SPACING[1.5],
+          paddingVertical: SPACING[2],
+          borderRadius: shape.radius.lg,
+          ...gradientStyle(look.fill),
+          borderWidth: KIT.size.edge,
+          borderColor: look.edge,
+        },
+        style,
+      ]}
+    >
+      <AppIcon name="pencil" color={colors.text} size={ICON.md} />
+      <View className="flex-1">
+        <Text variant="label" tone="text">
+          {tr.dm.editing}
+        </Text>
+        <Text variant="fine" tone="muted" numberOfLines={1}>
+          {text}
+        </Text>
+      </View>
+      <IconButton icon="close" label={tr.dm.cancelEdit} onPress={onCancel} testID="edit-cancel" />
+    </Animated.View>
   );
 }
 

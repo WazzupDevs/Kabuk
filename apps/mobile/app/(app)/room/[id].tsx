@@ -28,11 +28,6 @@ import { conceptOf, GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/Po
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
-import {
-  createDialogError,
-  DialogErrorLine,
-  type DialogErrorHolder,
-} from '@/features/rooms/DialogError';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { TableScene, useDrawerScroll } from '@/features/rooms/TableScene';
 import { TestBots } from '@/features/rooms/TestBots';
@@ -54,7 +49,7 @@ import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { closeAll, confirm } from '@/lib/overlayStore';
+import { confirm, runDialogAction, useDialogRun, useOverlayOpenId } from '@/lib/overlayStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
 import { useNarrow } from '@/lib/useNarrow';
@@ -362,9 +357,6 @@ function TableScreenBody() {
   // "Masayı bitir" is the owner's for everyone (cannot be undone: danger); "Masadan ayrıl" can be
   // joined again. Both are centred dialogs (lib/overlayStore → confirm), a failed try stays open.
   const openEnd = () => {
-    const holder = createDialogError();
-    let working = false;
-    const busy = { on: () => working, set: (v: boolean) => (working = v) };
     confirm({
       title: tr.table.endTitle,
       note: tr.table.endBody,
@@ -375,30 +367,12 @@ function TableScreenBody() {
       cancelLabel: tr.common.cancel,
       testID: 'table-end-confirm',
       onConfirm: async () => {
-        if (busy.on()) throw new Error('busy');
-        busy.set(true);
-        holder.set(null);
-        try {
-          await end.mutateAsync();
-        } catch (e) {
-          holder.set(e);
-          throw e;
-        } finally {
-          busy.set(false);
-        }
+        await end.mutateAsync();
       },
-      children: (
-        <View className="gap-3">
-          <DialogErrorLine holder={holder} />
-          {r.phones > 1 ? (
-            <OwnerLeave leave={() => leave.mutateAsync()} busy={busy} holder={holder} />
-          ) : null}
-        </View>
-      ),
+      children: r.phones > 1 ? <OwnerLeave leave={() => leave.mutateAsync()} /> : undefined,
     });
   };
   const openLeave = () => {
-    const holder = createDialogError();
     confirm({
       title: tr.table.leaveTitle,
       note: tr.table.leaveBody,
@@ -409,15 +383,8 @@ function TableScreenBody() {
       cancelLabel: tr.common.cancel,
       testID: 'table-leave-confirm',
       onConfirm: async () => {
-        holder.set(null);
-        try {
-          await leave.mutateAsync();
-        } catch (e) {
-          holder.set(e);
-          throw e;
-        }
+        await leave.mutateAsync();
       },
-      children: <DialogErrorLine holder={holder} />,
     });
   };
 
@@ -712,33 +679,14 @@ function TableScreenBody() {
 const BAR_TOP = 16;
 const SOLO_GAP = 6;
 
-// The owner's other way out in "Masayı bitir"'s dialog (it lies over the screen, so this button
-// holds its own wait and error): the table goes on for the others. `busy` is shared with the
-// dialog's own action so neither runs while the other is on its way.
-function OwnerLeave({
-  leave,
-  busy,
-  holder,
-}: {
-  leave: () => Promise<unknown>;
-  busy: { on: () => boolean; set: (v: boolean) => void };
-  holder: DialogErrorHolder;
-}) {
-  const [pending, setPending] = useState(false);
-  const press = async () => {
-    if (busy.on()) return;
-    busy.set(true);
-    setPending(true);
-    holder.set(null);
-    try {
-      await leave();
-      closeAll();
-    } catch (e) {
-      holder.set(e);
-    } finally {
-      busy.set(false);
-      setPending(false);
-    }
+// The owner's other way out in "Masayı bitir"'s dialog: the table goes on for the others. It runs
+// as one of the dialog's ways (`runDialogAction`): neither runs while the other is on its way, and
+// a failed try is written in the dialog's own error line.
+function OwnerLeave({ leave }: { leave: () => Promise<unknown> }) {
+  const id = useOverlayOpenId();
+  const pending = useDialogRun((s) => s.id === id && s.running === 'other');
+  const press = () => {
+    if (id) void runDialogAction(id, 'other', leave);
   };
   return (
     <View className="gap-2.5">
@@ -749,7 +697,7 @@ function OwnerLeave({
         testID="table-owner-leave"
         label={tr.table.leave}
         loading={pending}
-        onPress={() => void press()}
+        onPress={press}
       />
       <T v="fine" center>
         {tr.table.leaveNote}

@@ -6,7 +6,7 @@ import { Button } from '@/components/Button';
 import { Confetti } from '@/components/game/Confetti';
 import { CountIn } from '@/components/game/CountIn';
 import { GameButton } from '@/components/game/GameButton';
-import { GameToast, type GameToastMessage } from '@/components/game/GameToast';
+import { Toast, type ToastMessage } from '@/components/Toast';
 import { GroundView } from '@/components/game/GroundView';
 import { RING_SIZE, RingCounter } from '@/components/game/RingCounter';
 import { TimerBar } from '@/components/game/TimerBar';
@@ -27,7 +27,7 @@ export function PartsSet() {
   const { scheme, shape } = useTheme();
   const t = tr.design.parts;
   const purple = teamGround(scheme, 'purple');
-  const [toast, setToast] = useState<GameToastMessage | null>(null);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
   const [countIn, setCountIn] = useState(0);
   const [confetti, setConfetti] = useState(0);
   const ground = { borderRadius: shape.radius.lg, padding: SPACING[4] };
@@ -112,13 +112,13 @@ export function PartsSet() {
         >
           {countIn > 0 ? <CountIn key={countIn} onDone={() => setCountIn(0)} /> : null}
           {confetti > 0 ? <Confetti burst={confetti} seed={confetti} /> : null}
-          <GameToast message={toast} top={SPACING[4]} testID="game-toast" />
+          <Toast message={toast} top={SPACING[4]} testID="game-toast" />
         </GroundView>
         <View className="gap-2">
           <Button
             variant="secondary"
             label={t.showToast}
-            onPress={() => setToast({ id: Date.now(), text: t.toast, bad: true })}
+            onPress={() => setToast({ id: Date.now(), title: t.toast })}
             testID="preview-parts-toast"
           />
           <View className="flex-row gap-2">

@@ -1,26 +1,19 @@
 import { View } from 'react-native';
 
-import { PageTop } from '@/components/PageTop';
-import { Screen } from '@/components/Screen';
-import { T } from '@/aura/kit';
-import { RisoKanki } from '@/aura/RisoKanki';
 import { BlockedList } from '@/features/chat/BlockedList';
+import { Lede, SettingsPage } from '@/features/settings/SettingsParts';
 import { tr } from '@/i18n/tr';
-import { KIT } from '@/theme/auraKit';
-import { PAGE_KANKI } from '@/theme/kankiMotion';
+import { SPACING } from '@/theme/tokens';
 
-// Engellenenler (skall tuvali, Engellenenler, EngellenenlerBos).
+// Engellenenler (yeni arayüz tuvali, Engellenenler, EngellenenlerBos): its line, then each block with
+// "Engeli kaldır" on the ground.
 export default function BlockedScreen() {
   return (
-    <Screen
-      list
-      backdrop={<RisoKanki place={PAGE_KANKI.blocked} scale={1} />}
-      top={<PageTop title={tr.settings.blocked} />}
-    >
-      <View style={{ gap: KIT.size.rowGap }}>
-        <T v="fine">{tr.settings.blockedNote}</T>
+    <SettingsPage list title={tr.settings.blocked}>
+      <Lede>{tr.settings.blockedNote}</Lede>
+      <View style={{ marginTop: SPACING[3] }}>
         <BlockedList />
       </View>
-    </Screen>
+    </SettingsPage>
   );
 }

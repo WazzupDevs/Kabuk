@@ -147,11 +147,6 @@ function Body() {
           onPress={signOut.ask}
           danger
         />
-        {signOut.error ? (
-          <View style={NOTES}>
-            <Note color={c.warn}>{signOut.error}</Note>
-          </View>
-        ) : null}
       </View>
       {designPickerEnabled ? <TestRows /> : null}
     </View>

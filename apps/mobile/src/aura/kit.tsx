@@ -1168,6 +1168,7 @@ function PlainRows({ testID, children }: { sm?: boolean; testID?: string; childr
 export function Li({
   children,
   onPress,
+  onLongPress,
   testID,
   accessibilityLabel,
   padY = KIT.size.liPadY,
@@ -1178,6 +1179,9 @@ export function Li({
 }: {
   children: ReactNode;
   onPress?: () => void;
+  // The row's menu (Mesajlar: a conversation's Sabitle, Arşivle, Sohbeti sil); a screen reader
+  // reaches it as the row's long press action.
+  onLongPress?: () => void;
   testID?: string;
   accessibilityLabel?: string;
   // Above and under (Mesajlar's rows: 12).
@@ -1212,6 +1216,15 @@ export function Li({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityActions={onLongPress ? LONG_PRESS_ACTION : undefined}
+      onAccessibilityAction={
+        onLongPress
+          ? (e) => {
+              if (e.nativeEvent.actionName === 'longpress') onLongPress();
+            }
+          : undefined
+      }
       // A row under a scrolling finger never looks pressed (iskelet.md → 2.3, 6.4).
       unstable_pressDelay={PRESS_DELAY}
     >
@@ -1224,6 +1237,7 @@ export function Li({
   );
 }
 const PRESSED_ROW = 0.7;
+const LONG_PRESS_ACTION = [{ name: 'longpress' as const }];
 
 // A settings row's icon (iskelet.md → 2.4): white on a coloured square, 32 and 10 round.
 export function IconSquare({

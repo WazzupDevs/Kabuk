@@ -23,7 +23,7 @@ export const LEGAL_ENTITY: LegalEntity = {
   postalAddress: '',
   contactEmail: 'support@skall.world',
   developerName: 'Skall Labs',
-  effectiveDate: '12 Kasım 2026',
+  effectiveDate: '16 Kasım 2026',
 };
 
 // The texts are final once they name the data controller; until then every page says "taslak".
