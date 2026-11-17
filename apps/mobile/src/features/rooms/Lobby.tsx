@@ -348,7 +348,7 @@ function SectionHead({ title, count }: { title: string; count: number | null }) 
   const { c } = useKit();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: VENUE.lobby.headGap }}>
-      <T v="venueSection" ink accessibilityRole="header">
+      <T v="venueLobbyTitle" ink accessibilityRole="header">
         {title}
       </T>
       {count ? (

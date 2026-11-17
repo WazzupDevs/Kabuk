@@ -307,7 +307,7 @@ export const KIT_TYPE = {
   venueBarHere: t(600, 12, 16),
   venueCardTitle: t(700, 18, 24, -0.3 / 18),
   venueCount: t(700, 13, 18),
-  venueSection: t(700, 18, 24),
+  venueLobbyTitle: t(700, 18, 24),
   av: {
     xs: t(700, 9, 11),
     md: t(700, 15, 19),
