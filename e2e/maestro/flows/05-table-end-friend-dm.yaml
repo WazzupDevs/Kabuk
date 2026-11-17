@@ -8,6 +8,9 @@ appId: app.kabuk.mobile
     env:
       ACTION: backdate-encounter
 # "Masayı bitir" from the owner's bar asks first (v46 data-msheet "bitir").
+# Masa: "Masayı bitir" and "Masadan ayrıl" are in the ⋮ menu (yeni arayüz, MasaSecenek).
+- tapOn:
+    id: table-menu
 - tapOn:
     id: table-end-open
 - extendedWaitUntil:
