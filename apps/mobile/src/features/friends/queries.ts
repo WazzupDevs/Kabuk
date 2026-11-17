@@ -98,6 +98,16 @@ export function useVenueChatRequests() {
   });
 }
 
+// İstekler → "Gönderdiğin": the caller's own presses of "İstek gönder", every one waiting (rule 5).
+// Read again whenever the list is opened: a press in a chat is made on another screen.
+export function useSentRequests() {
+  return useQuery({
+    queryKey: friendKeys.sent,
+    queryFn: async () => (await friendsApi.sent()).sent,
+    refetchOnMount: 'always',
+  });
+}
+
 // The caller's own encounters (RLS: own rows once available; no id of the other side).
 export function usePlayHistory() {
   return useQuery({

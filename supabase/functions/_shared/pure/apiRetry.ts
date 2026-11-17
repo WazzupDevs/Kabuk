@@ -110,6 +110,12 @@ export const IDEMPOTENT_CALLS = [
   // friends.test "mutual friends (rule 4)": "lists the friends two friends share, nothing to
   // anyone else, the same when sent twice"
   'friends/mutual',
+  // friends.test "Gönderdiğin (rule 5)": "lists every press as waiting and takes one back, the
+  // same when sent twice"
+  'friends/sent',
+  // friends.test "Gönderdiğin (rule 5)": "lists every press as waiting and takes one back, the
+  // same when sent twice"
+  'friends/withdraw',
   // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
   // new until the list is opened"
   'account/notifications-seen',

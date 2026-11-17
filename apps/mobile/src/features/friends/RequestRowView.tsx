@@ -26,6 +26,8 @@ type Props = {
   face: ReactNode;
   decline?: RowAction;
   accept?: RowAction;
+  // "Gönderdiğin"'s one soft button ("Geri çek"), with its words in `text`.
+  soft?: RowAction;
   // A line under the row (the table is full, an answer failed).
   note?: { text: string; danger?: boolean };
 };
@@ -42,12 +44,13 @@ export function RequestRowView({
   face,
   decline,
   accept,
+  soft,
   note,
 }: Props) {
   const R = FLAT.request;
   const narrow = useNarrow();
   const actions =
-    decline || accept ? (
+    decline || accept || soft ? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
         {decline ? (
           <Round
@@ -69,6 +72,18 @@ export function RequestRowView({
             disabled={accept.disabled}
             loading={accept.loading}
             onPress={accept.onPress}
+          />
+        ) : null}
+        {soft ? (
+          <Btn
+            sm
+            variant="glassy"
+            label={soft.text ?? ''}
+            accessibilityLabel={soft.label}
+            testID={soft.testID}
+            disabled={soft.disabled}
+            loading={soft.loading}
+            onPress={soft.onPress}
           />
         ) : null}
       </View>

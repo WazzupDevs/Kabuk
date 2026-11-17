@@ -27,6 +27,8 @@ describe('IDEMPOTENT_CALLS', () => {
         'friends/list',
         'friends/mutual',
         'friends/notifications',
+        'friends/sent',
+        'friends/withdraw',
         'gifts/equip',
         'gifts/login',
         'gifts/state',

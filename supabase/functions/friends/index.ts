@@ -14,6 +14,7 @@ import type {
   FriendsIncomingResponse,
   FriendsListResponse,
   FriendsMutualResponse,
+  FriendsSentResponse,
   FriendsAddResponse,
   FriendsOkResponse,
   FriendsRequest,
@@ -46,6 +47,8 @@ const Body: z.ZodType<FriendsRequest> = z.union([
   }),
   z.object({ action: z.literal('notifications') }),
   z.strictObject({ action: z.literal('mutual'), publicId: z.uuid() }),
+  z.strictObject({ action: z.literal('sent') }),
+  z.strictObject({ action: z.literal('withdraw'), sentId: z.uuid() }),
 ]);
 
 const db = serviceClient();
@@ -207,6 +210,13 @@ async function mutual(userId: string, publicId: string): Promise<FriendsMutualRe
   };
 }
 
+// "Gönderdiğin": the caller's presses, every one waiting (rule 5).
+async function sent(userId: string): Promise<FriendsSentResponse> {
+  const { data, error } = await db.rpc('friends_sent', { viewer: userId });
+  if (error) throw dbError('friends_sent', error);
+  return { sent: data.map((p) => ({ id: p.id, name: p.to_name, sentAt: p.sent_at })) };
+}
+
 Deno.serve(
   handle(
     async (
@@ -215,6 +225,7 @@ Deno.serve(
     ): Promise<
       | FriendsListResponse
       | FriendsMutualResponse
+      | FriendsSentResponse
       | FriendsIncomingResponse
       | FriendsOkResponse
       | FriendsAddResponse
@@ -232,6 +243,21 @@ Deno.serve(
 
         case 'mutual':
           return await mutual(user.id, body.publicId);
+
+        case 'sent':
+          return await sent(user.id);
+
+        // "Geri çek": the same answer whatever happened. The person whose waiting request went
+        // reads their inbox again; nothing says why.
+        case 'withdraw': {
+          const { data, error } = await db.rpc('friends_withdraw', {
+            target_user_id: user.id,
+            target_press_id: body.sentId,
+          });
+          if (error) throw dbError('friends_withdraw', error);
+          if (data) notifyInbox([data], BROADCAST.friendRequest);
+          return { ok: true };
+        }
 
         case 'incoming':
           return await incoming(user.id);

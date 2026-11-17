@@ -779,9 +779,8 @@ describe('venue chat: friend requests', () => {
     const requestId = incoming.body.requests[0]?.requestId;
     expect(await invoke(a, 'friends', { action: 'respond', requestId, accept: true })).toEqual(OK);
     expect(await sql`select source from public.friendships`).toEqual([{ source: 'request' }]);
-    expect((await b.rpc('my_sent_venue_chat_requests')).data).toEqual([
-      expect.objectContaining({ status: 'accepted' }),
-    ]);
+    // Accepted, it leaves the sender's list (İstekler → "Gönderdiğin").
+    expect((await b.rpc('my_sent_venue_chat_requests')).data).toEqual([]);
     // Already friends.
     expect(
       await invoke(b, 'friends', { action: 'request', venueChatMessageId: messageId }),

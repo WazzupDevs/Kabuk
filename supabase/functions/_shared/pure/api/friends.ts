@@ -26,6 +26,11 @@ export type FriendsRequest =
   // Ortak arkadaşlar, on a friend's profile only (rule 4): the friends the caller and that friend
   // share. For anyone who is not the caller's friend the answer is empty, like a friend with none.
   | { action: 'mutual'; publicId: string }
+  // İstekler → "Gönderdiğin": the caller's own presses of "İstek gönder" (the chats and play
+  // history), every one waiting whatever became of it (rule 5). `withdraw` takes one back: the
+  // answer is { ok: true } whatever happened, an unknown id included.
+  | { action: 'sent' }
+  | { action: 'withdraw'; sentId: string }
   // The bell's list (docs/SPEC_V4.md §4.G, step 4.7), newest first.
   | { action: 'notifications' };
 
@@ -50,6 +55,11 @@ export type MutualFriend = {
   photoUrl: string | null;
 };
 export type FriendsMutualResponse = { count: number; friends: MutualFriend[] };
+
+// The name is the one the person showed when it was pressed (a seat's nick for someone who sat
+// anonymously); no photo, no profile id, and never what became of the request.
+export type SentRequest = { id: string; name: string | null; sentAt: string };
+export type FriendsSentResponse = { sent: SentRequest[] };
 
 export type VenueChatIncoming = {
   requestId: string;
