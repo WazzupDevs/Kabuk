@@ -17,6 +17,8 @@ import {
   insidePlanKey,
   skiaAccessories,
   skiaAt,
+  TICKET_SKIA_WHOLE,
+  ticketWholeOn,
 } from './capsuleSkia';
 import { defBox, multiply } from './svgBox';
 
@@ -77,6 +79,14 @@ describe('the switch', () => {
     expect(capsulePainter(true, true)).toBe('skia');
     expect(capsulePainter(false, false)).toBe('svg');
     expect(capsulePainter(false, true)).toBe('skia');
+  });
+
+  it("draws the profile ticket's capsule on one canvas on Android unless the panel says SVG", () => {
+    expect(TICKET_SKIA_WHOLE).toBe(true);
+    expect(ticketWholeOn('android', false)).toBe(true);
+    expect(ticketWholeOn('android', true)).toBe(false);
+    expect(ticketWholeOn('ios', false)).toBe(false);
+    expect(ticketWholeOn('web', false)).toBe(false);
   });
 });
 

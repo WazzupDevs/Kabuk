@@ -14,8 +14,15 @@ import { createOrder } from '@/lib/lru';
 // query for the Aktiviteler card, Paketler and Kapsülünü süsle.
 export const giftKeys = { state: ['gifts', 'state'] as const };
 
+// The one query's options, read ahead too (features/profile/ahead.ts).
+export const giftStateQuery = {
+  queryKey: giftKeys.state,
+  queryFn: giftsApi.state,
+  staleTime: 60_000,
+};
+
 export function useGiftState() {
-  return useQuery({ queryKey: giftKeys.state, queryFn: giftsApi.state, staleTime: 60_000 });
+  return useQuery(giftStateQuery);
 }
 
 // The app opened with a session counts as a login (one a day, the server's count): on the signed-in
