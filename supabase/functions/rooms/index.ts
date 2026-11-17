@@ -288,7 +288,7 @@ Deno.serve(
           inBackground(broadcast(sessionChannel(ownerSessionId), BROADCAST.joinRequest));
           inBackground(
             pushTokenOfSession(ownerSessionId).then((token) =>
-              sendPush(token, joinRequestPush(data.requester_alias, data.requester_phones)),
+              sendPush(token, joinRequestPush(data.requester_phones)),
             ),
           );
           return { requestId: data.id, expiresAt: data.expires_at };

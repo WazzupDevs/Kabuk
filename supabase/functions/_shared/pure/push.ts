@@ -2,9 +2,8 @@ import { APP_NAME } from './brand.ts';
 import type { PushTarget } from './navigation.ts';
 
 // Push notification texts are built on the server, so they live here rather than in the app's
-// tr.ts (which re-exports them). They carry only what the request card shows the owner: the asking
-// table's name and its phone count, or the person's name on its own (rule 4; docs/SPEC_V4.md
-// §4.E).
+// tr.ts (which re-exports them). A join request carries only the asking
+// table's phone count, never a name (rule 4; docs/SPEC_V4.md §4.E).
 
 // `kind`: the status bar icon the phone draws (Aura BildirimSimgeleri, 3 Kasım; the patched
 // expo-notifications draws res/drawable/ic_bildirim_<kind>, a kind it has no icon for the default
@@ -21,14 +20,16 @@ export const PUSH_ICONS = [
 export type PushIcon = (typeof PUSH_ICONS)[number];
 export type PushMessage = { title: string; body: string; kind: PushIcon; target?: PushTarget };
 
-export function joinRequestPush(name: string, phones: number): PushMessage {
+// No name: the lock screen shows neither the asking table's name nor the person's; the request card
+// in the app shows it (docs/SPEC_V4.md §4.E). Only the phone count goes.
+export function joinRequestPush(phones: number): PushMessage {
   return {
     title: 'Katılma isteği',
     kind: 'katilma_istegi',
     body:
       phones > 1
-        ? `${name} (${phones} kişi) masana katılmak istiyor.`
-        : `${name} masana katılmak istiyor.`,
+        ? `${phones} kişilik bir masa masana katılmak istiyor.`
+        : 'Biri masana katılmak istiyor.',
   };
 }
 

@@ -1,4 +1,4 @@
-import { FunctionsHttpError, isAuthApiError } from '@supabase/supabase-js';
+import { FunctionRegion, FunctionsHttpError, isAuthApiError } from '@supabase/supabase-js';
 
 import type { AccountRequest, AccountResponse } from '@shared/api/account.ts';
 import type {
@@ -95,6 +95,7 @@ import { isNetworkError } from '@/lib/connection';
 import { useUpdateGate } from '@/features/update/updateGate';
 
 import { appBuildHeaders } from './appBuild';
+import { env } from './env';
 import { reportFunctionFailure } from './errorReporting';
 import { supabase } from './supabase';
 
@@ -116,6 +117,7 @@ async function invoke<T>(fn: string, body: Record<string, unknown>, attempt = 1)
   const { data, error } = await supabase.functions.invoke<T>(fn, {
     body,
     headers: appBuildHeaders,
+    region: FUNCTION_REGION,
     // A call on a stalled connection ends (audit AUTH-7): its button stops waiting and the
     // connection banner hears of it. Deleting an account removes photos and more: it gets longer.
     timeout: fn === 'account' ? ACCOUNT_TIMEOUT_MS : CALL_TIMEOUT_MS,
@@ -141,6 +143,13 @@ async function invoke<T>(fn: string, body: Record<string, unknown>, attempt = 1)
   if (error || data === null) throw new ApiError('internal', error?.message ?? 'Empty response');
   return data;
 }
+
+// Hosted projects are in Frankfurt (docs/OPS.md): Edge Function calls are pinned there (supabase-js
+// sends `x-region`), so a call never runs in a far region next to the database. The local stack
+// has no regions and is left as it is.
+const FUNCTION_REGION = /^https:\/\/[a-z0-9]+\.supabase\.co(\/|$)/.test(env.supabaseUrl)
+  ? FunctionRegion.EuCentral1
+  : undefined;
 
 const CALL_TIMEOUT_MS = 20_000;
 const ACCOUNT_TIMEOUT_MS = 60_000;

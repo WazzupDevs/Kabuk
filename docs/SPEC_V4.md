@@ -992,7 +992,7 @@ K-87. Kurallar ve plan `docs/decisions/kaupholl.md` (v3.1, proje sahibinin onay�
 - **Bildirim ayarları** (K-53, K-62): kişi başına üç satır.
   - Arkadaşlık istekleri, Masa davetleri, Birebir mesajlar: bugünkü `notify_friend_requests` ve `notify_dm`'in yanına `notify_invites`.
   - Tercih push gönderilmeden önce okunur.
-  - Katılma isteği ve kabul push'larının ayarı yoktur; bugünkü gibi gider.
+  - Katılma isteği ve kabul push'larının ayarı yoktur; bugünkü gibi gider. Katılma isteği push'u ad taşımaz (masa adı da kişinin adı da kilit ekranına düşmez): yalnız kişi sayısı ("3 kişilik bir masa masana katılmak istiyor.", tek kişide "Biri masana katılmak istiyor."); ad uygulamadaki istek kartındadır.
   - Mekan sohbeti yanıtları ve kampanya satırı yoktur (SPEC_V3 §7.4, K-15).
   - Ekran v46'dadır (v46 raporu, bölüm 4).
 - Üretim projesi için Firebase anahtarının Expo paneline yüklendiği pilot öncesi doğrulanır (§4.N).
