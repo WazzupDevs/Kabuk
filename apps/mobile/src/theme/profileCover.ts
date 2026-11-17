@@ -126,35 +126,54 @@ export const RISO_PAPER = {
   dark: { paper: '#1B231E', dots: 'rgba(255, 255, 255, 0.07)' },
 } as const;
 
-// The ticket (tuval Benim): paper with a dark-green edge 2.5 and a pink print 4 right and 5 down
-// under it, 26 round, 150 high; a notch 24 across at the top and the bottom of the perforation (2,
-// dashed, the edge's green at 50 %); the stub 112 with the capsule on its ground under a pink
-// halftone (3 apart, 0.8), its parts 8 apart; the words 16 inside (18 at their left), 4 apart, the
-// button 8 more under them, 16 in, its star 15, 6 from the words.
+// The ticket (yeni arayüz tuvali, ProfilBen `.tk`; 16 Kasım, value for value): 128 high, 24 round, an
+// edge 2 wide and a pink (violet in the dark) print 4 right and 5 down under it; a notch 24 across at
+// the top and the bottom of the perforation (2, dashed); the stub 97 with the capsule (80) on its
+// ground under a halftone (3 apart, 0.8), its parts 8 apart; the words 16 inside (18 at their left),
+// 4 apart, the button 8 more under them, 16 in, its star 15, 6 from the words. The paper, edge, print
+// and inks are the scheme's (TICKET_TONE).
 export const TICKET = {
-  paper: '#FBF7EE',
-  edge: '#0B5A2D',
-  edgeWidth: 2.5,
-  print: '#FF4F8B',
+  edgeWidth: 2,
   printX: 4,
   printY: 5,
-  ink: '#031B0B',
-  muted: '#4A6550',
-  link: '#0B783D',
-  radius: 26,
-  height: 150,
+  radius: 24,
+  height: 128,
   notch: 12,
-  stub: 112,
+  stub: 97,
   stubGap: 8,
   stubDots: { cell: 3, dot: 0.8, color: 'rgba(255, 79, 139, 0.20)' },
-  capsule: 64,
+  capsule: 80,
   dash: [4, 4] as const,
   dashWidth: 2,
-  dashColor: 'rgba(11, 90, 45, 0.5)',
   padX: 16,
   padLeft: 18,
-  padY: 16,
+  padY: 12,
   gap: 4,
   buttonTop: 8,
   button: { padX: 16, gap: 6, icon: 15 },
+} as const;
+
+export const TICKET_TONE = {
+  light: {
+    paper: '#FBF8EE',
+    dots: 'rgba(11, 61, 34, 0.10)',
+    edge: '#0B3D22',
+    print: '#FF4F8B',
+    ink: '#031B0B',
+    kicker: '#2C5A3E',
+    muted: '#4A6550',
+    link: '#0B783D',
+    dash: 'rgba(11, 61, 34, 0.45)',
+  },
+  dark: {
+    paper: '#101915',
+    dots: 'rgba(147, 235, 185, 0.10)',
+    edge: '#3DDC84',
+    print: '#7B5CFF',
+    ink: '#EEF3F0',
+    kicker: '#93EBB9',
+    muted: 'rgba(238, 243, 240, 0.62)',
+    link: '#93EBB9',
+    dash: 'rgba(147, 235, 185, 0.45)',
+  },
 } as const;
