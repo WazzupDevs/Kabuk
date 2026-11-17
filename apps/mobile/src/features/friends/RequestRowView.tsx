@@ -1,0 +1,99 @@
+import type { ReactNode } from 'react';
+import { View } from 'react-native';
+
+import { Btn, Round, T } from '@/aura/kit';
+import { useNarrow } from '@/lib/useNarrow';
+import { KIT } from '@/theme/auraKit';
+import { FLAT } from '@/theme/flatLists';
+
+export type RowAction = {
+  label: string;
+  // The accept button's own words ("Kabul et", "Katıl"); the round decline has none.
+  text?: string;
+  testID: string;
+  loading: boolean;
+  disabled: boolean;
+  onPress: () => void;
+};
+
+type Props = {
+  testID: string;
+  // What the reader hears: the whole row as a sentence.
+  label: string;
+  name: string;
+  kind: string;
+  stamp?: { text: string; color?: string };
+  face: ReactNode;
+  decline?: RowAction;
+  accept?: RowAction;
+  // A line under the row (the table is full, an answer failed).
+  note?: { text: string; danger?: boolean };
+};
+
+// Mesajlar → İstekler `.rq` (yeni arayüz tuvali: IsteklerDolu): the face, the name over its line and
+// its date or seconds, the decline round and the accept button at the right; at 320 dp or the
+// largest text they stand under the words. Shared by the friend requests and the "Masa" rows.
+export function RequestRowView({
+  testID,
+  label,
+  name,
+  kind,
+  stamp,
+  face,
+  decline,
+  accept,
+  note,
+}: Props) {
+  const R = FLAT.request;
+  const narrow = useNarrow();
+  const actions =
+    decline || accept ? (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
+        {decline ? (
+          <Round
+            icon="close"
+            label={decline.label}
+            testID={decline.testID}
+            disabled={decline.disabled}
+            loading={decline.loading}
+            onPress={decline.onPress}
+          />
+        ) : null}
+        {accept ? (
+          <Btn
+            sm
+            icon="check"
+            label={accept.text ?? ''}
+            accessibilityLabel={accept.label}
+            testID={accept.testID}
+            disabled={accept.disabled}
+            loading={accept.loading}
+            onPress={accept.onPress}
+          />
+        ) : null}
+      </View>
+    ) : null;
+  return (
+    <View testID={testID} style={{ gap: KIT.size.chipsGap, paddingVertical: R.rowPadY }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.gap }}>
+        {face}
+        <View style={{ flex: 1, minWidth: 0 }} accessible accessibilityLabel={label}>
+          <T v="h3">{name}</T>
+          <T v="fine">{kind}</T>
+          {stamp ? (
+            <T v="stamp" color={stamp.color}>
+              {stamp.text}
+            </T>
+          ) : null}
+        </View>
+        {narrow ? null : actions}
+      </View>
+      {narrow ? actions : null}
+      {note ? (
+        <T v="fine" color={note.danger ? KIT.danger : undefined}>
+          {note.text}
+        </T>
+      ) : null}
+    </View>
+  );
+}
