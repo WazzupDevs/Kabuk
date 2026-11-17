@@ -112,6 +112,10 @@ export const KIT_TYPE = {
   // (21, 800, -0.02em), its sentence (14, 500, 1.45) and its buttons (16.5, 800).
   msgDm: t(500, 16, 22),
   msgTime: t(600, 11.5, 15),
+  // "düzenlendi" by it (tuval DmDuzenlendi: 500) and the held message's menu's note (DmMenuSureDoldu:
+  // 12/16, 500).
+  msgEdited: t(500, 11.5, 15),
+  menuNote: t(500, 12, 16),
   dayPill: t(700, 12.5, 16),
   dmName: t(800, 16.5, 21, -0.015),
   menuRow: t(600, 15.5, 20),

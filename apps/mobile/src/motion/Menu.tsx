@@ -119,6 +119,28 @@ export function Menu({
 
 const noop = () => undefined;
 
+// The menu's note under its rows (tuval DmMenuSureDoldu, `.pnote`): 4 under them over a hairline,
+// 8 / 12 / 6 inside, 12/16 500 in the muted ink. Read with the menu, not a row of its own.
+export function MenuNote({ children }: { children: string }) {
+  const { colors, scheme } = useTheme();
+  return (
+    <View
+      style={{
+        marginTop: DM.menuNote.top,
+        paddingTop: DM.menuNote.padTop,
+        paddingHorizontal: DM.menuNote.padX,
+        paddingBottom: DM.menuNote.padBottom,
+        borderTopWidth: KIT.size.hair,
+        borderTopColor: KIT[scheme].hair,
+      }}
+    >
+      <T v="menuNote" color={colors.muted}>
+        {children}
+      </T>
+    </View>
+  );
+}
+
 // Where a button's menu measures it from: its box in the window, as the menu's Modal reads it.
 export function measureMenuAnchor(view: View | null, done: (anchor: MenuAnchor) => void): void {
   view?.measureInWindow((x, y, width, height) => done({ x, y, width, height }));
