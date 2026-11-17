@@ -105,7 +105,7 @@ Ağ notu: bu oturumda `supabase.com` ve `kvkk.gov.tr` doğrudan açılamadı (ot
 | PostHog | Zorunlu değil | Ürün istatistikleri | — | `EXPO_PUBLIC_POSTHOG_KEY` yoksa kapalı (`analytics.ts:12`); sunucu sırları yoksa silme atlanır | Pilotta kapatmak: EAS'tan anahtarı silmek; yasal metinden satırı çıkarmak (metin + onay sürümü, küçük PR) |
 | OpenFreeMap | Keşfet haritası için gerekli; liste görünümü haritasız çalışır (`explore_viewed: list | map`) | Harita görünümü | IP gider; başka sunucuya `EXPO_PUBLIC_MAP_STYLE_URL` ile çevrilebilir (kendi barındırma büyük iş) | `EXPO_PUBLIC_MAP_STYLE_URL(_DARK)` | Haritayı pilotta gizlemek küçük PR (ürün kararı) |
 | Cloudflare | Zorunlu (Play gizlilik ve hesap silme bağlantısı) | Yasal sayfaların web adresi | Yalnız ziyaretçi IP'si | — | — |
-| Google Fonts | Zorunlu değil | Ana sayfada Poppins | Yazı tipini `web/assets/`'e koymak | — | Küçük PR (`web/index.html`, `web/404.html` + woff2; secret-guard woff2'yi kabul ediyor) |
+| Google Fonts | Kaldırıldı | Yok: Poppins siteden sunulur (`web/fonts/`, SIL OFL; yapıldı, PR #675) | — | — | — |
 | Zoho | E-posta iletişimi için (yasal metin adres veriyor) | Destek e-postası | Kodda yok | — | Operasyonel |
 
 ---
@@ -146,7 +146,7 @@ Ağ notu: bu oturumda `supabase.com` ve `kvkk.gov.tr` doğrudan açılamadı (ot
 1. AB'de (Frankfurt) barındırılan ama sözleşme tarafı ABD şirketi olan sağlayıcı (Supabase Inc., PostHog Inc., Functional Software Inc.) için standart sözleşmenin tarafı ve modülü (veri sorumlusu → veri işleyen) hangisidir?
 2. Sağlayıcı standart sözleşmeyi değiştirilmeden imzalamazsa, tıklamayla kabul edilen GDPR DPA'sı/SCC ile yapılan aktarım KVKK'ya göre hangi durumda kalır ve geçici olarak ne yapılmalı?
 3. Push bildirimi (Expo → FCM), OTA sorgusu ve harita karosu gibi yalnız IP ve cihaz token'ı taşıyan akışlar standart sözleşme gerektiren "kişisel veri aktarımı" mıdır?
-4. Bireysel ve ücretsiz kullanılan açık servisle (OpenFreeMap, Google Fonts) sözleşme imzalamak mümkün değilken bu akış için hangi dayanak kullanılabilir, yoksa kaldırılmalı mı?
+4. Bireysel ve ücretsiz kullanılan açık servisle (OpenFreeMap; Google Fonts artık kullanılmıyor, Poppins siteden sunulur) sözleşme imzalamak mümkün değilken bu akış için hangi dayanak kullanılabilir, yoksa kaldırılmalı mı?
 5. Uygulamanın her kullanımda yaptığı aktarımlar için m. 9/6'daki "sözleşmenin ifası için zorunlu" hali "arızi" şartını karşılar mı?
 6. Netgsm ile yurt içinde ayrıca veri işleyen sözleşmesi (m. 12) yapılması gerekir mi, Netgsm'in standart abonelik sözleşmesi yeterli mi?
 
