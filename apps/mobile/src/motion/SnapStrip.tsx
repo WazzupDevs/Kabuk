@@ -14,7 +14,9 @@ import Reanimated, {
 import { carouselWindow } from '@/lib/carouselWindow';
 import { type SnapEvent, snapStart, snapStep } from '@/lib/snapPick';
 import { useLatestCallback } from '@/lib/useLatestCallback';
+import { T } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
+import { CAPSULE_EDIT } from '@/theme/capsuleEdit';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { Tap } from './Tap';
@@ -27,6 +29,11 @@ const ON = KIT.size.stripOn;
 const OFF = KIT.size.stripOff;
 // The strip's height: the centred option at its full size.
 export const SNAP_STRIP_HEIGHT = Math.ceil(BOX * ON);
+// The options' names under them (KapsulSusle `.gi p`): the height they add to the strip.
+export function snapStripNameHeight(fontScale: number): number {
+  const N = CAPSULE_EDIT.strip;
+  return N.nameGap + Math.ceil(N.nameLine * Math.min(fontScale, N.nameScale));
+}
 // A lifted finger rests where it is when the strip is this close to an option and still.
 const ALIGNED = 0.5;
 
@@ -66,7 +73,8 @@ export function SnapStrip({
   ringColor?: string;
   testID?: string;
 }) {
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
+  const nameHeight = snapStripNameHeight(fontScale);
   const pad = (width - STEP) / 2;
   const ref = useAnimatedRef<Reanimated.ScrollView>();
   const start = Math.max(chosen, 0);
@@ -140,7 +148,7 @@ export function SnapStrip({
       onScroll={onScroll}
       scrollEventThrottle={16}
       fadingEdgeLength={{ start: KIT.size.stripFade, end: KIT.size.stripFade }}
-      style={{ flexGrow: 0, width, height: SNAP_STRIP_HEIGHT }}
+      style={{ flexGrow: 0, width, height: SNAP_STRIP_HEIGHT + nameHeight }}
       contentContainerStyle={{ paddingHorizontal: pad, alignItems: 'center' }}
     >
       <View style={{ width: Math.max(0, win.from) * STEP }} />
@@ -155,6 +163,7 @@ export function SnapStrip({
             x={x}
             reduce={reduce}
             ground={ground}
+            nameHeight={nameHeight}
             ringColor={ringColor}
             onPress={tap}
           >
@@ -175,6 +184,7 @@ const Item = memo(function Item({
   reduce,
   ground,
   ringColor,
+  nameHeight,
   onPress,
   children,
 }: {
@@ -185,6 +195,7 @@ const Item = memo(function Item({
   reduce: boolean;
   ground: string;
   ringColor?: string;
+  nameHeight: number;
   onPress: (index: number) => void;
   children: ReactNode;
 }) {
@@ -208,42 +219,63 @@ const Item = memo(function Item({
       onPress={() => onPress(index)}
       style={{
         width: STEP,
-        height: SNAP_STRIP_HEIGHT,
+        height: SNAP_STRIP_HEIGHT + nameHeight,
         alignItems: 'center',
-        justifyContent: 'center',
       }}
     >
-      <Reanimated.View style={[{ width: BOX, height: BOX, padding: RING_OUT }, scale]}>
-        <View
-          style={{
-            width: ITEM,
-            height: ITEM,
-            borderRadius: ITEM / 2,
-            backgroundColor: ground,
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-          }}
-        >
-          {children}
-        </View>
-        <Reanimated.View
-          pointerEvents="none"
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderRadius: BOX / 2,
-              borderWidth: KIT.size.boxRing,
-              borderColor: ringColor ?? colors.accent,
-            },
-            ring,
-          ]}
-        />
-      </Reanimated.View>
+      <View
+        style={{
+          width: STEP,
+          height: SNAP_STRIP_HEIGHT,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Reanimated.View style={[{ width: BOX, height: BOX, padding: RING_OUT }, scale]}>
+          <View
+            style={{
+              width: ITEM,
+              height: ITEM,
+              borderRadius: ITEM / 2,
+              backgroundColor: ground,
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+            }}
+          >
+            {children}
+          </View>
+          <Reanimated.View
+            pointerEvents="none"
+            style={[
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: BOX / 2,
+                borderWidth: KIT.size.boxRing,
+                borderColor: ringColor ?? colors.accent,
+              },
+              ring,
+            ]}
+          />
+        </Reanimated.View>
+      </View>
+      {/* The name under the option, one line that shrinks; the centred one in bold. */}
+      <View
+        style={{
+          width: STEP - 2 * CAPSULE_EDIT.strip.nameSide,
+          height: nameHeight - CAPSULE_EDIT.strip.nameGap,
+          marginTop: CAPSULE_EDIT.strip.nameGap,
+          justifyContent: 'flex-start',
+        }}
+      >
+        <T v="eyebrow" ink strong={on} lines={1} fit center>
+          {label}
+        </T>
+      </View>
     </Tap>
   );
 });

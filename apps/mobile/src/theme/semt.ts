@@ -45,53 +45,102 @@ export const SEMT = {
   },
   // The eyebrow's ink (`.sg-eb`, `.tchip .ci`, `.sg-meta .ci`).
   eyebrow: { light: '#0A7139', dark: '#3DDC84' },
+  // The picture over the top of Geçit, Açık, Oturum kapandı, Dışarıda and Konum (yeni arayüz tuvali
+  // 12, 13, 100, 101, 102: `.hero`, `.hdr`, `.txt`; the canvas's phone is 844 high with a 60 status
+  // bar). Heights are under the status bar; the offsets are from the top bar's foot. Scaled with
+  // the window's height (`refHeight`) so a short phone keeps the foot in view.
+  hero: {
+    refHeight: 844,
+    minScale: 0.6,
+    // The picture's height under the status bar: 400 - 60 (Geçit: 360 - 60; short: 250 - 60).
+    tall: 340,
+    gate: 300,
+    short: 190,
+    // The words' offset from the bar's foot (`.txt` margin-top), and the note's (`.note`).
+    textTop: 318,
+    textTopShort: 168,
+    noteTop: 226,
+    // The bar (`.hdr`, 56) and the scallop along the picture's foot (cells of 20, notches of 8).
+    bar: 56,
+    scallop: { cell: 20, radius: 8 },
+    // The short pictures' paper ground (`.hero` of 101, 102).
+    paper: '#EDE7D7',
+    // The round buttons over the picture (`.round.gl`) and the words on it (`.ey2`).
+    round: { bg: 'rgba(5, 30, 24, 0.55)', edge: 'rgba(255, 255, 255, 0.18)', ink: '#FFFFFF' },
+    onPicture: { ink: '#FFFFFF', soft: 'rgba(255, 255, 255, 0.78)' },
+    // Where Oturum kapandı's picture sits in its frame (`object-position` x; the others 50%).
+    focusClosed: '78%',
+    // The footer's waiting line over the button (`.fnd`).
+    findGap: 8,
+    findBottom: 8,
+  },
   // The question's paper (`.note`): the same paper in both schemes.
   note: {
-    paper: '#FBF6E4',
-    ink: '#1B1A14',
-    label: '#B0124F',
-    radius: 6,
-    padTop: 18,
-    padX: 18,
-    padBottom: 16,
-    rotateDeg: -1.2,
-    shadow: '0px 10px 20px rgba(3, 27, 11, 0.16)',
-    darkEdge: 'rgba(255, 255, 255, 0.06)',
-    pin: { size: 16, top: -8, color: '#E8457A', shadow: '0px 3px 4px rgba(0, 0, 0, 0.25)' },
-    // It lies 56 over the scene's foot, 14 in from its sides.
-    overlap: 56,
-    inset: 14,
-    questionTop: 6,
+    paper: '#FBF5E4',
+    ink: '#16141C',
+    label: '#C2185B',
+    radius: 8,
+    padTop: 22,
+    padX: 20,
+    padBottom: 20,
+    rotateDeg: -1.4,
+    shadow: '0px 12px 26px rgba(0, 0, 0, 0.28)',
+    pin: { size: 18, top: -9, color: '#FF4F8B', shadow: '0px 2px 4px rgba(0, 0, 0, 0.3)' },
+    // 12 in from the page's sides.
+    inset: 12,
+    questionTop: 8,
     maxLines: 3,
   },
-  // The option tickets (`.tk`): two columns 10 apart, 20 under the paper.
+  // The option tickets (`.op`): two columns 10 apart, 24 under the paper; a stub of 52 behind a
+  // dashed line, notches of 8 at the line.
   ticket: {
-    top: 20,
+    top: 24,
     gap: 10,
-    minHeight: 56,
-    radius: 12,
-    stub: 44,
-    notch: 6,
-    textPadX: 12,
+    minHeight: 62,
+    radius: 16,
+    stub: 52,
+    notch: 8,
+    textPadLeft: 18,
+    textPadRight: 12,
     textPadY: 10,
+    dashInset: 10,
     light: {
       ground: '#FFFFFF',
-      edge: 'rgba(3, 27, 11, 0.12)',
-      dash: 'rgba(3, 27, 11, 0.18)',
+      stub: '#E3EFE6',
+      dash: 'rgba(3, 27, 11, 0.2)',
       onGround: '#CDEFD9',
-      onEdge: '#0E8745',
-      onDash: 'rgba(14, 135, 69, 0.45)',
-      onLetter: '#0A7139',
+      onStub: '#0E8745',
+      onDash: 'rgba(255, 255, 255, 0.6)',
+      onInk: '#FFFFFF',
     },
     dark: {
-      ground: '#151A18',
-      edge: 'rgba(255, 255, 255, 0.12)',
-      dash: 'rgba(255, 255, 255, 0.16)',
+      ground: '#121614',
+      stub: '#1C2320',
+      dash: 'rgba(255, 255, 255, 0.2)',
       onGround: 'rgba(61, 220, 132, 0.14)',
-      onEdge: '#3DDC84',
-      onDash: 'rgba(61, 220, 132, 0.45)',
-      onLetter: '#3DDC84',
+      onStub: '#3DDC84',
+      onDash: 'rgba(255, 255, 255, 0.6)',
+      onInk: '#031B0B',
     },
+  },
+  // Geçit açıldı's ticket (`.tk`): 88 high, 18 round, a stub of 84, notches of 9.
+  entryTicket: {
+    top: 24,
+    minHeight: 88,
+    radius: 18,
+    stub: 84,
+    notch: 9,
+    stubGap: 4,
+    icon: 26,
+    padTop: 14,
+    padRight: 16,
+    padBottom: 14,
+    padLeft: 20,
+    gap: 2,
+    dashInset: 12,
+    dash: 'rgba(255, 255, 255, 0.7)',
+    light: { ground: '#FFFFFF', stub: '#0E8745', ink: '#FFFFFF' },
+    dark: { ground: '#121614', stub: '#3DDC84', ink: '#031B0B' },
   },
   // The waiting ring (`.spin`).
   spin: { size: 20, line: 2 },

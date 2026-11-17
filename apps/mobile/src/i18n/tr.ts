@@ -217,10 +217,8 @@ export const tr = {
   // seven steps, the consents first (K-19, K-33).
   signup: {
     welcomeTitle: 'Aynı mekanda, aynı masada.',
-    // The title in two halves: the second comes in when everyone has sat down (v45 §2).
+    // The title in two lines (KayitAcilis `.kh`).
     welcomeHalves: ['Aynı mekanda,', 'aynı masada.'],
-    // Skips the first screen's scene to its end.
-    skip: 'Geç',
     welcomeBody:
       'Girdiğin mekandaki masaları gör, birine katıl ya da kendi masanı kur. Oyunu herkes kendi telefonundan oynar.',
     // K-26: the first screen's button opens "Başlamadan önce".
@@ -1137,7 +1135,7 @@ export const tr = {
       next: 'Devam',
       // The dev project only (state.pickByHand).
       byHand: 'Test: semti elle seç',
-      sceneLabel: 'Anten kanki açık bir haritanın yanında, iğne semtin üstünde',
+      sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     // Hand-picked districts on the dev project; their names as the content file writes them.
     names: { beylikduzu: 'Beylikdüzü', esenyurt: 'Esenyurt', avcilar: 'Avcılar' },
@@ -1147,18 +1145,27 @@ export const tr = {
       options: 'Seçenekler',
       letters: ['A', 'B', 'C', 'D'],
       send: 'Geçide söyle',
+      // Over the button (yeni arayüz tuvali GecitSoru `.hint`).
+      hint: 'Tek hakkın var, gönderince değiştiremezsin.',
       sendError: 'Bağlantı yok, tekrar dene',
       loadError: 'Soru yüklenemedi.',
       retry: 'Tekrar dene',
       loading: 'Soru yükleniyor',
-      sceneLabel: 'Tuğla duvarda kemerli kapı, üstünde GEÇİT tabelası, yanında şapkalı bekçi kanki',
+      sceneLabel:
+        'Gece, tuğla duvarda kilitli kemerli kapı, üstünde GEÇİT tabelası, iki yanında kankiler',
     },
     open: {
       title: 'Geçit açıldı!',
-      body: (name: string) =>
-        `Doğru bildin. ${name} sohbeti seni bekliyor; iki saatin girdiğin an başlar.`,
+      body: (name: string) => `Doğru bildin. ${name} sohbeti seni bekliyor.`,
+      // The ticket under it (yeni arayüz tuvali GecitAcik `.tk`).
+      ticket: {
+        eyebrow: 'Sohbet bileti',
+        title: (name: string) => `${name} sohbeti`,
+        note: 'Süre, içeri girdiğin an başlar.',
+        hours: '2 sa',
+      },
       enter: 'İçeri gir',
-      sceneLabel: 'Kapı kanadı açık, içeriden sarı ışık, el sallayan kankiler',
+      sceneLabel: 'Gece, tuğla duvarda açık kemerli kapı, içeriden sarı ışık, kapıda üç kanki',
     },
     closed: {
       title: 'Geçit bugün kapalı',
@@ -1170,13 +1177,13 @@ export const tr = {
     outside: {
       title: 'Geçit henüz senin semtinde yok',
       body: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",
-      sceneLabel: 'Valizli kanki bir yol tabelasının dibinde, oklar Beylikdüzü, Esenyurt, Avcılar',
+      sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     ended: {
       title: 'Oturumun kapandı',
       body: 'Bugün tekrar girersen soru sorulmaz.',
       again: 'Yeniden gir',
-      sceneLabel: 'Kapalı Geçit kapısı ve bekçi kanki',
+      sceneLabel: 'Gece, açık Geçit kapısının önünde iki kanki, yanında bekçi kanki',
     },
     backToExplore: "Keşfet'e dön",
     close: 'Kapat',

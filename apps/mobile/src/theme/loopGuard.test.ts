@@ -24,10 +24,6 @@ const FRAME_LOOPS: Record<string, string> = {
   'src/features/design/DrawLabPanel.tsx': 'draw lab only',
   // Kapsül ölçümü's frame gaps: the callback is active only during its 30 s, in test builds.
   'src/features/design/capsuleMeasurePreview.tsx': 'capsule measure only',
-  // The first screen's seven riso buddies (Aura v65 §13.1: Reanimated on the UI thread, one 6 s
-  // clock); only while the screen is on top and the app in front (useLoopActive), still with
-  // reduce motion.
-  'src/aura/RisoKanki.tsx': 'first screen only, §13.1',
   // The capsule's Skia drawing (skia-build-plani.md → P6): a Skia canvas takes only a shared value,
   // and its clock moves the canvas's own drawing, no view's props. Behind CAPSULE_SKIA (Süsle) and
   // the lab's switch; held only while the drawing moves (FxSvg → useLoopActive, reduce motion).

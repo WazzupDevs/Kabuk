@@ -1,23 +1,11 @@
 import { Image } from 'expo-image';
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode } from 'react';
 import { type ImageSourcePropType, StyleSheet, View } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  type SharedValue,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
-import { useLoopActive } from '@/components/Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { AURA } from '@/theme/aura';
 import {
   KANKI_BEATS,
-  KANKI_FRAME_WIDTH,
-  KANKI_LOOP_S,
   KANKI_ORIGIN,
   KANKI_SHADOW,
   kankiFrame,
@@ -52,34 +40,6 @@ const CLOSED: Partial<Record<KankiId, ImageSourcePropType>> = {
   '6f419d': require('../../assets/riso/buddies/riso_6f419d_c.webp'),
   f280a5: require('../../assets/riso/buddies/riso_f280a5_c.webp'),
 };
-// The sign-up scene (riso-kayit, 800x920).
-const SIGNUP_GROUND = require('../../assets/riso/scene-signup.webp');
-// Aura v75 KayitKoyu: the dark scheme's own scene (riso-kayit-koyu; 800x920, the @3x 978x1125).
-const SIGNUP_GROUND_DARK = require('../../assets/riso/scene-signup-dark.webp');
-
-// The loop's clock in seconds (0 → 6, again and again) while the screen is on top and the app in
-// front; still at 0 with reduce motion (§13.1: everyone stands, eyes open).
-export function useKankiClock(): SharedValue<number> {
-  const reduce = useReduceMotion();
-  const active = useLoopActive();
-  const t = useSharedValue(0);
-  useEffect(() => {
-    if (reduce || !active) {
-      cancelAnimation(t);
-      if (reduce) t.set(0);
-      return undefined;
-    }
-    t.set(
-      withRepeat(
-        withTiming(KANKI_LOOP_S, { duration: KANKI_LOOP_S * 1000, easing: Easing.linear }),
-        -1,
-        false,
-      ),
-    );
-    return () => cancelAnimation(t);
-  }, [reduce, active, t]);
-  return t;
-}
 
 // Where a buddy stands, scaled from the board's 350 wide frame to the scene's width.
 function placeStyle(p: KankiPlace, k: number) {
@@ -177,47 +137,6 @@ export function RisoKanki({
         ) : null}
         {children}
       </Animated.View>
-    </View>
-  );
-}
-
-// U39: the scene's 28 corners (ekran.css `.scene`, --r-xl).
-const SIGNUP_SCENE_RADIUS = AURA.card.radius;
-
-// The sign-up scene's box (`.scene` with riso-kayit): the picture covers it from the bottom, no floor
-// glow, the light inner edge; the buddies placed in it at `width / 350`. It fills its parent.
-export function SignupScene({
-  width,
-  children,
-}: {
-  width: number;
-  children?: (scale: number) => ReactNode;
-}) {
-  const { scheme } = useTheme();
-  const k = width / KANKI_FRAME_WIDTH;
-  return (
-    <View
-      pointerEvents="box-none"
-      style={[StyleSheet.absoluteFill, { borderRadius: SIGNUP_SCENE_RADIUS, overflow: 'hidden' }]}
-    >
-      <Image
-        source={scheme === 'dark' ? SIGNUP_GROUND_DARK : SIGNUP_GROUND}
-        style={StyleSheet.absoluteFill}
-        contentFit="cover"
-        contentPosition="bottom"
-      />
-      {width > 0 && children ? children(k) : null}
-      <View
-        pointerEvents="none"
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            borderRadius: SIGNUP_SCENE_RADIUS,
-            borderWidth: AURA.card.edgeWidth,
-            borderColor: AURA.scene[scheme].edge,
-          },
-        ]}
-      />
     </View>
   );
 }

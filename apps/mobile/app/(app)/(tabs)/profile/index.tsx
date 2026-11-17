@@ -104,17 +104,17 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   const atX = (x: number) => width / 2 + (x - P.canvasWidth / 2) * sx;
   const barFoot = insets.top + TOP_BAR_ROW;
   const barMid = insets.top + SPACING[2] + KIT.size.topBtn / 2;
-  const coverHeight = P.cover + dy;
+  const coverHeight = OWN.cover + dy;
   const faceFlight: Flight = {
     arrive: OWN.arrive,
     speed: OWN.rise,
-    from: { x: atX(P.faceAt.x), y: P.faceAt.y + dy },
+    from: { x: atX(OWN.photoAt.x), y: OWN.photoAt.y + dy },
     to: { x: atX(OWN.faceTo.x), y: barMid },
   };
   const nameFlight: Flight = {
     arrive: OWN.arrive,
     speed: OWN.rise,
-    from: { x: atX(P.nameAt.x), y: P.nameAt.y + dy },
+    from: { x: atX(OWN.nameAt.x), y: OWN.nameAt.y + dy },
     to: { x: atX(OWN.nameTo.x), y: barMid },
   };
   // In the bar the name keeps clear of the small photo and of the settings button.
@@ -125,7 +125,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   // board's line (31 at 1.1), which sits inside T's taller one.
   const line = KIT_TYPE.profileName.lineHeight ?? 0;
   const nameHeight = line * Math.min(fontScale, MAX_TEXT_SCALE);
-  const wordsTop = P.nameAt.y + dy + (nameHeight - (line - B.nameLine)) / 2 + B.bioTop;
+  const wordsTop = OWN.nameAt.y + dy + (nameHeight - (line - B.nameLine)) / 2 + B.bioTop;
   // The panel reaches the bar's foot at 316 (lower when the words need it).
   const panelTop = Math.max(barFoot + OWN.arrive, wordsFoot + SPACING[4]);
   const arrival = panelTop - barFoot;
@@ -164,8 +164,8 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
               <View
                 style={{
                   position: 'absolute',
-                  top: faceFlight.from.y - P.face / 2,
-                  left: faceFlight.from.x - P.face / 2,
+                  top: faceFlight.from.y - OWN.photo / 2,
+                  left: faceFlight.from.x - OWN.photo / 2,
                 }}
               >
                 <Tap
@@ -174,7 +174,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                   disabled={!photoUrl}
                   onPress={() => setPreview(true)}
                 >
-                  <View style={{ width: P.face, height: P.face }} />
+                  <View style={{ width: OWN.photo, height: OWN.photo }} />
                 </Tap>
               </View>
               <View
@@ -334,13 +334,13 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
           <PhotoPreview url={photoUrl} visible={preview} onClose={() => setPreview(false)} />
           <FlyingFace
             flight={faceFlight}
-            side={P.face}
+            side={OWN.photo}
             sideTo={OWN.face}
             ring={P.ring}
             ringTo={OWN.ring}
             ringColor={P.ringColor}
           >
-            <ProfileFace side={P.face - 2 * P.ring} name={name} photoUrl={photoUrl} />
+            <ProfileFace side={OWN.photo - 2 * P.ring} name={name} photoUrl={photoUrl} />
           </FlyingFace>
           <FlyingName
             flight={nameFlight}
