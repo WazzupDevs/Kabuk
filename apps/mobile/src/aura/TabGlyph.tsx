@@ -46,7 +46,18 @@ function Mark({ color, uid }: { color: string; uid: string }) {
   );
 }
 
-export function TabIcon({ tab, color, size }: { tab: TabKey; color: string; size: number }) {
+// `second`: the chosen tab's body in its own colour, whole (`.ti.on .ci`: --ci-b, --ci-bo 1).
+export function TabIcon({
+  tab,
+  color,
+  second,
+  size,
+}: {
+  tab: TabKey;
+  color: string;
+  second?: string;
+  size: number;
+}) {
   const uid = `m${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   if (tab === 'venue') {
     return (
@@ -55,5 +66,13 @@ export function TabIcon({ tab, color, size }: { tab: TabKey; color: string; size
       </Svg>
     );
   }
-  return <CapIcon name={CAP[tab]} color={color} size={size} />;
+  return (
+    <CapIcon
+      name={CAP[tab]}
+      color={color}
+      second={second}
+      soft={second ? 1 : undefined}
+      size={size}
+    />
+  );
 }

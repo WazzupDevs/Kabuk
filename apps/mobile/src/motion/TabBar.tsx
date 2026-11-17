@@ -62,7 +62,7 @@ type Props = {
 const s = AURA.tabBar;
 const [OPEN_WIDTH, SHRUNK_WIDTH] = MOTION.tabMin.widths;
 
-// The floating tab bar (docs/design/iskelet.md → 3.3): a glass capsule with labelled tabs (icon 22,
+// The floating tab bar (docs/design/iskelet.md → 3.3): a glass capsule with labelled tabs (icon 20,
 // label 10.5), the chosen one in a green-toned pill, its icon and label green. Scrolled down fast
 // past MOTION.tabMin's threshold it shrinks to the chosen tab alone (350 → 76, the others fade) on
 // springs.tabLead; scrolled up, near the top, on a tab change or pressed, it opens again. The glass
@@ -172,6 +172,7 @@ export function TabBar({ items, selected, onPress, opaque = false }: Props) {
                   height: s.pillHeight,
                   borderRadius: s.pillHeight / 2,
                   backgroundColor: a.pill,
+                  boxShadow: a.pillShadow || undefined,
                 },
                 pillStyle,
               ]}
@@ -244,7 +245,12 @@ function Tab({
           }}
         >
           <View>
-            <TabIcon tab={item.key} color={ink} size={s.iconLabelled} />
+            <TabIcon
+              tab={item.key}
+              color={active ? a.iconOn : ink}
+              second={active ? a.iconOnBody : undefined}
+              size={s.iconLabelled}
+            />
             {item.unread ? (
               <View
                 style={{

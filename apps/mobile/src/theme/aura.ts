@@ -25,15 +25,20 @@ export const AURA = {
       solid: '#EFF7F1',
       edge: 'rgba(255, 255, 255, 0.90)',
       inset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.95)',
-      shadow: '0px 10px 30px rgba(3, 27, 11, 0.08)',
+      shadow: '0px 6px 18px rgba(3, 27, 11, 0.08)',
       disc: '#FFFFFF',
       discShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
       off: '#4A6550',
       // The chosen icon's strong part (skall.css `.tab.on .ci`: --accent); its body is --buzz.
       on: '#0B783D',
-      // iskelet.md → 3.3: the chosen tab in a green-toned pill, its icon and label green.
-      pill: 'rgba(14, 135, 69, 0.12)',
-      onInk: '#0E8745',
+      // Yeni arayüz tuvali (Kesfet `.ti.on`, 16 Kasım; in place of iskelet.md → 3.3's green-toned
+      // pill): the chosen tab in an ink pill with its shadow, the label white, the icon's strong
+      // part green and its body pink.
+      pill: '#031B0B',
+      pillShadow: '0px 4px 12px rgba(3, 27, 11, 0.18)',
+      onInk: '#FFFFFF',
+      iconOn: '#3DDC84',
+      iconOnBody: '#FF6FA0',
     },
     // iskelet.md → 3.1 and 3.3: the top bar's band (the ground at 84 %, its foot fading out) and the
     // tab bar's bottom edge (from clear to the ground at 92 %).
@@ -55,18 +60,24 @@ export const AURA = {
     },
     // Not drawn on the boards: the clear glass of the dark buttons (theme/buttonGlass.ts).
     tab: {
-      fill: 'rgba(18, 22, 20, 0.62)',
+      // koyu.css: the bar's glass is the flat #121614 with a 7 % white ring.
+      fill: '#121614',
       solid: '#121614',
-      edge: 'rgba(255, 255, 255, 0.10)',
+      edge: 'rgba(255, 255, 255, 0.07)',
       inset: '',
       shadow: '',
       disc: 'rgba(255, 255, 255, 0.94)',
       discShadow: '',
-      off: '#A3AEA8',
+      // `.dark .ti`: the ink at 55 %.
+      off: 'rgba(238, 243, 240, 0.55)',
       // `.dark .tab.on .ci`: #0B783D on the near-white disc.
       on: '#0B783D',
-      pill: 'rgba(31, 220, 117, 0.16)',
-      onInk: '#1FDC75',
+      // `.dark .ti.on`: a near-white pill, no shadow, the label near-black.
+      pill: 'rgba(255, 255, 255, 0.94)',
+      pillShadow: '',
+      onInk: '#0B0E0D',
+      iconOn: '#0B783D',
+      iconOnBody: '#FF4F8B',
     },
     // The dark ground (#000000) in place of the light one.
     bar: {
@@ -82,9 +93,10 @@ export const AURA = {
   // 58): a glass capsule 20 in from each side; the selected one sits on a pill that slides to it.
   // 12 above the bottom safe area.
   tabBar: {
-    height: 66,
+    // Yeni arayüz tuvali (Kesfet `.tb`, `.ti`): the bar 60 high, 5 inside, a tab 50 high.
+    height: 60,
     inset: 20,
-    padding: 4,
+    padding: 5,
     tab: 48,
     icon: 24,
     iconOn: 24,
@@ -97,9 +109,9 @@ export const AURA = {
     dotRight: 11,
     // iskelet.md → 3.3: the labelled bar's icon 22 and its pill (the tab's height, round); the
     // bottom edge band 160 under it.
-    iconLabelled: 22,
-    labelGap: 2,
-    pillHeight: 58,
+    iconLabelled: 20,
+    labelGap: 3,
+    pillHeight: 50,
     edgeHeight: 160,
   },
   // iskelet.md → 3.1: the top bar. Its band 118 high (status bar included), the foot `bandFade`

@@ -230,7 +230,7 @@ export type TypeVariant =
   | 'buttonSmall' // a small button in a header ("Mekandan ayrıl", "Odayı bitir")
   | 'tag'
   | 'caption' // small counters
-  | 'tabLabel' // the tab bar's labels (iskelet.md → 3.3: 10.5)
+  | 'tabLabel' // the tab bar's labels (yeni arayüz tuvali `.ti`: 10)
   | 'overline' // "Söylenmeyecekler"
   | 'signalMark' // the emoji of the "Tanışalım mı?" signal
   | 'gameButton' // the 56 high game button (v43: .tbtn)
@@ -356,7 +356,7 @@ export function baseTypography(overrides: Partial<Typography> = {}): Typography 
     buttonSmall: { font: 'bold', size: 13, lineHeight: 18 },
     tag: { font: 'display', size: 11, lineHeight: 14 },
     caption: { font: 'display', size: 11, lineHeight: 14 },
-    tabLabel: { font: 'display', size: 10.5, lineHeight: 13 },
+    tabLabel: { font: 'display', size: 10, lineHeight: 13 },
     overline: { font: 'bold', size: 12, lineHeight: 16, letterSpacing: 1, uppercase: true },
     signalMark: { font: 'regular', size: 104, lineHeight: 126 },
     gameButton: { font: 'display', size: 16, lineHeight: 20 },
