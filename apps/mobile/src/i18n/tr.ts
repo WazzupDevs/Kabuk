@@ -794,6 +794,8 @@ export const tr = {
     nickWait: (days: number) => `${days} gün sonra yenileyebilirsin.`,
     // A friend's profile (skall tuvali, ProfilBaskasi): the status beside "Mesaj".
     friendsStatus: 'Arkadaşsınız',
+    mutualTitle: (count: number) => `Ortak arkadaşlar · ${count}`,
+    mutualOpen: (name: string) => `${name}, profilini aç`,
     noName: 'Henüz bir adın yok',
     nameWithAge: (name: string, age: number) => `${name}, ${age}`,
     // After the name on a profile's head, in the quiet colour (v45: .page-age).

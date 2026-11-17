@@ -20,7 +20,7 @@ import { ScreenStatusBar } from '@/components/StatusScrim';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { openDm } from '@/features/friends/openDm';
-import { refreshFriends, useFriends } from '@/features/friends/queries';
+import { refreshFriends, useFriends, useMutualFriends } from '@/features/friends/queries';
 import { ProfileTopBar } from '@/features/profile/ProfileCard';
 import { ProfileCoverArt } from '@/features/profile/ProfileCover';
 import { ProfileFace, RingedFace } from '@/features/profile/ProfileFace';
@@ -143,6 +143,8 @@ function CoverPage({
   const [ending, setEnding] = useState<'remove' | 'block' | null>(null);
   // The status bar's icons: light over the cover, the scheme's once the band is in (5.2).
   const onBar = useScrollPast((O.band[0] + O.band[1]) / 2);
+  // Only on a friend's profile (rule 4); nothing while it loads, fails or is empty.
+  const mutual = useMutualFriends(publicId, !!friend).data;
 
   const end = useMutation({
     meta: FEEL_ERROR,
@@ -278,6 +280,48 @@ function CoverPage({
               openDm({ threadId, publicId: friend.publicId, name: friend.displayName })
             }
           />
+        ) : null}
+        {friend && mutual && mutual.count > 0 ? (
+          <View style={{ alignSelf: 'stretch', marginTop: B.badgesTop }}>
+            <View style={{ marginLeft: B.eyebrow.in, marginBottom: B.eyebrow.bottom }}>
+              <T v="sheetEyebrow" color={look.eyebrow} accessibilityRole="header">
+                {upperTr(tr.profile.mutualTitle(mutual.count))}
+              </T>
+            </View>
+            <Glass
+              face={look.card}
+              radius={B.badgeCard.radius}
+              style={{ padding: B.badgeCard.pad, gap: B.mutual.rowGap }}
+            >
+              {mutual.friends.map((m) => {
+                const mutualName = m.displayName ?? tr.profile.noName;
+                return (
+                  <Tap
+                    key={m.publicId}
+                    testID={`profile-mutual-${m.publicId}`}
+                    accessibilityLabel={tr.profile.mutualOpen(mutualName)}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/people/[publicId]',
+                        params: { publicId: m.publicId },
+                      })
+                    }
+                  >
+                    <View
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: B.mutual.faceGap }}
+                    >
+                      <Av size="list" name={mutualName} photoUrl={m.photoUrl} />
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <T v="body" ink>
+                          {mutualName}
+                        </T>
+                      </View>
+                    </View>
+                  </Tap>
+                );
+              })}
+            </Glass>
+          </View>
         ) : null}
         {profile.badges.length > 0 ? (
           <View style={{ alignSelf: 'stretch', marginTop: B.badgesTop }}>

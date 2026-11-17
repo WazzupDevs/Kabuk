@@ -58,3 +58,6 @@ export const FRIEND_REQUEST_SOURCES = ['history', 'room_end', 'venue_chat'] as c
 export type FriendRequestSource = (typeof FRIEND_REQUEST_SOURCES)[number];
 export const FRIENDSHIP_SOURCES = ['room_end_mutual', 'request'] as const;
 export type FriendshipSource = (typeof FRIENDSHIP_SOURCES)[number];
+
+// Ortak arkadaşlar on a friend's profile: the count is whole, the list stops here.
+export const MUTUAL_FRIENDS_SHOWN = 50;

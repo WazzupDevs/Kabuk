@@ -13,6 +13,7 @@ import type {
   Friend,
   FriendsIncomingResponse,
   FriendsListResponse,
+  FriendsMutualResponse,
   FriendsAddResponse,
   FriendsOkResponse,
   FriendsRequest,
@@ -22,7 +23,7 @@ import type {
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { REPORT_REASONS } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
-import { matchPushRecipient } from '../_shared/pure/friends.ts';
+import { matchPushRecipient, MUTUAL_FRIENDS_SHOWN } from '../_shared/pure/friends.ts';
 import { inviteState, isUnseen } from '../_shared/pure/notifications.ts';
 import { friendMatchPush, friendRequestPush, PUSH_PREFERENCE } from '../_shared/pure/push.ts';
 import { BROADCAST } from '../_shared/pure/rooms.ts';
@@ -44,6 +45,7 @@ const Body: z.ZodType<FriendsRequest> = z.union([
     report: z.enum(REPORT_REASONS).optional(),
   }),
   z.object({ action: z.literal('notifications') }),
+  z.strictObject({ action: z.literal('mutual'), publicId: z.uuid() }),
 ]);
 
 const db = serviceClient();
@@ -183,6 +185,28 @@ async function list(userId: string): Promise<FriendsListResponse> {
   return { friends };
 }
 
+// Rule 4: only on a friend's profile. Not a friend, blocked or unknown: the same empty answer.
+async function mutual(userId: string, publicId: string): Promise<FriendsMutualResponse> {
+  const { data, error } = await db.rpc('friends_mutual', {
+    viewer: userId,
+    target_public_id: publicId,
+  });
+  if (error) throw dbError('friends_mutual', error);
+  const shown = data.slice(0, MUTUAL_FRIENDS_SHOWN);
+  const urls = await signPhotos(
+    db,
+    shown.map((f) => f.photo_path).filter((p): p is string => !!p),
+  );
+  return {
+    count: data.length,
+    friends: shown.map((f) => ({
+      publicId: f.public_id,
+      displayName: f.display_name,
+      photoUrl: f.photo_path ? (urls.get(f.photo_path) ?? null) : null,
+    })),
+  };
+}
+
 Deno.serve(
   handle(
     async (
@@ -190,6 +214,7 @@ Deno.serve(
       raw,
     ): Promise<
       | FriendsListResponse
+      | FriendsMutualResponse
       | FriendsIncomingResponse
       | FriendsOkResponse
       | FriendsAddResponse
@@ -204,6 +229,9 @@ Deno.serve(
 
         case 'notifications':
           return await notifications(user.id);
+
+        case 'mutual':
+          return await mutual(user.id, body.publicId);
 
         case 'incoming':
           return await incoming(user.id);

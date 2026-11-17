@@ -23,6 +23,9 @@ export type FriendsRequest =
   | { action: 'add-from-room'; historyId: string }
   | { action: 'withdraw-add'; historyId: string }
   | { action: 'remove'; publicId: string; report?: ReportReason }
+  // Ortak arkadaşlar, on a friend's profile only (rule 4): the friends the caller and that friend
+  // share. For anyone who is not the caller's friend the answer is empty, like a friend with none.
+  | { action: 'mutual'; publicId: string }
   // The bell's list (docs/SPEC_V4.md §4.G, step 4.7), newest first.
   | { action: 'notifications' };
 
@@ -38,6 +41,15 @@ export type Friend = {
 };
 
 export type FriendsListResponse = { friends: Friend[] };
+
+// Each one is the caller's own friend. `count` is all of them; `friends` the first
+// MUTUAL_FRIENDS_SHOWN by name.
+export type MutualFriend = {
+  publicId: string;
+  displayName: string | null;
+  photoUrl: string | null;
+};
+export type FriendsMutualResponse = { count: number; friends: MutualFriend[] };
 
 export type VenueChatIncoming = {
   requestId: string;
