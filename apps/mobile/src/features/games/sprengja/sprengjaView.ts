@@ -32,6 +32,14 @@ export function ringSeats(
   }));
 }
 
+// The throwing order from `from` on, clockwise: `from` first, then each seat after it, those who
+// left at their places (the board's "Atış sırası"); a name not in the order gives the order as is.
+export function throwOrder(order: readonly string[], from: string | null): string[] {
+  const at = from === null ? -1 : order.indexOf(from);
+  if (at <= 0) return [...order];
+  return [...order.slice(at), ...order.slice(0, at)];
+}
+
 export type Point = { x: number; y: number };
 
 export function onCircle(angle: number, radius: number, centre: number): Point {
