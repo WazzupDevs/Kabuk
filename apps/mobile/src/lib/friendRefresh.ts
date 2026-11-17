@@ -6,18 +6,19 @@
 // that ends closes it through the friend list it reads. Only what this phone reads again changes;
 // nothing the server sends or keeps (rule 5's silence) does. Pure, so friendRefresh.test.ts pins it.
 export type FriendQuery =
-  'list' | 'incoming' | 'incomingChat' | 'history' | 'inbox' | 'notifications';
+  'list' | 'incoming' | 'incomingChat' | 'sent' | 'history' | 'inbox' | 'notifications';
 
 // `request`: a request came in (the inbox broadcast). `pressed`: this phone pressed "Arkadaş ekle",
 // took it back or sent "İstek gönder" from a play history record (its record changes; a match makes
 // a friend). `friendship`: a friendship began or ended (the inbox broadcast, a request answered, a
-// friend removed or blocked, a conversation left).
+// friend removed or blocked, a conversation left). The caller's own "Gönderdiğin" list changes with
+// its presses and with a friendship (an accepted request leaves it).
 export type FriendEvent = 'request' | 'pressed' | 'friendship';
 
 const READS: Record<FriendEvent, readonly FriendQuery[]> = {
   request: ['incoming', 'incomingChat', 'notifications'],
-  pressed: ['history', 'list', 'inbox'],
-  friendship: ['list', 'inbox', 'history', 'incoming', 'incomingChat', 'notifications'],
+  pressed: ['history', 'list', 'inbox', 'sent'],
+  friendship: ['list', 'inbox', 'history', 'incoming', 'incomingChat', 'sent', 'notifications'],
 };
 
 export function friendReads(event: FriendEvent): readonly FriendQuery[] {

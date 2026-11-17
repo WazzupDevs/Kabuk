@@ -58,6 +58,7 @@ import type {
   FriendsIncomingResponse,
   FriendsListResponse,
   FriendsMutualResponse,
+  FriendsSentResponse,
   FriendsOkResponse,
   NotificationsResponse,
 } from '@shared/api/friends.ts';
@@ -414,6 +415,9 @@ export const friendsApi = {
     invoke<FriendsMutualResponse>('friends', { action: 'mutual', publicId }),
   // The bell's list (docs/SPEC_V4.md §4.G): requests, accepted requests, matches and invites.
   notifications: () => invoke<NotificationsResponse>('friends', { action: 'notifications' }),
+  sent: () => invoke<FriendsSentResponse>('friends', { action: 'sent' }),
+  withdraw: (sentId: string) =>
+    invoke<FriendsOkResponse>('friends', { action: 'withdraw', sentId }),
   request: (historyId: string) =>
     invoke<FriendsOkResponse>('friends', { action: 'request', historyId }),
   requestFromVenueChat: (venueChatMessageId: string) =>

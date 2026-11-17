@@ -607,6 +607,59 @@ export type Database = {
           },
         ];
       };
+      friend_presses: {
+        Row: {
+          from_user_id: string;
+          hidden_at: string | null;
+          history_id: string | null;
+          id: string;
+          requested_at: string | null;
+          sent_at: string;
+          source: string;
+          to_name: string | null;
+          to_profiled: boolean;
+          to_user_id: string | null;
+          venue_name: string | null;
+          withdrawn_at: string | null;
+        };
+        Insert: {
+          from_user_id: string;
+          hidden_at?: string | null;
+          history_id?: string | null;
+          id?: string;
+          requested_at?: string | null;
+          sent_at?: string;
+          source: string;
+          to_name?: string | null;
+          to_profiled?: boolean;
+          to_user_id?: string | null;
+          venue_name?: string | null;
+          withdrawn_at?: string | null;
+        };
+        Update: {
+          from_user_id?: string;
+          hidden_at?: string | null;
+          history_id?: string | null;
+          id?: string;
+          requested_at?: string | null;
+          sent_at?: string;
+          source?: string;
+          to_name?: string | null;
+          to_profiled?: boolean;
+          to_user_id?: string | null;
+          venue_name?: string | null;
+          withdrawn_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'friend_presses_history_id_fkey';
+            columns: ['history_id'];
+            isOneToOne: false;
+            referencedRelation: 'play_history';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       friend_requests: {
         Row: {
           created_at: string;
@@ -2253,30 +2306,6 @@ export type Database = {
           },
         ];
       };
-      venue_chat_friend_presses: {
-        Row: {
-          created_at: string;
-          from_user_id: string;
-          to_name: string | null;
-          to_user_id: string;
-          venue_name: string | null;
-        };
-        Insert: {
-          created_at?: string;
-          from_user_id: string;
-          to_name?: string | null;
-          to_user_id: string;
-          venue_name?: string | null;
-        };
-        Update: {
-          created_at?: string;
-          from_user_id?: string;
-          to_name?: string | null;
-          to_user_id?: string;
-          venue_name?: string | null;
-        };
-        Relationships: [];
-      };
       venue_chat_messages: {
         Row: {
           body: string;
@@ -3208,6 +3237,18 @@ export type Database = {
           other_user_id: string;
           outcome: string;
         }[];
+      };
+      friends_sent: {
+        Args: { viewer: string };
+        Returns: {
+          id: string;
+          sent_at: string;
+          to_name: string;
+        }[];
+      };
+      friends_withdraw: {
+        Args: { target_press_id: string; target_user_id: string };
+        Returns: string;
       };
       friends_withdraw_add: {
         Args: { target_history_id: string; target_user_id: string };

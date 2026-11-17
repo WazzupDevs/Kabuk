@@ -9,6 +9,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type {
   DmInboxResponse,
   FriendsListResponse,
+  FriendsSentResponse,
   FriendsMutualResponse,
 } from '../functions/_shared/pure/api/friends.ts';
 import type { ProfileUploadUrl } from '../functions/_shared/pure/api/profile.ts';
@@ -481,6 +482,107 @@ describe('friend requests', () => {
     expect(await friends(a, { action: 'request', historyId: historyB })).toEqual(OK);
     expect(await friends(a, { action: 'request', historyId: randomUUID() })).toEqual(OK);
     expect(await sql`select 1 from public.friend_requests`).toHaveLength(0);
+  });
+});
+
+// İstekler → "Gönderdiğin" (docs/SPEC_V4.md §4.J): the sender's presses, never the request rows.
+describe('Gönderdiğin (rule 5)', () => {
+  async function sentList(client: Client) {
+    const res = await friends(client, { action: 'sent' });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    return (res.body as FriendsSentResponse).sent;
+  }
+
+  it('lists every press as waiting and takes one back, the same when sent twice', async () => {
+    const { a, b, roomId, historyA } = await metOnce();
+    expect(await sentList(a)).toEqual([]);
+    await friends(a, { action: 'request', historyId: historyA });
+    const before = await sentList(a);
+    // The name the other sat with, when it was pressed; no photo, no id of the person, no status.
+    expect(before).toEqual([
+      {
+        id: expect.any(String),
+        name: (await seatNames(roomId, a, b)).b,
+        sentAt: expect.any(String),
+      },
+    ]);
+    expect(await sentList(a)).toEqual(before);
+    expect(await sentList(b)).toEqual([]);
+
+    // A decline shows nothing.
+    const [req] = await incoming(b);
+    await friends(b, { action: 'respond', requestId: req?.request_id, accept: false });
+    expect(await sentList(a)).toEqual(before);
+
+    // Someone else's press and an unknown one: the same answer, nothing changes.
+    const sentId = before[0]?.id;
+    expect(await friends(b, { action: 'withdraw', sentId })).toEqual(OK);
+    expect(await friends(a, { action: 'withdraw', sentId: randomUUID() })).toEqual(OK);
+    expect(await sentList(a)).toEqual(before);
+
+    // "Geri çek": the press leaves the list, the history row offers "İstek gönder" again, the
+    // decline stays.
+    expect(await friends(a, { action: 'withdraw', sentId })).toEqual(OK);
+    expect(await friends(a, { action: 'withdraw', sentId })).toEqual(OK);
+    expect(await sentList(a)).toEqual([]);
+    expect((await history(a))[0]?.friend_action_at).toBeNull();
+    expect(await sql`select status from public.friend_requests`).toEqual([{ status: 'declined' }]);
+
+    // Pressed again it waits again, and is still swallowed.
+    expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
+    expect(await sentList(a)).toHaveLength(1);
+    expect(await incoming(b)).toEqual([]);
+  });
+
+  it('takes the waiting request with it, and sends a new one only the next day', async () => {
+    const { a, b, historyA } = await metOnce();
+    await friends(a, { action: 'request', historyId: historyA });
+    expect(await incoming(b)).toHaveLength(1);
+    const [first] = await sentList(a);
+    expect(await friends(a, { action: 'withdraw', sentId: first?.id })).toEqual(OK);
+    expect(await incoming(b)).toEqual([]);
+    expect(await sql`select 1 from public.friend_requests`).toHaveLength(0);
+
+    // The same day: it shows as waiting and nothing goes.
+    expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
+    const [again] = await sentList(a);
+    expect(again?.id).toBe(first?.id);
+    expect(await incoming(b)).toEqual([]);
+
+    // A day later a new press sends one.
+    expect(await friends(a, { action: 'withdraw', sentId: again?.id })).toEqual(OK);
+    await sql`update public.friend_presses set withdrawn_at = withdrawn_at - interval '25 hours'`;
+    expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
+    expect(await incoming(b)).toHaveLength(1);
+    expect(await sentList(a)).toHaveLength(1);
+  });
+
+  it('drops an accepted request of someone profiled; a swallowed one waits for ever', async () => {
+    // Profiled: accepted, it leaves the list.
+    const profiled = await metOnce({ modes: ['profile', 'profile'] });
+    await becomeFriends(profiled.a, profiled.b, profiled.historyA);
+    expect(await sentList(profiled.a)).toEqual([]);
+    for (const phone of PHONES) await deleteUserByPhone(phone);
+
+    // Someone who sat anonymously stays, friend or not (K-75): the row never names a friend.
+    const anon = await metOnce();
+    await becomeFriends(anon.a, anon.b, anon.historyA);
+    expect(await sentList(anon.a)).toHaveLength(1);
+    for (const phone of PHONES) await deleteUserByPhone(phone);
+
+    // Across a block, and with the other account gone: the same waiting row, no request.
+    const { a, b, historyA, historyB } = await metOnce();
+    expect(await safety(b, { action: 'block', historyId: historyB })).toEqual(OK);
+    await friends(a, { action: 'request', historyId: historyA });
+    const waiting = await sentList(a);
+    expect(waiting).toHaveLength(1);
+    expect(await sql`select 1 from public.friend_requests`).toHaveLength(0);
+    await sql`delete from public.blocks`;
+    await deleteUserByPhone(PHONES[1]);
+    expect(await sentList(a)).toEqual(waiting);
+    expect(await friends(a, { action: 'withdraw', sentId: waiting[0]?.id })).toEqual(OK);
+    expect(await sentList(a)).toEqual([]);
+    void b;
   });
 });
 
@@ -1377,6 +1479,40 @@ describe('locks', () => {
       expect(await answered).toEqual([{ outcome: 'friendship_created' }]);
     } finally {
       await Promise.all([pair.end(), answering.end()]);
+    }
+  });
+  // friends_withdraw ("Geri çek"): the pair, then the press and the request (rule 10). A request
+  // road holds the pair while it writes the press; a withdraw holding the press first would close
+  // a cycle.
+  it("takes a press back only after taking the pair's lock", async () => {
+    const { a, b, historyA } = await metOnce();
+    await friends(a, { action: 'request', historyId: historyA });
+    const [aId, bId] = await Promise.all([userIdOf(a), userIdOf(b)]);
+    const [press] = await sql`select id from public.friend_presses where from_user_id = ${aId}`;
+
+    const pair = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const withdrawing = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let withdrawn: Promise<unknown> = Promise.resolve();
+      await pair.begin(async (tx) => {
+        await tx`select private.lock_pair(${aId}, ${bId})`;
+        withdrawn = withdrawing`select public.friends_withdraw(${aId}, ${press?.id}) as gone`
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('friends_withdraw');
+        await tx`set local lock_timeout = '2s'`;
+        const held = await tx`
+          select id from public.friend_presses where id = ${press?.id} for update
+        `;
+        expect(held).toHaveLength(1);
+        const request = await tx`
+          select id from public.friend_requests where from_user_id = ${aId} for update
+        `;
+        expect(request).toHaveLength(1);
+      });
+      expect(await withdrawn).toEqual([{ gone: bId }]);
+    } finally {
+      await Promise.all([pair.end(), withdrawing.end()]);
     }
   });
   // dm_react (docs/SPEC_V3.md §21.3): the thread, then the message's reactions.

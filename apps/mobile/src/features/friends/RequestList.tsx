@@ -15,7 +15,12 @@ import { friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { FLAT } from '@/theme/flatLists';
 
-import { refreshFriends, useIncomingFriendRequests, useVenueChatRequests } from './queries';
+import {
+  refreshFriends,
+  useIncomingFriendRequests,
+  useSentRequests,
+  useVenueChatRequests,
+} from './queries';
 import { MasaSection, useMasaRequestData } from './MasaRequests';
 import { RequestRowView } from './RequestRowView';
 import { useRetryAfterName } from './useRetryAfterName';
@@ -39,13 +44,21 @@ type Answer = { requestId: string; accept: boolean };
 // open friend requests waiting for the caller under "Arkadaşlık · N", newest first, from the venue
 // chat (the sender's name and photo, rule 4) and from play history (the table's name); a flat row
 // each with its decline and "Kabul et". A decline is silent (rule 5). The board's "Masa · N"
-// section over it is MasaRequests.tsx (join requests and table invites); "Gönderdiğin" waits for
-// the server and is not drawn.
+// section over it is MasaRequests.tsx (join requests and table invites). Under them
+// "Gönderdiğin · N": the caller's own requests, every one "Kabul etmesi bekleniyor" whatever became
+// of it (rule 5), with the name shown when it was sent and a letter for a face (no photo comes),
+// and "Geri çek". A list that fails to load leaves the section out: the rest stays.
 export function RequestList({ now }: { now: Date }) {
   const queryClient = useQueryClient();
   const fromTables = useIncomingFriendRequests();
   const fromChat = useVenueChatRequests();
   const masa = useMasaRequestData(now.getTime());
+  const sent = useSentRequests();
+  const withdraw = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (sentId: string) => friendsApi.withdraw(sentId),
+    onSettled: () => refreshFriends(queryClient, 'pressed'),
+  });
   const pending = fromTables.isPending || fromChat.isPending || masa.pending;
   const loading = useLoaderHold(pending);
 
@@ -105,7 +118,8 @@ export function RequestList({ now }: { now: Date }) {
     })),
   ].sort((a, b) => b.at.localeCompare(a.at));
 
-  if (rows.length === 0 && !masa.any) {
+  const mine = sent.data ?? [];
+  if (rows.length === 0 && mine.length === 0 && !masa.any) {
     return (
       // IsteklerBos: the riso and its two lines in the middle, no card.
       <View className="flex-1 justify-center">
@@ -147,6 +161,42 @@ export function RequestList({ now }: { now: Date }) {
       {respond.isError ? (
         <T v="fine" color={KIT.danger}>
           {errorMessage(respond.error)}
+        </T>
+      ) : null}
+      {mine.length > 0 ? (
+        <T
+          v="sectionHead"
+          accessibilityRole="header"
+          style={{ marginTop: R.headTop, marginBottom: R.headBottom }}
+        >
+          {tr.friends.sentHead(mine.length)}
+        </T>
+      ) : null}
+      {mine.map((s) => {
+        const name = s.name ?? tr.profile.noName;
+        return (
+          <RequestRowView
+            key={s.id}
+            testID={`sent-${name}`}
+            label={tr.friends.sentRow(name)}
+            name={name}
+            kind={tr.friends.sentKind}
+            stamp={{ text: tr.messages.stamp(s.sentAt, inboxStamp(s.sentAt, now)) }}
+            face={<Avatar kind="profile" name={name} photoUrl={null} size="xl" />}
+            soft={{
+              text: tr.friends.withdraw,
+              label: tr.friends.withdrawLabel(name),
+              testID: `sent-withdraw-${name}`,
+              disabled: withdraw.isPending,
+              loading: withdraw.isPending && withdraw.variables === s.id,
+              onPress: () => withdraw.mutate(s.id),
+            }}
+          />
+        );
+      })}
+      {withdraw.isError ? (
+        <T v="fine" color={KIT.danger}>
+          {errorMessage(withdraw.error)}
         </T>
       ) : null}
     </View>

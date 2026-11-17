@@ -30,6 +30,7 @@ describe('what a friends event reads again (B3)', () => {
       'incomingChat',
       'list',
       'notifications',
+      'sent',
     ]);
   });
 });

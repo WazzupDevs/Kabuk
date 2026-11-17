@@ -625,6 +625,12 @@ export const tr = {
     messageSend: 'Mesaj gönder',
     // Mesajlar → İstekler's section head (yeni arayüz tuvali, IsteklerDolu): "Arkadaşlık · 3".
     requestsHead: (n: number) => `Arkadaşlık · ${n}`,
+    // "Gönderdiğin · 1": the caller's own requests, every one waiting (rule 5), and "Geri çek".
+    sentHead: (n: number) => `Gönderdiğin · ${n}`,
+    sentKind: 'Kabul etmesi bekleniyor',
+    sentRow: (name: string) => `${name}, kabul etmesi bekleniyor`,
+    withdraw: 'Geri çek',
+    withdrawLabel: (name: string) => `${name} kişisine gönderdiğin isteği geri çek`,
     // On a person's row in Aktiviteler's game sheet once a request went (GecmisMasa).
     requestSent: 'İstek gitti',
     // skall tuvali (AktivitelerGecmisEklendi); approved 27 Ekim.
