@@ -770,6 +770,7 @@ describe('DMs', () => {
     expect(Object.keys(page?.[0] ?? {}).sort()).toEqual([
       'body',
       'created_at',
+      'deleted',
       'edited_at',
       'from_me',
       'id',
@@ -936,6 +937,7 @@ describe('DM ticks', () => {
         'lastFromMe',
         'lastMessageAt',
         'lastStatus',
+        'lastDeleted',
         'photoUrl',
         'pinned',
         'archived',
