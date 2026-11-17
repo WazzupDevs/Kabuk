@@ -24,13 +24,11 @@ describe('isExpoPushToken', () => {
 });
 
 describe('push texts', () => {
-  it('names only the asking table and its phones, or the person on its own (§4.E)', () => {
-    expect(joinRequestPush('Mor Baykuş', 3).body).toBe(
-      'Mor Baykuş (3 kişi) masana katılmak istiyor.',
-    );
+  it('carries only the phone count, never a name (§4.E)', () => {
+    expect(joinRequestPush(3).body).toBe('3 kişilik bir masa masana katılmak istiyor.');
     // Up to 12 phones, counted exactly; no headcount is declared any more.
-    expect(joinRequestPush('Mor Baykuş', 7).body).toContain('(7 kişi)');
-    expect(joinRequestPush('kapsul-ab12', 1).body).toBe('kapsul-ab12 masana katılmak istiyor.');
+    expect(joinRequestPush(7).body).toContain('7 kişilik');
+    expect(joinRequestPush(1).body).toBe('Biri masana katılmak istiyor.');
     // The user never sees "oda" (docs/SPEC_V3.md §23.C): the table joins a table.
     expect(joinAcceptedPush()).toEqual({
       title: 'İsteğin kabul edildi',
@@ -66,7 +64,7 @@ describe('push texts', () => {
 describe('push icons (Aura BildirimSimgeleri)', () => {
   const root = resolve(import.meta.dirname, '../../../..');
   const pushes = [
-    joinRequestPush('Mor Baykuş', 3),
+    joinRequestPush(3),
     joinAcceptedPush(),
     dmPush(),
     friendRequestPush(),
