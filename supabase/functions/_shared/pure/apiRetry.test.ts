@@ -62,6 +62,10 @@ describe('IDEMPOTENT_CALLS', () => {
         'vampir/advance',
         'vampir/view',
         'venue-chat/page',
+        'venue-feed/like',
+        'venue-feed/page',
+        'venue-feed/replies',
+        'venue-feed/unlike',
       ].sort(),
     );
   });

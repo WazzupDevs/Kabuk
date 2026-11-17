@@ -19,6 +19,7 @@ import type {
 } from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
+import type { VenueFeedRequest } from './api/venueFeed.ts';
 
 // Every call the list below may name; a misspelled entry does not compile.
 type CallName =
@@ -29,6 +30,7 @@ type CallName =
   | `friends/${FriendsRequest['action']}`
   | `dm/${DmRequest['action']}`
   | `venue-chat/${VenueChatRequest['action']}`
+  | `venue-feed/${VenueFeedRequest['action']}`
   | `account/${AccountRequest['action']}`
   | `vampir/${VampirRequest['action']}`
   | `kibrit/${KibritRequest['action']}`
@@ -89,6 +91,16 @@ export const IDEMPOTENT_CALLS = [
   // venueChat.test "venue chat: photos (venue-chat/page)": "signs the photo of a profiled message
   // and never gives an anonymous one a photo path"
   'venue-chat/page',
+  // venueFeed.test "venue feed: replies": "pages posts, the same when sent twice"
+  'venue-feed/page',
+  // venueFeed.test "venue feed: replies": "answers a post, never a reply; the page counts them"
+  'venue-feed/replies',
+  // venueFeed.test "venue feed: likes": "counts a like once per person, never names it, the same
+  // when sent twice"
+  'venue-feed/like',
+  // venueFeed.test "venue feed: likes": "counts a like once per person, never names it, the same
+  // when sent twice"
+  'venue-feed/unlike',
   // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
   // new until the list is opened"
   'friends/notifications',
