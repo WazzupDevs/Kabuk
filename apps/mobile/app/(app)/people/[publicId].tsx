@@ -443,7 +443,7 @@ function CoverPage({
       <ConfirmWithReport
         reasons={REPORT_REASONS}
         visible={ending !== null}
-        title={ending === 'block' ? tr.safety.blockConfirmTitle : tr.friends.removeFriend}
+        title={ending === 'block' ? tr.safety.blockNamedTitle(name) : tr.friends.removeFriend}
         hint={ending === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
         confirmLabel={ending === 'block' ? tr.friends.blockConfirm : tr.friends.removeConfirm}
         confirmIcon={ending === 'block' ? 'block' : undefined}

@@ -1,6 +1,7 @@
-// Keşfet and its map, value for value from the approved boards (tuval: Kesfet.dc.html and
-// Harita.dc.html, 390 × 844, the status bar 47 high) where docs/design/iskelet.md → 5.1 gives no
-// value of its own. The kit's values (KIT.size.explore) are the parts both share.
+// Keşfet and its map as the new board draws them (yeni arayüz tuvali, 16 Kasım:
+// docs/design/yeni-arayuz/project/ Kesfet, KesfetAra, KesfetAraBos, KesfetBos, KesfetKaydir,
+// KesfetHarita; 390 × 844, the status bar 47 high), value for value. The glass and card faces below
+// are also read by Mesajlar, Profil and the venue's empty card.
 const LIGHT_GLASS = {
   fill: 'rgba(255, 255, 255, 0.60)',
   edge: 'rgba(255, 255, 255, 0.90)',
@@ -8,8 +9,7 @@ const LIGHT_GLASS = {
   shadow: '0px 10px 30px rgba(3, 27, 11, 0.08)',
 } as const;
 
-// The dark scheme is not drawn on the boards: the kit's dark glass (#121614, a 9 % white edge, no
-// shadow, no top light).
+// The dark scheme's flat glass (koyu.css: #121614, a 9 % white edge, no shadow, no top light).
 const DARK_GLASS = {
   fill: '#121614',
   edge: 'rgba(255, 255, 255, 0.09)',
@@ -18,43 +18,93 @@ const DARK_GLASS = {
 } as const;
 
 export const EXPLORE = {
-  // The list's head: 15 under the status bar (62 on the board), its parts 22 from the sides, the
-  // cards 16; the line of the day 6 over the question, the capsule 26 under it, the chips 14 under
-  // the capsule, Semte Git 22 under the chips, the place line 28 under it and 12 over the cards,
-  // the cards 10 apart.
-  top: 15,
-  side: 16,
-  headSide: 22,
-  titleGap: 6,
-  capsuleTop: 26,
-  chipsTop: 14,
-  districtTop: 22,
-  sectionTop: 28,
-  sectionBottom: 12,
-  sectionGap: 8,
-  cardsGap: 10,
-  // The capsule: 18 in at its left, 5 at its right, 10 between the icon, the words and the switch;
-  // the search icon 19; the switch a sunk track 3 in, 22 round, its two parts 40 × 38, 2 apart, the
-  // icons 18.
-  capsule: {
-    padLeft: 18,
-    padRight: 5,
-    gap: 10,
-    icon: 19,
-    trackPad: 3,
-    trackRadius: 22,
-    segWidth: 40,
-    segHeight: 38,
-    segIcon: 18,
+  // The list (`.content`: 60 from the board's top, 13 under the status bar; 20 from the sides): the
+  // line of the day 4 over the question (`.kh`), the search row 66 under it (the buddy looks over
+  // it), the kind chips 10 under it, Semte Git 20 under them, the place line 24 under it and the
+  // rows 4 under that.
+  list: {
+    top: 13,
+    side: 20,
+    titleTop: 4,
+    fieldTop: 66,
+    chipsTop: 10,
+    districtTop: 20,
+    sectionTop: 24,
+    rowsTop: 4,
+    // "Şu an buradasın" under Semte Git (the board does not draw it; the rows' own 12).
+    hereTop: 12,
   },
-  // The kind chips: 36 high (KIT.size.chip), 16 in.
-  chipPadX: 16,
-  // A venue's card: 14 between the picture and the words, its lines 5 apart, the arrow 18.
-  card: { gap: 14, lineGap: 5, chevron: 18 },
-  // The bucket's pill: 24 high, 8 in at its left and 10 at its right, its dot 6, 6 from the words.
+  // The search (`.sr .field`): 20 in, 8 between the icon and the words, the icon 20; the clear
+  // button (`.clr`) 36 round, its icon 20, 10 into the field's right padding; the map button 8 to
+  // its right.
+  field: { padX: 20, gap: 8, icon: 20, clear: 36, clearIcon: 20, clearOut: -10, rowGap: 8 },
+  // The buddies over the search (`.sr .kk`): 178 wide (the picture's 600 × 340), 64 from the right,
+  // their foot 22 over the field's foot, under the field.
+  peek: { width: 178, height: 101, right: 64, bottom: 22 },
+  // The empty list and the search that finds nothing (KesfetBos, KesfetAraBos `.emp`): 10 under the
+  // place line, 24 from the sides; the riso 100 × 82 and 120 × 98; the title 12 under it, the
+  // sentence 4 under that and 240 wide at most.
+  empty: {
+    top: 10,
+    side: 24,
+    list: { width: 100, height: 82 },
+    search: { width: 120, height: 98 },
+    titleTop: 12,
+    noteTop: 4,
+    noteWidth: 240,
+  },
+  // Semte Git as the board draws it (Kesfet, KesfetSemtIcerde `.semt`): the riso scene under it,
+  // 200 high at least, 18 inside, 22 round; the words in its left 58 %; the dot 8, 6 from the
+  // eyebrow; the title 6 under it, the note 4 under that, the time 8 under the title with its 18
+  // clock 6 from the words; the button at the foot on its 0 4 10 shadow. In the room the eyebrow
+  // and its dot are pink, the dot in a 4 ring.
+  scene: {
+    minHeight: 200,
+    pad: 18,
+    radius: 22,
+    words: '58%',
+    dot: 8,
+    dotRing: 4,
+    eyebrowGap: 6,
+    titleTop: 6,
+    noteTop: 4,
+    metaTop: 8,
+    metaGap: 6,
+    metaIcon: 18,
+    eyebrow: '#7CF0B0',
+    roomEyebrow: '#FF8FB8',
+    roomDot: '#FF4F8B',
+    roomDotRing: 'rgba(255, 79, 139, 0.28)',
+    title: '#FFFFFF',
+    note: 'rgba(255, 255, 255, 0.8)',
+    meta: 'rgba(255, 255, 255, 0.86)',
+  },
+  // The kind chips (`.ch .chip`): 14 in, 8 apart, each growing to share the row.
+  chip: { padX: 14, gap: 8 },
+  // The place button (`.cty`): 10 in at its left, 8 at its right, 6 between its parts, the pin 18,
+  // its arrow 18 pulled 2 closer; the count 10 after it; the order (`.srt`) 32 high, 10 in at its
+  // left, 4 at its right, its arrow 18, 2 from the words.
+  place: { padLeft: 10, padRight: 8, gap: 6, icon: 18, chevron: 18, chevronIn: -2, countGap: 10 },
+  sort: { height: 32, padLeft: 10, padRight: 4, gap: 2, chevron: 18 },
+  // A venue row (`.rw.vr`): on the ground with no card and no hairline, 10 above and under, 20 from
+  // the sides, 12 between its parts, 76 at least; the picture 56, 16 round; the lines 2 apart; how
+  // lively 6 from its dot (7); the arrow 18, 4 closer.
+  row: {
+    padY: 10,
+    padX: 20,
+    gap: 12,
+    minHeight: 76,
+    picture: 56,
+    pictureRadius: 16,
+    lineGap: 2,
+    statusGap: 6,
+    dot: 7,
+    chevron: 18,
+    chevronIn: -4,
+  },
+  // The bucket's pill (the campus sheet): 24 high, 8 in at its left and 10 at its right, its dot 6,
+  // 6 from the words.
   bucket: { height: 24, padLeft: 8, padRight: 10, gap: 6, dot: 6 },
-  // The order's button: its arrow 14 after the words.
-  sortIcon: 14,
   // Semte Git: 20 inside, 30 round, the words and the gate 12 apart, the lines 7 apart, the dot 7
   // and 6 from the eyebrow, the button 8 more under the note with its arrow 16. The gate a 106 ×
   // 128 sticker 16 round in a 3 white edge, turned 4°, in a 112 × 136 place; a 32 × 42 buddy 14 out
@@ -74,38 +124,33 @@ export const EXPLORE = {
     // At 320 dp or the largest text (lib/narrow.ts) the art at this share.
     narrowArt: 0.68,
   },
-  // The map: the head 10 apart (the capsule, the chips); the glass column 46 wide, 20 under the
-  // chips, its buttons 46, a hairline 10 in from its sides between them, the icons 19; the fades
-  // 200 at the top and 280 at the bottom; the venue's card 16 above the tab bar, 16 from the
-  // sides, 30 round, 12 inside, 14 apart, its picture 72 at 18 with a 26 × 34 buddy 8 out of its
-  // right and 6 under it, the way to the venue a 44 green round.
+  // The map (KesfetHarita): the head 20 from the sides, the chips 10 under the search; no fades. The
+  // venue's card (`.vc`) 26 over the tab bar's top, 20 from the sides, 22 round, 14 inside, 18
+  // between its parts, 96 at least, its picture 56 at 16; the round to the venue 44. The round over
+  // the card (`.loc`) 48, 12 over the card's room, 20 from the right; the sources' line (`.attr`)
+  // 22 from the left at the round's foot; the legend (`.lg`) 20 over it, 20 from the left, 12 in
+  // and 6 above and under, 10 between its parts, each dot 9 and 5 from its word.
   map: {
     headGap: 10,
-    columnTop: 20,
-    column: 46,
-    dividerInset: 10,
-    icon: 19,
-    fadeTop: 200,
-    fadeBottom: 280,
-    cardBottom: 16,
-    cardSide: 16,
-    cardRadius: 30,
-    cardPad: 12,
-    cardGap: 14,
-    picture: 72,
-    pictureRadius: 18,
+    side: 20,
+    cardBottom: 26,
+    cardRadius: 22,
+    cardPad: 14,
+    cardGap: 18,
+    cardMinHeight: 96,
+    picture: 56,
+    pictureRadius: 16,
     buddy: { width: 26, height: 34, right: -8, bottom: -6 },
     goIcon: 18,
+    control: 48,
+    controlOver: 12,
+    attrSide: 22,
+    legendOver: 20,
+    legend: { padX: 12, padY: 6, gap: 10, itemGap: 5, dot: 9, radius: 13 },
   },
   light: {
-    // `.glass` on the list (the capsule, the chips, the order), and on the map a shade whiter.
+    // `.glass` (the venue page's empty card, Mesajlar's tabs).
     glass: LIGHT_GLASS,
-    mapGlass: {
-      fill: 'rgba(255, 255, 255, 0.66)',
-      edge: 'rgba(255, 255, 255, 0.92)',
-      inset: LIGHT_GLASS.inset,
-      shadow: '0px 10px 30px rgba(3, 27, 11, 0.10)',
-    },
     // `.card` (iskelet.md → 2.2): white 86 %, a white edge, two shadows and the top light.
     card: {
       fill: 'rgba(255, 255, 255, 0.86)',
@@ -113,12 +158,15 @@ export const EXPLORE = {
       inset: 'inset 0px 1px 0px #FFFFFF',
       shadow: '0px 1px 2px rgba(3, 27, 11, 0.04), 0px 14px 34px rgba(3, 27, 11, 0.07)',
     },
-    mapCard: 'rgba(255, 255, 255, 0.82)',
+    // The search field, the map's chips and its card (`.sr .field`, `.ch .chip` on the map, `.vc`):
+    // white on the board's glass edge, top light and shadow.
+    solid: {
+      fill: '#FFFFFF',
+      edge: 'rgba(255, 255, 255, 0.86)',
+      inset: 'inset 0px 1px 0px #FFFFFF',
+      shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
+    },
     pictureShadow: '0px 4px 12px rgba(3, 27, 11, 0.12)',
-    chevron: '#9AAEA1',
-    chipOnShadow: '0px 6px 14px rgba(3, 27, 11, 0.18)',
-    track: 'rgba(3, 27, 11, 0.05)',
-    segOnShadow: '0px 2px 8px rgba(3, 27, 11, 0.12)',
     calm: { bg: '#E3F4E9', fg: '#0B5E30', dot: '#0E8745' },
     // Semte Git's ink ground: a deep green to the ink, a green glow at its top right.
     district: {
@@ -131,32 +179,21 @@ export const EXPLORE = {
       note: 'rgba(255, 255, 255, 0.72)',
       doorShadow: '0px 12px 26px rgba(0, 0, 0, 0.35)',
     },
-    divider: 'rgba(3, 27, 11, 0.08)',
-    goShadow: '0px 6px 14px rgba(14, 135, 69, 0.35)',
-    fadeTop:
-      'linear-gradient(180deg, rgba(239, 247, 241, 0.92) 0%, rgba(239, 247, 241, 0.6) 55%, rgba(239, 247, 241, 0) 100%)',
-    fadeBottom:
-      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.55) 55%, rgba(239, 247, 241, 0.85) 100%)',
+    // The map's pins by how lively (`--lv-s`, `--lv-m`, `--lv-c`), the crowded one's glow, the
+    // sources' line (`--m-lab`).
+    level: { calm: '#C3D0C7', lively: '#FFB547', buzzing: '#FF4F8B' },
+    mapLabel: '#4A6550',
   },
   dark: {
     glass: DARK_GLASS,
-    mapGlass: DARK_GLASS,
     card: DARK_GLASS,
-    mapCard: '#121614',
+    solid: DARK_GLASS,
     pictureShadow: '',
-    chevron: '#A3AEA8',
-    chipOnShadow: '',
-    track: 'rgba(255, 255, 255, 0.06)',
-    segOnShadow: '',
     calm: { bg: 'rgba(61, 220, 132, 0.14)', fg: '#93EBB9', dot: '#3DDC84' },
     // The dark scheme keeps its own feature card (theme.ts → feature).
     district: null,
-    divider: 'rgba(255, 255, 255, 0.08)',
-    goShadow: '',
-    fadeTop:
-      'linear-gradient(180deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.6) 55%, rgba(0, 0, 0, 0) 100%)',
-    fadeBottom:
-      'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0.85) 100%)',
+    level: { calm: '#4A5550', lively: '#FFB547', buzzing: '#FF4F8B' },
+    mapLabel: '#7D8C85',
   },
 } as const;
 

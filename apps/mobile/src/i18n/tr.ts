@@ -392,7 +392,10 @@ export const tr = {
     loadError: 'Paketler yüklenemedi.',
     loadErrorHint: 'Bağlantını kontrol edip tekrar dene.',
     oddsTitle: (name: string) => `${name} paket oranları`,
-    oddsLead: 'Her paketten 1 aksesuar çıkar.',
+    oddsLead: 'Her pakette 1 aksesuar çıkar. Çıkma şansı nadirliğe göre:',
+    oddsMarks: 'Elmas işaretlerinin sayısı nadirliği gösterir.',
+    soonOpening: 'Yakında açılacak',
+    soonNote: (pack: string) => `${pack} paketler şimdilik kapalı. Oranlara şimdiden bakabilirsin.`,
     oddsNoRepeat: 'Sahip olduğun aksesuar bir daha çıkmaz.',
     oddsError: 'Oranlar yüklenemedi.',
     ok: 'Tamam',
@@ -401,7 +404,10 @@ export const tr = {
       `%${(Math.round((parts / total) * 100 * 1000) / 1000).toString().replace('.', ',')}`,
     close: 'Kapat',
     ripHint: 'Yırtmak için şeridi sağa kaydır',
-    tiltHint: 'Kartı sağa sola sürükleyerek çevir',
+    ripHintRelease: 'Parmağını kaldırırsan şerit yerine döner.',
+    fromPack: (pack: string) => `${pack} paketten çıktı`,
+    newAccessory: 'Yeni aksesuar',
+    tiltHint: 'Kartı sağa sola sürükleyerek çevirebilirsin.',
     later: 'Sonra',
     wear: 'Aksesuarı tak',
     worn: 'Takıldı',
@@ -476,7 +482,15 @@ export const tr = {
     here: 'Şu an buradasın',
     hereAt: (spot: string) => `${spot} · check-in yaptın`,
     backToVenue: 'Mekana dön',
-    views: { list: 'Liste', map: 'Harita' },
+    views: { list: 'Liste', map: 'Haritada gör' },
+    // The search's clear button (KesfetAra).
+    clearSearch: 'Temizle',
+    // The map's legend (KesfetHarita `.lg`): the pins' colours by how lively.
+    legend: { calm: 'Sessiz', lively: 'Masa var', buzzing: 'Kalabalık' },
+    // The map's sources (KesfetHarita `.attr`); a touch opens the map's own attribution.
+    mapSources: '© OpenStreetMap',
+    // The map card's line: the type, the district and how lively.
+    mapSub: (kind: string, district: string, bucket: string) => `${kind} · ${district} · ${bucket}`,
     // The bucket of a venue's active tables (K-16, K-41): never a count.
     buckets: { calm: 'Sessiz', lively: 'Birkaç açık masa', buzzing: 'Kalabalık' },
     // Search and kind (v44: .dsearch, .vcats).
@@ -966,6 +980,9 @@ export const tr = {
       closedNote: 'Yarın yeni soru gelir.',
       opensIn: (h: number, m: number) => `Açılmasına ${h} sa ${m} dk`,
       inRoom: (name: string) => `${name} sohbetindesin`,
+      // The eyebrows on the card's riso scene (Kesfet, KesfetSemtIcerde).
+      sceneEyebrow: 'Semt sohbeti',
+      roomEyebrow: 'Sohbettesin',
       backToRoom: 'Odaya dön',
       outsideTitle: 'Geçit henüz senin semtinde yok',
       outsideNote: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",
@@ -1067,6 +1084,9 @@ export const tr = {
     },
   },
   safety: {
+    // EngelleOnay (61): "Ece engellensin mi?"; where the name is not at hand the plain
+    // blockConfirmTitle stays.
+    blockNamedTitle: (name: string) => `${name} engellensin mi?`,
     report: 'Şikayet et',
     reportTitle: 'Neden şikayet ediyorsun?',
     reasons: {
