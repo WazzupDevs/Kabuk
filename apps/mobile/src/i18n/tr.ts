@@ -1004,6 +1004,8 @@ export const tr = {
     tabTables: 'Masalar',
     tabFeed: 'Akış',
     field: 'Mekana bir şey yaz…',
+    // The feed's own limit (VENUE_FEED.maxLength), not the chats' 200.
+    tooLong: (max: number) => `Gönderi 1-${max} karakter olmalı.`,
     fieldLabel: 'Akışa profilinle yaz',
     note: 'Akışta herkes profiliyle yazar.',
     // The time of a post: "şimdi", "2 dk", "3 sa", "1 g".

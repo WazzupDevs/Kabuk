@@ -179,7 +179,14 @@ export default function VenueFeedComposeScreen() {
           />
         </View>
       ) : post.isError ? (
-        <Banner tone="danger" body={errorMessage(post.error)} />
+        <Banner
+          tone="danger"
+          body={
+            post.error instanceof ApiError && post.error.code === 'message_invalid'
+              ? tr.venueFeed.tooLong(VENUE_FEED.maxLength)
+              : errorMessage(post.error)
+          }
+        />
       ) : null}
       <PhotoSheet visible={photoSheet} onClose={() => setPhotoSheet(false)} />
     </Screen>
