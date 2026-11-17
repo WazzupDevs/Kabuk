@@ -65,7 +65,13 @@ export function SemtSheetFixture({ sheet }: { sheet: 'options' | 'end' }) {
         <ChatBubble text="Akşam sahilde yürüyen var mı?" mine={false} first time="20:41" />
         <ChatBubble text="Ben çıkıyorum birazdan" mine first time="20:43" delivery="read" />
       </ChatScreen>
-      <OptionsSheet visible={sheet === 'options'} onClose={noop} onChanged={noop} onEnd={noop} />
+      <OptionsSheet
+        visible={sheet === 'options'}
+        onClose={noop}
+        onChanged={noop}
+        onEnd={noop}
+        onPeople={noop}
+      />
       {sheet === 'end' ? (
         <View style={StyleSheet.absoluteFill}>
           <Dialog

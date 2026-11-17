@@ -1193,6 +1193,36 @@ export const tr = {
       friendRequest: 'Arkadaşlık isteği',
       leave: 'Sohbetten çık',
     },
+    // Odadakiler (yeni arayüz tuvali: Odadakiler, OdaProfilli, OdaUzun, OdaTek; §4.V). Nothing here
+    // names an anonymous row: it is a time and nothing else.
+    people: {
+      title: 'Odadakiler',
+      // The first row of the room's options.
+      entry: 'Odadakiler',
+      sub: (district: string, count: number) =>
+        count <= 1 ? `${district} · sadece sen buradasın` : `${district} · ${count} kişi burada`,
+      you: 'Sen',
+      youAnonymous: 'Anonim görünüyorsun',
+      youProfiled: 'Profilinle görünüyorsun',
+      profiledGroup: (n: number) => `Profiliyle · ${n}`,
+      anonymousGroup: (n: number) => `Anonim · ${n}`,
+      anonymous: 'Anonim',
+      someone: 'Biri',
+      nameAge: (name: string, age: number | null) => (age === null ? name : `${name}, ${age}`),
+      // "Az önce geldi", "12 dk önce geldi", "1 sa önce geldi"; the time is to the minute, so the
+      // first two minutes are "az önce". No time (a changed identity): nothing is written.
+      joined: (iso: string, now: number) => {
+        const minutes = Math.floor((now - Date.parse(iso)) / 60000);
+        if (minutes < 2) return 'Az önce geldi';
+        if (minutes < 60) return `${minutes} dk önce geldi`;
+        return `${Math.floor(minutes / 60)} sa önce geldi`;
+      },
+      friend: 'Arkadaşın',
+      muted: 'Sessize aldın',
+      emptyTitle: 'Odada şimdilik yalnızsın',
+      emptyBody: 'Biri gelince burada görünür.',
+      list: 'Odadakiler listesi',
+    },
     // "Oturumu kapat" in the room's options (§4.V).
     end: {
       action: 'Oturumu kapat',

@@ -25,12 +25,15 @@ export function OptionsSheet({
   onClose,
   onChanged,
   onEnd,
+  onPeople,
 }: {
   visible: boolean;
   onClose: () => void;
   onChanged: () => void;
   // "Oturumu kapat": this sheet closes and the asking one opens (one sheet at a time).
   onEnd: () => void;
+  // "Odadakiler": this sheet closes and the list opens (one sheet at a time; no way back here).
+  onPeople: () => void;
 }) {
   const queryClient = useQueryClient();
   const mutes = useQuery({
@@ -80,6 +83,12 @@ export function OptionsSheet({
         )}
       </View>
       <Menu>
+        <MenuItem
+          icon="people-outline"
+          label={tr.district.people.entry}
+          testID="district-people-open"
+          onPress={onPeople}
+        />
         <MenuItem
           negative
           icon="log-out-outline"

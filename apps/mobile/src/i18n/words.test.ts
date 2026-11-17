@@ -34,6 +34,10 @@ const DISTRICT_ROOM = [
   'Odaya dön',
   'Odaya henüz kimse yazmadı. İlk mesajı sen yaz; gelenler görür.',
   'İki saatin doldu. Evet dersen iki saat daha bu odadasın.',
+  // Odadakiler (yeni arayüz tuvali, 17 Kasım; §4.V).
+  'Odadakiler',
+  'Odada şimdilik yalnızsın',
+  'Odadakiler listesi',
 ];
 
 describe('no "oda" in what the user sees', () => {
