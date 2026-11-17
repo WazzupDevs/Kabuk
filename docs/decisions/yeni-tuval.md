@@ -35,6 +35,19 @@ e. **DM düzenleme:** kendi metin mesajı, gönderildikten sonraki 15 dakika iç
 
 f. **Kapsül kaydı:** Süsle ve Tüm aksesuarlar tek taslağı paylaşır; Kaydet yalnız Süsle'de; sunucuda tek atomik yazma (`profile/save-look`).
 
+## Tuvale sadık kalınır (17 Kasım gece, proje sahibinin kararı)
+
+Proje sahibi sekme çubuğunun hiç aktarılmadığını gördü ("tuvalin birebir aktarılmasını istemiştim") ve pano–kod denetiminden (`docs/design/yeni-arayuz/pano-kod-denetimi.md`) çıkan altı açık soruda aynı cevabı verdi: **hepsinde tuvale sadık kalınır.** Yeni arayüz tuvalinin çizdiği ekranda ve ortak parçada pano ile uygulama ayrışıyorsa pano geçerlidir; 8 Kasım'ın "var olan ekrana yalnız istenen parça girer" kuralı bu tuvalin çizdiği yerde uygulanmaz. Aktarım planı ortak parçaları (sekme çubuğu, üst bar, boş ve hata hâli, avatar, zemin) saymadığı için atlanmışlardı; bundan sonra her paket kendi panolarındaki ortak parçayı da panoyla karşılaştırır.
+
+1. **Zemin:** renk bulutları kalkar, panodaki düz zemin gelir.
+2. **Arkasında özellik olmayan öğeler ve "(ÖNERİ)" panoları çizilir.** Özelliği olmayan öğe (DM yazma alanında emoji, dosya, kamera, ses; "Sohbette ara"; şikayette not alanı; etkinlikte tür ve düzenleyen; uzun basma menüsünde Sessize al, Profilini gör, Engelle; ÖNERİ panoları) çalışmayan düğme olarak bırakılmaz: her biri özelliğiyle birlikte gelir (sunucu gerekiyorsa ayrı paket, `mimar` ve `guvenlik`); ürün belgesine yazılır.
+3. **Semt sohbetinin üst çubuğunda kişi sayısı** ("6 kişi burada") ve "yazıyor" satırı panodaki gibi yazılır. Değişmez kural 4'ün semt maddesini ("sayı ve liste başka hiçbir yanıtta ve Realtime yükünde görünmez; presence ve son yazanlar yok") ve kural 9'u değiştirir: PR'ı proje sahibinin açık "onaylandı"sıyla birleşir.
+4. **Başkasının profilindeki rozet kartı kalkar** (panoda yok).
+5. **Canlı noktanın nabız hareketi kalkar** (panolar durağan).
+6. **Masa bitti'de "arkadaş oldunuz" bildirimi (64a)** panodaki gibi gösterilir. K-70 ("eşleşme yalnızca ilk basana bildirilir") ve kural 5'in masa sonu maddesiyle birlikte ele alınır: PR'ı proje sahibinin açık "onaylandı"sıyla birleşir.
+
+Daha önce verilmiş ölçü kararları (çip 36, ana düğme 48/56, küçük düğme 36) için ayrıca sorulmadı; pano farklı çiziyorsa (Keşfet çipi 40, satır düğmesi 40) yeni oturum tek satırda sorar.
+
 ## Panolar depoda (17 Kasım, proje sahibinin kararı)
 
 Canlı tuvalin bütün panoları (203 pano, `canvas.json`, üç css; sürüm 1794920928-8d77) `docs/design/yeni-arayuz/project/` altındadır; numara → dosya eşlemesi `docs/design/yeni-arayuz/ESLEME.md`, resimlerin (blob) hangi panoda kullanıldığı `BLOBLAR.md`. Yeni oturum panoları indirmez, buradan okur; `mobil` ajanına dosya yolu verilir. Resimler depoda değildir: gereken resim Artifact aracıyla tek tek indirilir. Tuval değişince proje sahibi söyler; o zaman değişen panolar yeniden indirilip bu klasör ve iki eşleme dosyası güncellenir.
