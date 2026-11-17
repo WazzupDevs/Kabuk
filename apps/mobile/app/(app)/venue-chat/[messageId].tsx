@@ -172,7 +172,11 @@ export default function VenueChatProfileScreen() {
       <ConfirmWithReport
         reasons={REPORT_REASONS}
         visible={blocking}
-        title={tr.venueChat.blockConfirmTitle}
+        title={
+          view.data?.displayName
+            ? tr.safety.blockNamedTitle(view.data.displayName)
+            : tr.venueChat.blockConfirmTitle
+        }
         hint={tr.venueChat.blockConfirmBody}
         confirmLabel={tr.safety.blockConfirm}
         confirmIcon="block"
