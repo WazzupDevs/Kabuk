@@ -29,17 +29,19 @@ import { KIT } from '@/theme/auraKit';
 // side this account's name, age and photo.
 export type SenderProfileProps = {
   view: UseQueryResult<ChatProfileView>;
-  sendRequest: () => Promise<unknown>;
+  // Without it there is no request (Odadakiler's row: a request goes through a message).
+  sendRequest?: () => Promise<unknown>;
   onRequested?: () => void;
-  report: { send: (reason: ReportReason) => Promise<unknown>; onSent?: () => void };
+  // Without it (and no mute, no block) there is no "Seçenekler".
+  report?: { send: (reason: ReportReason) => Promise<unknown>; onSent?: () => void };
   // Where the source offers it (the venue chat); the feed and the district chat have no block.
   block?: { send: (reason: ReportReason | undefined) => Promise<unknown>; onDone: () => void };
   // The feed's "Sessize al": the post goes from the reader's view, so the screen closes.
   mute?: { send: () => Promise<unknown>; onDone: () => void };
   ids: {
     screen: string;
-    request: string;
-    confirm: string;
+    request?: string;
+    confirm?: string;
     sent?: string;
     report?: string;
     block?: string;
@@ -66,7 +68,7 @@ export function SenderProfileScreen({
 
   const request = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: sendRequest,
+    mutationFn: () => (sendRequest ? sendRequest() : Promise.resolve()),
     onSuccess: () => {
       onRequested?.();
       setSent(true);
@@ -88,9 +90,9 @@ export function SenderProfileScreen({
     });
   const reportMutation = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: report.send,
+    mutationFn: (reason: ReportReason) => (report ? report.send(reason) : Promise.resolve()),
     onSuccess: () => {
-      report.onSent?.();
+      report?.onSent?.();
       setReporting(false);
       Alert.alert(tr.safety.reportSent);
     },
@@ -118,7 +120,7 @@ export function SenderProfileScreen({
         // the request under it.
         <ProfileTopBar
           onBack={() => router.back()}
-          onMore={view.data ? () => setMenu(true) : undefined}
+          onMore={view.data && (report || mute || block) ? () => setMenu(true) : undefined}
         />
       }
     >
@@ -137,7 +139,7 @@ export function SenderProfileScreen({
               <T v="fine" center testID={ids.sent}>
                 {tr.venueChat.requestSent}
               </T>
-            ) : (
+            ) : !sendRequest ? null : (
               <>
                 {request.isError ? (
                   <Banner tone="danger" body={errorMessage(request.error)} />
@@ -171,16 +173,18 @@ export function SenderProfileScreen({
               }}
             />
           ) : null}
-          <MenuItem
-            negative
-            cap="report"
-            label={tr.chat.report}
-            testID={ids.report}
-            onPress={() => {
-              setMenu(false);
-              setReporting(true);
-            }}
-          />
+          {report ? (
+            <MenuItem
+              negative
+              cap="report"
+              label={tr.chat.report}
+              testID={ids.report}
+              onPress={() => {
+                setMenu(false);
+                setReporting(true);
+              }}
+            />
+          ) : null}
           {block ? (
             <MenuItem
               negative

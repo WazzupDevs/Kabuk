@@ -51,6 +51,9 @@ export type ProfileRequest =
   // The author of a venue feed post or reply the reader may see (docs/SPEC_V4.md §4.Y): the same
   // view, the same not_found for everything else.
   | { action: 'get'; venuePostId: string }
+  // A profiled row of Odadakiler (docs/SPEC_V4.md §4.V): the reference the row carries; across a
+  // block only the row's own name, age and photo.
+  | { action: 'get'; districtPersonRef: string }
   | {
       action: 'update';
       displayName?: string;

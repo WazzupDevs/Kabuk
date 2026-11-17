@@ -1216,6 +1216,8 @@ export const tr = {
       sub: (district: string, count: number) =>
         count <= 1 ? `${district} · sadece sen buradasın` : `${district} · ${count} kişi burada`,
       you: 'Sen',
+      // A profiled row's hint for a screen reader.
+      openProfile: 'Profilini aç',
       youAnonymous: 'Anonim görünüyorsun',
       youProfiled: 'Profilinle görünüyorsun',
       profiledGroup: (n: number) => `Profiliyle · ${n}`,

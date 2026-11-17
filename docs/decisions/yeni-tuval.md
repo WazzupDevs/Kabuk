@@ -70,7 +70,7 @@ Ortak arkadaş (karar b; sunucusu uygulandı, `docs/SPEC_V4.md` §4.W): `friends
 
 - **Onaylar:** her onay ortada dialogdur (geri alınamaz olanlar ve kaydetmeden çıkış dahil); alttan sayfa yalnız içerik, seçim ya da form içindir (pano `OrtakKurallar`, C1). iskelet.md 3.5'in "alttan onay sayfası" kuralı dialoga geçişin paketinde değişir.
 - **Süsle:** altıncı sekme Ağız; Takımlar yalnız katalogda. Katalogda "Kapsülüne tak" taslağa uygular, kayıt yalnız Süsle'de.
-- **Odadakiler:** listeden geri dönünce Seçenekler yeniden açılmaz.
+- **Odadakiler:** listeden geri dönünce Seçenekler yeniden açılmaz. Profilli satır o kişinin profilini açar (17 Kasım gece, proje sahibinin isteği; kural 4'e cümle): satırın oturuma bağlı kendi anahtarıyla, engelde yalnız satırın gösterdiği alanlarla; anonim satır basılamaz kalır.
 - **Boy:** ana düğme ve form alanı 48 (eski 52/56); CLAUDE.md "Ekran davranışı" ve iskelet.md 2.1 düğme paketinin PR'ında güncellenir.
 - **Ayarlar tam sayfa:** alttan sayfa yerine geri düğmeli sayfa, sağdan iter (yığının varsayılan geçişi); Bildirim ayarları, Gizlilik, Hesap, Engellenenler ve Sessize alınanlar aynı yığında itilir (iskelet.md 5.9).
 - **Atölye:** çizilmiş panolarda Atölye adımı yoktur, onaylı pano doğrudan aktarılır; Atölye (`.claude/skills/ui-workshop-workflow`) yalnız panonun çizmediği yerde.

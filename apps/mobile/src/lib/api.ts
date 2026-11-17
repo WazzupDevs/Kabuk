@@ -388,6 +388,8 @@ export const profileApi = {
   // A profiled district chat message's sender (docs/SPEC_V4.md §4.V): the room's people only.
   getFromDistrictChat: (districtChatMessageId: string) =>
     invoke<ChatProfileView>('profile', { action: 'get', districtChatMessageId }),
+  getFromDistrictPerson: (districtPersonRef: string) =>
+    invoke<ChatProfileView>('profile', { action: 'get', districtPersonRef }),
   update: (changes: ProfileUpdate) =>
     invoke<{ ok: true }>('profile', { action: 'update', ...changes }),
   photoUploadUrl: () => invoke<ProfileUploadUrl>('profile', { action: 'photo-upload-url' }),
