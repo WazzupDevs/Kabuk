@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Hediye paketi sonuç</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hpw{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:52px}
+.hpt{display:flex;align-items:center;gap:12px;height:56px;padding:0 20px}
+.hpt h1{flex:1;margin:0;font:700 21px/28px var(--font);letter-spacing:-.3px;color:var(--text)}
+.car{position:relative;height:410px;margin-top:24px}
+.car .pp{position:absolute;top:50%;left:50%;display:block;filter:drop-shadow(0 14px 18px rgba(3,27,11,.22))}
+.dark .car .pp{filter:drop-shadow(0 14px 18px rgba(0,0,0,.6))}
+.car .c{width:236px;transform:translate(-50%,-50%);z-index:2}
+.car .l{width:168px;transform:translate(-50%,-50%) translateX(-150px) rotate(-7deg)}
+.car .r{width:168px;transform:translate(-50%,-50%) translateX(150px) rotate(7deg)}
+.car .s{position:absolute;left:50%;transform:translate(-50%,-50%);z-index:3;display:flex;align-items:center;gap:4px;height:24px;padding:0 9px 0 7px;border-radius:999px;background:rgba(3,27,11,.78);color:#fff;font:600 11px/1 var(--font)}
+.car .s svg{width:12px;height:12px}
+.car .sl{top:300px;margin-left:-150px}.car .sr{top:300px;margin-left:150px}
+.car .sc{top:338px}
+.bd{position:absolute;z-index:3;left:50%;top:28px;margin-left:98px;min-width:26px;height:26px;border-radius:999px;background:var(--buzz);color:#fff;font:700 13px/26px var(--font);text-align:center;box-shadow:0 0 0 3px var(--canvas)}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.dots i{width:6px;height:6px;border-radius:3px;background:var(--hair-strong,rgba(3,27,11,.18))}
+.dots i.on{width:20px;background:var(--text)}
+.dark .dots i{background:rgba(255,255,255,.22)}.dark .dots i.on{background:#fff}
+.inf{display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:20px;padding:0 24px}
+.inf h2{margin:0;font:700 21px/28px var(--font);color:var(--text)}
+.inf .st{margin-top:4px;font:600 15px/20px var(--font);color:var(--text)}
+.inf .st.ok{color:var(--success)}.dark .inf .st.ok{color:#3DDC84}
+.pr{display:flex;align-items:center;gap:8px;margin-top:10px;font:600 13px/18px var(--font);color:var(--muted)}
+.pr span{display:flex;gap:4px}.pr b{width:28px;height:6px;border-radius:3px;background:rgba(3,27,11,.12)}
+.pr b.on{background:var(--success)}.dark .pr b{background:rgba(255,255,255,.16)}.dark .pr b.on{background:#3DDC84}
+.inf .nt{margin-top:6px;font:500 13px/18px var(--font);color:var(--muted);max-width:280px}
+.fx{position:absolute;left:20px;right:20px;bottom:46px;display:flex;gap:12px}
+.fx .btn{flex:1;height:56px}
+.oneri{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;background:var(--success-soft);color:var(--on-success-soft);font:700 10px/14px var(--font);letter-spacing:.3px;vertical-align:middle}
+.scrim{position:absolute;inset:0;background:rgba(3,27,11,.42);z-index:20}
+.dark .scrim{background:rgba(0,0,0,.7)}
+.ssh{position:absolute;left:8px;right:8px;bottom:8px;z-index:22;background:var(--surface);border-radius:28px;padding:10px 20px 34px;box-shadow:0 -8px 40px rgba(3,27,11,.18)}
+.dark .ssh{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.ssh .grb{width:40px;height:5px;border-radius:3px;background:rgba(3,27,11,.18);margin:0 auto 16px}
+.dark .ssh .grb{background:rgba(255,255,255,.22)}
+.ssh h2{margin:0;font:700 21px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.ssh .sx{margin:4px 0 8px;font:500 14px/20px var(--font);color:var(--muted)}
+.rr{display:flex;align-items:center;gap:12px;height:56px}
+.rr+.rr{border-top:1px solid var(--hair)}
+.rr .dm{display:flex;gap:3px;width:52px}
+.rr .dm i{width:9px;height:9px;transform:rotate(45deg);border-radius:2px;background:var(--rc)}
+.rr .nm{flex:1;font:600 16px/22px var(--font);color:var(--text)}
+.rr .bar{width:96px;height:6px;border-radius:3px;background:rgba(3,27,11,.08);overflow:hidden}
+.dark .rr .bar{background:rgba(255,255,255,.12)}
+.rr .bar b{display:block;height:100%;border-radius:3px;background:var(--rc)}
+.rr .pc{width:44px;text-align:right;font:700 15px/20px var(--font);color:var(--text)}
+.ssh .ft{margin-top:10px;font:500 13px/18px var(--font);color:var(--muted)}
+.tr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:52px}
+.trt{display:flex;align-items:center;justify-content:center;position:relative;height:56px;width:100%}
+.trt span{font:600 14px/20px var(--font);color:var(--muted)}
+.trt .round{position:absolute;right:20px}
+.tpk{position:relative;margin-top:36px;width:276px}
+.tpk img{width:100%;display:block;filter:drop-shadow(0 18px 22px rgba(3,27,11,.25))}
+.dark .tpk img{filter:drop-shadow(0 18px 22px rgba(0,0,0,.6))}
+.tl{position:absolute;left:14px;right:14px;top:9%;border-top:2.5px dashed #FFFFFF;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.7))}
+.th{position:absolute;left:4px;top:calc(9% - 21px);width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 4px 14px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:#031B0B}
+.th svg{width:22px;height:22px}
+.hint{margin-top:30px;font:600 15px/20px var(--font);color:var(--text)}
+.hint2{margin-top:4px;font:500 13px/18px var(--font);color:var(--muted)}
+.skip{margin-top:18px}
+.res{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:52px}
+.kart{margin-top:28px;width:250px;border-radius:20px;display:block;box-shadow:0 20px 40px rgba(123,92,255,.35),0 0 0 1px rgba(255,255,255,.4)}
+.res .nw{margin-top:22px;display:flex;align-items:center;gap:6px;font:700 12px/16px var(--font);letter-spacing:.6px;color:var(--muted)}
+.res h2{margin:4px 0 0;font:700 24px/30px var(--font);color:var(--text)}
+.ndt{margin-top:8px;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;background:rgba(123,92,255,.14);color:var(--text);font:700 12px/16px var(--font)}
+.ndt i{width:7px;height:7px;transform:rotate(45deg);border-radius:1.5px;background:#7B5CFF}
+.dark .ndt{background:rgba(123,92,255,.26)}
+.res .rh{margin-top:8px;font:500 13px/18px var(--font);color:var(--muted)}
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="res"><div class="trt"><span>Bronz paketten çıktı</span></div><img class="kart" src="/_blob/45d9d4b21255adce00118cd7ad695fab" alt="Büyücü şapkası kartı"><p class="nw">YENİ AKSESUAR</p><h2>Büyücü şapkası</h2><span class="ndt"><i></i><i></i><i></i>Destansı</span><p class="rh">Kartı sağa sola sürükleyerek çevirebilirsin.</p></div><div class="fx"><button class="btn soft">Sonra</button><button class="btn primary">Aksesuarı tak</button></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>
