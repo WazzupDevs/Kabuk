@@ -35,6 +35,20 @@ e. **DM düzenleme:** kendi metin mesajı, gönderildikten sonraki 15 dakika iç
 
 f. **Kapsül kaydı:** Süsle ve Tüm aksesuarlar tek taslağı paylaşır; Kaydet yalnız Süsle'de; sunucuda tek atomik yazma (`profile/save-look`).
 
+## 17 Kasım kararları (proje sahibi)
+
+Mekan akışı ayrı dosyada: `docs/decisions/mekan-akisi.md`. Aşağıdakiler henüz uygulanmadı; her biri sunucu paketi ve `guvenlik` denetimiyle gelir, değişmez kural metnine dokunan PR proje sahibinin "onaylandı"sıyla birleşir.
+
+g. **DM'de mesaj silme:** kişi kendi mesajını siler; herkesten silinir, süre sınırı yok (düzenlemenin 15 dakikası silmeyi bağlamaz), karşı tarafta "Mesaj silindi" izi kalır; metin yalnız şikayet için 7 gün saklanır. Plan: `dm/delete { messageId }`, mesaja `deleted_at`, metin `dm_message_versions`'a son sürüm, tepkiler silinir; sayfa silineni metinsiz iz olarak döner (telefondaki DM önbelleği eski metni tutmasın); `dm:` konusunda veri içermeyen yayın; kilit sırası `dm_edit` gibi. `docs/SPEC_V4.md` §4.X'in "mesaj silme yoktur" cümlesi ve kural 10'un DM yönetimi cümlesi aynı PR'da değişir.
+
+h. **İstekler'de "Gönderdiğin" bölümü:** eklenir. Reddedilen ve sessizce yutulan istek de "Kabul etmesi bekleniyor" görünür; bunun için yutulan istek yalnız gönderenin gördüğü bir satır bırakır (kural 5'in "satır oluşmaz" metni değişir). "Geri çek" bekleyen isteği kaldırır, reddedilmiş ya da yutulmuşta yalnız gönderenin listesinden gizler; kalıcı red silinmez; aynı çifte günde bir yeni istek, fazlası sessizce yutulur. Listede alıcının yalnız istek anında görülen adı gider; fotoğraf ve profil kimliği gitmez. Plan: `friends/sent`, `friends/withdraw { requestId }`, çift kilidinden başlar.
+
+i. **Mekan sohbeti kartındaki yazma alanı** kalır (panoda yok, uygulamadaki hâl korunur).
+
+j. **Bildirimler:** bekleyen arkadaşlık isteği satırında yalnız "Bak" (İstekler'e götürür); kabul ve red İstekler'de. Okundu işareti liste kapanınca ya da "Tümünü okundu say" ile yazılır (uygulandı, #692).
+
+Ortak arkadaşın planı (karar b): `friends/mutual { publicId }` → sayı ve arkadaşlar; yalnız ikisi arkadaşsa döner, değilse aynı boş yanıt; izleyenle ya da hedefle arasında engel olan listeye girmez; kural 4'e "arkadaşın profilinde ortak arkadaşlar görünür, başka hiçbir yerde görünmez" cümlesi eklenir. Panodaki, arkadaş olmayanın isteğinde çizili "Ortak arkadaş" satırı karar b ile çelişir, uygulanmaz.
+
 ## Proje sahibinin kararları (16 Kasım, ortak temel)
 
 - **Onaylar:** her onay ortada dialogdur (geri alınamaz olanlar ve kaydetmeden çıkış dahil); alttan sayfa yalnız içerik, seçim ya da form içindir (pano `OrtakKurallar`, C1). iskelet.md 3.5'in "alttan onay sayfası" kuralı dialoga geçişin paketinde değişir.

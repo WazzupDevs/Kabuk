@@ -1,5 +1,13 @@
 # İlerleme
 
+## Devir notu (17 Kasım 2026, akşamüstü): Dalga 5'in ikinci yarısı
+
+- Birleşenler: #692 Bildirimler (Bak, Tümünü okundu say sunucuya yazar); #693 mekan, masa ve semt sohbeti görünüşü; #694 Mekan akışı sunucusu (`venue-feed`, SPEC §4.Y, kural 4, 9 ve 10'a cümle; proje sahibinin onayıyla); #695 kapsül pilotu (Süsle, Tüm aksesuarlar, Profilim; Süsle'de çift bildirim düzeldi). #696 İstekler'in Masa bölümü. Açık PR (`ci` yeşilse birleştir): #698 Mekan akışının istemcisi (seçici, akış, yazma, yanıtlar; telefonda hiç görülmedi).
+- Sıradaki sunucu paketleri (ana oturum; plan ve kararlar `docs/decisions/yeni-tuval.md` → "17 Kasım kararları"; her biri `guvenlik` ve değişmez kural metni için "onaylandı" ister): ortak arkadaş (`friends/mutual`, kural 4'e cümle); DM'de mesaj silme (`dm/delete`, kural 10 ve SPEC §4.X); İstekler'de "Gönderdiğin" (`friends/sent`, `friends/withdraw`, kural 5'in "satır oluşmaz" metni); Mekan akışında gönderiden profil ve arkadaşlık isteği; Odadakiler (16 Kasım kararı a; proje sahibine sorulur).
+- Kalan ekranlar: mekan/masa (oda ekranı, 33–38), semtin sohbet dışı ekranları (12, 13, 99–102), sohbet seçenekler menüsü (15, 32: "Sohbet kuralları" ve kişi sayısı satırlarının davranışı yok), Açılış sahnesi (süre kararı proje sahibinde), oyun içi en son.
+- Proje sahibinden karar bekleyen görsel maddeler: kapsül pilotunda Profilim kapak ve fotoğraf ölçüleri (pano 236/112, kod 230/124), Süsle'de mor halka, şeritte parça adları, nadirlik noktası ve bilet dolgusu, çip boyu 28/32; İstekler'de kırmızı nokta ve harf rozeti. Mekan sohbeti kartındaki yazma alanı kalıyor (17 Kasım).
+- Tuzaklar: bu ortamda yerel Supabase için önce `dockerd` elle başlatılır; Edge Function çalıştırıcısı vekil sertifikasına güvenmez (`functions serve --env-file` ile `DENO_TLS_CA_STORE=system` verip kapsayıcının `/etc/ssl/certs/ca-certificates.crt` dosyasına `/root/.ccr/ca-bundle.crt` eklenir). Yeni pg_cron işi `chat.test.ts`'teki iş listesine, yeni fonksiyon `config.test.ts` ve `docs/PILOT_RELEASE.md`'deki sayıya eklenir. Tuval indirmesi scratchpad'de, kalıcı değil.
+
 ## Devir notu (17 Kasım 2026, öğle): Dalga 5'in ilk dört paketi
 
 - Birleşenler: #687 ortak temel 5 (sayfa, ⋮, uzun basma tek depoda; `SCRIM_GLASS` 6 yalnız uzun basmada, panel anahtarı "Uzun basma bulanıklığı", varsayılan kapalı); #688 Toast ve ButtonRow (Profilim, Süsle kayıt hatası); #689 mekan detayı ve konum doğrulama (17, 18, 11b, 11c); #690 Mekan sekmesi ve lobi (19–23, 126–128).
