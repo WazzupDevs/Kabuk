@@ -1,190 +1,46 @@
-import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Alert, View } from 'react-native';
 
-import { Btn, T } from '@/aura/kit';
-import { Banner } from '@/components/Banner';
-import { EmptyState } from '@/components/EmptyState';
-import { Menu, MenuItem } from '@/components/Menu';
-import { Screen } from '@/components/Screen';
-import { Sheet } from '@/components/Sheet';
-import { Loader } from '@/components/Loader';
-import { ReportModal } from '@/features/chat/ReportModal';
-import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { FriendActions } from '@/features/friends/FriendActions';
-import { refreshFriends, useFriends } from '@/features/friends/queries';
-import { ProfileHead, ProfileTopBar } from '@/features/profile/ProfileCard';
+import { refreshFriends } from '@/features/friends/queries';
+import { SenderProfileScreen } from '@/features/profile/SenderProfileScreen';
 import { useVenueChatProfile } from '@/features/venueChat/queries';
-import { errorMessage } from '@/i18n/errors';
-import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
-import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { confirm } from '@/lib/overlayStore';
-import { KIT } from '@/theme/auraKit';
 
 // The sender of a profiled venue chat message, opened through the message (docs/SPEC_V3.md §7.5):
-// no public_id. "Arkadaşlık isteği gönder" asks first, because the request shows the other side
-// this account's name, age and photo.
+// no public_id. The screen is the shared `SenderProfileScreen` (the district chat and the venue
+// feed use it too).
 export default function VenueChatProfileScreen() {
   const { messageId } = useLocalSearchParams<{ messageId: string }>();
   const view = useVenueChatProfile(messageId);
-  // A friend: "Arkadaşsınız" and the DM, not a request (the owner's report, 29 Ekim).
-  const friends = useFriends();
-  const friendId = view.data?.friendPublicId;
-  const friend = friendId ? friends.data?.find((f) => f.publicId === friendId) : undefined;
-  const [menu, setMenu] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [reporting, setReporting] = useState(false);
-  const [blocking, setBlocking] = useState(false);
-
-  const request = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: () => friendsApi.requestFromVenueChat(messageId),
-    onSuccess: () => {
-      track('friend_request_sent', { source: 'venue_chat' });
-      setSent(true);
-    },
-  });
-  // A thrown error leaves the dialog open; the Banner under the button keeps the message.
-  const ask = () =>
-    confirm({
-      title: tr.venueChat.requestConfirmTitle,
-      note: tr.venueChat.requestConfirmBody,
-      icon: 'invite',
-      tone: 'plain',
-      confirmLabel: tr.venueChat.requestConfirm,
-      cancelLabel: tr.common.cancel,
-      testID: 'venue-chat-request-confirm',
-      onConfirm: async () => {
-        await request.mutateAsync();
-      },
-    });
   const queryClient = useQueryClient();
-  const report = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: (reason: ReportReason) => safetyApi.reportVenueChat(messageId, reason),
-    onSuccess: () => {
-      track('venue_chat_reported', {});
-      setReporting(false);
-      Alert.alert(tr.safety.reportSent);
-    },
-  });
-  const block = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: (reason: ReportReason | undefined) => safetyApi.blockVenueChat(messageId, reason),
-    onSuccess: () => {
-      track('block_created', {});
-      // The blocked person's messages go from the chat, and a friend from the lists (audit CHAT-5).
-      void queryClient.invalidateQueries({ queryKey: ['venueChat'] });
-      void refreshFriends(queryClient, 'friendship');
-      setBlocking(false);
-      router.back();
-    },
-  });
-
   return (
-    <Screen
-      // MekanSohbetiProfil (v71; docs/decisions/aura-v71-eklenen.md, karar 3): "Geri" always in
-      // the fixed foot.
-      footer={<Btn block variant="glassy" label={tr.profile.back} onPress={() => router.back()} />}
-      top={
-        // Like a friend's profile (the owner's call, 27 Ekim; skall tuvali, ProfilYabanci): the
-        // round back and "Seçenekler" on top, the profile's head, the request under it.
-        <ProfileTopBar
-          onBack={() => router.back()}
-          onMore={view.data ? () => setMenu(true) : undefined}
-        />
-      }
-    >
-      {view.isPending ? (
-        <View className="mt-16 items-center">
-          <Loader />
-        </View>
-      ) : !view.data ? (
-        <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
-      ) : (
-        <View testID="venue-chat-profile">
-          <ProfileHead profile={view.data}>
-            {friend ? (
-              <FriendActions friend={friend} />
-            ) : sent ? (
-              <T v="fine" center testID="venue-chat-request-sent">
-                {tr.venueChat.requestSent}
-              </T>
-            ) : (
-              <>
-                {request.isError ? (
-                  <Banner tone="danger" body={errorMessage(request.error)} />
-                ) : null}
-                <Btn
-                  block
-                  bar={KIT.size.btnRow}
-                  testID="venue-chat-request"
-                  icon="invite"
-                  label={tr.venueChat.sendRequest}
-                  onPress={ask}
-                />
-              </>
-            )}
-          </ProfileHead>
-        </View>
-      )}
-      <Sheet
-        visible={menu}
-        onClose={() => setMenu(false)}
-        title={view.data?.displayName ?? tr.profile.moreTitle}
-      >
-        <Menu>
-          <MenuItem
-            negative
-            cap="report"
-            label={tr.chat.report}
-            testID="profile-report"
-            onPress={() => {
-              setMenu(false);
-              setReporting(true);
-            }}
-          />
-          <MenuItem
-            negative
-            cap="block"
-            label={tr.safety.block}
-            testID="profile-block"
-            onPress={() => {
-              setMenu(false);
-              setBlocking(true);
-            }}
-          />
-        </Menu>
-        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
-      </Sheet>
-      <ReportModal
-        reasons={REPORT_REASONS}
-        visible={reporting}
-        pending={report.isPending}
-        error={report.error}
-        onReport={(reason) => report.mutate(reason)}
-        onClose={() => setReporting(false)}
-      />
-      <ConfirmWithReport
-        reasons={REPORT_REASONS}
-        visible={blocking}
-        title={
-          view.data?.displayName
-            ? tr.safety.blockNamedTitle(view.data.displayName)
-            : tr.venueChat.blockConfirmTitle
-        }
-        hint={tr.venueChat.blockConfirmBody}
-        confirmLabel={tr.safety.blockConfirm}
-        confirmIcon="block"
-        pending={block.isPending}
-        error={block.error}
-        onConfirm={(reason) => block.mutate(reason)}
-        onClose={() => setBlocking(false)}
-      />
-    </Screen>
+    <SenderProfileScreen
+      view={view}
+      sendRequest={() => friendsApi.requestFromVenueChat(messageId)}
+      onRequested={() => track('friend_request_sent', { source: 'venue_chat' })}
+      report={{
+        send: (reason) => safetyApi.reportVenueChat(messageId, reason),
+        onSent: () => track('venue_chat_reported', {}),
+      }}
+      block={{
+        send: (reason) => safetyApi.blockVenueChat(messageId, reason),
+        onDone: () => {
+          track('block_created', {});
+          // The blocked person's messages go from the chat, and a friend from the lists (audit CHAT-5).
+          void queryClient.invalidateQueries({ queryKey: ['venueChat'] });
+          void refreshFriends(queryClient, 'friendship');
+          router.back();
+        },
+      }}
+      ids={{
+        screen: 'venue-chat-profile',
+        request: 'venue-chat-request',
+        confirm: 'venue-chat-request-confirm',
+        sent: 'venue-chat-request-sent',
+        report: 'profile-report',
+        block: 'profile-block',
+      }}
+    />
   );
 }

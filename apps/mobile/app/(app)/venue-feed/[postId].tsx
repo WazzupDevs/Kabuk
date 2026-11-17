@@ -59,6 +59,7 @@ export default function VenueFeedRepliesScreen() {
             post={parent}
             now={now}
             first
+            onProfile={actions.onProfile}
             onLike={actions.onLike}
             onDelete={actions.onDelete}
             onReport={actions.onReport}
@@ -95,6 +96,7 @@ export default function VenueFeedRepliesScreen() {
                   post={post}
                   now={now}
                   first={i === 0}
+                  onProfile={actions.onProfile}
                   onLike={actions.onLike}
                   onDelete={actions.onDelete}
                   onReport={actions.onReport}
