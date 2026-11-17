@@ -48,6 +48,34 @@ Proje sahibi sekme çubuğunun hiç aktarılmadığını gördü ("tuvalin bireb
 
 Daha önce verilmiş ölçü kararları (çip 36, ana düğme 48/56, küçük düğme 36) için ayrıca sorulmadı; pano farklı çiziyorsa (Keşfet çipi 40, satır düğmesi 40) yeni oturum tek satırda sorar.
 
+## 18 Kasım kararları (proje sahibi; tam denetimden sonra)
+
+Tam denetim (`docs/design/yeni-arayuz/pano-kod-denetimi.md`, 203 pano) panoların bugünkü kurallarla çeliştiği yerleri çıkardı; proje sahibi her birine tek tek cevap verdi. Değişmez kural metnine dokunanların kural cümlesi kendi paketinin PR'ında değişir ve o PR proje sahibinin açık "onaylandı"sıyla birleşir; plan ve sıra `mimar`'dan (P1–P6).
+
+Görünüş:
+
+- **Boylar her yerde panodaki gibi:** çip 40, büyük düğme 56, sohbet yazma alanı ve gönder 52, Süsle süzgeç çipi 28, satır düğmeleri panonun o satırda çizdiği boyda (32, 34, 40). 2 ve 16 Kasım'ın "çip 36, küçük düğme 36" kararının yerini alır; CLAUDE.md "Ekran davranışı" ve `iskelet.md` 2.1 boy paketinin PR'ında güncellenir.
+- **Alt sayfalarda kapat (X) düğmesi kalkar** (panoda yok); sayfa dışarı dokununca, kaydırınca ve geri tuşuyla kapanır.
+- **Panoda olmayıp kodda duran, işlevi olan öğeler kalır:** Kibrit'te sohbet düğmesi ve "Bildir", Sprengja'da "Kelime kuralları", masa kartında "Lobiye aç / Lobiden çek", davette "Reddet", DM'de "Okunmamış mesajlar" çizgisi. Yalnız süs olanlar kalkar (Aktiviteler'de şehir satırı, masa kartında boş koltuk çizimi).
+
+Kural değişmeyenler (panodan bilerek ayrılır):
+
+- Mekan sohbetinde kişi sayısı, "Mekandakiler" ve "yazıyor" çizilmez (semt sohbeti gibi).
+- İstekler satırında "Ortak arkadaş" ve masa adı çizilmez.
+- Masa bitti bugünkü gibi kalır: yaş ve anonim kapsül gönderilmez, anonim kişi eklenebilir (K-75).
+
+Kural değişenler:
+
+- **P1 "Yeniden oyna" herkeste, öneri olarak** (kural 3 değişmez): katılımcının basışı sahibe öneridir, oyunu yine sahip başlatır. Masa bitti'de "arkadaş oldunuz" (64a) aynı pakette.
+- **P2 Anonim oturma herkese açılır** (kural 4 ve 12): erkek ve belirtmeyen de masada anonim oturabilir; check-in'e kimlik adımı gelir (124). Kayıttaki cinsiyet sorusu kalır; cinsiyeti boş eski hesaba yeniden sorulmaz.
+- **P2 Anonim nick öneki cinsiyete göre** (kural 12 ve 4): erkek `terra-xxxx`, kadın `luna-xxxx`, belirtmeyen `sol-xxxx`; `xxxx` bugünkü biçim. Proje sahibine nick'in cinsiyeti her okuyana söylediği ve rastgele önek seçeneği sunuldu; "cinsiyete göre" dedi. Kural 12'nin "cinsiyet hiçbir kullanıcıya gösterilmez" cümlesi ve gizlilik metinleri bu paketle değişir.
+- **P3 Odadakiler panodaki gibi tam** (kural 4 ve 5): profilli satırda "Arkadaş ekle", anonim satırda kapsül ve satır menüsü. Sessize alma kimliğe bağlı kalır: anonim satırdan sessize almak yalnız o kişinin anonim mesajlarını gizler.
+- **P4 Lobide yüzler ve masa sayısı** (kural 4, K-41): lobi satırında masadakilerin yüzleri (profilli fotoğrafıyla, anonim kapsülüyle; ad ve nick gitmez), yalnız o mekanda check-in'i olana; Keşfet ve haritada masa sayısı, yüz yok.
+- **P5 Akış gönderisine masa kartı** (kural 4, §4.Y): yalnız masa sahibi ekler.
+- **P6 Haritada konum noktası, "Konumuma git" ve uzaklık** (kural 6): konum cihazda kalır, sunucuya gitmez; KVKK metni ve mağaza beyanı güncellenir.
+
+Kabul edilen yeni açıklıklar (proje sahibine söylendi): lobide kapsül görününce mekan sohbetinde aynı kapsülle yazan kişinin masası anlaşılır; Odadakiler'de anonim satır kapsülüyle görününce satır o kişinin mesajlarına ve geliş zamanına bağlanır; nick öneki anonim yazanın cinsiyetini söyler.
+
 ## Panolar depoda (17 Kasım, proje sahibinin kararı)
 
 Canlı tuvalin bütün panoları (203 pano, `canvas.json`, üç css; sürüm 1794920928-8d77) `docs/design/yeni-arayuz/project/` altındadır; numara → dosya eşlemesi `docs/design/yeni-arayuz/ESLEME.md`, resimlerin (blob) hangi panoda kullanıldığı `BLOBLAR.md`. Yeni oturum panoları indirmez, buradan okur; `mobil` ajanına dosya yolu verilir. Resimler depoda değildir: gereken resim Artifact aracıyla tek tek indirilir. Tuval değişince proje sahibi söyler; o zaman değişen panolar yeniden indirilip bu klasör ve iki eşleme dosyası güncellenir.
