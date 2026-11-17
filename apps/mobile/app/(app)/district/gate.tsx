@@ -4,11 +4,19 @@ import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Btn, Round, T, useKit } from '@/aura/kit';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, T, useKit } from '@/aura/kit';
 import { boxShadowParts } from '@/components/NativeShadow';
-import { Screen } from '@/components/Screen';
 import { districtScreen } from '@/features/district/flow';
-import { Foot, RISO, StillScene, WarnRow } from '@/features/district/parts';
+import {
+  Foot,
+  HeroBar,
+  HeroRound,
+  HeroScreen,
+  RISO,
+  TicketShell,
+  WarnRow,
+} from '@/features/district/parts';
 import { districtKeys, putDistrictState, useDistrictState } from '@/features/district/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -17,8 +25,8 @@ import { ApiError, districtApi } from '@/lib/api';
 import { isNetworkError } from '@/lib/connection';
 import { useLabOff } from '@/lib/drawLab';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { KIT } from '@/theme/auraKit';
 import { SEMT } from '@/theme/semt';
-import { SPACING } from '@/theme/tokens';
 
 // Geçit (Gecit, GecitHal; docs/SPEC_V4.md §4.V): the day's question pinned to the door, four tickets.
 // Choosing sends nothing; [Geçide söyle] sends, the tickets locked meanwhile, an error in the flow
@@ -55,24 +63,24 @@ export default function DistrictGateScreen() {
   const sending = answer.isPending;
 
   return (
-    <Screen
+    <HeroScreen
+      kind="gate"
+      source={RISO.heroGate}
+      label={tr.district.gate.sceneLabel}
       top={
-        <View
-          style={{
-            minHeight: TOP_BAR,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: SPACING[3],
-          }}
-        >
-          <Round icon="back" label={tr.common.back} onPress={() => router.back()} />
+        <HeroBar>
+          <HeroRound icon="back" label={tr.common.back} onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
-            {s?.district ? <T v="eyebrow">{s.district.name}</T> : null}
-            <T v="h3" accessibilityRole="header">
+            {s?.district ? (
+              <T v="fine" strong color={SEMT.hero.onPicture.soft}>
+                {s.district.name}
+              </T>
+            ) : null}
+            <T v="h3" color={SEMT.hero.onPicture.ink} accessibilityRole="header">
               {tr.district.gate.title}
             </T>
           </View>
-        </View>
+        </HeroBar>
       }
       footer={
         <Foot>
@@ -86,6 +94,10 @@ export default function DistrictGateScreen() {
                   : errorMessage(answer.error)
               }
             />
+          ) : q ? (
+            <T v="fine" center>
+              {tr.district.gate.hint}
+            </T>
           ) : null}
           {q || !state.isError ? (
             <Btn
@@ -110,17 +122,7 @@ export default function DistrictGateScreen() {
       }
     >
       <View testID="district-gate">
-        <StillScene
-          source={RISO.closed}
-          height={SEMT.scene.gecit}
-          label={tr.district.gate.sceneLabel}
-        />
-        <View
-          style={{
-            marginTop: -SEMT.note.overlap,
-            marginHorizontal: SEMT.note.inset,
-          }}
-        >
+        <View style={{ marginHorizontal: SEMT.note.inset }}>
           {q ? (
             <Paper prompt={q.prompt} />
           ) : state.isError ? (
@@ -153,20 +155,14 @@ export default function DistrictGateScreen() {
           </View>
         ) : null}
       </View>
-    </Screen>
+    </HeroScreen>
   );
 }
-const TOP_BAR = 56;
 
 // `.note`: the question's paper, the same in both schemes, tilted, its pin at the top.
 function Paper({ prompt }: { prompt: string }) {
-  const { scheme } = useKit();
   const n = SEMT.note;
-  const shadow = boxShadowParts(
-    useLabOff('golge'),
-    scheme === 'light' ? n.shadow : `0px 0px 0px 1px ${n.darkEdge}`,
-    n.radius,
-  );
+  const shadow = boxShadowParts(useLabOff('golge'), n.shadow, n.radius);
   return (
     <View
       style={{
@@ -249,8 +245,8 @@ function PaperSkeleton() {
   );
 }
 
-// `.tk`: a ticket, its letter on the stub behind a dashed line; chosen in the soft green with the
-// primary's ring. Locked while sending: the chosen one stays, the others' words go muted.
+// `.op`: a ticket, its letter on the stub behind a dashed line; chosen in the soft green with the
+// check on the primary's stub. Locked while sending: the chosen one stays, the others' words go muted.
 function Ticket({
   letter,
   text,
@@ -276,51 +272,39 @@ function Ticket({
       testID={`gecit-option-${letter}`}
       disabled={locked}
       onPress={onPress}
-      style={{
-        flexBasis: '45%',
-        flexGrow: 1,
-        minHeight: t.minHeight,
-        flexDirection: 'row',
-        alignItems: 'stretch',
-        borderRadius: t.radius,
-        backgroundColor: on ? k.onGround : k.ground,
-        borderWidth: on ? 2 : 1,
-        borderColor: on ? k.onEdge : k.edge,
-      }}
+      style={{ flexBasis: '45%', flexGrow: 1 }}
     >
-      <View
-        style={{
-          width: t.stub,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+      <TicketShell
+        stubWidth={t.stub}
+        stubGround={on ? k.onStub : k.stub}
+        ground={on ? k.onGround : k.ground}
+        radius={t.radius}
+        notch={t.notch}
+        minHeight={t.minHeight}
+        dash={on ? k.onDash : k.dash}
+        dashInset={t.dashInset}
+        stub={
+          on ? (
+            <CapIcon name="check" color={k.onInk} size={KIT.size.icon} />
+          ) : (
+            <T v="h3" color={c.muted}>
+              {letter}
+            </T>
+          )
+        }
       >
-        <T v="h3" color={on ? k.onLetter : c.muted}>
-          {letter}
-        </T>
-      </View>
-      <View
-        accessible={false}
-        style={{
-          width: 2,
-          marginVertical: SPACING[1],
-          borderWidth: 1,
-          borderStyle: 'dashed',
-          borderColor: on ? k.onDash : k.dash,
-        }}
-      />
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          paddingHorizontal: t.textPadX,
-          paddingVertical: t.textPadY,
-        }}
-      >
-        <T v="body" strong color={ink}>
-          {text}
-        </T>
-      </View>
+        <View
+          style={{
+            paddingLeft: t.textPadLeft,
+            paddingRight: t.textPadRight,
+            paddingVertical: t.textPadY,
+          }}
+        >
+          <T v="title" color={ink}>
+            {text}
+          </T>
+        </View>
+      </TicketShell>
     </Pressable>
   );
 }
