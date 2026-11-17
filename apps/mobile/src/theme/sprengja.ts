@@ -182,6 +182,8 @@ export type SprengjaRing = ReturnType<typeof sprengjaRing>;
 export const SPRENGJA_BOARD_TYPE = {
   headTitle: risoType(F700, 17, 22),
   headSub: risoType(F500, 13, 18),
+  // The plain "Süre gizli" label (`.tmr.nt`, 700/13): says the time is hidden, shows none.
+  hiddenTime: risoType(F700, 13, 20),
   kick: risoType(F700, 12, 16, 0.4 / 12),
   group: risoType(F800, 64, 70, 4 / 64),
   note: risoType(F500, 14, 20),
@@ -197,7 +199,19 @@ export const SPRENGJA_BOARD_TYPE = {
 
 export const SPRENGJA_BOARD = {
   // The head: 5 under the status bar, 16 from the sides, 10 apart; the poster 56 × 40, 12 round.
-  head: { top: 5, side: 16, gap: 10, logoW: 56, logoH: 40, logoRadius: 12 },
+  head: {
+    top: 5,
+    side: 16,
+    gap: 10,
+    logoW: 56,
+    logoH: 40,
+    logoRadius: 12,
+    // The label (`.tmr.nt`): 40 high, 14 in; under the head below this width or past this text scale.
+    pillHeight: 40,
+    pillPadX: 14,
+    narrow: 360,
+    bigText: 1,
+  },
   // The stage (`.gs`): 12 between its parts.
   gap: 12,
   // The bomb card: 28 round, 24 / 20 in; the bomb 96 (4 down), the group 8 over / 6 under, the note 6.

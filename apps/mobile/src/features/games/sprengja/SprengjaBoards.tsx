@@ -1,7 +1,7 @@
 import { upperTr } from '@shared/trText.ts';
 import { Image } from 'expo-image';
 import { type ReactNode } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { PixelRatio, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
@@ -24,8 +24,8 @@ import { BarSlot, Cover } from './SprengjaParts';
 import type { ScoreRow } from './sprengjaView';
 
 // Sprengja's two yeni arayüz boards: SprengjaBomba (bomba sende) and SprengjaSonuc (oyun sonu).
-// No time shows on either (K-85): the board's "Süre gizli" pill is not drawn; the chat round stays
-// where the head has room for it.
+// No time shows on either (K-85): the head's "Süre gizli" is a plain label; it steps under the head
+// when the width or the text size is short.
 
 export type BarClose = { label: string; onPress: () => void; testID: string };
 
@@ -43,7 +43,29 @@ export function SprengjaHead({
   right?: ReactNode;
 }) {
   const H = B.head;
-  return (
+  const { width } = useWindowDimensions();
+  const { colors, scheme } = useTheme();
+  const { c } = useKit();
+  const under = width < H.narrow || PixelRatio.getFontScale() > H.bigText;
+  // "Süre gizli" (`.tmr.nt`): a plain label, no time, bar or motion (K-85).
+  const pill = (
+    <View
+      style={{
+        height: H.pillHeight,
+        borderRadius: H.pillHeight / 2,
+        paddingHorizontal: H.pillPadX,
+        justifyContent: 'center',
+        backgroundColor: colors.surface,
+        boxShadow:
+          scheme === 'dark' ? `inset 0px 0px 0px 1px ${SPRENGJA_BOARD_RING}` : c.raisedShadow,
+      }}
+    >
+      <Text maxFontSizeMultiplier={1} style={[BT.hiddenTime, { color: c.muted }]}>
+        {tr.sprengja.hiddenTime}
+      </Text>
+    </View>
+  );
+  const row = (
     <View
       style={{
         flexDirection: 'row',
@@ -70,7 +92,15 @@ export function SprengjaHead({
           </T>
         ) : null}
       </View>
+      {under ? null : pill}
       {right}
+    </View>
+  );
+  if (!under) return row;
+  return (
+    <View>
+      {row}
+      <View style={{ alignItems: 'flex-end', marginTop: H.gap }}>{pill}</View>
     </View>
   );
 }
