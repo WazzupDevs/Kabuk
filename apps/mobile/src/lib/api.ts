@@ -76,6 +76,11 @@ import type {
 } from '@shared/api/venueChat.ts';
 import type { VenueChatMode } from '@shared/venueChat.ts';
 import type {
+  VenueFeedMuteResponse,
+  VenueFeedPageResponse,
+  VenueFeedPostResponse,
+} from '@shared/api/venueFeed.ts';
+import type {
   DistrictAnswerResponse,
   DistrictChatPageResponse,
   DistrictChatSendResponse,
@@ -466,6 +471,38 @@ export const venueChatApi = {
     invoke<VenueChatMuteResponse>('venue-chat', { action: 'mute', messageId }),
   unmute: (muteId: string) => invoke<{ ok: true }>('venue-chat', { action: 'unmute', muteId }),
   mutes: () => invoke<VenueChatMutesResponse>('venue-chat', { action: 'mutes' }),
+};
+
+// Mekan akışı (docs/SPEC_V4.md §4.Y): posts of the people checked in at the venue, always with the
+// author's profile. clientId: the same press again is the same post (nothing written twice).
+export const venueFeedApi = {
+  post: (venueId: string, body: string, clientId: string, replyTo?: string) =>
+    invoke<VenueFeedPostResponse>('venue-feed', {
+      action: 'post',
+      venueId,
+      body,
+      ...(replyTo ? { replyTo } : {}),
+      clientId,
+    }),
+  // `before`: an older page, the posts before that moment.
+  page: (venueId: string, before?: string) =>
+    invoke<VenueFeedPageResponse>('venue-feed', {
+      action: 'page',
+      venueId,
+      ...(before ? { before } : {}),
+    }),
+  replies: (postId: string, before?: string) =>
+    invoke<VenueFeedPageResponse>('venue-feed', {
+      action: 'replies',
+      postId,
+      ...(before ? { before } : {}),
+    }),
+  like: (postId: string) => invoke<{ ok: true }>('venue-feed', { action: 'like', postId }),
+  unlike: (postId: string) => invoke<{ ok: true }>('venue-feed', { action: 'unlike', postId }),
+  remove: (postId: string) => invoke<{ ok: true }>('venue-feed', { action: 'delete', postId }),
+  report: (postId: string, reason: ReportReason) =>
+    invoke<{ ok: true }>('venue-feed', { action: 'report', postId, reason }),
+  mute: (postId: string) => invoke<VenueFeedMuteResponse>('venue-feed', { action: 'mute', postId }),
 };
 
 // Semte Git and Geçit (docs/SPEC_V4.md §4.V, K-90). The coordinate goes in this one call and the

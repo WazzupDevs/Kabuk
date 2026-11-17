@@ -22,6 +22,7 @@ import { useCurrentRoom, useRoom, useVenueTables } from '@/features/rooms/querie
 import { TableCard } from '@/features/rooms/TableCard';
 import { VenueHead, VenueNameRow } from '@/features/venue/VenueHead';
 import { VenueChatCard } from '@/features/venueChat/VenueChatCard';
+import { FeedView } from '@/features/venueFeed/FeedView';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { trackOnce } from '@/lib/analytics';
@@ -34,9 +35,14 @@ import { PinLayer } from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { VENUE } from '@/theme/venue';
-import { T } from '@/aura/kit';
+import { VENUE_FEED_LOOK } from '@/theme/venueFeed';
+import { Seg, T } from '@/aura/kit';
 
 type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
+
+// "Masalar" is Mekan as it was (the table's card, the venue chat, the lobby); "Akış" the venue's
+// posts (docs/SPEC_V4.md §4.Y).
+type VenueView = 'tables' | 'feed';
 
 function endSession(checkInId: string, startedAt: string) {
   trackOnce(`session_ended:${checkInId}`, 'session_ended', {
@@ -65,6 +71,7 @@ export default function VenueScreen() {
   // Where the lobby starts in the content ("Açık masalar" on the card without a table goes there).
   const [lobbyAt, setLobbyAt] = useState(0);
   const scroll = useRef<ScrollView>(null);
+  const [view, setView] = useState<VenueView>('tables');
   const reduceMotion = useReduceMotion();
 
   const leave = useMutation({
@@ -201,6 +208,8 @@ export default function VenueScreen() {
             stayShare={stayShare}
             onLeave={openLeave}
             leaving={leave.isPending}
+            // The check-in's identity is for the table and the venue chat; the feed has none.
+            feed={view === 'feed'}
           />
         }
       >
@@ -219,69 +228,91 @@ export default function VenueScreen() {
               {errorMessage(leave.error)}
             </T>
           ) : null}
+          <View style={{ marginTop: VENUE_FEED_LOOK.switchTop }}>
+            <Seg
+              value={view}
+              onChange={(next) => {
+                // Each view starts from its top.
+                scroll.current?.scrollTo({ y: 0, animated: false });
+                setView(next);
+              }}
+              accessibilityLabel={tr.venueFeed.viewLabel}
+              options={[
+                { value: 'tables', label: tr.venueFeed.tabTables, testID: 'venue-view-tables' },
+                { value: 'feed', label: tr.venueFeed.tabFeed, testID: 'venue-view-feed' },
+              ]}
+            />
+          </View>
         </View>
-        <PinLayer>
-          <View style={{ marginTop: gaps.card }}>
-            <TableCard
-              checkIn={checkIn.data}
-              room={room}
-              state={state}
-              band={band}
-              onCreate={() => setCreating(true)}
-              onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
-              onShowLobby={showLobby}
-            />
-          </View>
-        </PinLayer>
-        <PinLayer>
-          <View style={{ marginTop: gaps.chat }}>
-            <VenueChatCard
-              venueId={checkIn.data.venue_id}
-              sessionId={checkIn.data.id}
-              identity={checkIn.data.identity.mode}
-              at={chatAt}
-            />
-          </View>
-        </PinLayer>
+        {view === 'feed' ? <FeedView venueId={checkIn.data.venue_id} /> : null}
+        {view === 'tables' ? (
+          <PinLayer>
+            <View style={{ marginTop: gaps.card }}>
+              <TableCard
+                checkIn={checkIn.data}
+                room={room}
+                state={state}
+                band={band}
+                onCreate={() => setCreating(true)}
+                onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
+                onShowLobby={showLobby}
+              />
+            </View>
+          </PinLayer>
+        ) : null}
+        {view === 'tables' ? (
+          <PinLayer>
+            <View style={{ marginTop: gaps.chat }}>
+              <VenueChatCard
+                venueId={checkIn.data.venue_id}
+                sessionId={checkIn.data.id}
+                identity={checkIn.data.identity.mode}
+                at={chatAt}
+              />
+            </View>
+          </PinLayer>
+        ) : null}
         {/* At least as tall as what is left under the two strips: with few open tables the page ran
           out of scroll before the table card had folded, and stopped half folded with its buttons
           cut at its foot (docs/denetim/pano-fark-2026-11.md → PF-78). */}
-        <View
-          style={{ marginTop: gaps.lobby, minHeight: lobbyRoom }}
-          onLayout={(e) => setLobbyAt(e.nativeEvent.layout.y)}
-        >
-          <Lobby
-            venueId={checkIn.data.venue_id}
-            sessionId={checkIn.data.id}
-            since={checkIn.data.created_at}
-            mySpotId={checkIn.data.spot_id}
-            venueHasSpots={venueHasSpots}
-            state={state}
-            roomId={room?.id ?? null}
-            myPhones={room?.phones ?? 1}
-            needsPhoto={needsPhoto}
-            onNotice={setNotice}
-          />
-          {lobbySheet && room && state === 'private' ? (
-            <OpenLobbySheet
-              onClose={() => setLobbySheet(null)}
-              // Opened from further down the screen, the card's new "Lobide açık" is scrolled away.
-              onOpened={() => scroll.current?.scrollTo({ y: 0, animated: !reduceMotion })}
-              roomId={room.id}
+        {view === 'tables' ? (
+          <View
+            style={{ marginTop: gaps.lobby, minHeight: lobbyRoom }}
+            onLayout={(e) => setLobbyAt(e.nativeEvent.layout.y)}
+          >
+            <Lobby
               venueId={checkIn.data.venue_id}
-              intent={lobbySheet.intent}
-              gameTag={lobbySheet.gameTag}
+              sessionId={checkIn.data.id}
+              since={checkIn.data.created_at}
+              mySpotId={checkIn.data.spot_id}
+              venueHasSpots={venueHasSpots}
+              state={state}
+              roomId={room?.id ?? null}
+              myPhones={room?.phones ?? 1}
+              needsPhoto={needsPhoto}
+              onNotice={setNotice}
             />
-          ) : null}
-          {creating && state === 'none' ? (
-            <CreateTableSheet
-              onClose={() => setCreating(false)}
-              venueId={checkIn.data.venue_id}
-              usedIcons={usedIcons}
-              anonymous={anonymous}
-            />
-          ) : null}
-        </View>
+            {lobbySheet && room && state === 'private' ? (
+              <OpenLobbySheet
+                onClose={() => setLobbySheet(null)}
+                // Opened from further down the screen, the card's new "Lobide açık" is scrolled away.
+                onOpened={() => scroll.current?.scrollTo({ y: 0, animated: !reduceMotion })}
+                roomId={room.id}
+                venueId={checkIn.data.venue_id}
+                intent={lobbySheet.intent}
+                gameTag={lobbySheet.gameTag}
+              />
+            ) : null}
+            {creating && state === 'none' ? (
+              <CreateTableSheet
+                onClose={() => setCreating(false)}
+                venueId={checkIn.data.venue_id}
+                usedIcons={usedIcons}
+                anonymous={anonymous}
+              />
+            ) : null}
+          </View>
+        ) : null}
       </Screen>
       {/* The request's notice 16 over the tab bar (MasaIstekBekliyor `.snk`). */}
       <Toast
