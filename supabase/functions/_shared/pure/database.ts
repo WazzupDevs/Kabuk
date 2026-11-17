@@ -3240,6 +3240,17 @@ export type Database = {
           outcome: string;
         }[];
       };
+      friends_request_venue_post: {
+        Args: {
+          daily_max: number;
+          target_post_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          other_user_id: string;
+          outcome: string;
+        }[];
+      };
       friends_respond: {
         Args: {
           accept: boolean;
@@ -5899,6 +5910,10 @@ export type Database = {
           likes: number;
           photo_path: string;
         }[];
+      };
+      venue_post_profile_owner: {
+        Args: { target_post_id: string; target_user_id: string };
+        Returns: string;
       };
       venue_tables: {
         Args: { target_venue_id: string };

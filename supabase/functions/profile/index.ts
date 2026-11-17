@@ -43,6 +43,7 @@ const Body: z.ZodType<ProfileRequest> = z.union([
   z.strictObject({ action: z.literal('get'), publicId: z.uuid() }),
   z.strictObject({ action: z.literal('get'), venueChatMessageId: z.uuid() }),
   z.strictObject({ action: z.literal('get'), districtChatMessageId: z.uuid() }),
+  z.strictObject({ action: z.literal('get'), venuePostId: z.uuid() }),
   z.object({
     action: z.literal('update'),
     displayName: z.string().max(200).optional(),
@@ -177,13 +178,27 @@ async function ageAndBadges(userId: string) {
 async function getChatProfile(
   viewer: string,
   messageId: string,
-  chat: 'venue' | 'district' = 'venue',
+  chat: 'venue' | 'district' | 'post' = 'venue',
 ): Promise<ChatProfileView> {
-  const fn = chat === 'district' ? 'district_chat_profile_owner' : 'venue_chat_profile_owner';
-  const owner = await db.rpc(fn, {
-    target_user_id: viewer,
-    target_message_id: messageId,
-  });
+  const fn =
+    chat === 'post'
+      ? 'venue_post_profile_owner'
+      : chat === 'district'
+        ? 'district_chat_profile_owner'
+        : 'venue_chat_profile_owner';
+  const owner =
+    chat === 'post'
+      ? await db.rpc('venue_post_profile_owner', {
+          target_user_id: viewer,
+          target_post_id: messageId,
+        })
+      : await db.rpc(
+          chat === 'district' ? 'district_chat_profile_owner' : 'venue_chat_profile_owner',
+          {
+            target_user_id: viewer,
+            target_message_id: messageId,
+          },
+        );
   if (owner.error) throw dbError(fn, owner.error);
   if (!owner.data) throw new AppError('not_found', 'Profile not found.');
   const [a, b] = viewer < owner.data ? [viewer, owner.data] : [owner.data, viewer];
@@ -287,6 +302,9 @@ Deno.serve(
       case 'get':
         if ('districtChatMessageId' in body) {
           return await getChatProfile(user.id, body.districtChatMessageId, 'district');
+        }
+        if ('venuePostId' in body) {
+          return await getChatProfile(user.id, body.venuePostId, 'post');
         }
         return 'venueChatMessageId' in body
           ? await getChatProfile(user.id, body.venueChatMessageId)

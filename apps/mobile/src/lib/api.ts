@@ -383,6 +383,8 @@ export const profileApi = {
   get: (publicId: string) => invoke<ProfileView>('profile', { action: 'get', publicId }),
   getFromVenueChat: (venueChatMessageId: string) =>
     invoke<ChatProfileView>('profile', { action: 'get', venueChatMessageId }),
+  getFromVenuePost: (venuePostId: string) =>
+    invoke<ChatProfileView>('profile', { action: 'get', venuePostId }),
   // A profiled district chat message's sender (docs/SPEC_V4.md §4.V): the room's people only.
   getFromDistrictChat: (districtChatMessageId: string) =>
     invoke<ChatProfileView>('profile', { action: 'get', districtChatMessageId }),
@@ -423,6 +425,8 @@ export const friendsApi = {
     invoke<FriendsOkResponse>('friends', { action: 'request', historyId }),
   requestFromVenueChat: (venueChatMessageId: string) =>
     invoke<FriendsOkResponse>('friends', { action: 'request', venueChatMessageId }),
+  requestFromVenuePost: (venuePostId: string) =>
+    invoke<FriendsOkResponse>('friends', { action: 'request', venuePostId }),
   requestFromDistrictChat: (districtChatMessageId: string) =>
     invoke<FriendsOkResponse>('friends', { action: 'request', districtChatMessageId }),
   incoming: () => invoke<FriendsIncomingResponse>('friends', { action: 'incoming' }),

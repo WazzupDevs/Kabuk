@@ -48,6 +48,9 @@ export type ProfileRequest =
   | { action: 'get'; venueChatMessageId: string }
   // A profiled district chat message's sender (docs/SPEC_V4.md §4.V).
   | { action: 'get'; districtChatMessageId: string }
+  // The author of a venue feed post or reply the reader may see (docs/SPEC_V4.md §4.Y): the same
+  // view, the same not_found for everything else.
+  | { action: 'get'; venuePostId: string }
   | {
       action: 'update';
       displayName?: string;

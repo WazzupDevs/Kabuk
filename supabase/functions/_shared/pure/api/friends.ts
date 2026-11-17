@@ -13,6 +13,8 @@ export type FriendsRequest =
   | { action: 'request'; venueChatMessageId: string }
   // From a profiled district chat message (docs/SPEC_V4.md §4.V).
   | { action: 'request'; districtChatMessageId: string }
+  // From a venue feed post or reply (docs/SPEC_V4.md §4.Y): the same kind of request.
+  | { action: 'request'; venuePostId: string }
   // Requests from the venue chat waiting for the caller: the sender's name, age and photo.
   | { action: 'incoming' }
   | { action: 'respond'; requestId: string; accept: boolean }
