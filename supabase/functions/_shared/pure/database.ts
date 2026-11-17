@@ -3127,6 +3127,14 @@ export type Database = {
           venue_name: string;
         }[];
       };
+      friends_mutual: {
+        Args: { target_public_id: string; viewer: string };
+        Returns: {
+          display_name: string;
+          photo_path: string;
+          public_id: string;
+        }[];
+      };
       friends_of: {
         Args: { viewer: string };
         Returns: {

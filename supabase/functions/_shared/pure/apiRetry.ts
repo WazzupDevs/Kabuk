@@ -104,6 +104,9 @@ export const IDEMPOTENT_CALLS = [
   // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
   // new until the list is opened"
   'friends/notifications',
+  // friends.test "mutual friends (rule 4)": "lists the friends two friends share, nothing to
+  // anyone else, the same when sent twice"
+  'friends/mutual',
   // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
   // new until the list is opened"
   'account/notifications-seen',
