@@ -384,6 +384,25 @@ describe('venue feed: the profile and a friend request from a post', () => {
     expect(await profile(c, id)).toEqual(NOT_FOUND);
   });
 
+  it('answers the same for a hidden post, one past its day and a reply whose post is gone', async () => {
+    const { a, b } = await threeAtVenue();
+    const hidden = await post(a, 'Gizli');
+    const old = await post(a, 'Eski');
+    const parent = await post(a, 'Üst');
+    const reply = await post(a, 'Yanıt', parent);
+    await sql`update public.venue_posts set hidden_at = now() where id = ${hidden}`;
+    await sql`
+      update public.venue_posts set created_at = now() - interval '25 hours' where id = ${old}
+    `;
+    await sql`update public.venue_posts set deleted_at = now() where id = ${parent}`;
+    for (const postId of [hidden, old, reply]) {
+      expect(await profile(b, postId)).toEqual(NOT_FOUND);
+      expect(await request(b, postId)).toEqual(OK);
+    }
+    expect(await sql`select 1 from public.friend_requests`).toHaveLength(0);
+    expect(await sql`select 1 from public.friend_presses`).toHaveLength(0);
+  });
+
   it('sends a request named after the venue, says ok whatever happens, and tells a friend', async () => {
     const { a, b, c } = await threeAtVenue();
     const id = await post(a, 'Selam');
@@ -528,6 +547,52 @@ describe('locks (rule 10)', () => {
       expect(await sql`select 1 from public.reports where venue_post_id = ${id}`).toHaveLength(1);
     } finally {
       await Promise.all([holder.end(), reporter.end()]);
+    }
+  });
+  // friends_request_venue_post: the pair, then the press and the request; no check-in and no post
+  // is locked (the feed's own chain starts at the check-in).
+  it('asks from a post only after taking the pair, locking no check-in and no post', async () => {
+    const { a, b } = await threeAtVenue();
+    const id = await post(a, 'Selam');
+    const [aId, bId] = await Promise.all([userIdOf(a), userIdOf(b)]);
+    const [request] = await sql`
+      insert into public.friend_requests (from_user_id, to_user_id, encounter_id)
+      values (${aId}, ${bId}, ${randomUUID()})
+      returning id
+    `;
+
+    const pair = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const asking = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let asked: Promise<unknown> = Promise.resolve();
+      await pair.begin(async (tx) => {
+        await tx`select private.lock_pair(${aId}, ${bId})`;
+        asked = asking`
+          select outcome from public.friends_request_venue_post(${bId}, ${id}, 10)
+        `
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('friends_request_venue_post');
+        await tx`set local lock_timeout = '2s'`;
+        // It waits for the pair holding nothing: the other side's request, both check-ins and
+        // the post are free.
+        expect(
+          await tx`select id from public.friend_requests where id = ${request?.id} for update`,
+        ).toHaveLength(1);
+        expect(
+          await tx`
+            select id from public.table_sessions where user_id in ${tx([aId, bId])}
+            for no key update
+          `,
+        ).not.toHaveLength(0);
+        expect(
+          await tx`select id from public.venue_posts where id = ${id} for update`,
+        ).toHaveLength(1);
+      });
+      // The author had asked first: the press from the post makes them friends.
+      expect(await asked).toEqual([{ outcome: 'friendship_created' }]);
+    } finally {
+      await Promise.all([pair.end(), asking.end()]);
     }
   });
 });
