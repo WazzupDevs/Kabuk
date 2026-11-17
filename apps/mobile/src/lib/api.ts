@@ -57,6 +57,7 @@ import type {
   DmSendResponse,
   FriendsIncomingResponse,
   FriendsListResponse,
+  FriendsMutualResponse,
   FriendsOkResponse,
   NotificationsResponse,
 } from '@shared/api/friends.ts';
@@ -408,6 +409,9 @@ export const profileApi = {
 
 export const friendsApi = {
   list: () => invoke<FriendsListResponse>('friends', { action: 'list' }),
+  // Ortak arkadaşlar, on a friend's profile only (rule 4); empty for anyone else.
+  mutual: (publicId: string) =>
+    invoke<FriendsMutualResponse>('friends', { action: 'mutual', publicId }),
   // The bell's list (docs/SPEC_V4.md §4.G): requests, accepted requests, matches and invites.
   notifications: () => invoke<NotificationsResponse>('friends', { action: 'notifications' }),
   request: (historyId: string) =>

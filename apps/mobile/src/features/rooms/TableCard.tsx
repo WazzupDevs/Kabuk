@@ -22,7 +22,6 @@ import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { VENUE } from '@/theme/venue';
 
-import { InviteSheet } from './InviteSheet';
 import { roomKeys, type TableRoomRow, useTablePeople } from './queries';
 import { PersonFace } from './RoomPeople';
 import { TABLE_CARD_WIDE, TABLE_ICON_IMAGES } from './tableIconImages';
@@ -69,7 +68,10 @@ export function TableCard({
   const { scheme } = useKit();
   const look = V[scheme];
   const queryClient = useQueryClient();
-  const [invite, setInvite] = useState(false);
+  // Masana davet et is its own page (yeni arayüz tuvali, MasaDavet).
+  const openInvite = () => {
+    if (room) router.push({ pathname: '/room-invite/[id]', params: { id: room.id } });
+  };
 
   const settle = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.current });
@@ -187,7 +189,7 @@ export function TableCard({
                     color={look.accent}
                     label={tr.venue.invite}
                     disabled={full}
-                    onPress={() => setInvite(true)}
+                    onPress={openInvite}
                   />
                 </View>
               ) : null
@@ -311,7 +313,7 @@ export function TableCard({
             testID="invite-open"
             label={tr.venue.invite}
             disabled={full}
-            onPress={() => setInvite(true)}
+            onPress={openInvite}
             look={buttonLook}
             style={EQUAL}
           />
@@ -324,15 +326,6 @@ export function TableCard({
             {errorMessage(withdraw.error)}
           </T>
         </View>
-      ) : null}
-
-      {owner ? (
-        <InviteSheet
-          visible={invite}
-          onClose={() => setInvite(false)}
-          roomId={room.id}
-          phones={room.phones}
-        />
       ) : null}
     </CollapsingCard>
   );

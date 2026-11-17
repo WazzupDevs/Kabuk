@@ -9,6 +9,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type {
   DmInboxResponse,
   FriendsListResponse,
+  FriendsMutualResponse,
 } from '../functions/_shared/pure/api/friends.ts';
 import type { ProfileUploadUrl } from '../functions/_shared/pure/api/profile.ts';
 import { PHOTO_BUCKET } from '../functions/_shared/pure/profile.ts';
@@ -535,6 +536,75 @@ describe('no profile id before a friendship', () => {
     expect(friend).toMatchObject({ displayName: 'Ayşe', photoUrl: null, unread: false });
     // Sent twice, the same answer: the app may resend it after a 5xx (pure/apiRetry.ts).
     expect(await friendList(b)).toEqual([friend]);
+  });
+});
+
+describe('mutual friends (rule 4)', () => {
+  async function befriend(x: Client, y: Client): Promise<void> {
+    const [idX, idY] = await Promise.all([userIdOf(x), userIdOf(y)]);
+    await sql`
+      insert into public.friendships (user_a, user_b, source)
+      values (least(${idX}::uuid, ${idY}::uuid), greatest(${idX}::uuid, ${idY}::uuid), 'request')
+    `;
+  }
+  async function mutual(client: Client, of: Client): Promise<FriendsMutualResponse> {
+    const res = await friends(client, { action: 'mutual', publicId: await publicIdOf(of) });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    return res.body as FriendsMutualResponse;
+  }
+  const NONE = { count: 0, friends: [] };
+
+  it('lists the friends two friends share, nothing to anyone else, the same when sent twice', async () => {
+    const [a, b, c] = await Promise.all([
+      named(PHONES[0], 'Ayşe'),
+      named(PHONES[1], 'Burak'),
+      named(PHONES[2], 'Cem'),
+    ]);
+    // a–b and b–c: a and c share b but are not friends, so neither is told.
+    await befriend(a, b);
+    await befriend(b, c);
+    expect(await mutual(a, c)).toEqual(NONE);
+    expect(await mutual(c, a)).toEqual(NONE);
+    expect(await mutual(a, b)).toEqual(NONE);
+
+    // a–c too: now every two share the third.
+    await befriend(a, c);
+    const seen = await mutual(a, b);
+    expect(seen).toEqual({
+      count: 1,
+      friends: [{ publicId: await publicIdOf(c), displayName: 'Cem', photoUrl: null }],
+    });
+    // Sent twice, the same answer: the app may resend it after a 5xx (pure/apiRetry.ts).
+    expect(await mutual(a, b)).toEqual(seen);
+    expect((await mutual(b, a)).friends.map((f) => f.displayName)).toEqual(['Cem']);
+
+    // The caller itself and an unknown id: the same empty answer.
+    expect(await mutual(a, a)).toEqual(NONE);
+    const unknown = await friends(a, { action: 'mutual', publicId: randomUUID() });
+    expect(unknown).toEqual({ status: 200, body: NONE });
+
+    // A block between the common friend and either of the two takes it off the list.
+    const [idB, idC] = await Promise.all([userIdOf(b), userIdOf(c)]);
+    await sql`
+      insert into public.blocks (blocker_id, blocked_id, blocked_alias) values (${idC}, ${idB}, 'x')
+    `;
+    expect(await mutual(a, b)).toEqual(NONE);
+    await sql`delete from public.blocks`;
+    expect((await mutual(a, b)).count).toBe(1);
+
+    // A block between the two: nothing, like a stranger.
+    const idA = await userIdOf(a);
+    await sql`
+      insert into public.blocks (blocker_id, blocked_id, blocked_alias) values (${idB}, ${idA}, 'x')
+    `;
+    expect(await mutual(a, b)).toEqual(NONE);
+    await sql`delete from public.blocks`;
+
+    // Removed (rule 5): both sides read nothing, like strangers; c drops from nobody else's list.
+    expect(await friends(b, { action: 'remove', publicId: await publicIdOf(a) })).toEqual(OK);
+    expect(await mutual(a, b)).toEqual(NONE);
+    expect(await mutual(b, a)).toEqual(NONE);
+    expect(await mutual(a, c)).toEqual(NONE);
   });
 });
 

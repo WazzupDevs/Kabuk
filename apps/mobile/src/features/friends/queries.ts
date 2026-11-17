@@ -34,6 +34,8 @@ export const friendKeys = {
   dms: ['friends', 'dm'] as const,
   dm: (threadId: string) => ['friends', 'dm', threadId] as const,
   notifications: ['friends', 'notifications'] as const,
+  // Under `list`: read again whenever the friend list is (a friendship made or ended).
+  mutual: (publicId: string) => ['friends', 'list', 'mutual', publicId] as const,
 };
 
 // What a friends event reads again (lib/friendRefresh.ts, B3): the queries it can change, never a
@@ -49,6 +51,18 @@ export function useNotifications() {
   return useQuery({
     queryKey: friendKeys.notifications,
     queryFn: () => friendsApi.notifications(),
+  });
+}
+
+// Ortak arkadaşlar on a friend's profile (rule 4): asked only for a friend.
+export function useMutualFriends(publicId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: friendKeys.mutual(publicId),
+    enabled,
+    queryFn: async () => {
+      const { count, friends } = await friendsApi.mutual(publicId);
+      return { count, friends: friends.map((f) => ({ ...f, photoUrl: stablePhoto(f.photoUrl) })) };
+    },
   });
 }
 

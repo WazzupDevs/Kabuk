@@ -25,6 +25,7 @@ describe('IDEMPOTENT_CALLS', () => {
         'dm/unarchive',
         'dm/unpin',
         'friends/list',
+        'friends/mutual',
         'friends/notifications',
         'gifts/equip',
         'gifts/login',

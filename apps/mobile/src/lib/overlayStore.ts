@@ -33,6 +33,8 @@ export type ConfirmOptions = {
   note: string;
   // A 56 disc over the title (EngelleOnay, MesajlarSohbetSil).
   icon?: CapIconName;
+  // A face over the title in the disc's place (MasaAt: the person, 64).
+  face?: ReactNode;
   // `danger` only for what cannot be undone (Ortak kurallar C1): the red button and disc.
   tone: 'danger' | 'plain';
   confirmLabel: string;

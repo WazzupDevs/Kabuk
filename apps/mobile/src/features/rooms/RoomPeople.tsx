@@ -1,9 +1,10 @@
+import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Av, Btn, Glass, T, Tag, useKit } from '@/aura/kit';
+import { Av, Btn, T, useKit } from '@/aura/kit';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Menu, MenuItem } from '@/components/Menu';
@@ -15,7 +16,11 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm } from '@/lib/overlayStore';
+import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
+import { ROOM } from '@/theme/room';
+import { VENUE } from '@/theme/venue';
 
 import { roomKeys, type TablePerson } from './queries';
 
@@ -23,20 +28,33 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   roomId: string;
+  // The table's name (its icon's, K-76) and its seats, for the line under the title.
+  tableName: string;
+  phones: number;
   people: readonly TablePerson[];
   me: string;
   // A profiled person's public id at this table (room_member_profiles); none for an anonymous one.
   profiles: ReadonlyMap<string, string> | undefined;
 };
 
-// Masadakiler (U24, docs/design/aura → Masadakiler; docs/SPEC_V4.md §4.E, K-40): everyone at the
-// table one a row, the owner and the viewer marked; a person opens their
-// card (MasaKisiSecenekler): the profile (profiled), Şikayet et, the owner's "Masadan çıkar" (K-88:
-// off without a block) and Engelle (K-13: the owner's block takes the person off the table, a
-// participant's takes the participant off). The table is
-// called by its icon (K-76): no other name to draw.
-export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: Props) {
-  const { c } = useKit();
+// Masadakiler (yeni arayüz tuvali, Masadakiler, MasaAt; docs/SPEC_V4.md §4.E, K-40): everyone at
+// the table two a row, "Sen" for the viewer, "Masa sahibi" under the owner; the owner's "At" beside
+// everyone else (K-88: off without a block, after its dialog). A press on a person opens their card
+// (MasaKisiSecenekler): the profile (profiled), Şikayet et, the owner's "Masadan çıkar" and Engelle
+// (K-13: the owner's block takes the person off the table, a participant's takes the participant
+// off). Only what the table already shows its people: the faces and the names (rule 4).
+export function PeopleSheet({
+  visible,
+  onClose,
+  roomId,
+  tableName,
+  phones,
+  people,
+  me,
+  profiles,
+}: Props) {
+  const { c, scheme } = useKit();
+  const narrow = useNarrow();
   const [person, setPerson] = useState<TablePerson | null>(null);
   const safety = useRoomSafety(roomId);
   const publicId = person ? profiles?.get(person.sessionId) : undefined;
@@ -56,51 +74,113 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
       void queryClient.invalidateQueries({ queryKey: roomKeys.people(roomId) });
     },
   });
+  // "At" (MasaAt): the centred dialog with the person's face; a failed try stays open.
+  const kick = (p: TablePerson) =>
+    confirm({
+      face: <ListFace person={p} publicId={profiles?.get(p.sessionId)} self={false} size="lg" />,
+      title: tr.table.kickTitle(p.alias),
+      note: tr.table.kickBody(tableName),
+      tone: 'danger',
+      confirmLabel: tr.table.kickConfirm,
+      confirmIcon: 'personRemove',
+      cancelLabel: tr.common.cancel,
+      testID: 'person-kick-confirm',
+      onConfirm: async () => {
+        await remove.mutateAsync(p.sessionId);
+      },
+    });
+  const P = ROOM.people;
+  // Two a row; one a row at 320 dp or the largest text, so a name and "At" keep their room.
+  const perRow = narrow ? 1 : 2;
+  const rows: TablePerson[][] = [];
+  people.forEach((p, i) => {
+    if (i % perRow === 0) rows.push([p]);
+    else rows[rows.length - 1]?.push(p);
+  });
 
   return (
     <>
-      {/* U24 (Masadakiler): 84 from the top, the headcount under the title; everyone on glass,
-          one a row (56, a 40 face, h3), the owner's and the viewer's tags at the row's right. */}
       <Sheet
         visible={visible && person === null}
         onClose={close}
-        top={KIT.peopleSheet.top}
         title={tr.table.peopleTitle}
-        subtitle={tr.table.peopleCount(tr.venue.people(people.length))}
-        footer={<Btn block variant="glassy" label={tr.common.close} onPress={close} />}
+        titleType="pageBarTitle"
+        subtitle={tr.table.peopleSub(
+          tableName,
+          tr.table.seats(phones, MAX_TABLE_PHONES),
+          phones >= MAX_TABLE_PHONES,
+        )}
       >
-        <Glass sm style={{ overflow: 'hidden' }} testID="table-people">
-          {people.map((p, i) => {
-            const mine = p.sessionId === me;
-            return (
-              <Pressable
-                key={p.sessionId}
-                testID={`person-${p.alias}`}
-                accessibilityRole="button"
-                accessibilityLabel={mine ? tr.table.you(p.alias) : p.alias}
-                disabled={mine}
-                onPress={() => setPerson(p)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: KIT.size.rowGap,
-                  minHeight: KIT.peopleSheet.height,
-                  paddingVertical: KIT.peopleSheet.padY,
-                  paddingHorizontal: KIT.peopleSheet.padX,
-                  borderTopWidth: i > 0 ? KIT.size.hair : 0,
-                  borderTopColor: c.hair,
-                }}
-              >
-                <ListFace person={p} publicId={profiles?.get(p.sessionId)} self={mine} />
-                <T v="h3" style={{ flex: 1 }}>
-                  {p.alias}
-                </T>
-                {p.owner ? <Tag tone="purple" label={tr.table.ownerTag} /> : null}
-                {mine ? <Tag label={tr.table.youTag} /> : null}
-              </Pressable>
-            );
-          })}
-        </Glass>
+        <View testID="table-people" style={{ marginTop: P.listTop - KIT.size.rowGap }}>
+          {rows.map((row, r) => (
+            <View key={r} style={{ flexDirection: 'row', columnGap: P.colGap }}>
+              {row.map((p) => {
+                const mine = p.sessionId === me;
+                return (
+                  <View key={p.sessionId} style={{ flex: 1, minWidth: 0 }}>
+                    {r > 0 ? (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: P.hairIn,
+                          right: 0,
+                          height: KIT.size.hair,
+                          backgroundColor: KIT.layer[scheme].menuHair,
+                        }}
+                      />
+                    ) : null}
+                    <Pressable
+                      testID={`person-${p.alias}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={mine ? tr.table.you(p.alias) : p.alias}
+                      disabled={mine}
+                      onPress={() => setPerson(p)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: P.gap,
+                        paddingVertical: P.padY,
+                      }}
+                    >
+                      <ListFace
+                        person={p}
+                        publicId={profiles?.get(p.sessionId)}
+                        self={mine}
+                        size="sm"
+                      />
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <T v="roomPerson" ink lines={1} fit>
+                          {mine ? tr.table.youTag : p.alias}
+                        </T>
+                        {p.owner ? (
+                          <T v="roomOwner" color={VENUE[scheme].here.ink} lines={1} fit>
+                            {tr.table.ownerTag}
+                          </T>
+                        ) : null}
+                      </View>
+                      {iOwn && !mine ? (
+                        <Btn
+                          sm
+                          variant="danger"
+                          testID={`person-kick-${p.alias}`}
+                          label={tr.table.kick}
+                          accessibilityLabel={tr.table.kickLabel(p.alias)}
+                          disabled={remove.isPending || safety.blocking}
+                          onPress={() => kick(p)}
+                        />
+                      ) : null}
+                    </Pressable>
+                  </View>
+                );
+              })}
+              {row.length < perRow ? <View style={{ flex: 1 }} /> : null}
+            </View>
+          ))}
+        </View>
+        <T v="roomNote" color={c.muted} style={{ marginTop: P.noteTop - KIT.size.rowGap }}>
+          {tr.table.peopleNote}
+        </T>
       </Sheet>
 
       <Sheet
@@ -208,25 +288,27 @@ export function PersonFace({
   );
 }
 
-// A face in Masadakiler (U24): 40, the profile photo, or the anonymous seat's capsule as the app
-// draws it.
+// A face in Masadakiler (32) and over its "At" dialog (64): the profile photo, or the anonymous
+// seat's capsule as the app draws it.
 function ListFace({
   person,
   publicId,
   self,
+  size,
 }: {
   person: TablePerson;
   publicId: string | undefined;
   self: boolean;
+  size: 'sm' | 'lg';
 }) {
   const own = useProfile();
   const id = publicId ?? (self ? own.data?.public_id : undefined);
   const view = useProfileView(person.profiled ? id : undefined);
   if (!person.profiled && person.look)
     return (
-      <Av size="list" name={person.alias}>
-        <LookAvatar look={person.look} size={KIT.size.av.list} />
+      <Av size={size} name={person.alias}>
+        <LookAvatar look={person.look} size={KIT.size.av[size]} />
       </Av>
     );
-  return <Av size="list" name={person.alias} photoUrl={view.data?.photoUrl ?? null} />;
+  return <Av size={size} name={person.alias} photoUrl={view.data?.photoUrl ?? null} />;
 }

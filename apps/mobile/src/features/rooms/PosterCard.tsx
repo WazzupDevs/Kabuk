@@ -7,6 +7,7 @@ import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
+import { ROOM } from '@/theme/room';
 import { SPACING } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
@@ -140,8 +141,9 @@ export function GameCard({
 
 const DIMMED = 0.55;
 
-// The card 112 high (104 on a narrow screen), its corner 22 and the tag 8 in from its top left.
-const CARD_HEIGHT = 112;
+// The card 126 high (yeni arayüz tuvali, Masa `.gc`; 104 on a narrow screen), its corner 22 and
+// the tag 8 in from its top left.
+const CARD_HEIGHT = ROOM.games.card;
 const NARROW_CARD_HEIGHT = 104;
 const GAME_CARD = {
   radius: KIT.size.gameCardRadius,

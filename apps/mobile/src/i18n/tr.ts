@@ -800,6 +800,8 @@ export const tr = {
     nickWait: (days: number) => `${days} gün sonra yenileyebilirsin.`,
     // A friend's profile (skall tuvali, ProfilBaskasi): the status beside "Mesaj".
     friendsStatus: 'Arkadaşsınız',
+    mutualTitle: (count: number) => `Ortak arkadaşlar · ${count}`,
+    mutualOpen: (name: string) => `${name}, profilini aç`,
     noName: 'Henüz bir adın yok',
     nameWithAge: (name: string, age: number) => `${name}, ${age}`,
     // After the name on a profile's head, in the quiet colour (v45: .page-age).
@@ -1010,6 +1012,8 @@ export const tr = {
     tabTables: 'Masalar',
     tabFeed: 'Akış',
     field: 'Mekana bir şey yaz…',
+    // The feed's own limit (VENUE_FEED.maxLength), not the chats' 200.
+    tooLong: (max: number) => `Gönderi 1-${max} karakter olmalı.`,
     fieldLabel: 'Akışa profilinle yaz',
     note: 'Akışta herkes profiliyle yazar.',
     // The time of a post: "şimdi", "2 dk", "3 sa", "1 g".
@@ -2250,14 +2254,7 @@ export const tr = {
   // The table screen (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F).
   table: {
     back: 'Mekana dön',
-    whoLabel: (n: number) => `Masadakileri gör, ${headcountLabel(n)} kişi`,
-    // The people's drawer on the table's card (MasaCekmece): closed, the faces and the button open it.
-    drawerLabel: (n: number) => `Masadakiler, ${headcountLabel(n)} kişi. Kişileri göster`,
-    drawerShow: 'Kişileri göster',
-    drawerHide: 'Kişileri gizle',
-    end: 'Bitir',
     leave: 'Masadan ayrıl',
-    leaveShort: 'Ayrıl',
     chat: 'Sohbet',
     // Masa sohbeti on its own screen, from the bar's button (the owner's call, 28 Ekim).
     chatTitle: 'Masa sohbeti',
@@ -2310,13 +2307,30 @@ export const tr = {
     leaveBody: 'Mekana dönersin. Masa diğerleri için sürer.',
     // Masadakiler (v46 data-msheet).
     people: (n: number) => `Masadakiler · ${headcountLabel(n)} kişi`,
-    peopleCount: (people: string) =>
-      `${people} · Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.`,
     you: (alias: string) => `${alias} (sen)`,
     ownerTag: 'Masa sahibi',
     peopleTitle: 'Masadakiler',
     youTag: 'Sen',
     viewProfile: 'Profili gör',
+    // Masa as the new board draws it (yeni arayüz tuvali, Masa, MasaSecenek, Masadakiler, MasaAt).
+    // The bar's line: "7/12 · Lobide açık".
+    seats: (phones: number, max: number) => `${phones}/${max}`,
+    facesLabel: (n: number) => `Masadakiler, ${headcountLabel(n)} kişi`,
+    fullNote: 'Masa dolu. Biri kalkınca yer açılır.',
+    games: 'Oyunlar',
+    gamesCount: (n: number) => `${n} oyun`,
+    menu: 'Masa seçenekleri',
+    rename: 'Masanın adını değiştir',
+    // Masadakiler's line under its title: the table, its seats, and "Masa dolu" once full.
+    peopleSub: (table: string, seats: string, full: boolean) =>
+      [table, seats, full ? 'Masa dolu' : null].filter((part) => part).join(' · '),
+    peopleNote: 'Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
+    // "At" beside a person (the owner's; K-88 without a block) and its dialog.
+    kick: 'At',
+    kickLabel: (alias: string) => `${alias} kişisini masadan at`,
+    kickTitle: (alias: string) => `${alias} masadan atılsın mı?`,
+    kickBody: (table: string) => `${table} masasından çıkarılır ve yeri boşalır.`,
+    kickConfirm: 'Masadan at',
   },
   // "Masa kur" (v46 data-kur; docs/SPEC_V4.md §4.E).
   // Test bots (dev project only): the owner seats bots that play by themselves.
@@ -2364,9 +2378,10 @@ export const tr = {
   // "Masana davet et" (v46 data-sheet; docs/SPEC_V4.md §4.G): every sent invite looks the same.
   invite: {
     title: 'Masana davet et',
-    // Two lines (iskelet.md → 5.11): who it reaches, then how long it holds.
-    how: 'Davet yalnızca şu an bu mekanda olan arkadaşına ulaşır; kimin burada olduğu görünmez.',
-    howLong: 'Her davette "Gönderildi" yazar. Davet 2 dakika geçerli.',
+    // The page's line under its title (MasaDavet): the table and its seats.
+    sub: (table: string, seats: string) => `${table} · ${seats}`,
+    // The note under the bar (MasaDavet): who it reaches, then how long it holds.
+    how: 'Davet yalnızca şu an bu mekanda olan arkadaşına ulaşır, kimin burada olduğu görünmez. Davet 2 dakika geçerli.',
     send: 'Davet et',
     sent: 'Gönderildi',
     valid: (seconds: number) =>

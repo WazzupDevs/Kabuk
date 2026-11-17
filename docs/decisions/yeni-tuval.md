@@ -47,7 +47,7 @@ i. **Mekan sohbeti kartındaki yazma alanı** kalır (panoda yok, uygulamadaki h
 
 j. **Bildirimler:** bekleyen arkadaşlık isteği satırında yalnız "Bak" (İstekler'e götürür); kabul ve red İstekler'de. Okundu işareti liste kapanınca ya da "Tümünü okundu say" ile yazılır (uygulandı, #692).
 
-Ortak arkadaşın planı (karar b): `friends/mutual { publicId }` → sayı ve arkadaşlar; yalnız ikisi arkadaşsa döner, değilse aynı boş yanıt; izleyenle ya da hedefle arasında engel olan listeye girmez; kural 4'e "arkadaşın profilinde ortak arkadaşlar görünür, başka hiçbir yerde görünmez" cümlesi eklenir. Panodaki, arkadaş olmayanın isteğinde çizili "Ortak arkadaş" satırı karar b ile çelişir, uygulanmaz.
+Ortak arkadaş (karar b; sunucusu uygulandı, `docs/SPEC_V4.md` §4.W): `friends/mutual { publicId }` → sayı ve arkadaşlar; yalnız ikisi arkadaşsa döner, değilse aynı boş yanıt; izleyenle ya da hedefle arasında engel olan listeye girmez; kural 4'e "arkadaşın profilinde ortak arkadaşlar görünür, başka hiçbir yerde görünmez" cümlesi eklenir. Panodaki, arkadaş olmayanın isteğinde çizili "Ortak arkadaş" satırı karar b ile çelişir, uygulanmaz.
 
 ## Proje sahibinin kararları (16 Kasım, ortak temel)
 

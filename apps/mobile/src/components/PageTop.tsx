@@ -38,7 +38,14 @@ export function PageTop({
   const part = useContext(PageTopPart);
   if (inline) {
     return (
-      <TopBarRow kind="sayfa" title={title} onBack={onBack} trailing={trailing} inline={inline} />
+      <TopBarRow
+        kind="sayfa"
+        title={title}
+        sub={sub}
+        onBack={onBack}
+        trailing={trailing}
+        inline={inline}
+      />
     );
   }
   const row = <TopBarRow kind="sayfa" title={title} onBack={onBack} trailing={trailing} />;
