@@ -1065,11 +1065,10 @@ export const KIT = {
     // U27 (`.list .li`): a conversation 72 high, 12 / 16 in; the hairline from 72.
     inboxPadY: 12,
     inboxRow: 72,
-    // iskelet.md → 3.5: the sheet 8 in from the edges (its corners KIT.layer's 28); its close
-    // button 38 at the title's right, 10 under the handle; what scrolls fades out over `sheetFade`
-    // at its edges (no band).
+    // iskelet.md → 3.5: the sheet 8 in from the edges (its corners KIT.layer's 28); its title 10
+    // under the handle, no close button (18 Kasım); what scrolls fades out over `sheetFade` at its
+    // edges (no band).
     sheetInset: 8,
-    sheetClose: 38,
     sheetHeadGap: 10,
     sheetFade: 24,
     // iskelet.md → 3.5: a menu grown from its button 8 from it and the screen's edges (its look

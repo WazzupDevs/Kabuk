@@ -39,12 +39,12 @@ describe('the sheet (iskelet.md → 3.5, 4.3)', () => {
     expect(code('src/motion/Sheet.tsx')).toMatch(/'sheetTitle'\)/);
   });
 
-  it('opens on springs.sheet and floats 8 in, 28 round, its close button 38', () => {
+  it('opens on springs.sheet and floats 8 in, 28 round, without a close button', () => {
     expect(MOTION.springs.sheet).toEqual({ stiffness: 260, damping: 24, mass: 1 });
     expect(code('src/motion/useSheetMotion.ts')).toMatch(/springConfig\(MOTION\.springs\.sheet\)/);
     expect(kitSize('sheetInset')).toBe(8);
     expect(KIT.layer.size.sheetRadius).toBe(28);
-    expect(kitSize('sheetClose')).toBe(38);
+    expect(code('src/components/SheetCard.tsx')).not.toMatch(/sheet-close|icon="close"/);
   });
 
   it('leaves on the leaving curve by its own height, and is not put back while still drawn', () => {

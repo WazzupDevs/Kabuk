@@ -3,8 +3,7 @@ import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { type AnimatedRef, useAnimatedRef } from 'react-native-reanimated';
 
-import { Round, useKit } from '@/aura/kit';
-import { tr } from '@/i18n/tr';
+import { useKit } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useLabOff } from '@/lib/drawLab';
@@ -13,8 +12,9 @@ import { useSheetDrag } from './sheetDrag';
 
 // A bottom sheet's card (Sheet, RouteSheet; iskelet.md → 3.5): it floats 8 from the screen's sides
 // and foot, 28 round at every corner, the flat surface (yeni arayüz tuvali: SikayetEt, Masadakiler;
-// KIT.layer: #FFFFFF, in the dark #121614 in a 1 px white ring), its shadow 0 -8 40 at 18 %. Its handle and its title stay put at its top, the 38 close
-// button at the title's right; what is under them scrolls, edge to edge inside the card, clipped by
+// KIT.layer: #FFFFFF, in the dark #121614 in a 1 px white ring), its shadow 0 -8 40 at 18 %. Its handle and its title stay put at its top, no close
+// button (the owner's call, 18 Kasım: a tap outside, a pull down and Android's back close it, as
+// the boards draw); what is under them scrolls, edge to edge inside the card, clipped by
 // its own corners, and fades out at the scroll's edges (Android's fading edge: no band of colour,
 // only while there is more to scroll). No scroll bar (29 Ekim), no "Tamam" or "Kapat" at its foot.
 // Its content ends the bottom safe area and 4 above its foot, so its buttons sit 12 above the safe
@@ -27,23 +27,19 @@ export function SheetCard({
   bottomInset,
   above,
   head,
-  balance,
   fill,
   footer,
   scrollRef,
   look,
-  closeButton = true,
   children,
 }: {
-  // Unset: it cannot be pulled away and has no close button (the join request).
+  // Unset: it cannot be pulled away (the join request).
   onClose?: () => void;
   // The bottom safe area: the content's end stays clear of it.
   bottomInset: number;
   above?: ReactNode;
-  // The title that stays put under the handle, the close button at its right.
+  // The title that stays put under the handle.
   head?: ReactNode;
-  // A centred title: as much room before it as the close button takes after it.
-  balance?: boolean;
   // As tall as the sheet around it (Sheet → `top`), the content stretched to it.
   fill?: boolean;
   // Buttons that stay under the scrolling content.
@@ -51,10 +47,8 @@ export function SheetCard({
   // The content's scroll, for a sheet that moves it itself (Kapsülünü süsle's pack chips).
   scrollRef?: AnimatedRef<Animated.ScrollView>;
   // A board's own sheet (tuval Mesajlar's Bildirimler, Dm's block): its ground with no line, its
-  // room inside, where its title stands and how far the close button is from the side.
+  // room inside and where its title stands.
   look?: SheetLook;
-  // Pulled down and on the scrim it still closes; false: no close button (the location sheet).
-  closeButton?: boolean;
   children: ReactNode;
 }) {
   const k = useKit();
@@ -75,16 +69,6 @@ export function SheetCard({
     look?.padBottom ?? KIT.size.sheetPadBottomMin,
   );
   const size = fill ? { flex: 1 } : { flexShrink: 1 };
-  const close =
-    onClose && closeButton ? (
-      <Round
-        testID="sheet-close"
-        icon="close"
-        label={tr.common.close}
-        side={KIT.size.sheetClose}
-        onPress={onClose}
-      />
-    ) : null;
   return (
     <GestureDetector gesture={pan}>
       <Animated.View
@@ -129,16 +113,10 @@ export function SheetCard({
                     alignItems: look ? 'center' : 'flex-start',
                     marginTop: look?.headTop ?? KIT.size.sheetHeadGap,
                     paddingLeft: padX + (look?.titleIn ?? 0),
-                    paddingRight: padX + (look?.closeIn ?? 0),
+                    paddingRight: padX,
                   }}
                 >
-                  {balance && close ? <View style={{ width: KIT.size.sheetClose }} /> : null}
-                  <View
-                    style={{ flex: 1, minHeight: KIT.size.sheetClose, justifyContent: 'center' }}
-                  >
-                    {head}
-                  </View>
-                  {close}
+                  <View style={{ flex: 1, justifyContent: 'center' }}>{head}</View>
                 </View>
               ) : null}
             </View>
@@ -174,19 +152,6 @@ export function SheetCard({
                 {footer}
               </View>
             ) : null}
-            {/* Without a title the close button stands at the top right over the content (a
-                person's card opens with their face under the handle). */}
-            {!head && close ? (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: KIT.size.sheetPadTop + KIT.size.grabH + KIT.size.sheetHeadGap,
-                  right: padX,
-                }}
-              >
-                {close}
-              </View>
-            ) : null}
           </View>
         </View>
       </Animated.View>
@@ -201,7 +166,6 @@ export type SheetLook = {
   padBottom?: number;
   headTop?: number;
   titleIn?: number;
-  closeIn?: number;
   // The content's room under the title's row (tuval Ayarlar: 13).
   bodyTop?: number;
 };
