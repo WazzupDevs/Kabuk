@@ -660,6 +660,8 @@ export const tr = {
     earlier: 'Önceki',
     join: 'Katıl',
     writeMessage: 'Mesaj yaz',
+    // A friend request's button: opens Mesajlar → İstekler (yeni arayüz tuvali, Bildirimler).
+    look: 'Bak',
     // The sheet's text button over the new ones (yeni arayüz tuvali, Bildirimler).
     markAllSeen: 'Tümünü okundu say',
     // An invite's second line: the table's name and its phones (never the venue, §4.B-8).
