@@ -952,7 +952,7 @@ K-87. Kurallar ve plan `docs/decisions/kaupholl.md` (v3.1, proje sahibinin onay�
   - eşleşmeyle kurulan arkadaşlıklar (`friendships`, kaynağı `room_end_mutual`), son 7 gün, yalnızca ilk basan için. Kimin önce bastığı `mutual_friend_intents.created_at`'ten okunur; niyetler arkadaşlık sürdükçe kalır (K-70);
   - gelen masa davetleri (`table_invites`), son 1 gün.
 - Satırlar hesap id'si ve karşılaşma öncesinde `public_id` taşımaz. Arkadaşlık isteğinde ad, yaş ve fotoğraf bugünkü kurallarla gelir (SPEC_V3 §7.5).
-- Rozet: `profiles.notifications_seen_at`; liste açılınca `account/notifications-seen` yazar. Okunmamış = bu zamandan sonraki satırlar.
+- Rozet: `profiles.notifications_seen_at`; liste kapanınca ya da 'Tümünü okundu say' ile `account/notifications-seen` yazar. Okunmamış = bu zamandan sonraki satırlar.
 - Yayın: değişiklik `inbox:{user_id}` kanalına veri içermeyen bir olayla gider (kural 9 aynen).
 
 **Masa daveti** (§4.B-8; kural 4'e açık istisna):

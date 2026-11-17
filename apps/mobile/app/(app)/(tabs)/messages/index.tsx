@@ -1,7 +1,7 @@
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { normalize, upperTr } from '@shared/trText.ts';
 import { useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
@@ -39,6 +39,13 @@ type Tab = 'chats' | 'requests';
 // open friend requests waiting for the caller (RequestList); their count is on its tab.
 export default function MessagesScreen() {
   const [tab, setTab] = useState<Tab>('chats');
+  // "Bak" in Bildirimler opens İstekler (`?tab=requests`).
+  const { tab: wantedTab } = useLocalSearchParams<{ tab?: string }>();
+  const [handledTab, setHandledTab] = useState<string | undefined>(undefined);
+  if (wantedTab !== handledTab) {
+    setHandledTab(wantedTab);
+    if (wantedTab === 'requests') setTab('requests');
+  }
   const [picking, setPicking] = useState(false);
   const [query, setQuery] = useState('');
   // The field shows each letter at once; the rows follow it a moment later (A-28).
