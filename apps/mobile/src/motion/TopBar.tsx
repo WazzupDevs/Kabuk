@@ -101,9 +101,12 @@ export function TopBarRow({
   onBack,
   trailing,
   inline,
+  sub,
 }: {
   kind: TopBarKind;
   title: string;
+  // With `inline`: a line under the title (MasaDavet `.pt2 span`, 13/18 500).
+  sub?: string;
   back?: boolean;
   onBack?: () => void;
   trailing?: ReactNode;
@@ -124,6 +127,7 @@ export function TopBarRow({
           <T v="pageBarTitle" ink accessibilityRole="header">
             {title}
           </T>
+          {sub ? <T v="fine">{sub}</T> : null}
         </View>
         {trailing}
       </View>

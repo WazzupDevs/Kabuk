@@ -308,7 +308,20 @@ export const KIT_TYPE = {
   venueCardTitle: t(700, 18, 24, -0.3 / 18),
   venueCount: t(700, 13, 18),
   venueLobbyTitle: t(700, 18, 24),
+  // Masa (yeni arayüz tuvali, Masa, Masadakiler): the bar's table name (`.mti b`, 16/20 700) and its
+  // line (`.mti span`, 12/16 500); "Oyunlar" (`.gh p`, 18/24 700) and its count (13/18 500); a person
+  // in Masadakiler (`.mg .mr p`, 13/17 600), "Masa sahibi" under them (11/14 600) and the note
+  // under the list (12/16 500).
+  roomBarName: t(700, 16, 20),
+  roomBarLine: t(500, 12, 16),
+  roomSection: t(700, 18, 24),
+  roomCount: t(500, 13, 18),
+  roomPerson: t(600, 13, 17),
+  roomOwner: t(600, 11, 14),
+  roomNote: t(500, 12, 16),
   av: {
+    // A face in Masa's row of faces (`.fcs .av`, 10 700).
+    roomFace: t(700, 10, 12),
     xs: t(700, 9, 11),
     md: t(700, 15, 19),
     sm: t(700, 12, 16),
@@ -717,37 +730,10 @@ export const KIT = {
     body: { top: 12, x: 16, bottom: 16, gap: 12 },
   },
   sceneTagCalm: { bg: 'rgba(215, 238, 220, 0.92)', fg: '#055328' },
-  // U22 (Masa `.mcard`, `.mem`, `.game`, `.fadebot`): the table's card on glass 28 round, 6 in,
-  // its wide riso card a 96 strip 22 round (seen at 40 % down); under it 12 / 14 / 14 in, 12 apart,
-  // the name and its line 2 apart. The people four a row, 10 / 4 apart, faces 36 (`av.member`; an
-  // anonymous one's capsule as the app draws it, §9.2), the name 4 under. The bar's rounds and
-  // Bitir 44; the games fade into the canvas over the bottom 90 (solid from 80 %).
+  // U22 (Masa `.fadebot`): the table's riso card seen at 40 % down; the games fade into the canvas
+  // over the bottom 90 (solid from 80 %). The rest of Masa: theme/room.ts.
   table: {
-    pad: 6,
-    radius: 28,
-    strip: 96,
-    stripRadius: 22,
     stripFocus: 0.4,
-    body: { top: 12, x: 14, bottom: 14, gap: 12 },
-    lineGap: 2,
-    rowGap: 10,
-    colGap: 4,
-    nameGap: 4,
-    // MasaCekmece: the people's drawer. Closed, the faces 32 on a 2 white ring overlap by 45 % in a
-    // row 44 high, the round button (44) 8 to their right; open, the grid reaches 8 past the body on
-    // each side, no column gap, 8 between rows, the faces 32 (36 narrow), the names 2 under them,
-    // the button 8 under the grid at the right.
-    drawer: {
-      face: 32,
-      faceNarrow: 36,
-      overlap: 0.45,
-      row: 44,
-      gap: 8,
-      out: 8,
-      rowGap: 8,
-      nameGap: 2,
-    },
-    bar: 44,
     fade: 90,
     fadeSolid: 0.8,
   },
@@ -790,9 +776,6 @@ export const KIT = {
   },
   // Its empty note (`.day`): a glass pill 14 × 6 in, 13/17 600.
   chatEmptyPad: { x: 14, y: 6 },
-  // U24 (Masadakiler `.sh`, `.srow`): the sheet 84 from the top; a person's row 56 high, 6 / 14 in,
-  // their face 40 (`av.list`).
-  peopleSheet: { top: 84, height: 56, padY: 6, padX: 14 },
   // docs/design/iskelet.md → 5.3: the game sheet's green-toned note (16 round, 12 in; 2.4: the
   // sheet's card less its inset), its words in the clear button's green.
   historyNote: {
@@ -893,6 +876,8 @@ export const KIT = {
     av: {
       // The venue chat's last writers under its title (the owner's call, 8 Kasım).
       xs: 18,
+      // Masa's row of faces (yeni arayüz tuvali, Masa `.fcs`).
+      roomFace: 24,
       sm: 32,
       member: 36,
       // The DM's top bar (yeni arayüz tuvali, DmSohbet `.who .av`: 40).

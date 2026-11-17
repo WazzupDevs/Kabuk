@@ -229,7 +229,7 @@ describe('K17: a full table', () => {
     expect(card).toMatch(
       /testID=\{full \? 'table-full' : undefined\}>\s*\{full\s*\? tr\.venue\.seatsFull/,
     );
-    const sheet = code('src/features/rooms/InviteSheet.tsx');
+    const sheet = code('src/features/rooms/InvitePage.tsx');
     expect(sheet).toMatch(/const full = phones >= MAX_TABLE_PHONES;/);
   });
 });

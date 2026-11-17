@@ -1317,6 +1317,7 @@ export function Av({
   photoUrl?: string | null;
   size?:
     | 'xs'
+    | 'roomFace'
     | 'sm'
     | 'member'
     | 'bar'

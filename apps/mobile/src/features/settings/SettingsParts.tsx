@@ -137,10 +137,13 @@ export const NOTES = {
 // bar, the content from the page's side as Ayarlar has it. `list`: the page is a list and scrolls.
 export function SettingsPage({
   title,
+  sub,
   list,
   children,
 }: {
   title: string;
+  // Under the title on the bar (MasaDavet: the table and its seats).
+  sub?: string;
   list?: boolean;
   children: ReactNode;
 }) {
@@ -154,7 +157,11 @@ export function SettingsPage({
       barTop={P.barTop}
       padTop={P.top - SPACING[1]}
       top={
-        <PageTop title={title} inline={{ row: P.barRow, back: KIT.size.round, gap: P.barGap }} />
+        <PageTop
+          title={title}
+          sub={sub}
+          inline={{ row: P.barRow, back: KIT.size.round, gap: P.barGap }}
+        />
       }
     >
       {children}
