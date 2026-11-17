@@ -1,7 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { View } from 'react-native';
-
-import { Av, Btn, Li, RowList, T } from '@/aura/kit';
+import { Av, Btn } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
@@ -9,7 +7,7 @@ import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { safetyApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
-import { KIT } from '@/theme/auraKit';
+import { Group, PERSON_HAIR, PersonRow } from '@/features/settings/SettingsParts';
 
 const blocksKey = ['blocks'] as const;
 
@@ -29,7 +27,7 @@ function useBlocks() {
   });
 }
 
-// Engellenenler (skall tuvali, Engellenenler, EngellenenlerBos): each block with "Engeli kaldır".
+// Engellenenler (yeni arayüz tuvali, Engellenenler, EngellenenlerBos): each block with "Engeli kaldır".
 export function BlockedList() {
   const queryClient = useQueryClient();
   const blocks = useBlocks();
@@ -49,29 +47,35 @@ export function BlockedList() {
     );
   }
   if (blocks.data.length === 0) {
-    return <EmptyState kind="empty" riso="blocked" body={tr.safety.blockedEmpty} />;
+    return (
+      <EmptyState
+        kind="empty"
+        riso="blocked"
+        title={tr.settings.blockedEmptyTitle}
+        body={tr.settings.blockedEmptyBody}
+      />
+    );
   }
   return (
-    <RowList inset={KIT.size.av.md + KIT.size.liGap}>
+    <Group hairIn={PERSON_HAIR}>
       {blocks.data.map((b) => (
-        <Li key={b.id} padY={KIT.size.lrPadY} minHeight={KIT.size.lrMin}>
-          <Av size="md" name={b.blocked_alias} />
-          <View style={{ flex: 1 }}>
-            <T v="h3" ink>
-              {b.blocked_alias}
-            </T>
-            <T v="fine">{tr.common.ago(b.created_at, now)}</T>
-          </View>
-          <Btn
-            sm
-            variant="glassy"
-            label={tr.safety.unblock}
-            onPress={() => unblock.mutate(b.id)}
-            loading={unblock.isPending && unblock.variables === b.id}
-            disabled={unblock.isPending}
-          />
-        </Li>
+        <PersonRow
+          key={b.id}
+          face={<Av size="md" name={b.blocked_alias} />}
+          name={b.blocked_alias}
+          line={tr.common.ago(b.created_at, now)}
+          action={
+            <Btn
+              sm
+              variant="glassy"
+              label={tr.safety.unblock}
+              onPress={() => unblock.mutate(b.id)}
+              loading={unblock.isPending && unblock.variables === b.id}
+              disabled={unblock.isPending}
+            />
+          }
+        />
       ))}
-    </RowList>
+    </Group>
   );
 }

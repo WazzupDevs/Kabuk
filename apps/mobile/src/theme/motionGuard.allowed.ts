@@ -5,7 +5,6 @@ export const MOTION_ALLOWED: readonly string[] = [
   'app/(app)/district/room.tsx',
   'app/(app)/gifts.tsx',
   'app/(app)/room/[id].tsx',
-  'app/(app)/settings-notifications.tsx',
   'app/(auth)/welcome.tsx',
   'src/features/activities/EventCard.tsx',
   'src/features/capsule/CapsuleStage.tsx',

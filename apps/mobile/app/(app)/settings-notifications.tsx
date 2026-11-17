@@ -1,30 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
-import { AppState, Linking, Pressable, View } from 'react-native';
+import { AppState, Linking, View } from 'react-native';
 
-import { Btn, Glass, Switch, T, Tag, useKit } from '@/aura/kit';
-import { PageTop } from '@/components/PageTop';
-import { Screen } from '@/components/Screen';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, T, Tag, useKit } from '@/aura/kit';
 import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { haptic } from '@/lib/haptics';
-import { KIT } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
 import { patchProfile } from '@/features/account/patchProfile';
+import {
+  Eyebrow,
+  Group,
+  Note,
+  NOTES,
+  SettingsPage,
+  SwitchRow,
+} from '@/features/settings/SettingsParts';
+import { KIT } from '@/theme/auraKit';
+import { SETTINGS } from '@/theme/settings';
+import { SPACING } from '@/theme/tokens';
 
 type Changes = { notifyDm?: boolean; notifyFriendRequests?: boolean; notifyInvites?: boolean };
 
-// Bildirim ayarları (skall tuvali: BildirimAyarlari, BildirimIzinKapali; docs/SPEC_V4.md §4.G, K-53,
-// K-62): whether the phone lets them through (with the way to its settings when not), then the
-// three kinds. Read again when the app comes back from the phone's settings.
+// Bildirim ayarları (yeni arayüz tuvali: AyarBildirim, AyarBildirimKapali; docs/SPEC_V4.md §4.G,
+// K-53, K-62): whether the phone lets them through (a card with the way to its settings when not;
+// the kinds below it dim and wait), then the three kinds as rows on the ground. Read again when the
+// app comes back from the phone's settings. The board's "Mesajı bildirimde göster" is its own
+// proposal (ÖNERİ) and is not here.
 export default function NotificationSettingsScreen() {
-  const { c } = useKit();
-  const { colors } = useTheme();
+  const { c, scheme } = useKit();
   const queryClient = useQueryClient();
   const own = useProfile();
   const permission = useQuery({
@@ -55,63 +62,90 @@ export default function NotificationSettingsScreen() {
   const value = (key: keyof Changes, saved: boolean | undefined) =>
     update.isPending && update.variables[key] !== undefined ? !!update.variables[key] : !!saved;
 
+  const warn = KIT.warnBox[scheme];
+  const R = SETTINGS.row;
   return (
-    <Screen top={<PageTop title={tr.settings.notificationSettings} />}>
-      <View style={{ gap: KIT.size.rowGap }}>
+    <SettingsPage title={tr.settings.notificationSettings}>
+      <View>
         {off ? (
-          // Aura v71 (BildirimAyarlari `.offc`): the lively card, 16 in.
-          <View
-            style={{
-              padding: SPACING[4],
-              borderRadius: KIT.size.glassRadiusSm,
-              backgroundColor: colors.lively,
-              gap: KIT.size.rowGap,
-            }}
-          >
-            <View style={{ gap: SPACING[0.5] }}>
-              <T v="h3" color={colors.onLively}>
-                {tr.settings.phone.title}
+          <View>
+            <View
+              style={{
+                paddingTop: SPACING[3] + SPACING[0.5],
+                paddingHorizontal: SPACING[4],
+                paddingBottom: SPACING[4],
+                borderRadius: SPACING[5],
+                backgroundColor: warn.bg,
+                gap: SPACING[1],
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2.5] }}>
+                <CapIcon name="bell" color={warn.fg} size={R.icon} />
+                <View style={{ flex: 1 }}>
+                  <T v="h3" ink>
+                    {tr.settings.phone.offTitle}
+                  </T>
+                </View>
+              </View>
+              <T v="note" color={warn.fg}>
+                {tr.settings.phone.offBody}
               </T>
-              <T v="fine" color={colors.onLively}>
-                {tr.settings.phone.off}
-              </T>
+              <View style={{ alignSelf: 'flex-start', marginTop: SPACING[2.5] }}>
+                <Btn
+                  sm
+                  label={tr.settings.phone.offOpen}
+                  onPress={() => void Linking.openSettings()}
+                />
+              </View>
             </View>
-            <Btn block label={tr.settings.phone.open} onPress={() => void Linking.openSettings()} />
+            <View style={NOTES}>
+              <Note>{tr.settings.phone.offNote}</Note>
+            </View>
           </View>
         ) : (
-          <Glass sm style={[ROW, CARD_PAD]}>
-            <View style={{ flex: 1, gap: SPACING[0.5] }}>
-              <T v="h3">{tr.settings.phone.title}</T>
-              <T v="fine">{tr.settings.phone.on}</T>
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: R.gap,
+                minHeight: R.height,
+              }}
+            >
+              <CapIcon name="bell" color={c.ink} size={R.icon} />
+              <View style={{ flex: 1 }}>
+                <T v="settingsRow" ink>
+                  {tr.settings.phone.title}
+                </T>
+              </View>
+              {permission.data ? <Tag tone="green" label={tr.settings.phone.onTag} /> : null}
             </View>
-            {permission.data ? <Tag tone="green" label={tr.settings.phone.onTag} /> : null}
-          </Glass>
+            <View style={NOTES}>
+              <Note>{tr.settings.phone.onNote}</Note>
+            </View>
+          </View>
         )}
-        <T v="h3" accessibilityRole="header" style={SECTION}>
-          {tr.settings.friendsSection}
-        </T>
-        <View style={{ gap: KIT.size.rowGap, opacity: off ? OFF : 1 }}>
-          <SwitchRow
-            label={tr.settings.notifyFriendRequests}
-            hint={tr.settings.requestsNote}
-            value={value('notifyFriendRequests', p?.notify_friend_requests)}
-            disabled={!p || update.isPending}
-            onChange={(v) => update.mutate({ notifyFriendRequests: v })}
-            testID="notify-requests"
-          />
-          <SwitchRow
-            label={tr.settings.invitesTitle}
-            hint={tr.settings.invitesNote}
-            value={value('notifyInvites', p?.notify_invites)}
-            disabled={!p || update.isPending}
-            onChange={(v) => update.mutate({ notifyInvites: v })}
-            testID="notify-invites"
-          />
-        </View>
-        <T v="h3" accessibilityRole="header" style={SECTION}>
-          {tr.settings.messagesSection}
-        </T>
-        <View style={{ opacity: off ? OFF : 1 }}>
+        <View style={{ opacity: off ? OFF : 1 }} pointerEvents={off ? 'none' : 'auto'}>
+          <Eyebrow label={tr.settings.friendsSection} />
+          <Group hairIn={0}>
+            <SwitchRow
+              label={tr.settings.notifyFriendRequests}
+              hint={tr.settings.requestsNote}
+              value={value('notifyFriendRequests', p?.notify_friend_requests)}
+              disabled={!p || update.isPending}
+              onChange={(v) => update.mutate({ notifyFriendRequests: v })}
+              testID="notify-requests"
+            />
+            <SwitchRow
+              label={tr.settings.invitesTitle}
+              hint={tr.settings.invitesNote}
+              value={value('notifyInvites', p?.notify_invites)}
+              disabled={!p || update.isPending}
+              onChange={(v) => update.mutate({ notifyInvites: v })}
+              testID="notify-invites"
+            />
+          </Group>
+          <Eyebrow label={tr.settings.messagesSection} />
           <SwitchRow
             label={tr.settings.dmTitle}
             hint={tr.settings.dmNote}
@@ -121,60 +155,14 @@ export default function NotificationSettingsScreen() {
             testID="notify-dm"
           />
         </View>
-        {update.isError ? (
-          <T v="fine" color={c.warn}>
-            {errorMessage(update.error)}
-          </T>
-        ) : null}
-        <T v="fine">{tr.settings.notifyFootnote}</T>
-      </View>
-    </Screen>
-  );
-}
-
-// Aura v71: the rows fade to .45 while the phone's notifications are off; the cards 14 / 16 in,
-// the section headings 8 further down.
-const OFF = 0.45;
-const ROW = { flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap } as const;
-const CARD_PAD = { paddingVertical: SPACING[3] + SPACING[0.5], paddingHorizontal: SPACING[4] };
-const SECTION = { marginTop: SPACING[2] };
-
-// Masa kur's switch row: the whole glass card is the switch.
-function SwitchRow({
-  label,
-  hint,
-  value,
-  disabled,
-  onChange,
-  testID,
-}: {
-  label: string;
-  hint: string;
-  value: boolean;
-  disabled: boolean;
-  onChange: (next: boolean) => void;
-  testID: string;
-}) {
-  return (
-    <Pressable
-      testID={testID}
-      accessibilityRole="switch"
-      accessibilityLabel={label}
-      accessibilityHint={hint}
-      accessibilityState={{ checked: value, disabled }}
-      disabled={disabled}
-      onPress={() => {
-        haptic('selection');
-        onChange(!value);
-      }}
-    >
-      <Glass sm style={[ROW, CARD_PAD]}>
-        <View style={{ flex: 1, gap: SPACING[0.5] }}>
-          <T v="h3">{label}</T>
-          <T v="fine">{hint}</T>
+        <View style={{ marginTop: SPACING[4] + SPACING[0.5], gap: SETTINGS.note.gap }}>
+          {update.isError ? <Note color={c.warn}>{errorMessage(update.error)}</Note> : null}
+          <Note>{tr.settings.notifyFootnote}</Note>
         </View>
-        <Switch on={value} disabled={disabled} />
-      </Glass>
-    </Pressable>
+      </View>
+    </SettingsPage>
   );
 }
+
+// The board dims the kinds to .45 while the phone's notifications are off and takes no touch there.
+const OFF = 0.45;

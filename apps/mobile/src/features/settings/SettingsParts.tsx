@@ -2,9 +2,13 @@ import { Children, isValidElement, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { Li, type SegBoard, T, useKit } from '@/aura/kit';
+import { Li, type SegBoard, Switch, T, useKit } from '@/aura/kit';
+import { PageTop } from '@/components/PageTop';
+import { Screen } from '@/components/Screen';
+import { Tap } from '@/motion/Tap';
 import { KIT } from '@/theme/auraKit';
 import { SETTINGS } from '@/theme/settings';
+import { SPACING } from '@/theme/tokens';
 
 // Ayarlar's parts as the new board draws them (yeni arayüz tuvali, Ayarlar.dc.html;
 // theme/settings.ts): its seg, its rows on the ground, its section heads and its notes; Görünüm
@@ -26,7 +30,15 @@ export function segBoard(scheme: 'light' | 'dark'): SegBoard {
 
 // Rows one under another on the ground (`.sl`), a hairline between them from the words to the
 // row's right edge.
-export function Group({ children }: { children: ReactNode }) {
+export function Group({
+  children,
+  hairIn = SETTINGS.row.hairIn,
+}: {
+  children: ReactNode;
+  // Where the hairline starts: under the words by default, 0 for switch rows, after the face in a
+  // person's list.
+  hairIn?: number;
+}) {
   const { scheme } = useKit();
   const rows = Children.toArray(children).filter(Boolean);
   return (
@@ -37,7 +49,7 @@ export function Group({ children }: { children: ReactNode }) {
             <View
               style={{
                 height: KIT.size.hair,
-                marginLeft: SETTINGS.row.hairIn,
+                marginLeft: hairIn,
                 backgroundColor: SETTINGS[scheme].hair,
               }}
             />
@@ -58,7 +70,7 @@ export function SettingsPageRow({
   onPress,
   danger,
 }: {
-  testID: string;
+  testID?: string;
   icon: CapIconName;
   label: string;
   onPress: () => void;
@@ -119,3 +131,135 @@ export const NOTES = {
   marginTop: SETTINGS.note.top,
   gap: SETTINGS.note.gap,
 } as const;
+
+// A page of Ayarlar's family (Bildirim ayarları, Gizlilik, Engellenenler, Sessize alınanlar; yeni
+// arayüz tuvali, `.pg` / `.ptop`): the ground without clouds, the back button and the title on one
+// bar, the content from the page's side as Ayarlar has it. `list`: the page is a list and scrolls.
+export function SettingsPage({
+  title,
+  list,
+  children,
+}: {
+  title: string;
+  list?: boolean;
+  children: ReactNode;
+}) {
+  const P = SETTINGS.page;
+  return (
+    <Screen
+      plain
+      list={list}
+      side={P.side}
+      barSide={P.barSide}
+      barTop={P.barTop}
+      padTop={P.top - SPACING[1]}
+      top={
+        <PageTop title={title} inline={{ row: P.barRow, back: KIT.size.round, gap: P.barGap }} />
+      }
+    >
+      {children}
+    </Screen>
+  );
+}
+
+// A switch row (`.sr.tr2`): the name over its line, the switch at the right; the whole row is the
+// switch. 56 at least, 10 above and under.
+export function SwitchRow({
+  label,
+  hint,
+  value,
+  disabled,
+  onChange,
+  testID,
+  loading,
+}: {
+  label: string;
+  hint: string;
+  value: boolean;
+  disabled?: boolean;
+  onChange: (next: boolean) => void;
+  testID: string;
+  // Not known yet: the switch waits (disabled) and shows off.
+  loading?: boolean;
+}) {
+  const { c } = useKit();
+  const off = disabled || loading;
+  return (
+    <Tap
+      testID={testID}
+      feel="selection"
+      sink={false}
+      accessibilityRole="switch"
+      accessibilityLabel={`${label}. ${hint}`}
+      accessibilityState={{ checked: value, disabled: !!off }}
+      disabled={off}
+      onPress={() => onChange(!value)}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SETTINGS.row.gap,
+          minHeight: SETTINGS.row.height,
+          paddingVertical: SPACING[2.5],
+        }}
+      >
+        <View style={{ flex: 1, gap: SPACING[0.5] }}>
+          <T v="settingsRow" ink>
+            {label}
+          </T>
+          <T v="fine" color={c.muted}>
+            {hint}
+          </T>
+        </View>
+        <Switch on={value} disabled={off} />
+      </View>
+    </Tap>
+  );
+}
+
+// The line under a list page's title (`.lede`: 14/500, the muted ink, 2 under the bar).
+export function Lede({ children }: { children: string }) {
+  const { c } = useKit();
+  return (
+    <T v="note" color={c.muted} style={{ marginTop: SPACING[0.5] }}>
+      {children}
+    </T>
+  );
+}
+
+// A person's row in Engellenenler and Sessize alınanlar (`.ur`): the face, the name over its line,
+// the small button at the right; 64 at least, 12 apart. They stand in a `Group` whose hairline
+// starts after the face (`PERSON_HAIR`).
+export function PersonRow({
+  face,
+  name,
+  line,
+  action,
+}: {
+  face: ReactNode;
+  name: string;
+  line: string;
+  action: ReactNode;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING[3],
+        minHeight: KIT.size.lrMin,
+      }}
+    >
+      {face}
+      <View style={{ flex: 1 }}>
+        <T v="settingsRow" ink>
+          {name}
+        </T>
+        <T v="fine">{line}</T>
+      </View>
+      {action}
+    </View>
+  );
+}
+export const PERSON_HAIR = KIT.size.av.md + SPACING[3];
