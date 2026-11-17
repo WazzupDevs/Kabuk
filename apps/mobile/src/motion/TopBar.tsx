@@ -75,7 +75,7 @@ export function BarBand({ from, to }: { from: number; to: number }) {
   );
 }
 
-// The bar's glass back button (46, iskelet.md → 2.1; a board's own side where it gives one).
+// The bar's glass back button (44, iskelet.md → 2.1; a board's own side where it gives one).
 export function BarBack({ onBack, side }: { onBack?: () => void; side?: number }) {
   return (
     <Round

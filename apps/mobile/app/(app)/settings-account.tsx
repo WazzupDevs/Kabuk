@@ -19,6 +19,7 @@ import { confirm } from '@/lib/overlayStore';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { KIT } from '@/theme/auraKit';
+import { SETTINGS } from '@/theme/settings';
 import { SPACING } from '@/theme/tokens';
 
 // The address in the legal texts (legalEntity.ts) unless the build names another: the row is always
@@ -86,7 +87,7 @@ export default function AccountScreen() {
           ) : null}
         </Glass>
         <T v="fine">{tr.settings.fixedNote}</T>
-        <RowList inset={KIT.size.lrIcon + KIT.size.liGap}>
+        <RowList inset={SETTINGS.row.hairIn}>
           <SettingsRow
             icon="chat"
             chevron

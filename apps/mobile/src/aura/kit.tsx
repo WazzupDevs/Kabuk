@@ -959,13 +959,14 @@ export function Tag({
 
 const MIN_TAG_SCALE = 0.7;
 
-// .live: a glowing dot and its words. The dot beats: two rings spread from it and fade, one after
-// the other, like a pulse (the owner's call, 28 Ekim). Still with reduce motion, and while the
-// screen is out of sight.
+// .live: a dot and its words (yeni arayüz tuvali skall.css `.live i`: 8, --buzz pink in a still 4
+// ring of itself at 18 %, no ring in the dark). The dot beats: two rings spread from it and fade,
+// one after the other, like a pulse (the owner's call, 28 Ekim; the boards draw it still). Still
+// with reduce motion, and while the screen is out of sight.
 export function Live({
   label,
-  color = KIT.success,
-  ring = KIT.successRing,
+  color = KIT.pink,
+  ring = KIT.pinkRing,
   large,
   soft,
 }: {
@@ -991,26 +992,30 @@ export function Live({
   );
 }
 
+// A board's own dot where it draws one (`.here i`, `.semt .ey i`): its colour and size, a ring only
+// where the board gives one (`darkRing`: kept in the dark too, `.semt.in .ey i`).
 export function PulseDot({
-  color = KIT.success,
-  ring = KIT.successRing,
+  color = KIT.pink,
+  ring,
   size = KIT.size.dot,
+  darkRing,
 }: {
   color?: string;
   ring?: string;
   size?: number;
+  darkRing?: boolean;
 }) {
   const reduce = useReduceMotion();
   const active = useLoopActive();
   const { scheme } = useKit();
-  // The core's glow natively (NativeShadow.tsx): the waves redraw the screen on every frame, and
-  // React Native would blur this glow again on each one. None in the dark: there it stood as a
-  // grey disc round the dot (the owner's report, 2 Kasım, 2.2); the waves stay.
+  // The core's still ring natively (NativeShadow.tsx): the waves redraw the screen on every frame,
+  // and React Native would draw it again on each one. None in the dark: there it stood as a grey
+  // disc round the dot (the owner's report, 2 Kasım, 2.2; skall.css K13); the waves stay.
   const glow = boxShadowParts(
     useLabOff('golge'),
-    scheme === 'dark'
+    !ring || (scheme === 'dark' && !darkRing)
       ? undefined
-      : `0px 0px ${size}px ${ring}, 0px 0px 0px ${KIT.size.dotRing / 2}px ${ring}`,
+      : `0px 0px 0px ${KIT.size.dotRing}px ${ring}`,
     size / 2,
   );
   const [waves] = useState(() => [new Animated.Value(0), new Animated.Value(0)]);
@@ -1310,7 +1315,8 @@ export function Thumb({
 }
 
 // .av (.sm, .lg, .xl; c1 … c5): a face. A photo when there is one, else the name's first letter on
-// a colour picked from the name. A white ring and a soft shadow.
+// a flat colour picked from the name. A ring in the surface's colour and a soft shadow (none in the
+// dark; yeni arayüz tuvali ekran.css `.av`).
 export function Av({
   name,
   photoUrl,
@@ -1375,7 +1381,7 @@ export function Av({
               alignItems: 'center',
               justifyContent: 'center',
             },
-            children || photoUrl ? null : gradientStyle(avatarGround(name)),
+            children || photoUrl ? null : gradientStyle(avatarGround(name, scheme)),
           ]}
         >
           {children ? (
@@ -1405,11 +1411,13 @@ export function Av({
         : size === 'xl' || size === 'big' || size === 'edit'
           ? KIT.size.avRingXl
           : KIT.size.avRing;
-  // U31: the profile's face in the dark sits in a ring of the dark card (#121614).
-  const ringColor = size === 'hero' && scheme === 'dark' ? KIT.dark.raised : KIT.white;
-  const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
-  // The face clips its photo, so its native shadow sits beside it in a box of the same size.
-  const shadow = shadowParts(shadowOff, KIT.avShadow, undefined, side / 2);
+  // The ring in the surface's colour (yeni arayüz tuvali ekran.css `.av`: --surface, #151A18 in the
+  // dark). U31: the profile's face in the dark sits in a ring of the dark card (#121614).
+  const ringColor = size === 'hero' && scheme === 'dark' ? KIT.dark.raised : KIT[scheme].faceRing;
+  const pick = avatarGround(name, scheme);
+  // The face clips its photo, so its native shadow sits beside it in a box of the same size; none
+  // in the dark (--shadow-raised).
+  const shadow = shadowParts(shadowOff, KIT[scheme].faceShadow || undefined, undefined, side / 2);
   const face = (
     <View
       style={[
@@ -1463,9 +1471,10 @@ function initial(name: string): string {
   return upperTr(name.trim().charAt(0)) || '?';
 }
 
-// A face without a photo: its colour from the name (aura.css `.av` c1 … c5).
-export function avatarGround(name: string): string {
-  return KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
+// A face without a photo: its flat colour from the name (ekran.css `.c1` … `.c5`), the scheme's own.
+export function avatarGround(name: string, scheme: 'light' | 'dark'): string {
+  const colors = scheme === 'dark' ? KIT.avColorsDark : KIT.avColors;
+  return colors[colorIndex(name)] ?? colors[0];
 }
 
 function colorIndex(name: string): number {
@@ -1660,7 +1669,11 @@ export function Switch({ on, disabled }: { on: boolean; disabled?: boolean }) {
   }, [on, reduce, x]);
   const inset = (KIT.size.switchH - KIT.size.switchKnob) / 2;
   const travel = KIT.size.switchW - KIT.size.switchKnob - 2 * inset;
-  const knob = boxShadowParts(useLabOff('golge'), KIT.switchKnobShadow, KIT.size.switchKnob / 2);
+  const knob = boxShadowParts(
+    useLabOff('golge'),
+    c.switchKnobShadow || undefined,
+    KIT.size.switchKnob / 2,
+  );
   return (
     <View
       importantForAccessibility="no-hide-descendants"
@@ -1680,7 +1693,7 @@ export function Switch({ on, disabled }: { on: boolean; disabled?: boolean }) {
           width: KIT.size.switchKnob,
           height: KIT.size.switchKnob,
           borderRadius: KIT.size.switchKnob / 2,
-          backgroundColor: KIT.white,
+          backgroundColor: c.switchKnob,
           boxShadow: knob.boxShadow,
           transform: [
             { translateX: x.interpolate({ inputRange: [0, 1], outputRange: [0, travel] }) },

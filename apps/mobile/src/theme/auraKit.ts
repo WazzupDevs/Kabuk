@@ -87,6 +87,9 @@ export const KIT_TYPE = {
   // The small empty card (tuval Detay, Aktivite: 15.5/700, its sentence 13/500 at 1.4).
   emptyTitle: t(700, 15.5, 20),
   emptyNote: t(500, 13, 18),
+  // The empty, error and offline state's title (yeni arayüz tuvali AktivitelerBos, AktivitelerHata
+  // `.et`: 15/20 600); its sentence is `.fine` (`.ed`: 13/18 500).
+  stateTitle: t(600, 15, 20),
   // A venue's page (tuval Detay): the name (31, 800, -0.03em; the line the face's own height, as
   // exploreTitle), the info line's pills (12.5, 700) and place (13.5, 600), the main button's words
   // (17, 800, -0.01em), the bar's name (15.5, 800, -0.015em).
@@ -482,6 +485,18 @@ export const KIT = {
     onDangerSoft: '#A8301A',
     // Aura v71: the step dots of the sign-up (`--step-dot`).
     stepDot: 'rgba(17, 23, 20, 0.16)',
+    // A face's 2 ring (yeni arayüz tuvali ekran.css `.av`: --surface) and its shadow
+    // (--shadow-raised; none in the dark).
+    faceRing: '#FFFFFF',
+    faceShadow: SHADOW.av,
+    // The switch's knob (skall.css `.toggle i`: --surface, --shadow-raised; none in the dark).
+    switchKnob: '#FFFFFF',
+    switchKnobShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
+    // The check box and the radio (yeni arayüz tuvali `.cb`, `.rd`: KayitOnay, EngelleOnay,
+    // SikayetEt, CheckInNokta): empty a 2 line of the ink at 28 %, on the ink with a white check.
+    markLine: 'rgba(3, 27, 11, 0.28)',
+    markOn: '#031B0B',
+    onMarkOn: '#FFFFFF',
   },
   dark: {
     ink: '#EEF3F0',
@@ -545,12 +560,17 @@ export const KIT = {
     dangerSoft: '#3A1E22',
     onDangerSoft: '#FF977E',
     stepDot: 'rgba(255, 255, 255, 0.18)',
+    faceRing: '#151A18',
+    faceShadow: '',
+    switchKnob: '#151A18',
+    switchKnobShadow: '',
+    markLine: 'rgba(255, 255, 255, 0.30)',
+    markOn: 'rgba(255, 255, 255, 0.94)',
+    onMarkOn: '#0B0E0D',
   },
   // The same in both schemes.
   primary: '#0E8745',
   onPrimary: '#FFFFFF',
-  // The dark ink on a filled box or radio in the dark scheme (the accent's ground): #0B0E0D.
-  checkInk: '#0B0E0D',
   // The lines beside "Yeni mesaj" in a chat.
   freshLine: 'rgba(255, 79, 139, 0.40)',
   // A new invite in Bildirimler: the brand's soft gradient.
@@ -648,14 +668,11 @@ export const KIT = {
   diskRing: 'rgba(255, 255, 255, 0.90)',
   avShadow: SHADOW.av,
   thumbShadow: SHADOW.thumb,
-  // .av c1 … c5: a face without a photo, a colour from its name.
-  avColors: [
-    'linear-gradient(145deg, #12984F, #0E8745)',
-    'linear-gradient(145deg, #FF7EA8, #E83C78)',
-    'linear-gradient(145deg, #FFC66E, #F09A1F)',
-    'linear-gradient(145deg, #5FC6A0, #1C8C4E)',
-    'linear-gradient(145deg, #6FB7E8, #2F7FC0)',
-  ],
+  // .av c1 … c5: a face without a photo, a flat colour from its name (yeni arayüz tuvali ekran.css
+  // `.c1` … `.c5`: --primary, --violet, --signal, --success, --read; no gradient), the dark
+  // scheme's own (skall.css `.dark`).
+  avColors: ['#0E8745', '#C51F62', '#FFB547', '#1C7843', '#2C63D6'],
+  avColorsDark: ['#0E8745', '#FF5C93', '#FFB547', '#4CC97E', '#7DB2FF'],
   // .tag colours: ground and text.
   tags: {
     purple: { bg: '#D7EEDC', fg: '#055328' },
@@ -673,8 +690,6 @@ export const KIT = {
   // A read message's double tick (Mesajlar, Dm).
   // On the viewer's own white bubble (a soft off-white in the dark): the light read blue in both.
   readTick: '#2C63D6',
-  // The switch's knob (Masa kur).
-  switchKnobShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
   // A game card's corner tag: dark glass over its picture (Masa), and its shadow.
   artTag: 'rgba(3, 27, 11, 0.55)',
   // U17 (KesfetMekan `.htop`): over the venue's scene, in both schemes, the back button on light
@@ -858,10 +873,11 @@ export const KIT = {
     tagPadX: 8,
     tagGap: 4,
     round: 44,
-    // iskelet.md → 2.1 and 3.1: every top bar button 46 (the glass back button); a sticky field
+    // iskelet.md → 2.1 and 3.1: every top bar button 44 (the glass back button; the yeni arayüz
+    // tuvali's `.round`, 17 Kasım, was 46); a sticky field
     // pins `stickyTop` under the top of its screen's scrolling body (top 52 to 54 on the canvas's 47
     // status bar) and the band reaches `stickyBandPad` under it.
-    topBtn: 46,
+    topBtn: 44,
     stickyTop: 6,
     stickyBandPad: 8,
     // iskelet.md → 5.1 (Keşfet): the search and list/map capsule 54, 48 once pinned, its switch's
@@ -910,14 +926,24 @@ export const KIT = {
     stackOverlap: 10,
     // Profil's two buttons and Kapsülün's: the main height (B1).
     btnRow: 48,
-    // The empty state: its sign 28 × 42, 6 apart, the title 10 under the sign; 26 above (the
-    // lobby's 18), 8 inside.
+    // The empty state: its sign 28 × 42; 26 above (the lobby's 18). Yeni arayüz tuvali
+    // (AktivitelerBos, AktivitelerHata `.emp`): 24 in from the sides, the title 12 under the
+    // picture, the sentence 4 under it and at most 260 wide, the button 16 under it; the riso
+    // picture small and unframed (150 across, a card's or a sheet's 120; no corner, no shadow).
     emptyMark: { width: 28, height: 42 },
-    emptyTitleTop: 10,
+    emptyTitleTop: 12,
+    emptyNoteTop: 4,
+    emptyNoteMax: 260,
+    emptyActionTop: 16,
+    emptyPad: 24,
+    emptyRiso: 150,
+    emptyRisoSm: 120,
+    // The Aura v76 BosDurumlar pictures are 640 × 440 exports: drawn whole at their own shape.
+    emptyRisoAspect: 440 / 640,
     emptyTop: 26,
     emptyTopSm: 18,
-    // U36 (GaleriKesfet, GaleriProfil `.disc`): the error and icon state's disc 64, its icon 26,
-    // the disc, the note and the button 12 apart. Loading (MekanYukleniyor): the meeting capsules
+    // U36 (GaleriKesfet, GaleriProfil `.disc`): the error and icon state's disc 64, its icon 26
+    // (its words and button as the empty state's). Loading (MekanYukleniyor): the meeting capsules
     // 50 (YukleniyorListe `.ld` 22 x 50), no visible note (screen readers say it).
     stateDisc: 64,
     stateIcon: 26,
@@ -925,7 +951,6 @@ export const KIT = {
     tagNarrow: 30,
     // Aura v75 AktivitelerHal `.erc .ci`.
     stateIconPage: 28,
-    stateGap: 12,
     stateLoader: 50,
     stateLoadTop: 18,
     // Aktiviteler's history rows (iskelet.md → 5.3): a 56 picture.
@@ -1038,17 +1063,20 @@ export const KIT = {
     photoPick: 120,
     photoPickLine: 3,
     // The check box and the radio: 24, the box 8 round (`.check`, `.radio`).
+    // `.cb` and `.rd`: 24, the box 7 round with an 18 check, the empty line 2, the chosen radio's
+    // ring 7.
     checkBox: 24,
-    checkRadius: 8,
+    checkRadius: 7,
+    checkTick: 18,
+    markLine: 2,
+    radioOn: 7,
     // A choice or consent row: 56 and 64 at least (the consents, `.opt`), 10 or 12 above and under.
     optMin: 56,
     optPadY: 10,
     consentPadY: 12,
-    // A settings row (`.lr`): 64 at least, 12 above and under, its icon 24 and chevron 20.
+    // A person's row in a settings page (`.lr`): 64 at least. A settings row itself: theme/settings.ts
+    // → SETTINGS.row (yeni arayüz tuvali `.sr`).
     lrMin: 64,
-    lrPadY: 12,
-    lrIcon: 24,
-    lrChevron: 20,
     // A person's row: the face 44 (`.av`).
     avPerson: 44,
     // The warning strip: 14 above and under, 16 in, 4 between its title and words.

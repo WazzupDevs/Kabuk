@@ -138,9 +138,10 @@ export function Choice({
           width: DOT,
           height: DOT,
           borderRadius: shape.radius.pill,
-          // skall.css → `.radio`: 2 px border on nothing; on, a 7 px primary ring (dark: accent).
-          borderWidth: selected ? 7 : 2,
-          borderColor: selected ? ring : colors.border,
+          // Yeni arayüz tuvali `.rd` (CheckInNokta, SikayetEt): a 2 line of the ink at 28 % on
+          // nothing; on, a 7 ring of the ink (the dark: the 94 % white).
+          borderWidth: selected ? KIT.size.radioOn : KIT.size.markLine,
+          borderColor: selected ? KIT[scheme].markOn : KIT[scheme].markLine,
         }}
       ></View>
     </Pressable>

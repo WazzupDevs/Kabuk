@@ -7,6 +7,7 @@ import { photoCacheKey } from '@/lib/usePhoto';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { PROFILE_PAGE } from '@/theme/profileCover';
+import { useTheme } from '@/theme/ThemeProvider';
 
 // A face on a profile page (docs/design/iskelet.md → 2.4, 5.6, 5.7): the photo, or the name's first
 // letter on its colour, `side` across; no shadow and no second ring.
@@ -19,6 +20,7 @@ export function ProfileFace({
   name: string;
   photoUrl: string | null;
 }) {
+  const { scheme } = useTheme();
   return (
     <View
       style={[
@@ -30,7 +32,7 @@ export function ProfileFace({
           alignItems: 'center',
           justifyContent: 'center',
         },
-        photoUrl ? null : gradientStyle(avatarGround(name)),
+        photoUrl ? null : gradientStyle(avatarGround(name, scheme)),
       ]}
     >
       {photoUrl ? (
