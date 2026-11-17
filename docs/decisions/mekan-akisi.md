@@ -12,4 +12,4 @@
 
 **Realtime:** yeni kanal türü açılmadı; `venue_chat:{venue_id}` konularında veri içermeyen `venue_post` olayı. Politika değişmedi.
 
-**Sonraya kalan:** gönderiden profil açma ve arkadaşlık isteği; analitik olayları; istemci (Masalar/Akış seçicisi, akış, yazma sayfası, yanıtlar). Kadının başlıktaki anonim/profil seçicisinin Akış görünümünde ne göstereceği istemci paketinde sorulur (öneri: gizlenir, "Akışta herkes profiliyle yazar." notu kalır).
+**Sonraya kalan:** gönderiden profil açma ve arkadaşlık isteği (17 Kasım'da uygulandı: `profile/get { venuePostId }`, `friends/request { venuePostId }`, `docs/SPEC_V4.md` §4.Y); analitik olayları; istemci (Masalar/Akış seçicisi, akış, yazma sayfası, yanıtlar). Kadının başlıktaki anonim/profil seçicisinin Akış görünümünde ne göstereceği istemci paketinde sorulur (öneri: gizlenir, "Akışta herkes profiliyle yazar." notu kalır).

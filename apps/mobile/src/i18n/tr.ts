@@ -1027,6 +1027,7 @@ export const tr = {
     ageDays: (n: number) => `${n} g`,
     someone: 'Biri',
     postOptions: 'Gönderi seçenekleri',
+    openProfile: (name: string) => `${name} profilini aç`,
     reply: 'Yanıtla',
     replyCount: (n: number) => (n > 0 ? `Yanıtla, ${n} yanıt` : 'Yanıtla'),
     like: 'Beğen',

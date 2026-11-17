@@ -1,140 +1,25 @@
-import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { useMutation } from '@tanstack/react-query';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
-import { Btn, T } from '@/aura/kit';
-import { Banner } from '@/components/Banner';
-import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
-import { Menu, MenuItem } from '@/components/Menu';
-import { Screen } from '@/components/Screen';
-import { Sheet } from '@/components/Sheet';
-import { ReportModal } from '@/features/chat/ReportModal';
 import { useDistrictChatProfile } from '@/features/district/queries';
-import { FriendActions } from '@/features/friends/FriendActions';
-import { useFriends } from '@/features/friends/queries';
-import { ProfileHead, ProfileTopBar } from '@/features/profile/ProfileCard';
-import { errorMessage } from '@/i18n/errors';
-import { tr } from '@/i18n/tr';
+import { SenderProfileScreen } from '@/features/profile/SenderProfileScreen';
 import { districtChatApi, friendsApi } from '@/lib/api';
-import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { confirm } from '@/lib/overlayStore';
-import { KIT } from '@/theme/auraKit';
 
 // The sender of a profiled district chat message, opened through the message (docs/SPEC_V4.md
-// §4.V, as the venue chat's profile): only to the room's people now, no public_id. The request
-// asks first: it shows the other side this account's name, age and photo.
+// §4.V): only to the room's people, no public_id. The screen is the shared
+// `SenderProfileScreen`; the district chat has no block.
 export default function DistrictChatProfileScreen() {
   const { messageId } = useLocalSearchParams<{ messageId: string }>();
   const view = useDistrictChatProfile(messageId);
-  const friends = useFriends();
-  const friendId = view.data?.friendPublicId;
-  const friend = friendId ? friends.data?.find((f) => f.publicId === friendId) : undefined;
-  const [menu, setMenu] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [reporting, setReporting] = useState(false);
-
-  const request = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: () => friendsApi.requestFromDistrictChat(messageId),
-    onSuccess: () => {
-      setSent(true);
-    },
-  });
-  // A thrown error leaves the dialog open; the Banner under the button keeps the message.
-  const ask = () =>
-    confirm({
-      title: tr.venueChat.requestConfirmTitle,
-      note: tr.venueChat.requestConfirmBody,
-      icon: 'invite',
-      tone: 'plain',
-      confirmLabel: tr.venueChat.requestConfirm,
-      cancelLabel: tr.common.cancel,
-      testID: 'district-chat-request-confirm',
-      onConfirm: async () => {
-        await request.mutateAsync();
-      },
-    });
-  const report = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: (reason: ReportReason) => districtChatApi.report(messageId, reason),
-    onSuccess: () => {
-      setReporting(false);
-      Alert.alert(tr.safety.reportSent);
-    },
-  });
-
   return (
-    <Screen
-      footer={<Btn block variant="glassy" label={tr.profile.back} onPress={() => router.back()} />}
-      top={
-        <ProfileTopBar
-          onBack={() => router.back()}
-          onMore={view.data ? () => setMenu(true) : undefined}
-        />
-      }
-    >
-      {view.isPending ? (
-        <View className="mt-16 items-center">
-          <Loader />
-        </View>
-      ) : !view.data ? (
-        <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
-      ) : (
-        <View testID="district-chat-profile">
-          <ProfileHead profile={view.data}>
-            {friend ? (
-              <FriendActions friend={friend} />
-            ) : sent ? (
-              <T v="fine" center>
-                {tr.venueChat.requestSent}
-              </T>
-            ) : (
-              <>
-                {request.isError ? (
-                  <Banner tone="danger" body={errorMessage(request.error)} />
-                ) : null}
-                <Btn
-                  block
-                  bar={KIT.size.btnRow}
-                  testID="district-chat-profile-request"
-                  icon="invite"
-                  label={tr.venueChat.sendRequest}
-                  onPress={ask}
-                />
-              </>
-            )}
-          </ProfileHead>
-        </View>
-      )}
-      <Sheet
-        visible={menu}
-        onClose={() => setMenu(false)}
-        title={view.data?.displayName ?? tr.profile.moreTitle}
-      >
-        <Menu>
-          <MenuItem
-            negative
-            cap="report"
-            label={tr.chat.report}
-            onPress={() => {
-              setMenu(false);
-              setReporting(true);
-            }}
-          />
-        </Menu>
-        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
-      </Sheet>
-      <ReportModal
-        reasons={REPORT_REASONS}
-        visible={reporting}
-        pending={report.isPending}
-        error={report.error}
-        onReport={(reason) => report.mutate(reason)}
-        onClose={() => setReporting(false)}
-      />
-    </Screen>
+    <SenderProfileScreen
+      view={view}
+      sendRequest={() => friendsApi.requestFromDistrictChat(messageId)}
+      report={{ send: (reason) => districtChatApi.report(messageId, reason) }}
+      ids={{
+        screen: 'district-chat-profile',
+        request: 'district-chat-profile-request',
+        confirm: 'district-chat-request-confirm',
+      }}
+    />
   );
 }

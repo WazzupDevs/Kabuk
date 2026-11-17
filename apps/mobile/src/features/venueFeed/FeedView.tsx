@@ -72,6 +72,7 @@ export function FeedView({ venueId }: { venueId: string }) {
               now={now}
               first={i === 0}
               onOpen={open}
+              onProfile={actions.onProfile}
               onLike={actions.onLike}
               onDelete={actions.onDelete}
               onReport={actions.onReport}

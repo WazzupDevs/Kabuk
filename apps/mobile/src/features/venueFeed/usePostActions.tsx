@@ -1,6 +1,7 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import type { VenuePost } from '@shared/venueFeed.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { useState } from 'react';
 
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -71,8 +72,13 @@ export function usePostActions() {
     if (!mute.isPending) mute.mutate(post, { onError: (err) => flash(errorMessage(err)) });
   };
 
+  // The author's profile, through the post (docs/SPEC_V4.md §4.Y).
+  const onProfile = (post: VenuePost) =>
+    router.push({ pathname: '/venue-feed/profile/[postId]', params: { postId: post.id } });
+
   return {
     note,
+    onProfile,
     flash,
     onLike,
     onDelete,

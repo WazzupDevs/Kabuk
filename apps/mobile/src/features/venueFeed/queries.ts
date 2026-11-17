@@ -5,12 +5,13 @@ import {
   type QueryClient,
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 
 import { useBroadcast } from '@/features/rooms/useBroadcast';
-import { venueFeedApi } from '@/lib/api';
+import { profileApi, venueFeedApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { stablePhoto } from '@/lib/photoUrls';
 
@@ -21,7 +22,19 @@ export const venueFeedKeys = {
   page: (venueId: string) => ['venueFeed', venueId] as const,
   replies: (postId: string) => ['venueFeedReplies', postId] as const,
   repliesAll: ['venueFeedReplies'] as const,
+  profile: (postId: string) => ['venueFeedProfile', postId] as const,
 };
+
+// The author of a post, opened through it: a profile view without public_id; `not_found` (the post
+// gone, the venue left, a block) is the screen's "not visible".
+export function useVenueFeedProfile(postId: string | undefined) {
+  return useQuery({
+    queryKey: venueFeedKeys.profile(postId ?? ''),
+    enabled: !!postId,
+    retry: false,
+    queryFn: () => profileApi.getFromVenuePost(postId ?? ''),
+  });
+}
 
 type FeedPages = InfiniteData<VenuePost[], string | undefined>;
 

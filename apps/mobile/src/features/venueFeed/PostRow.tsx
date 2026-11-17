@@ -28,14 +28,15 @@ function ageLabel(createdAt: string, now: number): string {
 // One post of the feed (yeni arayüz tuvali, MekanAkis `.po`): the author's face (the profile photo,
 // or the name's first letter), the name and the age on one row with the ⋮ at the right, the words,
 // then "Yanıtla" with its count and "Beğen" with its count. A post opens its replies; a reply
-// (`reply`) has neither: no replies to a reply. The face and the name open nothing: the feed
-// carries no profile id (rule 4).
+// (`reply`) has neither: no replies to a reply. The face and the name open the author's profile
+// (`onProfile`, §4.Y; not on one's own post): the feed carries no profile id (rule 4).
 export function PostRow({
   post,
   now,
   first,
   reply,
   onOpen,
+  onProfile,
   onLike,
   onDelete,
   onReport,
@@ -48,6 +49,8 @@ export function PostRow({
   // A reply in a post's replies.
   reply?: boolean;
   onOpen?: (post: VenuePost) => void;
+  // The author's profile, through the post (not one's own).
+  onProfile?: (post: VenuePost) => void;
   onLike: (post: VenuePost) => void;
   onDelete: (post: VenuePost) => void;
   onReport: (post: VenuePost) => void;
@@ -65,6 +68,7 @@ export function PostRow({
       setAnchor(at);
       setMenu(true);
     });
+  const openProfile = !!onProfile && !post.fromMe;
   const ink = post.liked ? KIT.pink : c.muted;
   const words = (
     <T v="body" ink style={{ marginTop: L.head.textTop }}>
@@ -94,7 +98,17 @@ export function PostRow({
           }}
         />
       )}
-      <Av name={name} photoUrl={post.photoUrl} size="list" />
+      {openProfile ? (
+        <Tap
+          testID="venue-feed-face"
+          accessibilityLabel={tr.venueFeed.openProfile(name)}
+          onPress={() => onProfile?.(post)}
+        >
+          <Av name={name} photoUrl={post.photoUrl} size="list" />
+        </Tap>
+      ) : (
+        <Av name={name} photoUrl={post.photoUrl} size="list" />
+      )}
       <View style={{ flex: 1, minWidth: 0 }}>
         <View
           style={{
@@ -114,9 +128,22 @@ export function PostRow({
               columnGap: L.head.gap,
             }}
           >
-            <T v="body" ink strong>
-              {name}
-            </T>
+            {openProfile ? (
+              <Tap
+                testID="venue-feed-name"
+                sink={false}
+                accessibilityLabel={tr.venueFeed.openProfile(name)}
+                onPress={() => onProfile?.(post)}
+              >
+                <T v="body" ink strong>
+                  {name}
+                </T>
+              </Tap>
+            ) : (
+              <T v="body" ink strong>
+                {name}
+              </T>
+            )}
             <T v="fine">{`· ${ageLabel(post.createdAt, now)}`}</T>
           </View>
           <View ref={moreRef} collapsable={false}>
