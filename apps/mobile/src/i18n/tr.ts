@@ -402,7 +402,6 @@ export const tr = {
     close: 'Kapat',
     ripHint: 'Yırtmak için şeridi sağa kaydır',
     ripHintRelease: 'Parmağını kaldırırsan şerit yerine döner.',
-    ripSkip: 'Atla',
     fromPack: (pack: string) => `${pack} paketten çıktı`,
     newAccessory: 'Yeni aksesuar',
     tiltHint: 'Kartı sağa sola sürükleyerek çevirebilirsin.',

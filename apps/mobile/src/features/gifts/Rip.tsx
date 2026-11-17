@@ -23,7 +23,7 @@ import Svg, {
 } from 'react-native-svg';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, T } from '@/aura/kit';
+import { T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { svgKey } from '@/lib/svgKey';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -39,7 +39,7 @@ import { type Rect, type Stage, centerOf } from './stage';
 // middle; its strip, above a jagged line at 8.5 % of its height, is torn left to right by the
 // finger. The torn part lifts at the tear's end; the gap shows a shade and a white edge. Let go
 // under 70 % it springs back; past it the strip flies off, the card rises out of the pack and the
-// pack falls away. Atla (HediyeYirt) tears it at once; a screen reader rips it with it too.
+// pack falls away. A screen reader rips it with the hint's action. No Atla (the owner's call, 8 Kasım; HediyeYirt draws one, waiting for his answer).
 // The pack 276 wide, 144 from the board's top (HediyeYirt `.tpk`); the card inside it is the 260
 // pack's (30, 20, 200) at the 276's scale.
 const PACK = { left: 57, top: 144, w: 276 };
@@ -58,7 +58,7 @@ const START_SHARE = 0.45;
 const START_BELOW = 80;
 const P_FILL_MS = 150;
 const FINGER_SIZE = 44;
-// The hint stands 30 under the pack, the line about letting go 4 under it, Atla 18 under that.
+// The hint stands 30 under the pack, the line about letting go 4 under it.
 const HINT_GAP = 30;
 
 export function ripRects(stage: Stage): { pack: Rect; card: Rect } {
@@ -363,6 +363,13 @@ export function Rip({
         ]}
       >
         <View
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={tr.gifts.ripHint}
+          accessibilityActions={[{ name: 'activate' }]}
+          onAccessibilityAction={() => {
+            if (!skipping) skip();
+          }}
           style={{
             position: 'absolute',
             left: 20 * s,
@@ -378,16 +385,6 @@ export function Rip({
           <T v="fine" center>
             {tr.gifts.ripHintRelease}
           </T>
-          <View style={{ marginTop: SPACING[4] }}>
-            <Btn
-              variant="glassy"
-              sm
-              label={tr.gifts.ripSkip}
-              onPress={() => {
-                if (!skipping) skip();
-              }}
-            />
-          </View>
         </View>
       </Reanimated.View>
     </View>
