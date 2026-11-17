@@ -38,7 +38,7 @@ export function SusleFilter({
         accessibilityLabel={tr.capsule.packs}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
-        fadingEdgeLength={{ start: 0, end: E.panel.fadeEnd }}
+        fadingEdgeLength={{ start: E.panel.fadeStart, end: E.panel.fadeEnd }}
         style={{ flex: 1 }}
         contentContainerStyle={{ gap: E.filter.gap, alignItems: 'center' }}
       >
