@@ -124,8 +124,8 @@ export type DmRequest =
   // a message that came meanwhile, or between a call and its repeat, stays visible.
   | { action: 'clear'; threadId: string; upTo: string | null }
   // The caller's own message, within DM_EDIT_WINDOW_MS of sending (edit_expired); checked like a
-  // send (message_invalid, profanity_rejected); at most DM_EDIT_RATE per window (rate_limited); no
-  // push.
+  // send (message_invalid, profanity_rejected); at most DM_EDIT_RATE per window (rate_limited) and
+  // DM_EDIT_MAX real edits per message (edit_limit); no push.
   | { action: 'edit'; messageId: string; body: string };
 
 export type DmOkResponse = { ok: true };

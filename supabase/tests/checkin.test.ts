@@ -158,6 +158,10 @@ describe('checkin/check-in', () => {
       status: 409,
       body: errorBody('consent_outdated'),
     });
+
+    // A newer KVKK text (2026-11 → 2026-11-16): no check-in until the consent screen again.
+    await sql`update public.profiles set kvkk_version = '2026-11' where id = ${await userIdOf(client)}`;
+    expect(await checkIn(client)).toEqual({ status: 403, body: errorBody('onboarding_required') });
   });
 
   it('requires the v3 profile: an account from before v3 finishes it first', async () => {

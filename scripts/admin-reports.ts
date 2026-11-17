@@ -1,4 +1,4 @@
-// Usage: pnpm admin:reports list [all] | pnpm admin:reports done <reportId>
+// Usage: pnpm admin:reports list [all] | show <reportId> | done <reportId>
 // Developer machine only. Needs SUPABASE_URL and SUPABASE_SECRET_KEY in the environment
 // (Supabase dashboard → Settings → API Keys). The secret key never goes into the app.
 import { createClient } from '@supabase/supabase-js';

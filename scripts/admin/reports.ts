@@ -4,14 +4,19 @@ import type { Database, Json } from '../../supabase/functions/_shared/pure/datab
 
 // `pnpm admin:reports` (docs/OPS.md → Moderasyon): reading and closing what people reported.
 //   list [all]          open reports, oldest first (all: reviewed ones too)
+//   show <reportId>     one report in full: every kept message and its earlier texts, nothing cut
 //   done <reportId>     marks one reviewed
 // Reports are deleted 30 days after they were made (private.delete_old_reports), so the list is
 // read at least weekly. Acting on one is `pnpm admin:ban <userId>` or `pnpm admin:remove-photo`.
 
-export type ReportCommand = { kind: 'list'; all: boolean } | { kind: 'done'; reportId: string };
+export type ReportCommand =
+  | { kind: 'list'; all: boolean }
+  | { kind: 'show'; reportId: string }
+  | { kind: 'done'; reportId: string };
 
 export const REPORT_USAGE = [
   'pnpm admin:reports list [all]',
+  'pnpm admin:reports show <reportId>',
   'pnpm admin:reports done <reportId>',
 ].join('\n');
 
@@ -23,8 +28,8 @@ export function parseReportCommand(args: readonly string[]): ReportCommand | nul
   if (verb === 'list' && (arg === undefined || arg === 'all')) {
     return { kind: 'list', all: arg === 'all' };
   }
-  if (verb === 'done' && arg !== undefined && UUID.test(arg))
-    return { kind: 'done', reportId: arg };
+  if ((verb === 'done' || verb === 'show') && arg !== undefined && UUID.test(arg))
+    return { kind: verb, reportId: arg };
   return null;
 }
 
@@ -66,6 +71,23 @@ export function formatReport(r: ReportRow): string {
   return lines.join('\n');
 }
 
+// `show`: the whole report, its snapshots as stored (a DM copy's messages with their versions, the
+// earlier texts of an edited message; docs/decisions/dm-ilk-hal.md). Only to the developer's shell.
+export function formatReportInFull(r: ReportRow): string {
+  const head = formatReport({ ...r, messages_snapshot: null, profile_snapshot: null });
+  const parts = [head];
+  if (r.messages_snapshot !== null) {
+    parts.push(`  messages:\n${JSON.stringify(r.messages_snapshot, null, 2)}`);
+  }
+  if (r.profile_snapshot !== null) {
+    parts.push(`  profile:\n${JSON.stringify(r.profile_snapshot, null, 2)}`);
+  }
+  return parts.join('\n');
+}
+
+const REPORT_COLUMNS =
+  'id, created_at, status, reason, target_type, reported_user_id, reporter_id, messages_snapshot, profile_snapshot, photo_copy, cover_copy';
+
 export async function runReportCommand(
   admin: SupabaseClient<Database>,
   command: ReportCommand,
@@ -79,11 +101,18 @@ export async function runReportCommand(
     if (error) throw error;
     return data.length === 0 ? `No report ${command.reportId}` : `Reviewed ${command.reportId}`;
   }
+  if (command.kind === 'show') {
+    const { data, error } = await admin
+      .from('reports')
+      .select(REPORT_COLUMNS)
+      .eq('id', command.reportId)
+      .maybeSingle();
+    if (error) throw error;
+    return data === null ? `No report ${command.reportId}` : formatReportInFull(data);
+  }
   let query = admin
     .from('reports')
-    .select(
-      'id, created_at, status, reason, target_type, reported_user_id, reporter_id, messages_snapshot, profile_snapshot, photo_copy, cover_copy',
-    )
+    .select(REPORT_COLUMNS)
     .order('created_at', { ascending: true })
     .limit(200);
   if (!command.all) query = query.eq('status', 'open');

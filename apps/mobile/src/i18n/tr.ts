@@ -2635,6 +2635,7 @@ export const tr = {
     pin_limit: 'En çok 5 sohbet sabitleyebilirsin.',
     thread_archived: 'Arşivdeki sohbet sabitlenemez.',
     edit_expired: 'Mesajı yalnızca gönderdikten sonraki 15 dakika içinde düzenleyebilirsin.',
+    edit_limit: 'Bir mesajı en çok 5 kez düzenleyebilirsin.',
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
     anonymous_not_allowed: 'Bu hesapla masalara yalnızca profilinle katılabilirsin.',
     gender_required: 'Devam etmek için önce cinsiyetini seçmen gerekiyor.',

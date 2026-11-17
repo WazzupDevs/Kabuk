@@ -91,6 +91,8 @@ describe('account/complete-onboarding', () => {
       status: 409,
       body: { error: { code: 'consent_outdated', message: expect.any(String) } },
     });
+    // An app from before the KVKK text of 16 Kasım sends the version it showed.
+    expect(await call(client, { ...onboarding, kvkkVersion: '2026-11' })).toEqual(res);
   });
 
   it('rejects invalid bodies with the uniform error format', async () => {

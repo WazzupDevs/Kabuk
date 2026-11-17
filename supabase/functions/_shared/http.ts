@@ -63,6 +63,7 @@ const STATUS: Record<ErrorCode, number> = {
   pin_limit: 409,
   thread_archived: 409,
   edit_expired: 409,
+  edit_limit: 409,
   photo_required: 409,
   anonymous_not_allowed: 409,
   gender_required: 409,

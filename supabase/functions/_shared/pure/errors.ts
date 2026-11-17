@@ -53,6 +53,7 @@ export type ErrorCode =
   | 'pin_limit'
   | 'thread_archived'
   | 'edit_expired'
+  | 'edit_limit'
   | 'photo_required'
   | 'anonymous_not_allowed'
   | 'gender_required'
@@ -181,10 +182,12 @@ const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   // Replies and reactions (docs/SPEC_V3.md §21): a quoted message out of reach, a reacted one gone.
   'reply_unavailable',
   'not_found',
-  // DM yönetimi (docs/SPEC_V4.md §4.X): a sixth pin, a pin in the archive, an edit too late.
+  // DM yönetimi (docs/SPEC_V4.md §4.X): a sixth pin, a pin in the archive, an edit too late, a
+  // sixth real edit of one message.
   'pin_limit',
   'thread_archived',
   'edit_expired',
+  'edit_limit',
   // "Profilimle" needs a visible profile photo; the venue chat mode is chosen once per check-in
   // (docs/SPEC_V3.md §22.G).
   'photo_required',
