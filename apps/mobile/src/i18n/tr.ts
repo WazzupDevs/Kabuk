@@ -150,9 +150,9 @@ function numberPossessive(n: number): string {
 export const tr = {
   update: {
     title: 'Güncelleme gerekli',
-    body: 'Uygulamanın bu sürümü artık çalışmıyor. Devam etmek için yeni sürümü yükle.',
+    body: `${inflectTr(APP_NAME, 'genitive')} bu sürümü artık çalışmıyor. Devam etmek için yeni sürümü yükle, hesabın ve arkadaşların olduğu gibi kalır.`,
     action: 'Güncelle',
-    build: (b: string) => `Yüklü sürüm: ${b}`,
+    build: (b: string) => `Yüklü sürüm ${b}`,
   },
   errorScreen: {
     title: 'Bir şeyler ters gitti',

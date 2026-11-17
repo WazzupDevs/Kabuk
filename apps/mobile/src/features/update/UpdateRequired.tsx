@@ -1,38 +1,57 @@
 import { Linking, View } from 'react-native';
 
 import { Btn, T } from '@/aura/kit';
-import { RisoKanki } from '@/aura/RisoKanki';
+import { RisoPicture } from '@/aura/RisoPicture';
 import { Screen } from '@/components/Screen';
 import { Wordmark } from '@/components/Wordmark';
 import { tr } from '@/i18n/tr';
 import { appBuild, updateUrl } from '@/lib/appBuild';
-import { UPDATE_KANKI } from '@/theme/kankiMotion';
-import { SPACING } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
 
-// Full screen, in place of everything else, once the server refuses this build. Aura v71
-// GuncellemeGerekli: a riso buddy over the wordmark and the title, centred, then "Güncelle".
+// Full screen, in place of everything else, once the server refuses this build. Yeni arayüz tuvali
+// GuncellemeGerekli `.up`: the wordmark on top, the 260 × 212 riso picture, the title and the
+// sentence, centred; "Güncelle" (56) at the bottom with the installed version under it.
 export function UpdateRequired() {
   return (
     <Screen>
-      <View className="flex-1 justify-center gap-3">
-        <View className="items-center gap-3 py-8">
-          <View style={{ width: UPDATE_KANKI.width, height: UPDATE_KANKI.height }}>
-            <RisoKanki place={{ ...UPDATE_KANKI, left: 0, bottom: 0 }} scale={1} />
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ marginBottom: KIT.size.updateWordmarkGap }}>
+            <Wordmark height={KIT.size.updateWordmark} />
           </View>
-          <View style={{ marginTop: SPACING[1], marginBottom: SPACING[3] }}>
-            <Wordmark height={SPACING[8]} />
-          </View>
-          <T v="h3" ink center accessibilityRole="header">
+          <RisoPicture
+            source={require('../../../assets/riso/update-required.webp')}
+            width={KIT.size.updateRisoW}
+            height={KIT.size.updateRisoH}
+            radius={0}
+            shadow="none"
+          />
+          <T
+            v="updateTitle"
+            ink
+            center
+            accessibilityRole="header"
+            style={{ marginTop: KIT.size.updateTitleTop }}
+          >
             {tr.update.title}
           </T>
-          <T center>{tr.update.body}</T>
-        </View>
-        <Btn block label={tr.update.action} onPress={() => void Linking.openURL(updateUrl())} />
-        {appBuild ? (
-          <T v="fine" center>
-            {tr.update.build(appBuild)}
+          <T center style={{ marginTop: KIT.size.updateNoteTop, maxWidth: KIT.size.updateNoteMax }}>
+            {tr.update.body}
           </T>
-        ) : null}
+        </View>
+        <View style={{ alignItems: 'center', gap: KIT.size.updateFootGap }}>
+          <Btn
+            block
+            tall
+            label={tr.update.action}
+            onPress={() => void Linking.openURL(updateUrl())}
+          />
+          {appBuild ? (
+            <T v="updateBuild" center>
+              {tr.update.build(appBuild)}
+            </T>
+          ) : null}
+        </View>
       </View>
     </Screen>
   );

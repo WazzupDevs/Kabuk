@@ -31,8 +31,8 @@ export const GAME_CARDS = [
     category: 'multi',
     art: require('../../../assets/game-poster/g-kaupholl.webp'),
   },
-  // Kibrit: its v92 poster with the line and headcount of K-86 (the owner's call, 5 Kasım).
-  { id: 'kibrit', category: 'multi', art: require('../../../assets/game-poster/g-kibrit.webp') },
+  // Kibrit: the new board's logo (`.gc img`, the same picture in every `gl` place; 462 × 334).
+  { id: 'kibrit', category: 'multi', art: require('../../../assets/riso/logo-kibrit.webp') },
 ] as const satisfies readonly {
   id: keyof typeof tr.table.gameCards;
   category?: keyof typeof tr.table.gameCategories;

@@ -19,6 +19,6 @@ export const kibritArt = {
   light: require('../../../../assets/games/kibrit/b-isik.webp'),
   // One matchstick (240×320, transparent): one per vote in a result row, shown 22×30.
   stick: require('../../../../assets/games/kibrit/b-cop.webp'),
-  // The Players screen's poster (504×336, shown 84×56).
-  poster: require('../../../../assets/games/kibrit/b-poster.webp'),
+  // The logo (yeni arayüz tuvali `.gl`, 462×334, the same picture as the table's game card).
+  poster: require('../../../../assets/riso/logo-kibrit.webp'),
 } satisfies Record<string, ImageSourcePropType | Record<string, ImageSourcePropType>>;

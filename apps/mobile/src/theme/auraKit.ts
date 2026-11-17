@@ -230,6 +230,9 @@ export const KIT_TYPE = {
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
   wordmarkSm: t(800, 24, 28, -0.04),
+  // GuncellemeGerekli `.up h1` (24 / 30, 700, -.3px) and the version line under the button.
+  updateTitle: t(700, 24, 30, -0.3 / 24),
+  updateBuild: t(500, 12, 16),
   // A scene's title (Mekan: .title at 22).
   hero: t(600, 22, 28, -0.015),
   // Masa kur's title (.title at 24).
@@ -956,6 +959,20 @@ export const KIT = {
     // (its words and button as the empty state's). Loading (MekanYukleniyor): the meeting capsules
     // 50 (YukleniyorListe `.ld` 22 x 50), no visible note (screen readers say it).
     stateDisc: 64,
+    // GuncellemeGerekli `.up`: the wordmark 30 high, 28 over the 260 × 212 picture, the title 16
+    // under it, the sentence 8 under that (300 wide at most); the button and the version line 12
+    // apart at the bottom.
+    updateWordmark: 30,
+    updateWordmarkGap: 28,
+    updateRisoW: 260,
+    updateRisoH: 212,
+    updateTitleTop: 16,
+    updateNoteTop: 8,
+    updateNoteMax: 300,
+    updateFootGap: 12,
+    // AktivitelerHata, AktivitelerBaglantiYok `.emp img`: the error and offline riso picture.
+    stateRisoW: 210,
+    stateRisoH: 172,
     stateIcon: 26,
     // Aura v75 E4: a tag when narrow (320 dp or the largest text, src/lib/narrow.ts).
     tagNarrow: 30,

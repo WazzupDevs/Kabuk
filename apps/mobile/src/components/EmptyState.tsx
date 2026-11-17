@@ -13,6 +13,7 @@ import { Btn, T, useKit } from '@/aura/kit';
 import { shadowParts } from './NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { KIT } from '@/theme/auraKit';
+import { tr } from '@/i18n/tr';
 
 export type { StateKind };
 
@@ -54,6 +55,8 @@ const EMPTY_RISO = {
   venues: require('../../assets/riso/empty-venues.webp'),
   chat: require('../../assets/riso/history-sohbet.webp'),
   events: require('../../assets/riso/empty-events.webp'),
+  // Yeni arayüz tuvali (ArsivBos): the buddy looking out of the archive box, 360 × 294.
+  archive: require('../../assets/riso/empty-archive.webp'),
   // Yeni arayüz tuvali (MesajlarBos, MesajlarAraBos, DmBos): cut out, no frame.
   messages: require('../../assets/riso/empty-messages.webp'),
   search: require('../../assets/riso/empty-search.webp'),
@@ -82,7 +85,16 @@ const RISO_BOARD: Partial<
   messages: { width: 120, height: 98, radius: 0, shadow: 'none' },
   search: { width: 120, height: 80, radius: 0, shadow: 'none' },
   dm: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  archive: { width: 120, height: 98, radius: 0, shadow: 'none' },
 };
+
+// AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,
+// the buddy with the unplugged cable. Offline is told by the sentence the callers pass
+// (`errorMessage`: `tr.connection.offlineError`), so no caller needs to change.
+const ERROR_RISO = {
+  error: require('../../assets/riso/error-generic.webp'),
+  offline: require('../../assets/riso/error-offline.webp'),
+} as const satisfies Record<string, ImageSourcePropType>;
 
 // GaleriKesfet, GaleriProfil `.disc`: 64 round, the soft fill and edge (`.btn.soft`), the icon 26
 // muted.
@@ -121,8 +133,8 @@ function StateDisc({ icon, iconSize }: { icon: IconName; iconSize: number }) {
 // the screen without a card: the disc (or the loader), the note under it and at most one action,
 // "Tekrar dene" btn sm soft. Yeni arayüz tuvali (AktivitelerHata, AktivitelerBaglantiYok): the
 // title 15/20 600 12 under the disc, the sentence 13/18 500 4 under it (at most 260 wide), the
-// soft button 16 under it. The boards' riso pictures (a broken cup, an unplugged buddy) are not in
-// the repo yet: the disc stays.
+// soft button 16 under it. The error and offline states draw the boards' riso picture (210 × 172);
+// an icon state (no kind) keeps the soft disc.
 export function EmptyState({
   kind,
   icon,
@@ -155,8 +167,9 @@ export function EmptyState({
     );
   if (kind === 'loading') return <Loading body={body} inPage={inPage} />;
 
-  const glyph: IconName =
-    kind === 'error' || kind === 'offline' ? 'cloudOff' : (icon ?? 'cloudOff');
+  const pictured = kind === 'error' || kind === 'offline';
+  const offline = kind === 'offline' || body === tr.connection.offlineError;
+  const glyph: IconName = icon ?? 'cloudOff';
   return (
     <View
       className="items-center"
@@ -167,7 +180,19 @@ export function EmptyState({
         paddingHorizontal: KIT.size.emptyPad,
       }}
     >
-      <StateDisc icon={glyph} iconSize={inPage ? KIT.size.stateIconPage : KIT.size.stateIcon} />
+      {pictured ? (
+        <View testID={offline ? 'error-riso-offline' : 'error-riso'} collapsable={false}>
+          <RisoPicture
+            source={offline ? ERROR_RISO.offline : ERROR_RISO.error}
+            width={KIT.size.stateRisoW}
+            height={KIT.size.stateRisoH}
+            radius={0}
+            shadow="none"
+          />
+        </View>
+      ) : (
+        <StateDisc icon={glyph} iconSize={inPage ? KIT.size.stateIconPage : KIT.size.stateIcon} />
+      )}
       <StateWords title={title} body={body} />
       {action ? (
         <Btn
