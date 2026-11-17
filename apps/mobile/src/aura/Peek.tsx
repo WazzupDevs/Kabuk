@@ -6,6 +6,7 @@ import { peekScale } from '@/lib/sheetFit';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { MESSAGES } from '@/theme/messages';
+import { LOCATE_SHEET } from '@/theme/venueDetail';
 import {
   CHECKIN_KANKI,
   CHECKIN_PEEK_FRAME,
@@ -21,13 +22,20 @@ import { Buddy } from './Buddy';
 import { RisoKanki } from './RisoKanki';
 import { springConfig } from './motion';
 
-export type PeekKind = Exclude<keyof typeof AURA.peek, 'up' | 'height'>;
+type BuddyKind = Exclude<keyof typeof AURA.peek, 'up' | 'height'>;
+// The location sheet's strips are riso pictures of their own (MekanKonum, MekanKonumIzin,
+// MekanKonumDisari): asking, permission off, outside the venue.
+export type LocatePeek = 'locate' | 'locateDenied' | 'locateAway';
+export type PeekKind = BuddyKind | LocatePeek;
 
 // Buddies looking over a card's top edge (aura.css `.behind > .peek`): drawn before the card, so
 // the card hides their lower half. Placed in a 350 wide frame, scaled to the card. `fit` scales the
 // strip over the edge and how far down each starts too (Check-in, aura v37: 61 high on a 370 wide
 // sheet), not only their size and place.
 export function Peek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number; fit?: boolean }) {
+  if (kind === 'locate' || kind === 'locateDenied' || kind === 'locateAway') {
+    return <LocateStrip kind={kind} />;
+  }
   if (kind === 'notifications') return <RisoPeek />;
   if (kind === 'request') return <RisoStrip places={REQUEST_KANKI} frame={REQUEST_PEEK_FRAME} />;
   // ui 5.1: the check-in sheet's buddies are riso pictures, the strip scaled to the sheet.
@@ -37,6 +45,32 @@ export function Peek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number;
     );
   }
   return <BuddyPeek kind={kind} delay={delay} fit={fit} />;
+}
+
+const LOCATE_PICTURES: Record<LocatePeek, number> = {
+  locate: require('../../assets/riso/locate.webp'),
+  locateDenied: require('../../assets/riso/locate-denied.webp'),
+  locateAway: require('../../assets/riso/locate-away.webp'),
+};
+
+// The location sheet's strip: one still picture standing on the sheet's top edge, 330 wide at most
+// (MekanKonum: the buddies' feet are the picture's foot, cut flat).
+function LocateStrip({ kind }: { kind: LocatePeek }) {
+  const { width, ratio } = LOCATE_SHEET.peek;
+  return (
+    <View
+      pointerEvents="none"
+      style={{ position: 'absolute', left: 0, right: 0, bottom: '100%', alignItems: 'center' }}
+    >
+      <Image
+        testID={`locate-peek-${kind}`}
+        source={LOCATE_PICTURES[kind]}
+        accessible={false}
+        contentFit="contain"
+        style={{ width: '100%', maxWidth: width, aspectRatio: 1 / ratio }}
+      />
+    </View>
+  );
 }
 
 // tuval Mesajlar (Bildirimler): two riso buddies 56 × 70, 40 in from the sheet's left and 44 from
@@ -89,7 +123,7 @@ function RisoPeek() {
   );
 }
 
-function BuddyPeek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number; fit?: boolean }) {
+function BuddyPeek({ kind, delay = 0, fit }: { kind: BuddyKind; delay?: number; fit?: boolean }) {
   const [width, setWidth] = useState(0);
   const cast = AURA.peek[kind];
   const { k, strip: fitted } = peekScale(width, AURA.peek.up);

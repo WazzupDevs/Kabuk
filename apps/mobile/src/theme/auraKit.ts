@@ -94,6 +94,20 @@ export const KIT_TYPE = {
   detailPill: t(700, 12.5, 16),
   detailPlace: t(600, 13.5, 17),
   detailBtn: t(800, 17, 22, -0.01),
+  // The same page as the new board draws it (yeni arayüz tuvali, MekanDetay): the name (26, 700,
+  // -0.6 px), the info line's pills (13, 600) and place (14, 500), a section (16, 700), "Bu hafta"
+  // (13, 600), the line under the button (13, 500), the location sheet's title (21, 700, -0.3 px)
+  // and its notice's title (15, 700) and words (14, 500).
+  venueNameTitle: t(700, 26, 32, -0.023),
+  venueEmptyTitle: t(600, 15, 20),
+  venuePill: t(600, 13, 18),
+  venuePlace: t(500, 14, 18),
+  venueSection: t(700, 16, 22),
+  venueWeek: t(600, 13, 18),
+  venueHint: t(500, 13, 18),
+  locateTitle: t(700, 21, 26, -0.014),
+  locateNoticeTitle: t(700, 15, 20),
+  locateNotice: t(500, 14, 20),
   barName: t(800, 15.5, 20, -0.015),
   // Aktiviteler (tuval Aktivite, Sohbet): the gift card's eyebrow (11, 800, 0.12em), title (21,
   // 800, 1.16 raised to the face's height) and button (14.5, 800); the tabs (15, 700); the game
@@ -800,11 +814,13 @@ export const KIT = {
   // foot as a card 34 round; the band coming in over 240–280, the venue's small picture (32, 10
   // round: 2.4) and name beside the back button over 300–330.
   venueCover: {
-    height: 360,
+    height: 330,
     speed: 0.45,
     shadeHeight: 130,
     shade: 'linear-gradient(180deg, rgba(3, 27, 11, 0.38) 0%, rgba(3, 27, 11, 0) 100%)',
-    cardRadius: 34,
+    cardRadius: 28,
+    // How far the card rides over the cover's foot (MekanDetay: the card at 300 of a 330 cover).
+    cardOverlap: 30,
     band: [240, 280],
     barTitle: [300, 330],
     barThumb: 32,
