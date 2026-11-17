@@ -281,6 +281,8 @@ export const KIT_TYPE = {
   // A venue page's tags over its scene (U17: 13).
   tagLg: t(600, 13, 17),
   badge: t(700, 11, 14),
+  // The request row's letter face (`.rqa`: 20/700, line 1).
+  faceLetter: t(700, 20, 20),
   // The venue chat card's count (24 round, 12).
   badgeLg: t(700, 12, 15),
   live: t(600, 13, 17),

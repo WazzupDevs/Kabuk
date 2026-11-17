@@ -1,6 +1,8 @@
 import { tableAvatar } from '../../../../supabase/functions/_shared/pure/tableAvatar.ts';
 
 import { BRAND } from './brand';
+import { FLAT } from './flatLists';
+import { nameInkIndex } from './nameInk';
 
 // An anonymous table's face: one of twelve game-night icons (scripts/icon/glyphs.ts →
 // TABLE_AVATARS) on one of skall's eight discs (src/components/Avatar.tsx). Fixed values, the same
@@ -33,4 +35,15 @@ export function initials(name: string): string {
     .slice(0, 2)
     .map((w) => w[0]?.toLocaleUpperCase('tr-TR') ?? '')
     .join('');
+}
+
+// A request row's letter face (`.rqa`): the first letter of the name shown, and one of the board's
+// five colours picked from that name with the venue chat's hash (the same name, the same colour, on
+// every phone). Only the name already on the screen goes in: nothing of the account (rule 4).
+export function letterFace(name: string): { letter: string; color: string } {
+  const inks = FLAT.requestFace.inks;
+  return {
+    letter: initials(name).slice(0, 1),
+    color: inks[nameInkIndex(name) % inks.length] ?? inks[0],
+  };
 }

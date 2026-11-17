@@ -26,6 +26,14 @@ export const FLAT = {
   // Mesajlar → İstekler (`.rq`): a row 10 above and under, 12 between its parts; the head 14 over
   // and 4 under it (`.rqh`); the list 4 under the tabs.
   request: { rowPadY: 10, gap: 12, headTop: 14, headBottom: 4, listTop: 4 },
+  // The face without a photo (`.rqa`): the first letter, 20/700 in white, on a disc 52 across, its
+  // colour one of five fixed ones picked from the name shown (the same in both schemes: the board
+  // sets them inline). Never from an account or a profile id (rule 4).
+  requestFace: {
+    side: 52,
+    radius: 26,
+    inks: ['#7B5CFF', '#2C63D6', '#E2456F', '#0B783D', '#C77700'],
+  },
   // Aktiviteler's game sheet (`.msh`): the picture 56, 14 round, 14 from the title, 14 under the
   // handle; the note 14 under it; MASADAKİLER 20 over and 4 under it; a person (`.mr`) 64 high, 12
   // between its parts, the face 44.

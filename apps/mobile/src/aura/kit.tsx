@@ -710,9 +710,14 @@ export function Badge({
   swap?: boolean;
   green?: boolean;
 }) {
+  const { colors } = useTheme();
   const side = large ? KIT.size.badgeLg : KIT.size.badge;
   const label = count > 99 ? '99+' : String(count);
-  const textStyle = [large ? KIT_TYPE.badgeLg : KIT_TYPE.badge, { color: KIT.white }];
+  // `.badge`, `.cnt`: --on-buzz on --buzz; white on the primary.
+  const textStyle = [
+    large ? KIT_TYPE.badgeLg : KIT_TYPE.badge,
+    { color: green ? KIT.white : colors.onBuzz },
+  ];
   return (
     <View
       style={{

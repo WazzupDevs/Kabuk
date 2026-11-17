@@ -22,7 +22,7 @@ import {
   useVenueChatRequests,
 } from './queries';
 import { MasaSection, useMasaRequestData } from './MasaRequests';
-import { RequestRowView } from './RequestRowView';
+import { LetterFace, RequestRowView } from './RequestRowView';
 import { useRetryAfterName } from './useRetryAfterName';
 
 // The last game of the encounter, or the chat (docs/SPEC_V3.md §5.5), as on Bildirimler.
@@ -182,7 +182,7 @@ export function RequestList({ now }: { now: Date }) {
             name={name}
             kind={tr.friends.sentKind}
             stamp={{ text: tr.messages.stamp(s.sentAt, inboxStamp(s.sentAt, now)) }}
-            face={<Avatar kind="profile" name={name} photoUrl={null} size="xl" />}
+            face={<LetterFace name={name} />}
             soft={{
               text: tr.friends.withdraw,
               label: tr.friends.withdrawLabel(name),
@@ -226,8 +226,11 @@ function RequestRow({
       face={
         r.face.kind === 'table' ? (
           <Avatar kind="table" alias={r.face.alias} size="xl" />
-        ) : (
+        ) : r.face.photoUrl ? (
           <Avatar kind="profile" name={r.name} photoUrl={r.face.photoUrl} size="xl" />
+        ) : (
+          // `.rqa`: no photo, the letter on a colour.
+          <LetterFace name={r.name} />
         )
       }
       decline={{
