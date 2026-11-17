@@ -28,7 +28,7 @@ import {
   RingDots,
   useRing,
 } from '@/features/gifts/PackRing';
-import { CardFace, GiftTopBar, LoginBar, SoonTag } from '@/features/gifts/parts';
+import { CardFace, GiftTopBar, LoginBar } from '@/features/gifts/parts';
 import { CARD_RATIO } from '@/features/gifts/art';
 import { FxMoves } from '@/components/FxSvg';
 import { useGiftState, useOpenPack } from '@/features/gifts/queries';
@@ -36,7 +36,6 @@ import { Rip, ripRects, RipWarm } from '@/features/gifts/Rip';
 import { type Rect, type Stage, useStage } from '@/features/gifts/stage';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { PACK_BUTTON } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -46,6 +45,8 @@ import { ICON, SPACING } from '@/theme/tokens';
 // on a ring, the front one's logins and buttons under it; Aç draws on the server, then the pack
 // zooms to the middle, is torn open and its card is shown. Android's back closes the rip or the
 // card first.
+// The rip's and the result's title: the middle of the 56 bar under the status bar (HediyeYirt `.trt`).
+const RESULT_TITLE_AT = 70;
 type Opening = {
   pack: ShownPack;
   accessory: { id: string; tier: GiftTier };
@@ -213,7 +214,21 @@ function Packs({
           ) : null
         }
       />
-      <Screen top={top}>
+      <Screen
+        top={top}
+        footer={
+          view ? (
+            <Reanimated.View style={awayStyle} pointerEvents={opening ? 'none' : 'auto'}>
+              <Buttons
+                view={view}
+                pending={openPack.isPending}
+                onOpen={open}
+                onOdds={() => setOdds(true)}
+              />
+            </Reanimated.View>
+          ) : undefined
+        }
+      >
         <Reanimated.View
           style={awayStyle}
           pointerEvents={opening ? 'none' : 'box-none'}
@@ -241,18 +256,12 @@ function Packs({
                 {
                   marginTop: (INFO_AT - DOTS_END) * stage.s,
                   alignItems: 'center',
-                  gap: SPACING[1.5],
+                  gap: SPACING[1],
                 },
                 infoStyle,
               ]}
             >
-              <Info
-                view={view}
-                state={state}
-                pending={openPack.isPending}
-                onOpen={open}
-                onOdds={() => setOdds(true)}
-              />
+              <Info view={view} state={state} />
               {openPack.isError ? <OpenError error={openPack.error} /> : null}
             </Reanimated.View>
           ) : null}
@@ -283,15 +292,25 @@ function Packs({
           >
             <View
               pointerEvents="none"
-              style={{ position: 'absolute', left: 0, right: 0, top: stage.top(60) }}
+              style={{ position: 'absolute', left: 0, right: 0, top: stage.top(RESULT_TITLE_AT) }}
             >
-              <T v="eyebrow" center>
-                {tr.gifts.pack(packName(opening.pack))}
+              <T v="fine" strong center>
+                {opening.phase === 'rip'
+                  ? tr.gifts.pack(packName(opening.pack))
+                  : tr.gifts.fromPack(packName(opening.pack))}
               </T>
             </View>
-            <View style={{ position: 'absolute', right: SPACING[5], top: insets.top }}>
-              <Round icon="close" label={tr.gifts.close} onPress={close} />
-            </View>
+            {opening.phase === 'rip' ? (
+              <View
+                style={{
+                  position: 'absolute',
+                  right: SPACING[5],
+                  top: insets.top + SPACING[1.5],
+                }}
+              >
+                <Round icon="close" label={tr.gifts.close} onPress={close} />
+              </View>
+            ) : null}
           </Reanimated.View>
         </View>
       ) : null}
@@ -310,76 +329,92 @@ function Packs({
   );
 }
 
-// The front pack's name, what can be opened, the logins to the next and the buttons; a locked
-// pack only its name, "Yakında" and the buttons.
-function Info({
+// The front pack's name, what can be opened and the logins to the next (HediyePaket `.inf`); a
+// locked pack its name, "Yakında açılacak" and its note.
+function Info({ view, state }: { view: GiftPackView; state: GiftState }) {
+  const { colors } = useTheme();
+  const per = state.loginsPerPack;
+  const logins = Math.min(state.logins, per);
+  const name = packName(view.id);
+  return (
+    <>
+      <T v="title" center accessibilityRole="header">
+        {tr.gifts.pack(name)}
+      </T>
+      {view.locked ? (
+        <>
+          <T v="fine" strong center>
+            {tr.gifts.soonOpening}
+          </T>
+          <View style={{ maxWidth: NOTE_W }}>
+            <T v="fine" center>
+              {tr.gifts.soonNote(name)}
+            </T>
+          </View>
+        </>
+      ) : (
+        <>
+          <T v="fine" strong center color={view.unopened > 0 ? colors.success : undefined}>
+            {view.unopened > 0 ? tr.gifts.canOpen(view.unopened) : tr.gifts.nothingToOpen}
+          </T>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: SPACING[2],
+              marginTop: SPACING[1],
+            }}
+          >
+            <LoginBar logins={logins} per={per} width={BAR_W} on={colors.success} />
+            <T v="fine" strong>
+              {tr.gifts.loginsOf(logins, per)}
+            </T>
+          </View>
+          <View style={{ maxWidth: NOTE_W }}>
+            <T v="fine" center>
+              {tr.gifts.howToEarn(per)}
+            </T>
+          </View>
+        </>
+      )}
+    </>
+  );
+}
+// The progress's three parts (28 each, 4 apart) and the note's width (HediyePaket `.pr`, `.nt`).
+const BAR_W = 92;
+const NOTE_W = 280;
+
+// Aç and Oranlar side by side at the foot (HediyePaket `.fx`): a locked pack has Oranlar alone.
+function Buttons({
   view,
-  state,
   pending,
   onOpen,
   onOdds,
 }: {
   view: GiftPackView;
-  state: GiftState;
   pending: boolean;
   onOpen: () => void;
   onOdds: () => void;
 }) {
-  const per = state.loginsPerPack;
-  const logins = Math.min(state.logins, per);
   return (
-    <>
-      <T v="title" center accessibilityRole="header">
-        {tr.gifts.pack(packName(view.id))}
-      </T>
-      {view.locked ? (
-        <SoonTag />
-      ) : (
-        <>
-          <T v="fine" strong center>
-            {view.unopened > 0 ? tr.gifts.canOpen(view.unopened) : tr.gifts.nothingToOpen}
-          </T>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
-            <LoginBar logins={logins} per={per} />
-            <T v="fine">{tr.gifts.loginsOf(logins, per)}</T>
-          </View>
-          <T v="fine" center>
-            {tr.gifts.howToEarn(per)}
-          </T>
-        </>
-      )}
-      {/* Two buttons of one size side by side; Aç in the pack's colour (the owner's call, 7 Kasım). */}
-      <View
-        style={{
-          marginTop: SPACING[2],
-          flexDirection: 'row',
-          alignSelf: 'stretch',
-          marginHorizontal: SPACING[6],
-          gap: SPACING[3],
-        }}
-      >
+    <View style={{ flexDirection: 'row', gap: SPACING[3] }}>
+      {view.locked ? null : (
         <Btn
           label={tr.gifts.open}
           onPress={onOpen}
           loading={pending}
-          disabled={view.locked || view.unopened === 0}
-          fill={PACK_BUTTON[view.id].fill}
-          tint={PACK_BUTTON[view.id].ink}
-          style={{
-            flexGrow: 1,
-            flexBasis: 0,
-            boxShadow: `0 10px 22px ${PACK_BUTTON[view.id].shadow}`,
-          }}
-        />
-        <Btn
-          variant="glassy"
-          icon="info"
-          label={tr.gifts.odds}
-          onPress={onOdds}
+          disabled={view.unopened === 0}
           style={{ flexGrow: 1, flexBasis: 0 }}
         />
-      </View>
-    </>
+      )}
+      <Btn
+        variant="glassy"
+        icon="info"
+        label={tr.gifts.odds}
+        onPress={onOdds}
+        style={{ flexGrow: 1, flexBasis: 0 }}
+      />
+    </View>
   );
 }
 

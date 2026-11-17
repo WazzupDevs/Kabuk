@@ -1,23 +1,29 @@
 import type { GiftState } from '@shared/api/gifts.ts';
 import { GIFT_TIERS, ODDS_TOTAL } from '@shared/gifts.ts';
 import { Fragment } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, T, useKit } from '@/aura/kit';
+import { Btn, T, useKit } from '@/aura/kit';
 import { Sheet } from '@/components/Sheet';
 import { tr } from '@/i18n/tr';
+import { TIER_COLOR } from '@/theme/gifts';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { PACK_ART, PACK_RATIO, type ShownPack } from './art';
-import { packName, packView } from './model';
-import { TierTag } from './parts';
+import type { ShownPack } from './art';
+import { packName, packView, tierName } from './model';
+import { Marks } from './parts';
 
-// Oranlar (Aura v134 PaketOranlar; GaleriHediye's loading and error): the pack's tier odds as the
+// Oranlar (yeni tuval HediyeOranlar; Aura v134 PaketOranlar; GaleriHediye's loading and error): the pack's tier odds as the
 // server answers them for this person now (the app computes nothing), one accessory a pack, and
 // that an owned accessory never comes again.
-const THUMB = 48;
+// A row 56 high: the diamonds 52 wide, the bar 96 × 6, the share 44 wide (HediyeOranlar `.rr`).
+const ROW_H = 56;
+const MARKS_W = 52;
+const BAR_W = 96;
+const BAR_H = 6;
+const PERCENT_W = 44;
 const ROW_PAD_Y = 12;
 const SKELETON = { name: 90, value: 40, h: 20 };
 
@@ -38,51 +44,67 @@ export function OddsSheet({
   onRetry: () => void;
   retrying: boolean;
 }) {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const { c } = useKit();
   const view = state ? packView(state, pack) : null;
   const name = packName(pack);
   return (
     <Sheet visible={visible} onClose={onClose}>
-      <View style={{ gap: SPACING[4] }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[3] }}>
-          <Image
-            source={PACK_ART[pack]}
-            accessibilityIgnoresInvertColors
-            style={{ width: THUMB, height: THUMB / PACK_RATIO }}
-            resizeMode="contain"
-          />
-          <View style={{ flex: 1, gap: SPACING[1] }}>
-            <T v="title" accessibilityRole="header">
-              {tr.gifts.oddsTitle(name)}
-            </T>
-            <T v="fine">{tr.gifts.oddsLead}</T>
-          </View>
+      <View style={{ gap: SPACING[2] }}>
+        <View style={{ gap: SPACING[1] }}>
+          <T v="title" accessibilityRole="header">
+            {tr.gifts.oddsTitle(name)}
+          </T>
+          <T v="fine">{tr.gifts.oddsLead}</T>
         </View>
         {view ? (
-          <Glass sm>
+          <View>
             {GIFT_TIERS.map((tier, i) => (
               <Fragment key={tier}>
                 {i > 0 ? <View style={{ height: 1, backgroundColor: c.hair }} /> : null}
                 <View
                   accessible
+                  accessibilityLabel={`${tierName(tier)}, ${tr.gifts.percent(view.odds[tier], ODDS_TOTAL)}`}
                   style={{
+                    height: ROW_H,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
                     gap: SPACING[3],
-                    paddingVertical: ROW_PAD_Y,
-                    paddingHorizontal: SPACING[4],
                   }}
                 >
-                  <TierTag tier={tier} />
-                  <T v="h3">{tr.gifts.percent(view.odds[tier], ODDS_TOTAL)}</T>
+                  <View style={{ width: MARKS_W }}>
+                    <Marks tier={tier} color={TIER_COLOR[scheme][tier]} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <T v="h3">{tierName(tier)}</T>
+                  </View>
+                  <View
+                    style={{
+                      width: BAR_W,
+                      height: BAR_H,
+                      borderRadius: BAR_H / 2,
+                      backgroundColor: c.emptyMark,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: `${(view.odds[tier] / ODDS_TOTAL) * 100}%`,
+                        height: BAR_H,
+                        borderRadius: BAR_H / 2,
+                        backgroundColor: TIER_COLOR[scheme][tier],
+                      }}
+                    />
+                  </View>
+                  <View style={{ width: PERCENT_W, alignItems: 'flex-end' }}>
+                    <T v="h3">{tr.gifts.percent(view.odds[tier], ODDS_TOTAL)}</T>
+                  </View>
                 </View>
               </Fragment>
             ))}
-          </Glass>
+          </View>
         ) : loading ? (
-          <Glass sm>
+          <View>
             <View accessibilityState={{ busy: true }}>
               {GIFT_TIERS.map((tier) => (
                 <View
@@ -113,7 +135,7 @@ export function OddsSheet({
                 </View>
               ))}
             </View>
-          </Glass>
+          </View>
         ) : (
           <View style={{ alignItems: 'center', gap: SPACING[3], paddingVertical: SPACING[3] }}>
             <CapIcon name="warn" color={colors.danger} size={ICON.lg} />
@@ -130,8 +152,8 @@ export function OddsSheet({
             />
           </View>
         )}
+        <T v="fine">{tr.gifts.oddsMarks}</T>
         <T v="fine">{tr.gifts.oddsNoRepeat}</T>
-        <Btn variant="glassy" block label={tr.gifts.ok} onPress={onClose} />
       </View>
     </Sheet>
   );
