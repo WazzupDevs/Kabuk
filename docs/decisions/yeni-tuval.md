@@ -23,7 +23,7 @@
 
 Hiçbiri henüz uygulanmadı; her biri ayrı sunucu paketi ve `guvenlik` denetimiyle gelir.
 
-a. **Odadakiler (semt sohbeti):** panodaki gibi tam liste: kişi sayısı, profilli ve anonim herkes (yazmayanlar dahil), geliş zamanı. Bu, değişmez kural 4'ün semt sohbeti maddesini ("Odanın kişi sayısı hiçbir yanıtta, Realtime yükünde ve ekranda görünmez (presence ve son yazanlar yok)", "Kişinin semti hiçbir kullanıcıya gitmez") ve `docs/SPEC_V4.md` §4.V'yi değiştirir; CLAUDE.md değişikliği o paketin PR'ında, proje sahibinin sohbetteki "onaylandı"sıyla. Sınırlar: anonim satır hesaba, nick'e ya da arkadaşlığa bağlanmaz ("Arkadaşın" etiketi yalnız profilli satırda); profil kimliği gitmez.
+a. **Odadakiler (semt sohbeti; sunucusu uygulandı, `district-chat/people`, `docs/SPEC_V4.md` §4.V; 17 Kasım akşam yeniden onaylandı):** panodaki gibi tam liste: kişi sayısı, profilli ve anonim herkes (yazmayanlar dahil), geliş zamanı. Bu, değişmez kural 4'ün semt sohbeti maddesini ("Odanın kişi sayısı hiçbir yanıtta, Realtime yükünde ve ekranda görünmez (presence ve son yazanlar yok)", "Kişinin semti hiçbir kullanıcıya gitmez") ve `docs/SPEC_V4.md` §4.V'yi değiştirir; CLAUDE.md değişikliği o paketin PR'ında, proje sahibinin sohbetteki "onaylandı"sıyla. Sınırlar: anonim satır hesaba, nick'e ya da arkadaşlığa bağlanmaz ("Arkadaşın" etiketi yalnız profilli satırda); profil kimliği gitmez.
 
 b. **Ortak arkadaş:** yalnız zaten arkadaş olunan kişinin profilinde, sayı ve adlarla. Arkadaş olmayanın profilinde (mekan ya da semt sohbetinden açılan) gösterilmez.
 

@@ -9,6 +9,7 @@ import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import type {
   DistrictAnswerResponse,
   DistrictChatPageResponse,
+  DistrictPeopleResponse,
   DistrictLocateResponse,
   DistrictState,
 } from '../functions/_shared/pure/api/district.ts';
@@ -349,6 +350,69 @@ describe('the room chat', () => {
     expect(
       (await invoke(b.c, 'profile', { action: 'get', districtChatMessageId: id })).status,
     ).toBe(404);
+  });
+
+  // Odadakiler (rule 4's district paragraph): the whole room, a time alone for an anonymous one.
+  it('lists the room: the profile of a profiled one, a time alone for an anonymous one, the same across a block', async () => {
+    const a = await inRoom(0, 'Ayşe');
+    const b = await inRoom(1, 'Burak');
+    const c = await inRoom(2, 'Can');
+    await setTestPhoto(a.c);
+    await district(a.c, { action: 'set-identity', anonymous: false });
+    const people = async (client: Client) => {
+      const res = await chat(client, { action: 'people' });
+      expect(res.status, JSON.stringify(res.body)).toBe(200);
+      return res.body as DistrictPeopleResponse;
+    };
+
+    const seen = await people(b.c);
+    expect(seen).toEqual({
+      count: 3,
+      me: { profiled: false, joinedAt: expect.any(String) },
+      profiled: [
+        {
+          profiled: true,
+          displayName: 'Ayşe',
+          age: expect.any(Number),
+          photoUrl: expect.any(String),
+          // It changed identity here: no time, or the row it left would name it.
+          joinedAt: null,
+          friend: false,
+          muted: false,
+        },
+      ],
+      anonymous: [{ profiled: false, joinedAt: expect.any(String) }],
+    });
+    // The same when asked again; to the minute; no id, nick, look or key of anyone.
+    expect(await people(b.c)).toEqual(seen);
+    expect(new Date(seen.anonymous[0]?.joinedAt ?? '').getUTCSeconds()).toBe(0);
+    expect(JSON.stringify(seen)).not.toMatch(/public_?id|user_?id|alias|look|key|kapsul/i);
+    // The profiled one sees itself with its profile.
+    expect((await people(a.c)).me).toMatchObject({ profiled: true, displayName: 'Ayşe' });
+
+    // A friend and a mute show on the profiled row only.
+    const [low, high] = [a.userId, b.userId].sort() as [string, string];
+    await sql`
+      insert into public.friendships (user_a, user_b, source) values (${low}, ${high}, 'request')
+    `;
+    const id = await send(a.c, 'selam', 'profiled');
+    expect((await chat(b.c, { action: 'mute', messageId: id })).status).toBe(200);
+    expect((await people(b.c)).profiled[0]).toMatchObject({ friend: true, muted: true });
+    expect((await people(c.c)).profiled[0]).toMatchObject({ friend: false, muted: false });
+
+    // A block filters nothing (it is on the account: a row that left would name a nick).
+    const before = [await people(c.c), await people(a.c)];
+    await sql`
+      insert into public.blocks (blocker_id, blocked_id, blocked_alias)
+      values (${c.userId}, ${a.userId}, 'x')
+    `;
+    expect([await people(c.c), await people(a.c)]).toEqual(before);
+    await sql`delete from public.blocks`;
+
+    // Someone who left is gone; without a session the list is empty.
+    await district(b.c, { action: 'leave' });
+    expect((await people(c.c)).count).toBe(2);
+    expect(await people(b.c)).toEqual({ count: 0, me: null, profiled: [], anonymous: [] });
   });
 
   it('mutes by identity in the shared list, and sends a friend request named after the district', async () => {

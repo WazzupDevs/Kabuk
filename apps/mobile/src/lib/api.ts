@@ -85,6 +85,7 @@ import type {
 import type {
   DistrictAnswerResponse,
   DistrictChatPageResponse,
+  DistrictPeopleResponse,
   DistrictChatSendResponse,
   DistrictLocateResponse,
   DistrictState,
@@ -563,6 +564,8 @@ export const districtChatApi = {
     invoke<VenueChatMuteResponse>('district-chat', { action: 'mute', messageId }),
   report: (messageId: string, reason: ReportReason) =>
     invoke<{ ok: true }>('district-chat', { action: 'report', messageId, reason }),
+  // Odadakiler: everyone in the room now (rule 4's district paragraph); read only.
+  people: () => invoke<DistrictPeopleResponse>('district-chat', { action: 'people' }),
 };
 
 export const dmApi = {

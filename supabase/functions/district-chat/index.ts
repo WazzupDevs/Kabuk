@@ -2,7 +2,8 @@
 // person's own open district session. Length and profanity are checked here (rule 7); the session,
 // the rate limit and the write in district_chat_send_once. Others learn of a change from a
 // data-free broadcast on district_chat:{room_id} (rule 9) and read the page again: nothing older
-// than their own coming in, no head count, no profile id (rule 4). The muted list is the venue
+// than their own coming in, no profile id (rule 4). Odadakiler (`people`) is the one answer that
+// counts and lists the room. The muted list is the venue
 // chat's (venue-chat/mutes and unmute); a friend request (friends/request { districtChatMessageId })
 // and a profile (profile/get { districtChatMessageId }) go through those functions.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
@@ -16,6 +17,8 @@ import { loadProfanity } from '../_shared/profanity.ts';
 import type {
   DistrictChatPageResponse,
   DistrictChatRequest,
+  DistrictPeopleResponse,
+  DistrictPerson,
   DistrictChatSendResponse,
 } from '../_shared/pure/api/district.ts';
 import type { VenueChatMuteResponse } from '../_shared/pure/api/venueChat.ts';
@@ -24,6 +27,7 @@ import {
   DISTRICT_CHAT_REACTION_BROADCAST,
   districtChatChannel,
 } from '../_shared/pure/district.ts';
+import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { parseQuote, parseReactionCounts } from '../_shared/pure/messageExtras.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
@@ -45,6 +49,7 @@ const Body: z.ZodType<DistrictChatRequest> = z.discriminatedUnion('action', [
   }),
   z.object({ action: z.literal('react'), messageId: z.uuid(), emoji: ReactionInput }),
   z.object({ action: z.literal('page'), before: z.iso.datetime({ offset: true }).optional() }),
+  z.strictObject({ action: z.literal('people') }),
   z.object({ action: z.literal('delete'), messageId: z.uuid() }),
   z.object({ action: z.literal('mute'), messageId: z.uuid() }),
   z.object({ action: z.literal('report'), messageId: z.uuid(), reason: z.enum(REPORT_REASONS) }),
@@ -89,17 +94,53 @@ async function page(userId: string, before?: string): Promise<DistrictChatPageRe
   };
 }
 
+// Odadakiler: the room's people now. An anonymous row carries a time alone (rule 4).
+async function people(userId: string): Promise<DistrictPeopleResponse> {
+  const { data, error } = await db.rpc('district_people_for', { target_user_id: userId });
+  if (error) throw dbError('district_people_for', error);
+  const urls = await signPhotos(db, [
+    ...new Set(data.map((r) => r.photo_path).filter((p): p is string => !!p)),
+  ]);
+  const today = istanbulToday(new Date());
+  const person = (r: (typeof data)[number]): DistrictPerson => {
+    if (!r.profiled) return { profiled: false, joinedAt: r.joined_at };
+    const born = r.birth_date ? parseIsoDate(r.birth_date) : null;
+    return {
+      profiled: true,
+      displayName: r.display_name,
+      age: born ? ageOn(born, today) : null,
+      photoUrl: r.photo_path ? (urls.get(r.photo_path) ?? null) : null,
+      joinedAt: r.joined_at,
+      friend: r.friend,
+      muted: r.muted,
+    };
+  };
+  const own = data.find((r) => r.me);
+  const others = data.filter((r) => !r.me).map(person);
+  return {
+    count: data.length,
+    me: own ? person(own) : null,
+    profiled: others.filter((p) => p.profiled),
+    anonymous: others.filter((p) => !p.profiled),
+  };
+}
+
 Deno.serve(
   handle(
     async (
       req,
       raw,
     ): Promise<
-      DistrictChatPageResponse | DistrictChatSendResponse | VenueChatMuteResponse | { ok: true }
+      | DistrictChatPageResponse
+      | DistrictPeopleResponse
+      | DistrictChatSendResponse
+      | VenueChatMuteResponse
+      | { ok: true }
     > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
       if (body.action === 'page') return page(user.id, body.before);
+      if (body.action === 'people') return people(user.id);
 
       if (body.action === 'delete') {
         const { data, error } = await db.rpc('district_chat_delete', {

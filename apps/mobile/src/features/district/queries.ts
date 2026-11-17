@@ -1,4 +1,8 @@
-import type { DistrictState } from '@shared/api/district.ts';
+import type {
+  DistrictPeopleResponse,
+  DistrictPerson,
+  DistrictState,
+} from '@shared/api/district.ts';
 import {
   DISTRICT_CHAT_BROADCAST,
   DISTRICT_CHAT_REACTION_BROADCAST,
@@ -27,6 +31,7 @@ export const districtKeys = {
   // Per room: a new room never starts from the last one's page.
   chat: (roomId: string) => ['district', 'chat', roomId] as const,
   profile: (messageId: string) => ['district', 'profile', messageId] as const,
+  people: ['district', 'people'] as const,
 };
 
 // The person's own district, Geçit and session: never the right option, never a head count. Each
@@ -98,5 +103,27 @@ export function useDistrictChatProfile(messageId: string | undefined) {
     enabled: !!messageId,
     retry: false,
     queryFn: () => profileApi.getFromDistrictChat(messageId ?? ''),
+  });
+}
+
+// Odadakiler: the room's people, read again at every opening (the server publishes nothing for it:
+// "gelen ve giden yayınlanmaz", docs/SPEC_V4.md §4.V) and never kept once the sheet is gone.
+export function useDistrictPeople() {
+  return useQuery({
+    queryKey: districtKeys.people,
+    refetchOnMount: 'always',
+    staleTime: 0,
+    gcTime: 0,
+    queryFn: async (): Promise<DistrictPeopleResponse> => {
+      const r = await districtChatApi.people();
+      const face = (p: DistrictPerson): DistrictPerson =>
+        p.profiled ? { ...p, photoUrl: stablePhoto(p.photoUrl) } : p;
+      return {
+        count: r.count,
+        me: r.me ? face(r.me) : null,
+        profiled: r.profiled.map((p) => ({ ...p, photoUrl: stablePhoto(p.photoUrl) })),
+        anonymous: r.anonymous,
+      };
+    },
   });
 }

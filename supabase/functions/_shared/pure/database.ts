@@ -2992,6 +2992,19 @@ export type Database = {
         Args: { target_user_id: string };
         Returns: string;
       };
+      district_people_for: {
+        Args: { target_user_id: string };
+        Returns: {
+          birth_date: string;
+          display_name: string;
+          friend: boolean;
+          joined_at: string;
+          me: boolean;
+          muted: boolean;
+          photo_path: string;
+          profiled: boolean;
+        }[];
+      };
       district_set: {
         Args: { target_district_id: string; target_user_id: string };
         Returns: undefined;

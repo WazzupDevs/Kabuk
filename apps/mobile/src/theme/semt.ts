@@ -165,6 +165,19 @@ export const SEMT = {
   empty: { gap: 8 },
   // The dev project's hand pick of a district.
   pickGap: 8,
+  // Odadakiler (Odadakiler, OdaProfilli, OdaUzun, OdaTek, DarOdadakiler `.plist`): a row 8 above and
+  // under, 4 in, 14 between the face and the words, the face the kit's 48 ('row'); a group's label
+  // (`.gl`) 14 above and 4 under, 4 in; the viewer's own face in a 2.5 ring.
+  people: {
+    padY: 8,
+    padX: 4,
+    gap: 14,
+    labelTop: 14,
+    labelBottom: 4,
+    labelX: 4,
+    ring: 2.5,
+    top: 12,
+  },
 } as const;
 
 // The layers of the moving scenes, in the 350 × 240 (bank: 350 × 230) scene's dp

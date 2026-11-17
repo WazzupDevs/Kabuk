@@ -49,6 +49,7 @@ import { OlderFoot } from '@/features/chat/OlderFoot';
 import { useOlderPages } from '@/features/chat/useOlderPages';
 import { asksToContinue } from '@/features/district/continueNotice';
 import { Foot, TimeChip, WarnRow } from '@/features/district/parts';
+import { PeopleSheet } from '@/features/district/People';
 import { DISTRICT_MUTES_KEY, OptionsSheet, useEndSession } from '@/features/district/RoomSheets';
 import {
   districtKeys,
@@ -106,6 +107,7 @@ function DistrictRoomBody() {
   const [person, setPerson] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
   const [options, setOptions] = useState(false);
+  const [people, setPeople] = useState(false);
   const endSession = useEndSession();
   const older = useOlderPages({
     key: roomId ?? '',
@@ -583,7 +585,12 @@ function DistrictRoomBody() {
           setOptions(false);
           endSession();
         }}
+        onPeople={() => {
+          setOptions(false);
+          setPeople(true);
+        }}
       />
+      <PeopleSheet visible={people} onClose={() => setPeople(false)} district={name} />
       <Sheet visible={person !== null} onClose={() => setPerson(null)}>
         {person ? (
           <>
