@@ -84,13 +84,15 @@ export default function VenueScreen() {
   });
 
   // "Mekandan ayrıl" asks first (iskelet.md → 3.5): a centred dialog (lib/overlayStore → confirm);
-  // it can be undone by checking in again, so plain. A failed try stays open with its error.
+  // the pano's (MekanAyril) danger button; a table of the person's leaves with it. A failed try
+  // stays open with its error.
   const openLeave = () => {
+    const tableName = currentRoom.data?.name;
     confirm({
       title: tr.venue.leaveConfirmTitle,
-      note: tr.venue.leaveConfirmBody,
+      note: tableName ? tr.venue.leaveConfirmBodyTable(tableName) : tr.venue.leaveConfirmBody,
       icon: 'logout',
-      tone: 'plain',
+      tone: 'danger',
       confirmLabel: tr.venue.leaveConfirm,
       confirmIcon: 'logout',
       cancelLabel: tr.common.cancel,

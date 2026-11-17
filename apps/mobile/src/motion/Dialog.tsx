@@ -17,6 +17,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { type Bezier, MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING } from '@/theme/tokens';
 
 const curve = (b: Bezier) => Easing.bezier(b[0], b[1], b[2], b[3]);
 const L = KIT.layer.size;
@@ -177,9 +178,11 @@ export function Dialog({
           >
             {title}
           </T>
-          <T v="body" center style={[KIT_TYPE.dialogText, { marginTop: L.dialogTextTop }]}>
-            {options.note}
-          </T>
+          {options.note ? (
+            <T v="body" center style={[KIT_TYPE.dialogText, { marginTop: L.dialogTextTop }]}>
+              {options.note}
+            </T>
+          ) : null}
           {options.children ? (
             <View style={{ alignSelf: 'stretch', marginTop: L.dialogTextBottom }}>
               {options.children}
@@ -196,6 +199,7 @@ export function Dialog({
               label={options.confirmLabel}
               onPress={onConfirm}
               loading={running === 'confirm'}
+              disabled={options.confirmDisabled}
             />
             {other ? (
               <Btn
@@ -217,6 +221,11 @@ export function Dialog({
               />
             ) : null}
           </View>
+          {options.footnote ? (
+            <T v="fine" center style={{ marginTop: L.dialogTextTop + SPACING[1] }}>
+              {options.footnote}
+            </T>
+          ) : null}
         </ScrollView>
       </Reanimated.View>
     </View>

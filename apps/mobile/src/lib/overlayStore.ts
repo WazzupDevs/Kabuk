@@ -58,6 +58,10 @@ export type ConfirmOptions = {
   children?: ReactNode;
   // Names the action; the cancel gets `${testID}-cancel` (as ConfirmSheet).
   testID?: string;
+  // Under the buttons, small (MasaIstekGelen `.dnote`: what a "Reddet" shows the other side).
+  footnote?: string;
+  // The action cannot be pressed now (a table that would pass 12 people cannot be accepted).
+  confirmDisabled?: boolean;
 };
 
 // What a non-dialog entry draws once its component moves here (a later package).

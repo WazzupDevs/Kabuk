@@ -14,23 +14,20 @@ import { type Position, useCheckinDraft } from '@/features/checkin/draft';
 import { useSkipLocation } from '@/features/checkin/locationMode';
 import { checkinButton } from '@/features/checkin/checkinButton';
 import { LocateNotice } from '@/features/checkin/LocateNotice';
-import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useCheckIn } from '@/features/checkin/useCheckIn';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { KIT } from '@/theme/auraKit';
-import { SPACING } from '@/theme/tokens';
 import { LOCATE_SHEET as L } from '@/theme/venueDetail';
 
 type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 
 // Check-in: the position, which only verifies the venue chosen in Keşfet (docs/arsiv/SPEC_V2.md §4).
 // Outside the radius, or the boundary with its tolerance (docs/SPEC_V3.md §4.2), the user is warned
-// here; the server decides anyway. A venue with spots asks "Neredesin?" in the same sheet, before the
-// position (docs/SPEC_V4.md §4.E: no headcount). There is no consent box (the owner's call, 31 Ekim):
+// here; the server decides anyway. A venue with spots asks "Neredesin?" before the position in a
+// sheet of its own (checkin/spot; CheckInNokta; docs/SPEC_V4.md §4.E: no headcount). There is no consent box (the owner's call, 31 Ekim):
 // the press on "Konumumu kullan" under the line that says what the position is for is the consent,
 // and the version still goes in the check-in (useCheckIn). On the dev project with
 // CHECKIN_SKIP_LOCATION (useSkipLocation) neither a position outside the venue nor a missing one (no
@@ -46,7 +43,6 @@ export default function LocationScreen() {
   const [openedVenue] = useState(draftVenue);
   const setPosition = useCheckinDraft((s) => s.setPosition);
   const spot = useCheckinDraft((s) => s.spot);
-  const setSpot = useCheckinDraft((s) => s.setSpot);
   const active = useActiveTable();
   const spots = useVenueSpots((draftVenue ?? openedVenue)?.id);
   const skipLocation = useSkipLocation();
@@ -121,6 +117,8 @@ export default function LocationScreen() {
   // A check-in that went through is on its way out: the cleared draft sends it nowhere else.
   if (!venue && !checkIn.isSuccess) return <Redirect href="/explore" />;
   if (!venue) return null;
+  // A venue with spots asks "Neredesin?" first, in its own sheet (checkin/spot).
+  if (hasSpots && !spot && !checkIn.isSuccess) return <Redirect href="/checkin/spot" />;
 
   const button = checkinButton({
     locating,
@@ -167,9 +165,8 @@ export default function LocationScreen() {
       }
     >
       {/* docs/design/aura → CheckIn: the venue's name and why the position is asked, "Konumumu
-          kullan" and "Vazgeç"; the page it opened from stays behind the sheet. A venue with spots
-          also asks "Neredesin?" as glass rows (the owner's call, 31 Ekim): the spot is chosen before
-          the position, as the table invite depends on it (CLAUDE.md → Değişmez kurallar 4). */}
+          kullan"; the page it opened from stays behind the sheet. The spot was chosen before, in
+          checkin/spot (the table invite depends on it, CLAUDE.md → Değişmez kurallar 4). */}
       {denied || away ? null : <T v="body">{tr.checkin.locationBody}</T>}
       {elsewhere ? <Banner tone="warn" body={tr.checkin.replaces(elsewhere)} /> : null}
       {/* Above "Neredesin?": on a short screen a warning under the spots fell below the sheet's
@@ -207,19 +204,6 @@ export default function LocationScreen() {
         <Reveal index={1}>
           <Banner tone="danger" body={errorMessage(checkIn.error)} />
         </Reveal>
-      ) : null}
-      {hasSpots ? (
-        <View style={{ gap: KIT.size.chipsGap }}>
-          <View style={{ gap: SPACING[1] }}>
-            <T v="h3">{tr.checkin.spotTitle}</T>
-            <T v="fine">{tr.checkin.spotHint}</T>
-          </View>
-          <SpotPicker
-            spots={spots.data ?? []}
-            selectedId={spot?.id ?? null}
-            onSelect={(s) => setSpot({ id: s.id, name: s.name })}
-          />
-        </View>
       ) : null}
     </RouteSheet>
   );

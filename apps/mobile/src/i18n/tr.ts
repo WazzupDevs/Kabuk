@@ -896,6 +896,7 @@ export const tr = {
     tooFarTitle: 'Bu mekana çok uzaktasın',
     tooFarNote: 'Mekandayken tekrar dene.',
     spotTitle: 'Neredesin?',
+    spotNext: 'Devam',
     spotHint: 'Aynı noktadaki masalarla oynarsın. Noktanı sonra da değiştirebilirsin.',
     open: 'Masayı aç',
   },
@@ -946,6 +947,12 @@ export const tr = {
     memberAsk: 'Bu masadayım diyor',
     askedBy: (who: string) => `isteyen ${who}`,
     askedByAnonymous: 'isteyen anonim',
+    memberClaims: (who: string) => `${who} masanda olduğunu söylüyor`,
+    memberNote: 'Onaylarsan masana katılır.',
+    requestPill: (title: string, seconds: number) => `${title} · ${seconds} sn`,
+    requestReopen: 'İsteği aç',
+    groupNote: (people: number, total: number) =>
+      `${people} kişi · Birlikte ${total} kişi olursunuz`,
     tooMany: 'Birlikte 12 kişiyi geçersiniz. Masada en çok 12 kişi olur.',
     comingTitle: (alias: string, people: number) => `${alias} geliyor, ${people} kişi`,
     comingBody: 'Masanın yanına geliyorlar.',
@@ -2249,7 +2256,7 @@ export const tr = {
     // MekanProfilGecis, …Fotosuz, MekanGecisKullanildi; docs/SPEC_V4.md §4.D).
     switchOn: 'Anonim görünüyorsun',
     switchOff: 'Profilinle görünüyorsun',
-    anonTitle: 'Anonim görün?',
+    anonTitle: 'Anonim görünsün mü?',
     anonBody: (nick: string) =>
       `Adın ve fotoğrafın görünmez. Mekan sohbetinde ve masada ${nick} adıyla, kapsül karakterinle görünürsün.`,
     anonConfirm: 'Anonim görün',
@@ -2257,9 +2264,10 @@ export const tr = {
     chatAnonBody: (nick: string) =>
       `Mekan sohbetinde adın ve fotoğrafın görünmez; ${nick} adıyla, kapsül karakterinle yazarsın. Masada ve oyunlarda her zaman profilinle görünürsün.`,
     chatAnonConfirm: 'Anonim yaz',
-    profileTitle: 'Profilinle görün?',
-    profileBody: 'Mekan sohbetinde ve masada adın ve fotoğrafın görünür.',
-    profileConfirm: 'Profilimle görün',
+    profileTitle: 'Profiline geçilsin mi?',
+    profileBody:
+      'Mekandakiler adını ve fotoğrafını görür. Bunu bir kez yapabilirsin, sonra anonime dönemezsin.',
+    profileConfirm: 'Profiline geç',
     photoNeeded: 'Profilinle görünmek için önce fotoğraf eklemelisin.',
     addPhoto: 'Fotoğraf ekle',
     onceTitle: 'Bu girişte tek değişiklik hakkın var.',
@@ -2281,8 +2289,10 @@ export const tr = {
     remaining: (h: number, m: number) => (h > 0 ? `${h} sa ${m} dk kaldı` : `${m} dk kaldı`),
     leave: 'Mekandan ayrıl',
     leaveConfirmTitle: 'Mekandan ayrılıyor musun?',
-    leaveConfirmBody: 'Masan kapanır. Sonra yeniden giriş yapabilirsin.',
-    leaveConfirm: 'Ayrıl',
+    leaveConfirmBody: 'Geri gelmek için yeniden check-in yaparsın.',
+    leaveConfirmBodyTable: (table: string) =>
+      `${table} masasından da kalkarsın. Geri gelmek için yeniden check-in yaparsın.`,
+    leaveConfirm: 'Mekandan ayrıl',
     changeSpot: 'Değiştir',
     chooseSpot: 'Noktanı seç',
     changeSpotTitle: 'Neredesin?',
