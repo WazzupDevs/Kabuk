@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Btn, Round, T } from '@/aura/kit';
 import { useNarrow } from '@/lib/useNarrow';
-import { KIT } from '@/theme/auraKit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { letterFace } from '@/theme/avatar';
 import { FLAT } from '@/theme/flatLists';
 
 export type RowAction = {
@@ -109,6 +110,30 @@ export function RequestRowView({
           {note.text}
         </T>
       ) : null}
+    </View>
+  );
+}
+
+// `.rqa`: a face without a photo, the name's first letter in white on its own colour.
+export function LetterFace({ name }: { name: string }) {
+  const f = FLAT.requestFace;
+  const { letter, color } = letterFace(name);
+  return (
+    <View
+      accessible={false}
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        width: f.side,
+        height: f.side,
+        borderRadius: f.radius,
+        backgroundColor: color,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.faceLetter, { color: KIT.white }]}>
+        {letter}
+      </Text>
     </View>
   );
 }
