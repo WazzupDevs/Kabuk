@@ -99,6 +99,9 @@ export type DistrictPerson =
       joinedAt: string | null;
       friend: boolean;
       muted: boolean;
+      // Opens this person's profile (`profile/get { districtPersonRef }`): a value of the session
+      // made for this alone; not a profile id, not what messages carry.
+      ref: string;
     }
   | { profiled: false; joinedAt: string | null };
 export type DistrictPeopleResponse = {

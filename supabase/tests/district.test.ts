@@ -379,6 +379,7 @@ describe('the room chat', () => {
           joinedAt: null,
           friend: false,
           muted: false,
+          ref: expect.any(String),
         },
       ],
       anonymous: [{ profiled: false, joinedAt: expect.any(String) }],
@@ -413,6 +414,77 @@ describe('the room chat', () => {
     await district(b.c, { action: 'leave' });
     expect((await people(c.c)).count).toBe(2);
     expect(await people(b.c)).toEqual({ count: 0, me: null, profiled: [], anonymous: [] });
+  });
+
+  // Odadakiler's profiled row opens that person's profile (rule 4's district paragraph): through
+  // the row's own reference, only in the room, only while profiled; across a block the row's own
+  // fields alone.
+  it('opens the profile of a profiled row, of one who never wrote, and nothing of an anonymous one', async () => {
+    const a = await inRoom(0, 'Ayşe');
+    const b = await inRoom(1, 'Burak');
+    await setTestPhoto(a.c);
+    await district(a.c, { action: 'set-identity', anonymous: false });
+    await sql`update public.profiles set bio = 'Sahilde yürürüm' where id = ${a.userId}`;
+    const people = async (client: Client) =>
+      (await chat(client, { action: 'people' })).body as DistrictPeopleResponse;
+    const get = (client: Client, ref: string) =>
+      invoke(client, 'profile', { action: 'get', districtPersonRef: ref });
+
+    const row = (await people(b.c)).profiled[0];
+    const ref = row?.ref ?? '';
+    // Not the session's id, not a profile id, not an account id.
+    const [ids] = await sql<{ id: string; public_id: string }[]>`
+      select s.id, p.public_id from public.district_sessions s
+      join public.profiles p on p.id = s.user_id where s.user_id = ${a.userId}
+    `;
+    expect([ids?.id, ids?.public_id, a.userId]).not.toContain(ref);
+
+    // Ayşe never wrote: the row alone opens the profile, with no profile id.
+    const seen = await get(b.c, ref);
+    expect(seen.status, JSON.stringify(seen.body)).toBe(200);
+    expect(seen.body).toMatchObject({ displayName: 'Ayşe', bio: 'Sahilde yürürüm' });
+    expect(JSON.stringify(seen.body)).not.toMatch(/public_?id|user_?id/i);
+    // The same twice (IDEMPOTENT_CALLS: profile/get).
+    expect((await get(b.c, ref)).body).toEqual(seen.body);
+
+    // Across a block, either way: the list is the same and the profile is the row's own fields.
+    for (const [blocker, blocked] of [
+      [a.userId, b.userId],
+      [b.userId, a.userId],
+    ]) {
+      await sql`
+        insert into public.blocks (blocker_id, blocked_id, blocked_alias)
+        values (${blocker ?? ''}, ${blocked ?? ''}, 'x')
+      `;
+      expect((await people(b.c)).profiled[0]).toEqual(row);
+      const limited = await get(b.c, ref);
+      expect(limited.status).toBe(200);
+      expect(limited.body).toEqual({
+        displayName: 'Ayşe',
+        bio: null,
+        photoUrl: expect.any(String),
+        coverUrl: null,
+        age: expect.any(Number),
+        badges: [],
+      });
+      await sql`delete from public.blocks`;
+    }
+
+    // Someone outside the room, an unknown reference and a closed session: not_found alike.
+    const c = { c: await onboarded(TABLE_PHONES[2] as string, { displayName: 'Can' }) };
+    expect((await get(c.c, ref)).status).toBe(404);
+    expect((await get(b.c, crypto.randomUUID())).status).toBe(404);
+    await district(a.c, { action: 'leave' });
+    expect((await get(b.c, ref)).status).toBe(404);
+
+    // An anonymous row carries no reference, and an anonymous session's own answers nothing.
+    const [anon] = await sql<{ people_ref: string }[]>`
+      select people_ref from public.district_sessions
+      where user_id = ${b.userId} and status = 'open'
+    `;
+    const d = await inRoom(3, 'Deniz');
+    expect(JSON.stringify(await people(d.c))).not.toContain(anon?.people_ref ?? 'x');
+    expect((await get(d.c, anon?.people_ref ?? '')).status).toBe(404);
   });
 
   it('mutes by identity in the shared list, and sends a friend request named after the district', async () => {

@@ -1,4 +1,5 @@
 import type { DistrictPerson } from '@shared/api/district.ts';
+import { router } from 'expo-router';
 import { View } from 'react-native';
 
 import { Av, T, useKit } from '@/aura/kit';
@@ -10,6 +11,7 @@ import { Sheet } from '@/components/Sheet';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { Tap } from '@/motion/Tap';
 import { useNow } from '@/lib/useNow';
 import { KIT } from '@/theme/auraKit';
 import { SEMT } from '@/theme/semt';
@@ -36,15 +38,20 @@ export function PeopleSheet({
   onClose: () => void;
   district: string;
 }) {
+  // A profiled row opens that person's profile: the sheet closes first (one thing open at a time).
+  const open = (ref: string) => {
+    onClose();
+    router.push({ pathname: '/district/person/[ref]', params: { ref } });
+  };
   return (
     <Sheet visible={visible} onClose={onClose} title={tr.district.people.title}>
       {/* The query lives in the body: it mounts at every opening and is gone with the sheet. */}
-      <PeopleBody district={district} />
+      <PeopleBody district={district} onOpen={open} />
     </Sheet>
   );
 }
 
-function PeopleBody({ district }: { district: string }) {
+function PeopleBody({ district, onOpen }: { district: string; onOpen: (ref: string) => void }) {
   const { c } = useKit();
   const people = useDistrictPeople();
   const now = useNow(TICK_MS);
@@ -84,7 +91,7 @@ function PeopleBody({ district }: { district: string }) {
           <>
             <Label>{tr.district.people.profiledGroup(data.profiled.length)}</Label>
             {data.profiled.map((p, i) => (
-              <Row key={i} person={p} now={now} />
+              <Row key={p.ref} person={p} now={now} onOpen={onOpen} />
             ))}
           </>
         ) : null}
@@ -114,16 +121,19 @@ function Label({ children }: { children: string }) {
   );
 }
 
-// One row, never pressable. The viewer's own anonymous row wears the own capsule (the phone's own
+// One row. A profiled one (not the viewer's own) opens that person's profile; an anonymous one is
+// never pressable (rule 4: it is tied to nothing). The viewer's own anonymous row wears the own capsule (the phone's own
 // look); another anonymous row wears the plain mark, the same for everyone.
 function Row({
   person,
   now,
   self = false,
+  onOpen,
 }: {
   person: DistrictPerson;
   now: number;
   self?: boolean;
+  onOpen?: (ref: string) => void;
 }) {
   const { c } = useKit();
   const { colors } = useTheme();
@@ -157,18 +167,17 @@ function Row({
   ) : (
     <Avatar kind="default" size="lg" />
   );
-  return (
-    <View
-      accessible
-      accessibilityLabel={note ? `${title}, ${note}` : title}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: P.gap,
-        paddingVertical: P.padY,
-        paddingHorizontal: P.padX,
-      }}
-    >
+  const ref = !self && person.profiled && onOpen ? person.ref : null;
+  const label = note ? `${title}, ${note}` : title;
+  const row = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: P.gap,
+    paddingVertical: P.padY,
+    paddingHorizontal: P.padX,
+  } as const;
+  const inner = (
+    <>
       {/* The ring sits outside the face's box: the words stay in line with the other rows'. */}
       <View
         style={
@@ -194,6 +203,22 @@ function Row({
           </T>
         ) : null}
       </View>
+    </>
+  );
+  // A profiled row opens the profile; the others are no buttons.
+  return ref ? (
+    <Tap
+      sink={false}
+      testID="district-person"
+      accessibilityLabel={`${label}, ${text.openProfile}`}
+      onPress={() => onOpen?.(ref)}
+      style={row}
+    >
+      {inner}
+    </Tap>
+  ) : (
+    <View accessible accessibilityLabel={label} style={row}>
+      {inner}
     </View>
   );
 }

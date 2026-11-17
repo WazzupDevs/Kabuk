@@ -44,6 +44,7 @@ const Body: z.ZodType<ProfileRequest> = z.union([
   z.strictObject({ action: z.literal('get'), venueChatMessageId: z.uuid() }),
   z.strictObject({ action: z.literal('get'), districtChatMessageId: z.uuid() }),
   z.strictObject({ action: z.literal('get'), venuePostId: z.uuid() }),
+  z.strictObject({ action: z.literal('get'), districtPersonRef: z.uuid() }),
   z.object({
     action: z.literal('update'),
     displayName: z.string().max(200).optional(),
@@ -201,6 +202,25 @@ async function getChatProfile(
         );
   if (owner.error) throw dbError(fn, owner.error);
   if (!owner.data) throw new AppError('not_found', 'Profile not found.');
+  return await chatProfileOf(viewer, owner.data);
+}
+
+// A profiled row of Odadakiler, opened through the row's reference (docs/SPEC_V4.md §4.V): the
+// same view as a profiled message's, also for one who never wrote. Across a block only what the
+// row already shows goes (the list is not filtered by a block and a not_found would tell of it).
+async function getDistrictPersonProfile(viewer: string, ref: string): Promise<ChatProfileView> {
+  const { data, error } = await db.rpc('district_person_profile_owner', {
+    target_user_id: viewer,
+    target_ref: ref,
+  });
+  if (error) throw dbError('district_person_profile_owner', error);
+  const row = data[0];
+  if (!row) throw new AppError('not_found', 'Profile not found.');
+  return await chatProfileOf(viewer, row.owner_id, row.limited);
+}
+
+async function chatProfileOf(viewer: string, ownerId: string, limited = false) {
+  const owner = { data: ownerId };
   const [a, b] = viewer < owner.data ? [viewer, owner.data] : [owner.data, viewer];
   const [{ data, error }, friendship] = await Promise.all([
     db
@@ -220,12 +240,23 @@ async function getChatProfile(
     if (signed.error) throw new Error(`storage sign failed (${signed.error.message})`);
     photoUrl = reachablePhotoUrl(signed.data.signedUrl);
   }
+  const more = await ageAndBadges(owner.data);
+  if (limited) {
+    return {
+      displayName: data.display_name,
+      bio: null,
+      photoUrl,
+      coverUrl: null,
+      age: more.age,
+      badges: [],
+    };
+  }
   return {
     displayName: data.display_name,
     bio: data.bio,
     photoUrl,
     coverUrl: await coverUrlOf(data.cover_path, !!data.cover_hidden_at),
-    ...(await ageAndBadges(owner.data)),
+    ...more,
     // A friend's profile kimliği goes to the friend (rule 4): the screen offers the DM, not a
     // request (the owner's report, 29 Ekim).
     ...(friendship.data ? { friendPublicId: data.public_id } : {}),
@@ -302,6 +333,9 @@ Deno.serve(
       case 'get':
         if ('districtChatMessageId' in body) {
           return await getChatProfile(user.id, body.districtChatMessageId, 'district');
+        }
+        if ('districtPersonRef' in body) {
+          return await getDistrictPersonProfile(user.id, body.districtPersonRef);
         }
         if ('venuePostId' in body) {
           return await getChatProfile(user.id, body.venuePostId, 'post');

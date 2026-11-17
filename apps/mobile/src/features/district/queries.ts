@@ -32,6 +32,7 @@ export const districtKeys = {
   chat: (roomId: string) => ['district', 'chat', roomId] as const,
   profile: (messageId: string) => ['district', 'profile', messageId] as const,
   people: ['district', 'people'] as const,
+  person: (ref: string) => ['district', 'person', ref] as const,
 };
 
 // The person's own district, Geçit and session: never the right option, never a head count. Each
@@ -103,6 +104,18 @@ export function useDistrictChatProfile(messageId: string | undefined) {
     enabled: !!messageId,
     retry: false,
     queryFn: () => profileApi.getFromDistrictChat(messageId ?? ''),
+  });
+}
+
+// A profiled row of Odadakiler, opened through its reference; never kept (the reference is the
+// session's and goes with it).
+export function useDistrictPersonProfile(ref: string | undefined) {
+  return useQuery({
+    queryKey: districtKeys.person(ref ?? ''),
+    enabled: !!ref,
+    retry: false,
+    gcTime: 0,
+    queryFn: () => profileApi.getFromDistrictPerson(ref ?? ''),
   });
 }
 

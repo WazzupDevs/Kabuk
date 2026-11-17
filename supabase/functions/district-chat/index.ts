@@ -113,6 +113,7 @@ async function people(userId: string): Promise<DistrictPeopleResponse> {
       joinedAt: r.joined_at,
       friend: r.friend,
       muted: r.muted,
+      ref: r.ref ?? '',
     };
   };
   const own = data.find((r) => r.me);

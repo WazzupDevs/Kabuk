@@ -338,6 +338,7 @@ export type Database = {
           identity_mode: string;
           identity_switches: number;
           joined_at: string;
+          people_ref: string;
           room_id: string;
           status: string;
           user_id: string;
@@ -353,6 +354,7 @@ export type Database = {
           identity_mode?: string;
           identity_switches?: number;
           joined_at?: string;
+          people_ref?: string;
           room_id: string;
           status?: string;
           user_id: string;
@@ -368,6 +370,7 @@ export type Database = {
           identity_mode?: string;
           identity_switches?: number;
           joined_at?: string;
+          people_ref?: string;
           room_id?: string;
           status?: string;
           user_id?: string;
@@ -2948,6 +2951,7 @@ export type Database = {
           identity_mode: string;
           identity_switches: number;
           joined_at: string;
+          people_ref: string;
           room_id: string;
           status: string;
           user_id: string;
@@ -2976,6 +2980,7 @@ export type Database = {
           identity_mode: string;
           identity_switches: number;
           joined_at: string;
+          people_ref: string;
           room_id: string;
           status: string;
           user_id: string;
@@ -3003,6 +3008,14 @@ export type Database = {
           muted: boolean;
           photo_path: string;
           profiled: boolean;
+          ref: string;
+        }[];
+      };
+      district_person_profile_owner: {
+        Args: { target_ref: string; target_user_id: string };
+        Returns: {
+          limited: boolean;
+          owner_id: string;
         }[];
       };
       district_set: {
@@ -3022,6 +3035,7 @@ export type Database = {
           identity_mode: string;
           identity_switches: number;
           joined_at: string;
+          people_ref: string;
           room_id: string;
           status: string;
           user_id: string;
