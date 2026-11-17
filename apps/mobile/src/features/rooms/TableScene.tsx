@@ -96,10 +96,8 @@ export function TableScene({
         {cardTop !== null ? (
           <>
             {/* Beside the card down to its lower corners, then the card's own shape. */}
-            <AuraPatch top={cardTop} left={0} fill={{ left: 0, right: 0, bottom: C.radius }} />
+            <AuraPatch fill={{ left: 0, right: 0, bottom: C.radius }} />
             <AuraPatch
-              top={cardTop}
-              left={KIT.size.side}
               radius={C.radius}
               fill={{ left: KIT.size.side, right: KIT.size.side, bottom: 0 }}
             />
