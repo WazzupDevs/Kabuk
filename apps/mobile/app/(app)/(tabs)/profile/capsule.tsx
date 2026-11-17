@@ -5,10 +5,10 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { Btn, useKit } from '@/aura/kit';
+import { CapsuleHale } from '@/components/CapsuleHale';
 import { CachedSvg, readAhead } from '@/components/CachedSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
@@ -499,7 +499,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           />
         }
       >
-        {/* The scene on the page's ground: the riso disc, the capsule over its breathing shadow;
+        {/* The scene on the page's ground: the purple hale, the capsule over its breathing shadow;
         "Hepsini çıkar" and "Rastgele" side by side at its foot. */}
         <View
           ref={sceneRef}
@@ -514,7 +514,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
             pointerEvents="none"
             style={{ ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' }}
           >
-            <RisoDisc side={Math.round(E.scene.disc * sceneScale)} look={k.disc} />
+            <CapsuleHale side={Math.round(E.scene.hale * sceneScale)} />
           </View>
           <View
             style={{
@@ -797,46 +797,5 @@ function OptionPicture({
     <View style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }}>
       <CachedSvg xml={xml} width="100%" height="100%" />
     </View>
-  );
-}
-
-// The scene's riso disc (tuval Kapsul2): its pink light from the middle fading out at its edge, the
-// halftone dots over the whole disc.
-function RisoDisc({
-  side,
-  look,
-}: {
-  side: number;
-  look: { mid: string; edge: string; dots: string };
-}) {
-  const E = CAPSULE_EDIT;
-  const r = side / 2;
-  const cell = E.dot.cell;
-  return (
-    <Svg width={side} height={side} importantForAccessibility="no-hide-descendants">
-      <Defs>
-        <RadialGradient id="capsule-disc-light" cx={r} cy={r} r={r} gradientUnits="userSpaceOnUse">
-          <Stop offset="0%" stopColor={look.mid} />
-          <Stop offset={E.discMid} stopColor={look.edge} />
-          <Stop offset="100%" stopColor={look.edge} stopOpacity={0} />
-        </RadialGradient>
-        <Pattern id="capsule-disc-dots" width={cell} height={cell} patternUnits="userSpaceOnUse">
-          <Circle cx={cell / 4} cy={cell / 4} r={E.dot.r} fill={look.dots} />
-          <Circle cx={(3 * cell) / 4} cy={(3 * cell) / 4} r={E.dot.r} fill={look.dots} />
-        </Pattern>
-        <ClipPath id="capsule-disc-clip">
-          <Circle cx={r} cy={r} r={r} />
-        </ClipPath>
-      </Defs>
-      <Circle cx={r} cy={r} r={r} fill="url(#capsule-disc-light)" />
-      <Rect
-        x={0}
-        y={0}
-        width={side}
-        height={side}
-        fill="url(#capsule-disc-dots)"
-        clipPath="url(#capsule-disc-clip)"
-      />
-    </Svg>
   );
 }

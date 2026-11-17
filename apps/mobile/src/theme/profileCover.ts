@@ -136,7 +136,7 @@ export const RISO_PAPER = {
 // The ticket (yeni arayüz tuvali, ProfilBen `.tk`; 16 Kasım, value for value): 128 high, 24 round, an
 // edge 2 wide and a pink (violet in the dark) print 4 right and 5 down under it; a notch 24 across at
 // the top and the bottom of the perforation (2, dashed); the stub 97 with the capsule (80) on its
-// ground under a halftone (3 apart, 0.8), its parts 8 apart; the words 16 inside (18 at their left),
+// fixed fill (TICKET_TONE.stub, ProfilBen `.tks`) under an orange halftone (6 apart, 1.2, centred in its cell), a purple hale behind it (CAPSULE_HALE), its parts 8 apart; the words 16 inside (18 at their left),
 // 4 apart, the button 8 more under them, 16 in, its star 15, 6 from the words. The paper, edge, print
 // and inks are the scheme's (TICKET_TONE).
 export const TICKET = {
@@ -148,7 +148,7 @@ export const TICKET = {
   notch: 12,
   stub: 97,
   stubGap: 8,
-  stubDots: { cell: 3, dot: 0.8, color: 'rgba(255, 79, 139, 0.20)' },
+  stubDots: { cell: 6, dot: 1.2 },
   capsule: 80,
   dash: [4, 4] as const,
   dashWidth: 2,
@@ -171,6 +171,7 @@ export const TICKET_TONE = {
     muted: '#4A6550',
     link: '#0B783D',
     dash: 'rgba(11, 61, 34, 0.45)',
+    stub: { fill: '#FBD9A8', dots: 'rgba(224, 120, 40, 0.22)' },
   },
   dark: {
     paper: '#101915',
@@ -182,5 +183,6 @@ export const TICKET_TONE = {
     muted: 'rgba(238, 243, 240, 0.62)',
     link: '#93EBB9',
     dash: 'rgba(147, 235, 185, 0.45)',
+    stub: { fill: '#2A1F45', dots: 'rgba(201, 184, 255, 0.18)' },
   },
 } as const;
