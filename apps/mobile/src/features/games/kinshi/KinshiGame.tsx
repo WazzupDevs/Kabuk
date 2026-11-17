@@ -38,15 +38,17 @@ import {
   PEEK_PAIRS,
   SUMMARY_BUDDIES,
 } from '@/theme/kinshi';
+import { LOBBY } from '@/theme/lobby';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
   GameLobby,
-  LobbyActions,
   LobbyCard,
   type LobbyPerson,
   LobbyPeople,
+  LobbyTeam,
+  LobbyTeams,
   LobbyWatchers,
 } from '../GameLobby';
 import { kinshiArt, type KinshiTimer } from './kinshiArt';
@@ -63,7 +65,7 @@ import {
   PlayedRow,
   Pop,
   Stats,
-  TeamBar,
+  teamKey,
   TeamTag,
   TimeStrip,
   TopBar,
@@ -909,22 +911,28 @@ function Teams({
   const busy = pick.isPending;
   const person = (s: string): LobbyPerson => ({
     key: s,
-    face: <Face faces={faces} sid={s} size={K.person.face} />,
+    face: <Face faces={faces} sid={s} size={LOBBY.people.smallFace} />,
     name: nameOf(faces, s),
     me: s === faces.me,
+    owner: faces.people.get(s)?.owner,
   });
   const teamBox = (team: 'a' | 'b', sids: string[]) => (
-    <TeamBox
+    <LobbyTeam
       key={team}
-      team={team}
-      count={sids.length}
+      team={teamKey(team)}
+      title={tr.kinshi.team[team]}
+      count={String(sids.length)}
       joined={mine === team}
-      loading={pick.isPending && pick.variables === team}
-      disabled={busy}
-      onJoin={() => pick.mutate(team)}
+      join={{
+        label: tr.kinshi.join,
+        testID: `kinshi-join-${team}`,
+        loading: pick.isPending && pick.variables === team,
+        disabled: busy,
+        onPress: () => pick.mutate(team),
+      }}
     >
-      <LobbyPeople people={sids.map(person)} />
-    </TeamBox>
+      <LobbyPeople people={sids.map(person)} single small />
+    </LobbyTeam>
   );
   return (
     <GameLobby
@@ -953,27 +961,33 @@ function Teams({
         },
       }}
     >
-      {teamBox('a', a)}
-      {teamBox('b', b)}
+      <LobbyTeams
+        right={
+          owner ? (
+            <Btn
+              sm
+              variant="glassy"
+              icon="shuffle"
+              testID="kinshi-shuffle"
+              label={tr.kinshi.shuffle}
+              loading={shuffle.isPending}
+              disabled={start.isPending}
+              onPress={() => shuffle.mutate()}
+            />
+          ) : null
+        }
+      >
+        {teamBox('a', a)}
+        {teamBox('b', b)}
+      </LobbyTeams>
       {unpicked.length > 0 ? (
-        <LobbyCard title={tr.kinshi.unpicked} note={tr.kinshi.unpickedNote}>
-          <LobbyPeople people={unpicked.map(person)} />
+        <LobbyCard
+          title={tr.kinshi.unpicked}
+          count={tr.kinshi.count(unpicked.length)}
+          note={tr.kinshi.unpickedNote}
+        >
+          <LobbyPeople people={unpicked.map(person)} small />
         </LobbyCard>
-      ) : null}
-      {owner ? (
-        <LobbyActions>
-          <Btn
-            sm
-            variant="glassy"
-            icon="shuffle"
-            testID="kinshi-shuffle"
-            label={tr.kinshi.shuffle}
-            loading={shuffle.isPending}
-            disabled={start.isPending}
-            onPress={() => shuffle.mutate()}
-            style={{ flex: 1 }}
-          />
-        </LobbyActions>
       ) : null}
       <LobbyWatchers
         note={tr.kinshi.watchersNote}
@@ -985,48 +999,6 @@ function Teams({
         people={watchers.map(person)}
       />
     </GameLobby>
-  );
-}
-
-// A team's box: its bar, name and headcount, "Katıl" in the team's colour, its people.
-function TeamBox({
-  team,
-  count,
-  joined,
-  loading,
-  disabled,
-  onJoin,
-  children,
-}: {
-  team: 'a' | 'b';
-  count: number;
-  joined: boolean;
-  loading: boolean;
-  disabled: boolean;
-  onJoin: () => void;
-  children: ReactNode;
-}) {
-  const tone = useTeamTone(team);
-  return (
-    <LobbyCard
-      title={tr.kinshi.team[team]}
-      count={tr.kinshi.count(count)}
-      icon={<TeamBar team={team} />}
-      right={
-        <Btn
-          sm
-          testID={`kinshi-join-${team}`}
-          label={tr.kinshi.join}
-          fill={tone.fill}
-          tint={tone.onFill}
-          disabled={disabled || joined}
-          loading={loading}
-          onPress={onJoin}
-        />
-      }
-    >
-      {children}
-    </LobbyCard>
   );
 }
 

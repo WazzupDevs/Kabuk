@@ -507,18 +507,19 @@ function TableScreenBody() {
     const busy =
       openGame.isPending || vote.isPending || gameMode === 'play' || gameMode === 'pregame';
     const canOpen = owner && state.state === 'open';
+    // The corner says what a press does (or how many it needs), the votes lie at the bottom right
+    // (MasaOyunSec, MasaOyunOyla).
     return {
       dim: state.state === 'needs_players',
       lit: mine,
-      ok: canOpen && count === 0,
+      ok: canOpen,
       tag:
         state.state === 'needs_players'
           ? tr.table.posterNeeds(state.minPlayers)
-          : count > 0
-            ? tr.table.posterVotes(count, mine)
-            : owner
-              ? tr.table.posterOpen
-              : tr.table.posterVote,
+          : owner
+            ? tr.table.posterOpen
+            : tr.table.posterVote,
+      votes: count > 0 ? tr.table.posterVotes(count, mine) : undefined,
       onPress: busy
         ? undefined
         : canOpen

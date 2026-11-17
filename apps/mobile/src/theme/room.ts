@@ -17,6 +17,9 @@ export const ROOM = {
   buttons: { top: 12, x: 4, gap: 8 },
   // "Oyunlar" and its count (`.gh`): 22 under the card's place, 10 over the games, 4 in, 8 apart.
   games: { top: 22, bottom: 10, x: 4, gap: 8, card: 126 },
+  // A card's votes (MasaOyunSec, MasaOyunOyla `.gc .vc`): 6 in from its bottom right, 26 high; the
+  // person's own vote rings the card 3 wide in the ink (`.gc.mine`).
+  vote: { right: 6, bottom: 6, height: 26, ring: 3 },
   // Masadakiler (`.msh.mg`): two columns 10 apart, a person 10 above and under, 7 between the
   // parts, the face 32; the hairline over the rows from the second, from 40 in; the note 10 under.
   people: { colGap: 10, padY: 10, gap: 7, hairIn: 40, noteTop: 10, listTop: 10 },

@@ -2,7 +2,7 @@ import { Children, type ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { FrostIn } from '@/aura/FrostIn';
-import { Tag } from '@/aura/kit';
+import { Tag, useKit } from '@/aura/kit';
 import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { useNarrow } from '@/lib/useNarrow';
@@ -57,6 +57,7 @@ export function GameCard({
   art,
   onPress,
   tag = tr.table.soon,
+  votes,
   lit,
   ok,
   dim,
@@ -65,9 +66,12 @@ export function GameCard({
   id: GameCardId;
   art: ImageSourcePropType;
   onPress?: () => void;
-  // The corner tag: "Yakında" until the game's step; a playable game's votes or "Aç".
+  // The corner tag: "Yakında" until the game's step; a playable game's "Aç", "Oyla" or how many it
+  // needs.
   tag?: string;
-  // The person's own vote is on it.
+  // Its votes at the bottom right (MasaOyunSec, MasaOyunOyla `.vc`): "2 oy", "Oyun · 3".
+  votes?: string;
+  // The person's own vote is on it: the card ringed, its votes white.
   lit?: boolean;
   // The owner can open it: "Aç", white with the success green (over the posters the green tag did
   // not read, the owner's report, 6 Kasım, round 3).
@@ -76,6 +80,7 @@ export function GameCard({
   dim?: boolean;
   testID?: string;
 }) {
+  const { c } = useKit();
   const pressScale = usePressScale();
   const narrow = useNarrow();
   const text = tr.table.gameCards[id];
@@ -90,6 +95,7 @@ export function GameCard({
         'sub' in text ? text.sub : undefined,
         'people' in text ? text.people : undefined,
         tag,
+        votes,
       )}
       accessibilityState={{ disabled: !onPress }}
       disabled={!onPress}
@@ -106,6 +112,21 @@ export function GameCard({
           ]}
         >
           {shadow.node}
+          {lit ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: -ROOM.vote.ring,
+                top: -ROOM.vote.ring,
+                right: -ROOM.vote.ring,
+                bottom: -ROOM.vote.ring,
+                borderRadius: GAME_CARD.radius + ROOM.vote.ring,
+                borderWidth: ROOM.vote.ring,
+                borderColor: c.ink,
+              }}
+            />
+          ) : null}
           <View
             style={{
               // Aura v92 Masa: 112 high, MasaDar (narrow): 104; the poster covers it, centred.
@@ -127,11 +148,22 @@ export function GameCard({
             />
             <View style={{ position: 'absolute', left: GAME_CARD.tagX, top: GAME_CARD.tagY }}>
               <Tag
-                tone={lit ? 'artLit' : ok ? 'artOk' : 'art'}
+                tone={ok ? 'artOk' : 'art'}
                 label={tag}
                 height={narrow ? KIT.size.tagNarrow : undefined}
               />
             </View>
+            {votes ? (
+              <View
+                style={{ position: 'absolute', right: ROOM.vote.right, bottom: ROOM.vote.bottom }}
+              >
+                <Tag
+                  tone={lit ? 'artLit' : 'art'}
+                  label={votes}
+                  height={narrow ? KIT.size.tagNarrow : ROOM.vote.height}
+                />
+              </View>
+            ) : null}
           </View>
         </View>
       )}

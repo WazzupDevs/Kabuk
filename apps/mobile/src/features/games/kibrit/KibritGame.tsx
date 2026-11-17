@@ -46,6 +46,7 @@ import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { KIBRIT as KB, KIBRIT_TYPE as KT, kibritPaperType } from '@/theme/kibrit';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
+import { LOBBY } from '@/theme/lobby';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
@@ -1660,9 +1661,10 @@ function Pregame({
   });
   const person = (s: string): LobbyPerson => ({
     key: s,
-    face: <Face faces={faces} sid={s} size={R.person.face} />,
+    face: <Face faces={faces} sid={s} size={LOBBY.people.face} />,
     name: nameOf(faces, s),
     me: s === faces.me,
+    owner: faces.people.get(s)?.owner,
   });
   return (
     <GameLobby

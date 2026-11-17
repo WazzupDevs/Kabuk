@@ -1288,6 +1288,10 @@ export const tr = {
     watchers: 'Gözlemciler',
     watch: 'Gözlemci ol',
     play: 'Oyuna katıl',
+    // The page's rules row and the team games' heading and joined team (OyunLobi, TakimLobi).
+    how: 'Nasıl oynanır',
+    teams: 'Takımlar',
+    inTeam: 'Takımdasın',
     endGame: 'Oyunu bitir',
     turn: (n: number, total: number) => `Tur ${n}/${total}`,
     // The turn clock, "0:37".
@@ -2330,8 +2334,9 @@ export const tr = {
       sub: string | undefined,
       people: string | undefined,
       tag: string,
+      votes?: string,
     ) =>
-      [name, sub, people === undefined ? undefined : `${people} kişi`, tag]
+      [name, sub, people === undefined ? undefined : `${people} kişi`, tag, votes]
         .filter((part) => part !== undefined)
         .join(', '),
     // A playable game's poster (docs/SPEC_V4.md §4.F): the owner opens it, the others vote for it.
