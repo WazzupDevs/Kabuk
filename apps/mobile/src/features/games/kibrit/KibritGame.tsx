@@ -17,20 +17,11 @@ import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { confirmGameExit } from '@/features/games/gameExit';
 import { ScreenStatusBar } from '@/components/StatusScrim';
@@ -44,7 +35,12 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { KIBRIT as KB, KIBRIT_TYPE as KT, kibritPaperType } from '@/theme/kibrit';
+import {
+  KIBRIT as KB,
+  KIBRIT_BOARD as BB,
+  KIBRIT_TYPE as KT,
+  kibritPaperType,
+} from '@/theme/kibrit';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { LOBBY } from '@/theme/lobby';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
@@ -75,6 +71,16 @@ import {
   LobbyWatchers,
 } from '../GameLobby';
 import { kibritArt } from './kibritArt';
+import {
+  type BarClose,
+  BoardHint,
+  EndHeading,
+  KibritHead,
+  PastRow,
+  PaperCard,
+  TimerPill,
+  VoteChips,
+} from './KibritBoards';
 
 type Room = {
   id: string;
@@ -308,6 +314,8 @@ type Shared = {
   faces: Faces;
   owner: boolean;
   top: ReactNode;
+  // The close the board's own head (Gizli oy) puts where `top` has it.
+  exit: BarClose;
   active: string[];
   playing: boolean;
   view: ViewHandle;
@@ -377,6 +385,11 @@ function Play({
     faces,
     owner,
     top,
+    exit: {
+      label: owner ? tr.kibrit.endGame : tr.kibrit.exit,
+      onPress: onExit,
+      testID: 'kibrit-exit',
+    },
     active,
     playing: active.includes(me),
     view,
@@ -1039,103 +1052,6 @@ function Ringed({
   );
 }
 
-// The vote grid (`.vg`): 3 columns of glass tiles, the capsule over the name; the chosen one with
-// the --buzz edge, halo, ring and tick.
-function VoteGrid({
-  faces,
-  seats,
-  chosen,
-  onChoose,
-}: {
-  faces: Faces;
-  seats: string[];
-  chosen: string | null;
-  onChoose?: (sid: string) => void;
-}) {
-  const { colors } = useTheme();
-  const { width } = useWindowDimensions();
-  const V = KB.vote;
-  const tileWidth = (width - 2 * KIT.size.side - (V.columns - 1) * V.gap) / V.columns;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: V.gap }}>
-      {seats.map((sid) => {
-        const on = sid === chosen;
-        const name = nameOf(faces, sid);
-        return (
-          <Pressable
-            key={sid}
-            testID={`kibrit-vote-${sid}`}
-            accessibilityRole="button"
-            accessibilityLabel={tr.kibrit.voteFor(name)}
-            accessibilityState={{ selected: on, disabled: !onChoose }}
-            disabled={!onChoose}
-            onPress={() => onChoose?.(sid)}
-            style={{ width: tileWidth }}
-          >
-            <Glass
-              radius={V.tile.radius}
-              style={{
-                minHeight: V.tile.minHeight,
-                paddingVertical: V.tile.padY,
-                paddingHorizontal: V.tile.padX,
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: V.tile.gap,
-              }}
-            >
-              <Ringed
-                faces={faces}
-                sid={sid}
-                size={V.face}
-                ring={on ? V.ring : 0}
-                shadow={on ? undefined : V.faceShadow}
-              />
-              <Text
-                maxFontSizeMultiplier={1.3}
-                style={[KT.tileName, { color: colors.text, textAlign: 'center' }]}
-              >
-                {name}
-              </Text>
-            </Glass>
-            <View
-              pointerEvents="none"
-              style={[
-                StyleSheet.absoluteFill,
-                {
-                  borderRadius: V.tile.radius,
-                  borderWidth: V.tile.edge,
-                  borderColor: on ? colors.buzz : 'transparent',
-                  outlineColor: on ? V.haloColor : undefined,
-                  outlineWidth: on ? V.halo : 0,
-                  outlineStyle: 'solid',
-                },
-              ]}
-            />
-            {on ? (
-              <View
-                pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  right: V.tick.inset,
-                  top: V.tick.inset,
-                  width: V.tick.size,
-                  height: V.tick.size,
-                  borderRadius: V.tick.size / 2,
-                  backgroundColor: colors.buzz,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <CapIcon name="check" size={V.tick.icon} color={colors.onBuzz} />
-              </View>
-            ) : null}
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
-
 // Gizli oy (KibritOy, KibritOyAcik) and Oy verildi (KibritOyVerildi): one vote among those still in
 // the game, oneself too; the vote can change while the time runs. Only the total shows (K-86). A
 // vote for someone who left no longer counts: the grid comes back to choose again.
@@ -1228,18 +1144,17 @@ function VoteScreen(shared: Shared) {
   }
   const chosen = sel ?? (lost ? null : mine);
   const canChoose = playing && view.ready && !vote.isPending;
+  // Gizli oy (KibritOy): the board's head with the timer, the drawn paper, the chips and the count.
   return (
     <Page testID="kibrit-vote">
       <StageFit
         status={
-          <>
-            {top}
-            <Strip
-              clock={clock}
-              title={tr.kibrit.voteTitle}
-              line={<T v="fine">{playing ? tr.kibrit.voteLine : count}</T>}
-            />
-          </>
+          <KibritHead
+            close={shared.exit}
+            title={tr.kibrit.voteTitle}
+            line={tr.games.turn(round, state.rounds)}
+            right={<TimerPill clock={clock} />}
+          />
         }
         actions={
           <>
@@ -1249,6 +1164,7 @@ function VoteScreen(shared: Shared) {
             {playing ? (
               <Btn
                 block
+                tall
                 testID="kibrit-vote-submit"
                 label={tr.kibrit.give}
                 disabled={!chosen || !view.ready || (chosen === mine && !lost)}
@@ -1259,37 +1175,20 @@ function VoteScreen(shared: Shared) {
           </>
         }
       >
-        <View style={{ flexGrow: 1, gap: KB.vote.below - SPACING[2] }}>
-          {question}
+        <View style={{ flexGrow: 1, justifyContent: 'center', gap: BB.gap }}>
+          <PaperCard text={paper?.text ?? ''} note={tr.kibrit.voteNote} />
           {lost ? (
             <T v="fine" color={KIT.danger} center>
               {tr.kibrit.targetGone}
             </T>
           ) : null}
-          <VoteGrid
+          <VoteChips
             faces={faces}
             seats={active}
             chosen={chosen}
-            onChoose={
-              canChoose
-                ? (sid) => {
-                    setSel(sid);
-                    haptic('selection');
-                  }
-                : undefined
-            }
+            onChoose={canChoose ? (sid) => setSel(sid) : undefined}
           />
-          <View style={{ flexGrow: 1, minHeight: KB.corner * k }}>
-            <Buddy
-              buddy={NEAR[1]}
-              height={KB.corner * k}
-              style={{
-                right: KB.voteBuddy.right - KIT.size.side,
-                top: 0,
-                transform: [{ rotate: KB.voteBuddy.turn }],
-              }}
-            />
-          </View>
+          <BoardHint>{count}</BoardHint>
         </View>
       </StageFit>
       {report.modal}
@@ -1743,98 +1642,91 @@ function End({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { c } = useKit();
+  const insets = useSafeAreaInsets();
   const again = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.openGame(roomId, 'kibrit', true),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }),
   });
-  const T_ = KB.table;
   const counted = showsCounts(result.players);
+  // Oyun sonu (KibritSonuc): the board's head, the night's papers as plain rows, the foot.
   return (
-    <ScenePage
-      testID="kibrit-end"
-      scene={<Scene source={kibritArt.jar} height={KB.scene.end} y={KB.scene.endY} />}
-      content={KB.scene.endContent}
-      top={
-        <GameTopBar
-          close={{ label: tr.kibrit.exit, onPress: onBack, testID: 'kibrit-end-close' }}
-          right={<ChatRound onPress={onChat} />}
-        />
-      }
-      foot={
-        <>
-          {again.error ? (
-            <T v="fine" color={KIT.danger} center>
-              {errorMessage(again.error)}
-            </T>
-          ) : null}
-          <View style={{ flexDirection: 'row', gap: R.footGap }}>
-            <Btn
-              variant="glassy"
-              testID="kibrit-back"
-              label={tr.kibrit.backToTable}
-              onPress={onBack}
-              style={{ flex: 1 }}
+    <View testID="kibrit-end" style={{ flex: 1 }}>
+      <AuraBackground />
+      <View
+        style={{
+          flex: 1,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom + R.footBottom,
+          paddingHorizontal: KIT.size.side,
+        }}
+      >
+        <StageFit
+          status={
+            <KibritHead
+              close={{ label: tr.kibrit.exit, onPress: onBack, testID: 'kibrit-end-close' }}
+              title={result.notEnough ? tr.kibrit.name : tr.kibrit.over(result.past.length)}
+              line={result.notEnough ? undefined : tr.kibrit.name}
+              right={<ChatRound onPress={onChat} />}
             />
-            {owner ? (
-              <Btn
-                testID="kibrit-again"
-                label={tr.kibrit.again}
-                loading={again.isPending}
-                onPress={() => again.mutate()}
-                style={{ flex: 1 }}
-              />
+          }
+          actions={
+            <>
+              {again.error ? (
+                <T v="fine" color={KIT.danger} center>
+                  {errorMessage(again.error)}
+                </T>
+              ) : null}
+              <View style={{ flexDirection: 'row', gap: BB.end.footGap }}>
+                <Btn
+                  tall
+                  variant="glassy"
+                  testID="kibrit-back"
+                  label={tr.kibrit.backToTable}
+                  onPress={onBack}
+                  style={{ flex: 1 }}
+                />
+                {owner ? (
+                  <Btn
+                    tall
+                    testID="kibrit-again"
+                    label={tr.kibrit.again}
+                    loading={again.isPending}
+                    onPress={() => again.mutate()}
+                    style={{ flex: 1 }}
+                  />
+                ) : null}
+              </View>
+            </>
+          }
+        >
+          <View style={{ flexGrow: 1, justifyContent: 'center', gap: BB.end.gap }}>
+            <EndHeading
+              title={result.notEnough ? tr.kibrit.notEnough : tr.kibrit.night}
+              note={result.notEnough ? tr.kibrit.notEnoughNote : tr.kibrit.hidden}
+            />
+            {result.past.length > 0 ? (
+              <View>
+                {result.past.map((p, i) => (
+                  <PastRow
+                    key={p.paperId || i}
+                    first={i === 0}
+                    question={p.text}
+                    who={
+                      p.top.length > 0
+                        ? tr.kibrit.pastWho(
+                            p.top.map((s) => nameOf(faces, s)),
+                            counted ? p.votes : null,
+                          )
+                        : tr.kibrit.noVotes
+                    }
+                  />
+                ))}
+              </View>
             ) : null}
           </View>
-        </>
-      }
-    >
-      <View style={{ alignItems: 'center' }}>
-        <T v="fine" center>
-          {result.notEnough ? tr.kibrit.notEnoughNote : tr.kibrit.over(result.past.length)}
-        </T>
-        <T v="display" center accessibilityRole="header">
-          {result.notEnough ? tr.kibrit.notEnough : tr.kibrit.night}
-        </T>
+        </StageFit>
       </View>
-      {result.past.length > 0 ? (
-        <Glass radius={T_.radius} style={{ paddingVertical: T_.padY, paddingHorizontal: T_.padX }}>
-          {result.past.map((p, i) => (
-            <View
-              key={p.paperId || i}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: T_.rowGap,
-                paddingVertical: T_.pastPadY,
-                borderTopWidth: i === 0 ? 0 : KIT.size.hair,
-                borderTopColor: c.hair,
-              }}
-            >
-              <Text
-                maxFontSizeMultiplier={1.3}
-                style={[KT.pastQuestion, { color: c.ink, flex: 1, minWidth: 0 }]}
-              >
-                {p.text}
-              </Text>
-              {p.top.length > 0 ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: T_.pastGap }}>
-                  {p.top.map((sid) => (
-                    <Face key={sid} faces={faces} sid={sid} size={T_.pastFace} />
-                  ))}
-                  <Text maxFontSizeMultiplier={1.3} style={[KT.pastWho, { color: c.ink }]}>
-                    {tr.kibrit.pastWho(
-                      p.top.map((s) => nameOf(faces, s)),
-                      counted ? p.votes : null,
-                    )}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          ))}
-        </Glass>
-      ) : null}
-    </ScenePage>
+    </View>
   );
 }

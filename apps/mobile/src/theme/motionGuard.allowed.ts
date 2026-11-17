@@ -20,7 +20,6 @@ export const MOTION_ALLOWED: readonly string[] = [
   'src/features/games/TurnReady.tsx',
   'src/features/games/ibre/Ibre.tsx',
   'src/features/games/kaupholl/KauphollParts.tsx',
-  'src/features/games/kibrit/KibritGame.tsx',
   'src/features/games/kinshi/KinshiParts.tsx',
   'src/features/games/riso/RisoParts.tsx',
   'src/features/games/sahtekar/KrotGame.tsx',
