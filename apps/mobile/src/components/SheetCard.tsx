@@ -32,6 +32,7 @@ export function SheetCard({
   footer,
   scrollRef,
   look,
+  closeButton = true,
   children,
 }: {
   // Unset: it cannot be pulled away and has no close button (the join request).
@@ -52,6 +53,8 @@ export function SheetCard({
   // A board's own sheet (tuval Mesajlar's Bildirimler, Dm's block): its ground with no line, its
   // room inside, where its title stands and how far the close button is from the side.
   look?: SheetLook;
+  // Pulled down and on the scrim it still closes; false: no close button (the location sheet).
+  closeButton?: boolean;
   children: ReactNode;
 }) {
   const k = useKit();
@@ -72,15 +75,16 @@ export function SheetCard({
     look?.padBottom ?? KIT.size.sheetPadBottomMin,
   );
   const size = fill ? { flex: 1 } : { flexShrink: 1 };
-  const close = onClose ? (
-    <Round
-      testID="sheet-close"
-      icon="close"
-      label={tr.common.close}
-      side={KIT.size.sheetClose}
-      onPress={onClose}
-    />
-  ) : null;
+  const close =
+    onClose && closeButton ? (
+      <Round
+        testID="sheet-close"
+        icon="close"
+        label={tr.common.close}
+        side={KIT.size.sheetClose}
+        onPress={onClose}
+      />
+    ) : null;
   return (
     <GestureDetector gesture={pan}>
       <Animated.View

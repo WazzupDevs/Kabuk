@@ -164,7 +164,7 @@ describe('the cover (kapak, 5.2)', () => {
   it('moves at 0.45 of the scroll, linearly, and stays when pulled past the top', () => {
     // Read from the source: the kit's values bring React Native's types into this program.
     expect(code('src/theme/auraKit.ts')).toMatch(
-      /venueCover: \{\s+height: 360,\s+speed: 0\.45,\s+shadeHeight: 130,/,
+      /venueCover: \{\s+height: 330,\s+speed: 0\.45,\s+shadeHeight: 130,/,
     );
     expect(code('src/theme/auraKit.ts')).toMatch(/band: \[240, 280\],\s+barTitle: \[300, 330\],/);
     expect(coverShift(0, 0.45)).toBe(-0);
