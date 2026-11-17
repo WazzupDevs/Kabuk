@@ -12,7 +12,6 @@ import {
 } from 'react';
 import {
   Animated,
-  Easing,
   Image,
   type ImageSourcePropType,
   Pressable,
@@ -24,7 +23,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { Loader, useLoopActive } from '@/components/Loader';
+import { Loader } from '@/components/Loader';
 import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { useNarrow } from '@/lib/useNarrow';
@@ -960,9 +959,7 @@ export function Tag({
 const MIN_TAG_SCALE = 0.7;
 
 // .live: a dot and its words (yeni arayüz tuvali skall.css `.live i`: 8, --buzz pink in a still 4
-// ring of itself at 18 %, no ring in the dark). The dot beats: two rings spread from it and fade,
-// one after the other, like a pulse (the owner's call, 28 Ekim; the boards draw it still). Still
-// with reduce motion, and while the screen is out of sight.
+// ring of itself at 18 %, no ring in the dark). The dot is still: no pulse, no waves.
 export function Live({
   label,
   color = KIT.pink,
@@ -1005,12 +1002,10 @@ export function PulseDot({
   size?: number;
   darkRing?: boolean;
 }) {
-  const reduce = useReduceMotion();
-  const active = useLoopActive();
   const { scheme } = useKit();
-  // The core's still ring natively (NativeShadow.tsx): the waves redraw the screen on every frame,
-  // and React Native would draw it again on each one. None in the dark: there it stood as a grey
-  // disc round the dot (the owner's report, 2 Kasım, 2.2; skall.css K13); the waves stay.
+  // The core's still ring natively (NativeShadow.tsx). None in the dark: there it stood as a grey
+  // disc round the dot (the owner's report, 2 Kasım, 2.2; skall.css K13). The dot does not move
+  // (yeni arayüz tuvali: 8, the ring still).
   const glow = boxShadowParts(
     useLabOff('golge'),
     !ring || (scheme === 'dark' && !darkRing)
@@ -1018,53 +1013,11 @@ export function PulseDot({
       : `0px 0px 0px ${KIT.size.dotRing}px ${ring}`,
     size / 2,
   );
-  const [waves] = useState(() => [new Animated.Value(0), new Animated.Value(0)]);
-  useEffect(() => {
-    if (reduce || !active) {
-      waves.forEach((w) => w.setValue(0));
-      return undefined;
-    }
-    const loops = waves.map((w, i) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.delay(i * (PULSE_MS / 2)),
-          Animated.timing(w, {
-            toValue: 1,
-            duration: PULSE_MS,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(w, { toValue: 0, duration: 0, useNativeDriver: true }),
-          Animated.delay((1 - i) * (PULSE_MS / 2)),
-        ]),
-      ),
-    );
-    loops.forEach((l) => l.start());
-    return () => loops.forEach((l) => l.stop());
-  }, [reduce, active, waves]);
   return (
     <View
       style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
       accessible={false}
     >
-      {reduce
-        ? null
-        : waves.map((w, i) => (
-            <Animated.View
-              key={i}
-              style={{
-                position: 'absolute',
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                backgroundColor: color,
-                opacity: w.interpolate({ inputRange: [0, 1], outputRange: [PULSE_FROM, 0] }),
-                transform: [
-                  { scale: w.interpolate({ inputRange: [0, 1], outputRange: [1, PULSE_TO] }) },
-                ],
-              }}
-            />
-          ))}
       <View
         style={{
           width: size,
@@ -1079,9 +1032,6 @@ export function PulseDot({
     </View>
   );
 }
-const PULSE_MS = 1800;
-const PULSE_FROM = 0.45;
-const PULSE_TO = 2.8;
 
 // .sec: a section's heading and its note at the right, on a baseline.
 export function Sec({ title, note, large }: { title: string; note?: string; large?: boolean }) {
