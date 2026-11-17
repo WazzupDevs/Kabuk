@@ -21,6 +21,7 @@ export function GlassSearch({
   testID,
   height = X.capsule,
   trailing,
+  autoFocus,
 }: {
   value: string;
   onChangeText: (text: string) => void;
@@ -28,6 +29,8 @@ export function GlassSearch({
   testID?: string;
   height?: number;
   trailing?: ReactNode;
+  // The keyboard opens with it (a search page: Tüm aksesuarlar's).
+  autoFocus?: boolean;
 }) {
   const { c } = useKit();
   const { colors } = useTheme();
@@ -49,6 +52,7 @@ export function GlassSearch({
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <TextInput
           testID={testID}
+          autoFocus={autoFocus}
           value={value}
           onChangeText={onChangeText}
           accessibilityLabel={placeholder}
