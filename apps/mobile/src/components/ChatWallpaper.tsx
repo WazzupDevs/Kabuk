@@ -1,18 +1,18 @@
 import { memo } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
-import type { ChatWallKind, WallpaperCanvas } from '@/theme/chatWallpaper';
+import type { WallpaperCanvas } from '@/theme/chatWallpaper';
 import type { ColorScheme } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
-import { KIT } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
+
+import type { ChatWall } from './chatKind';
 
 // The chat walls as Telegram Android draws its chat backgrounds (the owner's call, 30 Ekim): one
 // picture from the top of the screen to its foot, a soft four-colour gradient with skall's quiet
 // pattern over it (scripts/art/walls.ts; DM and Mekan the riso landscapes, Aura v80), each chat its
 // own (DM, Masa, Mekan; light and dark). One image for the whole screen: a tile laid edge to edge left seams where its edges fell between
 // pixels. It stays where it is while the messages scroll over it and the keyboard comes and goes.
-const WALLS: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
+const WALLS: Record<ChatWall, Record<ColorScheme, ImageSourcePropType>> = {
   dm: {
     light: require('../../assets/riso/wall-dm-light.webp'),
     dark: require('../../assets/riso/wall-dm-dark.webp'),
@@ -24,6 +24,11 @@ const WALLS: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
   mekan: {
     light: require('../../assets/riso/wall-mekan-light.webp'),
     dark: require('../../assets/riso/wall-mekan-dark.webp'),
+  },
+  // yeni arayüz tuvali, SemtSohbet: the district chat's own picture, both schemes.
+  semt: {
+    light: require('../../assets/riso/semt/wall-semt-light.webp'),
+    dark: require('../../assets/riso/semt/wall-semt-dark.webp'),
   },
 };
 
@@ -39,17 +44,14 @@ export const ChatWallpaper = memo(function ChatWallpaper({
   kind,
   canvas,
   source,
-  veil,
   onDrawn,
 }: {
   // The picture is on the screen (decoded and shown): what lies under it is no longer seen.
   onDrawn?: () => void;
-  kind: ChatWallKind;
+  kind: ChatWall;
   canvas: WallpaperCanvas;
   // The chat's own picture in place of its kind's (Masa sohbeti: the table's tall riso card).
   source?: ImageSourcePropType;
-  // U25 (MasaSohbeti `.veil`): a soft dark curtain at the top and the foot over the picture.
-  veil?: boolean;
 }) {
   const { scheme } = useTheme();
   return (
@@ -68,14 +70,6 @@ export const ChatWallpaper = memo(function ChatWallpaper({
         onLoad={onDrawn}
         style={{ position: 'absolute', left: 0, top: 0, width: canvas.w, height: canvas.h }}
       />
-      {veil ? (
-        <View
-          style={[
-            { position: 'absolute', left: 0, top: 0, width: canvas.w, height: canvas.h },
-            gradientStyle(KIT.chatVeil[scheme]),
-          ]}
-        />
-      ) : null}
     </View>
   );
 });
@@ -97,7 +91,7 @@ export function WallBand({
   direction,
   source,
 }: {
-  kind: ChatWallKind;
+  kind: ChatWall;
   canvas: WallpaperCanvas;
   source?: ImageSourcePropType;
   top: number;

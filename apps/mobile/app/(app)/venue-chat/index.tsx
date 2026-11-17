@@ -33,7 +33,6 @@ import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen'
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton, MoreDots } from '@/components/IconButton';
 import { IdentityToggle } from '@/components/IdentityToggle';
 import { Loader } from '@/components/Loader';
 import { ChatLookAvatar, LookAvatar } from '@/components/LookAvatar';
@@ -69,9 +68,10 @@ import {
 } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { CapIcon } from '@/aura/CapIcon';
-import { Av, Glass, T, Btn } from '@/aura/kit';
+import { Av, Btn, Glass, Round, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
@@ -81,7 +81,7 @@ import { useLatestCallback } from '@/lib/useLatestCallback';
 import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
-import { type ColorScheme, SPACING } from '@/theme/tokens';
+import { type ColorScheme, ICON, SPACING } from '@/theme/tokens';
 import { FxMoves } from '@/components/FxSvg';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
@@ -431,9 +431,11 @@ function VenueChatScreenBody() {
       }}
       top={
         <ChatTopBar
+          dm
           onBack={() => router.back()}
-          // The title at its full size; under it the live dot and the last writers' small faces,
-          // never taller or narrower as writers come (the owner's calls, 6 and 8 Kasım).
+          // Yeni arayüz tuvali, MekanSohbet: the title in the capsule with the identity toggle; under
+          // it the live dot and the last writers' small faces (the board's "N kişi" has no data
+          // here), never taller or narrower as writers come (the owner's calls, 6 and 8 Kasım).
           title={tr.venueChat.open}
           titleLines={1}
           live
@@ -444,15 +446,18 @@ function VenueChatScreenBody() {
                 testID="venue-chat-mode"
                 mode={identity.mode}
                 locked={identity.switchUsed}
+                size={CHAT_LOOK.toggle}
                 onPick={() => setSheet('identity')}
                 onLocked={() => flash(tr.identity.used)}
               />
             ) : null
           }
-          actions={
-            <IconButton
-              icon="ellipsis-vertical"
-              glyph={<MoreDots />}
+          // The menu is a soft round of its own outside the capsule (`.round.soft`).
+          more={
+            <Round
+              side={KIT.size.round}
+              icon="moreV"
+              iconSize={ICON.md}
               label={tr.venueChat.options}
               testID="venue-chat-options"
               onPress={() => setSheet('options')}

@@ -48,7 +48,7 @@ function RoomChatScreenBody() {
   const seats = new Map(
     (people.data ?? []).map((p) => [p.sessionId, { look: p.look, profiled: p.profiled }]),
   );
-  const stream = useRoomChatList(chat, sessionId ?? '', profiles, id, seats);
+  const stream = useRoomChatList(chat, sessionId ?? '', profiles, id, seats, people.data?.length);
   const messages = chat.messages.data ?? [];
   const newestAt = messages.at(-1)?.created_at;
   useEffect(() => {
@@ -83,10 +83,12 @@ function RoomChatScreenBody() {
       newestMine={newestOut ? true : newestIn?.session_id === sessionId}
       top={
         <ChatTopBar
+          dm
           onBack={() => router.back()}
-          compact
+          // MasaSohbet: "Masa sohbeti" over "Uçan Halı · 12 kişi" in a capsule of its own. The
+          // board's menu round has no options to open here, so it is not drawn.
           title={tr.table.chatTitle}
-          subtitle={room.data.name ?? undefined}
+          subtitle={tr.chat.tableSub(room.data.name ?? undefined, people.data?.length ?? 1)}
         />
       }
       composer={<RoomComposer chat={chat} />}

@@ -7,6 +7,7 @@ import { FxMoves } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { isNarrow } from '@/lib/narrow';
 import { KIT } from '@/theme/auraKit';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { DM } from '@/theme/dm';
 import { SPACING } from '@/theme/tokens';
 
@@ -34,8 +35,9 @@ type Props = {
   toggle?: ReactNode;
   // Bare icon buttons at the capsule's right end (⋯).
   actions?: ReactNode;
-  // U25 (MasaSohbeti `.hpill`): the capsule without a face 20 in.
-  compact?: boolean;
+  // The group chats' menu (yeni arayüz tuvali, MekanSohbet, MasaSohbet, SemtSohbet `.round.soft`): a
+  // round of its own outside the capsule, at the bar's right end.
+  more?: ReactNode;
   // The DM's own bar (yeni arayüz tuvali, DmSohbet; theme/dm.ts): 16 from the sides, the soft back
   // round 44, the capsule 52, the face (40) 6 in and 10 from the name (16/600) over its line (12/16),
   // the menu's 44 round 2 from the capsule's right.
@@ -60,7 +62,7 @@ export function ChatTopBar({
   under,
   toggle,
   actions,
-  compact = false,
+  more,
   dm = false,
 }: Props) {
   const { c } = useKit();
@@ -172,16 +174,28 @@ export function ChatTopBar({
             flexDirection: 'row',
             alignItems: 'center',
             minHeight: pill,
-            paddingLeft: compact
-              ? KIT.chatPillPadX
-              : leading
-                ? dm
-                  ? DM.bar.faceIn
-                  : PILL_INSET
+            paddingLeft: leading
+              ? dm
+                ? DM.bar.faceIn
+                : PILL_INSET
+              : dm
+                ? // The group chats' capsule (`.who` override): the words 14 in with the toggle, 18
+                  // without.
+                  toggle
+                  ? CHAT_LOOK.bar.titleIn
+                  : CHAT_LOOK.bar.plainIn
                 : SPACING[4],
-            // The DM's menu (its 44 round) 2 from the capsule's right.
-            paddingRight: right ? (dm ? DM.bar.moreIn : 0) : PILL_PAD_RIGHT,
-            gap: dm ? 0 : SPACING[1],
+            // The DM's menu (its 44 round) 2 from the capsule's right; the toggle 4.
+            paddingRight: right
+              ? dm
+                ? toggle
+                  ? CHAT_LOOK.bar.toggleIn
+                  : DM.bar.moreIn
+                : 0
+              : dm && !leading
+                ? CHAT_LOOK.bar.plainIn
+                : PILL_PAD_RIGHT,
+            gap: dm ? (toggle ? CHAT_LOOK.bar.gap : 0) : SPACING[1],
           }}
         >
           {onPressTitle ? (
@@ -201,6 +215,7 @@ export function ChatTopBar({
           {toggle}
           {actions}
         </Glass>
+        {more}
       </View>
     </FxMoves>
   );

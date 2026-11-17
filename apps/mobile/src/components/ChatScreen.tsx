@@ -43,7 +43,7 @@ import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { type ChatWallKind, type WallpaperCanvas, wallpaperCanvas } from '@/theme/chatWallpaper';
+import { type WallpaperCanvas, wallpaperCanvas } from '@/theme/chatWallpaper';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { AURA, MOTION } from '@/theme/aura';
@@ -66,7 +66,7 @@ import { GlassTarget } from '@/components/LiquidGlass';
 import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { gradientStyle } from '@/theme/gradient';
-import { ChatKindContext, useChatKind } from './chatKind';
+import { type ChatWall, ChatKindContext, kindOfWall } from './chatKind';
 import { DM } from '@/theme/dm';
 import { ChatMetaContext } from './chatMeta';
 import { metaHiddenAt } from '@/lib/chatMeta';
@@ -1204,7 +1204,7 @@ type Props<T extends ChatListItem> = {
   startAtEnd?: boolean;
   testID?: string;
   // The chat's wall (skall tuvali: dm, masa, mekan); null: none (the table's games).
-  wall?: ChatWallKind | null;
+  wall?: ChatWall | null;
   // The wall's own picture (Masa sohbeti: the table's tall riso card, U25) with its curtain.
   wallSource?: ImageSourcePropType;
   // The screen hides the tab bar while it is open (a DM, useHideTabBar): laid out without the
@@ -1259,7 +1259,7 @@ export function ChatScreen<T extends ChatListItem>({
   // to its measured foot, fading over its last 12: no message shows through the bar's glass. It
   // lies in the stream's glass target, so the bar's frosted pills show the wallpaper. The table chat
   // keeps the band under the status bar only.
-  const bandUnderBar = wall === 'dm' || wall === 'mekan';
+  const bandUnderBar = wall === 'dm' || wall === 'mekan' || wall === 'semt';
   // Çizim ölçümü's chat parts (lib/drawLabParts.ts → CHAT_PARTS), a preview build only.
   const wallOff = useLabOff('duvar');
   const bandOff = useLabOff('bant');
@@ -1275,7 +1275,7 @@ export function ChatScreen<T extends ChatListItem>({
     walled !== null && !wallSource && wallDrawn && canvas !== null && canvas.h >= areaHeight;
   return (
     <ChatEndContext.Provider value={followEnd}>
-      <ChatKindContext.Provider value={wall ?? 'dm'}>
+      <ChatKindContext.Provider value={kindOfWall(wall ?? 'dm')}>
         <ChatBarContext.Provider value={reactions.bar}>
           <PopHostContext.Provider value={pop.host}>
             <PopOpenContext.Provider value={pop.open}>
@@ -1298,7 +1298,6 @@ export function ChatScreen<T extends ChatListItem>({
                         kind={walled}
                         canvas={canvas}
                         source={wallSource}
-                        veil={walled === 'masa'}
                         onDrawn={onWallDrawn}
                       />
                     ) : null}
@@ -1320,10 +1319,11 @@ export function ChatScreen<T extends ChatListItem>({
                               canvas={canvas}
                               source={wallSource}
                               top={0}
-                              // U29 (DmArkadaslik `.msgs`): in a DM the messages fade from 4 above the
-                              // header's pill to 24 under it (104–132 on the board).
-                              height={wall === 'dm' ? topHeight - SPACING[2.5] : topHeight}
-                              fade={wall === 'dm' ? SPACING[7] : SPACING[3]}
+                              // U29 (DmArkadaslik `.msgs`; MekanSohbet and SemtSohbet `.band` the
+                              // same): the messages fade from 4 above the header's pill to 24
+                              // under it (104–132 on the board).
+                              height={topHeight - SPACING[2.5]}
+                              fade={SPACING[7]}
                               direction="down"
                             />
                           ) : null
@@ -1332,7 +1332,7 @@ export function ChatScreen<T extends ChatListItem>({
                         contentContainerStyle={{
                           flexGrow: 1,
                           // tuval Dm: the bubbles 18 from the sides (12 and each row's 6).
-                          paddingHorizontal: wall === 'dm' ? DM.side : shape.screenPadding,
+                          paddingHorizontal: wall ? DM.side : shape.screenPadding,
                           paddingTop: SPACING[3] + under,
                           paddingBottom: SPACING[2] + topHeight,
                           // iskelet.md → 5.5: a run's bubbles 3 apart, runs 12 (ChatRow).
@@ -1446,11 +1446,12 @@ export function DayLine({
   // Over the stream (ChatList's floating day): no margins, not one of the stream's lines.
   floating?: boolean;
 }) {
-  const { c, scheme, tags } = useKit();
+  const { scheme } = useKit();
   const lineRef = useContext(DayLineRefContext);
   const shadowOff = useLabOff('golge');
-  const dm = useChatKind() === 'dm';
-  if (fresh && dm) {
+  // Every chat draws the day and the unread line as the DM's board does (yeni arayüz tuvali,
+  // DmSohbet, MekanSohbet, MasaSohbet, SemtSohbet: the same `.day`, `.new`).
+  if (fresh) {
     // Yeni arayüz tuvali, DmSohbet `.new`: the words (12/600, the ink) on a glass pill between two
     // hairlines, 8 apart, 8 above and under.
     const look = DM[scheme];
@@ -1479,30 +1480,10 @@ export function DayLine({
       </View>
     );
   }
-  if (fresh) {
-    // docs/design/aura → Mekan sohbeti: "Yeni mesaj" in pink between two soft pink lines.
-    const ink = scheme === 'dark' ? tags.pink.fg : KIT.nameInk;
-    const line = { flex: 1, height: KIT.size.hair, backgroundColor: KIT.freshLine };
-    return (
-      <View
-        className="flex-row items-center"
-        style={{ gap: KIT.size.barGap, marginVertical: SPACING[1.5] }}
-      >
-        <View style={line} />
-        <RNText
-          maxFontSizeMultiplier={DAY_SCALE}
-          style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: ink }]}
-        >
-          {label}
-        </RNText>
-        <View style={line} />
-      </View>
-    );
-  }
   // iskelet.md → 5.5 and 2.2: a glass pill ("Dün", "Bugün"), the clear glass drawn without a live
-  // blur (it is one of the stream's rows). In a DM (yeni arayüz tuvali, DmSohbet `.flow .day`): 4 /
-  // 12 inside, 12/600 in the ink, no shadow, 10 under the message above and 8 over the next.
-  const g = dm ? DM[scheme].day : KIT.button[scheme].clear;
+  // blur (it is one of the stream's rows). Yeni arayüz tuvali, DmSohbet `.flow .day`: 4 / 12
+  // inside, 12/600 in the ink, no shadow, 10 under the message above and 8 over the next.
+  const g = DM[scheme].day;
   const shadow = shadowParts(
     shadowOff,
     g.shadow || undefined,
@@ -1516,22 +1497,22 @@ export function DayLine({
       ref={floating ? undefined : (lineRef ?? undefined)}
       className="self-center"
       style={{
-        marginTop: floating ? 0 : dm ? DM.day.top : SPACING[2.5],
-        // In a DM the row's own 8 under it is the board's 8.
-        marginBottom: floating ? 0 : dm ? DM.day.bottom - SPACING[2] : SPACING[1.5],
+        marginTop: floating ? 0 : DM.day.top,
+        // The row's own 8 under it is the board's 8.
+        marginBottom: floating ? 0 : DM.day.bottom - SPACING[2],
         ...gradientStyle(g.fill),
         borderWidth: KIT.size.edge,
         borderColor: g.edge,
         boxShadow: shadow.boxShadow,
         borderRadius: KIT.size.chip,
-        paddingHorizontal: dm ? DM.day.padX : KIT.size.dayPadX,
-        paddingVertical: dm ? DM.day.padY : KIT.size.dayPadY,
+        paddingHorizontal: DM.day.padX,
+        paddingVertical: DM.day.padY,
       }}
     >
       {shadow.node}
       <RNText
         maxFontSizeMultiplier={DAY_SCALE}
-        style={[KIT_TYPE.day, { color: fresh ? KIT.primary : dm ? DM[scheme].dayInk : c.muted }]}
+        style={[KIT_TYPE.day, { color: DM[scheme].dayInk }]}
       >
         {label}
       </RNText>
