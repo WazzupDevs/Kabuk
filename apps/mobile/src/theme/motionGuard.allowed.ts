@@ -13,7 +13,6 @@ export const MOTION_ALLOWED: readonly string[] = [
   'src/features/design/capsuleMeasurePreview.tsx',
   'src/features/design/gorsel/GateState.tsx',
   'src/features/district/parts.tsx',
-  'src/features/friends/RequestList.tsx',
   'src/features/games/FirstGameIntro.tsx',
   'src/features/games/GameBits.tsx',
   'src/features/games/TimeUpOverlay.tsx',

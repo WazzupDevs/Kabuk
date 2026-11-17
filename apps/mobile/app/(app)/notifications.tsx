@@ -1,12 +1,11 @@
 import type { NotificationItem } from '@shared/api/friends.ts';
 import { upperTr } from '@shared/trText.ts';
 import { inviteState, seenMark } from '@shared/notifications.ts';
-import { TABLE_ICONS } from '@shared/tableIcons.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Av, Glass, Round, T, Thumb, useKit } from '@/aura/kit';
+import { Av, Btn, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
@@ -20,24 +19,25 @@ import {
 } from '@/features/friends/queries';
 import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { roomKeys } from '@/features/rooms/queries';
-import { TABLE_ICON_IMAGES } from '@/features/rooms/tableIconImages';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callAccount, friendsApi, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
-import { MESSAGES as M } from '@/theme/messages';
+import { KIT } from '@/theme/auraKit';
+import { FLAT } from '@/theme/flatLists';
 import { firstRows, useOpenRows } from '@/lib/afterTransition';
+import { Tap } from '@/motion';
 
-// Bildirimler (docs/SPEC_V4.md §4.G; skall tuvali: Bildirimler, BildirimlerKabul, BildirimlerBos):
-// friends/notifications's rows, the new ones (after the list was last opened) on soft cards under
-// "Yeni", the rest under "Önceki". A friend request is answered here, a table invite too (Reddet,
-// Katıl, its minutes); an accepted request, a match and a friendship offer "Mesaj yaz". Opening
-// the list marks it seen (account/notifications-seen); what was new stays under "Yeni" until the
-// list closes.
+// Bildirimler (docs/SPEC_V4.md §4.G; yeni arayüz tuvali: Bildirimler, BildirimlerBos,
+// MasaDavetGeldi, MasaDavetSuresiDoldu): friends/notifications's rows as a flat list on the sheet,
+// the new ones (after the list was last opened) under "YENİ" with a dot at their left, the rest
+// under "ÖNCEKİ". A friend request is answered here, a table invite too (Reddet, Katıl, its
+// minutes); an accepted request, a match and a friendship offer "Mesaj yaz". Opening the list
+// marks it seen (account/notifications-seen); what was new stays under "YENİ" until the list
+// closes or "Tümünü okundu say" is pressed (it moves them under "ÖNCEKİ" on this phone; the mark
+// itself went when the list opened).
 export default function NotificationsScreen() {
   const queryClient = useQueryClient();
   const list = useNotifications();
@@ -48,6 +48,7 @@ export default function NotificationsScreen() {
     fresh: ReadonlySet<string>;
     known: ReadonlySet<string>;
   } | null>(null);
+  const [allSeen, setAllSeen] = useState(false);
   if (items && opened === null) {
     setOpened({
       fresh: new Set(items.filter((n) => n.isNew).map(keyOf)),
@@ -67,23 +68,16 @@ export default function NotificationsScreen() {
 
   // Opened light: the first rows while the sheet comes up, the rest after.
   const shown = useOpenRows(items?.length ?? 0);
-  // tuval Mesajlar (Bildirimler): the sheet 16 inside on its pink and green lit ground, the title
-  // 22/800 14 under the handle, 6 in.
-  const { scheme } = useKit();
-  const S = M.sheet;
+  // The new board's sheet: the surface, 20 from the sides, the title under the handle.
+  const { c, scheme } = useKit();
   const sheet = {
     title: tr.notifications.title,
     testID: 'notifications',
     peek: 'notifications' as const,
-    titleType: 'sheetGame' as const,
     look: {
-      ground: M[scheme].sheetGround || undefined,
-      base: M[scheme].sheetBase,
-      padX: S.padX,
-      padBottom: S.padBottom,
-      headTop: S.headTop,
-      titleIn: S.titleIn,
-      closeIn: S.closeIn,
+      base: KIT.layer[scheme].sheet,
+      padX: KIT.layer.size.sheetPadX,
+      padBottom: FLAT.sheet.padBottom,
     },
   };
   if (list.isPending) {
@@ -109,53 +103,57 @@ export default function NotificationsScreen() {
   if (!items || items.length === 0) {
     return (
       <RouteSheet {...sheet}>
-        <EmptyState
-          kind="empty"
-          riso="notifications"
-          title={tr.notifications.empty}
-          body={tr.notifications.emptyHint}
-        />
+        <View style={{ paddingTop: FLAT.sheetEmpty.top, paddingBottom: FLAT.sheetEmpty.bottom }}>
+          <EmptyState
+            kind="empty"
+            riso="notifications"
+            compact
+            title={tr.notifications.empty}
+            body={tr.notifications.emptyHint}
+          />
+        </View>
       </RouteSheet>
     );
   }
   const isFresh = (n: NotificationItem) =>
-    opened ? opened.fresh.has(keyOf(n)) || !opened.known.has(keyOf(n)) : n.isNew;
+    !allSeen && (opened ? opened.fresh.has(keyOf(n)) || !opened.known.has(keyOf(n)) : n.isNew);
   const newer = items.filter(isFresh);
   const older = items.filter((n) => !isFresh(n));
   return (
     <RouteSheet {...sheet}>
-      {newer.length > 0 ? (
-        <View style={{ gap: M.eyebrow.bottom, marginTop: EYEBROW_TOP }}>
-          <Eyebrow>{tr.notifications.fresh}</Eyebrow>
-          {newer.map((n) => (
-            <Row key={keyOf(n)} item={n} fresh />
-          ))}
-        </View>
-      ) : null}
-      {older.length > 0 ? (
-        <View style={{ gap: M.eyebrow.bottom, marginTop: newer.length > 0 ? 0 : EYEBROW_TOP }}>
-          <Eyebrow>{tr.notifications.earlier}</Eyebrow>
-          {/* tuval Mesajlar: the earlier rows on one white card, 26 round, 4 / 6 inside, a hairline
-              from the words to the card's edge. */}
-          <Glass
-            face={M[scheme].noticeCard}
-            radius={M.card.radius}
-            style={{
-              overflow: 'hidden',
-              borderRadius: M.card.radius,
-              paddingVertical: M.card.padY,
-              paddingHorizontal: M.card.padX,
-            }}
-          >
-            {firstRows(older, shown).map((n, i) => (
-              <View key={keyOf(n)}>
-                {i > 0 ? <Hair /> : null}
-                <Row item={n} />
+      <View>
+        {newer.length > 0 ? (
+          <>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+              <View style={{ flex: 1 }}>
+                <Label first>{tr.notifications.fresh}</Label>
               </View>
+              <Tap
+                testID="notifications-mark-seen"
+                accessibilityRole="button"
+                accessibilityLabel={tr.notifications.markAllSeen}
+                hitSlop={KIT.size.chipGap}
+                onPress={() => setAllSeen(true)}
+              >
+                <T v="btnSm" color={c.link}>
+                  {tr.notifications.markAllSeen}
+                </T>
+              </Tap>
+            </View>
+            {newer.map((n) => (
+              <Row key={keyOf(n)} item={n} fresh />
             ))}
-          </Glass>
-        </View>
-      ) : null}
+          </>
+        ) : null}
+        {older.length > 0 ? (
+          <>
+            {newer.length > 0 ? <Label>{tr.notifications.earlier}</Label> : null}
+            {firstRows(older, shown).map((n) => (
+              <Row key={keyOf(n)} item={n} />
+            ))}
+          </>
+        ) : null}
+      </View>
     </RouteSheet>
   );
 }
@@ -174,9 +172,8 @@ function keyOf(n: NotificationItem): string {
 }
 
 function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
-  const { c, scheme } = useKit();
-  const look = M[scheme];
-  const N = M.notice;
+  const { c } = useKit();
+  const R = FLAT.sheet;
   const now = useNow(item.kind === 'invite' ? 1000 : 30000);
   const queryClient = useQueryClient();
   const friends = useFriends();
@@ -218,10 +215,11 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
 
   let name = item.displayName ?? '';
   let line = '';
+  // An invite: the table and its phones, then its minutes or its state.
+  let tableLine = '';
   let status = '';
+  let live = false;
   let time = tr.common.ago(item.createdAt, now);
-  let faded = false;
-  let joined = false;
   let actions: ReactNode = null;
   let error: unknown = null;
   switch (item.kind) {
@@ -271,6 +269,8 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
       break;
     case 'invite': {
       line = tr.notifications.line.invite;
+      tableLine = tr.notifications.inviteTable(item.tableName ?? '', item.phones);
+      time = '';
       const state = answer.isSuccess
         ? answer.variables.accept
           ? 'joined'
@@ -279,7 +279,7 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
       if (state === 'open') {
         const seconds = Math.max(0, Math.ceil((Date.parse(item.expiresAt) - now) / 1000));
         status = tr.notifications.short.invite(tr.invite.clock(seconds));
-        time = '';
+        live = true;
         actions = (
           <>
             <Round
@@ -288,9 +288,8 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
               disabled={answer.isPending}
               onPress={() => answer.mutate({ inviteId: item.inviteId, accept: false })}
             />
-            <Round
-              primary
-              icon="forward"
+            <Btn
+              sm
               testID="invite-join"
               label={tr.notifications.join}
               loading={answer.isPending && answer.variables.accept}
@@ -299,166 +298,91 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
             />
           </>
         );
-      } else if (state === 'joined') {
-        status = tr.notifications.short.joined;
-        joined = true;
-        time = '';
       } else {
         status =
-          state === 'declined' ? tr.notifications.short.declined : tr.notifications.short.gone;
-        faded = true;
+          state === 'joined'
+            ? tr.notifications.short.joined
+            : state === 'declined'
+              ? tr.notifications.short.declined
+              : tr.notifications.short.gone;
       }
       if (answer.isError) error = answer.error;
       break;
     }
   }
 
-  // iskelet.md → 5.4: the face, the name in bold with what happened as one sentence ("Furkan
-  // isteğini kabul etti"; it wraps, never cut), its date under it (an invite's state or its
-  // minutes in its place), the answers as round buttons at the right.
-  const under = item.kind === 'invite' ? status : time;
-  // tuval Mesajlar: the name 15.5/700, what happened 500 in its own ink; the date 12.5/600, 2 under.
-  const words = (
-    <View style={{ flex: 1, minWidth: 0, gap: N.lineGap }}>
-      <T v="notice">
-        {name}
-        <T v="notice" color={look.noticeLine} style={KIT_TYPE.light}>
-          {` ${line}`}
-        </T>
-      </T>
-      {under ? (
-        <T v="personLine" tabular color={joined ? KIT.success : look.time}>
-          {under}
-        </T>
-      ) : null}
-      {error ? <Error error={error} /> : null}
-    </View>
-  );
-  // An invite shows the table's picture with the inviter's face on its corner (Bildirimler).
-  const tableIcon =
-    item.kind === 'invite'
-      ? TABLE_ICONS.find((i) => (item.tableName ?? '').startsWith(i.name))?.id
-      : undefined;
-  const tablePicture = tableIcon ? TABLE_ICON_IMAGES[tableIcon] : undefined;
-  const face = tablePicture ? (
-    <View>
-      <Thumb source={tablePicture} size={INVITE_THUMB} radius={INVITE_RADIUS} />
-      <View style={{ position: 'absolute', right: -INVITE_BADGE_OUT, bottom: -INVITE_BADGE_OUT }}>
-        <Av size="sm" name={name} photoUrl={item.photoUrl} />
-      </View>
-    </View>
-  ) : (
-    <Av
-      size="row"
-      name={name}
-      photoUrl={item.photoUrl}
-      board={{ ring: N.ring, ringColor: look.faceRing, shadow: look.faceShadow }}
-    />
-  );
-  const row = (
+  // The face, then the name in bold with what happened as one sentence ("Furkan isteğini kabul
+  // etti"; it wraps, never cut), its date under it (an invite's table, then its minutes or its
+  // state), the answers at the right. A new one: a pink dot 12 left of the row.
+  return (
     <View
+      testID={`notification-${item.kind}`}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: N.gap,
-        minHeight: N.face,
+        gap: R.rowGap,
+        paddingVertical: R.rowPadY,
       }}
     >
-      {face}
-      {words}
+      {fresh ? (
+        <View
+          style={{
+            position: 'absolute',
+            left: -FLAT.dot.out,
+            width: FLAT.dot.side,
+            height: FLAT.dot.side,
+            borderRadius: FLAT.dot.side / 2,
+            backgroundColor: KIT.pink,
+          }}
+        />
+      ) : null}
+      <Av size="md" name={name} photoUrl={item.photoUrl} />
+      <View style={{ flex: 1, minWidth: 0, gap: R.lineGap }}>
+        <T v="body">
+          <T v="body" strong ink>
+            {name}
+          </T>
+          {` ${line}`}
+        </T>
+        {tableLine ? <T v="fine">{tableLine}</T> : null}
+        {time ? (
+          <T v="fine" tabular strong={fresh} color={fresh ? c.link : undefined}>
+            {time}
+          </T>
+        ) : null}
+        {status ? (
+          <T v="fine" tabular strong={live} color={live ? c.link : undefined}>
+            {status}
+          </T>
+        ) : null}
+        {error ? <Error error={error} /> : null}
+      </View>
       {actions ? (
-        <View style={{ flexDirection: 'row', gap: KIT.size.chipsGap }}>{actions}</View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
+          {actions}
+        </View>
       ) : null}
     </View>
   );
-  // A new one as its own card (an invite on the brand's soft gradient), an earlier one as a row
-  // of the list.
-  if (!fresh) {
-    return (
-      <View
-        testID={`notification-${item.kind}`}
-        style={{
-          opacity: faded ? FADED : 1,
-          paddingVertical: N.padY,
-          paddingHorizontal: N.padX,
-        }}
-      >
-        {row}
-      </View>
-    );
-  }
-  return item.kind === 'invite' ? (
-    <View
-      testID={`notification-${item.kind}`}
-      style={{
-        ...gradientStyle(KIT.inviteGround),
-        padding: FRESH_PAD,
-        borderRadius: KIT.size.glassRadiusSm + 2,
-        borderWidth: KIT.size.edge,
-        borderColor: c.glassEdge,
-        opacity: faded ? FADED : 1,
-      }}
-    >
-      {row}
-    </View>
-  ) : (
-    <Glass
-      sm
-      testID={`notification-${item.kind}`}
-      style={{ padding: FRESH_PAD, opacity: faded ? FADED : 1 }}
-    >
-      {row}
-    </Glass>
-  );
 }
 
-const FADED = 0.6;
-const INVITE_THUMB = 48;
-const INVITE_RADIUS = 16;
-const INVITE_BADGE_OUT = 8;
-const FRESH_PAD = 14;
-// The section's name 16 under the title: the sheet's content starts 12 under it.
-const EYEBROW_TOP = M.eyebrow.top - KIT.size.rowGap;
-
-// ÖNCEKİ (tuval Mesajlar): 12/800, 0.1em, 10 in.
-function Eyebrow({ children }: { children: string }) {
-  const { scheme } = useKit();
+// YENİ and ÖNCEKİ (`.sl`): small, the muted ink, 18 over and 4 under (the first 0 over).
+function Label({ children, first }: { children: string; first?: boolean }) {
+  const R = FLAT.sheet;
   return (
-    <View style={{ paddingLeft: M.eyebrow.in }}>
-      <T v="sheetEyebrow" color={M[scheme].eyebrow} accessibilityRole="header">
+    <View style={{ marginTop: first ? 0 : R.labelTop, marginBottom: R.labelBottom }}>
+      <T v="eyebrow" accessibilityRole="header">
         {upperTr(children)}
       </T>
     </View>
   );
 }
 
-// From the face's right (8 + 48 + 13) to the card's edge.
-function Hair() {
-  const { scheme } = useKit();
-  return (
-    <View
-      style={{
-        height: KIT.size.hair,
-        marginLeft: M.notice.padX + M.notice.face + M.notice.gap,
-        backgroundColor: M[scheme].hair,
-      }}
-    />
-  );
-}
-
-// tuval Mesajlar: a 42 glass round, its speech bubble 19 in the green.
+// The soft round with the speech bubble in the green (`.sm2`).
 function MessageRound({ onPress }: { onPress: () => void }) {
-  const { scheme } = useKit();
+  const { c } = useKit();
   return (
-    <Round
-      glass="clear"
-      side={M.notice.action}
-      iconSize={M.notice.icon}
-      color={M[scheme].action}
-      icon="chat"
-      label={tr.notifications.writeMessage}
-      onPress={onPress}
-    />
+    <Round icon="chat" color={c.link} label={tr.notifications.writeMessage} onPress={onPress} />
   );
 }
 

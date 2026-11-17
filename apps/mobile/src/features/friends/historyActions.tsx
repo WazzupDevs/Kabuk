@@ -166,6 +166,7 @@ export function HistoryActions({
   row?: { lead: ReactNode; title: ReactNode };
 }): ReactNode {
   const { c, scheme } = useKit();
+  const { colors } = useTheme();
   const action = historyAction(h);
   const silent = h.reveal_mutual || h.friend_open;
   const pending = act.isPending && act.variables?.historyId === h.id;
@@ -188,8 +189,9 @@ export function HistoryActions({
     setShownState(state);
     setPop(state === 'added' || state === 'sent');
   }
-  // In the game sheet's row (tuval Sohbet): the small prominent at 13.5/800, 11 / 14 in, its icon
-  // 14 and 5 from the words; once pressed the soft green pill at 13.5/700 with its check 15.
+  // In the game sheet's row (GecmisMasa `.add`): the small soft button in the green, 14 in at
+  // either side, its icon 16 and 4 from the words; once pressed the soft green pill at 13.5/700
+  // with its check 15.
   const pressLook = row ? ACTION_LOOK : undefined;
   const added = ACTIVITIES[scheme].added;
   const primary = friend?.threadId ? (
@@ -226,21 +228,17 @@ export function HistoryActions({
     />
   ) : action === 'done' ? (
     row ? (
+      // GecmisMasa `.sent`: "İstek gitti" in a quiet chip, 36 high, 12 in.
       <View
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: DONE_LOOK.gap,
+          justifyContent: 'center',
           minHeight: KIT.size.btnSm,
           paddingHorizontal: SHEET.done.padX,
           borderRadius: KIT.size.btnSm / 2,
-          backgroundColor: added.fill,
+          backgroundColor: colors.track,
         }}
       >
-        <CapIcon name="check" size={DONE_LOOK.icon} color={added.ink} />
-        <T v="actionSmDone" color={added.ink}>
-          {tr.friends.actionDone}
-        </T>
+        <T v="chip">{tr.friends.requestSent}</T>
       </View>
     ) : (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
@@ -252,6 +250,8 @@ export function HistoryActions({
     <Btn
       sm
       icon="plus"
+      variant={row ? 'glassy' : 'primary'}
+      tint={row ? c.link : undefined}
       look={pressLook}
       testID={action === 'add_friend' ? 'history-add' : 'history-request'}
       label={
@@ -272,8 +272,8 @@ export function HistoryActions({
       }
     />
   );
-  // Under the name in the sheet's row: the board's line (12.5/600, muted).
-  const line = row ? 'personLine' : 'fine';
+  // Under the name in the sheet's row: the quiet line.
+  const line = 'fine';
   const hint = friend ? (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
       <CapIcon name="check" size={ICON.sm} color={c.link} />
@@ -334,7 +334,7 @@ export function HistoryActions({
 // The game sheet's row (tuval Sohbet; theme/activities.ts).
 const SHEET = ACTIVITIES.sheet;
 const ACTION_LOOK: BtnLook = {
-  type: 'actionSm',
+  type: 'btnSm',
   padLeft: SHEET.action.padLeft,
   padRight: SHEET.action.padRight,
   gap: SHEET.action.gap,
@@ -348,10 +348,9 @@ const DONE_LOOK = {
   icon: SHEET.done.icon,
 } as const satisfies BtnLook;
 
-// The three dots at the row's right: a 36 round on a faint ink, no glass (tuval Sohbet).
+// The three dots at the row's right (`.ib2`): a 36 round with no fill, in the muted ink.
 function More({ onPress }: { onPress: () => void }) {
-  const { scheme } = useKit();
-  const more = ACTIVITIES[scheme].more;
+  const { c } = useKit();
   const side = KIT.size.btnSm;
   return (
     <Tap
@@ -362,50 +361,18 @@ function More({ onPress }: { onPress: () => void }) {
         width: side,
         height: side,
         borderRadius: side / 2,
-        backgroundColor: more.fill,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <CapIcon name="more" color={more.ink} soft={1} size={SHEET.more} />
+      <CapIcon name="more" color={c.muted} soft={1} size={ICON.md} />
     </Tap>
   );
 }
 
 // "İkiniz de basarsanız arkadaş olursunuz…": once over the sheet's people when any of them can be
-// added (5.2).
-// `boxed`: in the green-toned note box (Aktiviteler's game sheet, iskelet.md → 5.3).
-export function HistoryAddHint({
-  records,
-  boxed,
-}: {
-  records: HistoryRecord[];
-  boxed?: boolean;
-}): ReactNode {
-  const { scheme } = useTheme();
+// added (5.2); in the sheet a plain note (GecmisMasa `.note`: 13/500, muted).
+export function HistoryAddHint({ records }: { records: HistoryRecord[] }): ReactNode {
   if (!records.some((r) => historyAction(r) === 'add_friend')) return null;
-  if (!boxed) return <T v="fine">{tr.friends.addFriendHint}</T>;
-  // tuval Sohbet: the green at 8 %, 18 round, 12 / 14 in, the people's icon 18 before the words.
-  const note = SHEET.note;
-  const ink = ACTIVITIES[scheme].note.ink;
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: note.gap,
-        backgroundColor: ACTIVITIES[scheme].note.fill,
-        borderRadius: note.radius,
-        paddingHorizontal: note.padX,
-        paddingVertical: note.padY,
-      }}
-    >
-      <CapIcon name="people" color={ink} size={note.icon} />
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <T v="sheetNote" color={ink}>
-          {tr.friends.addFriendHint}
-        </T>
-      </View>
-    </View>
-  );
+  return <T v="fine">{tr.friends.addFriendHint}</T>;
 }

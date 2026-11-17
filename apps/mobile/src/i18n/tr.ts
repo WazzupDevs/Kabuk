@@ -569,10 +569,22 @@ export const tr = {
     venuePlace: (parts: readonly string[]) => parts.join(', '),
   },
   friends: {
-    empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
+    // Arkadaşlar, empty (yeni arayüz tuvali, ArkadaslarBos): a title and its sentence.
+    emptyTitle: 'Henüz arkadaşın yok',
+    emptyHint: "Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
+    // The field over the list (Arkadaslar): narrows the friends by name, on the phone.
+    search: 'Arkadaş ara',
+    noMatch: 'Arkadaş bulunamadı',
+    noMatchHint: 'Başka bir ad dene.',
     message: (name: string) => `${name} ile mesajlaş`,
     // The friend row's button (v45: .fmsg).
     messageShort: 'Mesaj',
+    // Arkadaşlar's row button (yeni arayüz tuvali, Arkadaslar).
+    messageSend: 'Mesaj gönder',
+    // Mesajlar → İstekler's section head (yeni arayüz tuvali, IsteklerDolu): "Arkadaşlık · 3".
+    requestsHead: (n: number) => `Arkadaşlık · ${n}`,
+    // On a person's row in Aktiviteler's game sheet once a request went (GecmisMasa).
+    requestSent: 'İstek gitti',
     // skall tuvali (AktivitelerGecmisEklendi); approved 27 Ekim.
     addedNote: (name: string) =>
       `${name} bunu görmez. O da seni eklerse arkadaş olursunuz. Yeniden basarsan geri alırsın.`,
@@ -615,6 +627,10 @@ export const tr = {
     earlier: 'Önceki',
     join: 'Katıl',
     writeMessage: 'Mesaj yaz',
+    // The sheet's text button over the new ones (yeni arayüz tuvali, Bildirimler).
+    markAllSeen: 'Tümünü okundu say',
+    // An invite's second line: the table's name and its phones (never the venue, §4.B-8).
+    inviteTable: (name: string, phones: number) => `${name} · ${phones} kişi`,
     // iskelet.md → 5.4: a row's sentence after the name in bold ("Furkan isteğini kabul etti"),
     // its date or state under it.
     line: {
