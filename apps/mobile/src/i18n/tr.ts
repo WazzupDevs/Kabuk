@@ -1904,6 +1904,7 @@ export const tr = {
     // Gizli oy and Oy verildi.
     voteTitle: 'Gizli oy',
     voteLine: 'Kime verdiğini kimse görmez',
+    voteNote: 'Kime verdiğini kimse görmez.',
     give: 'Oyumu ver',
     voteFor: (name: string) => `${name}, oy ver`,
     targetGone: 'Oy verdiğin kişi oyundan çıktı. Yeniden seç.',
