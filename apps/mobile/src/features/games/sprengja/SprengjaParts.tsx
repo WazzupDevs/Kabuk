@@ -1,15 +1,7 @@
 import { upperTr } from '@shared/trText.ts';
 import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
-import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
@@ -20,15 +12,13 @@ import { Sheet } from '@/components/Sheet';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { KROT } from '@/theme/krot';
-import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
+import { RISO as R } from '@/theme/riso';
 import { SPRENGJA as S, SPRENGJA_TYPE as ST, type SprengjaRing } from '@/theme/sprengja';
 import { useTheme } from '@/theme/ThemeProvider';
 import { BRAND } from '@/theme/brand';
 import { ScreenStatusBar } from '@/components/StatusScrim';
 
-import { Buddy, Face, type Faces, nameOf, useRisoDeck } from '../riso/RisoParts';
-import type { RisoBuddy } from '../riso/risoArt';
+import { Face, type Faces, nameOf, useRisoDeck } from '../riso/RisoParts';
 import { Eyebrow } from '../sahtekar/KrotParts';
 import { sprengjaArt } from './sprengjaArt';
 import { arcPath, onCircle, type RingSeat, type ScoreRow } from './sprengjaView';
@@ -803,93 +793,6 @@ export function ScenePage({
         {foot}
       </ScrollView>
       <Cover cover={cover} top={top} />
-    </View>
-  );
-}
-
-// The confetti and the two buddies of the end's scene, scaled across with the screen.
-export function EndDecor({ confetti }: { confetti: boolean }) {
-  const { width } = useWindowDimensions();
-  const k = Math.min(1, width / RISO_PANEL_WIDTH);
-  const E = KROT.end;
-  return (
-    <>
-      {confetti
-        ? E.confetti.map((b, i) => (
-            <View
-              key={i}
-              style={{
-                position: 'absolute',
-                left: b.left * k,
-                top: b.top,
-                width: E.bar.width,
-                height: E.bar.height,
-                borderRadius: E.bar.radius,
-                backgroundColor: b.color,
-                transform: [{ rotate: b.turn }],
-              }}
-            />
-          ))
-        : null}
-      {S.endBuddies.map((p) => (
-        <Buddy
-          key={p.buddy}
-          buddy={p.buddy as RisoBuddy}
-          height={p.height * k}
-          style={{
-            bottom: -p.below * k,
-            ...('left' in p ? { left: p.left * k } : { right: p.right * k }),
-          }}
-        />
-      ))}
-    </>
-  );
-}
-
-// The winners (or those left) over the end's scene: one 72 in --signal; two 64, more 56, everyone
-// 48, overlapping and ringed in #141016.
-export function HeroFaces({
-  faces,
-  sids,
-  size,
-  overlap,
-  lead,
-}: {
-  faces: Faces;
-  sids: readonly string[];
-  size: number;
-  overlap: number;
-  // The one winner, in --signal.
-  lead?: boolean;
-}) {
-  const { colors } = useTheme();
-  const H = S.hero;
-  if (lead && sids.length === 1) {
-    return (
-      <View
-        style={{
-          borderRadius: H.one / 2,
-          boxShadow: `0px 0px 0px ${H.oneRing}px ${colors.signal}, ${H.oneShadow}`,
-        }}
-      >
-        <Face faces={faces} sid={sids[0] as string} size={H.one} />
-      </View>
-    );
-  }
-  return (
-    <View style={{ flexDirection: 'row' }}>
-      {sids.map((sid, i) => (
-        <View
-          key={sid}
-          style={{
-            marginLeft: i === 0 ? 0 : -overlap,
-            borderRadius: size / 2,
-            boxShadow: `0px 0px 0px ${H.ring}px ${H.ringInk}`,
-          }}
-        >
-          <Face faces={faces} sid={sid} size={size} />
-        </View>
-      ))}
     </View>
   );
 }

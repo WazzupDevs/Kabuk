@@ -2059,6 +2059,7 @@ export const tr = {
     blasts: (n: number) => `${n} patlama`,
     points: (hits: number) => (hits === 0 ? '0' : `−${hits}`),
     out: 'çıktı',
+    outHits: (n: number) => (n === 0 ? 'Çıktı · hiç' : `Çıktı · ${n} patlama`),
     readyCount: (n: number, of: number) => `Hazır: ${n}/${of}`,
     ready: 'Hazırım',
     results: 'Sonuçları gör',
