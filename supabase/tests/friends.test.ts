@@ -495,6 +495,9 @@ describe('Gönderdiğin (rule 5)', () => {
 
   it('lists every press as waiting and takes one back, the same when sent twice', async () => {
     const { a, b, roomId, historyA } = await metOnce();
+    // A record of the old road ("İstek gönder"); a friend_open one carries "Arkadaş ekle", whose
+    // press "Geri çek" leaves alone.
+    await sql`update public.play_history set friend_open = false where id = ${historyA}`;
     expect(await sentList(a)).toEqual([]);
     await friends(a, { action: 'request', historyId: historyA });
     const before = await sentList(a);
@@ -555,6 +558,26 @@ describe('Gönderdiğin (rule 5)', () => {
     expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
     expect(await incoming(b)).toHaveLength(1);
     expect(await sentList(a)).toHaveLength(1);
+  });
+
+  // Rule 4: one person under a nick (a history row) and under their name (a chat press). Taking
+  // the named press back must not leave a request that an acceptance would tie to the nick.
+  it("takes the pair's request with any of its presses", async () => {
+    const { a, b, historyA } = await metOnce();
+    await friends(a, { action: 'request', historyId: historyA });
+    const [aId, bId] = await Promise.all([userIdOf(a), userIdOf(b)]);
+    const [named] = await sql`
+      insert into public.friend_presses (from_user_id, to_user_id, source, to_name, to_profiled)
+      values (${aId}, ${bId}, 'venue_chat', 'Burak', true)
+      returning id
+    `;
+    expect(await sentList(a)).toHaveLength(2);
+    expect(await friends(a, { action: 'withdraw', sentId: named?.id })).toEqual(OK);
+    expect(await sql`select 1 from public.friend_requests`).toHaveLength(0);
+    expect(await incoming(b)).toEqual([]);
+    // The nick's row goes on waiting, its history button still pressed.
+    expect(await sentList(a)).toHaveLength(1);
+    expect((await history(a))[0]?.friend_action_at).not.toBeNull();
   });
 
   it('drops an accepted request of someone profiled; a swallowed one waits for ever', async () => {

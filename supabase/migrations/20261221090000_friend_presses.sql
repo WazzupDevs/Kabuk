@@ -14,7 +14,7 @@
 --     press on someone who sat anonymously stays (K-75: a friend who sat anonymously is told apart
 --     from nobody).
 --   * "Geri çek" (friends_withdraw) hides the press, clears the history row's "İstek gönder" and
---     deletes the waiting request; a decline stays (it is permanent) and the other side is told
+--     deletes the pair's waiting request; a decline stays (it is permanent) and the other side is told
 --     nothing.
 --   * One new request a day per pair after a withdrawal: a press again within a day of taking a
 --     waiting request back shows as waiting and sends nothing. The chats' daily limit counts the
@@ -60,7 +60,7 @@ create index friend_presses_history_idx on public.friend_presses (history_id);
 delete from public.friend_presses p where private.are_friends(p.from_user_id, p.to_user_id);
 update public.friend_presses p set requested_at = r.created_at
 from public.friend_requests r
-where r.from_user_id = p.from_user_id and r.to_user_id = p.to_user_id;
+where r.from_user_id = p.from_user_id and r.to_user_id = p.to_user_id and r.source = 'venue_chat';
 
 -- "İstek gönder" pressed on play history before this (the old road's rows only: a mutual "Evet"
 -- and a friend_open row press "Arkadaş ekle", which is no request).
@@ -122,6 +122,24 @@ $$;
 revoke all on function private.friend_press(uuid, uuid, text, uuid, text, boolean, text)
   from public, anon, authenticated;
 
+-- The pair's presses, both ways, locked before the pair's requests (rule 10: friend_presses →
+-- friend_requests): make_friends deletes them after the caller has locked a request.
+create function private.lock_presses(a uuid, b uuid)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  select 1 from (
+    select id from public.friend_presses
+    where (from_user_id = a and to_user_id = b) or (from_user_id = b and to_user_id = a)
+    order by id
+    for update
+  ) locked;
+$$;
+
+revoke all on function private.lock_presses(uuid, uuid) from public, anon, authenticated;
+
 -- Whether `from_id` took a waiting request to `to_id` back within the last day (one new request a
 -- day per pair after that: "Geri çek" and a new press never ring the other side again and again).
 create function private.friend_withdrawn_today(from_id uuid, to_id uuid)
@@ -143,7 +161,8 @@ revoke all on function private.friend_withdrawn_today(uuid, uuid)
 
 -- 3. An accepted request leaves the sender's list ----------------------------------------------------
 -- make_friends as in 20261005090000_friends_dm.sql, first removing the pair's profiled presses
--- (friend_presses comes before friend_requests and friendships in the lock order).
+-- (friend_presses comes before friend_requests and friendships in the lock order: a caller that
+-- locks a request first has taken the pair's presses with private.lock_presses).
 create or replace function private.make_friends(a uuid, b uuid, new_source text)
 returns boolean
 language plpgsql
@@ -216,6 +235,7 @@ begin
     return;
   end if;
 
+  perform private.lock_presses(target_user_id, h.other_user_id);
   select status into reverse_status from public.friend_requests
   where from_user_id = h.other_user_id and to_user_id = target_user_id
   for update;
@@ -291,6 +311,7 @@ begin
     return;
   end if;
 
+  perform private.lock_presses(target_user_id, m.sender_user_id);
   select status into reverse_status from public.friend_requests
   where from_user_id = m.sender_user_id and to_user_id = target_user_id
   for update;
@@ -300,9 +321,14 @@ begin
     return;
   end if;
 
-  select count(*) into sent_today from public.friend_presses
-  where from_user_id = target_user_id and source <> 'history'
-    and requested_at > now() - interval '1 day';
+  -- The chats' requests of the last day, the ones taken back among them.
+  select (select count(*) from public.friend_requests
+          where from_user_id = target_user_id and source = 'venue_chat'
+            and created_at > now() - interval '1 day')
+       + (select count(*) from public.friend_presses
+          where from_user_id = target_user_id and source <> 'history'
+            and withdrawn_at > now() - interval '1 day')
+  into sent_today;
   if sent_today >= daily_max
      or private.friend_withdrawn_today(target_user_id, m.sender_user_id) then
     return query select 'ok'::text, null::uuid;
@@ -369,6 +395,7 @@ begin
     return;
   end if;
 
+  perform private.lock_presses(target_user_id, m.sender_user_id);
   select status into reverse_status from public.friend_requests
   where from_user_id = m.sender_user_id and to_user_id = target_user_id
   for update;
@@ -378,9 +405,14 @@ begin
     return;
   end if;
 
-  select count(*) into sent_today from public.friend_presses
-  where from_user_id = target_user_id and source <> 'history'
-    and requested_at > now() - interval '1 day';
+  -- The chats' requests of the last day, the ones taken back among them.
+  select (select count(*) from public.friend_requests
+          where from_user_id = target_user_id and source = 'venue_chat'
+            and created_at > now() - interval '1 day')
+       + (select count(*) from public.friend_presses
+          where from_user_id = target_user_id and source <> 'history'
+            and withdrawn_at > now() - interval '1 day')
+  into sent_today;
   if sent_today >= daily_max
      or private.friend_withdrawn_today(target_user_id, m.sender_user_id) then
     return query select 'ok'::text, null::uuid;
@@ -398,6 +430,44 @@ begin
   end if;
   update public.friend_presses set requested_at = now() where id = press_id;
   return query select 'request_created'::text, m.sender_user_id;
+end;
+$$;
+
+-- friends_respond as in 20261007090000_lock_order.sql, taking the pair's presses before the request.
+create or replace function public.friends_respond(
+  target_user_id uuid,
+  target_request_id uuid,
+  accept boolean
+)
+returns table (outcome text, other_user_id uuid)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  fr public.friend_requests;
+begin
+  select * into fr from public.friend_requests
+  where id = target_request_id and to_user_id = target_user_id and status = 'pending';
+  if fr.id is null or private.is_blocked_between(target_user_id, fr.from_user_id) then
+    raise exception using errcode = 'P0001', message = 'request_not_found';
+  end if;
+  perform private.lock_pair(target_user_id, fr.from_user_id);
+  perform private.lock_presses(target_user_id, fr.from_user_id);
+  select * into fr from public.friend_requests
+  where id = target_request_id and to_user_id = target_user_id and status = 'pending'
+  for update;
+  if fr.id is null then
+    raise exception using errcode = 'P0001', message = 'request_not_found';
+  end if;
+
+  if not accept then
+    update public.friend_requests set status = 'declined', responded_at = now() where id = fr.id;
+    return query select 'declined'::text, null::uuid;
+    return;
+  end if;
+  perform private.make_friends(target_user_id, fr.from_user_id, 'request');
+  return query select 'friendship_created'::text, fr.from_user_id;
 end;
 $$;
 
@@ -453,17 +523,17 @@ begin
   end if;
 
   update public.friend_presses set hidden_at = now() where id = p.id;
-  -- The history row offers "İstek gönder" again.
+  -- The history row offers "İstek gönder" again: the old road's rows only. A mutual "Evet" and a
+  -- friend_open row carry "Arkadaş ekle", whose press goes with its intent (friends_withdraw_add).
   if p.history_id is not null then
     update public.play_history set friend_action_at = null
-    where id = p.history_id and user_id = target_user_id;
+    where id = p.history_id and user_id = target_user_id
+      and not friend_open and not reveal_mutual;
   end if;
-  -- The waiting request goes with the last press that shows it; a decline stays.
-  if p.to_user_id is not null and not exists (
-    select 1 from public.friend_presses o
-    where o.from_user_id = target_user_id and o.to_user_id = p.to_user_id
-      and o.hidden_at is null
-  ) then
+  -- The pair's waiting request goes, whatever other press of the caller's shows the same person:
+  -- keeping it for another row would let an acceptance tie a nick to a name (rule 4). The other
+  -- rows go on waiting. A decline stays.
+  if p.to_user_id is not null then
     delete from public.friend_requests
     where from_user_id = target_user_id and to_user_id = p.to_user_id and status = 'pending'
     returning to_user_id into gone;
