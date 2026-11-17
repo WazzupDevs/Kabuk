@@ -202,10 +202,10 @@ export const KIT_TYPE = {
   // EngelleOnay's "Şikayet de et" row: the words 15/600, the line under them 13/500.
   checkRow: t(600, 15, 20),
   checkRowNote: t(500, 13, 18),
-  // Mekan (tuval Mekan): "Mekandasın" (13, 700); the card's title (26, 800, -0.03em, 1.1) and its
+  // Mekan: "Mekandasın" (yeni arayüz tuvali `.here`: 13, 600); (tuval Mekan) the card's title (26, 800, -0.03em, 1.1) and its
   // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
   // field (14, 600); the invite's name (16, 700) and its button (14, 700).
-  hereTag: t(700, 13, 17),
+  hereTag: t(600, 13, 18),
   cardHero: t(800, 26, 29, -0.03),
   cardHeroNote: t(500, 14.5, 21),
   tableBtn: t(800, 15.5, 20),
@@ -298,8 +298,16 @@ export const KIT_TYPE = {
   // A person's name under their face at Masa (`.mem`: 11/14 600).
   member: t(600, 11, 14),
   wordmark: t(800, 26, 30, -0.04),
-  // iskelet.md → 5.11: Mekan's venue name alone, 23.
-  venueName: t(800, 23, 26.5, -0.025),
+  // Mekan (yeni arayüz tuvali, MekanMasa, MekanKaydir): the venue's name alone (`.vn`, 24, 700,
+  // -0.5 px), small on the scrolled bar (`.sv p`, 17, 700, -0.2 px) and "Mekandasın" under it (12,
+  // 600); a card's title (`.t1`, 18, 700, -0.3 px), its count (`.cn`, 13, 700) and "Açık masalar"
+  // (`.oh p`, 18, 700).
+  venueName: t(700, 24, 30, -0.5 / 24),
+  venueBarName: t(700, 17, 22, -0.2 / 17),
+  venueBarHere: t(600, 12, 16),
+  venueCardTitle: t(700, 18, 24, -0.3 / 18),
+  venueCount: t(700, 13, 18),
+  venueLobbyTitle: t(700, 18, 24),
   av: {
     xs: t(700, 9, 11),
     md: t(700, 15, 19),

@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { EmptyState } from '@/components/EmptyState';
+import { Toast, type ToastMessage } from '@/components/Toast';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
@@ -43,9 +44,10 @@ function endSession(checkInId: string, startedAt: string) {
   });
 }
 
-// Mekan, the home screen (v46 "mekan"; docs/SPEC_V4.md §4.E): the person's card ("Henüz masan yok"
-// and "Masa kur", or its table), the venue chat and the lobby. Without a check-in it sends the
-// person to Keşfet. The card's head opens the table.
+// Mekan, the home screen (yeni arayüz tuvali: MekanMasaYok … MasaBuradayim; docs/SPEC_V4.md §4.E):
+// the person's card ("Henüz masan yok" with "Masa kur" and "Açık masalar", or its table), the venue
+// chat and the lobby; a join request's notice over the tab bar. Without a check-in it sends the
+// person to Keşfet. The card's picture opens the table.
 export default function VenueScreen() {
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -59,6 +61,9 @@ export default function VenueScreen() {
   const now = useNow(30_000);
   const [lobbySheet, setLobbySheet] = useState<LobbySheet | null>(null);
   const [creating, setCreating] = useState(false);
+  const [notice, setNotice] = useState<ToastMessage | null>(null);
+  // Where the lobby starts in the content ("Açık masalar" on the card without a table goes there).
+  const [lobbyAt, setLobbyAt] = useState(0);
   const scroll = useRef<ScrollView>(null);
   const reduceMotion = useReduceMotion();
 
@@ -173,96 +178,118 @@ export default function VenueScreen() {
       (fold.pinTop + fold.tableStrip + gaps.chat + fold.chatStrip + gaps.lobby) -
       (insets.bottom + UNDER_LAST_ROW),
   );
+  // Down to the lobby, its heading just under the pinned strips.
+  const showLobby = () =>
+    scroll.current?.scrollTo({
+      y: Math.max(0, lobbyAt - (fold.tableStrip + gaps.chat + fold.chatStrip + gaps.lobby)),
+      animated: !reduceMotion,
+    });
   return (
-    <Screen
-      edges={['top']}
-      scrollRef={scroll}
-      side={VENUE.side}
-      barSide={VENUE.side}
-      padTop={VENUE.padTop}
-      top={
-        <VenueHead
-          spot={spotName}
-          onSpot={state === 'none' ? () => router.push('/spot') : undefined}
-          identity={checkIn.data.identity}
-          atTable={!!room}
-          minutesLeft={minutesLeft}
-          stayShare={stayShare}
-          onLeave={openLeave}
-          leaving={leave.isPending}
-        />
-      }
-    >
-      {/* The order of Mekan's board (docs/design/aura → Mekan): the venue's name, the person's
+    <View style={{ flex: 1 }}>
+      <Screen
+        edges={['top']}
+        scrollRef={scroll}
+        side={VENUE.side}
+        barSide={VENUE.side}
+        padTop={VENUE.padTop}
+        top={
+          <VenueHead
+            venueName={checkIn.data.venue?.name ?? ''}
+            identity={checkIn.data.identity}
+            atTable={!!room}
+            minutesLeft={minutesLeft}
+            stayShare={stayShare}
+            onLeave={openLeave}
+            leaving={leave.isPending}
+          />
+        }
+      >
+        {/* The order of Mekan's board (docs/design/aura → Mekan): the venue's name, the person's
           scene, the venue chat, the lobby. */}
-      <View>
-        {/* The table's changes reach the card while it is on screen (Realtime and the check). */}
-        {room ? <RoomWatch roomId={room.id} /> : null}
-        <VenueNameRow name={checkIn.data.venue?.name ?? ''} />
-        {leave.isError ? (
-          <T v="fine" color={KIT.danger}>
-            {errorMessage(leave.error)}
-          </T>
-        ) : null}
-      </View>
-      <PinLayer>
-        <View style={{ marginTop: gaps.card }}>
-          <TableCard
-            checkIn={checkIn.data}
-            room={room}
-            state={state}
-            band={band}
-            onCreate={() => setCreating(true)}
-            onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
+        <View>
+          {/* The table's changes reach the card while it is on screen (Realtime and the check). */}
+          {room ? <RoomWatch roomId={room.id} /> : null}
+          <VenueNameRow
+            name={checkIn.data.venue?.name ?? ''}
+            spot={spotName}
+            onSpot={state === 'none' ? () => router.push('/spot') : undefined}
           />
+          {leave.isError ? (
+            <T v="fine" color={KIT.danger}>
+              {errorMessage(leave.error)}
+            </T>
+          ) : null}
         </View>
-      </PinLayer>
-      <PinLayer>
-        <View style={{ marginTop: gaps.chat }}>
-          <VenueChatCard
-            venueId={checkIn.data.venue_id}
-            sessionId={checkIn.data.id}
-            identity={checkIn.data.identity.mode}
-            at={chatAt}
-          />
-        </View>
-      </PinLayer>
-      {/* At least as tall as what is left under the two strips: with few open tables the page ran
+        <PinLayer>
+          <View style={{ marginTop: gaps.card }}>
+            <TableCard
+              checkIn={checkIn.data}
+              room={room}
+              state={state}
+              band={band}
+              onCreate={() => setCreating(true)}
+              onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
+              onShowLobby={showLobby}
+            />
+          </View>
+        </PinLayer>
+        <PinLayer>
+          <View style={{ marginTop: gaps.chat }}>
+            <VenueChatCard
+              venueId={checkIn.data.venue_id}
+              sessionId={checkIn.data.id}
+              identity={checkIn.data.identity.mode}
+              at={chatAt}
+            />
+          </View>
+        </PinLayer>
+        {/* At least as tall as what is left under the two strips: with few open tables the page ran
           out of scroll before the table card had folded, and stopped half folded with its buttons
           cut at its foot (docs/denetim/pano-fark-2026-11.md → PF-78). */}
-      <View style={{ marginTop: gaps.lobby, minHeight: lobbyRoom }}>
-        <Lobby
-          venueId={checkIn.data.venue_id}
-          sessionId={checkIn.data.id}
-          since={checkIn.data.created_at}
-          mySpotId={checkIn.data.spot_id}
-          venueHasSpots={venueHasSpots}
-          state={state}
-          roomId={room?.id ?? null}
-          myPhones={room?.phones ?? 1}
-          needsPhoto={needsPhoto}
-        />
-        {lobbySheet && room && state === 'private' ? (
-          <OpenLobbySheet
-            onClose={() => setLobbySheet(null)}
-            // Opened from further down the screen, the card's new "Lobide açık" is scrolled away.
-            onOpened={() => scroll.current?.scrollTo({ y: 0, animated: !reduceMotion })}
-            roomId={room.id}
+        <View
+          style={{ marginTop: gaps.lobby, minHeight: lobbyRoom }}
+          onLayout={(e) => setLobbyAt(e.nativeEvent.layout.y)}
+        >
+          <Lobby
             venueId={checkIn.data.venue_id}
-            intent={lobbySheet.intent}
-            gameTag={lobbySheet.gameTag}
+            sessionId={checkIn.data.id}
+            since={checkIn.data.created_at}
+            mySpotId={checkIn.data.spot_id}
+            venueHasSpots={venueHasSpots}
+            state={state}
+            roomId={room?.id ?? null}
+            myPhones={room?.phones ?? 1}
+            needsPhoto={needsPhoto}
+            onNotice={setNotice}
           />
-        ) : null}
-        {creating && state === 'none' ? (
-          <CreateTableSheet
-            onClose={() => setCreating(false)}
-            venueId={checkIn.data.venue_id}
-            usedIcons={usedIcons}
-            anonymous={anonymous}
-          />
-        ) : null}
-      </View>
-    </Screen>
+          {lobbySheet && room && state === 'private' ? (
+            <OpenLobbySheet
+              onClose={() => setLobbySheet(null)}
+              // Opened from further down the screen, the card's new "Lobide açık" is scrolled away.
+              onOpened={() => scroll.current?.scrollTo({ y: 0, animated: !reduceMotion })}
+              roomId={room.id}
+              venueId={checkIn.data.venue_id}
+              intent={lobbySheet.intent}
+              gameTag={lobbySheet.gameTag}
+            />
+          ) : null}
+          {creating && state === 'none' ? (
+            <CreateTableSheet
+              onClose={() => setCreating(false)}
+              venueId={checkIn.data.venue_id}
+              usedIcons={usedIcons}
+              anonymous={anonymous}
+            />
+          ) : null}
+        </View>
+      </Screen>
+      {/* The request's notice 16 over the tab bar (MasaIstekBekliyor `.snk`). */}
+      <Toast
+        message={notice}
+        bottom={insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height + VENUE.notice.above}
+        testID="lobby-notice"
+      />
+    </View>
   );
 }
 

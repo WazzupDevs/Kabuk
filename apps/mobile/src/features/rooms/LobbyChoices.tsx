@@ -1,7 +1,7 @@
 import { CONCEPTS, type Concept, type Intent, INTENTS } from '@shared/rooms.ts';
 import { ScrollView, View } from 'react-native';
 
-import { Chip, T } from '@/aura/kit';
+import { Chip, T, useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 
@@ -20,11 +20,18 @@ export function LobbyChoices({
   onIntent: (next: Intent | null) => void;
   onTag: (next: Concept | null) => void;
 }) {
+  const { c } = useKit();
   const hint =
     intent === 'game' ? tr.rooms.gameTagHint : intent ? tr.rooms.intentHint[intent] : null;
   return (
     <View style={{ gap: KIT.size.chipsGap }}>
-      <T v="eyebrow">{tr.rooms.intentLabel}</T>
+      {/* "Niyetin", its "· isteğe bağlı" quieter (MekanLobiAc `.lb`). */}
+      <T v="kesfetSort" ink>
+        {tr.rooms.intentLabel}{' '}
+        <T v="kesfetSub" color={c.muted}>
+          {tr.rooms.intentOptional}
+        </T>
+      </T>
       <View style={ROW}>
         {INTENTS.map((v) => (
           <Chip
