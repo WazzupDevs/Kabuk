@@ -1,7 +1,7 @@
 import { upperTr } from '@shared/trText.ts';
 import { Image } from 'expo-image';
 import { type ReactNode } from 'react';
-import { Text, useWindowDimensions, View } from 'react-native';
+import { PixelRatio, Text, useWindowDimensions, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Round, T, useKit } from '@/aura/kit';
@@ -29,14 +29,19 @@ export function KibritHead({
   title,
   line,
   right,
+  timer,
 }: {
   close: BarClose;
   title: string;
   line?: string;
   right?: ReactNode;
+  // The timer: beside the title, or under the head when the width or the text size is short.
+  timer?: ReactNode;
 }) {
+  const { width } = useWindowDimensions();
+  const under = !!timer && (width < B.head.narrow || PixelRatio.getFontScale() > B.head.bigText);
   const H = B.head;
-  return (
+  const row = (
     <View
       style={{
         flexDirection: 'row',
@@ -63,7 +68,15 @@ export function KibritHead({
           </T>
         ) : null}
       </View>
+      {under ? null : timer}
       {right}
+    </View>
+  );
+  if (!under) return row;
+  return (
+    <View>
+      {row}
+      <View style={{ alignItems: 'flex-end', marginTop: H.gap }}>{timer}</View>
     </View>
   );
 }

@@ -209,6 +209,9 @@ export const KIBRIT_BOARD = {
     pillPadRight: 12,
     pillIcon: 22,
     pillGap: 4,
+    // Under this width or past this text scale the timer goes under the head.
+    narrow: 360,
+    bigText: 1,
   },
   // The stage (`.gs`): 12 between the card, the grid and the hint.
   gap: 12,

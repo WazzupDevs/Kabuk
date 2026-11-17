@@ -316,6 +316,7 @@ type Shared = {
   top: ReactNode;
   // The close the board's own head (Gizli oy) puts where `top` has it.
   exit: BarClose;
+  onChat: () => void;
   active: string[];
   playing: boolean;
   view: ViewHandle;
@@ -390,6 +391,7 @@ function Play({
       onPress: onExit,
       testID: 'kibrit-exit',
     },
+    onChat,
     active,
     playing: active.includes(me),
     view,
@@ -1153,7 +1155,8 @@ function VoteScreen(shared: Shared) {
             close={shared.exit}
             title={tr.kibrit.voteTitle}
             line={tr.games.turn(round, state.rounds)}
-            right={<TimerPill clock={clock} />}
+            timer={<TimerPill clock={clock} />}
+            right={<ChatRound onPress={shared.onChat} />}
           />
         }
         actions={
