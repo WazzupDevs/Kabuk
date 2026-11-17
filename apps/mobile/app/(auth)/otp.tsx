@@ -58,6 +58,7 @@ export default function OtpStep() {
   return (
     <SignupStep
       step="code"
+      picture="code"
       testID="signup-code"
       title={tr.auth.otpTitle}
       body={

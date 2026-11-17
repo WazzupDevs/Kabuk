@@ -44,6 +44,7 @@ export default function PhoneStep() {
   return (
     <SignupStep
       step="phone"
+      picture="phone"
       testID="signup-phone"
       title={tr.auth.phoneTitle}
       onBack={() => router.back()}

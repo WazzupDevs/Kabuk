@@ -36,6 +36,7 @@ export default function NameStep() {
   return (
     <SignupStep
       step="name"
+      picture="name"
       testID="signup-name-step"
       title={tr.signup.nameTitle}
       body={tr.signup.nameBody}

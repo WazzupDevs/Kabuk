@@ -57,6 +57,7 @@ export default function PhotoStep() {
       <Stack.Screen options={{ gestureEnabled: false }} />
       <SignupStep
         step="photo"
+        picture="photo"
         testID="signup-photo-step"
         title={tr.signup.photoTitle}
         body={tr.signup.photoBody}

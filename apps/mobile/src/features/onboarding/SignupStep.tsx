@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
 
 import { Btn, Round } from '@/aura/kit';
 import { Screen } from '@/components/Screen';
@@ -8,6 +8,7 @@ import { SIGNUP_STEPS, SIGNUP_TOTAL, type SignupStep as Step, stepNumber } from 
 import { SIGNUP, SIGNUP_TYPE } from '@/theme/signup';
 
 import { ErrorLine } from './ErrorLine';
+import { SIGNUP_PICTURES, type SignupPicture } from './pictures';
 import { SIGNUP_FONT_SCALE, useSignupLook } from './look';
 
 type Action = {
@@ -22,6 +23,8 @@ type Props = {
   // The step this screen is (its bar and "n/7"); none for a one-time question outside sign-up
   // (the gender gate, new consents, under 18).
   step?: Step;
+  // The riso picture over the title.
+  picture?: SignupPicture;
   title: string;
   // The line under the title (`.kd`); a node where a part of it is a link (the code's number).
   body?: ReactNode;
@@ -43,6 +46,7 @@ type Props = {
 // a screen reader hears "Adım 2/7".
 export function SignupStep({
   step,
+  picture,
   title,
   body,
   onBack,
@@ -145,6 +149,20 @@ export function SignupStep({
       padTop={topRow ? SIGNUP.contentTop : SIGNUP.contentTopBare}
     >
       <View testID={testID} collapsable={false} style={{ flexGrow: 1 }}>
+        {picture ? (
+          <Image
+            source={SIGNUP_PICTURES[picture]}
+            accessible={false}
+            fadeDuration={0}
+            resizeMode="contain"
+            style={{
+              width: SIGNUP.picture.width,
+              height: SIGNUP.picture.height,
+              marginLeft: SIGNUP.picture.left,
+              marginBottom: SIGNUP.picture.bottom,
+            }}
+          />
+        ) : null}
         <Text
           accessibilityRole="header"
           maxFontSizeMultiplier={SIGNUP_FONT_SCALE}

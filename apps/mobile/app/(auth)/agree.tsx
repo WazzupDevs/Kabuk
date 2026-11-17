@@ -21,6 +21,7 @@ export default function ConsentsStep() {
   return (
     <SignupStep
       step="consents"
+      picture="consents"
       testID="signup-consents"
       title={tr.consents.title}
       body={tr.consents.body}

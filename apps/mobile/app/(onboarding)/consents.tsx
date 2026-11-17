@@ -90,6 +90,7 @@ export default function ConsentsAfterCode() {
   return (
     <SignupStep
       step={hasProfile ? undefined : 'consents'}
+      picture={hasProfile ? 'reconsent' : 'consents'}
       testID="signup-consents"
       title={tr.consents.title}
       body={hasProfile ? tr.consents.outdated : tr.consents.body}

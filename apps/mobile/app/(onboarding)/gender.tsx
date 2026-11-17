@@ -43,6 +43,7 @@ export default function GenderStep() {
   return (
     <SignupStep
       step={signingUp ? 'gender' : undefined}
+      picture="gender"
       testID="signup-gender-step"
       title={signingUp ? tr.signup.genderLabel : tr.signup.genderGateTitle}
       body={signingUp ? undefined : tr.signup.genderGateBody}

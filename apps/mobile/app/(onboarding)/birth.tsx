@@ -69,6 +69,7 @@ export default function BirthStep() {
   return (
     <SignupStep
       step="birth"
+      picture="birth"
       testID="signup-birth-step"
       title={tr.signup.birthTitle}
       onBack={() => router.back()}

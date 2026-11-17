@@ -10,6 +10,7 @@ export function UnderAge() {
   return (
     <SignupStep
       testID="under-age"
+      picture="birth"
       title={tr.underAge.title}
       body={tr.underAge.body}
       action={{

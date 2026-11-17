@@ -48,6 +48,8 @@ export const SIGNUP = {
   labelGap: 8,
   noteTop: 10,
   fieldTop: 18,
+  // The step's picture (`.vg`: 120 × 98, 6 out to the left, 10 over the title).
+  picture: { width: 120, height: 98, left: -6, bottom: 10 },
   // The foot (`.kft`: the buttons 56 high, 8 apart; its note 12 / 500 above or under them).
   footGap: 8,
   // A field (`.fl`): 56 high, 18 round, 18 in, the line 1 px (focused 2); the prefix with its
