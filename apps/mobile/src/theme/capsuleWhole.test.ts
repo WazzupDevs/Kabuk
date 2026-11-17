@@ -45,9 +45,9 @@ const through = (m: number[], x: number, y: number) => [
 ];
 
 describe('the whole drawing on one canvas', () => {
-  it('is off by default until the blank capsule is fixed, and the panel sets either way', () => {
-    expect(CAPSULE_SKIA_WHOLE).toBe(false);
-    expect(capsuleWholeOn('android', null)).toBe(false);
+  it('is on by default on Android only, and the panel sets either way', () => {
+    expect(CAPSULE_SKIA_WHOLE).toBe(true);
+    expect(capsuleWholeOn('android', null)).toBe(true);
     expect(capsuleWholeOn('ios', null)).toBe(false);
     expect(capsuleWholeOn('android', false)).toBe(false);
     expect(capsuleWholeOn('android', true)).toBe(true);
