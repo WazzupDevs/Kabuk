@@ -13,6 +13,7 @@ import Animated, {
 import { LayeredLook, snapTo } from '@/components/LayeredLook';
 import { RingStage } from '@/components/RingLook';
 import { AppIcon } from '@/components/AppIcon';
+import type { WholePainter } from '@/components/FxSvg';
 import { useLoopActive } from '@/components/Loader';
 import { JUMP, sample } from '@/features/capsule/motion';
 import { haptic } from '@/lib/haptics';
@@ -54,10 +55,13 @@ export function LivingLook({
   accessibilityLabel,
   inset = 0,
   ground = true,
+  whole,
 }: {
   look: string;
   size: number;
   accessibilityLabel?: string;
+  // The capsule's layers each on one canvas (LayeredLook → whole; the profile ticket's).
+  whole?: WholePainter;
   // The capsule stands in its ring with its head and accessories free above it (components/
   // RingLook.tsx; the owner's call, 7 Kasım): `inset` a ring drawn round the box (Av's edge),
   // `ground` the ring's colour drawn here (off where the ring has it).
@@ -165,6 +169,7 @@ export function LivingLook({
               blink={blink}
               lookX={eyeX}
               lookY={eyeY}
+              whole={whole}
             />
           </Animated.View>
         )}

@@ -289,6 +289,16 @@ export function capsuleWholeOn(os: string, lab: boolean | null): boolean {
   return lab ?? (CAPSULE_SKIA_WHOLE && capsuleSkiaOn(os));
 }
 
+// The profile ticket's capsule on one canvas (docs/perf/akicilik-denetimi.md → 4.13 D: the ticket
+// made some 6300 native views of the capsule's SVG layers and their pictures in turn, and the first
+// opening's longest frame of 268 ms was theirs). Android only, as the whole drawing; Çizim
+// ölçümü's `biletsvg` (`labSvg`) puts the pictures back on a preview build. Off: set this false.
+export const TICKET_SKIA_WHOLE = true;
+
+export function ticketWholeOn(os: string, labSvg: boolean): boolean {
+  return !labSvg && TICKET_SKIA_WHOLE && capsuleSkiaOn(os);
+}
+
 // The whole drawing's pictures copied to the GPU ahead, on the UI thread, one a frame, before the
 // stage shows them (capsule/textureQueue.ts; docs/decisions/skia-build-plani.md → "Dokunun önceden
 // yüklenmesi"): a canvas copied a new look's pictures in its first frame (docs/perf/

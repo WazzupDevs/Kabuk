@@ -2314,6 +2314,7 @@ export const tr = {
         karo: 'Karolar SVG',
         kapak: 'Profil kapağı',
         bilet: 'Kapsül bileti',
+        biletsvg: 'Bilet kapsülü SVG',
       },
       chatParts: 'Sohbette kapat',
       hold: 'Kapanınca koru',
