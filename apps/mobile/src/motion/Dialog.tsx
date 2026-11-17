@@ -150,7 +150,9 @@ export function Dialog({
             alignItems: 'center',
           }}
         >
-          {options.icon ? (
+          {options.face ? (
+            <View style={{ marginBottom: L.dialogTitleGap }}>{options.face}</View>
+          ) : options.icon ? (
             <View
               style={[
                 styles.disc,

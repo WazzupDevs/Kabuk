@@ -98,6 +98,9 @@ appId: app.kabuk.mobile
       id: table-people
     timeout: 10000
 # The owner's "Masadan ayrıl" sits in the end sheet, under "Masayı bitir" (§4.C).
+# Masa: "Masayı bitir" and "Masadan ayrıl" are in the ⋮ menu (yeni arayüz, MasaSecenek).
+- tapOn:
+    id: table-menu
 - tapOn:
     id: table-end-open
 - extendedWaitUntil:
@@ -141,8 +144,12 @@ appId: app.kabuk.mobile
     direction: DOWN
     visibilityPercentage: 50
     timeout: 10000
+# Masa: "Masayı bitir" and "Masadan ayrıl" are in the ⋮ menu (yeni arayüz, MasaSecenek).
+- tapOn:
+    id: table-menu
 - assertVisible:
     id: table-leave-open
+- back
 - runScript:
     file: ../scripts/bot.js
     env:

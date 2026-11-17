@@ -2,8 +2,8 @@
 // MekanMasaYok, MekanMasa, MekanLobiAc, MekanMasaDolu, MekanKaydir, MasaIstekBekliyor,
 // MasaIstekMusaitDegil, MasaBuradayim; 390 × 844, the status bar 47 high). The main and small
 // buttons' heights (2.1), the top round (46), the bar band, the fold's 104, 72, 52, 54, 170 and 70
-// (AURA.venueCollapse) and MOTION stay iskelet's. The venue chat's card and the invite sheet keep
-// the earlier board's values (chat, invite, chatCard).
+// (AURA.venueCollapse) and MOTION stay iskelet's. The venue chat's card keeps the earlier board's
+// values (chat, chatCard); Masana davet et is theme/room.ts's.
 import { EXPLORE, type ExploreFace } from './explore';
 
 export const VENUE = {
@@ -109,25 +109,6 @@ export const VENUE = {
   },
   // The request's notice over the tab bar (`.snk`): 16 above it, its loader 22.
   notice: { above: 16, lead: 22 },
-  // Masana davet et: the sheet 16 inside, 20 under its card, the title 12 under the handle and 6 in;
-  // the note 6 under the title's row, 6 in, 14 over the card; the card 26 round, 4 / 6 inside; a
-  // row 9 / 8 inside, 12 between its parts, the face 48; the hairline 70 in; the button 11 in at its
-  // left and 14 at its right, 5 between its plus (14) and its words; "Gönderildi" 8 / 12 in, its
-  // ring 22 (3 wide), 6 from the words.
-  invite: {
-    padX: 16,
-    padBottom: 20,
-    headTop: 12,
-    titleIn: 6,
-    closeIn: 0,
-    noteTop: 6,
-    noteIn: 6,
-    noteBottom: 14,
-    card: { radius: 26, padX: 6, padY: 4 },
-    row: { padX: 8, padY: 9, gap: 12, face: 48, hairIn: 70 },
-    send: { padLeft: 11, padRight: 14, gap: 5, icon: 14 },
-    sent: { padLeft: 8, padRight: 12, gap: 6, ring: 22, line: 3 },
-  },
   // The menu's first row: 14 / 16 / 12 inside, 8 between its line and its bar; the bar 5 high.
   stay: { padTop: 14, padX: 16, padBottom: 12, gap: 8, bar: 5 },
   light: {
@@ -168,21 +149,6 @@ export const VENUE = {
     field: 'rgba(23, 131, 77, 0.08)',
     hint: '#6B7E71',
     count: '#4A6550',
-    // Masana davet et.
-    sheetGround:
-      'radial-gradient(80% 30% at 100% 0%, #F8E3EB 0%, rgba(248, 227, 235, 0) 70%), radial-gradient(80% 30% at 0% 0%, #DDF1E5 0%, rgba(221, 241, 229, 0) 70%)',
-    sheetBase: '#F5F8F6',
-    inviteNote: '#4A6550',
-    inviteCard: {
-      fill: 'rgba(255, 255, 255, 0.92)',
-      edge: '#FFFFFF',
-      inset: '',
-      shadow: '0px 1px 2px rgba(3, 27, 11, 0.04), 0px 12px 30px rgba(3, 27, 11, 0.06)',
-    } satisfies ExploreFace,
-    // The face 48 with no ring, its soft shadow (Av → board).
-    inviteFace: { ring: 0, ringColor: 'transparent', shadow: '0px 2px 6px rgba(3, 27, 11, 0.14)' },
-    hair: '#E6EDE8',
-    sent: { fill: 'rgba(14, 135, 69, 0.10)', ink: '#0B5E30', track: 'rgba(14, 135, 69, 0.18)' },
     // The menu's first row.
     stayLabel: '#4A6550',
     stayValue: '#031B0B',
@@ -217,22 +183,6 @@ export const VENUE = {
     field: 'rgba(61, 220, 132, 0.10)',
     hint: '#A3AEA8',
     count: '#A3AEA8',
-    sheetGround: '',
-    sheetBase: '#121614',
-    inviteNote: '#A3AEA8',
-    inviteCard: {
-      fill: '#1B211F',
-      edge: 'rgba(255, 255, 255, 0.09)',
-      inset: '',
-      shadow: '',
-    } satisfies ExploreFace,
-    inviteFace: { ring: 0, ringColor: 'transparent', shadow: '' },
-    hair: 'rgba(255, 255, 255, 0.07)',
-    sent: {
-      fill: 'rgba(61, 220, 132, 0.14)',
-      ink: '#93EBB9',
-      track: 'rgba(61, 220, 132, 0.22)',
-    },
     stayLabel: '#A3AEA8',
     stayValue: '#EEF3F0',
     stayTrack: 'rgba(255, 255, 255, 0.08)',

@@ -59,6 +59,8 @@ Panolar statiktir; aşağıdakiler tasarımdan istendi (16 Kasım), tahmin edilm
 - Mesajlar menüsünden "Profilini gör" (arkadaşlar arası, uygulanabilir).
 
 "ÖNERİ" etiketli öğeler: Profilini gör, Sohbeti sil, Düzenle, mekan sohbetinden açılan profildeki ortak arkadaş kartı ve "Mekan sohbetinden · <üniversite>" satırı (yerleşke söylenmemeli, kural 4; `guvenlik` denetimi).
+
 - Kayıt: panodaki "Onayla ve devam et" düğmesi ve "okuyup onaylaman" notu alınmadı; KVKK aydınlatma metni okunur, onaylanmaz (yasal neden): düğme "Devam et", not "İkisini de okuman gerekir."
 
+- Masa (panolar `Masa`, `MasaSecenek`, `Masadakiler`, `MasaAt`, `MasaDavet`, 17 Kasım): ⋮ menüsündeki kişi sayısı ("12 kişi") ve "Sohbet kuralları" alınmadı (davranışı tanımsız); oyun kartındaki oynat rozeti alınmadı, kartın köşe etiketi (oy, "Aç", "Yakında", kişi sınırı) kalır; kartın 40'lık düğmeleri kitin küçük düğmesiyle (36); "At" onayı açılınca Masadakiler kapanır (tek açık kural, pano ikisini üst üste çiziyor); Masadakiler 320 dp ve en büyük yazıda tek sütun.
 - Hediye paketi yırtma (pano `HediyeYirt`): pano "Atla" düğmesi çiziyor, 8 Kasım kararı "Atla yok"; uygulanmadı, proje sahibinin kararı bekleniyor.

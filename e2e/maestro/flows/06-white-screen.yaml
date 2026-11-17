@@ -70,8 +70,12 @@ appId: app.kabuk.mobile
       id: table-top
     timeout: 20000
 # A person at the table, not its owner: "Masadan ayrıl" and no owner's bar.
+# Masa: "Masayı bitir" and "Masadan ayrıl" are in the ⋮ menu (yeni arayüz, MasaSecenek).
+- tapOn:
+    id: table-menu
 - assertVisible:
     id: table-leave-open
+- back
 - assertNotVisible:
     id: table-invite
 - takeScreenshot: 16-table-person

@@ -2,13 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { BackHandler, Pressable, View } from 'react-native';
-import Reanimated, { useAnimatedStyle } from 'react-native-reanimated';
+import { MAX_TABLE_PHONES } from '@shared/tables.ts';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
+import { type MenuAnchor, measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
@@ -28,8 +29,7 @@ import { conceptOf, GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/Po
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
-import { InviteSheet } from '@/features/rooms/InviteSheet';
-import { TableScene, useDrawerScroll } from '@/features/rooms/TableScene';
+import { TableScene } from '@/features/rooms/TableScene';
 import { TestBots } from '@/features/rooms/TestBots';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
@@ -52,16 +52,18 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { confirm, runDialogAction, useDialogRun, useOverlayOpenId } from '@/lib/overlayStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
-import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
+import { ROOM } from '@/theme/room';
 import { SPACING } from '@/theme/tokens';
+import { VENUE } from '@/theme/venue';
 import { AuraBackground, AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T } from '@/aura/kit';
 import { FxMoves } from '@/components/FxSvg';
 
-// The table (docs/design/aura → Masa; docs/SPEC_V4.md §4.E, §4.F): the bar (back; the chat, the
-// owner's "Davet et", Masadakiler, the owner's "Bitir" or a participant's "Ayrıl"), the table's card
-// (its people, name, headcount and lobby state, the owner's "Lobiye aç" or "Lobiden çek"), then the
+// The table (yeni arayüz tuvali, Masa, MasaSecenek; docs/SPEC_V4.md §4.E, §4.F): the bar (back,
+// the table's name with its seats and lobby state, the chat, the ⋮ menu: Masadakiler, the owner's
+// "Masanın adını değiştir" and "Masayı bitir", a participant's "Masadan ayrıl"), the table's card
+// (its picture, its people, the owner's "Lobiye aç" or "Lobiden çek" and "Davet et"), then the
 // games. The table's end is Masa bitti; a participant who leaves sees "Masadan ayrıldın".
 // The accessories move here (the owner's call, 7 Kasım; components/FxSvg.tsx → FxMoves).
 type Row = Parameters<typeof vampirMode>[0];
@@ -91,11 +93,10 @@ export default function TableScreen() {
 
 function TableScreenBody() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { scheme } = useTheme();
+  const { scheme, colors } = useTheme();
   const insets = useSafeAreaInsets();
   // The ground's height, not the window's (the band at the foot lines up with it; 3 Kasım, 2.1).
   const { height } = useGroundSize();
-  const narrow = useNarrow();
   // The head stays put over the games and nothing in it folds (the owner's call, 29 Ekim): the
   // games start under its height and scroll under it.
   const [headHeight, setHeadHeight] = useState(0);
@@ -112,26 +113,12 @@ function TableScreenBody() {
     id,
     (people.data ?? []).map((p) => p.sessionId).join(','),
   ).data;
-  const [sheet, setSheet] = useState<'people' | 'lobby' | 'invite' | 'icon' | null>(null);
+  const [sheet, setSheet] = useState<'people' | 'lobby' | 'icon' | null>(null);
+  // The ⋮ menu (MasaSecenek), grown out of its button (iskelet.md → 3.5).
+  const [menu, setMenu] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null);
+  const moreRef = useRef<View>(null);
   useMarkTableScreen();
-  // The people's drawer on the table's card (MasaCekmece): closed when the screen opens; back and
-  // a scroll close it (CLAUDE.md → Ekran davranışı), a scroll under the finger (useDrawerScroll).
-  const [drawer, setDrawer] = useState(false);
-  const drawerScroll = useDrawerScroll(drawer, setDrawer);
-  // The games move down as the drawer opens, so it does not lie over them (the owner's report, 10
-  // Kasım). On the UI thread: a spacer as tall as the drawer's opening, no render per frame.
-  const { progress: drawerProgress, travel: drawerTravel } = drawerScroll;
-  const drawerSpace = useAnimatedStyle(() => ({
-    height: Math.max(0, drawerTravel.get() * drawerProgress.get()),
-  }));
-  useEffect(() => {
-    if (!drawer) return undefined;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setDrawer(false);
-      return true;
-    });
-    return () => sub.remove();
-  }, [drawer]);
   const hiddenGame = useVampirHidden((s) => s.hidden[id]);
   // The votes are on the table's posters only: while a game has the screen they are not read (each
   // move of the game changes the table's row and asked for them again; A-24). Back at the table
@@ -390,120 +377,98 @@ function TableScreenBody() {
 
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
+  const full = r.phones >= MAX_TABLE_PHONES;
+  const seats = tr.table.seats(r.phones, MAX_TABLE_PHONES);
+  const openMenu = () =>
+    measureMenuAnchor(moreRef.current, (at) => {
+      setMenuAnchor(at);
+      setMenu(true);
+    });
 
-  // U22: the bar's rounds and "Bitir" 44.
-  const barSide = KIT.table.bar;
-  // The bar (docs/design/aura → Masa): back at the left; at the right the chat with its unread
-  // count (its own screen, the owner's call, 28 Ekim), the owner's "Davet et", Masadakiler and the
-  // owner's "Bitir", a participant's "Ayrıl", both danger sm (U22).
+  // The bar (yeni arayüz tuvali, Masa `.mtop`): back at the left, the table's pill (its name and
+  // "7/12 · Lobide açık"; the owner changes the table's card and name from it, the owner's call, 29
+  // Ekim), the chat with its unread count (its own screen, the owner's call, 28 Ekim) and the ⋮
+  // menu (MasaSecenek).
   const bar = (
     <View
       testID="table-top"
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: KIT.size.side,
-        paddingTop: BAR_TOP,
+        gap: ROOM.bar.gap,
+        paddingHorizontal: ROOM.bar.side,
+        paddingTop: ROOM.bar.top,
       }}
     >
       <Round
-        side={barSide}
         icon="back"
         label={tr.table.back}
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
       />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          // Aura v75 MasaDar: 6 apart when narrow, so the bar stays one line.
-          gap: narrow ? NARROW_BAR_GAP : KIT.size.chipsGap,
-        }}
-      >
-        <Round
-          side={barSide}
-          icon="chat"
-          label={tr.table.chatOpen(unread)}
-          badge={unread}
-          testID="table-chat"
-          onPress={() => router.push({ pathname: '/room-chat/[id]', params: { id } })}
-        />
-        {owner ? (
-          <Round
-            side={barSide}
-            icon="invite"
-            label={tr.venue.invite}
-            testID="table-invite"
-            onPress={() => setSheet('invite')}
-          />
-        ) : null}
-        <Round
-          side={barSide}
-          icon="list"
-          label={tr.table.peopleTitle}
-          testID="table-people-open"
-          onPress={() => setSheet('people')}
-        />
-        <Btn
-          bar={barSide}
-          variant="danger"
-          testID={owner ? 'table-end-open' : 'table-leave-open'}
-          label={owner ? tr.table.end : tr.table.leaveShort}
-          onPress={owner ? openEnd : openLeave}
-        />
-      </View>
-    </View>
-  );
-
-  // U22: the table's name and its line ("12 kişi · Lobide açık") at the left, the owner's lobby
-  // button at the right ("Lobiye aç" opens its sheet, "Lobiden çek" takes the table out). The owner
-  // changes the table's card and name from its name (the owner's call, 29 Ekim).
-  const info = (
-    // Narrow (Aura v75 MasaDar), the lobby button goes under the name when they do not fit, 10 apart.
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: narrow ? NARROW_INFO_GAP : KIT.size.chipsGap,
-        flexWrap: narrow ? 'wrap' : 'nowrap',
-      }}
-    >
       <Pressable
         testID="table-icon"
         accessibilityRole={owner ? 'button' : undefined}
         accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
         disabled={!owner}
         onPress={() => setSheet('icon')}
-        style={
-          narrow
-            ? { flexGrow: 1, flexShrink: 1, gap: KIT.table.lineGap }
-            : { flex: 1, gap: KIT.table.lineGap }
-        }
+        style={{ flex: 1, minWidth: 0 }}
       >
-        <T v="title" testID="table-title">
-          {r.name ?? ''}
-        </T>
-        <T v="fine">
-          {tr.table.status(
-            tr.venue.people(r.phones),
-            inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
-          )}
-        </T>
+        <Glass
+          radius={ROOM.bar.pill / 2}
+          face={VENUE[scheme].card}
+          style={{
+            minHeight: ROOM.bar.pill,
+            paddingHorizontal: ROOM.bar.pillPadX,
+            justifyContent: 'center',
+          }}
+        >
+          <T v="roomBarName" ink lines={1} fit testID="table-title">
+            {r.name ?? ''}
+          </T>
+          <T v="roomBarLine" lines={1} fit>
+            {tr.table.status(seats, inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff)}
+          </T>
+        </Glass>
       </Pressable>
-      {owner ? (
-        <Btn
-          sm
-          variant={inLobby ? 'glassy' : 'primary'}
-          icon={inLobby ? 'close' : undefined}
-          testID={inLobby ? 'table-withdraw' : 'table-lobby'}
-          label={inLobby ? tr.venue.withdraw : tr.venue.openLobby}
-          loading={withdraw.isPending}
-          onPress={() => (inLobby ? withdraw.mutate() : setSheet('lobby'))}
-        />
-      ) : null}
+      <Round
+        icon="chat"
+        label={tr.table.chatOpen(unread)}
+        badge={unread}
+        testID="table-chat"
+        onPress={() => router.push({ pathname: '/room-chat/[id]', params: { id } })}
+      />
+      <View ref={moreRef} collapsable={false}>
+        <Round icon="moreV" label={tr.table.menu} testID="table-menu" onPress={openMenu} />
+      </View>
     </View>
   );
+
+  // The owner's buttons on the card (`.tb2`): "Lobiye aç" opens its sheet, "Lobiden çek" takes the
+  // table out; "Davet et" opens Masana davet et, off once the table is full.
+  const actions = owner ? (
+    <>
+      <Btn
+        sm
+        variant="glassy"
+        icon={inLobby ? 'close' : 'list'}
+        testID={inLobby ? 'table-withdraw' : 'table-lobby'}
+        label={inLobby ? tr.venue.withdraw : tr.venue.openLobby}
+        loading={withdraw.isPending}
+        onPress={() => (inLobby ? withdraw.mutate() : setSheet('lobby'))}
+        style={EQUAL}
+      />
+      <Btn
+        sm
+        variant="glassy"
+        icon="invite"
+        testID="table-invite"
+        label={tr.venue.invite}
+        disabled={full}
+        onPress={() => router.push({ pathname: '/room-invite/[id]', params: { id } })}
+        style={EQUAL}
+      />
+    </>
+  ) : null;
 
   const failed =
     (withdraw.error ?? end.error ?? openGame.error ?? vote.error) ? (
@@ -568,10 +533,37 @@ function TableScreenBody() {
         visible={sheet === 'people'}
         onClose={() => setSheet(null)}
         roomId={id}
+        tableName={r.name ?? ''}
+        phones={r.phones}
         people={people.data ?? []}
         me={sessionId}
         profiles={profiles}
       />
+      {menuAnchor ? (
+        <Menu anchor={menuAnchor} visible={menu} onClose={() => setMenu(false)}>
+          <MenuItem
+            cap="people"
+            testID="table-menu-people"
+            label={tr.table.peopleTitle}
+            onPress={() => setSheet('people')}
+          />
+          {owner ? (
+            <MenuItem
+              cap="edit"
+              testID="table-menu-rename"
+              label={tr.table.rename}
+              onPress={() => setSheet('icon')}
+            />
+          ) : null}
+          <MenuItem
+            cap={owner ? 'close' : 'logout'}
+            negative
+            testID={owner ? 'table-end-open' : 'table-leave-open'}
+            label={owner ? tr.table.endConfirm : tr.table.leave}
+            onPress={owner ? openEnd : openLeave}
+          />
+        </Menu>
+      ) : null}
       {sheet === 'lobby' ? (
         <OpenLobbySheet
           onClose={() => setSheet(null)}
@@ -587,21 +579,15 @@ function TableScreenBody() {
         venueId={r.venue_id}
         icon={r.icon}
       />
-      <InviteSheet
-        visible={sheet === 'invite'}
-        onClose={() => setSheet(null)}
-        roomId={id}
-        phones={r.phones}
-      />
     </>
   );
 
-  // The head stays (the name, the owner's lobby button and the people's drawer); only the
-  // requests, the note and the game cards scroll, under it (the owner's call, 29 Ekim).
+  // The head stays (the bar and the table's card); only the requests, the note and the games
+  // scroll, under it (the owner's call, 29 Ekim).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
-      <Reanimated.ScrollView
+      <ScrollView
         bounces={false}
         overScrollMode="never"
         showsHorizontalScrollIndicator={false}
@@ -614,10 +600,7 @@ function TableScreenBody() {
           gap: KIT.size.venueGap,
         }}
         showsVerticalScrollIndicator={false}
-        onScroll={drawerScroll.onScroll}
-        scrollEventThrottle={16}
       >
-        <Reanimated.View style={drawerSpace} />
         {owner ? (
           <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
         ) : null}
@@ -630,34 +613,50 @@ function TableScreenBody() {
         {owner ? <TestBots roomId={id} phones={r.phones} /> : null}
         {rejoin}
         {failed}
-        <PosterGrid>
-          {GAME_CARDS.map((g) => (
-            <GameCard
-              key={g.id}
-              id={g.id}
-              art={g.art}
-              testID={`poster-${g.id}`}
-              {...poster(g.id)}
-            />
-          ))}
-        </PosterGrid>
-      </Reanimated.ScrollView>
+        <View>
+          {/* "Oyunlar" and how many (`.gh`). */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'baseline',
+              flexWrap: 'wrap',
+              gap: ROOM.games.gap,
+              marginTop: ROOM.games.top - KIT.size.venueGap,
+              marginBottom: ROOM.games.bottom,
+              marginHorizontal: ROOM.games.x,
+            }}
+          >
+            <T v="roomSection" ink accessibilityRole="header">
+              {tr.table.games}
+            </T>
+            <T v="roomCount" color={colors.muted}>
+              {tr.table.gamesCount(GAME_CARDS.length)}
+            </T>
+          </View>
+          <PosterGrid>
+            {GAME_CARDS.map((g) => (
+              <GameCard
+                key={g.id}
+                id={g.id}
+                art={g.art}
+                testID={`poster-${g.id}`}
+                {...poster(g.id)}
+              />
+            ))}
+          </PosterGrid>
+        </View>
+      </ScrollView>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
         <TableScene
           people={people.data ?? []}
           profiles={profiles}
           me={sessionId}
           icon={r.icon}
+          phones={r.phones}
           inset={insets.top}
-          onPress={() => setSheet('people')}
-          open={drawer}
-          onToggle={() => setDrawer((v) => !v)}
-          // The games move with the drawer on the UI thread (`drawerSpace`): following its height
-          // on the JavaScript side rendered the screen each frame (6 Kasım, round 3).
-          progress={drawerScroll.progress}
-          travel={drawerScroll.travel}
+          onPeople={() => setSheet('people')}
           onRestHeight={(h) => setHeadHeight((prev) => (prev === h ? prev : h))}
-          info={info}
+          actions={actions}
         >
           {bar}
         </TableScene>
@@ -675,9 +674,9 @@ function TableScreenBody() {
   );
 }
 
-// The bar sits this far under the status bar (the board: 60 from the top).
-const BAR_TOP = 16;
 const SOLO_GAP = 6;
+// The owner's two buttons share the card's row equally.
+const EQUAL = { flex: 1 };
 
 // The owner's other way out in "Masayı bitir"'s dialog: the table goes on for the others. It runs
 // as one of the dialog's ways (`runDialogAction`): neither runs while the other is on its way, and
@@ -705,7 +704,3 @@ function OwnerLeave({ leave }: { leave: () => Promise<unknown> }) {
     </View>
   );
 }
-
-// Aura v75 MasaDar (320 dp, the largest text).
-const NARROW_BAR_GAP = 6;
-const NARROW_INFO_GAP = 10;
