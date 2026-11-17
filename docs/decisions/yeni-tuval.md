@@ -41,7 +41,7 @@ Proje sahibi sekme çubuğunun hiç aktarılmadığını gördü ("tuvalin bireb
 
 1. **Zemin:** renk bulutları kalkar, panodaki düz zemin gelir.
 2. **Arkasında özellik olmayan öğeler ve "(ÖNERİ)" panoları çizilir.** Özelliği olmayan öğe (DM yazma alanında emoji, dosya, kamera, ses; "Sohbette ara"; şikayette not alanı; etkinlikte tür ve düzenleyen; uzun basma menüsünde Sessize al, Profilini gör, Engelle; ÖNERİ panoları) çalışmayan düğme olarak bırakılmaz: her biri özelliğiyle birlikte gelir (sunucu gerekiyorsa ayrı paket, `mimar` ve `guvenlik`); ürün belgesine yazılır.
-3. **Semt sohbetinin üst çubuğunda kişi sayısı** ("6 kişi burada") ve "yazıyor" satırı panodaki gibi yazılır. Değişmez kural 4'ün semt maddesini ("sayı ve liste başka hiçbir yanıtta ve Realtime yükünde görünmez; presence ve son yazanlar yok") ve kural 9'u değiştirir: PR'ı proje sahibinin açık "onaylandı"sıyla birleşir.
+3. **Semt sohbetinin üst çubuğunda kişi sayısı** ("6 kişi burada") ve "yazıyor" satırı panodaki gibi yazılır. Değişmez kural 4'ün semt maddesini ("sayı ve liste başka hiçbir yanıtta ve Realtime yükünde görünmez; presence ve son yazanlar yok") ve kural 9'u değiştirir: PR'ı proje sahibinin açık "onaylandı"sıyla birleşir. **Geri alındı (18 Kasım, proje sahibi):** kişi sayısı da "yazıyor" da gerekmez; üst çubuk altyazısız kalır, kural 4 ve 9 değişmez (panodan bilerek ayrılır).
 4. **Başkasının profilindeki rozet kartı kalkar** (panoda yok).
 5. **Canlı noktanın nabız hareketi kalkar** (panolar durağan).
 6. **Masa bitti'de "arkadaş oldunuz" bildirimi (64a)** panodaki gibi gösterilir. K-70 ("eşleşme yalnızca ilk basana bildirilir") ve kural 5'in masa sonu maddesiyle birlikte ele alınır: PR'ı proje sahibinin açık "onaylandı"sıyla birleşir.
