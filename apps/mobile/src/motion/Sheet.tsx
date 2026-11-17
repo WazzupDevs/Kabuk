@@ -49,6 +49,9 @@ type Props = {
   // A picture in the title's line before it, the title and the subtitle beside it (iskelet.md →
   // 5.3: a game's picture over its record).
   titleArt?: ReactNode;
+  // A round button before the title, 12 before it (yeni arayüz tuvali, MasaKurGorsel: the back
+  // button of a page inside the sheet); the title's type and line stay.
+  lead?: ReactNode;
   // Centered text for a single decision (the join request); menus stay left-aligned.
   centered?: boolean;
   // Buddies looking over the sheet's top edge (docs/design/aura → CheckIn, Bildirimler).
@@ -97,6 +100,7 @@ export function Sheet({
   icon,
   titleIcon,
   titleArt,
+  lead,
   centered,
   peek,
   titleLarge,
@@ -166,17 +170,19 @@ export function Sheet({
             style={
               titleArt
                 ? { flexDirection: 'row', alignItems: 'center', gap: ART.artGap }
-                : { alignSelf: 'stretch' }
+                : lead
+                  ? { flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }
+                  : { alignSelf: 'stretch' }
             }
           >
-            {titleArt}
+            {titleArt ?? lead}
             {/* With a picture (tuval Sohbet, the game's sheet): the title 22/800, its line 13/600,
                 3 apart. */}
             <View
               style={{
                 gap: titleArt ? ART.titleGap : SUBTITLE_GAP,
                 alignSelf: 'stretch',
-                flex: titleArt ? 1 : undefined,
+                flex: titleArt || lead ? 1 : undefined,
                 justifyContent: 'center',
               }}
             >

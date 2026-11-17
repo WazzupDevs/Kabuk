@@ -2407,8 +2407,20 @@ export const tr = {
     iconTaken: (name: string) => `${name}, başka bir masada`,
     lobby: 'Lobide görünsün',
     lobbyHint: 'Mekandakiler masanı görür ve katılmak isteyebilir. Sonra da değiştirebilirsin.',
-    youAre: (name: string) => `Masada ${name} olarak görünürsün.`,
     confirm: 'Masayı kur',
+    // Yeni arayüz tuvali (MasaKur 32a, MasaKurLobi 32b, MasaKurGorsel 32c).
+    picture: 'Masa görseli',
+    seeAll: 'Tümüne bak',
+    shuffle: 'Rastgele',
+    suggested: 'ÖNERİ',
+    shuffleLabel: 'Rastgele başka bir görsel',
+    pictureCount: (n: number) => `${n} görsel · soluk olanlar mekandaki başka bir masada`,
+    taken: 'Başka masada',
+    pick: 'Bu görseli seç',
+    seatAs: (name: string) => `${name} olarak görünürsün`,
+    seatAnonymous: 'Anonim kimliğinle masaya oturursun.',
+    seatProfile: 'Profilinle masaya oturursun.',
+    intentLabel: 'Niyetin (isteğe bağlı)',
   },
   // Mekan's lobby (v46 "mekan"; docs/SPEC_V4.md §4.E).
   lobby: {
@@ -2460,14 +2472,17 @@ export const tr = {
     leftTitle: 'Masadan ayrıldın',
     // The owner took the person off (K-88); a block still reads as the table ending (rule 5).
     removedTitle: 'Masadan çıkarıldın',
-    subtitle: (table: string, people: number) =>
-      `${table} · ${headcountLabel(people)} kişi. Beğendiğin kişileri ekle.`,
+    subtitle: (table: string, people: number) => `${table} · ${headcountLabel(people)} kişi`,
     addFriend: 'Arkadaş ekle',
     added: 'Eklendi',
     friends: 'Arkadaş oldunuz',
     message: 'Mesaj',
+    // Yeni arayüz tuvali (MasaBitti 64, MasaCikarildin 132).
+    people: 'Masadakiler · İkiniz de eklerseniz arkadaş olursunuz',
+    add: 'Ekle',
+    waiting: 'Onun eklemesi bekleniyor',
+    friendsNow: 'Arkadaşsınız',
     anonymous: 'Anonim katıldı',
-    note: 'Eklediğin kişi bunu görmez. O da seni eklerse ikinize de haber gelir ve arkadaş olursunuz.',
     anonymousNote:
       'Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil’den adını yenileyebilirsin.',
     back: 'Mekana dön',

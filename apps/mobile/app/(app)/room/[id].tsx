@@ -135,14 +135,15 @@ function TableScreenBody() {
   const seen = useTableEndStore((s) => s.tables[id]);
   const name = room.data?.name;
   const phones = room.data?.phones;
+  const icon = room.data?.icon ?? null;
   const profiledKey = (people.data ?? [])
     .filter((p) => p.profiled)
     .map((p) => p.alias)
     .join('\n');
   useEffect(() => {
     if (open && name && phones)
-      remember(id, name, phones, profiledKey ? profiledKey.split('\n') : []);
-  }, [open, id, name, phones, profiledKey, remember]);
+      remember(id, name, phones, profiledKey ? profiledKey.split('\n') : [], icon);
+  }, [open, id, name, phones, profiledKey, icon, remember]);
 
   // The table joined another one (its owner's "Katıl", §4.E): it closed and the person sits at the
   // other table now, which opens in its place instead of Masa bitti (audit VEN-6).
@@ -283,6 +284,7 @@ function TableScreenBody() {
         removed={removed.data === true}
         tableName={seen.name}
         phones={seen.phones}
+        icon={seen.icon}
         profiled={seen.profiled}
         anonymous={!!checkIn.data && seatsAnonymously(checkIn.data.identity.mode, ownPhoto.gender)}
         onClose={backToVenue}
