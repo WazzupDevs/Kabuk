@@ -671,6 +671,7 @@ describe('cleanup jobs', () => {
       ['delete-old-reports', '0 * * * *'],
       // The venue chat's own job (venueChat.test.ts checks its command).
       ['delete-old-venue-chat', '17 * * * *'],
+      ['delete-old-venue-posts', '19 * * * *'],
     ]);
   });
 
