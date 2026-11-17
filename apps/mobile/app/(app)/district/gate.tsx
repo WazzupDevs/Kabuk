@@ -101,6 +101,7 @@ export default function DistrictGateScreen() {
           ) : null}
           {q || !state.isError ? (
             <Btn
+              big
               block
               label={tr.district.gate.send}
               testID="gecit-send"
@@ -112,6 +113,7 @@ export default function DistrictGateScreen() {
             />
           ) : (
             <Btn
+              big
               block
               label={tr.district.gate.retry}
               loading={state.isFetching}

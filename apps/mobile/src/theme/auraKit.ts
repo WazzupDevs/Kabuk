@@ -282,10 +282,14 @@ export const KIT_TYPE = {
   // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
   light: { fontFamily: F[500] } as TextStyle,
   btn: t(600, 16, 20),
+  // `.btn.big`: 700 17/22.
+  btnBig: t(700, 17, 22),
   btnSm: t(600, 14, 18),
   // Mekan's "Masa kur" (44 high, 15).
   btnMid: t(600, 14, 18),
   chip: t(600, 13, 17),
+  // Süsle's filter chip (`.flt span`): 600 12/16.
+  chipFilter: t(600, 12, 16),
   // U34: a field's label on a card (ProfilDuzenle `.lb`).
   fieldLabel: t(600, 13, 17),
   // Keşfet's kind chips (15).
@@ -867,14 +871,20 @@ export const KIT = {
     glassRadiusSm: 22,
     pad: 18,
     padLg: 22,
-    // The button scale (the owner's call, 2 Kasım, B1; the main button 48 again, 16 Kasım): every
-    // main button 48, every small one 36, a round icon button 44, a form field 48, a chip 36; a
-    // screen never picks its own (the many-line field 104, 22 round; the sheet 8 from the edges, 28
-    // round, its handle 40 × 4). The venue page's and the check-in sheet's long one 56
-    // (docs/design/iskelet.md → 2.1).
+    // The sizes as the boards draw them (the owner's call, 18 Kasım; yeni arayüz tuvali skall.css,
+    // ekran.css and the boards' own): the main button 48 (`.btn`), the small 36 (`.btn.sm`), the
+    // big 56 at 700 17/22 (`.btn.big`; the long one `btnTall` 56 at the main's type, `.fx .btn`), a
+    // round icon button 44, a form field 48, a chip 40 (`.chip`), Süsle's filter chip 28 (`.flt
+    // span`), a bar's button 40 (`.tb2 .btn`); a row's buttons 32, 34 or 40 by its screen (`rowBtn*`;
+    // the many-line field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4).
     btn: 48,
     btnTall: 56,
+    btnBig: 56,
     btnSm: 36,
+    btnBar: 40,
+    rowBtnSm: 32,
+    rowBtnMd: 34,
+    rowBtnLg: 40,
     // Mekan's "Masa kur" and Masa's "Bitir": the small height, 18 inside.
     btnMid: 36,
     btnPadXMid: 18,
@@ -882,11 +892,14 @@ export const KIT = {
     btnPadX: 24,
     btnPadXSm: 16,
     btnGap: 8,
-    // Every chip 36 high (B1); Keşfet's kind chips 16 inside, Kapsülün's slot chips 18.
-    chip: 36,
-    chipTall: 36,
+    // Every chip 40 high (`.chip`, 18 Kasım); Keşfet's kind chips 16 inside, Kapsülün's slot chips
+    // 18. Süsle's filter chip 28, 11 inside (`.flt span`).
+    chip: 40,
+    chipTall: 40,
     chipTallPadX: 16,
-    chipLg: 36,
+    chipLg: 40,
+    chipFilter: 28,
+    chipFilterPadX: 11,
     // Aura v75 E4 (narrow): a chip 46, a field 56, a segment 52.
     chipNarrow: 46,
     fieldNarrow: 56,
@@ -1138,9 +1151,9 @@ export const KIT = {
     fieldLgTallRadius: 22,
     fieldLgPadX: 22,
     fieldLgPadY: 16,
-    // A chat's message field and its send button (docs/design/aura → Dm).
-    composerField: 44,
-    composerSend: 44,
+    // A chat's message field and its send button 52 (yeni arayüz tuvali `.fld`, `.snd`).
+    composerField: 52,
+    composerSend: 52,
     // iskelet.md → 5.5: the DM's message bar one glass capsule 52, its send a 38 green round inside
     // it at the right, `composerSendInset` from its edge.
     composerCapsule: 52,

@@ -263,6 +263,7 @@ export function Btn({
   sm,
   mid,
   tall,
+  big,
   bar,
   block,
   snug,
@@ -287,8 +288,10 @@ export function Btn({
   sm?: boolean;
   // Mekan's "Masa kur": 44 high, 15.
   mid?: boolean;
-  // The venue page's and the check-in sheet's button: 58 high.
+  // The venue page's and the check-in sheet's button: 56 high.
   tall?: boolean;
+  // `.btn.big` (the semt pages): 56 high, 700 17/22.
+  big?: boolean;
   // In a bar of round buttons: a button as tall as they are, `bar` high (the owner's report, 29
   // Ekim: Masa's "Bitir" stood shorter than the rounds beside it). Beside 48 rounds 18 inside and
   // 16 (Masa); beside 44 the small one's.
@@ -355,14 +358,16 @@ export function Btn({
       ? KIT.size.btnSm
       : mid
         ? KIT.size.btnMid
-        : tall
-          ? KIT.size.btnTall
-          : KIT.size.btn;
-  const big = bar ? bar >= KIT.size.roundLg : false;
-  const small = sm || (!!bar && !big);
+        : big
+          ? KIT.size.btnBig
+          : tall
+            ? KIT.size.btnTall
+            : KIT.size.btn;
+  const wide = bar ? bar >= KIT.size.roundLg : false;
+  const small = sm || (!!bar && !wide);
   const padX = snug
     ? KIT.size.btnPadXSnug
-    : big || mid
+    : wide || mid
       ? KIT.size.btnPadXMid
       : small
         ? KIT.size.btnPadXSm
@@ -373,7 +378,9 @@ export function Btn({
       ? KIT_TYPE.btnMid
       : small
         ? KIT_TYPE.btnSm
-        : KIT_TYPE.btn;
+        : big
+          ? KIT_TYPE.btnBig
+          : KIT_TYPE.btn;
   // The soft outer shadow drawn natively (NativeShadow.tsx); the top light, the bottom line and the
   // white edge inside are inset shadows. A flat `fill` has none.
   const shadow =
@@ -771,6 +778,7 @@ export function Chip({
   lg,
   md,
   narrow,
+  filter,
   icon,
   accessibilityLabel,
   fixed,
@@ -786,6 +794,9 @@ export function Chip({
   md?: boolean;
   // Aura v75 KesfetHaritaDar: 320 dp or the largest text (src/lib/narrow.ts), 46 high and 15.
   narrow?: boolean;
+  // Süsle's filter (`.flt span`): 28 high, 11 inside, 12/16; --surface2 without a line or shadow,
+  // its words muted (in the dark 60 %); chosen as every chosen chip.
+  filter?: boolean;
   // U35: a worn part's chip leads with its close icon, 10 in on that side.
   icon?: CapIconName;
   accessibilityLabel?: string;
@@ -796,18 +807,20 @@ export function Chip({
   const { c } = useKit();
   const press = usePress();
   const frosted = useFrost() && !on;
-  const h = narrow
-    ? KIT.size.chipNarrow
-    : lg || md
-      ? KIT.size.chipLg
-      : tall
-        ? KIT.size.chipTall
-        : KIT.size.chip;
+  const h = filter
+    ? KIT.size.chipFilter
+    : narrow
+      ? KIT.size.chipNarrow
+      : lg || md
+        ? KIT.size.chipLg
+        : tall
+          ? KIT.size.chipTall
+          : KIT.size.chip;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
     shadowOff,
-    on ? undefined : c.chipShadow || undefined,
+    on || filter ? undefined : c.chipShadow || undefined,
     undefined,
     h / 2,
     true,
@@ -829,33 +842,41 @@ export function Chip({
         style={{
           height: h,
           paddingLeft: icon ? KIT.size.chipIconPadLeft : undefined,
-          paddingHorizontal: md
-            ? KIT.size.chipMdPadX
-            : lg
-              ? KIT.size.chipLgPadX
-              : tall
-                ? KIT.size.chipTallPadX
-                : KIT.size.chipPadX,
+          paddingHorizontal: filter
+            ? KIT.size.chipFilterPadX
+            : md
+              ? KIT.size.chipMdPadX
+              : lg
+                ? KIT.size.chipLgPadX
+                : tall
+                  ? KIT.size.chipTallPadX
+                  : KIT.size.chipPadX,
           borderRadius: h,
           flexDirection: 'row',
           alignItems: 'center',
           gap: KIT.size.chipGap,
-          backgroundColor: on ? c.chipOn : frosted ? undefined : c.raisedChip,
-          borderWidth: KIT.size.edge,
+          backgroundColor: on ? c.chipOn : filter ? c.infoRow : frosted ? undefined : c.raisedChip,
+          borderWidth: filter ? 0 : KIT.size.edge,
           borderColor: on ? c.chipOn : c.raisedEdge,
           boxShadow: shadow.boxShadow,
           transform: [{ scale: press.scale }],
         }}
       >
         {shadow.node}
-        {on ? null : <FrostOf height={h} fill={c.raisedChip} />}
+        {on || filter ? null : <FrostOf height={h} fill={c.raisedChip} />}
         {icon ? <CapIcon name={icon} color={c.muted} size={KIT.size.iconSm} /> : null}
         <Text
           numberOfLines={1}
           maxFontSizeMultiplier={fixed ? 1 : MAX_FONT_SCALE}
           style={[
-            md ? KIT_TYPE.chipMd : tall || lg || narrow ? KIT_TYPE.chipLg : KIT_TYPE.chip,
-            { color: on ? c.onChipOn : c.ink },
+            filter
+              ? KIT_TYPE.chipFilter
+              : md
+                ? KIT_TYPE.chipMd
+                : tall || lg || narrow
+                  ? KIT_TYPE.chipLg
+                  : KIT_TYPE.chip,
+            { color: on ? c.onChipOn : filter ? c.muted : c.ink },
           ]}
         >
           {label}

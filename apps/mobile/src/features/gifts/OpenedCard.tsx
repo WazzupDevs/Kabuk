@@ -315,15 +315,17 @@ export function OpenedCard({
         ) : null}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[3] }}>
           <Btn
+            tall
             variant="glassy"
             label={worn ? tr.gifts.next : tr.gifts.later}
             onPress={onClose}
             style={BUTTON_SIDE}
           />
           {worn ? (
-            <Btn icon="check" label={tr.gifts.worn} disabled style={BUTTON_SIDE} />
+            <Btn tall icon="check" label={tr.gifts.worn} disabled style={BUTTON_SIDE} />
           ) : (
             <Btn
+              tall
               icon="sparkles"
               label={tr.gifts.wear}
               onPress={wear}

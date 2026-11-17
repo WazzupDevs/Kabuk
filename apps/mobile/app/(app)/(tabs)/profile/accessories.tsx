@@ -372,6 +372,7 @@ function WearBar({ set, bottom, onPress }: { set: boolean; bottom: number; onPre
       ) : null}
       <Btn
         block
+        tall
         testID="catalog-wear"
         label={set ? tr.capsule.wearSet : tr.capsule.wearSelected}
         onPress={onPress}
