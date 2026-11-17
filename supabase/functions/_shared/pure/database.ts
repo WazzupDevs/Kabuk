@@ -1611,6 +1611,7 @@ export type Database = {
           status: string;
           target_type: string;
           venue_chat_message_id: string | null;
+          venue_post_id: string | null;
         };
         Insert: {
           context?: Json | null;
@@ -1631,6 +1632,7 @@ export type Database = {
           status?: string;
           target_type?: string;
           venue_chat_message_id?: string | null;
+          venue_post_id?: string | null;
         };
         Update: {
           context?: Json | null;
@@ -1651,6 +1653,7 @@ export type Database = {
           status?: string;
           target_type?: string;
           venue_chat_message_id?: string | null;
+          venue_post_id?: string | null;
         };
         Relationships: [
           {
@@ -1679,6 +1682,13 @@ export type Database = {
             columns: ['venue_chat_message_id'];
             isOneToOne: false;
             referencedRelation: 'venue_chat_messages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reports_venue_post_id_fkey';
+            columns: ['venue_post_id'];
+            isOneToOne: false;
+            referencedRelation: 'venue_posts';
             referencedColumns: ['id'];
           },
         ];
@@ -2489,6 +2499,158 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'venue_events_venue_id_fkey';
+            columns: ['venue_id'];
+            isOneToOne: false;
+            referencedRelation: 'venues';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      venue_post_like_rate: {
+        Row: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Insert: {
+          count: number;
+          user_id: string;
+          window_started_at: string;
+        };
+        Update: {
+          count?: number;
+          user_id?: string;
+          window_started_at?: string;
+        };
+        Relationships: [];
+      };
+      venue_post_likes: {
+        Row: {
+          created_at: string;
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'venue_post_likes_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
+            referencedRelation: 'venue_posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      venue_post_rate: {
+        Row: {
+          count: number;
+          last_sent_at: string;
+          user_id: string;
+          window_started_at: string;
+        };
+        Insert: {
+          count: number;
+          last_sent_at: string;
+          user_id: string;
+          window_started_at: string;
+        };
+        Update: {
+          count?: number;
+          last_sent_at?: string;
+          user_id?: string;
+          window_started_at?: string;
+        };
+        Relationships: [];
+      };
+      venue_post_reports: {
+        Row: {
+          created_at: string;
+          post_id: string;
+          reporter_user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          post_id: string;
+          reporter_user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          post_id?: string;
+          reporter_user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'venue_post_reports_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
+            referencedRelation: 'venue_posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      venue_posts: {
+        Row: {
+          author_user_id: string;
+          body: string;
+          client_id: string | null;
+          created_at: string;
+          deleted_at: string | null;
+          hidden_at: string | null;
+          id: string;
+          parent_id: string | null;
+          session_id: string;
+          venue_id: string;
+        };
+        Insert: {
+          author_user_id: string;
+          body: string;
+          client_id?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          hidden_at?: string | null;
+          id?: string;
+          parent_id?: string | null;
+          session_id: string;
+          venue_id: string;
+        };
+        Update: {
+          author_user_id?: string;
+          body?: string;
+          client_id?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          hidden_at?: string | null;
+          id?: string;
+          parent_id?: string | null;
+          session_id?: string;
+          venue_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'venue_posts_parent_id_fkey';
+            columns: ['parent_id'];
+            isOneToOne: false;
+            referencedRelation: 'venue_posts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'venue_posts_session_id_fkey';
+            columns: ['session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'venue_posts_venue_id_fkey';
             columns: ['venue_id'];
             isOneToOne: false;
             referencedRelation: 'venues';
@@ -4354,6 +4516,15 @@ export type Database = {
         };
         Returns: boolean;
       };
+      safety_report_venue_post: {
+        Args: {
+          hide_after: number;
+          new_reason: string;
+          target_post_id: string;
+          target_user_id: string;
+        };
+        Returns: boolean;
+      };
       safety_unblock: {
         Args: { target_block_id: string; target_user_id: string };
         Returns: boolean;
@@ -5578,6 +5749,80 @@ export type Database = {
           tolerance_m: number;
         };
         Returns: boolean;
+      };
+      venue_feed_delete: {
+        Args: { target_post_id: string; target_user_id: string };
+        Returns: string;
+      };
+      venue_feed_like: {
+        Args: {
+          liked: boolean;
+          target_post_id: string;
+          target_user_id: string;
+          window_max: number;
+          window_seconds: number;
+        };
+        Returns: {
+          changed: boolean;
+          post_venue_id: string;
+        }[];
+      };
+      venue_feed_mute: {
+        Args: { target_post_id: string; target_user_id: string };
+        Returns: string;
+      };
+      venue_feed_page_for: {
+        Args: {
+          before?: string;
+          page_size?: number;
+          target_user_id: string;
+          target_venue_id: string;
+        };
+        Returns: {
+          body: string;
+          created_at: string;
+          display_name: string;
+          from_me: boolean;
+          id: string;
+          liked: boolean;
+          likes: number;
+          photo_path: string;
+          replies: number;
+        }[];
+      };
+      venue_feed_post_once: {
+        Args: {
+          min_interval_ms: number;
+          new_body: string;
+          new_client_id?: string;
+          reply_to?: string;
+          target_user_id: string;
+          target_venue_id: string;
+          window_max: number;
+          window_seconds: number;
+        };
+        Returns: {
+          post_id: string;
+          replayed: boolean;
+        }[];
+      };
+      venue_feed_replies_for: {
+        Args: {
+          before?: string;
+          page_size?: number;
+          target_post_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          body: string;
+          created_at: string;
+          display_name: string;
+          from_me: boolean;
+          id: string;
+          liked: boolean;
+          likes: number;
+          photo_path: string;
+        }[];
       };
       venue_tables: {
         Args: { target_venue_id: string };
