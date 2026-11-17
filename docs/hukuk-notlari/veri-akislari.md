@@ -27,7 +27,7 @@ Ağ notu: bu oturumda `supabase.com` ve `kvkk.gov.tr` doğrudan açılamadı (ot
 
 ### 3. Expo push servisi (exp.host)
 
-- **Sunucudan çıkan:** Expo push token + bildirim başlığı ve metni + `data.kind`/`target` (`supabase/functions/_shared/push.ts:3,9-21`). Metinler `supabase/functions/_shared/pure/push.ts`: çoğu sabit ("Yeni bir mesajın var" vb.), **katılma isteğinde istekçinin adı/masa adı ve kişi sayısı** (`pure/push.ts:24-33`, çağrı `supabase/functions/rooms/index.ts:291`, `requester_alias`). Mesaj içeriği push'a girmez.
+- **Sunucudan çıkan:** Expo push token + bildirim başlığı ve metni + `data.kind`/`target` (`supabase/functions/_shared/push.ts:3,9-21`). Metinler `supabase/functions/_shared/pure/push.ts`: çoğu sabit ("Yeni bir mesajın var" vb.), **katılma isteğinde yalnız kişi sayısı, ad yok** (`pure/push.ts` → `joinRequestPush`, çağrı `supabase/functions/rooms/index.ts:291`). Mesaj içeriği push'a girmez.
 - **Uygulamadan çıkan:** `Notifications.getExpoPushTokenAsync({ projectId })` (`apps/mobile/src/features/push/push.ts:52`): Expo'ya cihazın FCM token'ı ve proje kimliği gider (SDK davranışı; Expo'nun cihaz kimliği gönderip göndermediği koddan görünmüyor). Push isteğe bağlı, izin yoksa hiçbir şey (`push.ts:47-49`).
 - **Alıcı:** Expo (650 Industries, Inc.), ABD. Expo alt işleyen sayfası (arama sonucu, 7 Ağu 2023): AWS (ABD), Slack, Stripe, Twilio (https://expo.dev/privacy/subprocessors). Yasal metin "ABD" diyor (`gizlilik-politikasi.md:98`).
 
@@ -69,7 +69,7 @@ Ağ notu: bu oturumda `supabase.com` ve `kvkk.gov.tr` doğrudan açılamadı (ot
 ### 10. Web sitesi: Cloudflare ve Google Fonts
 
 - **Cloudflare:** `skall.world` statik site (`wrangler.jsonc`), ziyaretçinin IP'si ve istek bilgisi. Uygulama kullanıcı verisi göndermez (uygulama yasal metinleri kendi içinde gösterir, `docs/OPS.md` → "Yasal sayfalar" madde 4; dış bağlantılar `apps/mobile/src/components/LegalText.tsx:20,55` yalnız tıklanınca).
-- **Google Fonts:** yalnız ana sayfa ve 404: `web/index.html:23-25`, `web/404.html:12-14` (Poppins, `fonts.googleapis.com` / `fonts.gstatic.com`). Yasal sayfalar sistem yazı tipi kullanır (`scripts/site/render.ts:40`), dış istek yok. Site analitiği/çerez yok (`grep` boş; `gizlilik-politikasi.md:137`).
+- **Google Fonts:** yok. Poppins (SIL OFL) siteden sunulur: `web/fonts/`, `web/site.css` başındaki `@font-face`. Ana sayfa, 404 ve yasal sayfalar dış istek yapmaz. Site analitiği/çerez yok (`grep` boş; `gizlilik-politikasi.md:137`).
 
 ### 11. Zoho (e-posta)
 
@@ -98,14 +98,14 @@ Ağ notu: bu oturumda `supabase.com` ve `kvkk.gov.tr` doğrudan açılamadı (ot
 | ---------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | Supabase | Zorunlu | Uygulamanın tamamı | Proje bölgesi AB; Edge Functions'ı `eu-central-1`'e sabitle | Yok (bölge) | Küçük PR: `api.ts:116`'da `region: FunctionRegion.EuCentral1` (ve `broadcast.ts` gibi sunucu içi çağrılar zaten aynı projeye) |
 | Netgsm | Zorunlu (gerçek SMS girişi) | Telefonla giriş | — (yurt içi) | `SMS_PROVIDER` | Yok |
-| Expo push + FCM | Zorunlu değil (push isteğe bağlı, `docs/OPS.md` "Push (isteğe bağlı…)") | DM, arkadaşlık, davet, katılma isteği bildirimleri; uygulama içi gelen kutusu kalır | Katılma isteği metninden adı çıkarmak metni sabitler (`pure/push.ts:24-33`); token ve IP yine gider | `google-services.json` yoksa Android push yok; `EAS_PROJECT_ID` sabit | Pilotta push kapatmak: `registerForPush` çağrısını kapatmak küçük PR + `google-services.json`'suz build (native, yeni build). Metni sabitlemek: tek satır |
+| Expo push + FCM | Zorunlu değil (push isteğe bağlı, `docs/OPS.md` "Push (isteğe bağlı…)") | DM, arkadaşlık, davet, katılma isteği bildirimleri; uygulama içi gelen kutusu kalır | Katılma isteği metninde ad yok, yalnız kişi sayısı (`pure/push.ts` → `joinRequestPush`); token ve IP yine gider | `google-services.json` yoksa Android push yok; `EAS_PROJECT_ID` sabit | Pilotta push kapatmak: `registerForPush` çağrısını kapatmak küçük PR + `google-services.json`'suz build (native, yeni build). Metni sabitlemek: tek satır |
 | EAS Update (OTA) | Zorunlu değil ama "Hızlı yol" OTA'ya dayanıyor (CLAUDE.md "Çalışma şekli") | OTA ile düzeltme; her düzeltme yeni build + Play incelemesi | — (IP + kurulum bilgisi) | `updates.enabled` (`app.config.ts:163`) | Tek satır ama native: yeni build; operasyon yükünü artırır |
 | EAS Build | Zorunlu (build yolu) | — | Kullanıcı verisi yok | — | — |
 | Sentry | Zorunlu değil | Çökme raporları | Zaten az: id + scrub. Kullanıcı id'sini de kaldırmak mümkün (`setReportingUser`) | `EXPO_PUBLIC_SENTRY_DSN` yoksa kapalı (`errorReporting.ts:7`) | Pilotta kapatmak: EAS ortamından DSN'i silmek (kod yok, yeni build ya da OTA ile env) ; AB bölgesi: DSN'i AB projesinden almak |
 | PostHog | Zorunlu değil | Ürün istatistikleri | — | `EXPO_PUBLIC_POSTHOG_KEY` yoksa kapalı (`analytics.ts:12`); sunucu sırları yoksa silme atlanır | Pilotta kapatmak: EAS'tan anahtarı silmek; yasal metinden satırı çıkarmak (metin + onay sürümü, küçük PR) |
 | OpenFreeMap | Keşfet haritası için gerekli; liste görünümü haritasız çalışır (`explore_viewed: list | map`) | Harita görünümü | IP gider; başka sunucuya `EXPO_PUBLIC_MAP_STYLE_URL` ile çevrilebilir (kendi barındırma büyük iş) | `EXPO_PUBLIC_MAP_STYLE_URL(_DARK)` | Haritayı pilotta gizlemek küçük PR (ürün kararı) |
 | Cloudflare | Zorunlu (Play gizlilik ve hesap silme bağlantısı) | Yasal sayfaların web adresi | Yalnız ziyaretçi IP'si | — | — |
-| Google Fonts | Zorunlu değil | Ana sayfada Poppins | Yazı tipini `web/assets/`'e koymak | — | Küçük PR (`web/index.html`, `web/404.html` + woff2; secret-guard woff2'yi kabul ediyor) |
+| Google Fonts | Kaldırıldı | Yok: Poppins siteden sunulur (`web/fonts/`, SIL OFL; yapıldı, PR #675) | — | — | — |
 | Zoho | E-posta iletişimi için (yasal metin adres veriyor) | Destek e-postası | Kodda yok | — | Operasyonel |
 
 ---
@@ -146,7 +146,7 @@ Ağ notu: bu oturumda `supabase.com` ve `kvkk.gov.tr` doğrudan açılamadı (ot
 1. AB'de (Frankfurt) barındırılan ama sözleşme tarafı ABD şirketi olan sağlayıcı (Supabase Inc., PostHog Inc., Functional Software Inc.) için standart sözleşmenin tarafı ve modülü (veri sorumlusu → veri işleyen) hangisidir?
 2. Sağlayıcı standart sözleşmeyi değiştirilmeden imzalamazsa, tıklamayla kabul edilen GDPR DPA'sı/SCC ile yapılan aktarım KVKK'ya göre hangi durumda kalır ve geçici olarak ne yapılmalı?
 3. Push bildirimi (Expo → FCM), OTA sorgusu ve harita karosu gibi yalnız IP ve cihaz token'ı taşıyan akışlar standart sözleşme gerektiren "kişisel veri aktarımı" mıdır?
-4. Bireysel ve ücretsiz kullanılan açık servisle (OpenFreeMap, Google Fonts) sözleşme imzalamak mümkün değilken bu akış için hangi dayanak kullanılabilir, yoksa kaldırılmalı mı?
+4. Bireysel ve ücretsiz kullanılan açık servisle (OpenFreeMap; Google Fonts artık kullanılmıyor, Poppins siteden sunulur) sözleşme imzalamak mümkün değilken bu akış için hangi dayanak kullanılabilir, yoksa kaldırılmalı mı?
 5. Uygulamanın her kullanımda yaptığı aktarımlar için m. 9/6'daki "sözleşmenin ifası için zorunlu" hali "arızi" şartını karşılar mı?
 6. Netgsm ile yurt içinde ayrıca veri işleyen sözleşmesi (m. 12) yapılması gerekir mi, Netgsm'in standart abonelik sözleşmesi yeterli mi?
 

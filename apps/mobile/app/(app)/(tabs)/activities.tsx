@@ -5,13 +5,12 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 
-import { Btn, Glass, Li, Seg, T, useKit } from '@/aura/kit';
+import { Btn, Li, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Tag } from '@/components/Tag';
-import { boxShadowParts } from '@/components/NativeShadow';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
 import { GiftCard } from '@/features/gifts/GiftCard';
@@ -27,13 +26,12 @@ import { useHistoryFriends, usePlayHistory } from '@/features/friends/queries';
 import { GAME_GLYPH } from '@/features/games/GameCard';
 import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
-import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
 import { useNarrow } from '@/lib/useNarrow';
 import { LargeTitle, Rise, Sheet, StickyFade, StickyField } from '@/motion';
 import { ACTIVITIES as A } from '@/theme/activities';
 import { KIT } from '@/theme/auraKit';
-import { EXPLORE } from '@/theme/explore';
+import { FLAT } from '@/theme/flatLists';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 type Tab = 'events' | 'history';
@@ -55,12 +53,12 @@ export default function ActivitiesScreen() {
   const { scheme } = useKit();
   return (
     <Screen edges={['top']} refreshable side={A.side} padTop={A.top}>
-      {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; the title 36/800 6 in
-          from the cards (tuval Aktivite). */}
+      {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; the title 32/500 (the
+          new boards' `.display`). */}
       <LargeTitle kind="buyukBaslik">
-        <View style={{ gap: SPACING[1], marginHorizontal: A.titleIn }}>
+        <View style={{ gap: SPACING[1] }}>
           {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}
-          <T v="exploreTitle" accessibilityRole="header">
+          <T v="display" accessibilityRole="header">
             {tr.tabs.activities}
           </T>
         </View>
@@ -78,7 +76,7 @@ export default function ActivitiesScreen() {
           board={{
             item: A.tabs.item,
             radius: A.tabs.radius,
-            type: 'tabsBoard',
+            type: 'btnSm',
             face: A[scheme].tabsGlass,
             onShadow: A[scheme].tabOnShadow || undefined,
           }}
@@ -146,14 +144,15 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
     );
   }
   if (events.length === 0) {
-    // iskelet.md → 3.4: the small empty card, never half the screen.
+    // AktivitelerBos: the riso and its two lines, no card.
     return (
-      <View style={{ marginTop: A.listTop }}>
-        <EmptyCard
-          testID="activities-no-events"
+      <View style={{ marginTop: A.listTop }} testID="activities-no-events">
+        <EmptyState
+          kind="empty"
+          riso="events"
+          compact
           title={tr.activities.noEvents}
           body={tr.activities.noEventsHint}
-          picture={NO_EVENTS_PICTURE}
         />
       </View>
     );
@@ -187,7 +186,7 @@ function History({ now }: { now: number }) {
   const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
   const loading = useLoaderHold(history.isPending);
   const today = new Date(now);
-  const { c, scheme } = useKit();
+  const { scheme } = useKit();
   const S = A.sheet;
 
   // A failed refresh keeps the history (audit PRO-2).
@@ -238,36 +237,23 @@ function History({ now }: { now: number }) {
   return (
     <View>
       {groups.map((group) => (
-        // iskelet.md → 3.4 and 5.3: the day with its number of games beside it over its rows on
-        // one grouped list card (tuval Aktivite: 26 over the day, 12 under it, 6 in).
-        <View key={group.day} style={{ marginTop: A.dayTop, gap: A.dayBottom }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'baseline',
-              flexWrap: 'wrap',
-              columnGap: A.dayGap,
-              marginHorizontal: A.titleIn,
-            }}
-          >
-            <T v="exploreSection" accessibilityRole="header">
+        // Gecmis: a day's name with its number of games beside it (16/600 and 13/500 on one
+        // baseline, 8 apart), its games as flat rows 6 under it, no card and no hairline.
+        <View key={group.day} style={{ marginTop: A.listTop + FLAT.day.headTop }}>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', columnGap: FLAT.day.gap }}>
+            <T v="h3" ink accessibilityRole="header">
               {tr.activities.days[group.day]}
             </T>
-            <T v="exploreCount" color={c.muted} tabular>
+            <T v="fine" tabular>
               {tr.activities.gameCount(group.sessions.length)}
             </T>
           </View>
-          <Glass
-            face={EXPLORE[scheme].card}
-            radius={A.card.radius}
-            style={{ padding: A.card.pad, borderRadius: A.card.radius }}
-          >
+          <View style={{ marginTop: A.listTop + FLAT.day.listTop }}>
             {group.sessions.map((x, i) => {
               const h = x.first;
               const result = historyResult(h, results.data ?? []);
               return (
                 <Rise key={x.key} index={i}>
-                  {i > 0 ? <RowHair /> : null}
                   <HistoryRow
                     concept={historyConcept(h.concept)}
                     alias={h.other_alias}
@@ -280,25 +266,30 @@ function History({ now }: { now: number }) {
                 </Rise>
               );
             })}
-          </Glass>
+          </View>
         </View>
       ))}
 
       <Sheet
         visible={session !== null}
         onClose={() => setOpen(null)}
-        // iskelet.md → 5.3: the game's picture, its name, the day and time and how many sat there
-        // in the title; the green-toned note; then each person at that table on one grouped list
-        // (MASADAKİLER), with what can be done. "Kapat" at the foot stays (E2E's
-        // history-sheet-close): only the people scroll.
+        // GecmisMasa: the game's picture, its name, the day and time and how many sat there in
+        // the title; the note; then each person at that table (MASADAKİLER) as a flat row with
+        // what can be done. "Kapat" at the foot stays (E2E's history-sheet-close): only the
+        // people scroll.
         title={session ? tr.activities.game(historyConcept(session.first.concept)) : ''}
+        titleType="title"
+        look={{
+          base: KIT.layer[scheme].sheet,
+          padX: KIT.layer.size.sheetPadX,
+          headTop: FLAT.game.headTop,
+        }}
         titleArt={
           session ? (
             <Thumb
               concept={historyConcept(session.first.concept)}
               side={S.art}
               radius={S.artRadius}
-              shadow={A[scheme].artShadow}
             />
           ) : null
         }
@@ -324,61 +315,40 @@ function History({ now }: { now: number }) {
         }
       >
         {session ? (
-          <View style={{ gap: S.eyebrowTop }}>
-            <HistoryAddHint boxed records={session.people} />
-            <View style={{ gap: S.eyebrowBottom }}>
-              <View style={{ paddingHorizontal: S.eyebrowIn }}>
-                <T v="sheetEyebrow" color={c.muted} accessibilityRole="header">
-                  {upperTr(tr.activities.atTable)}
-                </T>
-              </View>
-              {/* tuval Sohbet: white 90 % on a white edge, 26 round, 4 / 6 inside; a hairline
-                  over every row but the first, across the row. */}
-              <View
-                style={{
-                  backgroundColor: A[scheme].people.fill,
-                  borderWidth: KIT.size.edge,
-                  borderColor: A[scheme].people.edge,
-                  borderRadius: S.card.radius,
-                  paddingHorizontal: S.card.padX,
-                  paddingVertical: S.card.padY,
-                  overflow: 'hidden',
-                }}
-              >
-                {session.people.map((record, i) => (
-                  <View
-                    key={record.id}
-                    style={{
-                      paddingHorizontal: S.row.padX,
-                      paddingVertical: S.row.padY,
-                      borderTopWidth: i > 0 ? KIT.size.hair : 0,
-                      borderTopColor: A[scheme].people.hair,
-                    }}
-                  >
-                    <HistoryActions
-                      record={record}
-                      friend={friends.data?.get(record.id)}
-                      act={act}
-                      narrow={narrow}
-                      row={{
-                        lead: <Kanki index={i} />,
-                        // One line, smaller where it does not fit: at 360 dp the name broke in
-                        // its middle (docs/denetim/pano-fark-2026-11.md → PF-27).
-                        title: (
-                          <T v="placeName" lines={1} fit>
-                            {record.other_alias}
-                          </T>
-                        ),
-                      }}
-                      onMore={() => {
-                        setOpen(null);
-                        openMenu(record.id);
-                      }}
-                    />
-                  </View>
-                ))}
-              </View>
+          <View>
+            <HistoryAddHint records={session.people} />
+            <View style={{ marginTop: FLAT.game.labelTop, marginBottom: FLAT.game.labelBottom }}>
+              <T v="eyebrow" accessibilityRole="header">
+                {upperTr(tr.activities.atTable)}
+              </T>
             </View>
+            {session.people.map((record, i) => (
+              <View
+                key={record.id}
+                style={{ minHeight: FLAT.person.height, justifyContent: 'center' }}
+              >
+                <HistoryActions
+                  record={record}
+                  friend={friends.data?.get(record.id)}
+                  act={act}
+                  narrow={narrow}
+                  row={{
+                    lead: <Kanki index={i} />,
+                    // One line, smaller where it does not fit: at 360 dp the name broke in its
+                    // middle (docs/denetim/pano-fark-2026-11.md → PF-27).
+                    title: (
+                      <T v="body" strong ink lines={1} fit>
+                        {record.other_alias}
+                      </T>
+                    ),
+                  }}
+                  onMore={() => {
+                    setOpen(null);
+                    openMenu(record.id);
+                  }}
+                />
+              </View>
+            ))}
             {act.isError ? (
               <T v="fine" color={KIT.danger}>
                 {errorMessage(act.error)}
@@ -392,8 +362,8 @@ function History({ now }: { now: number }) {
   );
 }
 
-// A game (iskelet.md → 5.3): its picture 56, its name and how many sat there (or with whom), the
-// time at the right in digits of one width; the result under the time.
+// A game (`.rw` in Gecmis): its picture 52, its name and the time on one line, who sat there (or
+// with whom) under it; the result beside that line's end. The time in digits of one width.
 function HistoryRow({
   concept,
   alias,
@@ -411,7 +381,6 @@ function HistoryRow({
   variant: 'won' | 'lost' | 'done' | undefined;
   onPress: () => void;
 }) {
-  const { c, scheme } = useKit();
   const game = tr.activities.game(concept);
   const with_ = people > 1 ? tr.activities.withPeople(people) : tr.activities.withTable(alias);
   return (
@@ -419,53 +388,33 @@ function HistoryRow({
       testID={`history-row-${alias}`}
       accessibilityLabel={tr.activities.rowLabel(game, with_, when, result)}
       onPress={onPress}
-      padY={A.row.pad}
-      padX={A.row.pad}
-      gap={A.row.gap}
+      padY={FLAT.row.padY}
+      padX={0}
+      gap={FLAT.row.gap}
+      minHeight={FLAT.row.minHeight}
     >
-      <Thumb concept={concept} shadow={A[scheme].thumbShadow} />
-      {/* tuval Aktivite: the name and who sat there, 3 apart; the time 4 down at the right, the
-          result under it. */}
-      <View style={{ flex: 1, minWidth: 0, gap: A.row.lineGap }}>
-        <T v="placeName">{game}</T>
-        <T v="placeSub" color={c.muted}>
-          {with_}
-        </T>
-      </View>
-      <View
-        style={{
-          alignSelf: 'flex-start',
-          alignItems: 'flex-end',
-          marginTop: A.row.timeTop,
-          gap: A.row.lineGap,
-        }}
-      >
-        <T v="exploreCount" color={c.muted} tabular>
-          {when}
-        </T>
-        {result && variant ? <Tag variant={variant} label={result} /> : null}
+      <Thumb concept={concept} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T v="h3">{game}</T>
+          </View>
+          <T v="fine" tabular>
+            {when}
+          </T>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T v="body">{with_}</T>
+          </View>
+          {result && variant ? <Tag variant={variant} label={result} /> : null}
+        </View>
       </View>
     </Li>
   );
 }
 
-// The hairline between two rows (3.4; tuval Aktivite): from the words after the picture, 10 short
-// of the card's right edge.
-function RowHair() {
-  const { scheme } = useKit();
-  return (
-    <View
-      style={{
-        height: KIT.size.hair,
-        marginLeft: A.row.pad + A.thumb.side + A.row.gap,
-        marginRight: A.row.pad,
-        backgroundColor: A[scheme].hair,
-      }}
-    />
-  );
-}
-
-// A person at the table (5.3; tuval Sohbet): a riso buddy standing in a tinted round, both by the
+// A person at the table (GecmisMasa `.kav`): a riso buddy standing in a tinted round, both by the
 // row's place in the list, never by who they are (the record carries no look of theirs, rule 4).
 function Kanki({ index }: { index: number }) {
   const { scheme } = useKit();
@@ -501,7 +450,6 @@ function Kanki({ index }: { index: number }) {
 const VAMPIR_THUMB = require('../../../assets/riso/history-vampir.webp');
 const CHAT_THUMB = require('../../../assets/riso/history-sohbet.webp');
 // The small empty cards' riso (3.4).
-const NO_EVENTS_PICTURE: number = require('../../../assets/riso/empty-events.webp');
 const NO_HISTORY_PICTURE: number = require('../../../assets/riso/empty-history.webp');
 // The buddies of the table's people (assets/riso/buddies).
 const KANKI = [
@@ -513,24 +461,20 @@ const KANKI = [
   require('../../../assets/riso/buddies/riso_b83534.webp'),
 ] as const;
 
-// The game's picture (tuval Aktivite: 56, 14 round; the sheet's 54, 16 round), on its own soft
-// shadow; a chat without a game has the speech bubbles.
+// The game's picture (Gecmis `.th`: 52, 14 round, drawn 1.04 times; the sheet's 56), no shadow; a
+// chat without a game has the speech bubbles.
 function Thumb({
   concept,
-  shadow: css,
-  side = A.thumb.side,
-  radius = A.thumb.radius,
+  side = FLAT.thumb.side,
+  radius = FLAT.thumb.radius,
 }: {
   concept: HistoryConcept;
-  shadow: string;
   side?: number;
   radius?: number;
 }) {
-  const shadow = boxShadowParts(useLabOff('golge'), css || undefined, radius);
   return (
-    <View style={{ width: side, height: side, borderRadius: radius, boxShadow: shadow.boxShadow }}>
-      {shadow.node}
-      <View style={{ width: side, height: side, borderRadius: radius, overflow: 'hidden' }}>
+    <View style={{ width: side, height: side, borderRadius: radius, overflow: 'hidden' }}>
+      <View style={{ width: side, height: side, transform: [{ scale: FLAT.thumb.scale }] }}>
         <Picture concept={concept} side={side} />
       </View>
     </View>
