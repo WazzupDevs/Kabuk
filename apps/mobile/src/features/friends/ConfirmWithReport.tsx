@@ -1,12 +1,16 @@
 import type { GameFlowReportReason } from '@shared/chat.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
 import { create } from 'zustand';
 
-import type { CapIconName } from '@/aura/CapIcon';
-import { Checkbox } from '@/components/Checkbox';
+import { T, useKit } from '@/aura/kit';
+import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { tr } from '@/i18n/tr';
 import { closeOverlay, confirm } from '@/lib/overlayStore';
+import { Tap } from '@/motion';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { useTheme } from '@/theme/ThemeProvider';
 
 type Props<R extends GameFlowReportReason> = {
   visible: boolean;
@@ -31,15 +35,60 @@ type Props<R extends GameFlowReportReason> = {
 type OptionState = { alsoReport: boolean };
 const useOption = create<OptionState>(() => ({ alsoReport: false }));
 
+const L = KIT.layer.size;
+
+// EngelleOnay (61) `.chk`: a row between two hairlines, the box (24, 7 round, a 2 line; ticked
+// the ink with its check) and the words with the line under them saying the reason comes next.
 function ReportOption() {
   const alsoReport = useOption((s) => s.alsoReport);
+  const { scheme } = useTheme();
+  const { c } = useKit();
+  const look = KIT.layer[scheme];
   return (
-    <Checkbox
-      boxed
-      label={tr.friends.alsoReport}
-      checked={alsoReport}
-      onToggle={() => useOption.setState((s) => ({ alsoReport: !s.alsoReport }))}
-    />
+    <Tap
+      sink={false}
+      feel="selection"
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: alsoReport }}
+      accessibilityLabel={`${tr.friends.alsoReport}. ${tr.friends.alsoReportNote}`}
+      testID="confirm-also-report"
+      onPress={() => useOption.setState((s) => ({ alsoReport: !s.alsoReport }))}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: L.checkRowGap,
+        paddingVertical: L.checkRowPad,
+        borderTopWidth: KIT.size.hair,
+        borderBottomWidth: KIT.size.hair,
+        borderColor: look.checkHair,
+      }}
+    >
+      <View
+        style={{
+          width: L.checkBox,
+          height: L.checkBox,
+          borderRadius: L.checkBoxRadius,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: alsoReport ? look.checkOn : 'transparent',
+          boxShadow: alsoReport
+            ? undefined
+            : `inset 0px 0px 0px ${L.checkBoxLine}px ${look.checkLine}`,
+        }}
+      >
+        {alsoReport ? (
+          <CapIcon name="check" size={L.checkMark} color={look.onCheckOn} soft={1} />
+        ) : null}
+      </View>
+      <View style={{ flex: 1 }}>
+        <T v="body" color={c.ink} style={KIT_TYPE.checkRow}>
+          {tr.friends.alsoReport}
+        </T>
+        <T v="body" color={c.muted} style={KIT_TYPE.checkRowNote}>
+          {tr.friends.alsoReportNote}
+        </T>
+      </View>
+    </Tap>
   );
 }
 
@@ -49,7 +98,7 @@ type Waiter = { resolve: () => void; reject: (e: unknown) => void; sawPending: b
 // report in the same transaction before anything is deleted. Now the centred dialog (`confirm`,
 // ortak-temel-plan.md paket 4, EngelleOnay): the option's box sits between the sentence and the
 // buttons, the action waits while the mutation runs, and a failed one leaves the dialog open with
-// the error in its own line. With the box ticked the action closes the dialog and the reason sheet (ReportModal,
+// the error in the top notice over it (Ortak kurallar C4). With the box ticked the action closes the dialog and the reason sheet (ReportModal,
 // still a bottom sheet) opens.
 export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R>) {
   const [pickingReason, setPickingReason] = useState(false);

@@ -28,7 +28,7 @@ type Props = {
   testID?: string;
 };
 
-const TOAST_TOP = SPACING[16] - SPACING[0.5];
+export const TOAST_TOP = SPACING[16] - SPACING[0.5];
 
 // The top notice (yeni arayüz tuvali, 16 Kasım; ortak-temel-plan.md → A12, C4; the earlier game
 // notice's motion): the ink with white words, turned over in the dark; 20 from the sides, 20
