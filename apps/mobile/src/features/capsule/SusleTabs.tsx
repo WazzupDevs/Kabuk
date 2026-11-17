@@ -54,34 +54,35 @@ export function SusleTabs({
       {tabs.map((t) => {
         const on = t.id === open;
         return (
-          <Tap
-            key={t.id}
-            testID={`capsule-tab-${t.id}`}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: on }}
-            accessibilityLabel={t.label}
-            feel="selection"
-            sink={false}
-            onPress={() => onPick(t.id)}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              alignItems: 'center',
-              gap: E.tabs.gap,
-              paddingTop: E.tabs.padTop,
-              paddingBottom: E.tabs.padBottom,
-            }}
-          >
-            <CapIcon
-              name={t.icon}
-              size={E.tabs.icon}
-              color={on ? c.ink : c.muted}
-              second={on ? KIT.pink : c.muted}
-            />
-            <T v="eyebrow" ink={on} strong={on} lines={1} fit center>
-              {t.name}
-            </T>
-          </Tap>
+          // The tab's share of the row is this view's: Tap's `style` is its inner view's, so a
+          // `flex: 1` there leaves the tabs as wide as their words (the owner's report, 17 Kasım).
+          <View key={t.id} style={{ flex: 1, minWidth: 0 }}>
+            <Tap
+              testID={`capsule-tab-${t.id}`}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={t.label}
+              feel="selection"
+              sink={false}
+              onPress={() => onPick(t.id)}
+              style={{
+                alignItems: 'center',
+                gap: E.tabs.gap,
+                paddingTop: E.tabs.padTop,
+                paddingBottom: E.tabs.padBottom,
+              }}
+            >
+              <CapIcon
+                name={t.icon}
+                size={E.tabs.icon}
+                color={on ? c.ink : c.muted}
+                second={on ? KIT.pink : c.muted}
+              />
+              <T v="eyebrow" ink={on} strong={on} lines={1} fit center>
+                {t.name}
+              </T>
+            </Tap>
+          </View>
         );
       })}
       <SlideLine

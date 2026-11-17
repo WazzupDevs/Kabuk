@@ -61,6 +61,11 @@ function popOf(look: string, feeling: string): string {
   return made;
 }
 
+// The room the stage keeps over its circle for what stands over the head (a circle `size` across).
+export function stageHeadroom(size: number): number {
+  return (STAGE.top * size) / STAGE.circle;
+}
+
 // The figure's box for the circle's diameter `size`.
 function figureOf(size: number): { width: number; height: number } {
   const unit = size / STAGE.circle;

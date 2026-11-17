@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, Image, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
@@ -35,6 +35,7 @@ import { tileShown } from '@/capsule/stageGate';
 import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
 import {
   CapsuleStage,
+  stageHeadroom,
   type Play,
   readStageAhead,
   neededBy,
@@ -88,6 +89,8 @@ import { SPACING } from '@/theme/tokens';
 
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
+// The least of the scene's height a short screen leaves it (300 on the board).
+const SCENE_MIN = 0.7;
 // The tabs' names are the board's (the catalog calls Gövde "Boyun").
 const SLOTS = CAPSULE_CATALOG.slots.map((s) => ({
   id: s.id as LookSlot,
@@ -432,7 +435,26 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   // The capsule as the board stands it: its shadow's top `shadowTop` down the scene, the capsule
   // its drawing's gap over it.
   const stageGap = SPACING[2];
-  const stageTop = E.scene.shadowTop - stageGap - stageSize;
+  // The stage keeps room over its circle (the hats'): the circle, not that room, stands over the
+  // shadow, or the capsule comes down over the two buttons (the owner's report, 17 Kasım).
+  const stageTop = E.scene.shadowTop - stageGap - stageSize - stageHeadroom(stageSize);
+  // A screen shorter than the board's (844): the scene gives its height to the tray, so that the
+  // tray's last button stands over the screen's foot; never under SCENE_MIN of its height.
+  const frame = useSafeAreaFrame();
+  const sceneRef = useRef<View>(null);
+  const [sceneY, setSceneY] = useState<number | null>(null);
+  const [trayHeight, setTrayHeight] = useState<number | null>(null);
+  const room =
+    sceneY === null || trayHeight === null
+      ? E.scene.height
+      : frame.height -
+        sceneY -
+        E.panel.top -
+        E.panel.padTop -
+        trayHeight -
+        E.padBottom -
+        insets.bottom;
+  const sceneScale = Math.min(1, Math.max(SCENE_MIN, room / E.scene.height));
   const panelShadow = shadowParts(
     useLabOff('golge'),
     k.panel.shadow || undefined,
@@ -486,15 +508,31 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       >
         {/* The scene on the page's ground: the riso disc, the capsule over its breathing shadow;
         "Hepsini çıkar" and "Rastgele" side by side at its foot. */}
-        <View style={{ height: E.scene.height }}>
+        <View
+          ref={sceneRef}
+          onLayout={() =>
+            sceneRef.current?.measureInWindow((_x, y) => {
+              if (Number.isFinite(y)) setSceneY(Math.round(y));
+            })
+          }
+          style={{ height: E.scene.height * sceneScale }}
+        >
           <View
             pointerEvents="none"
             style={{ ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' }}
           >
-            <RisoDisc side={E.scene.disc} look={k.disc} />
+            <RisoDisc side={Math.round(E.scene.disc * sceneScale)} look={k.disc} />
           </View>
           <View
-            style={{ position: 'absolute', left: 0, right: 0, top: stageTop, alignItems: 'center' }}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: stageTop * sceneScale,
+              alignItems: 'center',
+              transformOrigin: 'top',
+              transform: [{ scale: sceneScale }],
+            }}
           >
             <FloatStage
               drop={drop}
@@ -584,76 +622,91 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           }}
         >
           {panelShadow.node}
-          <SusleTabs
-            tabs={tabs}
-            open={slot}
-            onPick={(id) => setSlot(id as LookSlot)}
-            accessibilityLabel={tr.capsule.slots}
-          />
-          <SusleFilter
-            packs={packs}
-            open={openPack}
-            onPick={setPack}
-            onViewAll={() => router.push('/profile/accessories')}
-          />
-          {/* The trying strip, from one edge of the panel to the other; a new slot or pack opens on
+          <View onLayout={(e) => setTrayHeight(Math.round(e.nativeEvent.layout.height))}>
+            <SusleTabs
+              tabs={tabs}
+              open={slot}
+              onPick={(id) => setSlot(id as LookSlot)}
+              accessibilityLabel={tr.capsule.slots}
+            />
+            <SusleFilter
+              packs={packs}
+              open={openPack}
+              onPick={setPack}
+              onViewAll={() => router.push('/profile/accessories')}
+            />
+            {/* The trying strip, from one edge of the panel to the other; a new slot or pack opens on
           the chosen option without motion. The options' middle where the board has it. */}
-          <View
-            style={{
-              height: SNAP_STRIP_HEIGHT,
-              marginTop: E.strip.top + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
-              marginBottom: E.strip.bottom + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
-            }}
-          >
-            {ready ? (
-              <SnapStrip
-                key={`${slot}|${openPack ?? ''}`}
-                count={shown.length}
-                chosen={chosen}
-                keyOf={(i) => shown[i]?.key ?? String(i)}
-                labelOf={(i) => shown[i]?.name ?? ''}
-                renderItem={(i) => (
-                  <OptionArt
-                    slot={slot}
-                    option={shown[i]}
-                    color={color}
-                    tileNeed={tileNeed}
-                    visible={i >= w.from && i <= w.to}
-                  />
-                )}
-                onPick={(i) => {
-                  const o = shown[i];
-                  if (o) put(o.apply(look), null);
-                }}
-                label={current?.name ?? ''}
-                reduce={reduce}
-                ground={k.tile}
-                ringColor={KIT.pink}
-              />
-            ) : null}
-          </View>
-          {/* The chosen option's name (an accessory's tier beside it). */}
-          <View
-            style={{ alignItems: 'center', marginTop: E.nameTop, paddingHorizontal: E.panel.side }}
-            accessibilityLiveRegion="polite"
-          >
-            <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
-              <T v="capsuleName" ink center fit lines={1}>
-                {chosenOption?.name ?? ''}
-              </T>
-              {chosenOption?.tier ? <TierTag tier={chosenOption.tier} /> : null}
+            <View
+              style={{
+                height: SNAP_STRIP_HEIGHT,
+                marginTop: E.strip.top + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
+                marginBottom: E.strip.bottom + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
+              }}
+            >
+              {ready ? (
+                <SnapStrip
+                  key={`${slot}|${openPack ?? ''}`}
+                  count={shown.length}
+                  chosen={chosen}
+                  keyOf={(i) => shown[i]?.key ?? String(i)}
+                  labelOf={(i) => shown[i]?.name ?? ''}
+                  renderItem={(i) => (
+                    <OptionArt
+                      slot={slot}
+                      option={shown[i]}
+                      color={color}
+                      tileNeed={tileNeed}
+                      visible={i >= w.from && i <= w.to}
+                    />
+                  )}
+                  onPick={(i) => {
+                    const o = shown[i];
+                    if (o) put(o.apply(look), null);
+                  }}
+                  label={current?.name ?? ''}
+                  reduce={reduce}
+                  ground={k.tile}
+                  ringColor={KIT.pink}
+                />
+              ) : null}
+            </View>
+            {/* The chosen option's name (an accessory's tier beside it). */}
+            <View
+              style={{
+                alignItems: 'center',
+                marginTop: E.nameTop,
+                paddingHorizontal: E.panel.side,
+              }}
+              accessibilityLiveRegion="polite"
+            >
+              <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
+                <T v="capsuleName" ink center fit lines={1}>
+                  {chosenOption?.name ?? ''}
+                </T>
+                {chosenOption?.tier ? <TierTag tier={chosenOption.tier} /> : null}
+              </View>
+            </View>
+            {/* Its room stays with nothing worn: the tray, and the scene over it, never change
+          height as an accessory goes on and off. */}
+            <View
+              style={{
+                alignItems: 'center',
+                marginTop: E.actions.top,
+                minHeight: KIT.size.btn,
+                paddingHorizontal: E.panel.side,
+              }}
+            >
+              {wornHere ? (
+                <Btn
+                  icon="block"
+                  testID="capsule-remove-accessory"
+                  label={tr.capsule.removeAccessory}
+                  onPress={() => put(takeAccessoryOff(look, wornHere))}
+                />
+              ) : null}
             </View>
           </View>
-          {wornHere ? (
-            <View style={{ alignItems: 'center', marginTop: E.actions.top }}>
-              <Btn
-                icon="block"
-                testID="capsule-remove-accessory"
-                label={tr.capsule.removeAccessory}
-                onPress={() => put(takeAccessoryOff(look, wornHere))}
-              />
-            </View>
-          ) : null}
         </View>
       </Screen>
       {/* SusleKaydedilemedi (79): the failed save in the top notice, "Tekrar dene" saving again. */}
