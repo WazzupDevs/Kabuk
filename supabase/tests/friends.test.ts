@@ -599,6 +599,12 @@ describe('mutual friends (rule 4)', () => {
     `;
     expect(await mutual(a, b)).toEqual(NONE);
     await sql`delete from public.blocks`;
+
+    // Removed (rule 5): both sides read nothing, like strangers; c drops from nobody else's list.
+    expect(await friends(b, { action: 'remove', publicId: await publicIdOf(a) })).toEqual(OK);
+    expect(await mutual(a, b)).toEqual(NONE);
+    expect(await mutual(b, a)).toEqual(NONE);
+    expect(await mutual(a, c)).toEqual(NONE);
   });
 });
 
