@@ -296,23 +296,20 @@ export const NARROW_SCREEN = 360;
 // session's pin image; colours come from the palette. MAP_FONTS must be font stacks served by the
 // map style's glyph server (OpenFreeMap "liberty" serves Noto Sans), not the app's fonts.
 export const MAP_PIN = {
-  // Bigger and in full colour (the owner's report, 27 Ekim: the pins were faint).
-  radius: 21,
-  // The selected venue grows (canvas: Aşama 5 · Harita işaretçileri; tuval Harita: 64 with its
-  // ring, the others 48).
+  // Yeni arayüz tuvali KesfetHarita `.pin .pc`: 56 across, its 4 ring in how lively the venue is
+  // (theme/explore.ts → level), the picture's white disc 48 inside; the chosen one 68 with a 5 ring
+  // (`.pin.sel .pc`).
+  radius: 24,
   selectedRadius: 29,
-  // The type's picture filling the circle (40 pt in its image, the disc 42): grown with it when
-  // selected (29 / 21).
-  glyphScale: 1,
+  // The type's picture filling the disc (40 pt in its image for a 42 disc): 24 / 21 and 29 / 21.
+  glyphScale: 1.14,
   selectedGlyphScale: 1.38,
-  ring: 3,
+  ring: 4,
+  selectedRing: 5,
   outline: 2,
-  // A lively or crowded venue glows in its colour around the pin (the owner's call, 27 Ekim).
-  halo: 8,
-  haloOpacity: 0.28,
-  // iskelet.md → 5.1: the selected pin's ring in the accent's green, its wider green halo.
-  selectedHalo: 12,
-  selectedHaloOpacity: 0.3,
+  // A crowded venue's glow (`.pin.c .pc`: 6 in its pink at 22 %).
+  halo: 6,
+  haloOpacity: 0.22,
   // The second line under the name: how lively, and the event when there is one.
   statusScale: 0.82,
   eventDot: 6,
@@ -323,13 +320,11 @@ export const MAP_PIN = {
   labelSize: 11.5,
   labelSizeNarrow: 17,
   countSize: 14,
-  // Clear of the pin: the pin's radius, its rings and a gap, in the label's ems.
-  labelOffset: 2.4,
+  // Clear of the pin: its radius, its ring and the board's 8 (`.pin` gap), in the label's ems.
+  labelOffset: 3.1,
   labelHalo: 2.5,
-  // U14 (KesfetHarita `.pd`): the pin's white ring and its shadow's colour, by scheme; tuval
-  // Harita: 0 8 20 in the ink at 25 %.
-  pinRing: { light: '#FFFFFF', dark: '#EAF6EC' },
-  pinShadow: { light: 'rgba(3, 27, 11, 0.25)', dark: 'rgba(0, 0, 0, 0.5)' },
+  // The pin's shadow (`.pin .pc`: 0 8 18, black at 24 % in both schemes).
+  pinShadow: { light: 'rgba(0, 0, 0, 0.24)', dark: 'rgba(0, 0, 0, 0.24)' },
   shadowY: 8,
 } as const;
 export const MAP_FONTS = { bold: ['Noto Sans Bold'] } as const;
