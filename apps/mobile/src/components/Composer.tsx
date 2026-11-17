@@ -2,8 +2,10 @@ import { forwardRef, type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, Text as RNText, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
+  LayoutAnimationConfig,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSequence,
   withSpring,
   withTiming,
@@ -526,16 +528,27 @@ function SendIn({
             {sending ? (
               <Loader kind="meet" size={ICON.md} delay={0} label={null} />
             ) : (
-              <Svg width={arrow} height={arrow} viewBox="0 0 24 24">
-                <Path
-                  d={confirm ? TICK : dm ? ARROW_UP_DM : ARROW_UP}
-                  fill="none"
-                  stroke={KIT.onPrimary}
-                  strokeWidth={dm ? ARROW_STROKE : ARROW_STROKE_CARD}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </Svg>
+              // The motion table's A4 4.2 and 4.3: the arrow and the edit's tick change places, the
+              // old one fading, the new one popping in; at once with reduce motion. The icon drawn
+              // with the button stands still.
+              <LayoutAnimationConfig skipEntering skipExiting>
+                <Animated.View
+                  key={confirm ? 'tick' : 'arrow'}
+                  entering={reduce ? undefined : sendIconIn}
+                  exiting={reduce ? undefined : sendIconOut}
+                >
+                  <Svg width={arrow} height={arrow} viewBox="0 0 24 24">
+                    <Path
+                      d={confirm ? TICK : dm ? ARROW_UP_DM : ARROW_UP}
+                      fill="none"
+                      stroke={KIT.onPrimary}
+                      strokeWidth={dm ? ARROW_STROKE : ARROW_STROKE_CARD}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </Animated.View>
+              </LayoutAnimationConfig>
             )}
           </View>
         </Animated.View>
@@ -543,6 +556,26 @@ function SendIn({
     </Pressable>
   );
 }
+// A4 4.2: the new icon pops from tab.iconPopFrom on springs.pop, tab.iconInDelay after the old one
+// starts fading over tab.oldIconOutMs.
+const sendIconIn = () => {
+  'worklet';
+  const t = MOTION.tab;
+  return {
+    initialValues: { opacity: 0, transform: [{ scale: t.iconPopFrom }] },
+    animations: {
+      opacity: withDelay(t.iconInDelay, withTiming(1, { duration: 0 })),
+      transform: [{ scale: withDelay(t.iconInDelay, withSpring(1, MOTION.springs.pop)) }],
+    },
+  };
+};
+const sendIconOut = () => {
+  'worklet';
+  return {
+    initialValues: { opacity: 1 },
+    animations: { opacity: withTiming(0, { duration: MOTION.tab.oldIconOutMs }) },
+  };
+};
 // iskelet.md → 2.4: the line icons' stroke, round ends.
 const ARROW_UP = 'M12 19V5M5.5 11.5 12 5l6.5 6.5';
 // tuval Dm: the shaft from 19 to 6, the head 5.5 to either side.
@@ -622,30 +655,48 @@ export function DraftComposer({
   );
 }
 
-// The message being edited, over the message bar (docs/SPEC_V4.md §4.X; the motion table's A4 4.1:
-// it arrives in dissolve.inMs, rising dissolve.rise; still with reduce motion).
+// The motion table's A4 4.1: the strip arrives once the message's menu has closed (dissolve.outMs),
+// in dissolve.inMs on the arrive curve, rising dissolve.rise.
+const editStripIn = () => {
+  'worklet';
+  const d = MOTION.dissolve;
+  const arrive = Easing.bezier(...MOTION.curves.arrive);
+  return {
+    initialValues: { opacity: 0, transform: [{ translateY: d.rise }] },
+    animations: {
+      opacity: withDelay(d.outMs, withTiming(1, { duration: d.inMs, easing: arrive })),
+      transform: [
+        { translateY: withDelay(d.outMs, withTiming(0, { duration: d.inMs, easing: arrive })) },
+      ],
+    },
+  };
+};
+// A4 4.3: saved or given up, it fades out in dissolve.outMs on the leave curve.
+const editStripOut = () => {
+  'worklet';
+  return {
+    initialValues: { opacity: 1 },
+    animations: {
+      opacity: withTiming(0, {
+        duration: MOTION.dissolve.outMs,
+        easing: Easing.bezier(...MOTION.curves.leave),
+      }),
+    },
+  };
+};
+
+// The message being edited, over the message bar (docs/SPEC_V4.md §4.X; the motion table's A4 4.1
+// and 4.3; still with reduce motion).
 function EditStrip({ text, onCancel }: { text: string; onCancel: () => void }) {
   const { colors, shape } = useTheme();
   const k = useKit();
   const look = DM[k.scheme].composer;
   const reduce = useReduceMotion();
-  const p = useSharedValue(reduce ? 1 : 0);
-  useEffect(() => {
-    if (reduce) return;
-    p.set(
-      withTiming(1, {
-        duration: MOTION.dissolve.inMs,
-        easing: Easing.bezier(...MOTION.curves.arrive),
-      }),
-    );
-  }, [reduce, p]);
-  const style = useAnimatedStyle(() => ({
-    opacity: p.get(),
-    transform: [{ translateY: (1 - p.get()) * MOTION.dissolve.rise }],
-  }));
   // Board 02d: a glass strip, the pencil, the title over the old text, a × at the right.
   return (
     <Animated.View
+      entering={reduce ? undefined : editStripIn}
+      exiting={reduce ? undefined : editStripOut}
       testID="edit-strip"
       style={[
         {
@@ -660,7 +711,6 @@ function EditStrip({ text, onCancel }: { text: string; onCancel: () => void }) {
           borderWidth: KIT.size.edge,
           borderColor: look.edge,
         },
-        style,
       ]}
     >
       <AppIcon name="pencil" color={colors.text} size={ICON.md} />

@@ -13,7 +13,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { OPACITY, SPACING } from '@/theme/tokens';
 
 import type { IconName } from './Button';
-import { Menu, MenuItem } from './Menu';
+import { Menu, MenuItem, MenuNote } from './Menu';
 import { ReactionFace } from './ReactionFace';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from './NativeShadow';
@@ -64,6 +64,7 @@ export function MessagePop({
   onClose,
   onReact,
   actions,
+  note,
   children,
 }: {
   at: PopAnchor;
@@ -73,6 +74,8 @@ export function MessagePop({
   onClose: () => void;
   onReact?: (emoji: Reaction) => void;
   actions: readonly BubbleAction[];
+  // Under the actions (tuval DmMenuSureDoldu: "Mesajın 15 dakika içinde düzenlenebilir.").
+  note?: string;
   // The bubble, drawn again over the scrim.
   children: ReactNode;
 }) {
@@ -203,6 +206,7 @@ export function MessagePop({
                   }}
                 />
               ))}
+              {note ? <MenuNote>{note}</MenuNote> : null}
             </Menu>
           </Reanimated.View>
         ) : null}

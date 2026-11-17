@@ -13,6 +13,11 @@ export const DM = {
   tail: { width: 6, height: 16 },
   // The time 11 from the bubble's right and 6 from its foot, the ticks 16 × 11, 3 from it.
   time: { right: 11, bottom: 6, gap: 3, ticks: 16 },
+  // tuval DmDuzenlendi (`.s .edt`): "düzenlendi" before the time, 500 and slanted, at 90 %, 4 from
+  // it.
+  edited: { gap: 4, opacity: 0.9 },
+  // tuval DmDuzenle (`.msg.edg`): the message being edited outlined 2 in the ink, 2 out from it.
+  editing: { outline: 2, offset: 2 },
   // The day: a glass pill 28 high, 12 in, 6 under the previous message and 12 over the next.
   day: { height: 28, padX: 12, top: 6, bottom: 12 },
   // The top bar: 14 from the sides, the back and the capsule 8 apart; in the capsule the face 38,
@@ -36,6 +41,9 @@ export const DM = {
   // The menu: 6 inside above and under, its rows 50 high, 16 in, 12 between the icon (20) and the
   // words; the destructive group 6 under a 6 high band.
   menu: { width: 256, padY: 6, row: 50, padX: 16, gap: 12, icon: 20, bandGap: 6 },
+  // tuval DmMenuSureDoldu (`.pnote`): the held message's menu's note, 4 under its rows over a
+  // hairline, 8 / 12 / 6 inside.
+  menuNote: { top: 4, padTop: 8, padX: 12, padBottom: 6 },
   light: {
     // Another's bubble's soft shadow and the own one's (no line on the own: the board draws none).
     themShadow: '0px 4px 12px rgba(20, 60, 140, 0.18)',

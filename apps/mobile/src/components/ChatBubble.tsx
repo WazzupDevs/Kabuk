@@ -14,9 +14,16 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import Reanimated, {
+  Easing,
+  LayoutAnimationConfig,
+  LinearTransition,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
 import { useKit } from '@/aura/kit';
+import { MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
 import { tr } from '@/i18n/tr';
@@ -78,6 +85,16 @@ type Props = {
   last?: boolean;
   // In the bubble's bottom corner, after the text (v45: .bub time).
   time?: string;
+  // An edited message (docs/SPEC_V4.md §4.X): "düzenlendi" before the time, slanted (tuval
+  // DmDuzenlendi); written after the bubble first drew, it fades in (the motion table's A4 4.4).
+  edited?: string;
+  // The message being edited in the message bar: outlined (tuval DmDuzenle).
+  editing?: boolean;
+  // The bubble takes a new size on springs.morph (A4 4.4: an edit's new text): set from when its
+  // edit starts, so the change finds it ready.
+  morph?: boolean;
+  // Under the held message's actions (tuval DmMenuSureDoldu: why "Düzenle" is not there).
+  menuNote?: string;
   // Own DM messages (canvas: Aşama 5 · Geri bildirim → DM): one tick sent, two delivered, two in
   // the read colour read. Shown next to the time.
   delivery?: Delivery;
@@ -152,6 +169,10 @@ export function ChatBubble({
   first = true,
   last = true,
   time,
+  edited,
+  editing = false,
+  morph = false,
+  menuNote,
   delivery,
   quote,
   onPressQuote,
@@ -165,6 +186,7 @@ export function ChatBubble({
   skinMoves = true,
 }: Props) {
   const { shape } = useTheme();
+  const reduce = useReduceMotion();
   // A long press lifts the message over a scrim with the faces and its actions (MessagePop), from
   // where it sits on the screen.
   const faceRef = useRef<View>(null);
@@ -211,7 +233,9 @@ export function ChatBubble({
   // Telegram Android's bubble (the owner's call, 30 Ekim; iskelet.md → 5.5: 20 round, 7 tight): on
   // the author's side (left for others, right for the viewer's own) the corners inside a run are
   // tight, and the run's last bubble has a tail at its foot.
-  const { scheme } = useKit();
+  const { scheme, c: kitC } = useKit();
+  // The outline of the message being edited: the ink (tuval DmDuzenle, `var(--text)`).
+  const inkLine = kitC.ink;
   const kind = useChatKind();
   const metaRef = useChatMetaRef();
   // The owner's call (29 Ekim, again on 4 Kasım): the viewer's own bubble white (a soft off-white
@@ -300,7 +324,7 @@ export function ChatBubble({
     const lines = e.nativeEvent.lines;
     const [a, b] = lines;
     if (lines.length !== 2 || !a || !b || !time) return;
-    if (b.text.replace(/\s/g, '') !== time.replace(/\s/g, '')) return;
+    if (b.text.replace(/\s/g, '') !== stampRoom(time, edited).replace(/\s/g, '')) return;
     const need = Math.ceil(a.width + b.width + WIDEN_SLACK);
     if (need <= maxText) setWiden(need);
   };
@@ -366,119 +390,174 @@ export function ChatBubble({
                 if (box?.w !== w || box?.h !== h) setBox({ w, h });
               }
         }
-        // docs/design/aura → Dm (`.msg`): 22 round, the corner towards the author 8 at the
-        // bottom. Never see-through (the owner's call, 29 Ekim): the own white, another's in the
-        // chat's colour (DM blue, Mekan sohbeti green, Masa sohbeti purple).
-        style={[
-          big || skinned
-            ? null
-            : mineLine
-              ? {
-                  backgroundColor: shaped ? undefined : fill,
-                  borderWidth: KIT.size.edge,
-                  borderColor: shaped ? 'transparent' : paint.mineEdge,
-                  boxShadow: bubbleShadow.boxShadow,
-                }
-              : { backgroundColor: shaped ? undefined : fill, boxShadow: bubbleShadow.boxShadow },
-          big
-            ? {
-                opacity: state === 'sending' ? 0.6 : 1,
-                alignItems: mine ? 'flex-end' : 'flex-start',
-              }
-            : {
-                ...pad,
-                borderTopLeftRadius: radii[0],
-                borderTopRightRadius: radii[1],
-                borderBottomRightRadius: radii[2],
-                borderBottomLeftRadius: radii[3],
-                opacity: state === 'sending' ? 0.6 : 1,
-              },
-          skin && skinned ? skinFace(skin, mine, scheme, first, last) : null,
-        ]}
       >
-        {skin && skinned ? (
-          <SkinFrame skin={skin} mine={mine} first={first} last={last} moves={skinMoves} />
-        ) : null}
-        {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
-        {big || skinned ? null : bubbleShadow.node}
-        {skinned ? null : shaped ? (
-          <BubbleShape
-            mine={mine}
-            w={box.w}
-            h={box.h}
-            radii={radii}
-            fill={fill}
-            line={mineLine ? paint.mineEdge : undefined}
-            tailW={tail.width}
-            tailH={tail.height}
-          />
-        ) : last && !big ? (
-          <BubbleTail
-            side={mine ? 'right' : 'left'}
-            color={fill}
-            edge={mineLine ? KIT.size.edge : 0}
-            w={tail.width}
-            h={tail.height}
-          />
-        ) : null}
-        {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the
+        <Reanimated.View
+          // A4 4.4: an edited text's new size on springs.morph; at once with reduce motion.
+          layout={morph && !lifted && !reduce ? MORPH_LAYOUT : undefined}
+          // docs/design/aura → Dm (`.msg`): 22 round, the corner towards the author 8 at the
+          // bottom. Never see-through (the owner's call, 29 Ekim): the own white, another's in the
+          // chat's colour (DM blue, Mekan sohbeti green, Masa sohbeti purple).
+          style={[
+            big || skinned
+              ? null
+              : mineLine
+                ? {
+                    backgroundColor: shaped ? undefined : fill,
+                    borderWidth: KIT.size.edge,
+                    borderColor: shaped ? 'transparent' : paint.mineEdge,
+                    boxShadow: bubbleShadow.boxShadow,
+                  }
+                : { backgroundColor: shaped ? undefined : fill, boxShadow: bubbleShadow.boxShadow },
+            big
+              ? {
+                  opacity: state === 'sending' ? 0.6 : 1,
+                  alignItems: mine ? 'flex-end' : 'flex-start',
+                }
+              : {
+                  ...pad,
+                  borderTopLeftRadius: radii[0],
+                  borderTopRightRadius: radii[1],
+                  borderBottomRightRadius: radii[2],
+                  borderBottomLeftRadius: radii[3],
+                  opacity: state === 'sending' ? 0.6 : 1,
+                },
+            skin && skinned ? skinFace(skin, mine, scheme, first, last) : null,
+            editing && !lifted
+              ? {
+                  outlineWidth: DM.editing.outline,
+                  outlineStyle: 'solid',
+                  outlineColor: inkLine,
+                  outlineOffset: DM.editing.offset,
+                }
+              : null,
+          ]}
+        >
+          {skin && skinned ? (
+            <SkinFrame skin={skin} mine={mine} first={first} last={last} moves={skinMoves} />
+          ) : null}
+          {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
+          {big || skinned ? null : bubbleShadow.node}
+          {skinned ? null : shaped ? (
+            <BubbleShape
+              mine={mine}
+              w={box.w}
+              h={box.h}
+              radii={radii}
+              fill={fill}
+              line={mineLine ? paint.mineEdge : undefined}
+              tailW={tail.width}
+              tailH={tail.height}
+            />
+          ) : last && !big ? (
+            <BubbleTail
+              side={mine ? 'right' : 'left'}
+              color={fill}
+              edge={mineLine ? KIT.size.edge : 0}
+              w={tail.width}
+              h={tail.height}
+            />
+          ) : null}
+          {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the
             face beside it (the owner's call, 28 Ekim). The venue chat's is over the bubble (P4). */}
-        {inside && !venue && first && name ? (
-          <Pressable
-            testID={testID ? `${testID}-name` : undefined}
-            accessibilityRole="button"
-            accessibilityLabel={tr.chat.openProfile(name)}
-            disabled={!onPressSender}
-            onPress={onPressSender}
-            hitSlop={SPACING[1.5]}
-            style={{ alignSelf: 'flex-start', marginBottom: NAME_GAP }}
-          >
-            <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: big ? fill : paint.themInk }]}>
-              {name}
-            </RNText>
-          </Pressable>
-        ) : null}
-        {quote ? <QuoteBlock quote={quote} onColor={onColour} onPress={onPressQuote} /> : null}
-        {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
+          {inside && !venue && first && name ? (
+            <Pressable
+              testID={testID ? `${testID}-name` : undefined}
+              accessibilityRole="button"
+              accessibilityLabel={tr.chat.openProfile(name)}
+              disabled={!onPressSender}
+              onPress={onPressSender}
+              hitSlop={SPACING[1.5]}
+              style={{ alignSelf: 'flex-start', marginBottom: NAME_GAP }}
+            >
+              <RNText
+                style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: big ? fill : paint.themInk }]}
+              >
+                {name}
+              </RNText>
+            </Pressable>
+          ) : null}
+          {quote ? <QuoteBlock quote={quote} onColor={onColour} onPress={onPressQuote} /> : null}
+          {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
             React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
             into each other): the text ends with an invisible copy of the time, which makes the
             room, and the time is laid over that room. */}
-        {big ? (
-          <BigEmoji
-            text={text}
-            count={big}
-            time={time && !state ? time : undefined}
-            delivery={mine ? delivery : undefined}
-            stamp={paint.stamp}
-            stampInk={paint.stampInk}
-          />
-        ) : chipsInside ? (
-          <>
-            <RNText style={[msgType, { color: fg }]}>{text}</RNText>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'flex-end',
-                gap: SPACING[2],
-                marginTop: SPACING[1.5],
-              }}
-            >
-              <ReactionChips
-                reactions={reactions ?? []}
-                onToggle={onToggleReaction}
-                paint={chipPaint}
-              />
+          {big ? (
+            <BigEmoji
+              text={text}
+              count={big}
+              time={time && !state ? (edited ? `${edited} ${time}` : time) : undefined}
+              delivery={mine ? delivery : undefined}
+              stamp={paint.stamp}
+              stampInk={paint.stampInk}
+            />
+          ) : chipsInside ? (
+            <>
+              <RNText style={[msgType, { color: fg }]}>{text}</RNText>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-end',
+                  gap: SPACING[2],
+                  marginTop: SPACING[1.5],
+                }}
+              >
+                <ReactionChips
+                  reactions={reactions ?? []}
+                  onToggle={onToggleReaction}
+                  paint={chipPaint}
+                />
+                {time && !state ? (
+                  <View
+                    ref={metaRef}
+                    style={{
+                      marginLeft: 'auto',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: SPACING[1],
+                    }}
+                    importantForAccessibility="no-hide-descendants"
+                  >
+                    <EditedMark label={edited} color={muted} />
+                    <Stamp dm={dm} color={muted}>
+                      {time}
+                    </Stamp>
+                    {mine && delivery ? (
+                      <DeliveryTicks
+                        delivery={delivery}
+                        inBubble
+                        plainInk={muted}
+                        size={dm ? DM.time.ticks : undefined}
+                      />
+                    ) : null}
+                  </View>
+                ) : null}
+              </View>
+            </>
+          ) : (
+            <View style={widen ? { minWidth: widen } : undefined}>
+              <RNText style={[msgType, { color: fg }]} onTextLayout={onTextLayout}>
+                {text}
+                {time && !state ? (
+                  <Stamp dm={dm} color={withAlpha(fg, HIDDEN_ALPHA)} hidden>
+                    {`${TIME_GAP}${stampRoom(time, edited)}${mine && delivery ? TICKS_ROOM : ''}`}
+                  </Stamp>
+                ) : null}
+              </RNText>
               {time && !state ? (
                 <View
                   ref={metaRef}
                   style={{
-                    marginLeft: 'auto',
+                    position: 'absolute',
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: SPACING[1],
+                    gap: dm ? DM.time.gap : SPACING[1],
+                    // tuval Dm: 11 from the bubble's right, 6 from its foot.
+                    right: dm ? DM.time.right - DM.bubble.padRight : 0,
+                    bottom: dm ? DM.time.bottom - DM.bubble.padBottom : 0,
                   }}
                   importantForAccessibility="no-hide-descendants"
                 >
+                  <EditedMark label={edited} color={muted} />
                   <Stamp dm={dm} color={muted}>
                     {time}
                   </Stamp>
@@ -493,46 +572,8 @@ export function ChatBubble({
                 </View>
               ) : null}
             </View>
-          </>
-        ) : (
-          <View style={widen ? { minWidth: widen } : undefined}>
-            <RNText style={[msgType, { color: fg }]} onTextLayout={onTextLayout}>
-              {text}
-              {time && !state ? (
-                <Stamp dm={dm} color={withAlpha(fg, HIDDEN_ALPHA)} hidden>
-                  {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
-                </Stamp>
-              ) : null}
-            </RNText>
-            {time && !state ? (
-              <View
-                ref={metaRef}
-                style={{
-                  position: 'absolute',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: dm ? DM.time.gap : SPACING[1],
-                  // tuval Dm: 11 from the bubble's right, 6 from its foot.
-                  right: dm ? DM.time.right - DM.bubble.padRight : 0,
-                  bottom: dm ? DM.time.bottom - DM.bubble.padBottom : 0,
-                }}
-                importantForAccessibility="no-hide-descendants"
-              >
-                <Stamp dm={dm} color={muted}>
-                  {time}
-                </Stamp>
-                {mine && delivery ? (
-                  <DeliveryTicks
-                    delivery={delivery}
-                    inBubble
-                    plainInk={muted}
-                    size={dm ? DM.time.ticks : undefined}
-                  />
-                ) : null}
-              </View>
-            ) : null}
-          </View>
-        )}
+          )}
+        </Reanimated.View>
       </View>
     );
   }
@@ -554,6 +595,7 @@ export function ChatBubble({
         current={reactions?.find((r) => r.mine)?.emoji ?? null}
         onClose={close}
         onReact={onReact}
+        note={menuNote}
         actions={[
           ...(onReply
             ? [{ label: tr.chat.reply, icon: 'arrow-undo' as const, onPress: onReply }]
@@ -1291,6 +1333,55 @@ function ReactionChips({
         </Pressable>
       ))}
     </View>
+  );
+}
+
+// The room the time takes in the words, with "düzenlendi" before it (an en space for the 4 between
+// them).
+function stampRoom(time: string, edited: string | undefined): string {
+  return edited ? `${edited}\u2002${time}` : time;
+}
+
+// A4 4.4: an edited bubble's new size.
+const MORPH_LAYOUT = LinearTransition.springify()
+  .stiffness(MOTION.springs.morph.stiffness)
+  .damping(MOTION.springs.morph.damping)
+  .mass(MOTION.springs.morph.mass);
+
+// A4 4.4: "düzenlendi" fades in (dissolve.inMs, arrive) when an edit writes it.
+const editedIn = () => {
+  'worklet';
+  return {
+    initialValues: { opacity: 0 },
+    animations: {
+      opacity: withTiming(1, {
+        duration: MOTION.dissolve.inMs,
+        easing: Easing.bezier(...MOTION.curves.arrive),
+      }),
+    },
+  };
+};
+
+// "düzenlendi" before the time (tuval DmDuzenlendi, `.s .edt`): 500 and slanted, at 90 %, 4 from
+// the time. Drawn with the bubble it stands still; written later, it fades in (at once with reduce
+// motion).
+function EditedMark({ label, color }: { label: string | undefined; color: string }) {
+  const reduce = useReduceMotion();
+  return (
+    <LayoutAnimationConfig skipEntering>
+      {label ? (
+        <Reanimated.View
+          entering={reduce ? undefined : editedIn}
+          style={{ marginRight: DM.edited.gap }}
+        >
+          <RNText
+            style={[KIT_TYPE.msgEdited, KIT_TYPE.italic, { color, opacity: DM.edited.opacity }]}
+          >
+            {label}
+          </RNText>
+        </Reanimated.View>
+      ) : null}
+    </LayoutAnimationConfig>
   );
 }
 
