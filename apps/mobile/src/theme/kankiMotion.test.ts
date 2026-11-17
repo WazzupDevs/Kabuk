@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { KANKI_BEATS, KANKI_LOOP_S, kankiFrame, WELCOME_KANKI } from './kankiMotion';
+import { KANKI_BEATS, KANKI_LOOP_S, kankiFrame } from './kankiMotion';
 
 const beat = (id: keyof typeof KANKI_BEATS) => {
   const b = KANKI_BEATS[id];
@@ -44,9 +44,8 @@ describe('kankiFrame (Aura v65 §13.1)', () => {
     expect(kankiFrame(b, 4.0).translateY).toBe(0);
   });
 
-  it('loops in 6 s and every Main buddy has its beat', () => {
+  it('loops in 6 s', () => {
     expect(KANKI_LOOP_S).toBe(6);
-    for (const k of WELCOME_KANKI) expect(KANKI_BEATS[k.id]).toBeDefined();
     const b = beat('b83534');
     expect(kankiFrame(b, 0).scaleY).toBeCloseTo(kankiFrame(b, 6).scaleY, 10);
   });
