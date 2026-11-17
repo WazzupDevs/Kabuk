@@ -235,3 +235,52 @@ export function krotTimer(left: number, total: number): 'full' | 'half' | 'low' 
   return left >= total * KROT_FULL ? 'full' : 'half';
 }
 const KROT_FULL = 0.75;
+
+// Krot's İpucu turu and Oyun sonu as the new interface boards draw them (yeni arayüz tuvali, 17
+// Kasım: KrotIpucu, KrotSonuc; 390 × 844, the status bar 47 high). The buttons' heights are the
+// kit's (KIT.size): the board's 56 high Söyledim and foot buttons are the long one.
+const FJ600 = 'PlusJakartaSans_600SemiBold';
+const FJ700 = 'PlusJakartaSans_700Bold';
+const FJ800 = 'PlusJakartaSans_800ExtraBold';
+
+export const KROT_BOARD_TYPE = {
+  // The bar's title (`.gn b`, 700/17) and its line (`.gn span`, 500/13), the timer (`.tmr`, 700/15,
+  // tabular).
+  barTitle: risoType(FJ700, 17, 22),
+  barLine: risoType('PlusJakartaSans_500Medium', 13, 18),
+  timer: { ...risoType(FJ700, 15, 20), fontVariant: ['tabular-nums'] } as TextStyle,
+  // The card: the eyebrow (`.kick`, 700/12, 0.4 px), the title (`.q1`, 700/24, -0.4 px), the line
+  // (`.q2`, 500/14).
+  kick: risoType(FJ700, 12, 16, 0.4 / 12),
+  title: risoType(FJ700, 24, 30, -0.4 / 24),
+  note: risoType('PlusJakartaSans_500Medium', 14, 20),
+  // A row (`.rr p`, 600/15; its line 500/13), the tag (`.tag`, 600/12), the section (`.sec`,
+  // 600/12, 0.24 px).
+  rowName: risoType(FJ600, 15, 20),
+  rowLine: risoType('PlusJakartaSans_500Medium', 13, 17),
+  section: risoType(FJ600, 12, 16, 0.24 / 12),
+  // The hold card's title (`.hold p`, 600/15) and line (500/13).
+  holdTitle: risoType(FJ600, 15, 20),
+  // Oyun sonu: the winner (`.rs-h h1`, 800/30, -0.6 px), the word (22/700), its line (14/500).
+  winner: risoType(FJ800, 30, 38, -0.6 / 30),
+  word: risoType(FJ700, 22, 28, -0.4 / 22),
+} as const;
+
+export const KROT_BOARD = {
+  // The bar (`.gt`): 5 under the status bar, 16 from the sides, its parts 10 apart; the picture 56
+  // × 40, 12 round. The timer (`.tmr`): 40 high, 8 / 12 in, 4 between its icon (22) and the time.
+  bar: { top: 5, side: 16, gap: 10, posterW: 56, posterH: 40, posterRadius: 12 },
+  timer: { height: 40, padLeft: 8, padRight: 12, gap: 4, icon: 22 },
+  // The card (`.card`): 20 in; its title 4 under the eyebrow, its line 6 under the title.
+  card: { pad: 20, titleTop: 4, noteTop: 6 },
+  // A row (`.rr`): 56 high at least, 12 between its parts, the face 40, the hairline from 56; the
+  // speaker's (`.cur`) 18 round, 12 in, a 2 ring in the ink. Rows 2 apart; the people not in the
+  // game at 38 %.
+  row: { min: 56, gap: 12, face: 40, hairIn: 56, radius: 18, padX: 8, curPadX: 12, ring: 2 },
+  rowsGap: 2,
+  gone: 0.38,
+  // The hold card (`.hold`): 12 / 16 in, 12 between its parts.
+  hold: { padY: 12, padX: 16, gap: 12, icon: 24 },
+  // Oyun sonu: the body's parts 16 apart; the word card 16 / 20 in; the winner's block 4 apart.
+  end: { gap: 16, cardPadY: 16, cardPadX: 20, headGap: 4, wordTop: 4, hold: 8 },
+} as const;
