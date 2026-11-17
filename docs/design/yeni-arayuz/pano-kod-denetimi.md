@@ -25,10 +25,7 @@ UYUYOR: Mesajlar, Arşiv dolu, DM sohbet, Geçmiş, Geçmiş masa, Arkadaşlar s
 KARAR GEREĞİ: Keşfet çipi 40 (kod 36); cam/blur.
 UYUYOR: palet, yazı ölçeği, köşe, kenar 20, glass, düğme türleri, çip, tag, seg, mesaj satırı, dialog, menü, sheet, toast, örtü, Loader.
 ## D (keşfet, mekan, masa)
-1 MASA KUR (32a-c) HİÇ: CreateTableSheet.tsx eski v47; pano MasaKur/MasaKurLobi/MasaKurGorsel (214 görsel önizleme, görsel sırası, kimlik satırı, 56 "Masayı kur", oyun resimli çipler, ayrı görsel sayfası). LobbyChoices düz çip.
-2 MASA BİTTİ (64) HİÇ: TableEnd.tsx eski sahne; pano MasaBitti (350×200 fotoğraf, h1 32, camsız satırlar .pr2, 56 "Mekâna dön" sabit).
 3 64a "arkadaş oldunuz" toast + "Mesaj at" yok (K-70 emin değil).
-4 132 Masadan çıkarıldın: eski görünüş.
 5 GELEN İSTEK (125,129) HİÇ: IncomingRequest.tsx eski kart; pano merkez dialog (MasaIstekGelen, MasaBuradayimGelen).
 6 Kimlik onayları (25, 25b) alt sayfa; pano merkez dialog (IdentitySheet.tsx).
 7 Mekandan ayrıl (26): danger düğme "Mekandan ayrıl" + metin farklı (venue.tsx:67).

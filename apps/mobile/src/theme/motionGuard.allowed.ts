@@ -42,7 +42,6 @@ export const MOTION_ALLOWED: readonly string[] = [
   'src/features/onboarding/ConsentBoxes.tsx',
   'src/features/profile/LivingLook.tsx',
   'src/features/profile/ProfileCard.tsx',
-  'src/features/rooms/CreateTableSheet.tsx',
   'src/features/rooms/PosterCard.tsx',
   'src/features/rooms/RoomPeople.tsx',
   'src/features/rooms/TableScene.tsx',

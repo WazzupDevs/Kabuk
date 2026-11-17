@@ -16,7 +16,7 @@ describe('an account change', () => {
   });
 
   it("does not leave the last account's Masa bitti to the next one", () => {
-    useTableEndStore.getState().remember('room-1', 'Köşe', 3, ['Elif']);
+    useTableEndStore.getState().remember('room-1', 'Köşe', 3, ['Elif'], null);
     useTableEndStore.getState().markLeft('room-1');
     forgetAccountMemory();
     expect(useTableEndStore.getState().tables).toEqual({});

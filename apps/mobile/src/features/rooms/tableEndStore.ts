@@ -8,19 +8,27 @@ export type SeenTable = {
   name: string;
   phones: number;
   profiled: readonly string[];
+  // The table's picture (Masa bitti's hero, yeni arayüz tuvali 64).
+  icon: string | null;
   left: boolean;
 };
 
 type TableEndState = {
   tables: Record<string, SeenTable>;
-  remember: (roomId: string, name: string, phones: number, profiled: readonly string[]) => void;
+  remember: (
+    roomId: string,
+    name: string,
+    phones: number,
+    profiled: readonly string[],
+    icon: string | null,
+  ) => void;
   markLeft: (roomId: string) => void;
   forget: (roomId: string) => void;
 };
 
 export const useTableEndStore = create<TableEndState>((set) => ({
   tables: {},
-  remember: (roomId, name, phones, profiled) =>
+  remember: (roomId, name, phones, profiled, icon) =>
     set((s) => {
       const known = s.tables[roomId];
       // Someone who left keeps the name they were seen with.
@@ -29,13 +37,14 @@ export const useTableEndStore = create<TableEndState>((set) => ({
         known &&
         known.name === name &&
         known.phones === phones &&
+        known.icon === icon &&
         known.profiled.join('\n') === seen.join('\n')
       )
         return s;
       return {
         tables: {
           ...s.tables,
-          [roomId]: { name, phones, profiled: seen, left: known?.left ?? false },
+          [roomId]: { name, phones, profiled: seen, icon, left: known?.left ?? false },
         },
       };
     }),

@@ -195,6 +195,16 @@ export const KIT_TYPE = {
   // section's head in small letters (13, 700). The dialog's title is the page's; its words 15/500;
   // the long-press menu's row 15/600; the toast's title 14/600 and its line 12/500.
   pageBarTitle: t(700, 21, 26, -0.3 / 21),
+  // Masa kur (yeni arayüz tuvali 32a–32c, theme/tableSetup.ts): the picture's name pill 14/700,
+  // "Rastgele" 13/600, "ÖNERİ" 10/700, the pictures' head 15/700, "Başka masada" 11/700. Masa
+  // bitti (64, 132): the title 32/700 at -0.6 px, its line 15/500.
+  setupPill: t(700, 14, 18),
+  setupShuffle: t(600, 13, 16),
+  setupBadge: t(700, 10, 14, 0.4 / 10),
+  setupHead: t(700, 15, 20),
+  setupTaken: t(700, 11, 14),
+  endTitle: t(700, 32, 38, -0.6 / 32),
+  endLine: t(500, 15, 20),
   sectionHead: t(700, 13, 18),
   dialogText: t(500, 15, 22),
   holdRow: t(600, 15, 20),

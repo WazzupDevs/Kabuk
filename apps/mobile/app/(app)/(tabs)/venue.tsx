@@ -307,6 +307,7 @@ export default function VenueScreen() {
               <CreateTableSheet
                 onClose={() => setCreating(false)}
                 venueId={checkIn.data.venue_id}
+                venueName={checkIn.data.venue?.name ?? ''}
                 usedIcons={usedIcons}
                 anonymous={anonymous}
               />
