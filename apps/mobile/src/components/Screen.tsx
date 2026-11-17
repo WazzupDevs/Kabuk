@@ -40,6 +40,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { PullScroll } from '@/components/PullScroll';
 
+import { EmptyState } from './EmptyState';
 import { PageTop } from './PageTop';
 import { useTabBarSpace } from './TabBar';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
@@ -413,7 +414,11 @@ function cascade(children: ReactNode, openings: TabOpenings | null) {
 }
 
 function fills(child: ReactNode): boolean {
-  if (!isValidElement<{ className?: unknown; style?: unknown }>(child)) return false;
+  if (!isValidElement<{ className?: unknown; style?: unknown; kind?: unknown }>(child))
+    return false;
+  // A loading state stands in for the content: it takes the room left and centres its mark
+  // (Ortak kurallar C3).
+  if (child.type === EmptyState && child.props.kind === 'loading') return true;
   const { className, style } = child.props;
   if (typeof className === 'string' && /(?:^|\s)flex-1(?:\s|$)/.test(className)) return true;
   const flat = Array.isArray(style) ? Object.assign({}, ...style.filter(Boolean)) : style;

@@ -122,7 +122,8 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
         <EmptyState
           kind="error"
           inPage
-          body={errorMessage(venues.error ?? cities.error)}
+          body={tr.activities.eventsError}
+          error={venues.error ?? cities.error}
           action={{
             label: tr.common.retry,
             onPress: () => {
@@ -197,6 +198,7 @@ function History({ now }: { now: number }) {
           kind="error"
           inPage
           body={errorMessage(history.error)}
+          error={history.error}
           action={{
             label: tr.common.retry,
             onPress: () => void history.refetch(),

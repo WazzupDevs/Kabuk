@@ -39,7 +39,8 @@ type Props = {
 // The centred confirmation (yeni arayüz tuvali, Ortak kurallar C1; AyarlarCikis, MesajlarSohbetSil,
 // EngelleOnay): over a flat scrim (C2, no blur), a card 28 in from either side, the optional icon
 // disc, the title, one sentence, what the caller puts under it, the action, a third way if any
-// (SusleCikis: 8 under the action) and the way out; a failed try's error is the host's top notice
+// (SusleCikis: 8 under the action) and the way out without a fill; a little over the middle (the
+// boards' `.dlg` top, KIT.layer.size.dialogAbove). A failed try's error is the host's top notice
 // (Ortak kurallar C4), not written here. Hareket tablosu A2: it arrives on MOTION.dissolve (the
 // scrim and the card fade in, the card from 0.97 and 12 below, 240 on the arriving curve) and
 // leaves in 150 on the leaving curve (faded, back to 0.97); with reduce motion at once. When it does not fit (320 dp, the largest text) the
@@ -117,7 +118,13 @@ export function Dialog({
     >
       <Reanimated.View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: look.scrim }, scrimStyle]}
+        style={[
+          StyleSheet.absoluteFill,
+          // Opened from a long-press menu, the menu's lighter scrim (Ortak kurallar C2; its still
+          // copy's blur stays off, docs/decisions/cam-kapali.md).
+          { backgroundColor: options.scrim === 'hold' ? look.holdScrim : look.scrim },
+          scrimStyle,
+        ]}
       />
       <Pressable
         accessibilityRole="button"
@@ -126,6 +133,7 @@ export function Dialog({
         onPress={onCancel}
         style={StyleSheet.absoluteFill}
       />
+      <View pointerEvents="none" style={{ flexGrow: L.dialogAbove }} />
       <Reanimated.View
         accessibilityViewIsModal
         style={[
@@ -192,6 +200,7 @@ export function Dialog({
               block
               variant={danger ? 'danger' : 'primary'}
               icon={options.confirmIcon}
+              look={BUTTON_LOOK}
               testID={testID}
               label={options.confirmLabel}
               onPress={onConfirm}
@@ -201,6 +210,7 @@ export function Dialog({
               <Btn
                 block
                 variant={other.tone === 'danger' ? 'danger' : 'glassy'}
+                look={BUTTON_LOOK}
                 testID={other.testID}
                 label={other.label}
                 onPress={onOther}
@@ -208,9 +218,10 @@ export function Dialog({
               />
             ) : null}
             {options.cancelLabel ? (
+              // `.dlg .btn.ghost`: no fill, no line, no shadow, the text's colour.
               <Btn
                 block
-                variant="glassy"
+                variant="ghost"
                 testID={testID ? `${testID}-cancel` : undefined}
                 label={options.cancelLabel}
                 onPress={onCancel}
@@ -219,13 +230,17 @@ export function Dialog({
           </View>
         </ScrollView>
       </Reanimated.View>
+      <View pointerEvents="none" style={{ flexGrow: 1 - L.dialogAbove }} />
     </View>
   );
 }
 
+// The icon in its buttons 24 (`.dlg .btn .ci`).
+const BUTTON_LOOK = { icon: L.dialogButtonIcon };
+
 const styles = StyleSheet.create({
-  root: { flex: 1, justifyContent: 'center' },
-  card: { maxHeight: '100%' },
+  root: { flex: 1 },
+  card: { maxHeight: '100%', flexShrink: 1 },
   disc: {
     width: L.dialogDisc,
     height: L.dialogDisc,

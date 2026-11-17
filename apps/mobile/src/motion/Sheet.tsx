@@ -193,7 +193,8 @@ export function Sheet({
                 <View className="flex-1">
                   <T
                     v={
-                      titleType ?? (titleArt ? 'sheetGame' : titleLarge ? 'sheetTitleLg' : 'title')
+                      titleType ??
+                      (titleArt ? 'sheetGame' : titleLarge ? 'sheetTitleLg' : 'sheetTitle')
                     }
                     center={centered}
                     accessibilityRole="header"

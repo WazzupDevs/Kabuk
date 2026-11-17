@@ -13,6 +13,7 @@ import { Btn, T, useKit } from '@/aura/kit';
 import { shadowParts } from './NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { KIT } from '@/theme/auraKit';
+import { isOfflineError } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 
 export type { StateKind };
@@ -25,6 +26,9 @@ type Props = {
   icon?: IconName;
   title?: string;
   body: string;
+  // `error`: the failure it stands for. Without a connection it is the offline state ("Bağlantı
+  // yok", its own sentence and picture); otherwise its title "Bir sorun oldu" over `body`.
+  error?: unknown;
   // `loading`: the action is running (a retry reloading); the button waits and takes no second
   // press.
   action?: { label: string; onPress: () => void; loading?: boolean };
@@ -89,8 +93,8 @@ const RISO_BOARD: Partial<
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,
-// the buddy with the unplugged cable. Offline is told by the sentence the callers pass
-// (`errorMessage`: `tr.connection.offlineError`), so no caller needs to change.
+// the buddy with the unplugged cable. Offline is `kind="offline"`, or an `error` that is the
+// connection's (isOfflineError).
 const ERROR_RISO = {
   error: require('../../assets/riso/error-generic.webp'),
   offline: require('../../assets/riso/error-offline.webp'),
@@ -140,6 +144,7 @@ export function EmptyState({
   icon,
   title,
   body,
+  error,
   action,
   small,
   picture,
@@ -168,7 +173,14 @@ export function EmptyState({
   if (kind === 'loading') return <Loading body={body} inPage={inPage} />;
 
   const pictured = kind === 'error' || kind === 'offline';
-  const offline = kind === 'offline' || body === tr.connection.offlineError;
+  const offline =
+    kind === 'offline' || (kind === 'error' && error !== undefined && isOfflineError(error));
+  // Ortak kurallar C4: "Bağlantı yok" with its sentence; a failure "Bir sorun oldu" over the
+  // screen's own words.
+  const heading = offline
+    ? tr.connection.offlineTitle
+    : (title ?? (pictured ? tr.connection.errorTitle : undefined));
+  const words = offline ? tr.connection.offlinePageBody : body;
   const glyph: IconName = icon ?? 'cloudOff';
   return (
     <View
@@ -193,7 +205,7 @@ export function EmptyState({
       ) : (
         <StateDisc icon={glyph} iconSize={inPage ? KIT.size.stateIconPage : KIT.size.stateIcon} />
       )}
-      <StateWords title={title} body={body} />
+      <StateWords title={heading} body={words} />
       {action ? (
         <Btn
           variant="glassy"
@@ -241,7 +253,9 @@ function StateWords({ title, body }: { title?: string; body: string }) {
 
 // YukleniyorListe, YukleniyorProfil, YukleniyorSohbet (OrtakKurallar C3): the meeting capsules
 // alone in the content's middle, no words and no skeleton lines; screen readers say "Yükleniyor…".
-// The whole state waits 300 ms, so a quick answer shows nothing.
+// It fills what it stands in (a Screen's part, Screen → fills) and centres the mark there; where
+// nothing gives it room it keeps `stateLoadTop` over and under. The whole state waits 300 ms, so a
+// quick answer shows nothing.
 function Loading({ body, inPage }: { body: string; inPage?: boolean }) {
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -255,7 +269,9 @@ function Loading({ body, inPage }: { body: string; inPage?: boolean }) {
       accessibilityRole="progressbar"
       accessibilityLabel={body}
       style={{
-        paddingTop: inPage ? 0 : KIT.size.stateLoadTop,
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingVertical: inPage ? 0 : KIT.size.stateLoadTop,
         opacity: shown ? 1 : 0,
       }}
     >

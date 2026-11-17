@@ -632,7 +632,7 @@ export function Round({
                     ? {
                         backgroundColor: frosted ? undefined : c.raisedRound,
                         borderWidth: KIT.size.edge,
-                        borderColor: c.raisedEdge,
+                        borderColor: c.raisedRoundEdge,
                         boxShadow: shadow?.boxShadow,
                       }
                     : null,
@@ -645,7 +645,14 @@ export function Round({
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
-          (children ?? (icon ? <CapIcon name={icon} color={fg} size={iconSize} /> : null))
+          (children ??
+          (icon ? (
+            <CapIcon
+              name={icon}
+              color={fg}
+              size={iconSize ?? (s >= KIT.size.round ? KIT.size.roundIcon : KIT.size.icon)}
+            />
+          ) : null))
         )}
         {badge && !dot ? (
           <View style={{ position: 'absolute', top: -BADGE_OUT, right: -BADGE_OUT }}>
@@ -653,14 +660,15 @@ export function Round({
           </View>
         ) : null}
         {dot && dotLook ? (
+          // `side` across with its ring inside (`.nd`, border-box: 9 with a 2 ring, the pink 5).
           <View
             style={{
               position: 'absolute',
-              top: dotLook.top - dotLook.ring,
-              right: dotLook.right - dotLook.ring,
-              width: dotLook.side + 2 * dotLook.ring,
-              height: dotLook.side + 2 * dotLook.ring,
-              borderRadius: dotLook.side / 2 + dotLook.ring,
+              top: dotLook.top,
+              right: dotLook.right,
+              width: dotLook.side,
+              height: dotLook.side,
+              borderRadius: dotLook.side / 2,
               borderWidth: dotLook.ring,
               borderColor: dotLook.ringColor,
               backgroundColor: dotLook.color,
@@ -1292,8 +1300,8 @@ export function Av({
     | 'big'
     | 'hero'
     | 'edit';
-  // A board's own face (tuval Mesajlar, Dm): its white ring drawn outside the face (the face keeps
-  // its size), its colour and its shadow.
+  // A board's own face (tuval Mesajlar, Dm): its ring inside the face's size, its colour and its
+  // shadow.
   board?: AvBoard;
   // Something else in the ring (a capsule).
   children?: ReactNode;
@@ -1302,8 +1310,12 @@ export function Av({
   const side = KIT.size.av[size];
   const shadowOff = useLabOff('golge');
   if (board) {
-    const out = board.ring;
+    // The ring inside the face's size (ekran.css `.av`, border-box: a 48 face is 48 across, its
+    // picture 44); `outside`, around it (`.fcs .av`: a 2 px shadow ring).
+    const out = board.outside ? board.ring : 0;
     const outer = side + 2 * out;
+    const inset = board.outside ? 0 : board.ring;
+    const inner = side - 2 * inset;
     const boardShadow = boxShadowParts(shadowOff, board.shadow || undefined, outer / 2);
     return (
       <View style={{ width: side, height: side }}>
@@ -1324,9 +1336,12 @@ export function Av({
         <View
           style={[
             {
-              width: side,
-              height: side,
-              borderRadius: side / 2,
+              position: 'absolute',
+              left: inset,
+              top: inset,
+              width: inner,
+              height: inner,
+              borderRadius: inner / 2,
               overflow: 'hidden',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1341,7 +1356,7 @@ export function Av({
               source={{ uri: photoUrl, cacheKey: photoCacheKey(photoUrl) }}
               cachePolicy="memory-disk"
               transition={0}
-              style={{ width: side, height: side }}
+              style={{ width: inner, height: inner }}
               accessibilityIgnoresInvertColors
             />
           ) : (
@@ -1415,7 +1430,7 @@ export function Av({
   );
 }
 
-export type AvBoard = { ring: number; ringColor: string; shadow: string };
+export type AvBoard = { ring: number; ringColor: string; shadow: string; outside?: boolean };
 
 function initial(name: string): string {
   return upperTr(name.trim().charAt(0)) || '?';

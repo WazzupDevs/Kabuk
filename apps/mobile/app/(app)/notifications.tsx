@@ -91,6 +91,8 @@ export default function NotificationsScreen() {
   const { c, scheme } = useKit();
   const sheet = {
     title: tr.notifications.title,
+    // Bildirimler `.nh .title`: 21/27, 600.
+    titleType: 'title' as const,
     testID: 'notifications',
     peek: 'notifications' as const,
     look: {
@@ -114,6 +116,7 @@ export default function NotificationsScreen() {
         <EmptyState
           kind="error"
           body={errorMessage(list.error)}
+          error={list.error}
           action={{ label: tr.common.retry, onPress: () => void list.refetch() }}
         />
       </RouteSheet>

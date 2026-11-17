@@ -18,10 +18,11 @@ export function LocateNotice({
   title: string;
   body: string;
 }) {
-  const { colors } = useTheme();
+  const { scheme } = useTheme();
+  const k = KIT[scheme];
   const danger = tone === 'danger';
-  const bg = danger ? colors.dangerSoft : colors.warnSoft;
-  const ink = danger ? colors.onDangerSoft : colors.onWarnSoft;
+  const bg = danger ? k.stripDanger : k.stripWarn;
+  const ink = danger ? k.onStripDanger : k.onStripWarn;
   return (
     <View
       accessible

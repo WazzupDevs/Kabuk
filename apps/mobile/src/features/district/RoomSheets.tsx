@@ -63,6 +63,7 @@ export function OptionsSheet({
             kind="error"
             compact
             body={errorMessage(mutes.error)}
+            error={mutes.error}
             action={{ label: tr.common.retry, onPress: () => void mutes.refetch() }}
           />
         ) : list.length === 0 ? (

@@ -34,14 +34,15 @@ export function Banner({
   testID?: string;
 }) {
   const { colors, scheme } = useTheme();
+  const k = KIT[scheme];
   const [bg, fg, note] =
     tone === 'danger'
-      ? [colors.dangerSoft, colors.onDangerSoft, colors.onDangerSoft]
+      ? [k.stripDanger, k.onStripDanger, k.onStripDanger]
       : tone === 'positive'
         ? [colors.successSoft, colors.onSuccessSoft, colors.onSuccessSoft]
         : tone === 'info'
           ? [colors.surface2, colors.text, colors.muted]
-          : [colors.warnSoft, colors.onWarnSoft, colors.onWarnSoft];
+          : [k.stripWarn, k.onStripWarn, k.onStripWarn];
   // Aura v71 (GaleriEklenen, Uyarı): the warning has no icon, 14 / 16 in, its title 15 / 600 and 4
   // above its words; the other tones as before.
   const warn = tone === 'warn';

@@ -195,6 +195,8 @@ export const KIT_TYPE = {
   // section's head in small letters (13, 700). The dialog's title is the page's; its words 15/500;
   // the long-press menu's row 15/600; the toast's title 14/600 and its line 12/500.
   pageBarTitle: t(700, 21, 26, -0.3 / 21),
+  // A sheet's title (yeni arayüz tuvali `.sh-t`: 21/26, 700, -0.3 px).
+  sheetTitle: t(700, 21, 26, -0.3 / 21),
   // Masa kur (yeni arayüz tuvali 32a–32c, theme/tableSetup.ts): the picture's name pill 14/700,
   // "Rastgele" 13/600, "ÖNERİ" 10/700, the pictures' head 15/700, "Başka masada" 11/700. Masa
   // bitti (64, 132): the title 32/700 at -0.6 px, its line 15/500.
@@ -247,8 +249,6 @@ export const KIT_TYPE = {
   gameName: t(700, 24, 31, -0.02),
   // A venue's name on its page (KesfetMekan: .display at 31).
   venueTitle: t(500, 31, 38, -0.025),
-  // A venue's name on the check-in sheet (CheckIn: .title at 23).
-  sheetTitle: t(600, 23, 29, -0.015),
   h3: t(600, 16, 22, -0.005),
   // The masked phone number on Hesap (`.h3.mono`: 0.04em).
   h3Mono: t(600, 16, 22, 0.04),
@@ -439,6 +439,7 @@ export const KIT = {
     raisedRound: 'rgba(255, 255, 255, 0.74)',
     raisedChip: 'rgba(255, 255, 255, 0.74)',
     raisedEdge: '#FFFFFF',
+    raisedRoundEdge: '#FFFFFF',
     raisedShadow: SHADOW.soft,
     primaryShadow: SHADOW.primary,
     cardShadow: SHADOW.card,
@@ -496,6 +497,12 @@ export const KIT = {
     // .btn.danger: the soft red and its ink.
     dangerSoft: '#FBE1DB',
     onDangerSoft: '#A8301A',
+    // The warning strips (`.nb2.dg`, `.nb2.wn`): the soft red and the soft amber with their ink; in
+    // the dark see-through (the red at 12 %, the amber at 14 %).
+    stripDanger: '#FBE1DB',
+    onStripDanger: '#A8301A',
+    stripWarn: '#FFF1D6',
+    onStripWarn: '#5C3A00',
     // Aura v71: the step dots of the sign-up (`--step-dot`).
     stepDot: 'rgba(17, 23, 20, 0.16)',
     // A face's 2 ring (yeni arayüz tuvali ekran.css `.av`: --surface) and its shadow
@@ -531,6 +538,8 @@ export const KIT = {
     raisedRound: '#121614',
     raisedChip: '#121614',
     raisedEdge: 'rgba(255, 255, 255, 0.10)',
+    // A round button's line (`.dark .ptop .round`, `.gt`, `.ktop`: #121614 in a 1 px line at 8 %).
+    raisedRoundEdge: 'rgba(255, 255, 255, 0.08)',
     raisedShadow: '',
     primaryShadow: '0px 10px 22px rgba(0, 0, 0, 0.35)',
     cardShadow: '',
@@ -572,6 +581,10 @@ export const KIT = {
     disabledOnCard: '#2A332F',
     dangerSoft: '#3A1E22',
     onDangerSoft: '#FF977E',
+    stripDanger: 'rgba(255, 151, 126, 0.12)',
+    onStripDanger: '#FF977E',
+    stripWarn: 'rgba(255, 181, 71, 0.14)',
+    onStripWarn: '#FFC86B',
     stepDot: 'rgba(255, 255, 255, 0.18)',
     faceRing: '#151A18',
     faceShadow: '',
@@ -800,15 +813,20 @@ export const KIT = {
     bodySoft: 0.55,
   },
   // Who the viewer writes as, in the chat's top bar (the owner's call, 8 Kasım: the strip over the
-  // message bar went): two 30 slots 2 apart in a sunk track 2 in, the chosen one white and raised in
-  // a 2 accent ring, the other dimmed; a spent change locks it (a 14 badge, its icon 10).
-  // While the change is on its way the whole toggle at `busy`.
+  // message bar went): two 30 slots 2 apart in a sunk track 2 in; a spent change locks it (a 14
+  // badge, its icon 10). While the change is on its way the whole toggle at `busy`. Yeni arayüz
+  // tuvali `.tog`: the chosen one in a 2.5 ring outside it, no fill; the face 2 inside its slot; the
+  // other at 55 %; the track --surface2 with a 1 px line inside (in the dark #1B211F without it).
   identityToggle: {
     slot: 30,
     pad: 2,
     gap: 2,
-    ring: 2,
-    dim: 0.45,
+    ring: 2.5,
+    faceIn: 2,
+    dim: 0.55,
+    ringColor: { light: '#0E8745', dark: '#3DDC84' },
+    track: { light: '#E6F0E8', dark: '#1B211F' },
+    trackLine: { light: 'inset 0px 0px 0px 1px rgba(3, 27, 11, 0.06)', dark: '' },
     busy: 0.6,
     lock: 14,
     lockIcon: 10,
@@ -1024,6 +1042,8 @@ export const KIT = {
     rowGap: 12,
     side: 20,
     icon: 22,
+    // A round button's icon 44 and over (skall.css `.round .ci`: --icon-lg).
+    roundIcon: 24,
     iconSm: 18,
     iconSnug: 20,
     disk: 4,
@@ -1055,8 +1075,8 @@ export const KIT = {
     // iskelet.md → 3.5: a menu grown from its button 8 from it and the screen's edges (its look
     // KIT.layer's: the ⋮ menu and the long-press menu).
     menuGap: 8,
-    // The handle 10 under the sheet's top edge (tuval Mesajlar, Dm, Sohbet, Ayarlar, Mekan).
-    sheetPadTop: 10,
+    // The handle 12 under the sheet's top edge (yeni arayüz tuvali skall.css `.sheet`: 12 / 20 / 24).
+    sheetPadTop: 12,
     sheetPadX: 20,
     // Under the sheet's content: its 38 (SablonSheet) is the bottom safe area (34) and 4 more, so
     // its buttons sit 12 above the safe area as everywhere (U9).
@@ -1067,8 +1087,8 @@ export const KIT = {
     // Masa kur (aura v47): what scrolls fades into the footer's top edge, only while it overflows.
     sheetFooterFade: 32,
     grabW: 40,
-    // The handle 5 high (tuval: every sheet and Profil's panel).
-    grabH: 5,
+    // The handle 40 × 4 (yeni arayüz tuvali skall.css `.grab`: every sheet and Profil's panel).
+    grabH: 4,
     msgRadius: 22,
     msgTail: 8,
     // Chat bubbles (iskelet.md → 5.5): 20 round, 7 where a run's bubbles face each other, the run's
@@ -1196,9 +1216,9 @@ export const KIT = {
       holdIconSoft: 1,
       holdDangerBody: '#C8381F',
       holdDangerSoft: 0.35,
-      // The sheet: the surface, its handle and its shadow.
+      // The sheet: the surface, its handle (skall.css `.grab`: --control) and its shadow.
       sheet: '#FFFFFF',
-      sheetGrab: 'rgba(3, 27, 11, 0.18)',
+      sheetGrab: '#C6E0CC',
       sheetShadow: '0px -8px 40px rgba(3, 27, 11, 0.18)',
       // The toast: the ink with white words, its button and its shadow.
       toast: '#031B0B',
@@ -1240,7 +1260,7 @@ export const KIT = {
       holdDangerSoft: 0.35,
       // SikayetEt's dark sheet: #121614 and a 1 px white ring.
       sheet: '#121614',
-      sheetGrab: 'rgba(255, 255, 255, 0.22)',
+      sheetGrab: '#2A332F',
       sheetShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.08)',
       // The toast turned over: white with the ink.
       toast: '#FFFFFF',
@@ -1269,6 +1289,11 @@ export const KIT = {
       dialogTextTop: 6,
       dialogTextBottom: 20,
       dialogButtonGap: 8,
+      // The icon in its buttons 24 (skall.css `.ci`: --icon-lg).
+      dialogButtonIcon: 24,
+      // Where it stands (the boards' `.dlg` top 250 / 280 / 210 by its height): a little over the
+      // middle, this share of the room it leaves above it and the rest under it.
+      dialogAbove: 0.44,
       // A soft pill of words between the sentence and the buttons (SemtSureBitti `.dw`).
       dialogPill: { radius: 14, padY: 6, padX: 12 },
       // The ⋮ menu: 292 wide, 28 round, 16 / 8 / 8 inside, 12 from the screen's edge; a row 48 at
@@ -1300,15 +1325,15 @@ export const KIT = {
       holdHairIn: 46,
       holdBand: 6,
       holdBlur: 6,
-      // The sheet: 8 from the edges, 28 round, 10 / 20 / 34 inside; its handle 40 × 5, 16 over
+      // The sheet: 8 from the edges, 28 round, 12 / 20 / 34 inside; its handle 40 × 4, 16 over
       // the content.
       sheetInset: 8,
       sheetRadius: 28,
-      sheetPadTop: 10,
+      sheetPadTop: 12,
       sheetPadX: 20,
       sheetPadBottom: 34,
       grabW: 40,
-      grabH: 5,
+      grabH: 4,
       grabGap: 16,
       // The toast: 20 from the sides, 20 round, 12 / 12 / 12 / 14 inside, 12 between its parts;
       // its icon 22, its button 36 (14 in); the line under its title at 70 %.

@@ -44,7 +44,8 @@ export function RouteSheet({
   peek,
   footer,
   look,
-  titleType = 'title',
+  // A sheet's title (`.sh-t`: 21/26, 700).
+  titleType = 'sheetTitle',
   subtitle,
   closeButton,
 }: {

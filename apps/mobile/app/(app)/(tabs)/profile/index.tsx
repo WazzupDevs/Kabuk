@@ -366,7 +366,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
         }}
       >
         <Round
-          glass="clear"
+          glass="cover"
           icon="settings"
           side={KIT.size.topBtn}
           iconSize={B.settingsIcon}

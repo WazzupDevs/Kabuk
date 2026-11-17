@@ -44,6 +44,7 @@ export default function MutedScreen() {
           <EmptyState
             kind="error"
             body={errorMessage(mutes.error)}
+            error={mutes.error}
             action={{ label: tr.common.retry, onPress: () => void mutes.refetch() }}
           />
         ) : list.length === 0 ? (

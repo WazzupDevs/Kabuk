@@ -139,6 +139,7 @@ export default function CapsuleScreen() {
         <EmptyState
           kind="error"
           body={errorMessage(view.error)}
+          error={view.error}
           action={{ label: tr.common.retry, onPress: () => void view.refetch() }}
         />
       </SafeAreaView>

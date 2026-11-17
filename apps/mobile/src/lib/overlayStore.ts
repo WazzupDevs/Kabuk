@@ -58,6 +58,9 @@ export type ConfirmOptions = {
   children?: ReactNode;
   // Names the action; the cancel gets `${testID}-cancel` (as ConfirmSheet).
   testID?: string;
+  // `hold`: opened from a long-press menu, over the menu's lighter scrim (Ortak kurallar C2,
+  // MesajlarSohbetSil `.ubs`); otherwise the dialog's.
+  scrim?: 'hold';
 };
 
 // What a non-dialog entry draws once its component moves here (a later package).

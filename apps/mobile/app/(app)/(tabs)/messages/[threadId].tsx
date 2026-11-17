@@ -502,6 +502,7 @@ export default function DmScreen() {
             <EmptyState
               kind="error"
               body={errorMessage(messages.error)}
+              error={messages.error}
               action={{ label: tr.common.retry, onPress: () => void messages.refetch() }}
             />
           </View>

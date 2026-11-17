@@ -264,6 +264,7 @@ function TableScreenBody() {
           <EmptyState
             kind="error"
             body={errorMessage(room.error ?? checkIn.error)}
+            error={room.error ?? checkIn.error}
             action={{
               label: tr.common.retry,
               onPress: () => {

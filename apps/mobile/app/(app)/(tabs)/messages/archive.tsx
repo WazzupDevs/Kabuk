@@ -71,6 +71,7 @@ export default function ArchiveScreen() {
           <EmptyState
             kind="error"
             body={errorMessage(inbox.error)}
+            error={inbox.error}
             action={{
               label: tr.common.retry,
               onPress: () => void inbox.refetch(),

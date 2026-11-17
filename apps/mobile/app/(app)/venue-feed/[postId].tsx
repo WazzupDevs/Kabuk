@@ -51,6 +51,7 @@ export default function VenueFeedRepliesScreen() {
           kind="error"
           inPage
           body={errorMessage(feed.query.error)}
+          error={feed.query.error}
           action={{ label: tr.common.retry, onPress: () => void feed.query.refetch() }}
         />
       ) : (
@@ -82,6 +83,7 @@ export default function VenueFeedRepliesScreen() {
                 kind="error"
                 inPage
                 body={errorMessage(replies.query.error)}
+                error={replies.query.error}
                 action={{ label: tr.common.retry, onPress: () => void replies.query.refetch() }}
               />
             ) : replies.posts.length === 0 ? (

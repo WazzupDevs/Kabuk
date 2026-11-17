@@ -41,7 +41,8 @@ export function IdentityToggle({
 }) {
   const { c, scheme } = useKit();
   const S = size ? { ...BASE, ...size } : BASE;
-  const FACE = S.slot - S.ring * 2;
+  // Yeni arayüz tuvali `.tog`: the face 2 inside its 36 slot (32); the chosen slot's ring outside.
+  const FACE = S.slot - S.faceIn * 2;
   const photo = useOwnPhoto();
   const look = useOwnLook();
   const capsule = look ? (
@@ -98,16 +99,24 @@ export function IdentityToggle({
             borderRadius: S.slot / 2,
             alignItems: 'center',
             justifyContent: 'center',
-            ...(on
-              ? {
-                  backgroundColor: KIT.white,
-                  borderWidth: S.ring,
-                  borderColor: KIT.primary,
-                  boxShadow: c.raisedShadow,
-                }
-              : { opacity: S.dim }),
+            opacity: on ? 1 : S.dim,
           }}
         >
+          {on ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: -S.ring,
+                top: -S.ring,
+                width: S.slot + S.ring * 2,
+                height: S.slot + S.ring * 2,
+                borderRadius: S.slot / 2 + S.ring,
+                borderWidth: S.ring,
+                borderColor: S.ringColor[scheme],
+              }}
+            />
+          ) : null}
           {body}
         </View>
         {!on && locked ? (
@@ -141,7 +150,8 @@ export function IdentityToggle({
         gap: S.gap,
         padding: S.pad,
         borderRadius: S.slot / 2 + S.pad,
-        backgroundColor: c.hair,
+        backgroundColor: S.track[scheme],
+        boxShadow: S.trackLine[scheme] || undefined,
         opacity: busy ? S.busy : 1,
       }}
     >

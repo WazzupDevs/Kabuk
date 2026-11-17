@@ -387,6 +387,7 @@ function VenueChatScreenBody() {
             <EmptyState
               kind="error"
               body={errorMessage(page.error)}
+              error={page.error}
               action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
             />
           </View>

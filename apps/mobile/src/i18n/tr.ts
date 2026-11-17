@@ -461,6 +461,8 @@ export const tr = {
     eventKind: 'Etkinlik',
     eventLabel: (title: string, venue: string, when: string) => `${title}, ${venue}, ${when}`,
     noEvents: 'Bugün etkinlik yok',
+    // AktivitelerHata `.ed`: under "Bir sorun oldu".
+    eventsError: 'Etkinlikler yüklenemedi. Birazdan yeniden dene.',
     // Geçmiş's small empty card's title (iskelet.md → 3.4).
     noHistory: 'Henüz geçmiş yok',
     noEventsHint:
@@ -2850,6 +2852,10 @@ export const tr = {
     offlineBody: 'Bağlanınca ekran kendiliğinden yenilenir.',
     // An error state or line while offline (audit M15-21): the connection, not "bir şeyler".
     offlineError: 'Bağlantı yok. Bağlanınca tekrar dene.',
+    // A page's state with no connection, and any page's that failed (Ortak kurallar C4;
+    // AktivitelerBaglantiYok, AktivitelerHata).
+    offlinePageBody: 'İnternete bağlanınca bu sayfa kendiliğinden yenilenir.',
+    errorTitle: 'Bir sorun oldu',
   },
   errors: {
     bad_request: 'İstek geçersiz.',

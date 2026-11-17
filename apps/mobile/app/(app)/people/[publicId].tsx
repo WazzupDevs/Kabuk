@@ -399,7 +399,7 @@ function CoverPage({
         }}
       >
         <Round
-          glass="clear"
+          glass="cover"
           icon="back"
           side={KIT.size.topBtn}
           iconSize={B.bar.back}
@@ -437,7 +437,7 @@ function CoverPage({
         </View>
         <View ref={moreRef} collapsable={false}>
           <Round
-            glass="clear"
+            glass="cover"
             icon="moreV"
             side={KIT.size.topBtn}
             iconSize={B.bar.more}

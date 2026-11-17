@@ -80,6 +80,7 @@ export function useThreadMenu(
       confirmIcon: 'trash',
       cancelLabel: tr.common.cancel,
       testID: 'inbox-clear-confirm',
+      scrim: 'hold',
       onConfirm: async () => {
         setLastKind('clear');
         // The dialog closes once the call is done: the row goes after it.

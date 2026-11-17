@@ -77,6 +77,7 @@ export default function AccessoriesScreen() {
         <EmptyState
           kind="error"
           body={errorMessage(view.error)}
+          error={view.error}
           action={{ label: tr.common.retry, onPress: () => void view.refetch() }}
         />
       </View>
