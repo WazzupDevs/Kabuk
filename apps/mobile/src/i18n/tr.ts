@@ -949,6 +949,8 @@ export const tr = {
     askedByAnonymous: 'isteyen anonim',
     memberClaims: (who: string) => `${who} masanda olduğunu söylüyor`,
     memberNote: 'Onaylarsan masana katılır.',
+    requestPill: (title: string, seconds: number) => `${title} · ${seconds} sn`,
+    requestReopen: 'İsteği aç',
     groupNote: (people: number, total: number) =>
       `${people} kişi · Birlikte ${total} kişi olursunuz`,
     tooMany: 'Birlikte 12 kişiyi geçersiniz. Masada en çok 12 kişi olur.',

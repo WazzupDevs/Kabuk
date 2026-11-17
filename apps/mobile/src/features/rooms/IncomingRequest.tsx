@@ -20,6 +20,7 @@ import { useNowUntil } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
 import type { ConfirmOptions } from '@/lib/overlayStore';
 import { Dialog } from '@/motion/Dialog';
+import { Tap } from '@/motion/Tap';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -93,13 +94,15 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
   // Requests whose "Kabul" came too late, and the one whose card says so now.
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
   const [gone, setGone] = useState<string | null>(null);
+  // Requests whose dialog was put away (outside, back): they wait as a line until they run out.
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
   const [coming, setComing] = useState<{ alias: string; phones: number } | null>(null);
   const request = requests.data?.find(
     (r) => (Date.parse(r.expires_at) > now || r.id === gone) && !closed.has(r.id),
   );
   const profile = useRequestProfile(request?.id, request?.requester_profiled === true);
   // The dialog opens a Modal: a focused text field lets go as it does (lib/modalKeyboard).
-  useLeaveKeyboard(request !== undefined);
+  useLeaveKeyboard(request !== undefined && !hidden.has(request.id));
 
   const respond = useMutation({
     meta: FEEL_ERROR,
@@ -191,68 +194,52 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
   );
 
   if (!request) {
-    return coming
-      ? frame(
-          <View style={{ gap: KIT.size.tagGap }}>
-            <T v="h3">{tr.rooms.comingTitle(coming.alias, coming.phones)}</T>
-            <T v="fine">{tr.rooms.comingBody}</T>
-          </View>,
-          'request-coming',
-        )
-      : null;
+    return (
+      <>
+        <RequestModal options={null} running={null} onOther={noop} onCancel={noop} />
+        {coming
+          ? frame(
+              <View style={{ gap: KIT.size.tagGap }}>
+                <T v="h3">{tr.rooms.comingTitle(coming.alias, coming.phones)}</T>
+                <T v="fine">{tr.rooms.comingBody}</T>
+              </View>,
+              'request-coming',
+            )
+          : null}
+      </>
+    );
   }
   const seconds = Math.max(0, Math.ceil((Date.parse(request.expires_at) - now) / 1000));
   const member = request.as_member;
 
-  const noop = () => undefined;
-  // Outside and back leave the request unanswered (the seconds run out as if unseen, rule 5).
+  // Outside and back put the dialog away without answering: nothing goes to the server, the
+  // seconds run out as if unseen (rule 5) and the line below stays until then.
   const dismiss = () => {
     if (respond.isPending) return;
-    setClosed((ids) => new Set([...ids, request.id]));
-    respond.reset();
+    if (request.id === gone) {
+      setClosed((ids) => new Set([...ids, request.id]));
+      setGone(null);
+      respond.reset();
+      return;
+    }
+    setHidden((ids) => new Set([...ids, request.id]));
   };
-  const modal = (
-    options: ConfirmOptions,
-    running: 'confirm' | 'other' | null,
-    other?: () => void,
-  ) => (
-    <Modal
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      navigationBarTranslucent
-      visible
-      onRequestClose={dismiss}
-    >
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Dialog
-          options={options}
-          visible
-          running={running}
-          onConfirm={options.onConfirm as () => void}
-          onOther={other ?? noop}
-          onCancel={dismiss}
-          onHidden={noop}
-        />
-      </GestureHandlerRootView>
-    </Modal>
-  );
 
   if (request.id === gone) {
-    return modal(
-      {
-        title: tr.rooms.requestGone,
-        note: '',
-        tone: 'plain',
-        confirmLabel: tr.common.close,
-        testID: 'request-gone',
-        onConfirm: () => {
-          setClosed((ids) => new Set([...ids, request.id]));
-          setGone(null);
-          respond.reset();
-        },
-      },
-      null,
+    return (
+      <RequestModal
+        options={{
+          title: tr.rooms.requestGone,
+          note: '',
+          tone: 'plain',
+          confirmLabel: tr.common.close,
+          testID: 'request-gone',
+          onConfirm: dismiss,
+        }}
+        running={null}
+        onOther={noop}
+        onCancel={dismiss}
+      />
     );
   }
 
@@ -341,23 +328,87 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
     if (!respond.isPending) respond.mutate({ id: request.id, accept, member });
   };
   const running = respond.isPending ? (respond.variables.accept ? 'confirm' : 'other') : null;
-  return modal(
-    {
-      title,
-      note,
-      face,
-      tone: 'plain',
-      confirmLabel: tr.rooms.accept,
-      confirmIcon: 'check',
-      confirmDisabled: full,
-      testID: 'join-accept',
-      other: { label: tr.rooms.decline, onPress: noop },
-      children: extra,
-      footnote: member ? tr.rooms.declineMemberNote : tr.rooms.declineNote,
-      onConfirm: () => answer(true),
-    },
-    running,
-    () => answer(false),
+  const isHidden = hidden.has(request.id);
+  const options: ConfirmOptions = {
+    title,
+    note,
+    face,
+    tone: 'plain',
+    confirmLabel: tr.rooms.accept,
+    confirmIcon: 'check',
+    confirmDisabled: full,
+    testID: 'join-accept',
+    other: { label: tr.rooms.decline, onPress: noop },
+    children: extra,
+    footnote: member ? tr.rooms.declineMemberNote : tr.rooms.declineNote,
+    onConfirm: () => answer(true),
+  };
+  return (
+    <>
+      <RequestModal
+        options={isHidden ? null : options}
+        running={running}
+        onOther={() => answer(false)}
+        onCancel={dismiss}
+      />
+      {isHidden
+        ? frame(
+            <Tap
+              accessibilityLabel={tr.rooms.requestReopen}
+              onPress={() =>
+                setHidden((ids) => new Set([...ids].filter((id) => id !== request.id)))
+              }
+            >
+              <T v="h3">{tr.rooms.requestPill(title, seconds)}</T>
+            </Tap>,
+            'request-card',
+          )
+        : null}
+    </>
+  );
+}
+
+const noop = () => undefined;
+
+// The dialog's window: it stays while the dialog leaves (the same leave as the others, motion/Dialog)
+// and keeps the last options it showed for that. Options null: the dialog goes. Its content is
+// live (the seconds), so it is drawn here and not through lib/overlayStore's host; it is the only
+// one open (a request closes the sheets as it comes, `closeAllSheets`).
+function RequestModal({
+  options,
+  running,
+  onOther,
+  onCancel,
+}: {
+  options: ConfirmOptions | null;
+  running: 'confirm' | 'other' | null;
+  onOther: () => void;
+  onCancel: () => void;
+}) {
+  const [shown, setShown] = useState<ConfirmOptions | null>(options);
+  if (options && options !== shown) setShown(options);
+  if (!shown) return null;
+  return (
+    <Modal
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      visible
+      onRequestClose={onCancel}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Dialog
+          options={shown}
+          visible={options !== null}
+          running={running}
+          onConfirm={() => void shown.onConfirm()}
+          onOther={onOther}
+          onCancel={onCancel}
+          onHidden={() => setShown(null)}
+        />
+      </GestureHandlerRootView>
+    </Modal>
   );
 }
 
