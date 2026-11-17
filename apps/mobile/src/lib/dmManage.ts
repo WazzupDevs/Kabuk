@@ -20,6 +20,13 @@ export function splitInbox<T extends Row>(
   };
 }
 
+// The Mesajlar tab's (and the launcher's) badge: the unread of the conversations out of the
+// archive only; an archived conversation's unread shows on Arşivlenenler alone (the owner's call,
+// 17 Kasım).
+export function tabUnread(threads: readonly { archived: boolean; unreadCount: number }[]): number {
+  return threads.reduce((sum, t) => sum + (t.archived ? 0 : Math.max(0, t.unreadCount)), 0);
+}
+
 // Five pinned already: "Sabitle" is off (pin_limit).
 export function pinsFull(threads: readonly Row[]): boolean {
   return threads.filter((t) => t.pinned).length >= DM_PIN_MAX;

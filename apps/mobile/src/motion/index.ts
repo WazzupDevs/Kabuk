@@ -7,6 +7,15 @@ export { PopIn } from './PopIn';
 export { SNAP_STRIP_HEIGHT, SnapStrip } from './SnapStrip';
 export { Turn } from './Turn';
 export { Rise, SlideFrom, usePressScale } from './Rise';
+export {
+  CountSwap,
+  ListMove,
+  ListMoveArea,
+  type ListMoveClose,
+  type ListMoveKind,
+  type ListMoves,
+  useListMoves,
+} from './ListMove';
 export { Sheet } from './Sheet';
 export { Menu, MenuItem, measureMenuAnchor } from './Menu';
 export type { MenuAnchor } from './menuPlace';
