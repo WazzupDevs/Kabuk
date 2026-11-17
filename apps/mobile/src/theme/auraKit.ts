@@ -151,6 +151,9 @@ export const KIT_TYPE = {
   toastSub: t(500, 12, 16),
   // The toast's button (SusleKaydedilemedi): 13/600.
   toastBtn: t(600, 13, 16),
+  // EngelleOnay's "Şikayet de et" row: the words 15/600, the line under them 13/500.
+  checkRow: t(600, 15, 20),
+  checkRowNote: t(500, 13, 18),
   // Mekan (tuval Mekan): "Mekandasın" (13, 700); the card's title (26, 800, -0.03em, 1.1) and its
   // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
   // field (14, 600); the invite's name (16, 700) and its button (14, 700).
@@ -1094,6 +1097,16 @@ export const KIT = {
       onToast: '#FFFFFF',
       toastButton: 'rgba(255, 255, 255, 0.14)',
       toastShadow: '0px 12px 30px rgba(3, 27, 11, 0.30)',
+      // A failure's icon on the toast (SusleKaydedilemedi `.ti2`): the strong part, the body at
+      // `toastIconSoft`.
+      toastIcon: '#FF977E',
+      toastIconSoft: 0.4,
+      // EngelleOnay's "Şikayet de et" row (`.chk`, `.cb`): hairlines over and under it; the box a
+      // 2 px inset line, filled with the ink and a white check when ticked.
+      checkHair: 'rgba(3, 27, 11, 0.08)',
+      checkLine: 'rgba(3, 27, 11, 0.28)',
+      checkOn: '#031B0B',
+      onCheckOn: '#FFFFFF',
     },
     dark: {
       dialog: '#151A18',
@@ -1119,6 +1132,12 @@ export const KIT = {
       onToast: '#031B0B',
       toastButton: 'rgba(3, 27, 11, 0.08)',
       toastShadow: '0px 12px 30px rgba(3, 27, 11, 0.30)',
+      toastIcon: '#C8381F',
+      toastIconSoft: 0.35,
+      checkHair: 'rgba(255, 255, 255, 0.08)',
+      checkLine: 'rgba(255, 255, 255, 0.30)',
+      checkOn: 'rgba(255, 255, 255, 0.94)',
+      onCheckOn: '#0B0E0D',
     },
     size: {
       // The dialog 28 in from the sides, 28 round, 24 / 20 / 20 inside; its icon's disc 56 (the
@@ -1177,6 +1196,14 @@ export const KIT = {
       toastButton: 36,
       toastButtonPadX: 14,
       toastSubOpacity: 0.7,
+      // EngelleOnay's "Şikayet de et" row: 12 over and under its words, 12 from the box to them;
+      // the box 24, 7 round, its line 2, its check 18.
+      checkRowPad: 12,
+      checkRowGap: 12,
+      checkBox: 24,
+      checkBoxRadius: 7,
+      checkBoxLine: 2,
+      checkMark: 18,
     },
   },
 } as const;
