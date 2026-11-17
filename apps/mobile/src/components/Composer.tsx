@@ -531,7 +531,7 @@ function SendIn({
               // The motion table's A4 4.2 and 4.3: the arrow and the edit's tick change places, the
               // old one fading, the new one popping in; at once with reduce motion. The icon drawn
               // with the button stands still.
-              <LayoutAnimationConfig skipEntering>
+              <LayoutAnimationConfig skipEntering skipExiting>
                 <Animated.View
                   key={confirm ? 'tick' : 'arrow'}
                   entering={reduce ? undefined : sendIconIn}

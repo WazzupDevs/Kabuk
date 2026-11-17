@@ -295,7 +295,7 @@ export function CountSwap({ value, children }: { value: string; children: ReactN
   const reduce = useReduceMotion();
   const delay = area?.exitDelay ?? null;
   return (
-    <LayoutAnimationConfig skipEntering>
+    <LayoutAnimationConfig skipEntering skipExiting>
       <Reanimated.View
         key={value}
         entering={reduce ? undefined : swapIn(delay)}
