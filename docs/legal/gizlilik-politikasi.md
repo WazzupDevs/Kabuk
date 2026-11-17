@@ -102,7 +102,7 @@ Verileriniz yalnızca hizmeti sunabilmek için, bizim adımıza çalışan şu h
 | PostHog                                                                | Kullanım istatistikleri                                          | Hesap kimliği, olay adı                         | Almanya (Frankfurt) |
 | Sentry                                                                 | Hata raporları                                                   | Hesap kimliği, teknik hata kaydı                | Almanya (Frankfurt) |
 | OpenFreeMap                                                            | Keşfet haritasının görüntüleri                                   | IP adresi, bakılan harita bölgesi               | Yurt dışı           |
-| Cloudflare, Google Fonts                                               | skall.world sitesinin sunulması                                  | Siteyi ziyaret edenin IP adresi                 | Yurt dışı           |
+| Cloudflare                                                             | skall.world sitesinin sunulması                                  | Siteyi ziyaret edenin IP adresi                 | Yurt dışı           |
 | Zoho                                                                   | Bize yazdığınız e-postaların alınması                            | E-posta adresiniz ve yazdıklarınız              | Yurt dışı           |
 
 Bu sağlayıcıların çoğu Türkiye dışındadır. Yurt dışına aktarım, KVKK'nın 9. maddesi uyarınca Kişisel Verileri Koruma Kurulu'nun ilan ettiği standart sözleşmeyle sağlanan uygun güvencelere dayanır.
@@ -137,7 +137,7 @@ Verilerinizi etkileyen bir güvenlik ihlali olursa Kişisel Verileri Koruma Kuru
 
 ## 11. skall.world sitesi
 
-Site çerezle izleme yapmaz, reklam ya da analiz çerezi kullanmaz. Yalnızca görünüm seçiminiz gibi tercihler tarayıcınızın kendi belleğinde tutulur ve bize gönderilmez. Sayfalar Cloudflare üzerinden sunulur ve yazı tipleri Google Fonts'tan yüklenir; bu sırada IP adresiniz bu sağlayıcılara ulaşır.
+Site çerezle izleme yapmaz, reklam ya da analiz çerezi kullanmaz. Yalnızca görünüm seçiminiz gibi tercihler tarayıcınızın kendi belleğinde tutulur ve bize gönderilmez. Sayfalar Cloudflare üzerinden sunulur; yazı tipleri sitenin kendisinden yüklenir, bu sırada IP adresiniz yalnızca Cloudflare'e ulaşır.
 
 ## 12. Değişiklikler
 

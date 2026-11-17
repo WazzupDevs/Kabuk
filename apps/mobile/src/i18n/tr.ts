@@ -1073,6 +1073,9 @@ export const tr = {
     },
   },
   safety: {
+    // EngelleOnay (61): "Ece engellensin mi?"; where the name is not at hand the plain
+    // blockConfirmTitle stays.
+    blockNamedTitle: (name: string) => `${name} engellensin mi?`,
     report: 'Şikayet et',
     reportTitle: 'Neden şikayet ediyorsun?',
     reasons: {

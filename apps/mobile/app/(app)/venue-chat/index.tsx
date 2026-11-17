@@ -559,7 +559,11 @@ function VenueChatScreenBody() {
       <ConfirmWithReport
         reasons={REPORT_REASONS}
         visible={blocking !== null}
-        title={tr.venueChat.blockConfirmTitle}
+        title={
+          blocking && senderLabel(blocking)
+            ? tr.safety.blockNamedTitle(senderLabel(blocking))
+            : tr.venueChat.blockConfirmTitle
+        }
         hint={tr.venueChat.blockConfirmBody}
         confirmLabel={tr.safety.blockConfirm}
         confirmIcon="block"
