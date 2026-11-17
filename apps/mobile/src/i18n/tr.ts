@@ -473,7 +473,15 @@ export const tr = {
     here: 'Şu an buradasın',
     hereAt: (spot: string) => `${spot} · check-in yaptın`,
     backToVenue: 'Mekana dön',
-    views: { list: 'Liste', map: 'Harita' },
+    views: { list: 'Liste', map: 'Haritada gör' },
+    // The search's clear button (KesfetAra).
+    clearSearch: 'Temizle',
+    // The map's legend (KesfetHarita `.lg`): the pins' colours by how lively.
+    legend: { calm: 'Sessiz', lively: 'Masa var', buzzing: 'Kalabalık' },
+    // The map's sources (KesfetHarita `.attr`); a touch opens the map's own attribution.
+    mapSources: '© OpenStreetMap',
+    // The map card's line: the type, the district and how lively.
+    mapSub: (kind: string, district: string, bucket: string) => `${kind} · ${district} · ${bucket}`,
     // The bucket of a venue's active tables (K-16, K-41): never a count.
     buckets: { calm: 'Sessiz', lively: 'Birkaç açık masa', buzzing: 'Kalabalık' },
     // Search and kind (v44: .dsearch, .vcats).

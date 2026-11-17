@@ -53,6 +53,25 @@ export const KIT_TYPE = {
   exploreSort: t(600, 13, 17),
   placeName: t(700, 16, 20, -0.01),
   placeSub: t(500, 13, 17),
+  // Keşfet as the new board draws it (yeni arayüz tuvali, Kesfet, KesfetHarita): the line of the day
+  // (`.eyebrow`, 12, 600), the question (`.kh`, 32, 700, -1 px; its line the face's own height, as
+  // exploreTitle, for the board's 38 cut the tails off), what is typed and the hint (`.field`, 15,
+  // 500), the chips (14, 600), the place (`.cty`, 15, 700), the count (13, 500), the order (13,
+  // 600), a row's name (16, 600) and line (13, 500), how lively (12, 600), the map's legend (11,
+  // 600), its sources (10, 500) and its card's name (16, 600, 21).
+  kesfetEyebrow: t(600, 12, 16, 0.02),
+  kesfetTitle: t(700, 32, 41, -0.03125),
+  kesfetField: t(500, 15, 22),
+  kesfetChip: t(600, 14, 18),
+  kesfetPlace: t(700, 15, 20),
+  kesfetCount: t(500, 13, 18),
+  kesfetSort: t(600, 13, 18),
+  kesfetName: t(600, 16, 22),
+  kesfetSub: t(500, 13, 18),
+  kesfetStatus: t(600, 12, 16),
+  mapLegend: t(600, 11, 14),
+  mapAttr: t(500, 10, 14),
+  mapName: t(600, 16, 21),
   bucket: t(700, 12, 16),
   // Semte Git on Keşfet: its eyebrow (11, 800, 0.1em), title (20, 800, 1.18) and note (13.5, 500,
   // 1.42).

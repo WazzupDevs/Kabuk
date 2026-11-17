@@ -32,12 +32,10 @@ import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
 import { KIT, VENUE_THUMB } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
-import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
 
-import { Bucket } from './Bucket';
 import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
 
@@ -69,8 +67,7 @@ const MAP_IMAGES = {
   'pin-kampus': { source: TYPE_PIN_IMAGES.kampus },
 };
 
-// U14: the pin's ring and shadow (KesfetHarita `.pd`, `.dark .pd`).
-const PIN_RING = MAP_PIN.pinRing;
+// The pin's shadow (KesfetHarita `.pin .pc`).
 const PIN_SHADOW = MAP_PIN.pinShadow;
 const PIN_SHADOW_Y = MAP_PIN.shadowY;
 const PIN_SHADOW_SPREAD = 11;
@@ -185,19 +182,24 @@ export function ExploreMap({
       </View>
     );
   }
-  // U14: the pin's 3 white ring (#EAF6EC in the dark) on its soft shadow.
-  const ring = PIN_RING[scheme];
   const id = selected ?? '';
-  const outer = MAP_PIN.ring;
-  // The venue's colour: quiet in the brand's purple, lively in the overlap's orange, crowded in pink.
+  const level = EXPLORE[scheme].level;
+  // KesfetHarita `.pin .pc`: the ring in how lively the venue is (`--lv-s`, `--lv-m`, `--lv-c`).
   const live: NonNullable<CircleLayer['paint']>['circle-color'] = [
     'match',
     ['get', 'bucket'],
     'lively',
-    colors.overlap,
+    level.lively,
     'buzzing',
-    colors.buzz,
-    colors.accent,
+    level.buzzing,
+    level.calm,
+  ];
+  // The ring's outer radius: 28 (56 across), the chosen one 34 (68).
+  const outerRadius: NonNullable<CircleLayer['paint']>['circle-radius'] = [
+    'case',
+    ['==', ['get', 'id'], id],
+    MAP_PIN.selectedRadius + MAP_PIN.selectedRing,
+    MAP_PIN.radius + MAP_PIN.ring,
   ];
   const label: { layout: NonNullable<SymbolLayer['layout']>; paint: SymbolLayer['paint'] } = {
     layout: {
@@ -329,45 +331,30 @@ export function ExploreMap({
               'circle-radius': [
                 'case',
                 ['==', ['get', 'id'], id],
-                MAP_PIN.selectedRadius + outer + PIN_SHADOW_SPREAD,
-                MAP_PIN.radius + outer + PIN_SHADOW_SPREAD,
+                MAP_PIN.selectedRadius + MAP_PIN.selectedRing + PIN_SHADOW_SPREAD,
+                MAP_PIN.radius + MAP_PIN.ring + PIN_SHADOW_SPREAD,
               ],
               'circle-translate': [0, PIN_SHADOW_Y],
             }}
           />
           <Layer
-            id="venue-selected-halo"
-            type="circle"
-            filter={[
-              'all',
-              ['!', ['has', 'point_count']],
-              ['!', ['has', 'stack']],
-              ['==', ['get', 'id'], id],
-            ]}
-            paint={{
-              'circle-color': colors.accent,
-              'circle-opacity': MAP_PIN.selectedHaloOpacity,
-              'circle-radius': MAP_PIN.selectedRadius + outer + MAP_PIN.selectedHalo,
-            }}
-          />
-          <Layer
             id="venue-halo"
             type="circle"
+            // `.pin.c .pc`: only a crowded venue glows, 6 in its pink at 22 %.
             filter={[
               'all',
               ['!', ['has', 'point_count']],
               ['!', ['has', 'stack']],
-              ['!=', ['get', 'bucket'], 'calm'],
-              ['!=', ['get', 'id'], id],
+              ['==', ['get', 'bucket'], 'buzzing'],
             ]}
             paint={{
-              'circle-color': live,
+              'circle-color': level.buzzing,
               'circle-opacity': MAP_PIN.haloOpacity,
               'circle-radius': [
                 'case',
                 ['==', ['get', 'id'], id],
-                MAP_PIN.selectedRadius + outer + MAP_PIN.halo,
-                MAP_PIN.radius + outer + MAP_PIN.halo,
+                MAP_PIN.selectedRadius + MAP_PIN.selectedRing + MAP_PIN.halo,
+                MAP_PIN.radius + MAP_PIN.ring + MAP_PIN.halo,
               ],
             }}
           />
@@ -375,16 +362,7 @@ export function ExploreMap({
             id="venue-ring"
             type="circle"
             filter={IS_VENUE}
-            paint={{
-              // 5.1: the selected pin's ring green.
-              'circle-color': ['case', ['==', ['get', 'id'], id], colors.accent, ring],
-              'circle-radius': [
-                'case',
-                ['==', ['get', 'id'], id],
-                MAP_PIN.selectedRadius + outer,
-                MAP_PIN.radius + outer,
-              ],
-            }}
+            paint={{ 'circle-color': live, 'circle-radius': outerRadius }}
           />
           <Layer
             id="venue-pins"
@@ -472,36 +450,22 @@ export function ExploreMap({
           />
         </GeoJSONSource>
       </Map>
-      {/* tuval Harita: the map fades into the ground under the head and over the tab bar. */}
-      <View
-        pointerEvents="none"
-        style={[
-          { position: 'absolute', left: 0, right: 0, top: 0, height: EXPLORE.map.fadeTop },
-          gradientStyle(EXPLORE[scheme].fadeTop),
-        ]}
-      />
-      <View
-        pointerEvents="none"
-        style={[
-          { position: 'absolute', left: 0, right: 0, bottom: 0, height: EXPLORE.map.fadeBottom },
-          gradientStyle(EXPLORE[scheme].fadeBottom),
-        ]}
-      />
-      <MapColumn
-        top={headerHeight + EXPLORE.map.columnTop}
+      {/* KesfetHarita: no fades; the legend, the sources and the round over the card's room. */}
+      <MapControls
+        bottom={cardBottom(tabBarHeight) + EXPLORE.map.cardMinHeight + EXPLORE.map.controlOver}
         onRecentre={() => camera.current?.fitBounds(opening, { padding, duration: CAMERA_MS })}
         onInfo={() => void map.current?.showAttribution()}
       />
       {/* 5.1: the selected venue's card comes up on a spring, again for each venue. */}
       {card ? (
-        <MapCard bottom={tabBarHeight}>
+        <MapCard bottom={cardBottom(tabBarHeight)}>
           <PopIn key={card.id}>
             <VenueCard venue={card} />
           </PopIn>
         </MapCard>
       ) : null}
       {stackVenues.length > 1 ? (
-        <MapCard bottom={tabBarHeight}>
+        <MapCard bottom={cardBottom(tabBarHeight)}>
           <PopIn key={stack ?? ''}>
             <StackCard venues={stackVenues} />
           </PopIn>
@@ -514,15 +478,22 @@ export function ExploreMap({
 // The map's camera moves (a cluster opened, the venues shown again).
 const CAMERA_MS = 400;
 
-// 5.1: the position and the map's sources at the top right in one glass column, under the floating
-// search and chips (tuval Harita: 46 wide, its buttons 46, a hairline between them). "Konum" is the
-// venues', never the phone's (rule 6): it shows every venue again.
-function MapColumn({
-  top,
+// Where the map's card stands: 26 over the tab bar's top (KesfetHarita `.vc`; the bar's room already
+// holds the 16 over it).
+function cardBottom(tabBarHeight: number) {
+  return tabBarHeight - SPACING[4] + EXPLORE.map.cardBottom;
+}
+
+// KesfetHarita `.lg`, `.attr`, `.loc`: the legend of the pins' colours and the map's sources at the
+// left, the round at the right, over the card's room. The round shows every venue again: it is the
+// venues', never the phone's position (rule 6; the board's own position dot is not drawn). The
+// sources open the map's attribution.
+function MapControls({
+  bottom,
   onRecentre,
   onInfo,
 }: {
-  top: number;
+  bottom: number;
   onRecentre: () => void;
   onInfo: () => void;
 }) {
@@ -530,40 +501,58 @@ function MapColumn({
   const { colors } = useTheme();
   const m = EXPLORE.map;
   const e = EXPLORE[scheme];
-  const button = (icon: 'compass' | 'info', label: string, color: string, onPress: () => void) => (
-    <Tap
-      accessibilityLabel={label}
-      onPress={onPress}
-      style={{
-        width: m.column,
-        height: m.column,
-        borderRadius: m.column / 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <CapIcon name={icon} color={color} size={m.icon} />
-    </Tap>
-  );
+  const g = m.legend;
   return (
-    <View pointerEvents="box-none" style={{ position: 'absolute', top, right: EXPLORE.headSide }}>
-      <Glass face={e.mapGlass} radius={m.column / 2} style={{ width: m.column }}>
-        {button('compass', tr.explore.recentre, colors.accent, onRecentre)}
-        <View
+    <>
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', left: m.side, bottom: bottom + m.legendOver }}
+      >
+        <Glass
+          face={e.solid}
+          radius={g.radius}
           style={{
-            height: KIT.size.hair,
-            marginHorizontal: m.dividerInset,
-            backgroundColor: e.divider,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: g.gap,
+            paddingHorizontal: g.padX,
+            paddingVertical: g.padY,
           }}
-        />
-        {button('info', tr.explore.mapInfo, c.muted, onInfo)}
-      </Glass>
-    </View>
+        >
+          {(['calm', 'lively', 'buzzing'] as const).map((b) => (
+            <View key={b} style={{ flexDirection: 'row', alignItems: 'center', gap: g.itemGap }}>
+              <View
+                style={{
+                  width: g.dot,
+                  height: g.dot,
+                  borderRadius: g.dot / 2,
+                  backgroundColor: e.level[b],
+                }}
+              />
+              <T v="mapLegend" color={c.muted}>
+                {tr.explore.legend[b]}
+              </T>
+            </View>
+          ))}
+        </Glass>
+      </View>
+      <View style={{ position: 'absolute', left: m.attrSide, bottom }}>
+        <Tap accessibilityLabel={tr.explore.mapInfo} onPress={onInfo} hitSlop={SPACING[3]}>
+          <T v="mapAttr" color={e.mapLabel}>
+            {tr.explore.mapSources}
+          </T>
+        </Tap>
+      </View>
+      <View style={{ position: 'absolute', right: m.side, bottom }}>
+        <Round side={m.control} label={tr.explore.recentre} onPress={onRecentre}>
+          <CapIcon name="compass" color={colors.accent} />
+        </Round>
+      </View>
+    </>
   );
 }
 
-// Where the map's card stands: 16 above the tab bar, 16 from the sides (tuval Harita; the bar's room
-// already holds the 16 over it).
 function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) {
   return (
     <View
@@ -572,8 +561,8 @@ function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) 
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: bottom - SPACING[4] + EXPLORE.map.cardBottom,
-        paddingHorizontal: EXPLORE.map.cardSide,
+        bottom,
+        paddingHorizontal: EXPLORE.map.side,
       }}
     >
       {children}
@@ -581,8 +570,8 @@ function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) 
   );
 }
 
-// The map's card (tuval Harita): white 82 % on the board's glass edge and shadow, 30 round, 12
-// inside (the map's GL surface cannot be blurred).
+// The map's card (KesfetHarita `.vc`): white on the board's glass edge and shadow, 22 round, 14
+// inside, 96 at least (the map's GL surface cannot be blurred).
 function MapFace({
   testID,
   row,
@@ -593,14 +582,14 @@ function MapFace({
   children: ReactNode;
 }) {
   const { scheme } = useKit();
-  const e = EXPLORE[scheme];
   const m = EXPLORE.map;
   return (
     <Glass
       testID={testID}
-      face={{ ...e.mapGlass, fill: e.mapCard }}
+      face={EXPLORE[scheme].solid}
       radius={m.cardRadius}
       style={{
+        minHeight: m.cardMinHeight,
         padding: m.cardPad,
         gap: row ? m.cardGap : SPACING[3],
         flexDirection: row ? 'row' : 'column',
@@ -612,45 +601,27 @@ function MapFace({
   );
 }
 
-// The bucket and the event, as the list shows them.
-function VenueTags({ venue }: { venue: ExploreVenue }) {
+function openVenue(id: string) {
+  router.push({ pathname: '/explore/[venueId]', params: { venueId: id } });
+}
+
+// The selected venue, over the floating tab bar (KesfetHarita `.vc`): its 56 picture with a buddy
+// at its corner, the name (wrapping, never cut) over the type, district and how lively, the event
+// when there is one, and the round to the venue.
+function VenueCard({ venue }: { venue: ExploreVenue }) {
+  const type = venueType(venue);
+  const { c } = useKit();
+  const { colors } = useTheme();
+  const m = EXPLORE.map;
   const now = useNow(60_000);
   const when = venue.event
     ? describeEventTime(venue.event.startsAt, venue.event.endsAt, now)
     : null;
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: SPACING[2] }}>
-      <Bucket bucket={venue.bucket} />
-      {venue.event && when ? (
-        <Tag
-          tone="amber"
-          label={tr.explore.eventTag(tr.explore.eventTime(when), venue.event.title)}
-        />
-      ) : null}
-    </View>
-  );
-}
-
-function openVenue(id: string) {
-  router.push({ pathname: '/explore/[venueId]', params: { venueId: id } });
-}
-
-// The selected venue, above the floating tab bar (tuval Harita): its 72 picture with a buddy at its
-// corner, the name, the type and district, the bucket, and the green round to the venue.
-function VenueCard({ venue }: { venue: ExploreVenue }) {
-  const type = venueType(venue);
-  const { c, scheme } = useKit();
-  const m = EXPLORE.map;
-  return (
     <Tap accessibilityLabel={venue.name} onPress={() => openVenue(venue.id)}>
       <MapFace testID="explore-map-card" row>
         <View>
-          <VenueThumb
-            kind={type}
-            size={m.picture}
-            radius={m.pictureRadius}
-            shadow={EXPLORE[scheme].pictureShadow}
-          />
+          <VenueThumb kind={type} size={m.picture} radius={m.pictureRadius} shadow="" />
           <Image
             source={BUDDY}
             fadeDuration={0}
@@ -665,20 +636,30 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
             }}
           />
         </View>
-        <View style={{ flex: 1, minWidth: 0, gap: EXPLORE.card.lineGap }}>
-          <T v="placeName">{venue.name}</T>
-          <T v="placeSub" color={c.muted}>
-            {tr.explore.venueSub(tr.explore.typeLabel[type], venue.district)}
+        <View style={{ flex: 1, minWidth: 0, gap: EXPLORE.row.lineGap }}>
+          <T v="mapName">{venue.name}</T>
+          <T v="kesfetSub" color={c.muted}>
+            {tr.explore.mapSub(
+              tr.explore.typeLabel[type],
+              venue.district,
+              tr.explore.buckets[venue.bucket],
+            )}
           </T>
-          <VenueTags venue={venue} />
+          {venue.event && when ? (
+            <View style={{ flexDirection: 'row', marginTop: SPACING[1] }}>
+              <Tag
+                tone="amber"
+                label={tr.explore.eventTag(tr.explore.eventTime(when), venue.event.title)}
+              />
+            </View>
+          ) : null}
         </View>
         <Round
-          primary
           label={tr.explore.goToVenue}
           testID="explore-map-go"
           onPress={() => openVenue(venue.id)}
         >
-          <CapIcon name="forward" color={KIT.onPrimary} size={m.goIcon} />
+          <CapIcon name="forward" color={colors.accent} size={m.goIcon} />
         </Round>
       </MapFace>
     </Tap>
