@@ -39,7 +39,7 @@ import {
   SUMMARY_BUDDIES,
 } from '@/theme/kinshi';
 import { LOBBY } from '@/theme/lobby';
-import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
+import { DarkGameScope } from '@/theme/ThemeProvider';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
 
 import {
@@ -72,6 +72,19 @@ import {
   useKinshiDeck,
   useTeamTone,
 } from './KinshiParts';
+import {
+  CountTags,
+  EndHeading,
+  EndRow,
+  EndSection,
+  PlayBar,
+  PlayTimer,
+  ScoreChip,
+  ScoreChips,
+  WordCard,
+  type WordFace,
+} from './KinshiBoard';
+import { KINSHI_PLAY as P } from '@/theme/kinshiPlay';
 
 type Room = {
   id: string;
@@ -310,13 +323,14 @@ function Play({
 
   const startsAt = state.startsAt ? Date.parse(state.startsAt) : 0;
   const toStart = useSecondsLeft(startsAt);
+  const close = {
+    label: owner ? tr.kinshi.endGame : tr.kinshi.exit,
+    onPress: onExit,
+    testID: 'kinshi-exit',
+  };
   const top = (
     <TopBar
-      close={{
-        label: owner ? tr.kinshi.endGame : tr.kinshi.exit,
-        onPress: onExit,
-        testID: 'kinshi-exit',
-      }}
+      close={close}
       score={{
         a: state.scores.a,
         b: state.scores.b,
@@ -331,7 +345,16 @@ function Play({
   if (state.phase === 'turn' && toStart > 0) {
     return <Countdown state={state} faces={faces} left={toStart} top={top} />;
   }
-  return <CardScreen roomId={roomId} state={state} faces={faces} top={top} />;
+  return (
+    <CardScreen
+      roomId={roomId}
+      state={state}
+      faces={faces}
+      top={top}
+      close={close}
+      onChat={onChat}
+    />
+  );
 }
 
 // The card screens (KinshiTurOncesi, KinshiBekle, Kinshi, KinshiTahminci, KinshiRakip,
@@ -342,13 +365,16 @@ function CardScreen({
   state,
   faces,
   top,
+  close,
+  onChat,
 }: {
   roomId: string;
   state: TabuState;
   faces: Faces;
   top: ReactNode;
+  close: { label: string; onPress: () => void; testID?: string };
+  onChat: () => void;
 }) {
-  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const me = faces.me;
   const role = roleOf(state, me);
@@ -451,7 +477,7 @@ function CardScreen({
       <View style={{ flexDirection: 'row', gap: K.footGap }}>
         <Btn
           variant="glassy"
-          icon="forward"
+          tall
           testID="kinshi-pass"
           label={tr.kinshi.pass}
           accessibilityLabel={tr.kinshi.passLabel(passesLeft)}
@@ -462,11 +488,9 @@ function CardScreen({
           style={{ flex: 1 }}
         />
         <Btn
-          icon="check"
+          tall
           testID="kinshi-correct"
           label={tr.kinshi.correct}
-          fill={colors.signal}
-          tint={colors.onSignal}
           disabled={mark.isPending && mark.variables !== 'correct'}
           loading={mark.isPending && mark.variables === 'correct'}
           onPress={() => mark.mutate('correct')}
@@ -476,6 +500,50 @@ function CardScreen({
     ) : rival ? (
       <Buzzer onPress={() => mark.mutate('taboo')} loading={mark.isPending} disabled={!card} />
     ) : null;
+
+  if (!ready && role === 'describer') {
+    // The describer's turn as the board draws it (KinshiAnlatici): the card is the describer's
+    // alone here (rule 3, as before); the same turn's other roles keep the deck.
+    const wordFace: WordFace = cards.isError
+      ? { kind: 'error', message: errorMessage(cards.error) }
+      : card
+        ? { kind: 'front', card }
+        : { kind: 'loading' };
+    return (
+      <Page testID="kinshi-describer">
+        <StageFit
+          status={
+            <>
+              <PlayBar
+                close={close}
+                title={tr.kinshi.describing}
+                line={tr.kinshi.turnLine(
+                  tr.games.turn(state.turnNo, state.totalTurns),
+                  tr.kinshi.team[team],
+                )}
+                timer={<PlayTimer clock={clock} label={tr.games.clockLabel(left)} late={late} />}
+                onChat={onChat}
+              />
+              <ScoreChips a={state.scores.a} b={state.scores.b} />
+            </>
+          }
+          actions={
+            <>
+              {failed ? (
+                <T v="fine" color={KIT.danger} center>
+                  {errorMessage(failed)}
+                </T>
+              ) : null}
+              {foot}
+            </>
+          }
+        >
+          <WordCard key={`${state.turnNo}:${state.cardIndex}`} face={wordFace} />
+          <CountTags counts={state.counts} />
+        </StageFit>
+      </Page>
+    );
+  }
 
   return (
     <Page
@@ -1002,9 +1070,9 @@ function Teams({
   );
 }
 
-// Oyun sonu (KinshiOyunSonu): the scene (confetti bars and three buddies), "Oyun bitti", the
-// winner, the score, "En çok bildiren anlatıcı" and "Yasak avcısı", Masaya dön and the owner's
-// Yeniden oyna.
+// Oyun sonu (KinshiSonuc): the bar ("Oyun bitti · 6 tur bitti"), the winner and the score, each
+// team's score, "Öne çıkanlar" (the top describer and the taboo hunter), Masaya dön and the
+// owner's Yeniden oyna.
 function End({
   roomId,
   result,
@@ -1021,158 +1089,78 @@ function End({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const insets = useSafeAreaInsets();
-  const { c } = useKit();
-  const { colors } = useTheme();
   const again = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.openGame(roomId, 'tabu', true),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }),
   });
-  const S = K.endScene;
-  const scene = kinshiScene(useWindowDimensions().width);
   const turns = result.lastTurn?.turnNo ?? TABU_GAME.totalTurns;
   const w = result.winner;
   const awards = [
     result.topDescriber
-      ? { award: result.topDescriber, label: tr.kinshi.topDescriber, mark: 'correct' as const }
+      ? {
+          award: result.topDescriber,
+          label: tr.kinshi.topDescriber,
+          count: tr.kinshi.wordsCount(result.topDescriber.count),
+        }
       : null,
     result.tabooHunter
-      ? { award: result.tabooHunter, label: tr.kinshi.tabooHunter, mark: 'taboo' as const }
+      ? {
+          award: result.tabooHunter,
+          label: tr.kinshi.tabooHunter,
+          count: tr.kinshi.tabooCount(result.tabooHunter.count),
+        }
       : null,
   ].filter((x) => x !== null);
   return (
-    <View testID="kinshi-end" style={{ flex: 1 }}>
-      <AuraBackground />
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          height: S.height - K.statusBar + insets.top,
-          overflow: 'hidden',
-          borderBottomLeftRadius: S.radius,
-          borderBottomRightRadius: S.radius,
-          backgroundColor: colors.surface,
-        }}
-      >
-        {scene.confetti.map((b, i) => (
-          <View
-            key={i}
-            style={{
-              position: 'absolute',
-              left: b.left,
-              top: b.top - K.statusBar + insets.top,
-              width: S.bar.width,
-              height: S.bar.height,
-              borderRadius: S.bar.radius,
-              backgroundColor: b.color,
-              transform: [{ rotate: b.turn }],
-            }}
-          />
-        ))}
-        {scene.endBuddies.map((p) => (
-          <Buddy
-            key={p.buddy}
-            buddy={p.buddy}
-            height={p.height}
-            style={{
-              bottom: -p.below,
-              ...('left' in p ? { left: p.left } : { right: p.right }),
-            }}
-          />
-        ))}
-      </View>
+    <Page testID="kinshi-end">
+      <PlayBar
+        close={{ label: tr.kinshi.exit, onPress: onBack, testID: 'kinshi-end-close' }}
+        title={tr.kinshi.overTurns(turns)}
+        line={tr.kinshi.name}
+        onChat={onChat}
+      />
       <ScrollView
         bounces={false}
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: insets.bottom + K.footBottom,
-          gap: K.summary.gap,
-        }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, gap: P.end.gap, paddingTop: P.stage.top - P.bar.top }}
       >
-        <TopBar
-          close={{ label: tr.kinshi.exit, onPress: onBack, testID: 'kinshi-end-close' }}
-          score={null}
-          onChat={onChat}
+        <EndHeading
+          title={w ? tr.kinshi.won(tr.kinshi.team[w]) : tr.kinshi.draw}
+          line={tr.kinshi.scoreLine(result.scores.a, result.scores.b)}
         />
-        <View style={{ height: S.contentTop - K.barBottom - 2 * K.summary.gap }} />
-        <View>
-          <T v="fine" center>
-            {tr.kinshi.overTurns(turns)}
-          </T>
-          <T v="display" center>
-            {w ? tr.kinshi.won(tr.kinshi.team[w]) : tr.kinshi.draw}
-          </T>
+        <View style={{ flexDirection: 'row', gap: P.score.between }}>
+          <ScoreChip team="a" score={result.scores.a} />
+          <ScoreChip team="b" score={result.scores.b} />
         </View>
-        <Glass
-          radius={K.box.radius}
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: S.scoreGap,
-            paddingVertical: 14,
-            paddingHorizontal: 20,
-          }}
-        >
-          <TeamTag team="a" short />
-          <Text
-            maxFontSizeMultiplier={1}
-            style={[KT.endScore, { color: w === 'b' ? c.muted : c.ink }]}
-          >
-            {result.scores.a}
-          </Text>
-          <View style={{ width: 1, height: S.scoreRule, backgroundColor: c.hair }} />
-          <Text
-            maxFontSizeMultiplier={1}
-            style={[KT.endScore, { color: w === 'a' ? c.muted : c.ink }]}
-          >
-            {result.scores.b}
-          </Text>
-          <TeamTag team="b" short />
-        </Glass>
         {awards.length > 0 ? (
-          <Glass radius={K.box.radius} style={{ paddingVertical: 4 }}>
+          <View>
+            <EndSection title={tr.kinshi.highlights} />
             {awards.map((x, i) => (
-              <View
+              <EndRow
                 key={x.label}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderTopWidth: i === 0 ? 0 : 1,
-                  borderTopColor: c.hair,
-                }}
-              >
-                <Face faces={faces} sid={x.award.sid} size={KIT.size.av.md} />
-                <View style={{ flex: 1 }}>
-                  <T v="h3">{nameOf(faces, x.award.sid)}</T>
-                  <T v="fine">{x.label}</T>
-                </View>
-                <MarkTag mark={x.mark} label={String(x.award.count)} />
-              </View>
+                first={i === 0}
+                face={<Face faces={faces} sid={x.award.sid} size={P.end.face} />}
+                name={nameOf(faces, x.award.sid)}
+                line={tr.kinshi.awardLine(x.label, x.count)}
+              />
             ))}
-          </Glass>
+          </View>
         ) : null}
-        <View style={{ flexGrow: 1 }} />
+      </ScrollView>
+      <View style={{ gap: P.foot.gap }}>
         {again.error ? (
           <T v="fine" color={KIT.danger} center>
             {errorMessage(again.error)}
           </T>
         ) : null}
-        <View style={{ flexDirection: 'row', gap: K.footGap }}>
+        <View style={{ flexDirection: 'row', gap: P.foot.gap }}>
           <Btn
             variant="glassy"
+            tall
             testID="kinshi-back"
             label={tr.kinshi.backToTable}
             onPress={onBack}
@@ -1180,6 +1168,7 @@ function End({
           />
           {owner ? (
             <Btn
+              tall
               testID="kinshi-again"
               label={tr.kinshi.again}
               loading={again.isPending}
@@ -1188,7 +1177,7 @@ function End({
             />
           ) : null}
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </Page>
   );
 }

@@ -1622,8 +1622,17 @@ export const tr = {
     next: 'Sıradaki: ',
     nextDescribes: (alias: string) => `, ${alias} anlatacak`,
     nextTurn: 'Sonraki tura geç',
+    // The describer's turn (KinshiAnlatici): the bar's line, the card's label, a team's score.
+    turnLine: (turn: string, team: string) => `${turn} · ${team}`,
+    wordKick: 'Kelime',
+    teamScore: (team: string, n: number) => `${team} ${n}`,
     // Oyun sonu.
     overTurns: (n: number) => `Oyun bitti · ${n} tur bitti`,
+    scoreLine: (a: number, b: number) => `Mor ${a} · Pembe ${b}`,
+    highlights: 'Öne çıkanlar',
+    awardLine: (label: string, count: string) => `${label} · ${count}`,
+    wordsCount: (n: number) => `${n} kelime`,
+    tabooCount: (n: number) => `${n} yasak`,
     won: (team: string) => `${team} kazandı`,
     draw: 'Berabere',
     topDescriber: 'En çok bildiren anlatıcı',
