@@ -2,29 +2,23 @@ import { router } from 'expo-router';
 
 import { Btn } from '@/aura/kit';
 import { useEnterDistrict } from '@/features/district/flow';
-import { Foot, RISO, ScenePage, StillScene, WarnRow } from '@/features/district/parts';
+import { Foot, HeroPage, RISO, WarnRow } from '@/features/district/parts';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { SEMT } from '@/theme/semt';
 
-// SemtBitti (docs/SPEC_V4.md §4.V; the owner's call, 8 Kasım, §8.4): [Yeniden gir] goes in without
-// the question and starts a new 2 hours; [Keşfet'e dön] under it.
+// SemtKapandi (yeni arayüz tuvali 100; docs/SPEC_V4.md §4.V; the owner's call, 8 Kasım, §8.4):
+// [Yeniden gir] goes in without the question and starts a new 2 hours; [Keşfet'e dön] under it.
 export default function DistrictEndedScreen() {
   const enter = useEnterDistrict();
   const back = () => router.navigate('/explore');
   return (
-    <ScenePage
-      close
+    <HeroPage
+      source={RISO.heroEnded}
+      focus={SEMT.hero.focusClosed}
+      label={tr.district.ended.sceneLabel}
       onClose={back}
       testID="district-ended"
-      centered
-      scene={
-        <StillScene
-          source={RISO.closed}
-          height={SEMT.scene.gecit}
-          label={tr.district.ended.sceneLabel}
-        />
-      }
       title={tr.district.ended.title}
       body={tr.district.ended.body}
       footer={
@@ -37,7 +31,7 @@ export default function DistrictEndedScreen() {
             loading={enter.isPending}
             onPress={() => enter.mutate()}
           />
-          <Btn block variant="glassy" label={tr.district.backToExplore} onPress={back} />
+          <Btn block variant="ghost" label={tr.district.backToExplore} onPress={back} />
         </Foot>
       }
     />

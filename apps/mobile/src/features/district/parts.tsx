@@ -1,3 +1,4 @@
+import { Image as Photo } from 'expo-image';
 import { router } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
 import {
@@ -9,6 +10,8 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { Glass, Round, T, useKit } from '@/aura/kit';
@@ -18,7 +21,7 @@ import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useLoopActive } from '@/components/Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { MOTION } from '@/theme/aura';
+import { AURA, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { CHAT_LOOK } from '@/theme/chatLook';
 import { RISO_TYPE } from '@/theme/riso';
@@ -37,6 +40,12 @@ export const RISO = {
   sign: require('../../../assets/riso/semt/yol-tabelasi-valizli-kanki.webp'),
   door: require('../../../assets/riso/semt/kesfet-kucuk-kapi.webp'),
   doorLocked: require('../../../assets/riso/semt/kesfet-kucuk-kapi-kilitli.webp'),
+  // The pictures over the pages (yeni arayüz tuvali 12, 13, 100, 101, 102).
+  heroGate: require('../../../assets/riso/semt/gecit-soru.webp'),
+  heroOpen: require('../../../assets/riso/semt/gecit-acik-hero.webp'),
+  heroEnded: require('../../../assets/riso/semt/oturum-kapandi.webp'),
+  heroOutside: require('../../../assets/riso/semt/disarida.webp'),
+  heroLocate: require('../../../assets/riso/semt/konum.webp'),
 } as const;
 
 const LAYER = {
@@ -730,4 +739,334 @@ const TOP_BAR = 56;
 // The foot's buttons, 8 apart (`.foot`).
 export function Foot({ children }: { children: ReactNode }) {
   return <View style={{ gap: SPACING[2] }}>{children}</View>;
+}
+
+// ---- The pages with a picture over their top (yeni arayüz tuvali 12, 13, 100, 101, 102) ----
+
+type HeroKind = 'tall' | 'gate' | 'short';
+
+// The picture's height, the words' offset and the content's top padding for this window: the
+// canvas's 844-high phone, scaled down on a shorter one (the foot stays in view).
+function useHeroLayout(kind: HeroKind) {
+  const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const h = SEMT.hero;
+  const k = Math.min(1, Math.max(h.minScale, height / h.refHeight));
+  const offset = kind === 'gate' ? h.noteTop : kind === 'short' ? h.textTopShort : h.textTop;
+  return {
+    inset: insets.top,
+    below: Math.round(h[kind] * k),
+    // The bar's foot (4 under its 56 row, Screen's `top`), then the offset.
+    padTop: Math.round(offset * k) - SPACING[1],
+  };
+}
+
+// `.hero`: the picture from the screen's top edge, its foot scalloped (cells of 20, notches of 8 in
+// the ground's colour).
+function HeroBackdrop({
+  kind,
+  source,
+  focus,
+  label,
+}: {
+  kind: HeroKind;
+  source: ImageSourcePropType;
+  focus?: `${number}%`;
+  label: string;
+}) {
+  const { scheme } = useKit();
+  const { width } = useWindowDimensions();
+  const { inset, below } = useHeroLayout(kind);
+  const { cell, radius } = SEMT.hero.scallop;
+  const short = kind === 'short';
+  return (
+    <View
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={label}
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: inset + below,
+        backgroundColor: short ? SEMT.hero.paper : undefined,
+      }}
+    >
+      <Photo
+        source={source}
+        accessible={false}
+        contentFit={short ? 'contain' : 'cover'}
+        contentPosition={{ left: focus ?? '50%', top: '100%' }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      <Svg width={width} height={radius} style={{ position: 'absolute', left: 0, bottom: 0 }}>
+        {Array.from({ length: Math.ceil(width / cell) }, (_, i) => (
+          <Circle
+            key={i}
+            cx={i * cell + cell / 2}
+            cy={radius + 1}
+            r={radius}
+            fill={AURA[scheme].ground}
+          />
+        ))}
+      </Svg>
+    </View>
+  );
+}
+
+// `.round.gl`: a round button over the picture, dark glass and a white icon, in both schemes.
+export function HeroRound({
+  icon,
+  label,
+  onPress,
+  testID,
+}: {
+  icon: CapIconName;
+  label: string;
+  onPress: () => void;
+  testID?: string;
+}) {
+  const r = SEMT.hero.round;
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={{
+        width: KIT.size.round,
+        height: KIT.size.round,
+        borderRadius: KIT.size.round / 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: r.bg,
+        borderWidth: KIT.size.edge,
+        borderColor: r.edge,
+      }}
+    >
+      <CapIcon name={icon} color={r.ink} size={KIT.size.icon} />
+    </Pressable>
+  );
+}
+
+// `.hdr`: the bar over the picture, 56 high; the close on the right or what the page puts in it.
+export function HeroBar({ children }: { children: ReactNode }) {
+  return (
+    <View
+      style={{
+        minHeight: SEMT.hero.bar,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING[3],
+      }}
+    >
+      {children}
+    </View>
+  );
+}
+
+// The screen of these pages: the picture behind the status bar and the bar, the content from the
+// words' offset, the buttons in the fixed foot.
+export function HeroScreen({
+  kind,
+  source,
+  focus,
+  label,
+  top,
+  footer,
+  children,
+}: {
+  kind: HeroKind;
+  source: ImageSourcePropType;
+  focus?: `${number}%`;
+  label: string;
+  top: ReactNode;
+  footer: ReactNode;
+  children: ReactNode;
+}) {
+  const { padTop } = useHeroLayout(kind);
+  return (
+    <Screen
+      top={top}
+      barTop={0}
+      padTop={padTop}
+      footer={footer}
+      backdrop={<HeroBackdrop kind={kind} source={source} focus={focus} label={label} />}
+    >
+      {children}
+    </Screen>
+  );
+}
+
+// Açık, Oturum kapandı, Dışarıda and Konum: the picture, the close on the right (`onClose`), the
+// title and the words centred (`.txt`); what the page adds goes under them.
+export function HeroPage({
+  kind = 'tall',
+  source,
+  focus,
+  label,
+  onClose,
+  title,
+  body,
+  children,
+  footer,
+  testID,
+}: {
+  kind?: 'tall' | 'short';
+  source: ImageSourcePropType;
+  focus?: `${number}%`;
+  label: string;
+  onClose?: () => void;
+  title: string;
+  body: string;
+  children?: ReactNode;
+  footer: ReactNode;
+  testID?: string;
+}) {
+  const leave =
+    onClose ?? (() => (router.canGoBack() ? router.back() : router.navigate('/explore')));
+  return (
+    <HeroScreen
+      kind={kind}
+      source={source}
+      focus={focus}
+      label={label}
+      top={
+        <HeroBar>
+          <View style={{ flex: 1 }} />
+          <HeroRound
+            icon="close"
+            label={tr.district.close}
+            testID="district-close"
+            onPress={leave}
+          />
+        </HeroBar>
+      }
+      footer={footer}
+    >
+      <View testID={testID}>
+        <T v="display" center accessibilityRole="header">
+          {title}
+        </T>
+        <View style={{ marginTop: SEMT.scene.textTop }}>
+          <T v="body" center>
+            {body}
+          </T>
+        </View>
+        {children}
+      </View>
+    </HeroScreen>
+  );
+}
+
+// A ticket (`.op`, `.tk`): a stub and a body behind a dashed line, a notch at the line's ends cut
+// out of the edges (drawn in the ground's colour; the ground is the clouds' flat colour).
+export function TicketShell({
+  stub,
+  stubWidth,
+  stubGround,
+  ground,
+  radius,
+  notch,
+  minHeight,
+  dash,
+  dashInset,
+  children,
+}: {
+  stub: ReactNode;
+  stubWidth: number;
+  stubGround: string;
+  ground: string;
+  radius: number;
+  notch: number;
+  minHeight: number;
+  dash: string;
+  dashInset: number;
+  children: ReactNode;
+}) {
+  const { scheme, c } = useKit();
+  const shadow = boxShadowParts(useLabOff('golge'), c.raisedShadow || undefined, radius);
+  const hole = AURA[scheme].ground;
+  return (
+    <View style={{ borderRadius: radius, boxShadow: shadow.boxShadow }}>
+      {shadow.node}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'stretch',
+          minHeight,
+          borderRadius: radius,
+          overflow: 'hidden',
+          backgroundColor: ground,
+        }}
+      >
+        <View
+          style={{
+            width: stubWidth,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: stubGround,
+          }}
+        >
+          {stub}
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center' }}>{children}</View>
+        <View
+          accessible={false}
+          style={{
+            position: 'absolute',
+            left: stubWidth - 1,
+            top: dashInset,
+            bottom: dashInset,
+            width: 2,
+            borderWidth: 1,
+            borderStyle: 'dashed',
+            borderColor: dash,
+          }}
+        />
+        {[{ top: -notch }, { bottom: -notch }].map((at, i) => (
+          <View
+            key={i}
+            accessible={false}
+            style={{
+              position: 'absolute',
+              left: stubWidth - notch,
+              width: notch * 2,
+              height: notch * 2,
+              borderRadius: notch,
+              backgroundColor: hole,
+              ...at,
+            }}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+// `.fnd`: the waiting line over the foot's button (a ring and the words).
+export function FindRow({ text }: { text: string }) {
+  const { scheme } = useKit();
+  return (
+    <View
+      accessibilityRole="progressbar"
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={text}
+      accessibilityState={{ busy: true }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: SEMT.hero.findGap,
+        marginBottom: SEMT.hero.findBottom,
+      }}
+    >
+      <Spin color={SEMT.progress[scheme].fill} />
+      <T v="body" strong>
+        {text}
+      </T>
+    </View>
+  );
 }

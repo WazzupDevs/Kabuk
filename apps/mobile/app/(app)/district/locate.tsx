@@ -8,7 +8,7 @@ import { AppState, Linking, View } from 'react-native';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, T, useKit } from '@/aura/kit';
 import { districtScreen, useEnterDistrict } from '@/features/district/flow';
-import { Foot, RISO, ScenePage, Spin, StillScene, WarnRow } from '@/features/district/parts';
+import { FindRow, Foot, HeroPage, RISO, WarnRow } from '@/features/district/parts';
 import { putDistrictState, useDistrictState } from '@/features/district/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -132,7 +132,6 @@ export default function DistrictLocateScreen() {
   );
 
   const s = state.data;
-  const busy = status === 'finding' || locate.isPending || pick.isPending;
   const next = () => {
     if (!s) return;
     const to = districtScreen(s);
@@ -162,50 +161,33 @@ export default function DistrictLocateScreen() {
       </Foot>
     ) : (
       <Foot>
+        {status === 'finding' ? <FindRow text={tr.district.locate.finding} /> : null}
         {enter.isError ? <WarnRow tone="danger" text={errorMessage(enter.error)} /> : null}
         <Btn
           block
           label={tr.district.locate.next}
           testID="district-locate-next"
           disabled={status !== 'found'}
-          loading={busy || enter.isPending}
+          loading={locate.isPending || pick.isPending || enter.isPending}
           onPress={next}
         />
       </Foot>
     );
 
   return (
-    <ScenePage
+    <HeroPage
+      kind="short"
+      source={RISO.heroLocate}
+      label={tr.district.locate.sceneLabel}
+      onClose={() => (router.canGoBack() ? router.back() : router.navigate('/explore'))}
       testID="district-locate"
-      scene={
-        <StillScene
-          source={RISO.map}
-          height={SEMT.scene.short}
-          label={tr.district.locate.sceneLabel}
-        />
-      }
       title={tr.district.locate.title}
       body={tr.district.locate.body}
       footer={footer}
     >
       <View style={{ marginTop: SEMT.scene.chipTop, gap: KIT.size.chipsGap }}>
-        {status === 'finding' ? (
-          <View style={{ flexDirection: 'row' }} accessibilityState={{ busy: true }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: KIT.size.chipGap,
-                height: KIT.size.chip,
-                paddingHorizontal: KIT.size.chipPadX,
-              }}
-            >
-              <Spin color={KIT[scheme].muted} />
-              <T v="fine">{tr.district.locate.finding}</T>
-            </View>
-          </View>
-        ) : status === 'found' && s?.district ? (
-          <View style={{ flexDirection: 'row' }}>
+        {status === 'finding' ? null : status === 'found' && s?.district ? (
+          <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
             <Chip
               testID="district-found"
               label={tr.district.locate.found(s.district.name)}
@@ -214,8 +196,17 @@ export default function DistrictLocateScreen() {
           </View>
         ) : status === 'choose' ? (
           <>
-            <T v="h3">{tr.district.locate.choose}</T>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap }}>
+            <T v="h3" center>
+              {tr.district.locate.choose}
+            </T>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: KIT.size.chipsGap,
+              }}
+            >
               {candidates.map((c) => (
                 <Chip
                   key={c.ref}
@@ -238,11 +229,27 @@ export default function DistrictLocateScreen() {
         ) : null}
         {s?.pickByHand && status !== 'found' ? (
           <View style={{ gap: SEMT.pickGap }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: KIT.size.chipGap,
+              }}
+            >
               <CapIcon name="info" color={KIT[scheme].muted} size={SEMT.warn.icon} />
-              <T v="fine">{tr.district.locate.byHand}</T>
+              <T v="fine" center>
+                {tr.district.locate.byHand}
+              </T>
             </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: KIT.size.chipsGap,
+              }}
+            >
               {HAND_PICK.map((ref) => (
                 <Chip
                   key={ref}
@@ -257,6 +264,6 @@ export default function DistrictLocateScreen() {
           </View>
         ) : null}
       </View>
-    </ScenePage>
+    </HeroPage>
   );
 }
