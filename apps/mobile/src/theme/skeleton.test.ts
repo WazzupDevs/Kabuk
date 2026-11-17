@@ -85,12 +85,12 @@ describe('the top bar (3.1)', () => {
     expect(barBandCss('dark', 200)).toContain('rgba(0, 0, 0, 0.84) 83.5%');
   });
 
-  it('PageTop is the `sayfa` bar: the 46 glass back button, the large title 34/800', () => {
+  it('PageTop is the `sayfa` bar: the 44 glass back button, the large title 34/800', () => {
     const page = code('src/components/PageTop.tsx');
     expect(page).toMatch(/<TopBarRow kind="sayfa"/);
     expect(page).toMatch(/<LargeTitle kind="sayfa"/);
     expect(code('src/motion/TopBar.tsx')).toMatch(/side=\{side \?\? KIT\.size\.topBtn\}/);
-    expect(code('src/theme/auraKit.ts')).toMatch(/\n {4}topBtn: 46,/);
+    expect(code('src/theme/auraKit.ts')).toMatch(/\n {4}topBtn: 44,/);
     expect(code('src/theme/tokens.ts')).toMatch(
       /largeTitle: \{ font: 'display', size: 34, lineHeight: 42/,
     );
@@ -305,10 +305,13 @@ describe('the tab bar (3.3)', () => {
     expect(MOTION.springs.tabLead).toEqual({ stiffness: 420, damping: 30, mass: 1 });
   });
 
-  it('its bottom edge: 160 high, from clear to the ground at 92 % (72 % 60 % down, tuval Kesfet)', () => {
-    expect(AURA.tabBar.edgeHeight).toBe(160);
+  it('its bottom edge: 150 high, from clear to the solid ground 70 % down (yeni tuval `.fade`)', () => {
+    expect(AURA.tabBar.edgeHeight).toBe(150);
     expect(barEdgeCss('light')).toBe(
-      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.72) 60%, rgba(239, 247, 241, 0.92) 100%)',
+      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, #EFF7F1 70%, #EFF7F1 100%)',
+    );
+    expect(barEdgeCss('dark')).toBe(
+      'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 70%, #000000 100%)',
     );
   });
 });

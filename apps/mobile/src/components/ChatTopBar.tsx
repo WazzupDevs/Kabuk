@@ -88,17 +88,17 @@ export function ChatTopBar({
           >
             {title}
           </T>
-          {live && !subtitle && !below ? <PulseDot /> : null}
+          {live && !subtitle && !below ? <PulseDot ring={KIT.pinkRing} /> : null}
         </View>
         {below && !subtitle ? (
           <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
-            {live ? <PulseDot /> : null}
+            {live ? <PulseDot ring={KIT.pinkRing} /> : null}
             {below}
           </View>
         ) : null}
         {subtitle ? (
           <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
-            {live ? <PulseDot /> : null}
+            {live ? <PulseDot ring={KIT.pinkRing} /> : null}
             <T v={dm ? 'dmSub' : 'fine'} style={{ flexShrink: 1 }}>
               {subtitle}
             </T>

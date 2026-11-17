@@ -31,7 +31,7 @@ import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { RISO as R } from '@/theme/riso';
-import { SPRENGJA as S, SPRENGJA_TYPE as ST, sprengjaRing } from '@/theme/sprengja';
+import { SPRENGJA as S, SPRENGJA_BOARD, SPRENGJA_TYPE as ST, sprengjaRing } from '@/theme/sprengja';
 import { LOBBY } from '@/theme/lobby';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
@@ -40,10 +40,18 @@ import { ChatRound, Deck, Face, type Faces, GameTopBar, nameOf } from '../riso/R
 import type { RisoBuddy } from '../riso/risoArt';
 import { PhasePill, ReadyChip } from '../sahtekar/KrotParts';
 import {
+  type BarClose,
+  BoardHint,
+  BoardPage,
+  BombCard,
+  ResultHeading,
+  ResultRow,
+  SprengjaHead,
+  ThrowOrder,
+} from './SprengjaBoards';
+import {
   CardFace,
-  EndDecor,
   ErrorCover,
-  HeroFaces,
   LetterPanel,
   MidNote,
   PlayPage,
@@ -66,10 +74,10 @@ import { sprengjaArt } from './sprengjaArt';
 import {
   blastBuzz,
   endWords,
-  mostHit,
   ringSeats,
   scoreRows,
   type Seen,
+  throwOrder,
   throwsUntil,
 } from './sprengjaView';
 
@@ -297,6 +305,9 @@ type Shared = {
   state: SprengjaState;
   faces: Faces;
   top: ReactNode;
+  // The close and the chat the boards' own head (Bomba sende) puts where `top` has them.
+  exit: BarClose;
+  onChat: () => void;
   playing: boolean;
   offline: boolean;
   cover: ReactNode;
@@ -374,6 +385,12 @@ function Play({
     state,
     faces,
     top,
+    exit: {
+      label: owner ? tr.sprengja.endGame : tr.sprengja.exit,
+      onPress: onExit,
+      testID: 'sprengja-exit',
+    },
+    onChat,
     playing,
     offline,
     cover: offline ? <ErrorCover retrying={retrying} onRetry={retry} /> : null,
@@ -512,7 +529,7 @@ function StartScreen({ roomId, state, faces, top, playing, offline, cover }: Sha
 // The fuse burns (SprengjaSende, SprengjaBaskasinda, SprengjaGozlemci, SprengjaHalka3/8,
 // SprengjaDar8): the ring with the bomb and the throw's arc, the letter-group panel; the holder's
 // "<Ad>'a at". No time shows (K-85).
-function LitScreen({ roomId, state, faces, top, offline, cover, onRules }: Shared) {
+function LitScreen({ roomId, state, faces, top, exit, onChat, offline, cover, onRules }: Shared) {
   const me = faces.me;
   const { width } = useWindowDimensions();
   const ring = sprengjaRing(width, state.order.length);
@@ -549,34 +566,66 @@ function LitScreen({ roomId, state, faces, top, offline, cover, onRules }: Share
         : until !== null
           ? tr.sprengja.comesIn(until)
           : tr.sprengja.watcherNote;
-  const foot =
-    mine && next ? (
-      <>
-        <FootError error={pass.error} />
-        <Btn
-          block
-          testID="sprengja-pass"
-          label={tr.sprengja.throwTo(nameOf(faces, next))}
-          icon="bomb"
-          disabled={offline}
-          loading={pass.isPending}
-          onPress={() => pass.mutate()}
+  if (mine) {
+    // Bomba sende (SprengjaBomba): the head with the round, the bomb card, the throwing order from
+    // this person on; the throw's button at the foot. No time shows (K-85).
+    return (
+      <BoardPage
+        testID="sprengja-mine"
+        head={
+          <SprengjaHead
+            close={exit}
+            title={title}
+            line={tr.games.turn(state.round, state.rounds)}
+            right={<ChatRound onPress={onChat} />}
+          />
+        }
+        cover={cover}
+        actions={
+          next ? (
+            <>
+              <FootError error={pass.error} />
+              <BoardHint>{tr.sprengja.throws(state.passes)}</BoardHint>
+              <Btn
+                block
+                tall
+                testID="sprengja-pass"
+                label={tr.sprengja.throwTo(nameOf(faces, next))}
+                icon="bomb"
+                disabled={offline}
+                loading={pass.isPending}
+                onPress={() => pass.mutate()}
+              />
+            </>
+          ) : null
+        }
+      >
+        <BombCard letters={state.letters ?? ''} note={note} />
+        <ThrowOrder
+          faces={faces}
+          order={throwOrder(state.order, holder)}
+          gone={state.gone}
+          first={holder}
         />
-      </>
-    ) : null;
+        <View style={{ alignItems: 'center' }}>
+          <Btn
+            sm
+            variant="glassy"
+            icon="info"
+            testID="sprengja-rules"
+            label={tr.sprengja.rules}
+            onPress={onRules}
+          />
+        </View>
+      </BoardPage>
+    );
+  }
   return (
-    <PlayPage
-      testID={mine ? 'sprengja-mine' : 'sprengja-lit'}
-      top={top}
-      title={title}
-      note={note}
-      foot={foot}
-      cover={cover}
-    >
-      <Ring faces={faces} seats={seats} ring={ring} holder={holder} next={next} mine={mine} />
+    <PlayPage testID="sprengja-lit" top={top} title={title} note={note} cover={cover}>
+      <Ring faces={faces} seats={seats} ring={ring} holder={holder} next={next} mine={false} />
       <View style={{ height: ring.panelGap }} />
       <LetterPanel letters={state.letters ?? ''} passes={state.passes} onRules={onRules} />
-      {!mine && !watcher && until !== null ? (
+      {!watcher && until !== null ? (
         <MidNote gap={S.ringNoteGap}>{tr.sprengja.whenYours}</MidNote>
       ) : null}
     </PlayPage>
@@ -918,7 +967,6 @@ function End({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
   const again = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.openGame(roomId, 'sprengja', true),
@@ -927,96 +975,60 @@ function End({
   const me = faces.me;
   const words = endWords(result, me);
   const rows = scoreRows(result);
-  const active = result.order.filter((s) => !result.gone.includes(s));
-  const winners = result.order.filter((s) => result.winners.includes(s));
-  const H = S.hero;
   const name = (sid: string) => (sid === me ? tr.sprengja.you : nameOf(faces, sid));
   let title: string;
   let note: string;
-  let tag: string | null;
-  let heroes: string[];
-  let size: number;
-  let overlap: number = H.overlap;
   switch (words.kind) {
     case 'abandoned':
       title = tr.sprengja.abandoned;
       note = tr.sprengja.abandonedNote;
-      tag = null;
-      heroes = active;
-      size = H.many;
       break;
     case 'all':
       title = tr.sprengja.wonAll;
       note = tr.sprengja.noteAll(words.hits);
-      tag = tr.sprengja.allEqual;
-      heroes = winners;
-      size = H.all;
-      overlap = H.overlapAll;
       break;
     case 'one':
       title = words.you ? tr.sprengja.wonYou : tr.sprengja.wonOne(nameOf(faces, words.sid));
       note = words.you
         ? tr.sprengja.noteYou(words.hits)
         : tr.sprengja.noteOne(nameOf(faces, words.sid), words.hits);
-      tag = tr.sprengja.winner;
-      heroes = winners;
-      size = H.one;
       break;
     case 'two': {
       const [a, b] = words.others.map((s) => nameOf(faces, s));
       title = words.you ? tr.sprengja.wonTwoYou(a ?? '') : tr.sprengja.wonTwo(a ?? '', b ?? '');
       note = words.you ? tr.sprengja.noteTwoYou(words.hits) : tr.sprengja.noteTwo(words.hits);
-      tag = tr.sprengja.winnersTag;
-      heroes = winners;
-      size = H.two;
       break;
     }
     case 'many': {
       title = tr.sprengja.wonMany(words.winners.length);
-      const names = words.winners.map(name);
-      note = capitalFirst(tr.sprengja.noteMany(names, words.you));
-      tag = tr.sprengja.winnersTag;
-      heroes = winners;
-      size = H.many;
+      note = capitalFirst(tr.sprengja.noteMany(words.winners.map(name), words.you));
       break;
     }
   }
   const finished = words.kind !== 'abandoned';
-  const scene = (
-    <Scene source={sprengjaArt.table} height={S.scene.end}>
-      <EndDecor confetti={finished && words.kind !== 'all'} />
-      <View style={{ position: 'absolute', left: 0, right: 0, top: H.top, alignItems: 'center' }}>
-        {tag ? (
-          <View style={{ transform: [{ rotate: S.stampTurn }], marginBottom: H.tagGap }}>
-            <Tag label={tag} colors={{ bg: colors.signal, fg: colors.onSignal }} />
-          </View>
-        ) : null}
-        <HeroFaces
-          faces={faces}
-          sids={heroes}
-          size={size}
-          overlap={overlap}
-          lead={words.kind === 'one'}
-        />
-      </View>
-    </Scene>
-  );
+  const won = new Set(finished ? result.winners : []);
+  // Oyun sonu (SprengjaSonuc): the head, the winner's words, the scores as plain rows, the foot.
   return (
-    <ScenePage
+    <BoardPage
       testID="sprengja-end"
-      scene={scene}
-      content={S.scene.endContent}
-      top={
-        <GameTopBar
+      head={
+        <SprengjaHead
           close={{ label: tr.sprengja.exit, onPress: onBack, testID: 'sprengja-end-close' }}
+          title={
+            finished
+              ? tr.sprengja.over(result.rounds)
+              : tr.sprengja.abandonedLine(result.round, result.rounds)
+          }
+          line={tr.sprengja.name}
           right={<ChatRound onPress={onChat} />}
         />
       }
-      foot={
+      actions={
         <>
           <FootError error={again.error} />
-          <View style={{ flexDirection: 'row', gap: R.footGap }}>
+          <View style={{ flexDirection: 'row', gap: SPRENGJA_BOARD.end.footGap }}>
             <Btn
+              tall
               variant={finished ? 'glassy' : 'primary'}
               testID="sprengja-back"
               label={tr.sprengja.backToTable}
@@ -1025,6 +1037,7 @@ function End({
             />
             {owner && finished ? (
               <Btn
+                tall
                 testID="sprengja-again"
                 label={tr.sprengja.again}
                 loading={again.isPending}
@@ -1036,21 +1049,19 @@ function End({
         </>
       }
     >
-      <View style={{ alignItems: 'center' }}>
-        <T v="fine" center>
-          {finished
-            ? tr.sprengja.over(result.rounds)
-            : tr.sprengja.abandonedLine(result.round, result.rounds)}
-        </T>
-        <T v="display" center accessibilityRole="header">
-          {title}
-        </T>
-        <T v="fine" ink center>
-          {note}
-        </T>
+      <ResultHeading title={title} note={note} />
+      <View>
+        {rows.map((row, i) => (
+          <ResultRow
+            key={row.sid}
+            faces={faces}
+            row={row}
+            first={i === 0}
+            winner={won.has(row.sid)}
+          />
+        ))}
       </View>
-      <ScoreTable faces={faces} rows={rows} lose={finished ? mostHit(rows) : new Set()} />
-    </ScenePage>
+    </BoardPage>
   );
 }
 

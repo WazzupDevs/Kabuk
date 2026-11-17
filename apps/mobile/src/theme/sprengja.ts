@@ -109,39 +109,15 @@ export const SPRENGJA = {
   flash: 'radial-gradient(circle at 50% 40%, rgba(255, 79, 139, 0.25), transparent 62%)',
   boom: { top: 22, radius: 28, below: 22, gap: 8 },
   stampTurn: '-6deg',
-  // The scenes over Tur sonu (b-patlama, 250) and the end (b-masa, 300): 36 round at the foot, their
-  // top shaded 110 down from black 55 %; the words at 322 and 372.
+  // The scene over Tur sonu (b-patlama, 250): 36 round at the foot, its top shaded 110 down from
+  // black 55 %; the words at 322.
   scene: {
     summary: 250,
-    end: 300,
     radius: 36,
     shade: 110,
     shadeFrom: 'rgba(0, 0, 0, 0.55)',
     summaryContent: 322,
-    endContent: 372,
   },
-  // The winners over the end's scene (`.hero-s`): 96 down, the tag 10 over them. One 72 in a 4
-  // --signal ring; two 64, three or more 56, overlapping 14; everyone 48 overlapping 10; each of
-  // those ringed 3 in #141016.
-  hero: {
-    top: 96,
-    tagGap: 10,
-    one: 72,
-    oneRing: 4,
-    oneShadow: '0px 10px 20px rgba(0, 0, 0, 0.4)',
-    two: 64,
-    many: 56,
-    all: 48,
-    overlap: 14,
-    overlapAll: 10,
-    ring: 3,
-    ringInk: '#141016',
-  },
-  // Two buddies at the scene's foot: 120 high, 20 in, 14 under.
-  endBuddies: [
-    { buddy: 'd2fbb5', left: 20, height: 120, below: 14 },
-    { buddy: 'f280a5', right: 20, height: 120, below: 14 },
-  ],
   // The score table (`.tbl`): 22 round, 4/16 in; rows 8 apart vertically, 10 across, the face 32,
   // the bombs 18 two apart, the points at least 44 wide; one who left at 60 %.
   table: {
@@ -198,3 +174,86 @@ export function sprengjaRing(screenWidth: number, players: number) {
   };
 }
 export type SprengjaRing = ReturnType<typeof sprengjaRing>;
+
+// The yeni arayüz boards SprengjaBomba (bomba sende) and SprengjaSonuc (oyun sonu), 390 × 844, value
+// for value (docs/design/yeni-arayuz/project/): the head (`.gt`, with no timer: Sprengja shows no
+// time, K-85), the bomb card (`.card.bomb`), the throwing order (`.order`, `.pc`), and the result's
+// heading and rows (`.rs-h`, `.rr`). The buttons' heights are the kit's.
+export const SPRENGJA_BOARD_TYPE = {
+  headTitle: risoType(F700, 17, 22),
+  headSub: risoType(F500, 13, 18),
+  // The plain "Süre gizli" label (`.tmr.nt`, 700/13): says the time is hidden, shows none.
+  hiddenTime: risoType(F700, 13, 20),
+  kick: risoType(F700, 12, 16, 0.4 / 12),
+  group: risoType(F800, 64, 70, 4 / 64),
+  note: risoType(F500, 14, 20),
+  section: risoType(F600, 12, 16, 0.24 / 12),
+  chipName: risoType(F600, 11, 14),
+  hint: risoType(F500, 13, 18),
+  heading: risoType(F800, 30, 36, -0.6 / 30),
+  headingNote: risoType(F500, 14, 20),
+  rowName: risoType(F600, 15, 20),
+  rowSub: risoType(F500, 13, 17),
+  rowPoints: { ...risoType(F700, 15, 20), fontVariant: ['tabular-nums'] } as TextStyle,
+} as const;
+
+export const SPRENGJA_BOARD = {
+  // The head: 5 under the status bar, 16 from the sides, 10 apart; the poster 56 × 40, 12 round.
+  head: {
+    top: 5,
+    side: 16,
+    gap: 10,
+    logoW: 56,
+    logoH: 40,
+    logoRadius: 12,
+    // The label (`.tmr.nt`): 40 high, 14 in; under the head below this width or past this text scale.
+    pillHeight: 40,
+    pillPadX: 14,
+    narrow: 360,
+    bigText: 1,
+  },
+  // The stage (`.gs`): 12 between its parts.
+  gap: 12,
+  // The bomb card: 28 round, 24 / 20 in; the bomb 96 (4 down), the group 8 over / 6 under, the note 6.
+  card: {
+    radius: 28,
+    padY: 24,
+    padX: 20,
+    bomb: 96,
+    bombTop: 4,
+    groupY: 8,
+    groupBottom: 6,
+    noteTop: 6,
+  },
+  // The bomb's drawing (`svg.bi`, 96 grid) and its colours; in the dark the body and the fuse get a
+  // 2.5 ring in the ink.
+  bomb: {
+    body: '#16141C',
+    shine: '#FFFFFF',
+    shineOpacity: 0.35,
+    rope: '#E0902A',
+    spark: '#FFB547',
+    darkRing: 2.5,
+  },
+  // The throwing order: 8 apart; a chip 64 wide, 18 round, 8 / 2 in, the face 52, the name 4 under
+  // it, the chosen one's 2 ring inside; one who left at 38 %.
+  order: {
+    gap: 8,
+    chip: 64,
+    radius: 18,
+    padY: 8,
+    padX: 2,
+    face: 52,
+    nameGap: 4,
+    ring: 2,
+    offOpacity: 0.38,
+  },
+  // The result: the page 16 between its parts, the heading 4 between lines; a row 56 high at least,
+  // 12 inside, its face 40, the hairline from 56; the foot's buttons 8 apart.
+  end: { gap: 16, headGap: 4, rowMin: 56, rowGap: 12, face: 40, hairIn: 56, footGap: 8 },
+  // One who left, at the rows' end.
+  outOpacity: 0.6,
+} as const;
+
+// The card's ring in the dark (`.dark .card`) and a chip's.
+export const SPRENGJA_BOARD_RING = 'rgba(255, 255, 255, 0.08)';

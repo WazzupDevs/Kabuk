@@ -178,7 +178,11 @@ describe('K13: a disabled button draws no icon', () => {
 describe('K15: the live dot in the dark', () => {
   it('has no ring', () => {
     const kit = code('src/aura/kit.tsx');
-    expect(kit).toMatch(/scheme === 'dark'\s*\? undefined\s*:\s*`0px 0px \$\{size\}px \$\{ring\}/);
+    // Yeni arayüz tuvali (`.live i`): a still 4 ring; none in the dark (skall.css K13) unless the
+    // board keeps it (`darkRing`, `.semt.in .ey i`).
+    expect(kit).toMatch(
+      /!ring \|\| \(scheme === 'dark' && !darkRing\)\s*\? undefined\s*:\s*`0px 0px 0px \$\{KIT\.size\.dotRing\}px \$\{ring\}`/,
+    );
   });
 });
 

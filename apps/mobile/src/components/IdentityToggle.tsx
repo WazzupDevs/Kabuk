@@ -39,7 +39,7 @@ export function IdentityToggle({
   // A board's own slots and rim (Mekan's bar: 36 in a 3 rim); the chats' 30 in a 2 otherwise.
   size?: { slot: number; pad: number };
 }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const S = size ? { ...BASE, ...size } : BASE;
   const FACE = S.slot - S.ring * 2;
   const photo = useOwnPhoto();
@@ -67,7 +67,7 @@ export function IdentityToggle({
           alignItems: 'center',
           justifyContent: 'center',
         },
-        gradientStyle(avatarGround(photo.name)),
+        gradientStyle(avatarGround(photo.name, scheme)),
       ]}
     >
       <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.av.sm, { color: KIT.white }]}>

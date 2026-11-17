@@ -23,7 +23,7 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 - Yazı 600 16/20, küçük buton 600 14/18. Üst çubuktaki Kaydet'in değişiklik varken yazısı 800.
 - Yeşil (`--primary`) anahtar, rozet, canlı nokta ve gönder yuvarlağı için kalır (`buttonGlass.ts` → `green`).
 - Basma: Tap davranışı (2.3).
-- Yükseklikler: ana buton ve form alanı 48 (proje sahibinin kararı, 16 Kasım), mekan sayfası ve check-in sayfasının uzun butonu 56, satır içi küçük buton 36, yuvarlak ikon 44, üst çubuk butonları 46. Sheet başlığındaki X 38.
+- Yükseklikler: ana buton ve form alanı 48 (proje sahibinin kararı, 16 Kasım), mekan sayfası ve check-in sayfasının uzun butonu 56, satır içi küçük buton 36, yuvarlak ikon 44, üst çubuk butonları 44 (yeni arayüz tuvaliyle değişti, 17 Kasım; önce 46). Sheet başlığındaki X 38.
 - Üst çubuktaki Kaydet clear: değişiklik yokken yazı #9AAEA1, varken #0E8745 ve 800. Kaydedince yazı "Kaydedildi" olur, buton boyu sabit kalır (en az 96 genişlik).
 
 ### 2.2 Cam yüzeyler ve performans
@@ -58,7 +58,7 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 | Tür         | Ekranlar                                         | Davranış                                                                                                                                                                                        |
 | ----------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | buyukBaslik | Sekme ana ekranları                              | Büyük başlık içerikle birlikte kayar ve 5 ile 100 px arasında söner (ölçek 1'den 0.94'e, köşe sol alt). Ana arama ya da filtre alanı varsa o alan tepeye yapışır (3.2); yoksa başlık bara geçer |
-| sayfa       | Arkadaşlar, Profili düzenle, ayar sayfaları      | Üst çubukta geri (46 cam). Altında büyük başlık (34, 800). Kaydırınca başlık 5 ile 50 px arasında söner, bar bandı belirir, bardaki ortalanmış küçük başlık 40 ile 70 px arasında gelir         |
+| sayfa       | Arkadaşlar, Profili düzenle, ayar sayfaları      | Üst çubukta geri (44 cam; yeni arayüz tuvaliyle değişti, önce 46). Altında büyük başlık (34, 800). Kaydırınca başlık 5 ile 50 px arasında söner, bar bandı belirir, bardaki ortalanmış küçük başlık 40 ile 70 px arasında gelir         |
 | kapak       | Kendi profilin, başkasının profili, mekan detayı | 5.7, 5.6 ve 5.2'deki gibi                                                                                                                                                                       |
 | sohbet      | DM, masa ve mekan sohbeti                        | Geri ve ayrı cam kapsülde avatar, isim, menü                                                                                                                                                    |
 
@@ -74,7 +74,7 @@ Bar bandı: yükseklik 118, zemin #EFF7F1 yüzde 84 ve 22 blur, alt yüzde 28'i 
 
 - Yüzen cam tab bar, etiketli. Yeni arayüz tuvaliyle (16 Kasım; pano `Kesfet` → `.tb`, `.ti`) değişti: bar 60, sekme 50, ikon 20 ve etiket 10; aktif sekme koyu (#031B0B) gölgeli hapın içinde, yazı beyaz, ikonun güçlü parçası yeşil (#3DDC84), gövdesi pembe (#FF6FA0); koyu temada hap beyaz yüzde 94, yazı koyu. (12 Kasım'daki hâli: ikon 22, etiket 10.5, yeşil tonlu hap.)
 - Kaydırma: 120 px'ten sonra aşağı yönde kare başına 3 px'ten hızlı kaydırınca tab bar küçülür; yukarı kaydırınca, 50 px'in altına inince ya da bara basınca açılır. Küçülünce genişlik 350'den 76'ya iner, sadece aktif sekme kalır, diğerleri söner. Hareket `MOTION.springs.tabLead` ile.
-- Alt kenar: 160 px yüksekliğinde, şeffaftan #EFF7F1 yüzde 92'ye geçen ve alt yarısında 8 blur olan bir bant; içerik tab barın altına sert kesilmeden girer.
+- Alt kenar: 150 px yüksekliğinde, şeffaftan zemine (açıkta #EFF7F1, koyuda #000) geçen, yüzde 70'te tam opak olan bir bant (yeni arayüz tuvaliyle değişti, 17 Kasım; önce 160 px ve en çok yüzde 92); içerik tab barın altına sert kesilmeden girer.
 
 ### 3.4 Liste ve kartlar
 

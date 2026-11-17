@@ -9,6 +9,7 @@ import {
   mostHit,
   onCircle,
   ringSeats,
+  throwOrder,
   scoreRows,
   throwsUntil,
 } from './sprengjaView';
@@ -70,6 +71,17 @@ describe('the ring (Aura v99, 360/n clockwise, the caller at 90°)', () => {
     expect(arcPath(90, 162, 96, 175)).toBe('M175 271 A96 96 0 0 1 83.7 204.67');
     expect(arcPath(270, 360, 99, 175)).toMatch(/^M175 76 A99 99 0 0 1 274 175/);
     expect(arcPath(90, 330, 96, 175)).toContain(' 0 1 1 ');
+  });
+});
+
+describe('the throwing order from the holder', () => {
+  it('starts at the holder and goes clockwise', () => {
+    expect(throwOrder(['a', 'b', 'c', 'd'], 'c')).toEqual(['c', 'd', 'a', 'b']);
+    expect(throwOrder(['a', 'b', 'c'], 'a')).toEqual(['a', 'b', 'c']);
+  });
+  it('keeps the order for someone not in it', () => {
+    expect(throwOrder(['a', 'b'], 'w')).toEqual(['a', 'b']);
+    expect(throwOrder(['a', 'b'], null)).toEqual(['a', 'b']);
   });
 });
 
