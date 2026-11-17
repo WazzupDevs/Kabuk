@@ -49,14 +49,15 @@ describe("the app's Keşfet", () => {
 
   it("is built from the canvas's kit", () => {
     expect(screen).toMatch(/from '@\/aura\/kit'/);
-    // iskelet.md → 5.1: the one capsule of the search and the switch, pinned and thinning; each
-    // venue on its own card; the motion from the kit.
-    for (const part of ['<SearchCapsule', '<ViewSwitch', '<Chip', '<PlaceCard', '<EmptyCard']) {
+    // Yeni arayüz tuvali Kesfet: the white search field with the round to the map, pinned; each
+    // venue a row on the ground; the riso empty state; the motion from the kit.
+    for (const part of ['<SearchRow', '<ClearButton', '<Chip', '<PlaceRow', '<ListEmpty']) {
       expect(screen, part).toContain(part);
     }
-    expect(screen).toMatch(
-      /<StickyField shrink=\{\[X\.capsule, X\.capsulePinned\]\} band side=\{EXPLORE\.headSide\}>/,
-    );
+    expect(screen).toMatch(/<StickyField band side=\{L\.side\}>/);
+    for (const riso of ['peek-explore', 'empty-explore', 'empty-search']) {
+      expect(screen, riso).toContain(`assets/riso/${riso}.webp`);
+    }
     expect(screen).toMatch(/from '@\/motion'/);
   });
 
@@ -84,10 +85,11 @@ describe("the app's Keşfet", () => {
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
     // The list row and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
-    expect(screen).toMatch(/<VenueThumb\s+kind=\{kind\}\s+size=\{VENUE_CARD_PICTURE\}/);
-    expect(screen).toMatch(/<CardPicture kind=\{type\} \/>/);
-    expect(screen).toMatch(/const VENUE_CARD_PICTURE = X\.card\.picture;/);
-    expect(app('src/theme/auraKit.ts')).toMatch(/picture: 76, pictureRadius: 14/);
+    expect(screen).toMatch(
+      /<VenueThumb kind=\{kind\} size=\{r\.picture\} radius=\{r\.pictureRadius\}/,
+    );
+    expect(screen).toMatch(/kind=\{type\}/);
+    expect(app('src/theme/explore.ts')).toMatch(/picture: 56,\n\s+pictureRadius: 16,/);
     expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
     const page = app('app/(app)/(tabs)/explore/[venueId].tsx');
@@ -99,9 +101,9 @@ describe("the app's Keşfet", () => {
   });
 
   it("keeps the board's spacing (tuval Kesfet, theme/explore.ts), and is always the list (no single venue)", () => {
-    expect(screen).toMatch(/marginTop: EXPLORE\.districtTop/);
-    expect(screen).toMatch(/marginTop: EXPLORE\.sectionTop/);
-    expect(screen).toMatch(/gap: X\.cardsGap/);
+    expect(screen).toMatch(/marginTop: L\.districtTop/);
+    expect(screen).toMatch(/marginTop: L\.sectionTop/);
+    expect(screen).toMatch(/marginTop: L\.rowsTop, marginHorizontal: -L\.side/);
     expect(screen).not.toMatch(/SingleVenue|exploreLayout/);
   });
 
