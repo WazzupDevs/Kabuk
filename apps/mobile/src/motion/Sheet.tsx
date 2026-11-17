@@ -1,4 +1,4 @@
-import { memo, type ReactNode, useEffect, useRef, useState } from 'react';
+import { memo, type ReactNode, useEffect, useState } from 'react';
 import { Animated, Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import type Reanimated from 'react-native-reanimated';
 import type { AnimatedRef } from 'react-native-reanimated';
@@ -11,7 +11,6 @@ import { AppIcon } from '@/components/AppIcon';
 import type { IconName } from '@/components/Button';
 import { InSheetLoops, useSheetsOpen } from '@/components/Loader';
 import { Quiet } from '@/components/Quiet';
-import { useSheetCloser } from '@/components/sheetCloser';
 import { SheetCard, type SheetLook } from '@/components/SheetCard';
 import { SheetScrim } from '@/components/SheetScrim';
 import { tr } from '@/i18n/tr';
@@ -19,10 +18,11 @@ import { ACTIVITIES } from '@/theme/activities';
 import { KIT, type KitTextVariant } from '@/theme/auraKit';
 import { runSheetSlide } from '@/lib/sheetSlide';
 import { useLeaveKeyboard } from '@/lib/modalKeyboard';
+import { useOverlaySlot } from '@/lib/useOverlaySlot';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
-import { useSheetFrost, useSheetMotion } from './useSheetMotion';
+import { useSheetMotion } from './useSheetMotion';
 
 // A closing slide that never reports its end: off the screen this long after it should have ended.
 const SLIDE_FALLBACK_MS = 250;
@@ -86,7 +86,8 @@ const Held = memo(
 // close button at the title's right; no "Tamam" or "Kapat" of its own. It opens on springs.sheet
 // from 80 below and faded to 0.3 (useSheetMotion), the scrim fading in; it leaves down off the
 // screen; with reduce motion it appears and goes at once. A tap outside, Android's back button, a
-// pull down and its close button close it. Its card is on the live glass where it can be.
+// pull down and its close button close it. Its card is the flat surface over a flat scrim (yeni
+// arayüz tuvali: SikayetEt, Masadakiler).
 export function Sheet({
   visible,
   onClose,
@@ -112,7 +113,6 @@ export function Sheet({
   const { height } = useWindowDimensions();
   const [travel, setTravel] = useState(0);
   const motion = useSheetMotion(travel);
-  const frost = useSheetFrost();
   const [mounted, setMounted] = useState(visible);
   useLeaveKeyboard(visible);
   // While the sheet is on the screen the screen behind holds its loops (Loader.tsx → useLoopActive).
@@ -122,14 +122,9 @@ export function Sheet({
     return () => useSheetsOpen.setState((s) => ({ count: Math.max(0, s.count - 1) }));
   }, [mounted]);
   if (visible && !mounted) setMounted(true);
-  // closeAllSheets: an open sheet closes as if tapped outside.
-  const round = useSheetCloser((s) => s.round);
-  const handled = useRef(round);
-  useEffect(() => {
-    if (round === handled.current) return;
-    handled.current = round;
-    if (visible) onClose?.();
-  }, [round, visible, onClose]);
+  // One open at a time (lib/overlayStore.ts): another opening, or closeAllSheets, closes it as a
+  // tap outside does.
+  useOverlaySlot('sheet', visible, onClose);
 
   const { show, hide, reset, leaveMs, reduce } = motion;
   useEffect(() => {
@@ -227,7 +222,7 @@ export function Sheet({
       {/* A Modal is a window of its own: the sheet's pull needs its own gesture root there. */}
       <InSheetLoops.Provider value>
         <GestureHandlerRootView style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <SheetScrim opacity={motion.scrim} glass={frost} />
+          <SheetScrim opacity={motion.scrim} />
           <Pressable
             accessibilityRole={onClose ? 'button' : undefined}
             accessibilityLabel={onClose ? tr.common.close : undefined}
@@ -259,7 +254,6 @@ export function Sheet({
                   ) : undefined
                 }
                 balance={centered}
-                frost={frost}
                 fill={top !== undefined}
                 scrollRef={scrollRef}
                 look={look}

@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { create } from 'zustand';
 
 import type { CapIconName } from '../aura/CapIcon';
-import { closeAllSheets, useSheetCloser } from '../components/sheetCloser';
 import {
   closeAllOverlays,
   closeOverlay as closeStep,
@@ -13,10 +12,13 @@ import {
   type OverlayStep,
 } from './overlayModel';
 
-// One place for what opens over the screens (OverlayHost, mounted once in app/(app)/_layout.tsx):
-// only one at a time, a new one closing the one before. Only `dialog` is drawn by the host for now;
-// the bottom sheets, the held message and the menus keep their own windows and close through
-// `closeAllSheets` (sheetCloser.ts), which this store and they share both ways.
+// One place for what opens over the screens (CLAUDE.md → Ekran davranışı): the centred dialog, the
+// bottom sheets (motion/Sheet, RouteSheet), the held message (MessagePop) and the menus (Menu →
+// anchor) all open here, one at a time, a new one closing the one before through its `onDismiss`.
+// Only `dialog` is drawn by the host (OverlayHost, mounted once in app/(app)/_layout.tsx); the
+// others draw themselves where they are (their own Modal; the held message at the chat's root,
+// popHost.tsx) and hold their place here with `useOverlaySlot`. `closeAll` (`closeAllSheets`) closes
+// whichever is open.
 
 export type DialogAction = {
   label: string;
@@ -58,7 +60,11 @@ export type ConfirmOptions = {
 // What a non-dialog entry draws once its component moves here (a later package).
 export type OverlayRender = { render: (close: () => void) => ReactNode };
 
-export type OverlayPayload = ConfirmOptions | OverlayRender;
+// A sheet, a menu or a held message that draws itself (useOverlaySlot): the store only knows it is
+// the one open.
+export type OverlayOwned = { owned: true };
+
+export type OverlayPayload = ConfirmOptions | OverlayRender | OverlayOwned;
 
 type Store = OverlayState<OverlayPayload>;
 
@@ -90,8 +96,6 @@ export const useDialogRun = create<DialogRunState>(() => ({
 }));
 
 let nextId = 0;
-// Set while this store closes the sheets itself, so their round does not close what it opens.
-let closingSheets = false;
 
 function apply(step: OverlayStep<OverlayPayload>): void {
   useOverlay.setState(step.state, true);
@@ -107,13 +111,6 @@ export function openOverlay(
   const entry: OverlayEntry<OverlayPayload> = { id: `o${nextId}`, kind, payload, onDismiss };
   if (kind === 'dialog') {
     useDialogRun.setState({ id: entry.id, running: null, error: null, failed: null }, true);
-  }
-  // The sheets drawn in their own windows close as this one opens.
-  closingSheets = true;
-  try {
-    closeAllSheets();
-  } finally {
-    closingSheets = false;
   }
   apply(openStep(useOverlay.getState(), entry));
   return entry.id;
@@ -134,10 +131,9 @@ export function closeAll(): void {
   apply(closeAllOverlays(useOverlay.getState()));
 }
 
-// `closeAllSheets` (a request card coming in) closes this store's one too.
-useSheetCloser.subscribe((s, before) => {
-  if (s.round !== before.round && !closingSheets) closeAll();
-});
+// The owner's request card coming in closes whatever is open over it (audit UI-2: a sheet is its
+// own Android window and hid the 60 second card under it).
+export const closeAllSheets = closeAll;
 
 // A centred confirmation, one call; the screen holds no state of its own for it.
 export function confirm(options: ConfirmOptions): string {

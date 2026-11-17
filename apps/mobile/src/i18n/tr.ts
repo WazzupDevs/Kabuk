@@ -2384,6 +2384,8 @@ export const tr = {
       trimSwitch: 'Parça kırpma',
       fewSwitch: 'Az katman',
       keepSwitch: 'Kalıcı tuval',
+      // The long-press menu's scrim over a blurred still copy (lib/drawLab.ts → scrimGlass).
+      scrimGlassSwitch: 'Uzun basma bulanıklığı',
       // The capsule's preparation queue (capsule/useArt.ts → artStats).
       prepStats: (prepared: number, pending: number, failed: number) =>
         `Hazırlanan ${prepared} / bekleyen ${pending} / hata ${failed}`,

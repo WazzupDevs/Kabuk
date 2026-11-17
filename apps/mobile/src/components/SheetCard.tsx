@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { type AnimatedRef, useAnimatedRef } from 'react-native-reanimated';
 
@@ -7,14 +7,13 @@ import { Round, useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { TAB_GLASS } from '@/theme/glass';
 import { useLabOff } from '@/lib/drawLab';
-import { LiquidGlass } from './LiquidGlass';
 import { shadowParts } from './NativeShadow';
 import { useSheetDrag } from './sheetDrag';
 
 // A bottom sheet's card (Sheet, RouteSheet; iskelet.md → 3.5): it floats 8 from the screen's sides
-// and foot, 40 round at every corner. Its handle and its title stay put at its top, the 38 close
+// and foot, 28 round at every corner, the flat surface (yeni arayüz tuvali: SikayetEt, Masadakiler;
+// KIT.layer: #FFFFFF, in the dark #121614 in a 1 px white ring), its shadow 0 -8 40 at 18 %. Its handle and its title stay put at its top, the 38 close
 // button at the title's right; what is under them scrolls, edge to edge inside the card, clipped by
 // its own corners, and fades out at the scroll's edges (Android's fading edge: no band of colour,
 // only while there is more to scroll). No scroll bar (29 Ekim), no "Tamam" or "Kapat" at its foot.
@@ -22,8 +21,7 @@ import { useSheetDrag } from './sheetDrag';
 // area as everywhere. Pulled down it follows the finger and closes (useSheetDrag); `above` (the
 // buddies over its top edge) comes with it. With a `footer` (Check-in, aura v37) the card is two
 // parts: the content scrolls above, only when it does not fit; the footer's buttons stay put under
-// it. `frost`: the card on the live glass (iskelet.md → 2.2), the screen behind blurred once
-// (SheetScrim) under the card's face; otherwise its solid ground.
+// it. No live glass on it (ortak-temel-plan.md A.11).
 export function SheetCard({
   onClose,
   bottomInset,
@@ -32,7 +30,6 @@ export function SheetCard({
   balance,
   fill,
   footer,
-  frost,
   scrollRef,
   look,
   children,
@@ -50,7 +47,6 @@ export function SheetCard({
   fill?: boolean;
   // Buttons that stay under the scrolling content.
   footer?: ReactNode;
-  frost?: boolean;
   // The content's scroll, for a sheet that moves it itself (Kapsülünü süsle's pack chips).
   scrollRef?: AnimatedRef<Animated.ScrollView>;
   // A board's own sheet (tuval Mesajlar's Bildirimler, Dm's block): its ground with no line, its
@@ -65,9 +61,10 @@ export function SheetCard({
   // The sheet's soft shadow natively (NativeShadow.tsx): it slides in, and React Native would blur
   // its shadow again on every frame of the slide.
   const shadowOff = useLabOff('golge');
-  const radius = KIT.size.sheetRadius;
-  // tuval (every sheet): its shadow rises over the screen, 0 -8 40.
-  const shadow = shadowParts(shadowOff, k.c.sheetShadow || undefined, undefined, radius);
+  const layer = KIT.layer[k.scheme];
+  const radius = KIT.layer.size.sheetRadius;
+  // tuval (every sheet): its shadow rises over the screen, 0 -8 40; in the dark its ring.
+  const shadow = shadowParts(shadowOff, layer.sheetShadow, undefined, radius);
   const padX = look?.padX ?? KIT.size.sheetPadX;
   const top = { borderRadius: radius };
   const foot = Math.max(
@@ -99,37 +96,17 @@ export function SheetCard({
           {shadow.node}
           <View
             style={{
-              ...(frost
-                ? null
-                : look
-                  ? {
-                      ...(look.ground ? gradientStyle(look.ground) : null),
-                      backgroundColor: look.base,
-                    }
-                  : { ...gradientStyle(k.c.sheet), backgroundColor: k.c.sheetBase }),
+              ...(look
+                ? {
+                    ...(look.ground ? gradientStyle(look.ground) : null),
+                    backgroundColor: look.base,
+                  }
+                : { backgroundColor: layer.sheet }),
               ...size,
               ...top,
-              borderWidth: look ? 0 : KIT.size.edge,
-              borderColor: k.c.glassEdge,
               overflow: 'hidden',
             }}
           >
-            {frost ? (
-              <>
-                <LiquidGlass
-                  backdrop
-                  cornerRadius={radius}
-                  ground={k.c.sheetBase}
-                  blur={TAB_GLASS.blur}
-                  saturation={TAB_GLASS.saturation}
-                  style={StyleSheet.absoluteFill}
-                />
-                <View
-                  pointerEvents="none"
-                  style={[StyleSheet.absoluteFill, gradientStyle(k.c.sheetFrost)]}
-                />
-              </>
-            ) : null}
             <View style={{ flexShrink: 0, paddingTop: KIT.size.sheetPadTop }}>
               <View
                 style={{
@@ -137,7 +114,7 @@ export function SheetCard({
                   width: KIT.size.grabW,
                   height: KIT.size.grabH,
                   borderRadius: KIT.size.grabH,
-                  backgroundColor: k.c.sheetGrab,
+                  backgroundColor: layer.sheetGrab,
                 }}
               />
               {head ? (

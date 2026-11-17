@@ -128,6 +128,8 @@ export const KIT_TYPE = {
   msgEdited: t(500, 11, 14),
   menuNote: t(500, 12, 16),
   menuRow: t(600, 15.5, 20),
+  // The ⋮ menu's row (MekanSecenek `.pi p`: 600 16/20).
+  popRow: t(600, 16, 20),
   confirmTitle: t(800, 21, 27, -0.02),
   confirmNote: t(500, 14, 20),
   confirmBtn: t(800, 16.5, 21),
@@ -979,20 +981,16 @@ export const KIT = {
     // U27 (`.list .li`): a conversation 72 high, 12 / 16 in; the hairline from 72.
     inboxPadY: 12,
     inboxRow: 72,
-    // iskelet.md → 3.5: the sheet 8 in from the edges, 40 round; its close button 38 at the title's
-    // right, 10 under the handle; what scrolls fades out over `sheetFade` at its edges (no band).
+    // iskelet.md → 3.5: the sheet 8 in from the edges (its corners KIT.layer's 28); its close
+    // button 38 at the title's right, 10 under the handle; what scrolls fades out over `sheetFade`
+    // at its edges (no band).
     sheetInset: 8,
-    sheetRadius: 40,
     sheetClose: 38,
     sheetHeadGap: 10,
     sheetFade: 24,
-    // iskelet.md → 3.5: a menu grown from its button, 256 to 272 wide, 26 round, 8 from its button
-    // and the screen's edges; a destructive row 6 apart under the others.
-    menuMinW: 256,
-    menuMaxW: 272,
-    menuRadius: 26,
+    // iskelet.md → 3.5: a menu grown from its button 8 from it and the screen's edges (its look
+    // KIT.layer's: the ⋮ menu and the long-press menu).
     menuGap: 8,
-    menuDangerGap: 6,
     // The handle 10 under the sheet's top edge (tuval Mesajlar, Dm, Sohbet, Ayarlar, Mekan).
     sheetPadTop: 10,
     sheetPadX: 20,
@@ -1122,6 +1120,15 @@ export const KIT = {
       menuHair: 'rgba(3, 27, 11, 0.10)',
       holdHair: 'rgba(3, 27, 11, 0.08)',
       holdBand: 'rgba(3, 27, 11, 0.05)',
+      // The rows' icons and the red (MekanSecenek `.pi`: --primary; MesajlarUzunBas `.pi`: the
+      // ink with its body muted; `.dg`: --danger, its body at 35 % in the long-press menu).
+      menuIcon: '#0E8745',
+      menuDanger: '#A8301A',
+      holdIcon: '#031B0B',
+      holdIconBody: '#4A6550',
+      holdIconSoft: 1,
+      holdDangerBody: '#C8381F',
+      holdDangerSoft: 0.35,
       // The sheet: the surface, its handle and its shadow.
       sheet: '#FFFFFF',
       sheetGrab: 'rgba(3, 27, 11, 0.18)',
@@ -1157,6 +1164,13 @@ export const KIT = {
       menuHair: 'rgba(255, 255, 255, 0.10)',
       holdHair: 'rgba(255, 255, 255, 0.08)',
       holdBand: 'rgba(255, 255, 255, 0.05)',
+      menuIcon: '#3DDC84',
+      menuDanger: '#FF977E',
+      holdIcon: '#EEF3F0',
+      holdIconBody: '#EEF3F0',
+      holdIconSoft: 0.45,
+      holdDangerBody: '#FF977E',
+      holdDangerSoft: 0.35,
       // SikayetEt's dark sheet: #121614 and a 1 px white ring.
       sheet: '#121614',
       sheetGrab: 'rgba(255, 255, 255, 0.22)',
@@ -1188,13 +1202,21 @@ export const KIT = {
       dialogTextTop: 6,
       dialogTextBottom: 20,
       dialogButtonGap: 8,
-      // The ⋮ menu: 292 wide, 28 round, 16 / 8 / 8 inside, 12 from the screen's edge.
+      // The ⋮ menu: 292 wide, 28 round, 16 / 8 / 8 inside, 12 from the screen's edge; a row 48 at
+      // least, 6 / 12 in, 18 round, its icon 22 and 14 to the words, the hairline from 48.
       menuWidth: 292,
       menuRadius: 28,
       menuPadTop: 16,
       menuPadX: 8,
       menuPadBottom: 8,
       menuEdge: 12,
+      menuRow: 48,
+      menuRowPadX: 12,
+      menuRowPadY: 6,
+      menuRowRadius: 18,
+      menuIcon: 22,
+      menuRowGap: 14,
+      menuHairIn: 48,
       // The long-press menu: 268 wide, 24 round, 6 inside; a row 44 at least, 12 in, 16 round, its
       // icon 20 and 14 to the words, the hairline from 46; the red group 6 apart on its band; the
       // still copy under it blurred 6.

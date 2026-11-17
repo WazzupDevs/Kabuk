@@ -17,6 +17,7 @@ import {
   toggleLabPart,
   toggleLabHold,
   toggleLabP2b,
+  toggleLabScrimGlass,
   toggleLabSkia,
   toggleLabTexture,
   toggleLabWhole,
@@ -24,6 +25,7 @@ import {
   useLabFew,
   useLabHold,
   useLabKeep,
+  useLabScrimGlass,
   useLabSkia,
   useLabTexture,
   useLabTrim,
@@ -49,6 +51,7 @@ export function DrawLabPanel() {
   const trim = useLabTrim();
   const few = useLabFew();
   const keep = useLabKeep();
+  const scrimGlass = useLabScrimGlass();
   const insets = useSafeAreaInsets();
   const { c } = useKit();
   if (!DRAW_LAB || !open) return null;
@@ -161,6 +164,12 @@ export function DrawLabPanel() {
               label={tr.design.drawLab.keepSwitch}
               on={keep}
               onPress={() => toggleLabP2b('keep')}
+            />
+            {/* The long-press menu's blurred still copy (off by default); kept as set, as above. */}
+            <Chip
+              label={tr.design.drawLab.scrimGlassSwitch}
+              on={scrimGlass}
+              onPress={toggleLabScrimGlass}
             />
             <PrepMeter />
             {/* Off: the tiles as SVG again while the whole capsule stays Skia's. */}

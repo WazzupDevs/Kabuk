@@ -1,22 +1,23 @@
 import { REACTIONS, type Reaction } from '@shared/reactions.ts';
 import { type ReactNode, useState } from 'react';
-import { Modal, Pressable, StatusBar, useWindowDimensions, View } from 'react-native';
+import { Modal, Pressable, StatusBar, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Reanimated, { withDelay, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
 import { useLeaveKeyboard } from '@/lib/modalKeyboard';
+import { useOverlaySlot } from '@/lib/useOverlaySlot';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
-import { OPACITY, SPACING } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { Menu, MenuItem, MenuNote } from './Menu';
 import { ReactionFace } from './ReactionFace';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from './NativeShadow';
+import { SheetScrim } from './SheetScrim';
 
 const BAR_FROM = 0.6;
 const FACE_FROM = 0.3;
@@ -57,6 +58,8 @@ function popIn(from: number, delay = 0) {
 // A held message (skall tuvali: SohbetBasiliTut, SohbetKendiMesaj): the screen dims, the message
 // stays where it was as it is (no ring, ui 1.1), the six faces over it and its actions under it; the viewer's own
 // on the right. A tap outside or back closes it. Moved up when the menu would leave the screen.
+// Its scrim and menu are the long-press menu's (MesajlarUzunBas: SheetScrim → hold, Menu → float);
+// it holds its place in the one store (lib/overlayStore.ts), so anything opening closes it.
 export function MessagePop({
   at,
   mine,
@@ -82,6 +85,7 @@ export function MessagePop({
   const { colors, shape } = useTheme();
   const reduce = useReduceMotion();
   useLeaveKeyboard(true);
+  useOverlaySlot('hold', true, onClose);
   // The reaction bar's soft shadow natively (NativeShadow.tsx): it pops in.
   const shadowOff = useLabOff('golge');
   const barShadow = boxShadowParts(shadowOff, shape.shadow.sheet, shape.radius.pill);
@@ -104,11 +108,12 @@ export function MessagePop({
   const side = shape.screenPadding;
   return (
     <Modal transparent visible animationType="fade" statusBarTranslucent onRequestClose={onClose}>
+      <SheetScrim hold opacity={1} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={tr.common.close}
         onPress={onClose}
-        style={{ flex: 1, backgroundColor: withAlpha(colors.scrim, OPACITY.scrim) }}
+        style={StyleSheet.absoluteFill}
       />
       <View
         pointerEvents="box-none"

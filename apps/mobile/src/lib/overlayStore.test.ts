@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { closeAllSheets, useSheetCloser } from '../components/sheetCloser';
+import { closeAllSheets } from '../components/sheetCloser';
 import { closeAllOverlays, closeOverlay, openOverlay, type OverlayEntry } from './overlayModel';
 import {
   closeAll,
@@ -111,11 +111,41 @@ describe('overlayStore', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('opening closes the sheets in their own windows, and stays open', () => {
-    const round = useSheetCloser.getState().round;
+  it('closeAllSheets is the store closeAll', () => {
+    expect(closeAllSheets).toBe(closeAll);
+  });
+
+  it('a sheet, a held message and a menu close each other, one open at a time', () => {
+    const owned = { owned: true } as const;
+    const sheet = vi.fn();
+    const hold = vi.fn();
+    const menu = vi.fn();
+    openStored('sheet', owned, sheet);
+    const held = openStored('hold', owned, hold);
+    expect(sheet).toHaveBeenCalledTimes(1);
+    expect(useOverlay.getState().open?.id).toBe(held);
+    const opened = openStored('menu', owned, menu);
+    expect(hold).toHaveBeenCalledTimes(1);
+    expect(useOverlay.getState().open?.kind).toBe('menu');
+    openStored('sheet', owned, sheet);
+    expect(menu).toHaveBeenCalledTimes(1);
+    // The menu closed again by its own screen: nothing is dismissed twice.
+    closeStored(opened, false);
+    expect(useOverlay.getState().open?.kind).toBe('sheet');
+    expect(sheet).toHaveBeenCalledTimes(1);
+  });
+
+  it('a confirmation closes the sheet it opens from; closeAll closes the sheet', () => {
+    const sheet = vi.fn();
+    openStored('sheet', { owned: true }, sheet);
     const id = confirm(options());
-    expect(useSheetCloser.getState().round).toBe(round + 1);
+    expect(sheet).toHaveBeenCalledTimes(1);
     expect(useOverlay.getState().open?.id).toBe(id);
+    const again = vi.fn();
+    openStored('sheet', { owned: true }, again);
+    closeAllSheets();
+    expect(again).toHaveBeenCalledTimes(1);
+    expect(useOverlay.getState().open).toBeNull();
   });
 
   it('a failed try keeps the dialog open with its error; the next try clears it and closes', async () => {

@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { Animated, Easing, useWindowDimensions } from 'react-native';
 
 import { springConfig } from '@/aura/motion';
-import { SHEET_FROSTED } from '@/components/LiquidGlass';
-import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { useReduceTransparency } from '@/lib/useReduceTransparency';
 import { MOTION } from '@/theme/aura';
 
 import { SHEET_OPEN_OPACITY, SHEET_OPEN_Y } from './sheetOpen';
@@ -80,13 +77,4 @@ export function useSheetMotion(travel = 0) {
     }),
     scrim: Animated.multiply(shown, kept).interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
   };
-}
-
-// Whether a sheet's or a menu's card is on the live glass here (iskelet.md → 2.2): where the glass
-// blurs, unless the system asks to reduce transparency (a solid card, iskelet.md → 6.6) or Çizim
-// ölçümü's `buzlu` is off.
-export function useSheetFrost(): boolean {
-  const solid = useReduceTransparency();
-  const labOff = useLabOff('buzlu');
-  return SHEET_FROSTED && !solid && !labOff;
 }

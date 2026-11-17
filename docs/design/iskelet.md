@@ -28,7 +28,7 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 
 ### 2.2 Cam yüzeyler ve performans
 
-- Gerçek (canlı) blur sadece şunlarda: üst bar bandı, tab bar, sheet'ler, menüler, sabitlenen şeritler. Mevcut buzlu cam modülü kullanılır (Liquid Glass merceği değil).
+- Gerçek (canlı) blur sadece şunlarda: üst bar bandı, tab bar, sabitlenen şeritler. Mevcut buzlu cam modülü kullanılır (Liquid Glass merceği değil). Sheet'ler, menüler ve dialog düz yüzeydir, örtüleri bulanıklıksızdır (17 Kasım, yeni arayüz tuvali; `ortak-temel-plan.md` A.8–A.11). Uzun basma örtüsünün altındaki sabit kopya 6 bulanıklık (`theme/glass.ts` → `SCRIM_GLASS`) varsayılan kapalıdır, yalnız Çizim ölçümü'nün "Uzun basma bulanıklığı" anahtarıyla açılır (`docs/decisions/scrim-glass.md`).
 - Butonlarda ve kartlarda canlı blur yok: yarı saydam dolgu, iç parlama ve gölgeyle sahte cam çizilir. Aura arka planı statik olduğu için gözle fark edilmez. Listelerde onlarca canlı blur Android'i kilitler; bu kural kesin.
 - Blur kaydırma sırasında yeniden hesaplanmaz: katman bir kez çizilir, kaydırmada sadece opaklığı değişir.
 - Kartlar: beyaz yüzde 86 dolgu, 1 px beyaz çerçeve, iki katmanlı gölge (0 1 2 yüzde 4 ve 0 14 34 yüzde 7, renk #031B0B), üst kenarda 1 px iç parlama.
@@ -84,8 +84,10 @@ Bar bandı: yükseklik 118, zemin #EFF7F1 yüzde 84 ve 22 blur, alt yüzde 28'i 
 
 ### 3.5 Menü ve sheet
 
-- Bir butondan açılan seçenekler o butondan doğan cam bir menüdür: genişlik 256 ile 272, köşe 26, 28 blur, ölçek 0.18'den 1'e, köken butonun konumu, yay (4.3 → `springs.menu`). Dışına basınca kapanır, Vazgeç yok. Yıkıcı seçenek en altta, 6 px'lik bir aralıkla ayrılmış, kırmızı.
-- Alttan açılan sheet yalnız içerik, seçim ve form içindir (seçenek listeleri, şikayet nedenleri, oranlar, bildirim ayarı, konum izni); bir şeyi onaylatmaz. Kenarlardan 8 px içeride yüzer, köşe 40. Tutamaç ve başlık sabit; sağ üstte 38 X. Altta Tamam ya da Kapat butonu yok. Aşağı çekilerek de kapanır. İçerik başlığın altına bantsız ve yumuşak girer.
+- Bir butondan (⋮) açılan seçenekler o butondan doğan menüdür: düz yüzey, örtüsüz, genişlik 292, köşe 28, iç boşluk 16/8/8, satır en az 48, ikon 22 (SikayetEt, MekanSecenek); ölçek 0.18'den 1'e, köken butonun konumu, yay (4.3 → `springs.menu`). Dışına basınca kapanır, Vazgeç yok. Yıkıcı seçenek en altta, kırmızı.
+- Uzun basma menüsü (mesaj, Mesajlar satırı; MesajlarUzunBas): genişlik 268, köşe 24, iç boşluk 6, satır en az 44, 600 15/20, ikon 20, aralık 14, ince çizgi 46'dan; kırmızı grup 6 px'lik bantla ayrılır. Örtüsü açıkta yüzde 30, koyuda yüzde 62.
+- Örtü: sheet ve dialog altında açıkta rgba(3,27,11,.42), koyuda rgba(0,0,0,.70), bulanıklık yok (`KIT.layer`). Dialog, sheet, ⋮ menüsü ve uzun basma tek depodadır (`src/lib/overlayStore.ts`, `useOverlaySlot`): aynı anda tek açık, yenisi öncekini kapatır; route sayfaları route kalır, açılınca depoya yazar.
+- Alttan açılan sheet yalnız içerik, seçim ve form içindir (seçenek listeleri, şikayet nedenleri, oranlar, bildirim ayarı, konum izni); bir şeyi onaylatmaz. Kenarlardan 8 px içeride yüzer, köşe 28, düz yüzey (koyuda #121614 ve 1 px halka), tutamaç 40×5, gölge 0 -8 40 yüzde 18. Tutamaç ve başlık sabit; sağ üstte 38 X. Altta Tamam ya da Kapat butonu yok. Aşağı çekilerek de kapanır. İçerik başlığın altına bantsız ve yumuşak girer.
 - Her onay ortada dialogdur (proje sahibinin kararı, 16 Kasım; yeni arayüz tuvali, Ortak kurallar C1): geri alınamayanlar (sohbeti sil, Engelle, hesabı sil, masadan at, Mekandan ayrıl, Çıkış yap) ve kaydetmeden çıkış dahil. Dialog yanlardan 28 içeride, köşe 28, düz yüzey; isteğe bağlı 56'lık ikon diski, başlık, ne olacağını anlatan tek cümle, alt alta ana eylem ve altında "Vazgeç" ya da işin öbür yolu. Kırmızı düğme yalnız geri alınamaz işlemde. Örtü düz karartmadır, bulanıklık yok (C2). Açılış `MOTION.dissolve` (240 ms), kapanış 150 ms; dışarı dokunma, Android geri ve Vazgeç kapatır, işlem sürerken kapanmaz (`src/motion/Dialog.tsx`, değerleri `src/theme/auraKit.ts` → `KIT.layer`; `src/lib/overlayStore.ts` → `confirm`).
 
 ## 4. Hareket kuralları

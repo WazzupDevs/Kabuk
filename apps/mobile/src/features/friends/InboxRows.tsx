@@ -22,7 +22,8 @@ import { MESSAGES as M } from '@/theme/messages';
 import { ICON, SPACING } from '@/theme/tokens';
 
 // Mesajlar's and Arşivlenenler's conversations (docs/SPEC_V4.md §4.X): flat rows on the ground, a
-// long press on a row opens its menu (tuval MesajlarUzunBas: grown from the row, Menu → anchor).
+// long press on a row opens its menu (tuval MesajlarUzunBas: grown from the row, Menu → anchor,
+// the long-press look over its scrim: `hold`).
 
 // Rows past this many don't listen for "yazıyor": a Realtime connection carries a limited number
 // of channels, and the rows further down are off screen.
@@ -96,7 +97,7 @@ export function useThreadMenu(
   const t = held?.thread;
   const menu =
     held && t ? (
-      <Menu anchor={held.at} visible onClose={() => setHeld(null)}>
+      <Menu anchor={held.at} hold visible onClose={() => setHeld(null)}>
         {t.archived ? (
           <MenuItem
             testID="inbox-menu-unarchive"
