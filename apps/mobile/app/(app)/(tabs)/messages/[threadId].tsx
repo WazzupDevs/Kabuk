@@ -34,7 +34,14 @@ import {
   useMarkThreadRead,
   useSendDm,
 } from '@/features/friends/queries';
-import { editedAt, editErrorText, useCanEdit, useEditDm } from '@/features/dm/edit';
+import {
+  editedAt,
+  editErrorText,
+  isDeleted,
+  useCanEdit,
+  useDeleteDm,
+  useEditDm,
+} from '@/features/dm/edit';
 import { useDmTyping } from '@/features/friends/useDmTyping';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { errorMessage } from '@/i18n/errors';
@@ -42,6 +49,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { confirm as openConfirm } from '@/lib/overlayStore';
 import { useSeen } from '@/lib/useSeen';
 import { KIT } from '@/theme/auraKit';
 import { DM } from '@/theme/dm';
@@ -165,6 +173,7 @@ export default function DmScreen() {
   // motion table's A4 4.4), ready before the save lands.
   const [morphId, setMorphId] = useState<string | null>(null);
   const edit = useEditDm(threadId);
+  const del = useDeleteDm(threadId);
 
   // While the DM slides in it shows what it opened with; what changed meanwhile comes once it is
   // in (Telegram Android holds a chat's updates during its opening animation).
@@ -404,6 +413,26 @@ export default function DmScreen() {
     },
     [reply],
   );
+  // The centred confirmation (CLAUDE.md → Ekran davranışı); the dialog keeps the button waiting and
+  // shows a refused call in its notice.
+  const onDelete = useCallback(
+    (m: DmPageRow) => {
+      openConfirm({
+        title: tr.dm.deleteTitle,
+        note: tr.dm.deleteNote,
+        icon: 'trash',
+        tone: 'danger',
+        confirmLabel: tr.dm.deleteConfirm,
+        confirmIcon: 'trash',
+        cancelLabel: tr.common.cancel,
+        testID: 'dm-delete-confirm',
+        onConfirm: async () => {
+          await del.mutateAsync(m.id);
+        },
+      });
+    },
+    [del],
+  );
   const onDiscard = useCallback(
     (m: OutboxMessage) => dispatch({ type: 'remove', localId: m.localId }),
     [],
@@ -425,6 +454,7 @@ export default function DmScreen() {
       pick={reactions.pick}
       onReply={onReply}
       onEdit={onEdit}
+      onDelete={onDelete}
       onRetry={onRetry}
       onDiscard={onDiscard}
     />
@@ -651,6 +681,7 @@ const DmRow = memo(function DmRow({
   pick,
   onReply,
   onEdit,
+  onDelete,
   onRetry,
   onDiscard,
 }: {
@@ -669,6 +700,7 @@ const DmRow = memo(function DmRow({
   pick: ReturnType<typeof useDmReactions>['pick'];
   onReply: (m: DmPageRow) => void;
   onEdit: (m: DmPageRow) => void;
+  onDelete: (m: DmPageRow) => void;
   onRetry: (m: OutboxMessage) => void;
   onDiscard: (m: OutboxMessage) => void;
 }) {
@@ -691,6 +723,7 @@ const DmRow = memo(function DmRow({
               pick={pick}
               onReply={onReply}
               onEdit={onEdit}
+              onDelete={onDelete}
             />
           ) : out ? (
             <ChatBubble
@@ -731,6 +764,7 @@ function ServerBubble({
   pick,
   onReply,
   onEdit,
+  onDelete,
 }: {
   m: DmPageRow;
   name: string;
@@ -743,23 +777,26 @@ function ServerBubble({
   pick: ReturnType<typeof useDmReactions>['pick'];
   onReply: (m: DmPageRow) => void;
   onEdit: (m: DmPageRow) => void;
+  onDelete: (m: DmPageRow) => void;
 }) {
   // "Düzenle" only on one's own message, in the 15 minutes after it was sent (docs/SPEC_V4.md §4.X).
   const canEdit = useCanEdit(m.created_at, m.from_me);
-  const edited = editedAt(m) !== null;
+  const gone = isDeleted(m);
+  const edited = !gone && editedAt(m) !== null;
   const clock = tr.chat.time(m.created_at);
   const counts = parseDmReactions(m.reactions);
   const quote = parseQuote(m.reply_to);
   return (
     <ChatBubble
-      text={m.body}
+      text={gone ? tr.dm.deleted : m.body}
+      gone={gone}
       mine={m.from_me}
       quote={toChatQuote(quote, name)}
       onPressQuote={quoteJump(quote, jumpTo)}
-      reactions={view(m.id, counts)}
-      onToggleReaction={(emoji) => pick(m.id, counts, emoji)}
-      onReact={(emoji) => pick(m.id, counts, emoji)}
-      onReply={() => onReply(m)}
+      reactions={gone ? undefined : view(m.id, counts)}
+      onToggleReaction={gone ? undefined : (emoji) => pick(m.id, counts, emoji)}
+      onReact={gone ? undefined : (emoji) => pick(m.id, counts, emoji)}
+      onReply={gone ? undefined : () => onReply(m)}
       first={first}
       last={last}
       time={clock}
@@ -767,18 +804,29 @@ function ServerBubble({
       editing={editing}
       morph={morph}
       // tuval DmMenuSureDoldu: one's own message past its 15 minutes says why "Düzenle" is gone.
-      menuNote={m.from_me && !canEdit ? tr.dm.editWindowNote : undefined}
+      menuNote={m.from_me && !gone && !canEdit ? tr.dm.editWindowNote : undefined}
       actions={
-        canEdit
-          ? [
+        gone || !m.from_me
+          ? undefined
+          : [
+              ...(canEdit
+                ? [
+                    {
+                      label: tr.dm.edit,
+                      icon: 'create-outline' as const,
+                      onPress: () => onEdit(m),
+                      testID: 'dm-edit',
+                    },
+                  ]
+                : []),
               {
-                label: tr.dm.edit,
-                icon: 'create-outline',
-                onPress: () => onEdit(m),
-                testID: 'dm-edit',
+                label: tr.dm.delete,
+                icon: 'trash' as const,
+                negative: true,
+                onPress: () => onDelete(m),
+                testID: 'dm-delete',
               },
             ]
-          : undefined
       }
       delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
       // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar says who it is

@@ -110,6 +110,9 @@ type Props = {
   onReact?: (emoji: Reaction) => void;
   // The held message's actions under it (skall tuvali: Yanıtla, Bildir; the viewer's own Sil).
   actions?: readonly BubbleAction[];
+  // A deleted DM message (docs/SPEC_V4.md §4.X): its words are the muted "Mesaj silindi"; no
+  // long press menu.
+  gone?: boolean;
   testID?: string;
   // A full set's balloon (the venue chat, anonymous, the set worn whole: theme/setBalloons.ts).
   skin?: SetBalloon | null;
@@ -182,6 +185,7 @@ export function ChatBubble({
   onReply,
   onReact,
   actions = [],
+  gone = false,
   testID,
   skin = null,
   skinMoves = true,
@@ -195,7 +199,7 @@ export function ChatBubble({
   // The bubble's measured size: a run's last bubble draws itself and its tail as one outline
   // (BubbleShape); until it is measured, its box and the tail laid beside it.
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const holdable = !!onReact || actions.length > 0 || text.length > 0;
+  const holdable = !gone && (!!onReact || actions.length > 0 || text.length > 0);
   const host = usePopHost();
   const lift = () => {
     // Measured where the bubble stands once the keyboard is away (the layer puts it away, and the
@@ -546,7 +550,7 @@ export function ChatBubble({
             </>
           ) : (
             <View style={widen ? { minWidth: widen } : undefined}>
-              <RNText style={[msgType, { color: fg }]} onTextLayout={onTextLayout}>
+              <RNText style={[msgType, { color: gone ? muted : fg }]} onTextLayout={onTextLayout}>
                 {text}
                 {time && !state ? (
                   <Stamp dm={dm} color={withAlpha(fg, HIDDEN_ALPHA)} hidden>

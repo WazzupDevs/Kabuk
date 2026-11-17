@@ -761,6 +761,141 @@ describe('dm/edit versions (§4.X)', () => {
   });
 });
 
+// DM'de mesaj silme (the owner's call, 17 Kasım; docs/SPEC_V4.md §4.X).
+describe('dm/delete (§4.X)', () => {
+  it("deletes one's own message for both, leaves a trace without the text, the same when sent twice", async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 'Yarın 7de');
+    const replyId = await send(b, threadId, 'Olur', messageId);
+    expect((await dm(b, { action: 'react', messageId, emoji: '👍' })).status).toBe(200);
+    // Long after the edit window: a delete has no time limit.
+    await sql`update public.dm_messages set created_at = created_at - interval '2 days'`;
+    await sql`update public.dm_threads set last_message_at = last_message_at - interval '2 days'`;
+
+    // Only the sender; the other member's and an unknown message read the same.
+    expect(await dm(b, { action: 'delete', messageId })).toEqual(NOT_FOUND);
+    expect(await dm(a, { action: 'delete', messageId: randomUUID() })).toEqual(NOT_FOUND);
+
+    const heard = waitForBroadcast(b, dmChannel(threadId), BROADCAST.dmEdit);
+    await heard.subscribed;
+    expect(await dm(a, { action: 'delete', messageId })).toEqual(OK);
+    await heard.received;
+    await heard.close();
+
+    const row = async () =>
+      sql`select body, deleted_at from public.dm_messages where id = ${messageId}`;
+    const after = await row();
+    expect(after).toEqual([{ body: '', deleted_at: expect.any(Date) }]);
+    // Sent twice, the same answer and nothing written: the app may resend it after a 5xx
+    // (pure/apiRetry.ts).
+    expect(await dm(a, { action: 'delete', messageId })).toEqual(OK);
+    expect(await row()).toEqual(after);
+    expect(await versionsOf(messageId)).toEqual([{ version: 1, body: 'Yarın 7de' }]);
+    expect(await sql`select 1 from public.dm_reactions where message_id = ${messageId}`).toEqual(
+      [],
+    );
+
+    // Both pages: the trace, no text, no reaction; the reply's quote is gone. Nothing either
+    // member can read holds the text.
+    for (const client of [a, b]) {
+      const rows = await page(client, threadId);
+      expect(rows.find((m) => m.id === messageId)).toMatchObject({
+        body: '',
+        deleted: true,
+        reactions: [],
+      });
+      expect(rows.find((m) => m.id === replyId)).toMatchObject({
+        deleted: false,
+        reply_to: { gone: true },
+      });
+      expect(JSON.stringify([rows, await inboxOf(client)])).not.toContain('Yarın 7de');
+    }
+
+    // A deleted message takes no edit, no reaction and no reply.
+    expect(await dm(a, { action: 'edit', messageId, body: 'geri' })).toEqual(NOT_FOUND);
+    expect(await dm(b, { action: 'react', messageId, emoji: '👍' })).toEqual(NOT_FOUND);
+    const reply = await dm(b, { action: 'send', threadId, body: 'ne?', replyTo: messageId });
+    expect(reply.body).toEqual(errorBody('reply_unavailable'));
+
+    // A report afterwards holds the deleted text, from the server's rows.
+    await reportAs(b, threadId);
+    const [report] = await sql`select messages_snapshot from public.reports`;
+    expect(report?.messages_snapshot).toEqual([
+      expect.objectContaining({
+        body: '',
+        deleted: true,
+        deleted_at: expect.any(String),
+        versions: [{ version: 1, body: 'Yarın 7de', saved_at: expect.any(String) }],
+      }),
+      expect.objectContaining({ body: 'Olur', deleted: false }),
+    ]);
+  });
+
+  it('shows a deleted newest message as the trace in Mesajlar, told to the other inbox', async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 'yanlış oldu');
+    expect(byThread(await inboxOf(b), threadId)).toMatchObject({
+      lastBody: 'yanlış oldu',
+      lastDeleted: false,
+    });
+    expect(await dm(a, { action: 'delete', messageId })).toEqual(OK);
+    for (const client of [a, b]) {
+      expect(byThread(await inboxOf(client), threadId)).toMatchObject({
+        lastBody: '',
+        lastDeleted: true,
+      });
+    }
+  });
+
+  it('keeps the text of an edited and then deleted message as its last version, for seven days', async () => {
+    const { a, threads } = await withFriends(1);
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 'bir');
+    await sql`update public.dm_messages set created_at = now() where id = ${messageId}`;
+    for (let i = 0; i < DM_EDIT_MAX; i++) {
+      expect((await dm(a, { action: 'edit', messageId, body: `iki ${i}` })).status).toBe(200);
+    }
+    await sql`delete from public.dm_edit_rate`;
+    expect(await dm(a, { action: 'delete', messageId })).toEqual(OK);
+    const versions = await versionsOf(messageId);
+    expect(versions).toHaveLength(DM_EDIT_MAX + 1);
+    expect(versions.at(-1)).toEqual({ version: DM_EDIT_MAX + 1, body: `iki ${DM_EDIT_MAX - 1}` });
+
+    // The hourly job takes the text once dm_versions_keep() has passed; the trace stays.
+    await sql`update private.dm_message_versions set saved_at = now() - interval '7 days 1 minute'`;
+    await sql`select private.delete_old_dm_versions()`;
+    expect(await versionsOf(messageId)).toEqual([]);
+    expect(await sql`select body from public.dm_messages where id = ${messageId}`).toEqual([
+      { body: '' },
+    ]);
+  });
+
+  it('answers not_friends across a block and shares the edit budget', async () => {
+    const { a, others, threads } = await withFriends(1);
+    const b = others[0] as Client;
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 'selam');
+    const [aId, bId] = await Promise.all([userIdOf(a), userIdOf(b)]);
+    await sql`
+      insert into public.blocks (blocker_id, blocked_id, blocked_alias) values (${bId}, ${aId}, 'x')
+    `;
+    expect(await dm(a, { action: 'delete', messageId })).toEqual(NOT_FRIENDS);
+    await sql`delete from public.blocks`;
+    await sql`
+      update public.dm_edit_rate set count = ${DM_EDIT_RATE.windowMax}, window_started_at = now()
+      where user_id = ${aId}
+    `;
+    expect((await dm(a, { action: 'delete', messageId })).body).toEqual(errorBody('rate_limited'));
+    expect(await sql`select deleted_at from public.dm_messages where id = ${messageId}`).toEqual([
+      { deleted_at: null },
+    ]);
+  });
+});
+
 describe('locks', () => {
   // dm_thread_pref: the thread (for key share), the caller's pin lock, then its own prefs row.
   it('sets a pin only after taking the thread', async () => {
@@ -876,6 +1011,36 @@ describe('locks', () => {
       expect(await versionsOf(messageId)).toEqual([{ version: 1, body: 'selam' }]);
     } finally {
       await Promise.all([holder.end(), editing.end()]);
+    }
+  });
+
+  it('deletes only after taking the thread', async () => {
+    const { a, threads } = await withFriends(1);
+    const threadId = threads[0] as string;
+    const messageId = await send(a, threadId, 'selam');
+    const aId = await userIdOf(a);
+
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const deleting = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let deleted: Promise<unknown> = Promise.resolve();
+      await holder.begin(async (tx) => {
+        await tx`select id from public.dm_threads where id = ${threadId} for update`;
+        deleted = deleting`select changed from public.dm_delete(${aId}, ${messageId})`
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('dm_delete');
+        await tx`set local lock_timeout = '2s'`;
+        const held =
+          await tx`select body from public.dm_messages where id = ${messageId} for update`;
+        expect(held).toEqual([{ body: 'selam' }]);
+        // The text is kept only after the thread and the message (rule 10).
+        expect(await tx`select 1 from private.dm_message_versions`).toHaveLength(0);
+      });
+      expect(await deleted).toEqual([{ changed: true }]);
+      expect(await versionsOf(messageId)).toEqual([{ version: 1, body: 'selam' }]);
+    } finally {
+      await Promise.all([holder.end(), deleting.end()]);
     }
   });
 

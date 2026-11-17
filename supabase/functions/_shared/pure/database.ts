@@ -438,6 +438,7 @@ export type Database = {
         Row: {
           body: string;
           created_at: string;
+          deleted_at: string | null;
           edited_at: string | null;
           id: string;
           replied: boolean;
@@ -448,6 +449,7 @@ export type Database = {
         Insert: {
           body: string;
           created_at?: string;
+          deleted_at?: string | null;
           edited_at?: string | null;
           id?: string;
           replied?: boolean;
@@ -458,6 +460,7 @@ export type Database = {
         Update: {
           body?: string;
           created_at?: string;
+          deleted_at?: string | null;
           edited_at?: string | null;
           id?: string;
           replied?: boolean;
@@ -2988,6 +2991,15 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      dm_delete: {
+        Args: { target_message_id: string; target_user_id: string };
+        Returns: {
+          changed: boolean;
+          is_last: boolean;
+          other_user_id: string;
+          thread_id: string;
+        }[];
+      };
       dm_edit: {
         Args: {
           new_body: string;
@@ -3017,6 +3029,7 @@ export type Database = {
           archived: boolean;
           display_name: string;
           last_body: string;
+          last_deleted: boolean;
           last_from_me: boolean;
           last_message_at: string;
           last_status: string;
@@ -3037,6 +3050,7 @@ export type Database = {
         Returns: {
           body: string;
           created_at: string;
+          deleted: boolean;
           edited_at: string;
           from_me: boolean;
           id: string;
