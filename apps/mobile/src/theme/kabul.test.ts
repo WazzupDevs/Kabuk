@@ -27,8 +27,8 @@ function code(path: string): string {
 
 describe('K1: the size scale', () => {
   // The boards' sizes (the owner's call, 18 Kasım): main 48, big and long 56, small 36, a bar's 40,
-  // a row's 32 / 34 / 40, round 44, chip 40, Süsle's filter chip 28.
-  it('main 48, big 56, small 36, bar 40, round 44, chip 40, filter chip 28, field 48', () => {
+  // a row's 32 / 34 / 40, round 44, chip 36 (40 where its board draws 40), Süsle's filter chip 28.
+  it('main 48, big 56, small 36, bar 40, round 44, chip 36 / 40, filter chip 28, field 48', () => {
     expect(KIT.size.btn).toBe(48);
     expect(KIT.size.btnTall).toBe(56);
     expect(KIT.size.btnBig).toBe(56);
@@ -36,8 +36,10 @@ describe('K1: the size scale', () => {
     expect(KIT.size.btnBar).toBe(40);
     expect([KIT.size.rowBtnSm, KIT.size.rowBtnMd, KIT.size.rowBtnLg]).toEqual([32, 34, 40]);
     expect(KIT.size.round).toBe(44);
-    expect(KIT.size.chip).toBe(40);
+    expect(KIT.size.chip).toBe(36);
     expect(KIT.size.chipLg).toBe(40);
+    expect(code('app/(app)/(tabs)/explore/index.tsx')).toMatch(/KIT\.size\.chipLg/);
+    expect(code('src/features/rooms/LobbyChoices.tsx')).toMatch(/<Chip\s+key=\{v\}\s+lg/);
     expect(KIT.size.chipFilter).toBe(28);
     expect(KIT.light.field).toBeDefined();
     // The form field's height: the many-line field's 22 round and the single-line 48 are the kit's.

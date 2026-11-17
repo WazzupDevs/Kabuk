@@ -788,7 +788,7 @@ export function Chip({
   onPress?: () => void;
   testID?: string;
   tall?: boolean;
-  // Kapsülün's slots: 40 high, 18 inside, 15.
+  // Where the board draws a 40 chip (Keşfet, MekanLobiAc `.chip`): 40 high, 16 inside, 14/18.
   lg?: boolean;
   // U19: Mekan's spot, 40 high, 16 inside, 14.
   md?: boolean;
@@ -811,11 +811,13 @@ export function Chip({
     ? KIT.size.chipFilter
     : narrow
       ? KIT.size.chipNarrow
-      : lg || md
+      : lg
         ? KIT.size.chipLg
-        : tall
-          ? KIT.size.chipTall
-          : KIT.size.chip;
+        : md
+          ? KIT.size.chip
+          : tall
+            ? KIT.size.chipTall
+            : KIT.size.chip;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
@@ -873,10 +875,12 @@ export function Chip({
               ? KIT_TYPE.chipFilter
               : md
                 ? KIT_TYPE.chipMd
-                : tall || lg || narrow
-                  ? KIT_TYPE.chipLg
-                  : KIT_TYPE.chip,
-            { color: on ? c.onChipOn : filter ? c.muted : c.ink },
+                : lg
+                  ? KIT_TYPE.chipMd
+                  : tall || narrow
+                    ? KIT_TYPE.chipLg
+                    : KIT_TYPE.chip,
+            { color: on ? c.onChipOn : filter ? c.filterInk : c.ink },
           ]}
         >
           {label}

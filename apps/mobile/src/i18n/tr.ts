@@ -1185,7 +1185,8 @@ export const tr = {
     },
     outside: {
       title: 'Geçit henüz senin semtinde yok',
-      body: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",
+      // SemtDisarida: the typographic apostrophe.
+      body: 'Şimdilik Beylikdüzü, Esenyurt ve Avcılar’da açık.',
       sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     ended: {
@@ -1194,7 +1195,8 @@ export const tr = {
       again: 'Yeniden gir',
       sceneLabel: 'Gece, açık Geçit kapısının önünde iki kanki, yanında bekçi kanki',
     },
-    backToExplore: "Keşfet'e dön",
+    // SemtDisarida, SemtKapandi: the typographic apostrophe.
+    backToExplore: 'Keşfet’e dön',
     close: 'Kapat',
     room: {
       title: (name: string) => `${name} sohbeti`,

@@ -444,6 +444,8 @@ export const KIT = {
     raisedChip: 'rgba(255, 255, 255, 0.74)',
     raisedEdge: '#FFFFFF',
     raisedRoundEdge: '#FFFFFF',
+    // Süsle's filter chip's words (`.flt span`: --muted; in the dark the text at 60 %).
+    filterInk: '#4A6550',
     raisedShadow: SHADOW.soft,
     primaryShadow: SHADOW.primary,
     cardShadow: SHADOW.card,
@@ -544,6 +546,7 @@ export const KIT = {
     raisedEdge: 'rgba(255, 255, 255, 0.10)',
     // A round button's line (`.dark .ptop .round`, `.gt`, `.ktop`: #121614 in a 1 px line at 8 %).
     raisedRoundEdge: 'rgba(255, 255, 255, 0.08)',
+    filterInk: 'rgba(238, 243, 240, 0.6)',
     raisedShadow: '',
     primaryShadow: '0px 10px 22px rgba(0, 0, 0, 0.35)',
     cardShadow: '',
@@ -892,10 +895,11 @@ export const KIT = {
     btnPadX: 24,
     btnPadXSm: 16,
     btnGap: 8,
-    // Every chip 40 high (`.chip`, 18 Kasım); Keşfet's kind chips 16 inside, Kapsülün's slot chips
-    // 18. Süsle's filter chip 28, 11 inside (`.flt span`).
-    chip: 40,
-    chipTall: 40,
+    // A chip 36 (skall.css `.chip`); 40 where its board draws 40 (`chipLg`: Keşfet's kind chips,
+    // MekanLobiAc's intent chips; 600 14/18, 16 inside). Süsle's filter chip 28, 11 inside
+    // (`.flt span`).
+    chip: 36,
+    chipTall: 36,
     chipTallPadX: 16,
     chipLg: 40,
     chipFilter: 28,
@@ -904,7 +908,7 @@ export const KIT = {
     chipNarrow: 46,
     fieldNarrow: 56,
     segItemNarrow: 52,
-    chipLgPadX: 18,
+    chipLgPadX: 16,
     // U19: Mekan's spot chip, 40 high and 16 in.
     chipMdPadX: 16,
     chipPadX: 12,

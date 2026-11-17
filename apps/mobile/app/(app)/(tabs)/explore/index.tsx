@@ -462,7 +462,8 @@ function KindChip({
   onPress: () => void;
 }) {
   const { c, scheme } = useKit();
-  const h = narrow ? KIT.size.chipNarrow : KIT.size.chip;
+  // Kesfet `.chip`: 40 high.
+  const h = narrow ? KIT.size.chipNarrow : KIT.size.chipLg;
   const shape = {
     height: h,
     borderRadius: h / 2,
