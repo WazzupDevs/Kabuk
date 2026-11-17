@@ -29,11 +29,15 @@ export const CAPSULE_EDIT = {
   panel: { top: 18, radius: 34, padTop: 16, side: 22, fadeStart: 22, fadeEnd: 40, gap: 8 },
   chip: { padLeft: 12, padRight: 15, gap: 6, icon: 17 },
   packsGap: 8,
-  // Under the chips: the strip 6 + 18 under them and 14 over the name (the options' middle 60 under
-  // the strip's top); the name 4 under the strip, the dots 14 under the name, 6 apart, 6 high and
-  // 3 round, the lit one 18 wide; 24 under them.
-  strip: { top: 6 + 18, bottom: 14 },
-  nameTop: 4,
+  // Under the chips: the strip 6 + 18 under them and 14 over the actions (the options' middle 60
+  // under the strip's top). Each option's name (KapsulSusle `.gi p`: 12, 600, 700 when picked) is
+  // under it, 6 below the largest option, one line that shrinks (never "…") up to the text size's
+  // 1.3 of a 16 line (CatalogTile's `eyebrow`), 6 in from the option's step at each side; 24 under the strip's foot.
+  strip: { top: 6 + 18, bottom: 14, nameGap: 6, nameSide: 6, nameLine: 16, nameScale: 1.3 },
+  // An option's rarity (`.gi .r`): a rotated square 9 across, 2 round, 6 in from the option's top and
+  // right, a 2 ring of the option's ground round it; only the tiers the board draws (`.r.ef`,
+  // `.r.ds`: Efsanevi and Destansı), in the tier's colour (theme/gifts.ts → TIER_COLOR).
+  tierDot: { size: 9, radius: 2, inset: 6, ring: 2, tiers: ['destansi', 'efsanevi'] as const },
   dots: { top: 14, gap: 6, side: 6, on: 18 },
   padBottom: 24,
   // Yeni arayüz tuvali (KapsulSusle, TumAksesuarlar; 16 Kasım), value for value: the bar's row 48

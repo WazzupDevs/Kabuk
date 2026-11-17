@@ -8,7 +8,7 @@ import { SafeAreaView, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-
 import Svg, { Circle, ClipPath, Defs, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { Btn, T, useKit } from '@/aura/kit';
+import { Btn, useKit } from '@/aura/kit';
 import { CachedSvg, readAhead } from '@/components/CachedSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
@@ -53,20 +53,14 @@ import {
   takeAccessoryOff,
 } from '@/features/capsule/look';
 import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/motion';
-import {
-  chosenIn,
-  findChosen,
-  type Option,
-  shownIn,
-  slotOptions,
-} from '@/features/capsule/options';
+import { findChosen, type Option, shownIn, slotOptions } from '@/features/capsule/options';
 import { stageAhead, tileOrder } from '@/features/capsule/readAhead';
 import { saveNoticeShown } from '@/features/capsule/saveNotice';
 import { SusleFilter } from '@/features/capsule/SusleFilter';
 import { SusleTabs } from '@/features/capsule/SusleTabs';
 import { packNames, packOptions } from '@/features/capsule/strip';
 import { optionArt } from '@/features/capsule/tileArt';
-import { TierTag } from '@/features/gifts/parts';
+import { tierName } from '@/features/gifts/model';
 import { giftKeys, useGiftState } from '@/features/gifts/queries';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -80,9 +74,10 @@ import { useLabOff } from '@/lib/drawLab';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { closeOverlay, confirm } from '@/lib/overlayStore';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip } from '@/motion';
+import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip, snapStripNameHeight } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { CAPSULE_EDIT } from '@/theme/capsuleEdit';
+import { TIER_COLOR } from '@/theme/gifts';
 import { FEELINGS } from '@/theme/capsuleLook';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -314,8 +309,6 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   // A pack the open slot has nothing of shows Tümü.
   const openPack = pack !== null && packs.includes(pack) ? pack : null;
   const shown = useMemo(() => packOptions(groups, openPack), [groups, openPack]);
-  const flat = current?.flat ?? [];
-  const chosenOption = flat[chosenIn(slot, look, flat)] ?? null;
   const chosen = findChosen(slot, look, shown);
   const stageSize = KIT.size.capsuleStage - KIT.size.capsuleRing * 2;
   // Skia's own reading ahead while it draws the big capsule (components/skiaInside.ts: the same
@@ -411,7 +404,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
 
   // The tiles on the screen once the strip is on the chosen option (the strip follows a choice made
   // elsewhere): the stage's new look waits for their pictures too (CapsuleStage → tiles).
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, fontScale } = useWindowDimensions();
   const w = carouselWindow(
     Math.max(chosen, 0) * KIT.size.stripStep,
     KIT.size.stripStep,
@@ -639,9 +632,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           the chosen option without motion. The options' middle where the board has it. */}
             <View
               style={{
-                height: SNAP_STRIP_HEIGHT,
+                height: SNAP_STRIP_HEIGHT + snapStripNameHeight(fontScale),
                 marginTop: E.strip.top + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
-                marginBottom: E.strip.bottom + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
+                marginBottom: E.strip.bottom,
               }}
             >
               {ready ? (
@@ -657,6 +650,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                       option={shown[i]}
                       color={color}
                       tileNeed={tileNeed}
+                      ground={k.tile}
                       visible={i >= w.from && i <= w.to}
                     />
                   )}
@@ -670,22 +664,6 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                   ringColor={KIT.pink}
                 />
               ) : null}
-            </View>
-            {/* The chosen option's name (an accessory's tier beside it). */}
-            <View
-              style={{
-                alignItems: 'center',
-                marginTop: E.nameTop,
-                paddingHorizontal: E.panel.side,
-              }}
-              accessibilityLiveRegion="polite"
-            >
-              <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
-                <T v="capsuleName" ink center fit lines={1}>
-                  {chosenOption?.name ?? ''}
-                </T>
-                {chosenOption?.tier ? <TierTag tier={chosenOption.tier} /> : null}
-              </View>
             </View>
             {/* Its room stays with nothing worn: the tray, and the scene over it, never change
           height as an accessory goes on and off. */}
@@ -715,18 +693,62 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   );
 }
 
+type OptionArtProps = {
+  slot: LookSlot;
+  option: Option | undefined;
+  color: string | undefined;
+  tileNeed: ((xml: string, size: number) => ArtNeed) | undefined;
+  ground: string;
+  visible: boolean;
+};
+
 // An option in the strip: its art alone (tileArt.ts), "boş" a crossed circle.
-function OptionArt({
+function OptionArt(props: OptionArtProps) {
+  const { option, ground } = props;
+  const { scheme } = useTheme();
+  const D = CAPSULE_EDIT.tierDot;
+  const tier = option?.tier ?? null;
+  const dot = tier !== null && D.tiers.some((t) => t === tier) ? TIER_COLOR[scheme][tier] : null;
+  return (
+    <>
+      <OptionPicture {...props} />
+      {dot ? (
+        <View
+          pointerEvents="none"
+          accessibilityLabel={tier ? tierName(tier) : undefined}
+          style={{
+            position: 'absolute',
+            top: D.inset - D.ring,
+            right: D.inset - D.ring,
+            padding: D.ring,
+            borderRadius: D.radius + D.ring,
+            backgroundColor: ground,
+            transform: [{ rotate: '45deg' }],
+          }}
+        >
+          <View
+            style={{ width: D.size, height: D.size, borderRadius: D.radius, backgroundColor: dot }}
+          />
+        </View>
+      ) : null}
+    </>
+  );
+}
+
+function OptionPicture({
   slot,
   option,
   color,
   tileNeed,
+  ground,
   visible,
 }: {
   slot: LookSlot;
   option: Option | undefined;
   color: string | undefined;
   tileNeed: ((xml: string, size: number) => ArtNeed) | undefined;
+  // The option's circle (the rarity dot's ring is cut from it).
+  ground: string;
   // On the screen (not one of the few bound either side of it).
   visible: boolean;
 }) {

@@ -1,6 +1,6 @@
 // The own profile, value for value from the approved board (tuval: Benim.dc.html and
 // BenimToplanmis.dc.html, folded at 330; 390 × 844, a 42 status bar) where docs/design/iskelet.md →
-// 5.7 gives no value of its own. The cover (230), the photo (124, its 4 ring), the -0.35 rise, the
+// 5.7 gives no value of its own. The cover (236), the photo (112, its 4 ring) are ProfilBen's (17 Kasım, PROFILE_PAGE.own); once iskelet's 230 and 124, the -0.35 rise, the
 // fade over 120–300, the 0.92, the 316 and the linear flight into the bar are iskelet's
 // (PROFILE_PAGE.own); the two buttons' 48 too. The board's flight eases in and out: iskelet's is
 // linear and one to one with the finger (4.1), and stays.
