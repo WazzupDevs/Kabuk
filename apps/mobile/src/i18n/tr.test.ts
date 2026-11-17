@@ -19,15 +19,18 @@ describe('seat suffixes (Sahtekar)', () => {
   });
 });
 
-// The birth date confirmation (K-55, K-63): v46's words, the month by name.
+// The birth date confirmation (K-55, K-63; KayitDogumOnay): the date asked, the month by name, the
+// age said in the line under it.
 describe('birth date confirmation', () => {
-  it('says the age and the date as v46 does', () => {
-    expect(tr.signup.birthConfirmTitle(25)).toBe('25 yaşındasın');
-    expect(tr.signup.birthConfirmBody({ year: 2001, month: 4, day: 5 })).toBe(
-      'Doğum tarihin 5 Nisan 2001. Sonra değiştiremezsin.',
+  it('asks the date and says the age', () => {
+    expect(tr.signup.birthConfirmTitle({ year: 2001, month: 4, day: 5 })).toBe(
+      '5 Nisan 2001 doğru mu?',
     );
-    expect(tr.signup.birthConfirmBody({ year: 1999, month: 12, day: 31 })).toBe(
-      'Doğum tarihin 31 Aralık 1999. Sonra değiştiremezsin.',
+    expect(tr.signup.birthConfirmTitle({ year: 1999, month: 12, day: 31 })).toBe(
+      '31 Aralık 1999 doğru mu?',
+    );
+    expect(tr.signup.birthConfirmBody(25)).toBe(
+      'Profilinde 25 yaşında görünürsün. Doğum tarihini sonra değiştiremezsin.',
     );
   });
 });

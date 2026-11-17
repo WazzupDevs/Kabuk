@@ -9,6 +9,7 @@ import { CapIcon } from '@/aura/CapIcon';
 import { Btn, T } from '@/aura/kit';
 import { FxMoves } from '@/components/FxSvg';
 import { Loader } from '@/components/Loader';
+import { useTicketWhole } from '@/components/skiaInside';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
@@ -63,6 +64,9 @@ export function IdentityTicket({
   refreshAt: string | null;
 }) {
   const [box, setBox] = useState({ w: 0, h: 0 });
+  // The capsule's layers each on one Skia canvas (docs/perf/akicilik-denetimi.md → 4.13 D: some
+  // 6300 native views of its SVG shapes and pictures in turn were the first opening's long frame).
+  const ticket = useTicketWhole();
   const e = TICKET.edgeWidth / 2;
   const ox = TICKET.printX;
   const oy = TICKET.printY;
@@ -160,14 +164,19 @@ export function IdentityTicket({
       >
         {look ? (
           <View style={{ width: TICKET.capsule, height: TICKET.capsule }}>
-            <FxMoves>
-              <LivingLook
-                look={look}
-                size={TICKET.capsule}
-                ground={false}
-                accessibilityLabel={tr.profile.ownCapsule}
-              />
-            </FxMoves>
+            {/* While Skia is being read (read ahead after the launch: features/profile/ahead.ts)
+                the place stays blank: the picture way would make the views the canvas is for. */}
+            {ticket.waiting ? null : (
+              <FxMoves>
+                <LivingLook
+                  look={look}
+                  size={TICKET.capsule}
+                  ground={false}
+                  accessibilityLabel={tr.profile.ownCapsule}
+                  whole={ticket.whole}
+                />
+              </FxMoves>
+            )}
           </View>
         ) : null}
         <T v="ticketNo" color={TICKET.ink} center>

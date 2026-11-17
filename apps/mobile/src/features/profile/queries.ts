@@ -26,7 +26,15 @@ function profileViewQuery(publicId: string | null | undefined) {
 // `own`: the person's own profile stays in memory while the app runs (audit M10-02): offline, the
 // Profil tab keeps showing it. Another's is dropped as soon as no screen shows it.
 export function useProfileView(publicId: string | null | undefined, own?: boolean) {
-  return useQuery({ ...profileViewQuery(publicId), ...(own ? { gcTime: Infinity } : null) });
+  return useQuery({ ...profileViewQuery(publicId), ...(own ? OWN : null) });
+}
+const OWN = { gcTime: Infinity };
+
+// The own profile's view as the Profil tab reads it (useProfileView(own)), to read it ahead
+// (ahead.ts): the same key, freshness and keeping.
+export function ownProfileViewAhead(publicId: string) {
+  const { queryKey, staleTime, retry, queryFn } = profileViewQuery(publicId);
+  return { queryKey, staleTime, retry, queryFn, ...OWN };
 }
 
 // The profile ids of the other profiled phones in the room, both sides, by table session id, while

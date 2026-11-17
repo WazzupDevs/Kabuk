@@ -1,14 +1,14 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import { Button } from '@/components/Button';
 import { CodeInput } from '@/components/CodeInput';
 import { authErrorMessage } from '@/features/auth/authErrors';
 import { SignupStep } from '@/features/onboarding/SignupStep';
-import { useFriend, useShakeOnError } from '@/features/onboarding/useFriend';
+import { SIGNUP_FONT_SCALE, useSignupLook } from '@/features/onboarding/look';
 import { tr } from '@/i18n/tr';
 import { supabase } from '@/lib/supabase';
+import { clock, SIGNUP, SIGNUP_TYPE } from '@/theme/signup';
 
 // Matches [auth.sms] max_frequency.
 const RESEND_SECONDS = 60;
@@ -22,8 +22,7 @@ export default function OtpStep() {
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
-  const friend = useFriend();
-  useShakeOnError(error, () => friend.react('err'));
+  const look = useSignupLook();
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
@@ -59,20 +58,33 @@ export default function OtpStep() {
   return (
     <SignupStep
       step="code"
+      picture="code"
       testID="signup-code"
       title={tr.auth.otpTitle}
-      body={tr.auth.otpHint(phone)}
+      body={
+        <>
+          {tr.auth.otpHint(phone)}{' '}
+          <Text
+            accessibilityRole="link"
+            onPress={() => router.back()}
+            style={[
+              SIGNUP_TYPE.bodyLink,
+              { color: look.ink, textDecorationLine: 'underline', textDecorationColor: look.link },
+            ]}
+          >
+            {tr.auth.changeNumber}
+          </Text>
+        </>
+      }
       onBack={() => router.back()}
-      friend={friend}
       action={{
         label: tr.auth.verify,
-        icon: 'check',
         onPress: () => void verify(code),
         disabled: code.length !== CODE_LENGTH,
         loading: verifying,
       }}
     >
-      <View className="gap-2">
+      <View style={{ marginTop: SIGNUP.code.top }}>
         <CodeInput
           testID="otp-input"
           length={CODE_LENGTH}
@@ -83,27 +95,38 @@ export default function OtpStep() {
           autoFocus
           value={code}
           onChangeText={onChange}
-          onFocus={friend.onFocus}
-          onBlur={friend.onBlur}
           error={error}
         />
-        {/* skall tuvali (KayitKod): the two links under the boxes, one each side. */}
-        <View className="flex-row flex-wrap justify-between gap-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            flush
-            label={secondsLeft > 0 ? tr.auth.resendIn(secondsLeft) : tr.auth.resend}
-            onPress={() => void resend()}
-            disabled={secondsLeft > 0}
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            flush
-            label={tr.auth.changeNumber}
-            onPress={() => router.back()}
-          />
+        {/* KayitKod `.rs`: "Yeniden gönder" with the time left; once it is up, the link. */}
+        <View style={{ marginTop: SIGNUP.resendTop }}>
+          {secondsLeft > 0 ? (
+            <Text
+              maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+              style={[SIGNUP_TYPE.resend, { color: look.muted }]}
+            >
+              {tr.auth.resend}{' '}
+              <Text style={[SIGNUP_TYPE.resendLink, { color: look.ink, opacity: 0.4 }]}>
+                {clock(secondsLeft)}
+              </Text>
+            </Text>
+          ) : (
+            <Pressable accessibilityRole="button" onPress={() => void resend()} hitSlop={12}>
+              <Text
+                maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+                style={[
+                  SIGNUP_TYPE.resendLink,
+                  {
+                    color: look.ink,
+                    textDecorationLine: 'underline',
+                    textDecorationColor: look.link,
+                    alignSelf: 'flex-start',
+                  },
+                ]}
+              >
+                {tr.auth.resend}
+              </Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </SignupStep>

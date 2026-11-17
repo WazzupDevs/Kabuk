@@ -11,6 +11,7 @@ import {
   useUnreadTotal,
   useUnseenCount,
 } from '@/features/friends/queries';
+import { useProfileAhead } from '@/features/profile/ahead';
 import { tr } from '@/i18n/tr';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
@@ -24,6 +25,8 @@ export const unstable_settings = { initialRouteName: 'explore' };
 export default function TabsLayout() {
   const table = useActiveTable();
   useInbox();
+  // The Profil tab's queries and its ticket's Skia, read ahead once the launch is idle.
+  useProfileAhead();
   const unread = useUnreadTotal();
   // The bell is in Mesajlar only (K-6): the tab's dot is there for unread DMs and for waiting
   // requests alike.

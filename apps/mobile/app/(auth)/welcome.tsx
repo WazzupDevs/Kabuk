@@ -6,6 +6,7 @@ import {
   ScrollView,
   type StyleProp,
   StyleSheet,
+  Text,
   useWindowDimensions,
   View,
   type ViewStyle,
@@ -19,7 +20,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, T } from '@/aura/kit';
 import { RisoKanki, SignupScene, useKankiClock } from '@/aura/RisoKanki';
 import { WordmarkRow } from '@/features/venue/VenueHead';
@@ -32,7 +32,9 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { copyFrame, type CopyPart, INTRO, introMinHeight } from '@/theme/introScene';
 import { AURA } from '@/theme/aura';
 import { WELCOME_KANKI } from '@/theme/kankiMotion';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
+import { SIGNUP, SIGNUP_TYPE } from '@/theme/signup';
+import { SIGNUP_FONT_SCALE, useSignupLook } from '@/features/onboarding/look';
 import { useTheme } from '@/theme/ThemeProvider';
 import { OPACITY, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -61,6 +63,7 @@ function Welcome() {
   const { scheme, shape } = useTheme();
   const reduce = useReduceMotion();
   const insets = useSafeAreaInsets();
+  const look = useSignupLook();
   const { height: windowHeight } = useWindowDimensions();
   // The scene waits for the launch curtain to open (src/features/launch/LaunchCurtain.tsx).
   const curtain = useLaunchStore((s) => s.curtain);
@@ -142,8 +145,6 @@ function Welcome() {
       collapsable={false}
       style={[styles.fill, { backgroundColor: AURA[scheme].ground }]}
     >
-      {/* docs/design/aura → Main: the colour clouds. */}
-      <AuraBackground />
       <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.fill}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -158,9 +159,6 @@ function Welcome() {
           bounces={false}
           overScrollMode="never"
         >
-          <Words part="logo" t={t} still={copy.shown.includes('logo')}>
-            <WordmarkRow small />
-          </Words>
           <View
             onLayout={onSceneLayout}
             accessibilityElementsHidden
@@ -178,32 +176,56 @@ function Welcome() {
               }
             </SignupScene>
           </View>
-          <View style={{ gap: SPACING[3] }}>
+          <Words
+            part="logo"
+            t={t}
+            still={copy.shown.includes('logo')}
+            style={{ alignItems: 'center' }}
+          >
+            <WordmarkRow small />
+          </Words>
+          <View style={{ alignItems: 'center', marginTop: SIGNUP.welcome.titleTop - WELCOME_GAP }}>
             <View accessible accessibilityRole="header" accessibilityLabel={tr.signup.welcomeTitle}>
               <Words part="line1" t={t} still={copy.shown.includes('line1')}>
-                <T v="display" style={KIT_TYPE.welcome}>
+                <Text
+                  maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+                  style={[SIGNUP_TYPE.title, { color: look.ink, textAlign: 'center' }]}
+                >
                   {tr.signup.welcomeHalves[0]}
-                </T>
+                </Text>
               </Words>
               <Words part="line2" t={t} still={copy.shown.includes('line2')}>
-                <T v="display" style={KIT_TYPE.welcome}>
+                <Text
+                  maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+                  style={[SIGNUP_TYPE.title, { color: look.ink, textAlign: 'center' }]}
+                >
                   {tr.signup.welcomeHalves[1]}
-                </T>
+                </Text>
               </Words>
             </View>
-            <Words part="body" t={t} still={copy.shown.includes('body')}>
-              <T v="body">{tr.signup.welcomeBody}</T>
+            <Words
+              part="body"
+              t={t}
+              still={copy.shown.includes('body')}
+              style={{ maxWidth: SIGNUP.welcome.bodyMax, marginTop: SIGNUP.titleGap }}
+            >
+              <Text
+                maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+                style={[SIGNUP_TYPE.body, { color: look.muted, textAlign: 'center' }]}
+              >
+                {tr.signup.welcomeBody}
+              </Text>
             </Words>
           </View>
           <Words
             part="foot"
             t={t}
             still={copy.shown.includes('foot')}
-            style={{ gap: SPACING[3], alignItems: 'center' }}
+            style={{ gap: SIGNUP.footGap, alignItems: 'stretch' }}
           >
             <Btn
               block
-              icon="forward"
+              tall
               testID="welcome-start"
               label={tr.signup.start}
               onPress={() => {
@@ -211,9 +233,12 @@ function Welcome() {
                 router.push('/agree');
               }}
             />
-            <T v="fine" center>
+            <Text
+              maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+              style={[SIGNUP_TYPE.foot, { color: look.muted, textAlign: 'center' }]}
+            >
               {tr.signup.adultsOnly}
-            </T>
+            </Text>
           </Words>
         </ScrollView>
         {copy.skip ? (

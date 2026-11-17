@@ -17,7 +17,6 @@ import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
 import { nextAfterConsents } from '@/features/onboarding/next';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
-import { useFriend } from '@/features/onboarding/useFriend';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
@@ -37,11 +36,7 @@ export default function ConsentsAfterCode() {
     consented?.terms === CURRENT_TERMS_VERSION && consented.kvkk === CURRENT_KVKK_VERSION;
   const [terms, setTerms] = useState(false);
   const [kvkk, setKvkk] = useState(false);
-  const friend = useFriend();
-  const toggle = (other: boolean, set: (v: boolean) => void, now: boolean) => {
-    set(!now);
-    friend.react(!now && other ? 'ok' : 'nod');
-  };
+  const toggle = (set: (v: boolean) => void, now: boolean) => set(!now);
 
   const reconsent = useMutation({
     meta: FEEL_ERROR,
@@ -95,16 +90,15 @@ export default function ConsentsAfterCode() {
   return (
     <SignupStep
       step={hasProfile ? undefined : 'consents'}
+      picture={hasProfile ? 'reconsent' : 'consents'}
       testID="signup-consents"
       title={tr.consents.title}
       body={hasProfile ? tr.consents.outdated : tr.consents.body}
       error={reconsent.isError ? errorMessage(reconsent.error) : null}
-      friend={friend}
-      standing={hasProfile}
+      footnote={tr.consents.both}
       action={{
         testID: 'consents-accept',
         label: tr.consents.accept,
-        icon: 'check',
         onPress: accept,
         disabled: !(terms && kvkk),
         loading: reconsent.isPending,
@@ -113,8 +107,8 @@ export default function ConsentsAfterCode() {
       <ConsentBoxes
         terms={terms}
         kvkk={kvkk}
-        onTerms={() => toggle(kvkk, setTerms, terms)}
-        onKvkk={() => toggle(terms, setKvkk, kvkk)}
+        onTerms={() => toggle(setTerms, terms)}
+        onKvkk={() => toggle(setKvkk, kvkk)}
       />
     </SignupStep>
   );
