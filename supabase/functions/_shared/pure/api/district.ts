@@ -70,6 +70,8 @@ export type DistrictChatRequest =
   | { action: 'react'; messageId: string; emoji: Reaction | null }
   // The caller's room, newest first, nothing from before they came in.
   | { action: 'page'; before?: string }
+  // Odadakiler: everyone in the caller's room now (rule 4's district paragraph).
+  | { action: 'people' }
   | { action: 'delete'; messageId: string }
   // The muted list is the venue chat's (venue-chat/mutes, unmute).
   | { action: 'mute'; messageId: string }
@@ -80,3 +82,26 @@ export type DistrictChatPageResponse = {
   roomId: string | null;
 };
 export type DistrictChatSendResponse = { messageId: string };
+
+// Odadakiler. `count` is every row, the caller's own included. A profiled person shows what their
+// messages already open to the room (name, age, photo), whether they are the caller's friend and
+// whether the caller muted their profiled messages; an anonymous one is a time and nothing else
+// (no nick, no look, no key: the row is tied to no account, no nick and no message). `joinedAt` is
+// to the minute. No profile id. Without an open session the list is empty.
+export type DistrictPerson =
+  | {
+      profiled: true;
+      displayName: string | null;
+      age: number | null;
+      photoUrl: string | null;
+      joinedAt: string;
+      friend: boolean;
+      muted: boolean;
+    }
+  | { profiled: false; joinedAt: string };
+export type DistrictPeopleResponse = {
+  count: number;
+  me: DistrictPerson | null;
+  profiled: Extract<DistrictPerson, { profiled: true }>[];
+  anonymous: Extract<DistrictPerson, { profiled: false }>[];
+};
