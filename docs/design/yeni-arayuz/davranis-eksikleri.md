@@ -59,3 +59,4 @@ Panolar statiktir; aşağıdakiler tasarımdan istendi (16 Kasım), tahmin edilm
 - Mesajlar menüsünden "Profilini gör" (arkadaşlar arası, uygulanabilir).
 
 "ÖNERİ" etiketli öğeler: Profilini gör, Sohbeti sil, Düzenle, mekan sohbetinden açılan profildeki ortak arkadaş kartı ve "Mekan sohbetinden · <üniversite>" satırı (yerleşke söylenmemeli, kural 4; `guvenlik` denetimi).
+- Kayıt: panodaki "Onayla ve devam et" düğmesi ve "okuyup onaylaman" notu alınmadı; KVKK aydınlatma metni okunur, onaylanmaz (yasal neden): düğme "Devam et", not "İkisini de okuman gerekir."

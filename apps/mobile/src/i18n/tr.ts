@@ -207,10 +207,10 @@ export const tr = {
     // An information notice is read, not approved (KVKK Kurulu, 2026/347): "okudum ve anladım".
     kvkk: 'KVKK Aydınlatma Metni’ni okudum ve anladım.',
     read: 'Oku',
-    accept: 'Onayla ve devam et',
+    accept: 'Devam et',
     // KayitOnay, KayitMetinler: under the title and over the button.
-    both: 'İkisini de okuyup onaylaman gerekir.',
-    outdated: 'Metinler güncellendi. Lütfen tekrar onayla.',
+    both: 'İkisini de okuman gerekir.',
+    outdated: 'Metinler güncellendi. Devam etmek için yeniden oku.',
   },
   // Sign-up (docs/SPEC_V3.md §3; docs/SPEC_V4.md §4.C, the v45 report §1): the first screen, then
   // seven steps, the consents first (K-19, K-33).
