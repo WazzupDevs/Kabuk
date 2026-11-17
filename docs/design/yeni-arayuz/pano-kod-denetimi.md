@@ -1,59 +1,76 @@
-# Yeni arayüz tuvali: pano–kod denetimi (17 Kasım 2026)
+# Yeni arayüz tuvali: pano–kod tam denetimi (18 Kasım 2026)
 
-Beş denetimin ham bulguları (pano kaynağı ile kodun karşılaştırması; telefonda doğrulanmadı, "emin değil" işaretliler dahil). Düzeltilen madde bu dosyadan silinir. Sekme çubuğu (#721) ve A'nın 1–11 maddeleri (ortak parçalar, zemin, canlı nokta) düzeltildi; A12 bar bandı ve karar gerektirenler açık. Hata hâli, arşiv boş resmi ve güncelleme ekranı da düzeltildi. Bu liste eksiksiz değildir (semt sohbetinin seçenekler menüsünü kaçırdı): her paket kendi panosunu baştan sona kodla karşılaştırır, bu dosya yalnız asgari listedir.
+Proje sahibi "komple denetim, her ince detayına kadar, eksik istemiyorum" dedi (17 Kasım'ın beş denetimi semt sohbetinin seçenekler menüsünü kaçırmıştı). Bu dosya dizindir; bulguların tamamı `denetim/grup-NN.md` dosyalarındadır ve 17 Kasım listesinin yerini alır.
 
-## B (mesajlar, sosyal)
-AKTİVİTELER: 1 etkinlik kartı eski (EventCard.tsx; pano AktivitelerDolu .evc 148/r22 kapak resmi, sarı tür etiketi, düzenleyen) — veri yok (tür, düzenleyen), karar ister. 2 "Bugün · 3" liste başlığı yok. 3 Hediye kartı eski (GIFT_CARD 170 koyu; pano .gift 76 cam, 3 kanki, chevron). 4 başlık üstünde şehir eyebrow fazla. 5 geçmiş satırında sonuç etiketi fazla.
-İSTEKLER: 6 reddet 40/Kabul 40 (kod 44/36). 7 satır arası çizgi yok. 8 Masa satırı yüzü: 52 r14 masa resmi + 26 harf rozeti (kod Avatar table/Av). 9 süre: kırmızı 700 + nokta. 10 davet satırı yalnız "Katıl" (kod Reddet+Katıl).
-BİLDİRİMLER: 11 "Tümünü okundu say" başlık satırında sağda, her zaman. 12 davet satırı (Katıl tek, "Masa daveti · 1:42" yeşil). 13 Mesaj yaz yuvarlağı 40. 14 Bak: yeni primary sm, eski soft sm. 15 peek kanki 64×80 (kod 56×70).
-ARKADAŞLAR: 16 arama üstünde peek kanki yok. 17 "Mesaj gönder" 32 yüksek min 112. 18 arama alanı düz beyaz. 19 Ortak arkadaşlar listesi ekranı (103) yok (bilerek).
-MESAJLAR/DM: 20 uzun basma menüsü: Sessize al, Profilini gör, Engelle yok. 22 DM "Sohbette ara" yok (özellik yok). 23 DM yazma alanı ikonları (emoji, dosya, kamera, ses) ve pasif gönder yok; 120/121 ÖNERİ alınmadı.
-UYUYOR: Mesajlar, Arşiv dolu, DM sohbet, Geçmiş, Geçmiş masa, Arkadaşlar satırı, Bildirim iskeleti.
-## A (ortak parçalar)
-3 BOŞ DURUM: 150×100 kesik resim çerçevesiz, 15/20 600, 13/18, ortada; kod 240×165 kartlı, üstten hizalı (EmptyState.tsx:80-85,226-272).
-4 ÜST BAR düğmesi 44 (kod topBtn 46, auraKit.ts:864, motion/TopBar.tsx).
-5 SEKME ALTI SOLMA: 150, %70'te tam opak; kod 160, en çok .92 (aura.ts:115,45-50,83-88).
-6 AVATAR: halka 2px surface (koyuda #151A18), koyuda gölge yok, gövde düz renk c1..c5; kod beyaz halka, koyuda gölge, gradyan (kit.tsx:1409, auraKit.ts:652).
-7 SettingsRow (Hesap vb.): min 56, 16/20 600, ikon metin renginde, ok 18; kod 64, ikon muted, ok 20 (features/settings/SettingsRow.tsx:36).
-9 CheckMark/radyo: 24 r7, ink dolgu, tik 18; kod yeşil r8 tik 16 (Checkbox.tsx:20, Choice.tsx:141). emin değil.
-10 Anahtar düğmesi koyuda surface, gölgesiz. küçük.
-11 Odak halkası 4px (kod 3; iskelet 5.8 3 diyor).
-12 Bar bandı beyaz .32+blur (kod canvas .84; cam kapalı).
-KARAR GEREĞİ: Keşfet çipi 40 (kod 36); cam/blur.
-UYUYOR: palet, yazı ölçeği, köşe, kenar 20, glass, düğme türleri, çip, tag, seg, mesaj satırı, dialog, menü, sheet, toast, örtü, Loader.
-## D (keşfet, mekan, masa)
-3 64a "arkadaş oldunuz" toast + "Mesaj at" yok (K-70 emin değil).
-5 GELEN İSTEK (125,129) HİÇ: IncomingRequest.tsx eski kart; pano merkez dialog (MasaIstekGelen, MasaBuradayimGelen).
-6 Kimlik onayları (25, 25b) alt sayfa; pano merkez dialog (IdentitySheet.tsx).
-7 Mekandan ayrıl (26): danger düğme "Mekandan ayrıl" + metin farklı (venue.tsx:67).
-8 Mekan menüsü "Mekan bilgileri" (ÖNERİ) yok.
-9 KEŞFET kaydırılmış (10c): arama+harita düğmesi+çipler+kompakt Semte Git şeridi birlikte yapışır; kod yalnız arama (explore/index.tsx:355).
-10 Keşfet arama hâli (116/117): Semte Git kartı ve kanki gizli, sayı yok.
-11 HARİTA kartı bilet biçimi + "Yol tarifi"; kod düz kart (ExploreMap.tsx).
-12 Harita pinleri fotoğraflı halka + ad hapı (GL sınırı, emin değil).
-13 Harita üst boşluk 60 (kod 53).
-14 Keşfet çipi 40 (karar 36).
-16 Mekan detayı kapağı mekana özgü fotoğraf yok (aynı sahne); "Bu hafta" oku.
-18 CHECK-IN nokta seçimi (123) ayrı alt sayfa, radyo satırları, Noktasız, Devam; kod konum sayfasının içinde eski .opt.
-19 124 check-in kimlik seçimi (ÖNERİ) yok. 21 akışta masa paylaşımı kartı (ÖNERİ) yok.
-20 Mekan sohbeti kartı başlığı (emin değil).
-UYUYOR: Keşfet liste, 112, Mekan detayı, konum sayfaları, Mekan sekmesi, menü, akış, sohbet, Masa ekranı, lobiye aç.
-## E (kayıt, semt)
-KAYIT: 1 Doğum tarihi tekerleği (52) yok: birth.tsx:147 üç alan; yaş hapı (ÖNERİ). 2 Ad önizlemesi (ÖNERİ) yok. 3 Ad'da fazla gövde metni (name.tsx:42). 4 Foto: "Nerede görünür" (ÖNERİ) yok; "Fotoğraf ekle"de kamera ikonu yok (extras.tsx:71). 5 Onay "Kısaca" 3 satır (ÖNERİ) yok. 6 Onay satırları iki satırlı (başlık + "Okudum…") olmalı (ConsentBoxes.tsx:23,99). 7 Metinler güncellendi hapı (ÖNERİ). 8 18 yaş altı üst boşluk 112 (kod 76); "Tamam" (ÖNERİ). 9 Çok fazla deneme 4:58 geri sayım (kod 60 sn; sunucu?). 10 Telefon "TR +90" yanında ok.
-SEMT: 11 Geçit yazıları: başlık 21/700 (kod 16/600), soru 22/29 700, şık 19/700, harf 17/800 (gate.tsx:79,188,303). 12 semt alt düğmeleri 56 (.btn.big) (kod 48; gate, open, ended, outside, locate). 13 semt h1 700 32/38 (kod display 500 32/42, parts.tsx:950). 14 bilet metinleri 800/700 (open.tsx:57-75).
-SEMT SOHBETİ: 15 üç öneri çipi (14) yok. 16 seçenekler menüsü (15; mekan sohbetinde 32) alttan sayfa, pano üst düğmeye bağlı açılır menü (Odadakiler, Sessize aldıkların, Sohbet kuralları, Sohbetten çık); "Bugün ilk sen geldin" kartı, yazma alanı ve opak üst düğmeler de panoyla karşılaştırılmadı (proje sahibi telefonda gördü, 18 Kasım).
-ODADAKİLER: 17 sheet tam yükseklik + hairline. 18 tek kişi metin boyu.
-SEMT KARTI: 20 süre kalın değil (DistrictCard.tsx:68,175). 21 düğmede fazla ileri oku (DistrictCard.tsx:388).
-UYUYOR: Açılış, Telefon, Kod, Cinsiyet, Geçit düzeni, semt resimleri, Odadakiler satırları.
-## C (profil, ayarlar, kapsül)
-BAŞKASININ PROFİLİ (people/[publicId].tsx): eylem satırı Mesaj + Arkadaşsınız iki 48 düğme yan yana (kod hap + tek düğme); ortak arkadaşlar tek glass satır → 103 listesi (kod kart liste, 103 rotası yok); rozet kartı panoda yok (karar); kapak 250, yüz 112, canvas kenar (kod 230/132 beyaz); ad 600 28/34 (kod 800 31/39, auraKit.ts:156); yükleniyor (87) kapaklı.
-MESAJDAN PROFİL (SenderProfileScreen, ProfileCard.tsx:70): ortalı 112 yüz 250 kapak üstünde, tam genişlik istek düğmesi (kod sol yaslı 120 + peek kanki); alt "Geri" fazla; ⋮ menü çıpalı açılır 292 (kod Sheet+Vazgeç), "Sessize al" altyazılı; istek onayı: 64 harf yüzü, "Ece'ye istek gönderilsin mi?", Adın/Yaşın/Fotoğrafın çipleri.
-PROFİLİM: alt bölge düz zemin (kod 34 köşeli panel, tutamak, ışık; index.tsx:244-290), aralık 28; kaydırılmış bar (03c; emin değil); kapak alt köşeleri 28.
-PROFİLİ DÜZENLE (edit.tsx, profileEdit.ts:17): önizleme 150/22 + "Kapağı değiştir" etiketi, yüz 104, kamera 38 ink; alanlar ayrı (.fi min 52 r16, sayaç, ipucu), doğum tarihi salt okunur kilitli; bar soft geri + h1 19/24 + primary Kaydet.
-SÜSLE: tepsi düz surface r28 (kod .72 r34; capsule.tsx:611); kapsül boyu 290/340 (kod 220; emin değil).
-TÜM AKSESUARLAR: nadirlik noktası (9 elmas) yok (CatalogTile).
-AYARLAR/HESAP (settings-account.tsx): eski düzen; pano SettingsPage ailesi (.sr.inf, kilit, kırmızı satırlar, foot wordmark). Ayarlar notu metni farklı (emin değil). ÖNERİ'ler alınmadı (03l, 03m).
-YASAL METİN (LegalText.tsx): footer "Devam"+kanki fazla; meta satırı TASLAK hapı + Yürürlük; h2 700 18/24; gövde 400 15/23; bağlantı ink altı çizili.
-ŞİKAYET ET (ReportModal.tsx): adlı başlık, radyo satırları, not alanı 0/280 (sunucu yok), kırmızı "Şikayeti gönder".
-HEDİYE: GiftTopBar başlık sola yaslı 21/28 (parts.tsx:175).
-UYUYOR: Ayarlar ana, Bildirim ayarları, Gizlilik, Engellenenler, Sessize alınanlar, Hesabı sil onayı, Engelle onayı, Profilim bilet, Süsle sekmeleri, Tüm aksesuarlar ızgara, Hediye ana ve Oranlar.
+## Yöntem
+
+- 203 panonun tamamı (`ESLEME.md` sırasıyla 13'er panoluk 16 grup), her biri ayrı denetçiyle. Her panoda ekrandaki her öğe yukarıdan aşağıya numaralandı; boy, köşe, boşluk, yazı, renk (açık ve koyu), ikon, resim ve metnin kendisi css'ten çözülüp kodun token değeriyle karşılaştırıldı. Ters yön de yazıldı (kodda olup panoda olmayan: FAZLA).
+- Dosyalarda yalnız fark satırları durur; uyan öğeler sayılır. Türler: ölçü, boşluk, renk, koyu, yazı, metin, ikon, resim, düzen, sıra, eksik, fazla, davranış, hareket, özellik yok, kural (değişmez kurala değen pano öğesi; karar proje sahibinin).
+- Okunan kod: main `26c94e9` (#727 dahil). #728 (hata hâli resimleri, arşiv boş, Kibrit logosu, güncelleme ekranı) ve #729 (gelen istek ve kimlik dialogları, Mekandan ayrıl, nokta seçimi) bu okumadan sonra geldi: o panoların (66, 66a, 01h, 65, 125, 129, 25, 25b, 26, 123) satırları paketlerinde yeniden karşılaştırılır.
+- Sınır: hükümler koddan; telefonda görülmedi. Resim içeriği (blob depoda yok), cihazın güvenli alanına bağlı konumlar ve hareketin görünüşü DOĞRULANAMADI kaldı; proje sahibinin telefonunda bakılır.
+- Düzeltilen satır kendi grup dosyasından silinir. Her paket yine kendi panosunu baştan sona kodla karşılaştırır.
+
+## Kapsam
+
+| grup | panolar                                                                         | pano | dosya                |
+| ---- | ------------------------------------------------------------------------------- | ---- | -------------------- |
+| 00   | 01–02e: Mesajlar, Arşiv, uzun basma, DM                                         | 13   | `denetim/grup-00.md` |
+| 01   | 03–03n: profil, Profilim, Profili düzenle, Süsle, Ayarlar                       | 13   | `denetim/grup-01.md` |
+| 02   | 03o–07a: Hesap, yasal, Bildirimler, İstekler, Arkadaşlar, Aktiviteler           | 13   | `denetim/grup-02.md` |
+| 03   | 08–15: Geçmiş, Keşfet, harita, Semte Git, Geçit, semt sohbeti                   | 13   | `denetim/grup-03.md` |
+| 04   | 16–27: Odadakiler, mekan detayı, Mekan sekmesi, masa kartı, akış                | 13   | `denetim/grup-04.md` |
+| 05   | 28–37: akış, mekan sohbeti, Masa kur, masa sohbeti                              | 13   | `denetim/grup-05.md` |
+| 06   | 38–50: masa, oyun lobisi, kayıt                                                 | 13   | `denetim/grup-06.md` |
+| 07   | 51–62a: kayıt, mesajdan profil, şikayet, hediye                                 | 13   | `denetim/grup-07.md` |
+| 08   | 62b–72: hediye, bildirim ayarı, Masa bitti, güncelleme, hata, hareket, Süsle    | 13   | `denetim/grup-08.md` |
+| 09   | 73–85: Süsle sekmeleri ve kayıt, Tüm aksesuarlar, Ortak kurallar                | 13   | `denetim/grup-09.md` |
+| 10   | 86–98: yükleniyor, 320 dp, Odadakiler hâlleri, semt sohbeti dolu                | 13   | `denetim/grup-10.md` |
+| 11   | 99–111: semt hâlleri, ortak arkadaş, Mesajlar hâlleri, boş hâller               | 13   | `denetim/grup-11.md` |
+| 12   | 112–124: Keşfet hâlleri, arama, DM hâlleri, check-in                            | 13   | `denetim/grup-12.md` |
+| 13   | 125–137: masa istekleri, lobi hâlleri, Bildirimler, kayıt hata hâlleri, oyun seç | 13   | `denetim/grup-13.md` |
+| 14   | 138–150: oyunu oyla, Vampir, Signum, Kinshi, Krot, Sprengja, Kaupholl           | 13   | `denetim/grup-14.md` |
+| 15   | 151–158: Kibrit, İbre, Harf Kapmaca, Şarkıda Geçsin                             | 8    | `denetim/grup-15.md` |
+
+Toplam 203 pano; bitmeyen pano yok. Yaklaşık 1.700 fark satırı; büyük kısmı aşağıdaki ortak parçaların her panoda yinelenmesidir.
+
+## Her yerde yinelenen ortak farklar (önce bunlar)
+
+- Dialog: "Vazgeç" ve ikincil düğme panoda dolgusuz (ghost), kodda yumuşak dolgulu; örtü pano .30 + blur 6, kod .42; düğme ikonu 24 (kod 22); üst konum.
+- Alt sayfa: tutamak 40×4 (kod 40×5), başlık 700 21/26 (kod 600 21/27), panoda kapat düğmesi yok (kodda var), örtü .20.
+- Açılır menü: sohbet seçenekleri (semt 15, mekan 32) ve mesajdan profil ⋮ menüsü panoda düğmeden büyüyen menü, kodda alt sayfa; mesaj menüsü 220 geniş (kod 268), tepki yuvası 40 (kod 42).
+- Uzun basılan satır panoda örtünün üstünde kalkık kart (köşe 22, gölge); kodda örtünün altında kararır.
+- Düğme ve çip boyları: Keşfet ve lobi çipi 40 (kod 36), üst satır düğmesi 40, satır düğmeleri 32/34/40, Süsle süzgeç çipi 28, büyük düğme 56 (semt, hediye, "Kapsülüne tak"; kod 48), sohbet yazma alanı ve gönder 52 (kod 44). Karar proje sahibinde (çip 36 ve küçük düğme 36 kararı).
+- İkonlar: yuvarlak düğme ikonları 24 (kod 22), çizimleri panodan farklı (zil, geri, düzenle, ara, çöp, kopyala, yanıtla, engelle, ⋮); kum saati ikonu yok.
+- Yüz: halka dışarıda (dış çap 52, pano 48), zil noktası 9 (kod 13), kimlik anahtarı halkası ve solukluğu.
+- Koyu tema: kart ve yüzey panoda düz `#121614` (kod `#151A18` ya da saydam), küçük düğme `#1B211F`, uyarı şeritleri, kenar .08, takım renkleri, harita renkleri.
+- Üst bant: pano beyaz .32 + blur (kod tuval rengi .84; cam kapalı kararı).
+- Yazı: sayfa başlığı ve ad ağırlıkları (pano 600 28/34, kod 800 31/39), kayıt ve semt başlığı satır yüksekliği, tipografik kesme işareti (’).
+- Yükleniyor: işaret ekranın ortasında ve üst bar çizili; kodda üstte ve barsız yerler var.
+
+## Paket sırası (görünüş; her biri bir dal, bir PR)
+
+1. Ortak parçalar 2: dialog, alt sayfa, açılır menü, kalkık satır, ikonlar, yüz, koyu yüzeyler, yükleniyor.
+2. Sohbet ailesi: semt, mekan ve masa sohbeti (menü, boş hâl kartı, öneri çipleri, yazma alanı, balon ve ad renkleri, duvar resimleri).
+3. Mesajlar ve DM: kaydırılmış başlık, uzun basma, mesaj menüsü, tepki çubuğu, "Sohbet silindi" bildirimi.
+4. Profil ailesi: başkasının profili, mesajdan profil, Profilim, Profili düzenle.
+5. Süsle ve Tüm aksesuarlar: iskelet (kapsül 290, tepsi), ızgara, Kaydet hâlleri, çıkış onayı, nadirlik noktası.
+6. İstekler, Bildirimler, Arkadaşlar, Aktiviteler, hediye kartı, Geçmiş.
+7. Keşfet, arama hâli, harita kartı ve pinleri.
+8. Mekan sekmesi, mekan detayı, masa kartı, lobi satırları, akış.
+9. Kayıt ve semt (doğum tarihi tekerleği, onay satırları, Geçit ve semt sayfaları).
+10. Ayarlar ailesi: Hesap, yasal metin, şikayet, bildirim ayarı metinleri.
+11. Hediye paketleri (aç, yırt, sonuç, oranlar).
+12. Masa ekranı, oyun seç ve oyla, oyun lobisi.
+13. Kibrit, Kinshi, Krot, Sprengja düzeltmeleri.
+14. Signum, Kaupholl, Vampir (üçü de panoya hiç geçirilmedi; güçlü model, ayrı paketler).
+15. Hareket tablosu (71): basma ve seçim eğrisi, satır kalkması, kademeler.
+
+Özelliği olmayan öğeler ve ÖNERİ panoları ayrı paketlerdir (`mimar` dökümü, 18 Kasım): İ1 (uzun basmada Profilini gör ve Engelle, ortak arkadaş listesi 103, semt öneri çipleri, emoji paneli), İ2 (kayıt ÖNERİ'leri, Mekan bilgileri, Yol tarifi), S1 DM sessize alma, S2 şikayet notu, S3 etkinlikte tür ve düzenleyen, S4 DM fotoğrafı, S5 sohbette ara, K2 Masa bitti'de "arkadaş oldunuz" (64a; "onaylandı" ister), S6 sesli mesaj (native). Denetimin eklediği adaylar: mekan detayında Paylaş, DM'de mesajı bildirme, Masa kur'da oyun etiketlerinin yeni altılısı (sunucuda `rooms_game_tag_check` eski altılıya izin veriyor), "Hata kaydını gönder", Profili düzenle'de "bizimle iletişime geç", Süsle'de uzun basınca büyük etiket.
+
+## Proje sahibinin kararını bekleyenler
+
+- Çip ve satır düğmesi boyları (yukarıda).
+- Değişmez kurala değen pano öğeleri (kod bugün göstermiyor): lobi ve Keşfet satırında yüz yığını ve masa sayısı (kural 4, K-41); haritada konum noktası, "Konumuma git" ve uzaklık (kural 6); etkinlikte uzaklık (kural 6) ve "Kampanya" (K-15); İstekler'de "Ortak arkadaş" ve masa adı (kural 4); mekan sohbetinde kişi sayısı, "Mekandakiler" ve "yazıyor" (kural 4, 9; semt sohbetinde 18 Kasım'da kaldırıldı); akışta masa kartı ve kimlik anahtarı (kural 4, §4.Y); Odadakiler'de "Arkadaş ekle" ve anonim satırda kapsül (kural 4, 5); Masa bitti'de yaş ve anonim kapsül (kural 4); ortak arkadaş listesinde tarih ve "Mesaj gönder" (kural 4); sonuç ekranlarında herkese "Yeniden oyna" (kural 3); check-in kimlik adımında herkese anonim (kural 12); kayıt 55'te "masalara katılamazsın" metni (kural 4); Gizlilik'te "Engellenenler 3" sayacı.
+- Panoda olmayıp kodda duranlar (silinsin mi): Kibrit'te sohbet düğmesi ve "Bildir", Sprengja'da "Kelime kuralları", masa kartında "Lobiye aç / Lobiden çek" ve boş koltuk, Bildirimler'de kapat düğmesi ve davette "Reddet", Aktiviteler'de şehir satırı, başkasının profilinde Rozetler (kalkması kararlaştırıldı), DM'de "Okunmamış mesajlar" çizgisi (pano "2 yeni mesaj"; 30 Ekim kararı).
+- "Noktasız" check-in (sunucu nokta ister), "Sohbet kuralları" metni, hediyede "Atla" (8 Kasım: Atla yok), lobide hazır olma ve kişi menüleri, "Mesajı bildirimde göster", "Verilerimin kopyasını iste", "Yakında" üç oyun (İbre, Harf Kapmaca, Şarkıda Geçsin: ekranları ve sunucuları yok).
+- Panonun kendi içinde çelişenler: Süsle'de sekme sayısı (panoda 5, karar 6 sekme: Ağız), hediye oranlarında Efsanevi çubuğu %3 yazısı %1, hediye kartının iki panoda iki ayrı çizimi.
