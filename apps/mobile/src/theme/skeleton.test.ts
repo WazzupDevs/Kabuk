@@ -291,11 +291,16 @@ describe('the tab bar (3.3)', () => {
     expect(x + 3.5 * tab).toBeCloseTo(38);
   });
 
-  it('labelled: icon 22, label 10.5, the chosen one green in its 12 % pill, on springs.tabLead', () => {
-    expect(AURA.tabBar.iconLabelled).toBe(22);
-    expect(code('src/theme/tokens.ts')).toMatch(/tabLabel: \{ font: 'display', size: 10\.5,/);
-    expect(AURA.light.tab.pill).toBe('rgba(14, 135, 69, 0.12)');
-    expect(AURA.light.tab.onInk).toBe('#0E8745');
+  // Yeni arayüz tuvali (Kesfet `.tb`, `.ti`, 16 Kasım) in place of 3.3's green-toned pill.
+  it('labelled: bar 60, tab 50, icon 20, label 10, the chosen one white in its ink pill, on springs.tabLead', () => {
+    expect([AURA.tabBar.height, AURA.tabBar.pillHeight, AURA.tabBar.padding]).toEqual([60, 50, 5]);
+    expect(AURA.tabBar.iconLabelled).toBe(20);
+    expect(code('src/theme/tokens.ts')).toMatch(/tabLabel: \{ font: 'display', size: 10,/);
+    expect(AURA.light.tab.pill).toBe('#031B0B');
+    expect(AURA.light.tab.onInk).toBe('#FFFFFF');
+    expect([AURA.light.tab.iconOn, AURA.light.tab.iconOnBody]).toEqual(['#3DDC84', '#FF6FA0']);
+    expect(AURA.dark.tab.pill).toBe('rgba(255, 255, 255, 0.94)');
+    expect(AURA.dark.tab.onInk).toBe('#0B0E0D');
     expect(code('src/motion/TabBar.tsx')).toMatch(/const spring = MOTION\.springs\.tabLead;/);
     expect(MOTION.springs.tabLead).toEqual({ stiffness: 420, damping: 30, mass: 1 });
   });

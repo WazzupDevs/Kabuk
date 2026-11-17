@@ -72,7 +72,7 @@ Bar bandı: yükseklik 118, zemin #EFF7F1 yüzde 84 ve 22 blur, alt yüzde 28'i 
 
 ### 3.3 Tab bar
 
-- Yüzen cam tab bar, etiketli: ikon 22 ve etiket 10.5. Aktif sekme yeşil tonlu bir hapın içinde (#0E8745 yüzde 12), ikon ve yazı yeşil.
+- Yüzen cam tab bar, etiketli. Yeni arayüz tuvaliyle (16 Kasım; pano `Kesfet` → `.tb`, `.ti`) değişti: bar 60, sekme 50, ikon 20 ve etiket 10; aktif sekme koyu (#031B0B) gölgeli hapın içinde, yazı beyaz, ikonun güçlü parçası yeşil (#3DDC84), gövdesi pembe (#FF6FA0); koyu temada hap beyaz yüzde 94, yazı koyu. (12 Kasım'daki hâli: ikon 22, etiket 10.5, yeşil tonlu hap.)
 - Kaydırma: 120 px'ten sonra aşağı yönde kare başına 3 px'ten hızlı kaydırınca tab bar küçülür; yukarı kaydırınca, 50 px'in altına inince ya da bara basınca açılır. Küçülünce genişlik 350'den 76'ya iner, sadece aktif sekme kalır, diğerleri söner. Hareket `MOTION.springs.tabLead` ile.
 - Alt kenar: 150 px yüksekliğinde, şeffaftan zemine (açıkta #EFF7F1, koyuda #000) geçen, yüzde 70'te tam opak olan bir bant (yeni arayüz tuvaliyle değişti, 17 Kasım; önce 160 px ve en çok yüzde 92); içerik tab barın altına sert kesilmeden girer.
 
