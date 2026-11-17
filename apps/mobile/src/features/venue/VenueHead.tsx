@@ -4,21 +4,31 @@ import { View } from 'react-native';
 
 import { Chip, PulseDot, Round, T, useKit } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
+import { IdentityToggle } from '@/components/IdentityToggle';
 import { Wordmark } from '@/components/Wordmark';
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { tr } from '@/i18n/tr';
-import { Menu, type MenuAnchor, MenuItem, measureMenuAnchor } from '@/motion';
+import {
+  BarArrive,
+  Menu,
+  type MenuAnchor,
+  MenuItem,
+  measureMenuAnchor,
+  ScrollFade,
+} from '@/motion';
+import { TOP_BAR } from '@/motion/TopBar';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { VENUE } from '@/theme/venue';
 
-// Mekan's head (docs/design/iskelet.md → 5.11): the skall wordmark at the left; at the right the
-// spot (a press changes it while there is no table) and the clear "Seçenekler" whose menu grows
-// out of it (3.5): the time at the venue with its bar filling, the check-in's one change of
-// identity, Profil, and "Mekandan ayrıl" apart in red (its confirm sheet, the screen's).
+// Mekan's head (yeni arayüz tuvali: MekanMasa, MekanKaydir; docs/design/iskelet.md → 5.11): the
+// skall wordmark at the left, and once the venue's name has scrolled under the bar the name small
+// with "Mekandasın" in its place; at the right the identity toggle (the check-in's one change:
+// the own capsule or the own photo, the other opens the change, a spent change says so) and the
+// clear "Seçenekler" whose menu grows out of it (3.5): the time at the venue with its bar filling,
+// Profil, and "Mekandan ayrıl" apart in red (its confirm dialog, the screen's).
 export function VenueHead({
-  spot,
-  onSpot,
+  venueName,
   identity,
   atTable,
   minutesLeft,
@@ -26,8 +36,7 @@ export function VenueHead({
   onLeave,
   leaving,
 }: {
-  spot: string | null;
-  onSpot?: () => void;
+  venueName: string;
   identity: { mode: 'anonymous' | 'profiled'; switchUsed: boolean };
   atTable: boolean;
   minutesLeft: number;
@@ -55,23 +64,41 @@ export function VenueHead({
   return (
     <View style={{ gap: SPACING[2] }}>
       <View
-        className="flex-row items-center justify-between"
-        style={{ minHeight: HEAD_HEIGHT, marginTop: VENUE.headTop }}
+        className="flex-row items-center"
+        style={{ minHeight: HEAD_HEIGHT, marginTop: VENUE.headTop, gap: VENUE.headGap }}
       >
-        <View style={{ marginLeft: VENUE.wordmarkIn }}>
-          <WordmarkRow />
+        <View
+          style={{
+            flex: 1,
+            minWidth: 0,
+            alignSelf: 'stretch',
+            justifyContent: 'center',
+            marginLeft: VENUE.wordmarkIn,
+          }}
+        >
+          <ScrollFade fade={BAR_NAME} shrink={BAR_NAME} scaleTo={1}>
+            <WordmarkRow />
+          </ScrollFade>
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
+          >
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+              <BarArrive from={BAR_NAME[0]} to={BAR_NAME[1]}>
+                <BarName name={venueName} />
+              </BarArrive>
+            </View>
+          </View>
         </View>
-        <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
-          {spot ? (
-            // U19: the spot as a chip; a press changes it while there is no table.
-            <Chip
-              md
-              testID={onSpot ? 'change-spot' : undefined}
-              accessibilityLabel={onSpot ? `${spot}, ${tr.venue.changeSpot}` : undefined}
-              label={spot}
-              onPress={onSpot}
-            />
-          ) : null}
+        <View className="flex-row items-center" style={{ gap: VENUE.headGap }}>
+          <IdentityToggle
+            testID="venue-identity"
+            size={VENUE.toggle}
+            mode={identity.mode}
+            locked={identity.switchUsed}
+            onPick={() => setAsking(true)}
+            onLocked={() => setUsedNote(true)}
+          />
           <View ref={moreRef} collapsable={false}>
             <Round
               glass="clear"
@@ -87,22 +114,6 @@ export function VenueHead({
       {anchor ? (
         <Menu anchor={anchor} visible={menu} onClose={() => setMenu(false)}>
           <Stay minutesLeft={minutesLeft} share={stayShare} />
-          <MenuItem
-            testID="identity-switch"
-            cap={anonymous ? 'personCircle' : 'eyeOff'}
-            label={anonymous ? tr.identity.toProfile : tr.identity.toAnonymous}
-            note={
-              identity.switchUsed
-                ? tr.identity.used
-                : anonymous
-                  ? tr.identity.toProfileNote
-                  : tr.identity.toAnonymousNote
-            }
-            onPress={() => {
-              if (identity.switchUsed) setUsedNote(true);
-              else setAsking(true);
-            }}
-          />
           <MenuItem
             testID="venue-profile"
             cap="user"
@@ -132,6 +143,36 @@ export function VenueHead({
 
 // The canvas's head row: its 46 clear round (iskelet.md → 2.1).
 const HEAD_HEIGHT = KIT.size.topBtn;
+// The wordmark gives way to the venue's small name over the large title's bar range (3.1).
+const BAR_NAME = TOP_BAR.buyukBaslik.barTitle;
+
+// The scrolled bar's venue (MekanKaydir `.sv`): the name small on one line, "Mekandasın" with its
+// dot 2 under it. A copy of what the page says; the screen reader reads the page's.
+function BarName({ name }: { name: string }) {
+  const { scheme } = useKit();
+  const here = VENUE[scheme].here;
+  const B = VENUE.bar;
+  return (
+    <View style={{ gap: B.lineGap }}>
+      <T v="venueBarName" ink lines={1} fit>
+        {name}
+      </T>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: B.dotGap }}>
+        <View
+          style={{
+            width: B.dot,
+            height: B.dot,
+            borderRadius: B.dot / 2,
+            backgroundColor: here.ink,
+          }}
+        />
+        <T v="venueBarHere" color={here.ink}>
+          {tr.venue.here}
+        </T>
+      </View>
+    </View>
+  );
+}
 // The note that the one change is spent stays this long.
 const USED_NOTE_MS = 2600;
 
@@ -189,13 +230,20 @@ export function WordmarkRow({ small }: { small?: boolean } = {}) {
 const WORDMARK_HEIGHT = 28;
 const WORDMARK_SMALL = 26;
 
-// The venue's name alone, large (23/800), and 6 under it "Mekandasın" on its green pill with its
-// beating dot (iskelet.md → 5.11; tuval Mekan). A long name shrinks to fit its two lines rather
-// than ending in "…".
-export function VenueNameRow({ name }: { name: string }) {
+// The venue's name alone, large (`.vn`), and 8 under it "Mekandasın" on its green pill with its
+// beating dot, the spot's chip beside it (MekanMasa; iskelet.md → 5.11). A long name shrinks to
+// fit its two lines rather than ending in "…".
+export function VenueNameRow({
+  name,
+  spot,
+  onSpot,
+}: {
+  name: string;
+  spot: string | null;
+  onSpot?: () => void;
+}) {
   const { scheme } = useKit();
   const here = VENUE[scheme].here;
-  const H = VENUE.here;
   return (
     <View style={{ gap: VENUE.titleGap, paddingHorizontal: VENUE.titleIn }}>
       <T v="venueName" accessibilityRole="header" testID="venue-name" lines={2} fit>
@@ -203,22 +251,49 @@ export function VenueNameRow({ name }: { name: string }) {
       </T>
       <View
         style={{
-          alignSelf: 'flex-start',
-          minHeight: H.height,
-          paddingLeft: H.padLeft,
-          paddingRight: H.padRight,
-          borderRadius: H.height / 2,
-          backgroundColor: here.fill,
           flexDirection: 'row',
+          flexWrap: 'wrap',
           alignItems: 'center',
-          gap: H.gap,
+          gap: VENUE.hereRowGap,
         }}
       >
-        <PulseDot color={here.dot} size={H.dot} />
-        <T v="hereTag" color={here.ink}>
-          {tr.venue.here}
-        </T>
+        <HereTag ink={here.ink} fill={here.fill} dot={here.dot} />
+        {spot ? (
+          // U19: the spot as a chip beside it (the board's bar has no room for it); a press
+          // changes it while there is no table.
+          <Chip
+            md
+            testID={onSpot ? 'change-spot' : undefined}
+            accessibilityLabel={onSpot ? `${spot}, ${tr.venue.changeSpot}` : undefined}
+            label={spot}
+            onPress={onSpot}
+          />
+        ) : null}
       </View>
+    </View>
+  );
+}
+
+// "Mekandasın" on its green pill with its beating dot.
+function HereTag({ ink, fill, dot }: { ink: string; fill: string; dot: string }) {
+  const H = VENUE.here;
+  return (
+    <View
+      style={{
+        minHeight: H.height,
+        paddingLeft: H.padLeft,
+        paddingRight: H.padRight,
+        borderRadius: H.height / 2,
+        backgroundColor: fill,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: H.gap,
+      }}
+    >
+      <PulseDot color={dot} size={H.dot} />
+      <T v="hereTag" color={ink}>
+        {tr.venue.here}
+      </T>
     </View>
   );
 }

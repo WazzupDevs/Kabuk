@@ -19,12 +19,18 @@ export type ToastMessage = {
   action?: { label: string; onPress: () => void; testID?: string };
   // Something before the words (an icon, 22).
   lead?: ReactNode;
+  // Stays without a button too, until the caller clears or replaces it (a request waiting for its
+  // answer, MasaIstekBekliyor).
+  stay?: boolean;
 };
 
 type Props = {
   message: ToastMessage | null;
   // Where it floats from the top of its parent.
   top?: number;
+  // Or from its parent's foot (Mekan's request notice over the tab bar, MasaIstekBekliyor `.snk`):
+  // it then comes up into place rather than down.
+  bottom?: number;
   testID?: string;
 };
 
@@ -35,7 +41,7 @@ export const TOAST_TOP = SPACING[16] - SPACING[0.5];
 // round, title 14/600, a line under it, a 36 button at the end. It sits over the content and lets
 // touches through except on its own button. Screen readers hear it once, announced. Its values
 // are KIT.layer's.
-export function Toast({ message, top = TOAST_TOP, testID }: Props) {
+export function Toast({ message, top = TOAST_TOP, bottom, testID }: Props) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const layer = KIT.layer[scheme];
@@ -51,7 +57,7 @@ export function Toast({ message, top = TOAST_TOP, testID }: Props) {
   const stays = useRef(false);
   useEffect(() => {
     said.current = message ? [message.title, message.sub].filter(Boolean).join('. ') : '';
-    stays.current = !!message?.action;
+    stays.current = !!message?.action || !!message?.stay;
   }, [message]);
 
   useEffect(() => {
@@ -81,7 +87,7 @@ export function Toast({ message, top = TOAST_TOP, testID }: Props) {
       testID={testID}
       style={{
         position: 'absolute',
-        top,
+        ...(bottom === undefined ? { top } : { bottom }),
         left: size.toastSide,
         right: size.toastSide,
         opacity: progress.interpolate({
@@ -91,7 +97,10 @@ export function Toast({ message, top = TOAST_TOP, testID }: Props) {
         }),
         transform: [
           {
-            translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [TOAST.fromY, 0] }),
+            translateY: progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [bottom === undefined ? TOAST.fromY : -TOAST.fromY, 0],
+            }),
           },
           {
             scale: progress.interpolate({ inputRange: [0, 1], outputRange: [TOAST.fromScale, 1] }),

@@ -862,7 +862,8 @@ export const tr = {
     // In place of the pending note for a few seconds once the request is accepted.
     newTitle: 'Masanı lobiye aç',
     newHint: 'Mekandaki masalar seni lobide görür ve katılmak isteyebilir.',
-    intentLabel: 'Niyetin (isteğe bağlı)',
+    intentLabel: 'Niyetin',
+    intentOptional: '· isteğe bağlı',
     intentHint: {
       game: 'Oyun oynamak istiyorsun.',
       chat: 'Sohbet etmek istiyorsun. Oyun yine önerilebilir.',
@@ -2133,6 +2134,10 @@ export const tr = {
     invite: 'Davet et',
     // iskelet.md → 5.11: the card's state at its picture's corner and the sentence under the faces.
     statusFull: 'Dolu',
+    // In the lobby and full (MekanMasaDolu).
+    statusLobbyFull: 'Lobide · Dolu',
+    // The phones at a table out of the 12 (MekanMasa `.cn`, the lobby's rows).
+    seatsCount: (n: number, max: number) => `${n}/${max}`,
     seatsAlone: 'Sadece sen varsın',
     seated: (n: number) => `${n} kişi oturuyor`,
     seatsFull: 'Masa dolu. Biri kalkınca yer açılır.',

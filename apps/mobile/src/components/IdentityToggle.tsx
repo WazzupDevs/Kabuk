@@ -15,8 +15,7 @@ import { gradientStyle } from '@/theme/gradient';
 
 import { LookAvatar } from './LookAvatar';
 
-const S = KIT.identityToggle;
-const FACE = S.slot - S.ring * 2;
+const BASE = KIT.identityToggle;
 
 // Who the viewer writes as, in the venue and the semt chat's top bar (the owner's call, 8 Kasım):
 // the own capsule (anonymous) and the own photo (profiled), the chosen one raised. Tapping the other
@@ -29,6 +28,7 @@ export function IdentityToggle({
   onPick,
   onLocked,
   testID,
+  size,
 }: {
   mode: VenueChatMode;
   locked: boolean;
@@ -36,8 +36,12 @@ export function IdentityToggle({
   onPick: (mode: VenueChatMode) => void;
   onLocked: () => void;
   testID?: string;
+  // A board's own slots and rim (Mekan's bar: 36 in a 3 rim); the chats' 30 in a 2 otherwise.
+  size?: { slot: number; pad: number };
 }) {
   const { c } = useKit();
+  const S = size ? { ...BASE, ...size } : BASE;
+  const FACE = S.slot - S.ring * 2;
   const photo = useOwnPhoto();
   const look = useOwnLook();
   const capsule = look ? (

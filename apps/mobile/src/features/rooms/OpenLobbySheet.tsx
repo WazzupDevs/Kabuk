@@ -71,8 +71,8 @@ export function OpenLobbySheet({
       onClose={onClose}
       title={tr.rooms.newTitle}
       footer={
-        // "Lobiye aç" at the sheet's foot, whatever the chips' height (K4); "Vazgeç" small under it:
-        // a press outside and a swipe down close the sheet as well (15.4).
+        // "Lobiye aç" at the sheet's foot, whatever the chips' height (K4); a press outside, a swipe
+        // down and the back button close the sheet (MekanLobiAc draws no "Vazgeç").
         <View style={{ gap: KIT.size.rowGap }}>
           {open.isError ? (
             <T v="fine" color={KIT.danger} accessibilityLiveRegion="polite">
@@ -86,13 +86,6 @@ export function OpenLobbySheet({
             label={tr.venue.openLobby}
             onPress={() => open.mutate()}
             loading={open.isPending}
-          />
-          <Btn
-            sm
-            variant="glassy"
-            label={tr.common.cancel}
-            onPress={onClose}
-            style={{ alignSelf: 'center' }}
           />
         </View>
       }

@@ -1,15 +1,16 @@
 import { isIntent, JOIN_REQUEST_TTL_SECONDS, requesterStatus } from '@shared/rooms.ts';
 import { groupRoomsBySpot } from '@shared/spots.ts';
+import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { lobbyActions, requestGone, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { type ReactNode, useEffect, useReducer, useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 
-import { Btn, Li, RowList, T, Tag, Thumb, useKit } from '@/aura/kit';
-import { Pips } from '@/aura/Pips';
+import { Btn, Li, RowList, T, Tag, useKit } from '@/aura/kit';
 import { Reveal } from '@/aura/Reveal';
 import { EmptyState } from '@/components/EmptyState';
+import type { ToastMessage } from '@/components/Toast';
 import { EmptyCard } from '@/features/explore/EmptyCard';
 import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
@@ -21,11 +22,11 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNowUntil } from '@/lib/useNow';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { SPACING } from '@/theme/tokens';
 import { VENUE } from '@/theme/venue';
 
 import { roomKeys, useMyRequest, useVenueTables, type VenueTable } from './queries';
 import { SpotHeading } from './SpotHeading';
+import { TableThumb } from './TableCard';
 import { TABLE_ICON_IMAGES } from './tableIconImages';
 
 // After "Kabul edildi" the table opens by itself (v46: the row's note, then the table).
@@ -49,13 +50,18 @@ type Props = {
   myPhones: number;
   // A profiled identity without a visible photo can neither ask nor sit (photo_required).
   needsPhoto: boolean;
+  // The request's notice over the tab bar (the screen's Toast): waiting with its seconds, "Masa şu
+  // an müsait değil" or "Kabul edildi"; null once there is nothing to say.
+  onNotice: (notice: ToastMessage | null) => void;
 };
 
-// Mekan's lobby (v46 "mekan"; docs/SPEC_V4.md §4.E): "Açık masalar" with "Katıl" and "Süren
-// masalar" with "Bu masadayım", one read of venue_tables. "Katıl": a person without a table alone, an
-// owner with the whole table; a participant leaves first. A request waits 60 s on its row; a refusal
-// and a time-out look the same ("Masa şu an müsait değil", rule 5); an accepted one opens the table.
-// At a venue with spots the tables are grouped by spot, the person's own first.
+// Mekan's lobby (yeni arayüz tuvali: MekanKaydir, MasaIstekBekliyor, MasaIstekMusaitDegil,
+// MasaBuradayim; docs/SPEC_V4.md §4.E): "Açık masalar" with "Katıl" and "Süren masalar" with "Bu
+// masadayım", one read of venue_tables. "Katıl": a person without a table alone, an owner with the
+// whole table; a participant leaves first. A request waits 60 s, its row's button passive and the
+// notice over the tab bar counting down; a refusal and a time-out look the same ("Masa şu an müsait
+// değil", rule 5); an accepted one opens the table. At a venue with spots the tables are grouped by
+// spot, the person's own first.
 export function Lobby({
   venueId,
   sessionId,
@@ -66,6 +72,7 @@ export function Lobby({
   roomId,
   myPhones,
   needsPhoto,
+  onNotice,
 }: Props) {
   const queryClient = useQueryClient();
   const tables = useVenueTables(venueId);
@@ -158,17 +165,52 @@ export function Lobby({
       ? tr.lobby.leaveFirst
       : ownerNote;
 
-  const rowNote = (table: VenueTable): string | null => {
-    if (!mine.data || mine.data.roomId !== table.roomId) return null;
-    if (status === 'pending') {
-      const left = Math.max(0, Math.ceil((Date.parse(mine.data.expiresAt) - now) / 1000));
-      return tr.lobby.waiting(Math.min(left, JOIN_REQUEST_TTL_SECONDS));
+  // The request's notice (MasaIstekBekliyor, MasaIstekMusaitDegil): what the row said before, now
+  // over the tab bar. Waiting, it stays and counts down; a refusal and a time-out say the same.
+  const requestId = mine.data?.id ?? null;
+  const tableName = (id: string) =>
+    [...(tables.data?.open ?? []), ...(tables.data?.running ?? [])].find((t) => t.roomId === id)
+      ?.name ?? (asked?.roomId === id ? asked.name : null);
+  const left =
+    mine.data && status === 'pending'
+      ? Math.min(
+          JOIN_REQUEST_TTL_SECONDS,
+          Math.max(0, Math.ceil((Date.parse(mine.data.expiresAt) - now) / 1000)),
+        )
+      : null;
+  const acceptedName = accepted ? tableName(accepted) : null;
+  const noticeKind: 'waiting' | 'accepted' | 'unavailable' | null =
+    left !== null
+      ? 'waiting'
+      : acceptedName
+        ? 'accepted'
+        : unavailable && unavailable === askedRoom
+          ? 'unavailable'
+          : null;
+  const noticeTitle =
+    noticeKind === 'waiting'
+      ? tr.lobby.waiting(left ?? 0)
+      : noticeKind === 'accepted'
+        ? tr.lobby.accepted(acceptedName ?? '')
+        : noticeKind === 'unavailable'
+          ? tr.lobby.unavailable
+          : null;
+  useEffect(() => {
+    if (!noticeKind || !noticeTitle || !requestId) {
+      onNotice(null);
+      return;
     }
-    if (status === 'accepted')
-      return accepted === table.roomId ? tr.lobby.accepted(table.name) : null;
-    if (asked?.roomId === table.roomId) return tr.lobby.unavailable;
-    return null;
-  };
+    onNotice({
+      id: `${requestId}:${noticeKind}`,
+      title: noticeTitle,
+      stay: noticeKind === 'waiting',
+      lead:
+        noticeKind === 'waiting' ? (
+          <Loader kind="meet" size={VENUE.notice.lead} delay={0} label={null} />
+        ) : undefined,
+    });
+  }, [noticeKind, noticeTitle, requestId, onNotice]);
+  useEffect(() => () => onNotice(null), [onNotice]);
 
   const groups = (list: VenueTable[]) =>
     groupRoomsBySpot(
@@ -176,9 +218,13 @@ export function Lobby({
       mySpotId,
     );
 
+  const L = VENUE.lobby;
   return (
     <View className="gap-3" testID="lobby">
-      <SectionHead title={tr.lobby.openTitle} count={read ? open.length : null} />
+      <SectionHead
+        title={tr.lobby.openTitle}
+        count={read && open.length > 0 ? open.length : null}
+      />
       {note ? <T v="fine">{note}</T> : null}
       {tables.isPending ? (
         <View className="items-center py-4" accessibilityLabel={tr.lobby.loading}>
@@ -198,30 +244,32 @@ export function Lobby({
             {venueHasSpots ? (
               <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
             ) : null}
-            <RowList>
+            <RowList plain inset={L.row.picture + L.row.gap}>
               {group.rooms.map((table, i) => {
                 const actions = lobbyActions(state, myPhones, table.phones);
                 const busy = request.isPending && request.variables?.table.roomId === table.roomId;
                 const waiting = waitingOn === table.roomId;
+                const full = actions.full || table.phones >= MAX_TABLE_PHONES;
                 return (
                   <Reveal key={table.roomId} index={i} step={MOTION.stagger.row}>
                     <LobbyRow
                       table={table}
                       narrow={narrow}
-                      note={rowNote(table)}
+                      line={tr.venue.seatsCount(table.phones, MAX_TABLE_PHONES)}
                       action={
-                        actions.join && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                        actions.join && !needsPhoto && accepted !== table.roomId ? (
                           <Btn
                             sm
-                            icon="forward"
+                            variant="glassy"
                             testID={`join-${table.name}`}
-                            label={tr.lobby.join}
-                            disabled={actions.full || waitingOn !== null}
+                            label={full ? tr.venue.statusFull : tr.lobby.join}
+                            disabled={full || waitingOn !== null}
                             loading={busy}
                             onPress={() => request.mutate({ table, asMember: false })}
+                            look={{ padLeft: 0, padRight: 0 }}
+                            style={{ width: L.join }}
+                            accessibilityLabel={waiting ? tr.lobby.waiting(left ?? 0) : undefined}
                           />
-                        ) : waiting ? (
-                          <WaitingSlot />
                         ) : null
                       }
                     />
@@ -236,12 +284,12 @@ export function Lobby({
       {/* No running table, no heading and no note (the canvas's call, 31 Ekim; the owner's report,
           10 Kasım: an empty "Süren masalar" stood alone under the open ones). */}
       {read && running.length > 0 ? (
-        <SectionHead title={tr.lobby.runningTitle} count={running.length} />
-      ) : null}
-      {read && running.length > 0 ? (
-        <T v="fine">
-          {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
-        </T>
+        <View style={{ marginTop: L.runningTop, gap: L.noteTop }}>
+          <SectionHead title={tr.lobby.runningTitle} count={running.length} />
+          <T v="fine">
+            {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
+          </T>
+        </View>
       ) : null}
       {/* By spot as well, the person's own first (audit VEN-13): "Bu masadayım" to a table at
           another spot only met different_spot. */}
@@ -250,7 +298,7 @@ export function Lobby({
           {venueHasSpots ? (
             <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
           ) : null}
-          <RowList>
+          <RowList plain inset={L.row.picture + L.row.gap}>
             {group.rooms.map((table, i) => {
               const actions = lobbyActions(state, myPhones, table.phones);
               const busy = request.isPending && request.variables?.table.roomId === table.roomId;
@@ -260,9 +308,10 @@ export function Lobby({
                   <LobbyRow
                     table={table}
                     narrow={narrow}
-                    note={rowNote(table)}
+                    line={tr.venue.people(table.phones)}
+                    running
                     action={
-                      actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                      actions.member && !needsPhoto && accepted !== table.roomId ? (
                         <Btn
                           sm
                           variant="glassy"
@@ -271,9 +320,9 @@ export function Lobby({
                           disabled={waitingOn !== null}
                           loading={busy}
                           onPress={() => request.mutate({ table, asMember: true })}
+                          look={{ padLeft: L.herePadX, padRight: L.herePadX }}
+                          accessibilityLabel={waiting ? tr.lobby.waiting(left ?? 0) : undefined}
                         />
-                      ) : waiting ? (
-                        <WaitingSlot />
                       ) : null
                     }
                   />
@@ -293,28 +342,18 @@ export function Lobby({
   );
 }
 
-// The heading with its count beside it (iskelet.md → 5.11: the tables shown in the lobby; never a
-// spot's count, rule 6; tuval Mekan: 21/800, its count 13/600 8 after it, 10 under what is above
-// it and 6 in). No count while the section is empty: its empty card already says so.
+// The heading with the tables' count beside it (`.oh`: "6 masa", never a spot's count, rule 6).
+// No count while the section is empty: its empty card already says so.
 function SectionHead({ title, count }: { title: string; count: number | null }) {
-  const { scheme } = useKit();
-  const L = VENUE.lobby;
+  const { c } = useKit();
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'baseline',
-        gap: L.headGap,
-        paddingTop: L.headTop,
-        paddingHorizontal: L.headIn,
-      }}
-    >
-      <T v="exploreSection" ink accessibilityRole="header">
+    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: VENUE.lobby.headGap }}>
+      <T v="venueSection" ink accessibilityRole="header">
         {title}
       </T>
       {count ? (
-        <T v="exploreCount" color={VENUE[scheme].count} tabular>
-          {String(count)}
+        <T v="kesfetCount" color={c.muted} tabular>
+          {tr.lobby.tables(count)}
         </T>
       ) : null}
     </View>
@@ -325,51 +364,71 @@ function SectionHead({ title, count }: { title: string; count: number | null }) 
 const NARROW_ROW_DP = 360;
 const MAX_FONT_SCALE = 1.3;
 
-// A table in the lobby (docs/design/aura → Mekan: `.li`): its picture, name, headcount as pips and
-// the request's note or the tags; its action at the right. No person's name. A thin row of the one
-// list kind (RowList; the owner's call, 30 Ekim). `narrow`: the action under the words, in line
-// with them; the tags wrap.
+// A table in the lobby (MekanKaydir `.orw`): its square picture in its edge, the name, and under it
+// the intent's tag and the phones out of 12 (a running table: its phones); the action at the right.
+// No person's name and no face (rule 4: the lobby carries the name, the picture, the phones, the
+// intent and the game tag only). On the ground, a hairline between rows. `narrow`: the action
+// under the words, in line with them; the tags wrap.
 function LobbyRow({
   table,
-  note,
+  line,
   action,
   narrow,
+  running,
 }: {
   table: VenueTable;
-  note: string | null;
-  action?: ReactNode;
+  line: string;
+  action: ReactNode;
   narrow: boolean;
+  running?: boolean;
 }) {
-  const intent = isIntent(table.intent) ? table.intent : null;
+  const { scheme, c } = useKit();
+  const intent = !running && isIntent(table.intent) ? table.intent : null;
+  const R = VENUE.lobby.row;
+  const T_ = VENUE.lobby.tag;
+  const tagLook = VENUE[scheme].tag;
   return (
-    <Li testID={`lobby-row-${table.name}`} top={narrow}>
-      <Thumb
-        source={table.icon ? TABLE_ICON_IMAGES[table.icon] : undefined}
-        size={KIT.size.av.row}
-        radius={ROW_THUMB_RADIUS}
+    <Li testID={`lobby-row-${table.name}`} top={narrow} padY={R.padY} gap={R.gap}>
+      <TableThumb
+        picture={table.icon ? TABLE_ICON_IMAGES[table.icon] : undefined}
+        size={R.picture}
+        radius={R.radius}
+        edge={R.edge}
       />
-      <View style={{ flex: 1, gap: narrow ? ROW_GAP_NARROW : ROW_GAP }}>
-        <T v="h3">{table.name}</T>
+      <View style={{ flex: 1, minWidth: 0, gap: R.lineGap }}>
+        <T v="mapName" ink>
+          {table.name}
+        </T>
         <View
           style={{
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignItems: 'center',
-            gap: KIT.size.chipsGap,
+            gap: R.partGap,
           }}
         >
-          <Pips count={table.phones} />
-          <T v="fine">{tr.venue.people(table.phones)}</T>
-          {note ? null : intent ? (
-            <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
+          {intent ? (
+            <View
+              style={{
+                minWidth: T_.width,
+                height: T_.height,
+                paddingHorizontal: T_.padX,
+                borderRadius: T_.height / 2,
+                backgroundColor: tagLook.bg,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <T v="tag" color={tagLook.fg}>
+                {tr.intents[intent]}
+              </T>
+            </View>
           ) : null}
-          {note || !table.gameTag ? null : <Tag label={tr.concepts[table.gameTag]} />}
-        </View>
-        {note ? (
-          <T v="fine" accessibilityLiveRegion="polite">
-            {note}
+          <T v="tag" color={c.muted} tabular>
+            {line}
           </T>
-        ) : null}
+          {running || !table.gameTag ? null : <Tag label={tr.concepts[table.gameTag]} />}
+        </View>
         {narrow && action ? (
           <View style={{ paddingTop: ROW_ACTION_TOP, alignItems: 'flex-start' }}>{action}</View>
         ) : null}
@@ -378,31 +437,7 @@ function LobbyRow({
     </Li>
   );
 }
-const ROW_GAP = 3;
-const ROW_GAP_NARROW = 6;
 const ROW_ACTION_TOP = 4;
-const ROW_THUMB_RADIUS = 14;
-
-// The pending request in the action's place: the meeting capsules on a raised capsule.
-function WaitingSlot() {
-  const { c } = useKit();
-  return (
-    <View
-      style={{
-        height: KIT.size.btnSm,
-        paddingHorizontal: KIT.size.btnPadXSm + SPACING[2],
-        borderRadius: KIT.size.btnSm,
-        backgroundColor: c.raised,
-        borderWidth: KIT.size.edge,
-        borderColor: c.raisedEdge,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
-    </View>
-  );
-}
 
 // U19: no open table. The riso 160 × 110, 22 round on the raised shadow; the title on one line, the
 // note at most 280 wide (Mekan).
