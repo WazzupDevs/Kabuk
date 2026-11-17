@@ -12,17 +12,8 @@ import {
 } from '@shared/sahtekarGame.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -37,21 +28,17 @@ import { roomsApi, sahtekarApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
-import { KROT as KR, KROT_TYPE as KTY } from '@/theme/krot';
-import { RISO as R, RISO_PANEL_WIDTH, risoDeck } from '@/theme/riso';
+import { KROT as KR, KROT_BOARD, KROT_BOARD_TYPE, KROT_TYPE as KTY } from '@/theme/krot';
+import { RISO as R, risoDeck } from '@/theme/riso';
 import { LOBBY } from '@/theme/lobby';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { useAdvanceClock } from '@/features/games/useAdvanceClock';
-import { ScreenStatusBar, StatusScrim } from '@/components/StatusScrim';
 
 import {
-  Buddy,
-  ChatRound,
   Deck,
   Face,
   type Faces,
-  FaceStack,
   GameTopBar,
   nameOf,
   PeekPair,
@@ -68,6 +55,7 @@ import {
   LobbyRules,
   LobbyWatchers,
 } from '../GameLobby';
+import { KrotBar, KrotCard, KrotHold, KrotRow, type KrotRowKind, KrotSection } from './KrotBoard';
 import { krotArt } from './krotArt';
 import {
   krotGuessLine,
@@ -82,7 +70,6 @@ import {
   ImpostorCard,
   Lineup,
   type LineupSeat,
-  NextRow,
   PhasePill,
   ReadyChip,
   RoleFace,
@@ -295,12 +282,15 @@ type Shared = {
   state: SahtekarGameState;
   faces: Faces;
   top: ReactNode;
+  close: { label: string; onPress: () => void; testID: string };
   view: SahtekarView | undefined;
   viewError: string | null;
   // The phase's time: the capsule's stage, the number and what screen readers hear.
   clock: StageClock;
   // "Rolüm" held: the role card in place of the line-up.
   peeking: boolean;
+  // The finger on "Rolüm" (down / up).
+  onPeek: (on: boolean) => void;
 };
 
 function Play({
@@ -353,17 +343,12 @@ function Play({
     state.phase === 'role' || guessing ? null : (
       <Round icon="eye" label={tr.krot.myRole} onHold={peek} testID="krot-my-role" />
     );
-  const top = (
-    <GameTopBar
-      close={{
-        label: owner ? tr.krot.endGame : tr.krot.exit,
-        onPress: onExit,
-        testID: 'krot-exit',
-      }}
-      middle={<PhasePill label={label} />}
-      right={right}
-    />
-  );
+  const closeBar = {
+    label: owner ? tr.krot.endGame : tr.krot.exit,
+    onPress: onExit,
+    testID: 'krot-exit',
+  };
+  const top = <GameTopBar close={closeBar} middle={<PhasePill label={label} />} right={right} />;
   const clock: StageClock = {
     endsAt: Date.parse(state.endsAt),
     total: PHASE_SECONDS[state.phase],
@@ -374,10 +359,12 @@ function Play({
     state,
     faces,
     top,
+    close: closeBar,
     view: view.data,
     viewError: view.error ? errorMessage(view.error) : null,
     clock,
     peeking,
+    onPeek: peek,
   };
   if (state.phase === 'role') return <RoleScreen key={state.step} {...shared} />;
   if (state.phase === 'clue') return <ClueScreen {...shared} />;
@@ -561,12 +548,15 @@ function Middle({
   );
 }
 
-// İpucu turu (KrotIpucu, KrotSiraSende): who speaks, ringed in --signal, the others dimmed; who is
-// next under the line-up; the speaker's Söyledim.
+// İpucu turu (KrotIpucu, 145 of the new interface boards): the bar with the phase and the time, the
+// card with whose turn it is, the people in the clue order with who has spoken, who is next and
+// who waits, "Rolüm, basılı tut" held to see one's role, and the speaker's Söyledim. Held, the role
+// card takes the list's place (not drawn on the board, as before).
 function ClueScreen(shared: Shared) {
-  const { roomId, state, faces, top, clock } = shared;
+  const { roomId, state, faces, close, clock } = shared;
   const { colors } = useTheme();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
   const me = faces.me;
   const speaker = state.speaker;
   const mine = speaker === me;
@@ -575,51 +565,90 @@ function ClueScreen(shared: Shared) {
     mutationFn: () => sahtekarApi.said(roomId, state.step),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }),
   });
-  const seats = seatsOf(state, faces, (sid) =>
-    sid === speaker ? { mark: 'speak' } : { dim: true },
-  );
+  const turn = speaker ? state.seats.indexOf(speaker) : -1;
+  const row = (sid: string, i: number, first: boolean) => {
+    const out = state.gone.includes(sid);
+    const kind: KrotRowKind = out ? 'gone' : sid === speaker ? 'speaker' : 'plain';
+    const line = out
+      ? undefined
+      : sid === speaker
+        ? mine
+          ? tr.krot.yourTurn
+          : tr.krot.speakingNow
+        : turn >= 0 && i < turn
+          ? tr.krot.spoke
+          : sid === state.next
+            ? tr.krot.upNext
+            : tr.krot.waiting;
+    return <KrotRow key={sid} faces={faces} sid={sid} kind={kind} line={line} first={first} />;
+  };
   return (
-    <Page testID={mine ? 'krot-clue-mine' : 'krot-clue'}>
-      <StageFit
-        status={
-          <>
-            {top}
-            <Strip
-              clock={clock}
-              title={
-                mine ? tr.krot.yourTurn : speaker ? tr.krot.speaking(nameOf(faces, speaker)) : ''
-              }
-              line={<T v="fine">{mine ? tr.krot.sayOne : tr.krot.listen}</T>}
-            />
-          </>
-        }
-        actions={
-          mine ? (
+    <View testID={mine ? 'krot-clue-mine' : 'krot-clue'} style={{ flex: 1 }}>
+      <AuraBackground />
+      <View
+        style={{
+          flex: 1,
+          paddingTop: insets.top + KROT_BOARD.bar.top,
+          paddingBottom: insets.bottom + SPACING[4],
+          paddingHorizontal: KIT.size.side,
+        }}
+      >
+        <StageFit
+          status={
+            <>
+              <KrotBar
+                close={close}
+                title={tr.krot.phase.clue(state.round, SAHTEKAR_GAME.clueRounds)}
+                clock={clock}
+              />
+              {mine ? (
+                <KrotCard
+                  kick={upperTr(tr.krot.yourTurn)}
+                  title={tr.krot.sayShort}
+                  note={tr.krot.sayOne}
+                />
+              ) : (
+                <KrotCard
+                  title={speaker ? tr.krot.speaking(nameOf(faces, speaker)) : ''}
+                  note={tr.krot.listen}
+                />
+              )}
+            </>
+          }
+          actions={
             <>
               {said.error ? (
                 <T v="fine" color={KIT.danger} center>
                   {errorMessage(said.error)}
                 </T>
               ) : null}
-              <Btn
-                block
-                icon="check"
-                testID="krot-said"
-                label={tr.krot.said}
-                fill={colors.signal}
-                tint={colors.onSignal}
-                loading={said.isPending}
-                onPress={() => said.mutate()}
-              />
+              <KrotHold onHold={shared.onPeek} />
+              {mine ? (
+                <Btn
+                  block
+                  tall
+                  icon="check"
+                  testID="krot-said"
+                  label={tr.krot.said}
+                  fill={colors.signal}
+                  tint={colors.onSignal}
+                  loading={said.isPending}
+                  onPress={() => said.mutate()}
+                />
+              ) : null}
             </>
-          ) : undefined
-        }
-      >
-        <Middle shared={shared} seats={seats} peek={mine ? FAR : NEAR}>
-          {state.next ? <NextRow faces={faces} sid={state.next} /> : null}
-        </Middle>
-      </StageFit>
-    </Page>
+          }
+        >
+          {shared.peeking ? (
+            <RoleDeck open shared={shared} pill={false} />
+          ) : (
+            <View style={{ gap: KROT_BOARD.rowsGap }}>
+              {state.seats.map((sid, i) => row(sid, i, i === 0))}
+            </View>
+          )}
+        </StageFit>
+      </View>
+    </View>
   );
 }
 
@@ -955,16 +984,12 @@ function Pregame({
     </GameLobby>
   );
 }
-const boxStyle = {
-  paddingVertical: R.box.padY,
-  paddingHorizontal: R.box.padX,
-  gap: R.box.gap,
-} as const;
 
-// Oyun sonu (KrotOyunSonu): the scene on the wall (confetti, the impostor ringed in --buzz under
-// "Sahtekar", two buddies), "Oyun bitti", who won and why, the impostor and the word, "Doğru oy
+// Oyun sonu (KrotSonuc, 146 of the new interface boards): "Oyun bitti" and the chat in the bar, who
+// won and why, the word with its category, the impostor (tagged "Yakalandı" when caught), "Doğru oy
 // verenler", Masaya dön and the owner's Yeniden oyna. An impostor who left keeps their role hidden
-// (impostorSeats has them not): "Sahtekar oyundan çıktı".
+// (impostorSeats has them not): "Sahtekar oyundan çıktı". The board's "tahmin" is not drawn: the
+// guess is never kept (§4.F).
 function End({
   roomId,
   result,
@@ -982,18 +1007,13 @@ function End({
 }) {
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
   const { c } = useKit();
-  const { width } = useWindowDimensions();
-  // The scene scales across as a whole on a narrower screen (as Kinshi's, kinshi-320dp.md).
-  const k = Math.min(1, width / RISO_PANEL_WIDTH);
   const again = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.openGame(roomId, 'sahtekar', true),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }),
   });
-  const E = KR.end;
-  const L = KR.lineup;
+  const E = KROT_BOARD.end;
   const impostors = result.impostorSeats;
   const won =
     result.winner === 'table'
@@ -1003,187 +1023,108 @@ function End({
         : tr.krot.impostorLeft;
   const guess = krotGuessLine(result.guessedRight);
   const guessLine = guess ? tr.krot[guess] : null;
-  const sceneTop = insets.top - R.statusBar;
   return (
     <View testID="krot-end" style={{ flex: 1 }}>
       <AuraBackground />
       <View
-        pointerEvents="none"
         style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          height: E.height + sceneTop,
-          overflow: 'hidden',
-          borderBottomLeftRadius: E.radius,
-          borderBottomRightRadius: E.radius,
-        }}
-      >
-        <Image
-          source={krotArt.lineup}
-          style={StyleSheet.absoluteFill}
-          contentFit="fill"
-          accessibilityIgnoresInvertColors
-        />
-        {E.confetti.map((b, i) => (
-          <View
-            key={i}
-            style={{
-              position: 'absolute',
-              left: b.left * k,
-              top: b.top + sceneTop,
-              width: E.bar.width,
-              height: E.bar.height,
-              borderRadius: E.bar.radius,
-              backgroundColor: b.color,
-              transform: [{ rotate: b.turn }],
-            }}
-          />
-        ))}
-        {impostors.length > 0 ? (
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: E.heroTop + sceneTop,
-              alignItems: 'center',
-            }}
-          >
-            <View style={{ transform: [{ rotate: L.stamp.turn }], marginBottom: E.stampGap }}>
-              <Tag label={tr.krot.impostor} colors={{ bg: colors.buzz, fg: colors.onBuzz }} />
-            </View>
-            <View style={{ flexDirection: 'row', gap: E.stampGap * 2 }}>
-              {impostors.map((sid) => (
-                <View
-                  key={sid}
-                  style={{
-                    borderRadius: E.face,
-                    borderWidth: L.ring,
-                    borderColor: colors.buzz,
-                    outlineColor: L.haloBuzz,
-                    outlineWidth: L.halo,
-                    outlineStyle: 'solid',
-                    boxShadow: L.bigShadow,
-                  }}
-                >
-                  <Face faces={faces} sid={sid} size={E.face} />
-                </View>
-              ))}
-            </View>
-          </View>
-        ) : null}
-        {E.buddies.map((p) => (
-          <Buddy
-            key={p.buddy}
-            buddy={p.buddy}
-            height={p.height * k}
-            style={{
-              bottom: -p.below * k,
-              ...('left' in p ? { left: p.left * k } : { right: p.right * k }),
-            }}
-          />
-        ))}
-        {/* The light lineup under the status bar: a fade and light icons (audit M15-12). */}
-        <StatusScrim />
-      </View>
-      <ScreenStatusBar style="light" />
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
+          flex: 1,
+          paddingTop: insets.top + KROT_BOARD.bar.top,
           paddingHorizontal: KIT.size.side,
-          paddingBottom: insets.bottom + R.footBottom,
-          gap: R.gap,
         }}
       >
-        <GameTopBar
+        <KrotBar
           close={{ label: tr.krot.exit, onPress: onBack, testID: 'krot-end-close' }}
-          right={<ChatRound onPress={onChat} />}
+          title={tr.krot.over}
+          onChat={onChat}
         />
-        <View style={{ height: E.contentTop - R.barBottom - 2 * R.gap }} />
-        <View style={{ alignItems: 'center' }}>
-          <T v="fine" center>
-            {tr.krot.over}
-          </T>
-          <T v="display" center accessibilityRole="header">
-            {won}
-          </T>
-          {guessLine ? (
-            <T v="fine" ink center>
-              {guessLine}
-            </T>
-          ) : null}
-        </View>
-        <View style={{ flexDirection: 'row', gap: E.cardGap }}>
-          {impostors.length > 0 ? (
-            <Glass radius={R.box.radius} style={[boxStyle, endCard]}>
-              <Eyebrow>{tr.krot.impostor}</Eyebrow>
-              {impostors.map((sid) => (
-                <View key={sid} style={{ alignItems: 'center', gap: END_CARD_GAP }}>
-                  <Face faces={faces} sid={sid} size={E.cardFace} />
-                  <T v="h3" center>
-                    {nameOf(faces, sid)}
-                  </T>
-                </View>
-              ))}
-            </Glass>
-          ) : null}
-          <Glass radius={R.box.radius} style={[boxStyle, endCard, { justifyContent: 'center' }]}>
-            <Eyebrow>{tr.krot.word}</Eyebrow>
-            <T v="title" center>
-              {upperTr(result.word)}
-            </T>
-            <T v="fine" center>
-              {upperTr(result.category)}
-            </T>
-          </Glass>
-        </View>
-        {result.rightVoters.length > 0 ? (
-          <Glass
-            radius={R.box.radius}
-            style={[boxStyle, { flexDirection: 'row', alignItems: 'center' }]}
-          >
-            <Text style={{ flex: 1 }} maxFontSizeMultiplier={1.3}>
-              <T v="fine" color={c.ink}>
-                {tr.krot.rightVoters}
-              </T>
+        <ScrollView
+          bounces={false}
+          overScrollMode="never"
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingTop: E.gap,
+            paddingBottom: E.gap,
+            gap: E.gap,
+          }}
+        >
+          <View style={{ alignItems: 'center', gap: E.headGap }}>
+            <Text
+              accessibilityRole="header"
+              maxFontSizeMultiplier={1.3}
+              style={[KROT_BOARD_TYPE.winner, { color: c.ink, textAlign: 'center' }]}
+            >
+              {won}
             </Text>
-            <FaceStack faces={faces} sids={result.rightVoters} />
-          </Glass>
-        ) : null}
-        <View style={{ flexGrow: 1 }} />
-        {again.error ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(again.error)}
-          </T>
-        ) : null}
-        <View style={{ flexDirection: 'row', gap: R.footGap }}>
-          <Btn
-            variant="glassy"
-            testID="krot-back"
-            label={tr.krot.backToTable}
-            onPress={onBack}
-            style={{ flex: 1 }}
+            {guessLine ? (
+              <T v="fine" center>
+                {guessLine}
+              </T>
+            ) : null}
+          </View>
+          <KrotCard
+            tight
+            kick={upperTr(tr.krot.word)}
+            title={result.word}
+            titleType={KROT_BOARD_TYPE.word}
+            note={tr.krot.category(result.category)}
           />
-          {owner ? (
+          {impostors.length > 0 ? (
+            <View>
+              {impostors.map((sid, i) => (
+                <KrotRow
+                  key={sid}
+                  faces={faces}
+                  sid={sid}
+                  first={i === 0}
+                  line={tr.krot.impostor}
+                  tag={result.caught.includes(sid) ? <Tag label={tr.krot.caught} /> : undefined}
+                />
+              ))}
+            </View>
+          ) : null}
+          {result.rightVoters.length > 0 ? (
+            <View style={{ gap: E.hold }}>
+              <KrotSection>{upperTr(tr.krot.rightVoters)}</KrotSection>
+              <View>
+                {result.rightVoters.map((sid, i) => (
+                  <KrotRow key={sid} faces={faces} sid={sid} first={i === 0} />
+                ))}
+              </View>
+            </View>
+          ) : null}
+        </ScrollView>
+        <View style={{ gap: SPACING[2], paddingBottom: insets.bottom + SPACING[4] }}>
+          {again.error ? (
+            <T v="fine" color={KIT.danger} center>
+              {errorMessage(again.error)}
+            </T>
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: SPACING[2] }}>
             <Btn
-              testID="krot-again"
-              label={tr.krot.again}
-              loading={again.isPending}
-              onPress={() => again.mutate()}
+              variant="glassy"
+              tall
+              testID="krot-back"
+              label={tr.krot.backToTable}
+              onPress={onBack}
               style={{ flex: 1 }}
             />
-          ) : null}
+            {owner ? (
+              <Btn
+                tall
+                testID="krot-again"
+                label={tr.krot.again}
+                loading={again.isPending}
+                onPress={() => again.mutate()}
+                style={{ flex: 1 }}
+              />
+            ) : null}
+          </View>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
-const endCard = { flex: 1, alignItems: 'center', gap: 6 } as const;
-const END_CARD_GAP = 6;
