@@ -9,6 +9,7 @@ import {
   type ConfirmOptions,
   isConfirm,
   openOverlay as openStored,
+  retryDialogAction,
   runDialogAction,
   useDialogRun,
   useOverlay,
@@ -121,13 +122,36 @@ describe('overlayStore', () => {
     const onCancel = vi.fn();
     const id = confirm(options({ onCancel }));
     const failure = new Error('x');
-    expect(await runDialogAction(id, 'confirm', () => Promise.reject(failure))).toBe(false);
+    const task = () => Promise.reject(failure);
+    expect(await runDialogAction(id, 'confirm', task)).toBe(false);
     expect(useOverlay.getState().open?.id).toBe(id);
-    expect(useDialogRun.getState()).toEqual({ id, running: null, error: failure });
+    expect(useDialogRun.getState()).toEqual({
+      id,
+      running: null,
+      error: failure,
+      failed: { which: 'confirm', task, n: 1 },
+    });
     expect(await runDialogAction(id, 'other', () => undefined)).toBe(true);
     expect(useOverlay.getState().open).toBeNull();
     expect(useDialogRun.getState().error).toBeNull();
     expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('"Tekrar dene" runs the failed way again; each failure counts, a success closes', async () => {
+    const id = confirm(options());
+    expect(await retryDialogAction(id)).toBe(false);
+    let tries = 0;
+    const task = () => {
+      tries += 1;
+      if (tries < 3) throw new Error('z');
+    };
+    expect(await runDialogAction(id, 'other', task)).toBe(false);
+    expect(await retryDialogAction(id)).toBe(false);
+    expect(useDialogRun.getState().failed).toEqual({ which: 'other', task, n: 2 });
+    expect(await retryDialogAction(id)).toBe(true);
+    expect(tries).toBe(3);
+    expect(useOverlay.getState().open).toBeNull();
+    expect(useDialogRun.getState().failed).toBeNull();
   });
 
   it('one way at a time; a new dialog starts with no error', async () => {
@@ -141,7 +165,12 @@ describe('overlayStore', () => {
     const next = confirm(options());
     await runDialogAction(next, 'confirm', () => Promise.reject(new Error('y')));
     const again = confirm(options());
-    expect(useDialogRun.getState()).toEqual({ id: again, running: null, error: null });
+    expect(useDialogRun.getState()).toEqual({
+      id: again,
+      running: null,
+      error: null,
+      failed: null,
+    });
     expect(await runDialogAction(next, 'confirm', () => undefined)).toBe(false);
   });
 });
