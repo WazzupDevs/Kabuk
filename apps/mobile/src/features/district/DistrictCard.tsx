@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
+import { PICTURE_FILL } from '@/aura/RisoPicture';
 import { Btn, PulseDot, T, useKit } from '@/aura/kit';
 import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { errorMessage } from '@/i18n/errors';
@@ -61,15 +62,17 @@ export function DistrictCard() {
     const grace = Date.parse(s.session.endsAt) <= now;
     const [h, m] = hm(s.session.endsAt);
     return (
-      <Frame door={RISO.door}>
-        <Title>{tr.district.card.inRoom(s.district.name)}</Title>
-        <Meta text={grace ? tr.district.continueChip : tr.district.left(h, m)} />
+      <Scene
+        room
+        title={tr.district.card.inRoom(s.district.name)}
+        meta={grace ? tr.district.continueChip : tr.district.left(h, m)}
+      >
         <CardButton
           label={tr.district.card.backToRoom}
           testID="district-card-room"
           onPress={() => router.push('/district/room')}
         />
-      </Frame>
+      </Scene>
     );
   }
   if (s.located === 'outside') {
@@ -91,9 +94,7 @@ export function DistrictCard() {
     );
   }
   return (
-    <Frame door={RISO.door}>
-      <Title>{tr.district.card.title(s.district?.name ?? null)}</Title>
-      <Note>{tr.district.card.note}</Note>
+    <Scene title={tr.district.card.title(s.district?.name ?? null)} note={tr.district.card.note}>
       <CardButton
         label={tr.district.card.go}
         testID="district-card-go"
@@ -109,7 +110,87 @@ export function DistrictCard() {
           {errorMessage(enter.error)}
         </T>
       ) : null}
-    </Frame>
+    </Scene>
+  );
+}
+
+// The board's riso scenes under the card (Kesfet: the gate; KesfetSemtIcerde: the bench, in the
+// room). In both schemes alike: the board draws the same picture on the dark side.
+const SCENE = require('../../../assets/riso/semt/kesfet-semt.webp') as ImageSourcePropType;
+const SCENE_ROOM = require('../../../assets/riso/semt/kesfet-semt-oda.webp') as ImageSourcePropType;
+
+// `.semt` (Kesfet, KesfetSemtIcerde): the riso scene filling the card, the words in its left 58 %
+// over it: the beating dot and the eyebrow, the title, the note or the time left, the button at the
+// foot. In the room the eyebrow and its dot are pink.
+function Scene({
+  room,
+  title,
+  note,
+  meta,
+  children,
+}: {
+  room?: boolean;
+  title: string;
+  note?: string;
+  meta?: string;
+  children: ReactNode;
+}) {
+  const k = EXPLORE.scene;
+  const eyebrow = room ? k.roomEyebrow : k.eyebrow;
+  return (
+    <View
+      testID="district-card"
+      style={{ minHeight: k.minHeight, borderRadius: k.radius, overflow: 'hidden' }}
+    >
+      <Image
+        source={room ? SCENE_ROOM : SCENE}
+        fadeDuration={0}
+        resizeMode="cover"
+        accessible={false}
+        style={PICTURE_FILL}
+      />
+      <View style={{ flex: 1, width: k.words, padding: k.pad, alignItems: 'flex-start' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: k.eyebrowGap }}>
+          <PulseDot
+            color={room ? k.roomDot : k.eyebrow}
+            ring={room ? k.roomDotRing : undefined}
+            size={k.dot}
+          />
+          <T v="kesfetEyebrow" color={eyebrow}>
+            {upperTr(room ? tr.district.card.roomEyebrow : tr.district.card.sceneEyebrow)}
+          </T>
+        </View>
+        <View style={{ marginTop: k.titleTop }}>
+          <T v="semtTitle" color={k.title}>
+            {title}
+          </T>
+        </View>
+        {note ? (
+          <View style={{ marginTop: k.noteTop }}>
+            <T v="semtNote" color={k.note}>
+              {note}
+            </T>
+          </View>
+        ) : null}
+        {meta ? (
+          <View
+            style={{
+              marginTop: k.metaTop,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: k.metaGap,
+            }}
+          >
+            <CapIcon name="clock" color={k.eyebrow} size={k.metaIcon} />
+            <T v="semtMeta" color={k.meta}>
+              {meta}
+            </T>
+          </View>
+        ) : null}
+        <View style={{ flexGrow: 1 }} />
+        {children}
+      </View>
+    </View>
   );
 }
 

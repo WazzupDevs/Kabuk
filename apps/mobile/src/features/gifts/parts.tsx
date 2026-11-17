@@ -8,7 +8,7 @@ import { FxSvg } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { CARD_BOX, lookCard } from '@/theme/capsuleLook';
-import { GIFT_BADGE, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
+import { GIFT_BADGE, PACK_SOON, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -21,7 +21,7 @@ const TIER_MARKS: Record<GiftTier, number> = { siradan: 1, nadir: 2, destansi: 3
 const MARK = 6;
 
 // A tier's marks (hediye.css `.nd .gm`): one to four of its colour (the colour never stands alone).
-function Marks({ tier, color }: { tier: GiftTier; color: string }) {
+export function Marks({ tier, color }: { tier: GiftTier; color: string }) {
   return (
     <View style={{ flexDirection: 'row', gap: 2 }}>
       {Array.from({ length: TIER_MARKS[tier] }, (_, i) => (
@@ -69,15 +69,14 @@ export function TierGems({ tier }: { tier: GiftTier }) {
   );
 }
 
-// "Yakında" over a locked pack (hediye.css `.lk`): the lock and the word, on the surface.
+// "Yakında" over a locked pack (HediyePaket `.s`): the lock and the word, white on a dark pill.
 export function SoonTag({ large }: { large?: boolean }) {
-  const { c } = useKit();
   return (
     <Tag
       label={tr.gifts.soon}
       large={large}
-      colors={{ bg: c.raisedRound, fg: c.ink }}
-      lead={<CapIcon name="lock" color={c.ink} size={ICON.sm} />}
+      colors={{ bg: PACK_SOON.bg, fg: PACK_SOON.ink }}
+      lead={<CapIcon name="lock" color={PACK_SOON.ink} size={ICON.sm} />}
     />
   );
 }

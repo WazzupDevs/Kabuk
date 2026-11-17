@@ -27,39 +27,39 @@ import { T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { svgKey } from '@/lib/svgKey';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { FINGER, PACK_GLOW, RIP_EDGE } from '@/theme/gifts';
+import { FINGER, RIP_EDGE } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
-import { ICON } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 
 import { CARD_RATIO, PACK_ART, PACK_RATIO, type ShownPack, TEAR_AT } from './art';
 import { CardFace } from './parts';
-import { Glow, type Rect, type Stage, centerOf } from './stage';
+import { type Rect, type Stage, centerOf } from './stage';
 
 // The rip (Aura v134 PaketSecimGecis, PaketAcilis): the front pack zooms from the ring to the
 // middle; its strip, above a jagged line at 8.5 % of its height, is torn left to right by the
 // finger. The torn part lifts at the tear's end; the gap shows a shade and a white edge. Let go
 // under 70 % it springs back; past it the strip flies off, the card rises out of the pack and the
-// pack falls away. A screen reader rips it with the hint's action.
-const PACK = { left: 65, top: 190, w: 260 };
-const CARD_IN_PACK = { left: 30, top: 20, w: 200, radius: 12 };
-const GLOWS = [
-  { left: 35, top: 220, size: 320, opacity: 0.45 },
-  { left: 135, top: 230, size: 220, opacity: 0.36 },
-] as const;
+// pack falls away. A screen reader rips it with the hint's action. No Atla (the owner's call, 8 Kasım; HediyeYirt draws one, waiting for his answer).
+// The pack 276 wide, 144 from the board's top (HediyeYirt `.tpk`); the card inside it is the 260
+// pack's (30, 20, 200) at the 276's scale.
+const PACK = { left: 57, top: 144, w: 276 };
+const PACK_K = 276 / 260;
+const CARD_IN_PACK = { left: 30 * PACK_K, top: 20 * PACK_K, w: 200 * PACK_K, radius: 12 * PACK_K };
 const ZIG_POINTS = 31;
 const ZIG = 3;
 const LIFT_DEG = -16.5;
 const SHADE = { h: 9, from: 0.55 };
 const EDGE = { line: 2.2, under: 1 };
 const FLY = { x: 96, y: -150, deg: -38 };
-const CARD_RISE = -112;
+const CARD_RISE = -112 * PACK_K;
 const PACK_DROP = 40;
 // The finger may start on the strip's left part only.
 const START_SHARE = 0.45;
 const START_BELOW = 80;
 const P_FILL_MS = 150;
 const FINGER_SIZE = 44;
-const HINT_FROM_FOOT = 96;
+// The hint stands 30 under the pack, the line about letting go 4 under it.
+const HINT_GAP = 30;
 
 export function ripRects(stage: Stage): { pack: Rect; card: Rect } {
   const w = PACK.w * stage.s;
@@ -193,7 +193,6 @@ export function Rip({
     };
   });
   const chromeStyle = useAnimatedStyle(() => ({ opacity: chrome.get() * (1 - done.get()) }));
-  const glowStyle = useAnimatedStyle(() => ({ opacity: chrome.get() }));
   // The card is drawn (and decoded) from the start but not shown before the tear begins: the pack's
   // picture is nearly clear above its tear, and the card showed there as a faint shade, giving the
   // prize away.
@@ -240,18 +239,6 @@ export function Rip({
 
   return (
     <View pointerEvents="box-none" style={{ position: 'absolute', inset: 0 }}>
-      <Reanimated.View pointerEvents="none" style={[{ position: 'absolute', inset: 0 }, glowStyle]}>
-        {GLOWS.map((g, i) => (
-          <Glow
-            key={i}
-            x={g.left * s}
-            y={stage.top(g.top)}
-            size={g.size * s}
-            color={PACK_GLOW[pack][i] ?? PACK_GLOW[pack][0]}
-            opacity={g.opacity}
-          />
-        ))}
-      </Reanimated.View>
       <GestureDetector gesture={pan}>
         <Reanimated.View
           style={[
@@ -375,8 +362,6 @@ export function Rip({
           chromeStyle,
         ]}
       >
-        {/* No Atla (the owner's call, 8 Kasım): the finger rips the strip. A screen reader, which
-            cannot drag, rips it with the hint's action. */}
         <View
           accessible
           accessibilityRole="button"
@@ -389,11 +374,16 @@ export function Rip({
             position: 'absolute',
             left: 20 * s,
             right: 20 * s,
-            bottom: stage.foot(HINT_FROM_FOOT),
+            top: R.y + R.h + HINT_GAP * s,
+            alignItems: 'center',
+            gap: SPACING[1],
           }}
         >
-          <T v="fine" center>
+          <T v="fine" strong center>
             {tr.gifts.ripHint}
+          </T>
+          <T v="fine" center>
+            {tr.gifts.ripHintRelease}
           </T>
         </View>
       </Reanimated.View>

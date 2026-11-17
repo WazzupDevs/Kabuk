@@ -1,4 +1,5 @@
 import type { GiftTier } from '@shared/gifts.ts';
+import { upperTr } from '@shared/trText.ts';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -33,7 +34,10 @@ import { Glow, type Rect, type Stage, Sparkle, centerOf } from './stage';
 // tier's light, sparkles by tier (Efsanevi with the buddies too), its name and tier under it. A
 // sideways drag turns it (0.3° a pixel, ±22° about Y and a twelfth of that about Z) and the holo
 // and the band of light move with it; let go, it turns back. "Aksesuarı tak" wears it.
-const CARD = { left: 79, top: 180, w: 232 };
+// The card 250 wide, 136 from the board's top (HediyeSonuc `.kart`); the lights round it were drawn
+// for the old card (79, 180, 232) and move up with it.
+const CARD = { left: 70, top: 136, w: 250 };
+const LIGHT_SHIFT = -44;
 // The card's width on this phone (Paketler draws its picture ahead, RipWarm).
 export function openedCardWidth(s: number): number {
   return CARD.w * s;
@@ -65,7 +69,7 @@ const SPARKLES = [
   [16, 296, 26],
   [173, 215, 20],
 ] as const;
-const HINT_AT = 612;
+const HINT_AT = 584;
 const BUTTONS_FOOT = 46;
 // Each button as wide as its words, the room left shared; when the two do not fit side by side the
 // second goes under the first. Neither shrinks its words, so the pair keeps one size (the owner's
@@ -184,14 +188,20 @@ export function OpenedCard({
           <Glow
             key={i}
             x={g.left * s}
-            y={stage.top(g.top)}
+            y={stage.top(g.top + LIGHT_SHIFT)}
             size={g.size * s}
             color={TIER_GLOW[tier][i] ?? TIER_GLOW[tier][0]}
             opacity={g.opacity}
           />
         ))}
         {SPARKLES.slice(0, TIER_SPARKLES[tier]).map(([x, y, size], i) => (
-          <Sparkle key={i} x={x * s} y={stage.top(y)} size={size * s} color={sparkColor} />
+          <Sparkle
+            key={i}
+            x={x * s}
+            y={stage.top(y + LIGHT_SHIFT)}
+            size={size * s}
+            color={sparkColor}
+          />
         ))}
         {tier === 'efsanevi' ? <StarBursts stage={stage} /> : null}
       </Reanimated.View>
@@ -258,15 +268,18 @@ export function OpenedCard({
             </Reanimated.View>
           </Reanimated.View>
         </GestureDetector>
-        <Reanimated.View
-          style={[{ marginTop: SPACING[2], alignItems: 'center', gap: SPACING[2] }, shownStyle]}
-        >
-          <T v="title" center>
-            {name}
+        <Reanimated.View style={[{ marginTop: SPACING[5], alignItems: 'center' }, shownStyle]}>
+          <T v="eyebrow" center>
+            {upperTr(tr.gifts.newAccessory)}
           </T>
+          <View style={{ marginTop: SPACING[1] }}>
+            <T v="title" center accessibilityRole="header">
+              {name}
+            </T>
+          </View>
           {/* The tag sets itself to the start; in its own box it sits in the middle (the owner's
               report, 8 Kasım). */}
-          <View style={{ alignItems: 'center' }}>
+          <View style={{ marginTop: SPACING[2], alignItems: 'center' }}>
             <TierTag tier={tier} />
           </View>
         </Reanimated.View>
