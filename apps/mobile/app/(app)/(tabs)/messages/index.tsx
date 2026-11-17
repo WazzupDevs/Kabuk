@@ -238,7 +238,7 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
 
   if (inbox.isPending || loading) {
     return (
-      <View className="mt-12">
+      <View className="flex-1">
         <EmptyState kind="loading" body={tr.common.loading} />
       </View>
     );
@@ -247,8 +247,9 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   if (!inbox.data) {
     return (
       <EmptyState
-        icon="cloud-offline-outline"
+        kind="error"
         body={errorMessage(inbox.error)}
+        error={inbox.error}
         action={{
           label: tr.common.retry,
           onPress: () => void inbox.refetch(),

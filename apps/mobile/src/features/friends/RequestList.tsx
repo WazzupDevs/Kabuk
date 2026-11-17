@@ -78,7 +78,7 @@ export function RequestList({ now }: { now: Date }) {
 
   if (pending || loading) {
     return (
-      <View className="mt-12">
+      <View className="flex-1">
         <EmptyState kind="loading" body={tr.common.loading} />
       </View>
     );
@@ -87,8 +87,9 @@ export function RequestList({ now }: { now: Date }) {
   if (!fromTables.data || !fromChat.data || masa.error) {
     return (
       <EmptyState
-        icon="cloud-offline-outline"
+        kind="error"
         body={errorMessage(fromTables.error ?? fromChat.error ?? masa.error)}
+        error={fromTables.error ?? fromChat.error ?? masa.error}
         action={{
           label: tr.common.retry,
           onPress: () => {

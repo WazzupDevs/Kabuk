@@ -242,8 +242,9 @@ export default function ExploreScreen() {
             >
               {failed ? (
                 <EmptyState
-                  icon="cloud-offline-outline"
+                  kind="error"
                   body={errorMessage(venues.error ?? cities.error)}
+                  error={venues.error ?? cities.error}
                   action={{
                     label: tr.checkin.retry,
                     onPress: () => {

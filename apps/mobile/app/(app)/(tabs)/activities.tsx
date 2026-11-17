@@ -138,8 +138,8 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
   }
   if (pending || loading) {
     return (
-      // Aura v75 AktivitelerHal: 24 under the switch, as the list.
-      <View style={{ marginTop: A.listTop }}>
+      // YukleniyorListe (Ortak kurallar C3): the mark in the middle of what is left.
+      <View className="flex-1">
         <EmptyState kind="loading" inPage body={tr.common.loading} />
       </View>
     );
@@ -210,8 +210,8 @@ function History({ now }: { now: number }) {
   }
   if (history.isPending || loading) {
     return (
-      // Aura v75 AktivitelerHal: 24 under the switch, as the list.
-      <View style={{ marginTop: A.listTop }}>
+      // YukleniyorListe (Ortak kurallar C3): the mark in the middle of what is left.
+      <View className="flex-1">
         <EmptyState kind="loading" inPage body={tr.common.loading} />
       </View>
     );

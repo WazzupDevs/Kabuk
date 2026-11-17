@@ -93,8 +93,9 @@ export default function PersonScreen() {
         </View>
       ) : failed ? (
         <EmptyState
-          icon="cloud-offline-outline"
+          kind="error"
           body={errorMessage(view.error)}
+          error={view.error}
           action={{
             label: tr.common.retry,
             onPress: () => void view.refetch(),

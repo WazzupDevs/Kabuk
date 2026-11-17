@@ -80,13 +80,14 @@ export default function FriendsScreen() {
         </StickyField>
       ) : null}
       {friends.isPending || loading ? (
-        <View className="mt-12">
+        <View className="flex-1">
           <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       ) : !friends.data ? (
         <EmptyState
-          icon="cloud-offline-outline"
+          kind="error"
           body={errorMessage(friends.error)}
+          error={friends.error}
           action={retry}
         />
       ) : (

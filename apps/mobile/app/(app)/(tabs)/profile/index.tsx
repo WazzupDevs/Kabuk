@@ -286,14 +286,15 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
             }}
           />
           {view.isPending || loading ? (
-            <View style={{ marginTop: SPACING[8] }}>
+            <View className="flex-1">
               <EmptyState kind="loading" body={tr.common.loading} />
             </View>
           ) : !data ? (
             <View style={{ marginTop: SPACING[8] }}>
               <EmptyState
-                icon="cloud-offline-outline"
+                kind="error"
                 body={errorMessage(view.error)}
+                error={view.error}
                 action={{
                   label: tr.common.retry,
                   onPress: () => void view.refetch(),
