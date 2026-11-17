@@ -57,9 +57,8 @@ export const PAGE_KANKI = {
 } as const satisfies Record<string, KankiPlace>;
 
 // YasalMetin: one looking over "Devam" (`.lbar .peek .stand`), 20 from the right, its feet 36 under
-// the button's top edge. GuncellemeGerekli: one standing over the title, in the column.
+// the button's top edge.
 export const LEGAL_PEEK: KankiPlace = { id: '1a80a9', right: 20, top: -36, width: 80, height: 105 };
-export const UPDATE_KANKI: KankiPlace = { id: '6f419d', width: 110, height: 144 };
 
 // Arkadaslar (tuval Arkadaslar): one looking over the list's card, 54 × 68, 40 from its right, its
 // head 58 over the card's top edge; in the 350 wide frame scaled to the 358 card.
