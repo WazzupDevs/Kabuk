@@ -11,7 +11,6 @@ import { type MenuAnchor, measureMenuAnchor, Menu, MenuItem } from '@/components
 import { TypingDots } from '@/components/TypingDots';
 import { openDm } from '@/features/friends/openDm';
 import { useDmManage } from '@/features/friends/useDmManage';
-import { createDialogError, DialogErrorLine } from '@/features/rooms/DialogError';
 import { useDmTyping } from '@/features/friends/useDmTyping';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -47,7 +46,6 @@ export function useThreadMenu(all: readonly DmInboxThread[]) {
   const askClear = (t: DmInboxThread) => {
     const threadId = t.threadId;
     if (!threadId) return;
-    const holder = createDialogError();
     const name = t.displayName ?? tr.profile.noName;
     // tuval MesajlarSohbetSil: the trash on the red disc, "Sohbeti sil" red, "Vazgeç" under it.
     confirm({
@@ -60,15 +58,8 @@ export function useThreadMenu(all: readonly DmInboxThread[]) {
       cancelLabel: tr.common.cancel,
       testID: 'inbox-clear-confirm',
       onConfirm: async () => {
-        holder.set(null);
-        try {
-          await manage.mutateAsync({ kind: 'clear', threadId, lastMessageAt: t.lastMessageAt });
-        } catch (e) {
-          holder.set(e);
-          throw e;
-        }
+        await manage.mutateAsync({ kind: 'clear', threadId, lastMessageAt: t.lastMessageAt });
       },
-      children: <DialogErrorLine holder={holder} />,
     });
   };
   const open = (thread: DmInboxThread, at: MenuAnchor) => setHeld({ thread, at });
