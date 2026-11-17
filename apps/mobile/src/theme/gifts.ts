@@ -46,6 +46,9 @@ export const PACK_BUTTON: Record<TierPack, { fill: string; ink: string; shadow: 
 // The rip's torn edge (PaketAcilis): a white line over a thin line in the pack's light colour.
 export const RIP_EDGE = { line: '#FFFFFF', under: '#FFB27F', shade: '#000000' } as const;
 
+// "Yakında" over a locked pack (HediyePaket `.s`): white words on a dark pill, both themes.
+export const PACK_SOON = { bg: 'rgba(3,27,11,0.78)', ink: '#FFFFFF' } as const;
+
 // The "can open" badge (GaleriHediye: 24, pink, a white ring and a halo).
 export const GIFT_BADGE = {
   fill: '#FF4F8B',

@@ -604,7 +604,7 @@ export default function DmScreen() {
       <ConfirmWithReport
         reasons={REPORT_REASONS}
         visible={confirm !== null}
-        title={confirm === 'block' ? tr.safety.blockConfirmTitle : tr.friends.removeFriend}
+        title={confirm === 'block' ? tr.safety.blockNamedTitle(name) : tr.friends.removeFriend}
         hint={confirm === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
         confirmLabel={confirm === 'block' ? tr.friends.blockConfirm : tr.friends.removeConfirm}
         confirmIcon={confirm === 'block' ? 'block' : undefined}

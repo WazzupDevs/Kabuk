@@ -395,7 +395,10 @@ export const tr = {
     loadError: 'Paketler yüklenemedi.',
     loadErrorHint: 'Bağlantını kontrol edip tekrar dene.',
     oddsTitle: (name: string) => `${name} paket oranları`,
-    oddsLead: 'Her paketten 1 aksesuar çıkar.',
+    oddsLead: 'Her pakette 1 aksesuar çıkar. Çıkma şansı nadirliğe göre:',
+    oddsMarks: 'Elmas işaretlerinin sayısı nadirliği gösterir.',
+    soonOpening: 'Yakında açılacak',
+    soonNote: (pack: string) => `${pack} paketler şimdilik kapalı. Oranlara şimdiden bakabilirsin.`,
     oddsNoRepeat: 'Sahip olduğun aksesuar bir daha çıkmaz.',
     oddsError: 'Oranlar yüklenemedi.',
     ok: 'Tamam',
@@ -404,7 +407,10 @@ export const tr = {
       `%${(Math.round((parts / total) * 100 * 1000) / 1000).toString().replace('.', ',')}`,
     close: 'Kapat',
     ripHint: 'Yırtmak için şeridi sağa kaydır',
-    tiltHint: 'Kartı sağa sola sürükleyerek çevir',
+    ripHintRelease: 'Parmağını kaldırırsan şerit yerine döner.',
+    fromPack: (pack: string) => `${pack} paketten çıktı`,
+    newAccessory: 'Yeni aksesuar',
+    tiltHint: 'Kartı sağa sola sürükleyerek çevirebilirsin.',
     later: 'Sonra',
     wear: 'Aksesuarı tak',
     worn: 'Takıldı',
@@ -1075,6 +1081,9 @@ export const tr = {
     },
   },
   safety: {
+    // EngelleOnay (61): "Ece engellensin mi?"; where the name is not at hand the plain
+    // blockConfirmTitle stays.
+    blockNamedTitle: (name: string) => `${name} engellensin mi?`,
     report: 'Şikayet et',
     reportTitle: 'Neden şikayet ediyorsun?',
     reasons: {

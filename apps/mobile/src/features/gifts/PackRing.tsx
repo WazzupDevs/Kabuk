@@ -15,8 +15,7 @@ import { useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
-import { gradientStyle } from '@/theme/gradient';
-import { GIFT_FLOOR, PACK_DROP, PACK_GLOW } from '@/theme/gifts';
+import { PACK_DROP } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -26,35 +25,36 @@ import { packName, type PackViewOf } from './model';
 import { BADGE, CanOpenBadge, SoonTag } from './parts';
 import type { Rect, Stage } from './stage';
 
-// Paketler's ring (Aura v134 Paketler, PaketSecimDonme): the four packs on a circle, Bronz in
-// front, Gümüş at the right, Altın behind, Elmas at the left. A pack at angle θ (0 in front, +90 at
-// the right) stands 122·sinθ from the middle, 142.9 + 45.1·cosθ wide, its middle 295.5 + 22.5·cosθ
-// from the board's top, turned −7·sinθ°, lit 0.775 + 0.225·cosθ (a locked one greyer). The finger
-// turns it 0.4° a pixel; let go, it settles on the nearest pack (a fling goes to the next), round
-// and round. A tap on the front pack opens it.
+// Paketler's ring (yeni tuval HediyePaket: a front pack 236 wide and its two neighbours 168 wide
+// at the sides, 150 from the middle, turned 7° outward; the pack behind stands hidden under the
+// front one): the four packs on a circle, Bronz in front, Gümüş at the right, Altın behind, Elmas
+// at the left. A pack at angle θ (0 in front, +90 at the right) stands 150·sinθ from the middle,
+// 168 + 68·cosθ wide, turned −7·sinθ°. The finger turns it 0.4° a pixel; let go, it settles on the
+// nearest pack (a fling goes to the next), round and round. A tap on the front pack opens it.
 
-// The ring's board lies from 128 (under the top bar and the page's first gap) to the dots at 506.
+// The ring's board lies from 128 (under the top bar and the page's first gap) to the dots at 548;
+// the pack's middle is 337 from the board's top (132 + 410 / 2).
 export const RING_FROM = 128;
 // Room round a pack for its shadow (PACK_DROP: 10 down, blur up to 7: about 3 × 7 past it).
 const SHADOW_ROOM = 32;
-const RING_TO = 500;
-const DOTS_AT = 506;
-export const INFO_AT = 532;
-const FRONT_W = 188;
+const RING_TO = 542;
+const DOTS_AT = 548;
+export const INFO_AT = 574;
+const FRONT_W = 236;
 const FRONT_H = FRONT_W / PACK_RATIO;
-const SIDE_W = 142.9;
-const SWAY = 122;
-const MID_Y = 295.5;
-const RISE = 22.5;
+const SIDE_W = 168;
+const SWAY = 150;
+const MID_Y = 337;
 const TURN = 7;
-const LIGHT_LOW = 0.775;
-const LOCKED_SATURATE = 0.75;
-const FLOOR = { left: 92, top: 476, w: 207, h: 18 };
-const GLOW = { left: 54, top: 177, size: 282, opacity: 0.4 };
 const DOT = 6;
-const DOT_ON = 18;
-const BADGE_OUT = -9;
-const SOON_AT = '9%';
+const DOT_ON = 20;
+// The badge: 4 past the pack's right edge, 10 under its top (the panel's 26 badge, 98 right of the
+// middle and 28 under the car's top).
+const BADGE_RIGHT = -4;
+const BADGE_TOP = 10;
+// "Yakında" sits 86 % down the pack, as the panel's pill (300 and 338 on the 410 car).
+const SOON_AT = '86%';
+const SOON_H = 24;
 
 // θ in (−180, 180] for pack `i` with the ring turned `turn` degrees.
 function angleOf(i: number, turn: number): number {
@@ -74,7 +74,7 @@ export function frontRect(stage: Stage, stageY: number): Rect {
   const h = FRONT_H * stage.s;
   return {
     x: stage.width / 2 - w / 2,
-    y: stageY + (MID_Y + RISE - RING_FROM) * stage.s - h / 2,
+    y: stageY + (MID_Y - RING_FROM) * stage.s - h / 2,
     w,
     h,
   };
@@ -106,7 +106,6 @@ export function PackRing({
   onOpen: () => void;
 }) {
   const reduce = useReduceMotion();
-  const { scheme } = useTheme();
   const [front, setFront] = useState(0);
   const { turn, info, fade } = ring;
   const start = useSharedValue(0);
@@ -209,20 +208,6 @@ export function PackRing({
       >
         <Reanimated.View style={[{ flex: 1 }, fadeStyle]}>
           {packs.map((p, i) => (
-            <RingGlow key={p.id} index={i} pack={p} turn={turn} s={s} />
-          ))}
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              left: width / 2 - (FLOOR.w * s) / 2,
-              top: (FLOOR.top - RING_FROM) * s,
-              width: FLOOR.w * s,
-              height: FLOOR.h * s,
-              ...gradientStyle(GIFT_FLOOR[scheme]),
-            }}
-          />
-          {packs.map((p, i) => (
             <RingPack
               key={p.id}
               index={i}
@@ -238,45 +223,6 @@ export function PackRing({
         </Reanimated.View>
       </View>
     </GestureDetector>
-  );
-}
-
-// Each pack's glow behind the ring, strongest when it is in front: the glow turns with the ring.
-function RingGlow({
-  index,
-  pack,
-  turn,
-  s,
-}: {
-  index: number;
-  pack: PackViewOf<ShownPack>;
-  turn: SharedValue<number>;
-  s: number;
-}) {
-  const style = useAnimatedStyle(() => {
-    const cos = Math.cos((angleOf(index, turn.get()) * Math.PI) / 180);
-    const on = Math.max(cos, 0);
-    return { opacity: GLOW.opacity * on * on };
-  });
-  const size = GLOW.size * s;
-  const wide = size * 1.45;
-  return (
-    <Reanimated.View
-      pointerEvents="none"
-      style={[
-        {
-          position: 'absolute',
-          left: GLOW.left * s - (wide - size) / 2,
-          top: (GLOW.top - RING_FROM) * s - (wide - size) / 2,
-          width: wide,
-          height: wide,
-          ...gradientStyle(
-            `radial-gradient(closest-side, ${PACK_GLOW[pack.id][0]} 25%, ${PACK_GLOW[pack.id][0]}00 100%)`,
-          ),
-        },
-        style,
-      ]}
-    />
   );
 }
 
@@ -304,7 +250,6 @@ function RingPack({
   const float = useFloat(px, ms, index * stepMs);
   const w = FRONT_W * s;
   const h = FRONT_H * s;
-  const locked = view.locked;
   const style = useAnimatedStyle(() => {
     const th = (angleOf(index, turn.get()) * Math.PI) / 180;
     const cos = Math.cos(th);
@@ -314,21 +259,21 @@ function RingPack({
       zIndex: Math.round(cos * 100) + 100,
       transform: [
         { translateX: width / 2 + SWAY * sin * s - w / 2 },
-        { translateY: (MID_Y + RISE * cos - RING_FROM) * s - h / 2 },
+        { translateY: (MID_Y - RING_FROM) * s - h / 2 },
         { rotate: `${-TURN * sin}deg` },
         { scale },
       ],
     };
   });
-  // The light on the picture only: a filter cuts what lies past its view (Android), and the badge
-  // stands out over the pack's corner (the owner's report, 7 Kasım: the badge was cut).
-  const lightStyle = useAnimatedStyle(() => {
-    const cos = Math.cos((angleOf(index, turn.get()) * Math.PI) / 180);
-    const light = LIGHT_LOW + (1 - LIGHT_LOW) * cos;
+  // The pill and the badge keep their own size and stand upright on a pack that turns and shrinks.
+  const upright = useAnimatedStyle(() => {
+    const th = (angleOf(index, turn.get()) * Math.PI) / 180;
+    const cos = Math.cos(th);
     return {
-      filter: locked
-        ? [{ brightness: light }, { saturate: LOCKED_SATURATE }]
-        : [{ brightness: light }],
+      transform: [
+        { rotate: `${TURN * Math.sin(th)}deg` },
+        { scale: FRONT_W / (SIDE_W + (FRONT_W - SIDE_W) * cos) },
+      ],
     };
   });
   return (
@@ -348,18 +293,15 @@ function RingPack({
           {/* The light's layer reaches past the pack by the shadow's room: a filter cuts what lies
               past its view, and the shadow under the pack was cut square (the owner's report,
               8 Kasım). */}
-          <Reanimated.View
-            style={[
-              {
-                position: 'absolute',
-                left: -SHADOW_ROOM,
-                right: -SHADOW_ROOM,
-                top: -SHADOW_ROOM,
-                bottom: -SHADOW_ROOM,
-                padding: SHADOW_ROOM,
-              },
-              lightStyle,
-            ]}
+          <View
+            style={{
+              position: 'absolute',
+              left: -SHADOW_ROOM,
+              right: -SHADOW_ROOM,
+              top: -SHADOW_ROOM,
+              bottom: -SHADOW_ROOM,
+              padding: SHADOW_ROOM,
+            }}
           >
             <View style={{ flex: 1, filter: [PACK_DROP[scheme]] }}>
               <Image
@@ -369,24 +311,28 @@ function RingPack({
                 resizeMode="contain"
               />
             </View>
-          </Reanimated.View>
+          </View>
           {view.locked ? (
-            <View
+            <Reanimated.View
               pointerEvents="none"
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: SOON_AT,
-                alignItems: 'center',
-              }}
+              style={[
+                {
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: SOON_AT,
+                  marginTop: -SOON_H / 2,
+                  alignItems: 'center',
+                },
+                upright,
+              ]}
             >
               <SoonTag />
-            </View>
+            </Reanimated.View>
           ) : view.unopened > 0 ? (
             <View
               pointerEvents="none"
-              style={{ position: 'absolute', right: BADGE_OUT, top: BADGE_OUT, width: BADGE }}
+              style={{ position: 'absolute', right: BADGE_RIGHT, top: BADGE_TOP, width: BADGE }}
             >
               <CanOpenBadge count={view.unopened} />
             </View>
@@ -397,9 +343,8 @@ function RingPack({
   );
 }
 
-// The dots under the ring: the front pack's long and green, the others round on the track.
+// The dots under the ring: the front pack's long and in the ink, the others round on the track.
 export function RingDots({ front, stage }: { front: number; stage: Stage }) {
-  const { colors } = useTheme();
   const { c } = useKit();
   return (
     <View
@@ -419,7 +364,7 @@ export function RingDots({ front, stage }: { front: number; stage: Stage }) {
             width: i === front ? DOT_ON : DOT,
             height: DOT,
             borderRadius: DOT / 2,
-            backgroundColor: i === front ? colors.primary : c.emptyMark,
+            backgroundColor: i === front ? c.ink : c.emptyMark,
           }}
         />
       ))}
