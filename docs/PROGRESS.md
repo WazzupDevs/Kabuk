@@ -1,5 +1,13 @@
 # İlerleme
 
+## Devir notu (17 Kasım 2026, öğle): Dalga 5'in ilk dört paketi
+
+- Birleşenler: #687 ortak temel 5 (sayfa, ⋮, uzun basma tek depoda; `SCRIM_GLASS` 6 yalnız uzun basmada, panel anahtarı "Uzun basma bulanıklığı", varsayılan kapalı); #688 Toast ve ButtonRow (Profilim, Süsle kayıt hatası); #689 mekan detayı ve konum doğrulama (17, 18, 11b, 11c); #690 Mekan sekmesi ve lobi (19–23, 126–128).
+- Sıradaki: Mekan akışı (27–28; Masalar/Akış seçicisi, sunucu sözleşmesi yok, önce `mimar`); mekan/masa; semt; mekan-masa-semt sohbeti görünüşü; kapsül pilotu; Açılış sahnesi; sunucu paketleri; oyun içi en son.
+- Proje sahibine sorulan, cevap bekleyen: mekan sohbeti kartındaki yazma alanı kalsın mı (öneri: kalsın; panoda yok).
+- Telefonda bakılacak: sayfa üstüne sayfa açan akışlar (artık öncekini kapatıyor); Süsle "Kaydet ve çık" hatasında iki üst bildirim üst üste; gece koşusunda `02-checkin` konum metni (artık `accessibilityLabel`).
+- Tuval indirmesi oturumun scratchpad'indeydi (kalıcı değil): yeni oturum panoları Artifact aracıyla yeniden indirir; birleşen panolar `docs/design/yeni-arayuz/project/` altında.
+
 ## Devir notu (17 Kasım 2026): orkestra oturumu, Dalga 3 ve 4
 
 - Birleşenler: Dalga 3 (#675 veri akışı, #676 dialog hatası toast ve Şikayet de et, #677 bildirim/arkadaş/aktivite, #678 DM düzeltme); Dalga 4 (#679 hediye, #680 Keşfet/harita, #681 kayıt, #682 gizlilik metni ve adlı engelle başlığı, #684 4.13 D düzeltmesi, #685 P3 profil bileti tek Skia tuvali, panel anahtarı `biletsvg`; #683 Mesajlar/DM görünüşü de birleşti). Bekleyen ölçüm: #685 için 4.13 E (S23'te Profil ilk açılışı; hedef ~1000–1100 görünüm, en uzun kare < 80 ms).
