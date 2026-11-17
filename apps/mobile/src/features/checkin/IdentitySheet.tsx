@@ -1,27 +1,27 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { View } from 'react-native';
 
-import { Av, Btn, T } from '@/aura/kit';
+import { Av } from '@/aura/kit';
 import { Avatar } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { LookAvatar } from '@/components/LookAvatar';
-import { Sheet } from '@/components/Sheet';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
-import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callSetIdentity } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { useTheme } from '@/theme/ThemeProvider';
 import { KIT } from '@/theme/auraKit';
-import { ICON, SPACING } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
+import { useTheme } from '@/theme/ThemeProvider';
+import { ICON, SPACING } from '@/theme/tokens';
+import { closeOverlay, confirm } from '@/lib/overlayStore';
 
-// The one change of identity a check-in allows (docs/SPEC_V4.md §4.D; skall tuvali MekanAnonimGecis,
-// MekanAnonimGecisErkek, MekanProfilGecis, MekanProfilGecisFotosuz): the two faces, what changes,
-// the one-change strip, then the change and "Vazgeç". A man or an unstated gender goes anonymous in
+// The one change of identity a check-in allows (docs/SPEC_V4.md §4.D; panolar MekanAnonimGec,
+// MekanProfilGec: a centred dialog, Ortak kurallar C1): the two faces over the title, what changes,
+// the one-change strip (anonymous), then the change and "Vazgeç". Outside, back and "Vazgeç" close it
+// (`onClose`); a failed change stays open with the error in the top notice. A man or an unstated gender goes anonymous in
 // the venue chat only (rule 12: the gender only picks the words here, on the person's own phone).
 export function IdentitySheet({
   visible,
@@ -64,66 +64,57 @@ export function IdentitySheet({
     ? (female ? tr.identity.anonBody : tr.identity.chatAnonBody)(photo.nick)
     : needsPhoto
       ? tr.identity.photoNeeded
-      : tr.identity.profileBody;
-  const confirm = toAnonymous
+      : tr.identity.profileBody + (atTable ? tr.identity.onceTable : '');
+  const confirmLabel = toAnonymous
     ? female
       ? tr.identity.anonConfirm
       : tr.identity.chatAnonConfirm
     : tr.identity.profileConfirm;
-  // MekanKimlikDegistir (v71): the two faces 44, 8 apart.
-  const face = <Av size="md" name={photo.name} photoUrl={photo.url} />;
+  // MekanAnonimGec `.sw`: the two faces 56, 10 apart, the arrow between.
+  const face = <Av size="seat" name={photo.name} photoUrl={photo.url} />;
   const capsule = look ? (
-    <LookAvatar look={look} size={KIT.size.av.md} />
+    <LookAvatar look={look} size={KIT.size.av.seat} />
   ) : (
     <Avatar kind="default" size="md" />
   );
-  // Closed, it opens next time without the last error.
-  const close = () => {
-    change.reset();
-    onClose();
-  };
-  return (
-    <>
-      <Sheet visible={visible} onClose={close} title={title}>
-        <View className="flex-row items-center self-start" style={{ gap: SPACING[2] }}>
-          {toAnonymous ? face : capsule}
-          <AppIcon name="forward" size={ICON.md} color={colors.muted} />
-          {toAnonymous ? capsule : face}
-        </View>
-        <T v="fine">{body}</T>
-        {needsPhoto ? null : (
-          <Banner
-            tone="warn"
-            title={tr.identity.onceTitle}
-            body={tr.identity.onceBody + (!toAnonymous && atTable ? tr.identity.onceTable : '')}
-          />
-        )}
-        {change.isError ? <Banner tone="danger" body={errorMessage(change.error)} /> : null}
-        <View className="gap-2.5">
-          {needsPhoto ? (
-            <Btn
-              block
-              icon="photo"
-              label={tr.identity.addPhoto}
-              onPress={() => {
-                // One sheet at a time: this one goes, the photo's comes (audit VEN-20).
-                close();
-                setPhotoSheet(true);
-              }}
-            />
-          ) : (
-            <Btn
-              block
-              testID="identity-confirm"
-              label={confirm}
-              loading={change.isPending}
-              onPress={() => change.mutate()}
-            />
-          )}
-          <Btn block variant="glassy" label={tr.common.cancel} onPress={close} />
-        </View>
-      </Sheet>
-      <PhotoSheet visible={photoSheet} onClose={() => setPhotoSheet(false)} />
-    </>
+  const faces = (
+    <View className="flex-row items-center" style={{ gap: SPACING[2.5] }}>
+      {toAnonymous ? face : capsule}
+      <AppIcon name="forward" size={ICON.md} color={colors.muted} />
+      {toAnonymous ? capsule : face}
+    </View>
   );
+  // It opens with what the screen knew then (the dialog's content is one call, lib/overlayStore).
+  const open = useEffectEvent(() => {
+    change.reset();
+    return confirm({
+      title,
+      note: body,
+      face: faces,
+      tone: 'plain',
+      confirmLabel: needsPhoto ? tr.identity.addPhoto : confirmLabel,
+      confirmIcon: needsPhoto ? 'photo' : toAnonymous ? 'eyeOff' : 'user',
+      cancelLabel: tr.common.cancel,
+      testID: needsPhoto ? undefined : 'identity-confirm',
+      children: toAnonymous ? (
+        <Banner tone="warn" title={tr.identity.onceTitle} body={tr.identity.onceBody} />
+      ) : undefined,
+      onCancel: onClose,
+      onConfirm: async () => {
+        if (needsPhoto) {
+          // One sheet at a time: the dialog goes, the photo's comes (audit VEN-20).
+          onClose();
+          setPhotoSheet(true);
+          return;
+        }
+        await change.mutateAsync();
+      },
+    });
+  });
+  useEffect(() => {
+    if (!visible) return undefined;
+    const id = open();
+    return () => closeOverlay(id, false);
+  }, [visible]);
+  return <PhotoSheet visible={photoSheet} onClose={() => setPhotoSheet(false)} />;
 }

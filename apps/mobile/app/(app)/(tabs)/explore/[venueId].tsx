@@ -16,6 +16,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenStatusBar } from '@/components/StatusScrim';
 import { useTabBarSpace } from '@/components/TabBar';
 import { useCheckinDraft } from '@/features/checkin/draft';
+import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { Bucket } from '@/features/explore/Bucket';
 import { useExploreVenue, useVenueCity } from '@/features/explore/useExploreVenues';
@@ -108,6 +109,7 @@ export default function VenueDetailScreen() {
 // button never moves. The rest of the board's values: theme/venueDetail.ts.
 function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollOffset> }) {
   const setVenue = useCheckinDraft((s) => s.setVenue);
+  const venueSpots = useVenueSpots(venue.id);
   // Already checked in here: back to Mekan, not a new check-in that would end this one and take
   // the person off its table (audit VEN-2).
   const active = useActiveTable();
@@ -243,7 +245,8 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
                 boundary: venue.boundary,
                 kind: venue.kind,
               });
-              router.push('/checkin');
+              // A venue with spots asks "Neredesin?" first (checkin/spot).
+              router.push((venueSpots.data ?? []).length > 0 ? '/checkin/spot' : '/checkin');
             }}
           />
           {/* Why the position is asked, under the button, before a check-in only: once here, the

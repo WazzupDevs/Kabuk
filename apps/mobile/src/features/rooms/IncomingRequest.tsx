@@ -1,17 +1,16 @@
-import { JOIN_REQUEST_TTL_SECONDS } from '@shared/rooms.ts';
 import { requestGone } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import { Modal, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
-import { Av, Btn, T, Tag, useKit } from '@/aura/kit';
+import { Av, T, Tag, useKit } from '@/aura/kit';
 import { Peek } from '@/aura/Peek';
-import { PopIn } from '@/aura/PopIn';
 import { AVATAR_SIZE } from '@/components/Avatar';
+import { PopIn } from '@/aura/PopIn';
 import { closeAllSheets } from '@/components/sheetCloser';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -19,12 +18,15 @@ import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { useNowUntil } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import type { ConfirmOptions } from '@/lib/overlayStore';
+import { Dialog } from '@/motion/Dialog';
+import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { haptic } from '@/lib/haptics';
+import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { roomKeys, useCurrentRoom, useIncomingRequests, useRequestProfile } from './queries';
@@ -76,7 +78,7 @@ export function IncomingRequestHost() {
 // name, age and photo, read while the request waits (rule 4); the seconds and the buttons never
 // wait for it.
 export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Props) {
-  const { shape } = useTheme();
+  const { shape, colors } = useTheme();
   const k = useKit();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
@@ -96,6 +98,8 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
     (r) => (Date.parse(r.expires_at) > now || r.id === gone) && !closed.has(r.id),
   );
   const profile = useRequestProfile(request?.id, request?.requester_profiled === true);
+  // The dialog opens a Modal: a focused text field lets go as it does (lib/modalKeyboard).
+  useLeaveKeyboard(request !== undefined);
 
   const respond = useMutation({
     meta: FEEL_ERROR,
@@ -200,24 +204,55 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
   const seconds = Math.max(0, Math.ceil((Date.parse(request.expires_at) - now) / 1000));
   const member = request.as_member;
 
-  if (request.id === gone) {
-    return frame(
-      <>
-        <T v="h3" testID="request-gone">
-          {tr.rooms.requestGone}
-        </T>
-        <Btn
-          block
-          variant="glassy"
-          label={tr.common.close}
-          onPress={() => {
-            setClosed((ids) => new Set([...ids, request.id]));
-            setGone(null);
-            respond.reset();
-          }}
+  const noop = () => undefined;
+  // Outside and back leave the request unanswered (the seconds run out as if unseen, rule 5).
+  const dismiss = () => {
+    if (respond.isPending) return;
+    setClosed((ids) => new Set([...ids, request.id]));
+    respond.reset();
+  };
+  const modal = (
+    options: ConfirmOptions,
+    running: 'confirm' | 'other' | null,
+    other?: () => void,
+  ) => (
+    <Modal
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      visible
+      onRequestClose={dismiss}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Dialog
+          options={options}
+          visible
+          running={running}
+          onConfirm={options.onConfirm as () => void}
+          onOther={other ?? noop}
+          onCancel={dismiss}
+          onHidden={noop}
         />
-      </>,
-      'request-card',
+      </GestureHandlerRootView>
+    </Modal>
+  );
+
+  if (request.id === gone) {
+    return modal(
+      {
+        title: tr.rooms.requestGone,
+        note: '',
+        tone: 'plain',
+        confirmLabel: tr.common.close,
+        testID: 'request-gone',
+        onConfirm: () => {
+          setClosed((ids) => new Set([...ids, request.id]));
+          setGone(null);
+          respond.reset();
+        },
+      },
+      null,
     );
   }
 
@@ -231,123 +266,100 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
       : null;
   const group = request.requester_phones > 1;
   const full = phones + request.requester_phones > MAX_TABLE_PHONES;
-  const title = tr.rooms.wantsToJoin(
-    group ? request.requester_alias : (person ?? request.requester_alias),
-  );
-  // How the person asks (docs/design/aura → MasaIstek: a purple tag), and the seconds left.
-  const how = group
-    ? tr.venue.people(request.requester_phones)
-    : member
-      ? tr.rooms.memberAsk
-      : profiled
-        ? tr.rooms.withProfile
-        : tr.rooms.anonymous;
   const faceName = profile.data?.displayName ?? request.requester_alias;
+  // MasaIstekGelen: the table's face (a letter here: the request carries no table picture), the
+  // title, one line, the one who asks (face 40, name and age, how), the seconds, "Kabul et" and
+  // "Reddet", what "Reddet" shows the other side.
   const face =
-    profiled && profile.data ? (
-      <Av size="row" name={faceName} photoUrl={profile.data.photoUrl} />
-    ) : profiled && profile.isPending ? (
+    profiled && profile.isPending ? (
       <Placeholder round label={tr.rooms.requestProfileLoading} />
     ) : (
-      <Av size="row" name={request.requester_alias} />
+      <Av
+        size="lg"
+        name={profiled && profile.data ? faceName : request.requester_alias}
+        photoUrl={!group && profiled ? profile.data?.photoUrl : undefined}
+      />
     );
-
-  return frame(
-    <>
-      <View
-        style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.pad - SPACING[1] }}
-        testID={profiled ? 'request-profile' : undefined}
-      >
-        <Countdown share={seconds / JOIN_REQUEST_TTL_SECONDS}>{face}</Countdown>
-        <View style={{ flex: 1, gap: KIT.size.tagGap }}>
-          <T v="h3" style={KIT_TYPE.requestTitle}>
-            {title}
-          </T>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
-            <Tag tone="purple" label={how} />
-            {group ? (
-              <Tag
-                tone="purple"
-                label={person ? tr.rooms.askedBy(person) : tr.rooms.askedByAnonymous}
-              />
-            ) : null}
-            <Tag label={tr.rooms.secondsLeft(seconds)} />
-          </View>
-        </View>
+  const title = member
+    ? tr.rooms.memberClaims(request.requester_alias)
+    : tr.rooms.wantsToJoin(group ? request.requester_alias : (person ?? request.requester_alias));
+  const note = group
+    ? tr.rooms.groupNote(request.requester_phones, phones + request.requester_phones)
+    : tr.rooms.memberNote;
+  const sub = group
+    ? person
+      ? tr.rooms.askedBy(faceName)
+      : tr.rooms.askedByAnonymous
+    : member
+      ? tr.rooms.memberAsk
+      : null;
+  const asker = (
+    <View
+      testID="request-card"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: KIT.size.chipGap + SPACING[1],
+        padding: SPACING[2.5],
+        borderRadius: KIT.size.glassRadiusSm,
+        backgroundColor: colors.surface2,
+      }}
+    >
+      <View testID={profiled ? 'request-profile' : undefined}>
+        <Av
+          size="list"
+          name={profiled && profile.data ? faceName : request.requester_alias}
+          photoUrl={profiled ? profile.data?.photoUrl : undefined}
+        />
       </View>
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
+        <T v="h3">{person ?? (group ? tr.rooms.anonymous : request.requester_alias)}</T>
+        {sub ? <T v="fine">{sub}</T> : null}
+      </View>
+      <Tag label={profiled ? tr.rooms.withProfile : tr.rooms.anonymous} />
+    </View>
+  );
+  const extra = (
+    <View style={{ gap: SPACING[2], alignItems: 'center' }}>
+      {asker}
+      <T v="fine" color={colors.accent} center>
+        {tr.rooms.secondsLeft(seconds)}
+      </T>
       {full ? (
-        <T v="fine" color={KIT.danger}>
+        <T v="fine" color={KIT.danger} center>
           {tr.rooms.tooMany}
         </T>
       ) : null}
       {respond.isError ? (
-        <T v="fine" color={KIT.danger}>
+        <T v="fine" color={KIT.danger} center>
           {errorMessage(respond.error)}
         </T>
       ) : null}
-      <View style={{ flexDirection: 'row', gap: KIT.size.chipGap + SPACING[1] }}>
-        <Btn
-          block
-          variant="glassy"
-          icon="close"
-          label={tr.rooms.decline}
-          accessibilityLabel={`${tr.rooms.decline}. ${member ? tr.rooms.declineMemberNote : tr.rooms.declineNote}`}
-          onPress={() => respond.mutate({ id: request.id, accept: false, member })}
-          disabled={respond.isPending}
-          style={{ flex: 1 }}
-        />
-        <Btn
-          block
-          icon="check"
-          testID="join-accept"
-          label={tr.rooms.accept}
-          onPress={() => respond.mutate({ id: request.id, accept: true, member })}
-          loading={respond.isPending}
-          disabled={full}
-          style={{ flex: 1 }}
-        />
-      </View>
-    </>,
-    'request-card',
-  );
-}
-
-// The face inside a ring that empties with the request's 60 seconds (MasaIstek).
-function Countdown({ share, children }: { share: number; children: ReactNode }) {
-  const { c } = useKit();
-  const side = RING_SIDE;
-  const r = (side - RING_STROKE) / 2;
-  const around = 2 * Math.PI * r;
-  const left = Math.max(0, Math.min(1, share));
-  return (
-    <View style={{ width: side, height: side, alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={side} height={side} style={{ position: 'absolute' }}>
-        <Circle
-          cx={side / 2}
-          cy={side / 2}
-          r={r}
-          stroke={c.hair}
-          strokeWidth={RING_STROKE}
-          fill="none"
-        />
-        <Circle
-          cx={side / 2}
-          cy={side / 2}
-          r={r}
-          stroke={KIT.primary}
-          strokeWidth={RING_STROKE}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={`${around * left} ${around}`}
-          transform={`rotate(-90 ${side / 2} ${side / 2})`}
-        />
-      </Svg>
-      {children}
     </View>
   );
+  const answer = (accept: boolean) => {
+    if (!respond.isPending) respond.mutate({ id: request.id, accept, member });
+  };
+  const running = respond.isPending ? (respond.variables.accept ? 'confirm' : 'other') : null;
+  return modal(
+    {
+      title,
+      note,
+      face,
+      tone: 'plain',
+      confirmLabel: tr.rooms.accept,
+      confirmIcon: 'check',
+      confirmDisabled: full,
+      testID: 'join-accept',
+      other: { label: tr.rooms.decline, onPress: noop },
+      children: extra,
+      footnote: member ? tr.rooms.declineMemberNote : tr.rooms.declineNote,
+      onConfirm: () => answer(true),
+    },
+    running,
+    () => answer(false),
+  );
 }
-const RING_SIDE = 72;
-const RING_STROKE = 4;
 
 // An accepted table's "geliyor" note stays this long.
 const COMING_MS = 6000;

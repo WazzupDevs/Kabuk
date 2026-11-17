@@ -173,14 +173,18 @@ appId: app.kabuk.mobile
     visible: Buraya giriş yap
     timeout: 10000
 - tapOn: Buraya giriş yap
+# "Neredesin?" is a sheet of its own (CheckInNokta): the spot first, "Devam", then the position's
+# sheet. A check-in opens no table and asks no headcount (docs/SPEC_V4.md §4.E).
+- extendedWaitUntil:
+    visible: Neredesin\?
+    timeout: 10000
+- tapOn:
+    id: spot-kantin
+- tapOn:
+    id: spot-next
 - extendedWaitUntil:
     visible: Konumumu kullan
     timeout: 10000
-# "Neredesin?" is in the same sheet (skall tuvali, KesfetGirisKampus): the spot comes first, then the
-# position. A check-in opens no table and asks no headcount (docs/SPEC_V4.md §4.E).
-- assertVisible: Neredesin\?
-- tapOn:
-    id: spot-kantin
 - takeScreenshot: 07-location-consent
 - setLocation:
     latitude: ${OUTSIDE_LAT}
