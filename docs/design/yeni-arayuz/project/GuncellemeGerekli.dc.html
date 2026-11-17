@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Güncelleme gerekli</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hpw{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:52px}
+.hpt{display:flex;align-items:center;gap:12px;height:56px;padding:0 20px}
+.hpt h1{flex:1;margin:0;font:700 21px/28px var(--font);letter-spacing:-.3px;color:var(--text)}
+.car{position:relative;height:410px;margin-top:24px}
+.car .pp{position:absolute;top:50%;left:50%;display:block;filter:drop-shadow(0 14px 18px rgba(3,27,11,.22))}
+.dark .car .pp{filter:drop-shadow(0 14px 18px rgba(0,0,0,.6))}
+.car .c{width:236px;transform:translate(-50%,-50%);z-index:2}
+.car .l{width:168px;transform:translate(-50%,-50%) translateX(-150px) rotate(-7deg)}
+.car .r{width:168px;transform:translate(-50%,-50%) translateX(150px) rotate(7deg)}
+.car .s{position:absolute;left:50%;transform:translate(-50%,-50%);z-index:3;display:flex;align-items:center;gap:4px;height:24px;padding:0 9px 0 7px;border-radius:999px;background:rgba(3,27,11,.78);color:#fff;font:600 11px/1 var(--font)}
+.car .s svg{width:12px;height:12px}
+.car .sl{top:300px;margin-left:-150px}.car .sr{top:300px;margin-left:150px}
+.car .sc{top:338px}
+.bd{position:absolute;z-index:3;left:50%;top:28px;margin-left:98px;min-width:26px;height:26px;border-radius:999px;background:var(--buzz);color:#fff;font:700 13px/26px var(--font);text-align:center;box-shadow:0 0 0 3px var(--canvas)}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.dots i{width:6px;height:6px;border-radius:3px;background:var(--hair-strong,rgba(3,27,11,.18))}
+.dots i.on{width:20px;background:var(--text)}
+.dark .dots i{background:rgba(255,255,255,.22)}.dark .dots i.on{background:#fff}
+.inf{display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:20px;padding:0 24px}
+.inf h2{margin:0;font:700 21px/28px var(--font);color:var(--text)}
+.inf .st{margin-top:4px;font:600 15px/20px var(--font);color:var(--text)}
+.inf .st.ok{color:var(--success)}.dark .inf .st.ok{color:#3DDC84}
+.pr{display:flex;align-items:center;gap:8px;margin-top:10px;font:600 13px/18px var(--font);color:var(--muted)}
+.pr span{display:flex;gap:4px}.pr b{width:28px;height:6px;border-radius:3px;background:rgba(3,27,11,.12)}
+.pr b.on{background:var(--success)}.dark .pr b{background:rgba(255,255,255,.16)}.dark .pr b.on{background:#3DDC84}
+.inf .nt{margin-top:6px;font:500 13px/18px var(--font);color:var(--muted);max-width:280px}
+.fx{position:absolute;left:20px;right:20px;bottom:46px;display:flex;gap:12px}
+.fx .btn{flex:1;height:56px}
+.oneri{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;background:var(--success-soft);color:var(--on-success-soft);font:700 10px/14px var(--font);letter-spacing:.3px;vertical-align:middle}
+.up{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 28px 150px;text-align:center}
+.up .wm{height:30px;width:auto;margin-bottom:28px}
+.up img{width:260px;height:212px;display:block}
+.up h1{margin:16px 0 0;font:700 24px/30px var(--font);letter-spacing:-.3px;color:var(--text)}
+.up p{margin:8px 0 0;font:500 15px/22px var(--font);color:var(--muted);max-width:300px}
+.fx2{position:absolute;left:20px;right:20px;bottom:46px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.fx2 .btn{width:100%;height:56px}
+.fx2 span{font:500 12px/16px var(--font);color:var(--muted)}
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="up"><svg class="wm" viewBox="27 250 2254 757" role="img" aria-label="skall"><defs><clipPath id="wmL{{t.k}}"><rect x="1951" y="250" width="200" height="757" rx="100"></rect></clipPath></defs><path d="M295 1007Q219 1007 159.5 981.5Q100 956 65.5 911.5Q31 867 27 811L27 811L217 811Q221 838 242 853Q263 868 294 868L294 868Q318 868 332 858Q346 848 346 832L346 832Q346 811 323 801Q300 791 247 779L247 779Q187 767 147 752Q107 737 77.5 703Q48 669 48 611L48 611Q48 561 75 520.5Q102 480 154.5 456Q207 432 281 432L281 432Q391 432 454 486Q517 540 527 628L527 628L350 628Q345 601 326.5 586.5Q308 572 277 572L277 572Q253 572 240.5 581Q228 590 228 606L228 606Q228 626 251 636.5Q274 647 325 658L325 658Q386 671 426.5 687Q467 703 497.5 738.5Q528 774 528 835L528 835Q528 884 499.5 923Q471 962 418.5 984.5Q366 1007 295 1007L295 1007ZM1214 1000L975 1000L820 770L820 1000L624 1000L624 260L820 260L820 659L975 439L1210 439L989 721L1214 1000ZM1239 719Q1239 632 1270.5 567Q1302 502 1356.5 467Q1411 432 1478 432L1478 432Q1536 432 1578 455Q1620 478 1643 517L1643 517L1643 439L1839 439L1839 1000L1643 1000L1643 922Q1620 961 1577.5 984Q1535 1007 1478 1007L1478 1007Q1411 1007 1356.5 972Q1302 937 1270.5 871.5Q1239 806 1239 719L1239 719ZM1643 719Q1643 665 1613.5 634Q1584 603 1541 603L1541 603Q1497 603 1468 633.5Q1439 664 1439 719L1439 719Q1439 773 1468 804.5Q1497 836 1541 836L1541 836Q1584 836 1613.5 805Q1643 774 1643 719L1643 719Z" fill="var(--text)"></path><rect x="1951" y="250" width="200" height="757" rx="100" fill="#7B5CFF"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="#FF4F8B"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="var(--overlap)" clip-path="url(#wmL{{t.k}})"></rect></svg><img src="/_blob/5ed5531cea522a44ba1eb787ed4e4ef0" alt="Telefonu güncelleyen kapsül kanki"><h1>Güncelleme gerekli</h1><p>skall'ın bu sürümü artık çalışmıyor. Devam etmek için yeni sürümü yükle, hesabın ve arkadaşların olduğu gibi kalır.</p></div><div class="fx2"><button class="btn primary">Güncelle</button><span>Yüklü sürüm 0.9.3</span></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>

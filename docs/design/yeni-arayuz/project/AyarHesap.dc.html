@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Hesap</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hd{display:flex;align-items:center;justify-content:space-between}
+.acts{display:flex;gap:8px}
+.round{position:relative}
+.round .nd{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--buzz);border:2px solid var(--canvas)}
+.srch{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);color:var(--placeholder);--ci-a:var(--muted);--ci-b:var(--muted)}
+.sg{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);height:44px;padding:4px}
+.sg span{gap:6px}
+.dark .sg span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.cnt{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--buzz);color:var(--on-buzz);font:700 11px/20px var(--font);text-align:center;box-sizing:border-box}
+.lbl{display:flex;align-items:center;gap:6px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted);padding:0 4px;--ci-a:var(--muted);--ci-b:var(--muted)}
+.lst{padding:0;display:flex;flex-direction:column;margin:0 -20px}
+.rw{padding:10px 20px!important}
+.rw+.rw:before{display:none!important}
+.lst+.lst{margin-top:8px}
+.rw{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:72px;position:relative}
+.rw+.rw:before{content:"";position:absolute;top:0;left:76px;right:16px;border-top:1px solid var(--hair)}
+.rw .av{width:48px;height:48px;font-size:17px}
+.mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.l1,.l2{display:flex;align-items:center;gap:8px}
+.nm{font:600 16px/22px var(--font);color:var(--text);flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.tm{font:500 13px/18px var(--font);color:var(--muted);flex:none}
+.tm.new{color:var(--accent);font-weight:700}
+.pv{font:500 15px/22px var(--font);color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);display:flex;align-items:center;gap:4px}
+.pv.un{color:var(--text);font-weight:600}
+.pv.first{font-style:italic}
+.tick{width:18px;height:18px;flex:none;color:var(--read)}
+.mu{width:16px;height:16px;flex:none;--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc{display:flex;align-items:center;gap:12px;height:48px;padding:0 16px;border-radius:999px;color:var(--text);font:600 15px/22px var(--font);--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc .n{margin-left:auto;font:600 13px/18px var(--font);color:var(--muted)}
+.chev{width:18px;height:18px;color:var(--muted)}
+.tb{position:absolute;left:16px;right:16px;bottom:34px;height:68px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:0 6px}
+.ti{width:68px;height:56px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font:600 11px/14px var(--font)}
+.ti .ci{width:22px;height:22px}
+.ti.on{background:#FFFFFF;color:var(--text);box-shadow:var(--shadow-raised)}
+.ti.on .ci{--ci-a:var(--accent);--ci-b:var(--buzz);--ci-bo:1}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#031B0B}
+.dark .ti.on .ci{--ci-a:#0B783D}
+.aura{display:none}
+.tb,.fade{display:none!important}
+.pg{position:absolute;inset:0;z-index:3;background:var(--canvas);overflow:hidden}
+.dark .pg{background:#000}
+.pl{position:absolute;left:0;right:0;top:100px;bottom:0;overflow:hidden}
+.pin{position:absolute;left:0;right:0}
+.ptop{margin:52px 16px 0;display:flex;align-items:center;gap:12px;height:48px}
+.ptop .round{--ci-a:var(--text);color:var(--text)}
+.dark .ptop .round{background:#121614;border-color:rgba(255,255,255,.08);box-shadow:none;color:#EEF3F0}
+.ptop b{font:700 21px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.sl{margin:4px 20px 0;display:flex;flex-direction:column}
+.sr{display:flex;align-items:center;gap:14px;min-height:56px;position:relative;--ci-a:var(--text);--ci-b:var(--text)}
+.dark .sr{--ci-a:#EEF3F0;--ci-b:#EEF3F0}
+.sr+.sr:before{content:"";position:absolute;top:0;left:38px;right:0;border-top:1px solid rgba(3,27,11,.10)}
+.dark .sr+.sr:before{border-top-color:rgba(255,255,255,.10)}
+.sr .ci{width:24px;height:24px}
+.sr p{flex:1;margin:0;font:600 16px/20px var(--font);color:var(--text);display:flex;align-items:center;gap:8px}
+.sr .chev{width:18px;height:18px;color:var(--muted)}
+.sr.dg{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.sr.dg p{color:var(--on-danger-soft)}
+.dark .sr.dg{--ci-a:#FF977E;--ci-b:#FF977E}.dark .sr.dg p{color:#FF977E}
+.sh3{margin:26px 20px 8px;font:700 13px/18px var(--font);color:var(--muted)}
+.seg2{margin:0 20px}
+.dark .seg2 span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.nt{margin:8px 20px 0;font:500 13px/18px var(--font);color:var(--muted)}
+.ob{font:700 8px/11px var(--font);letter-spacing:.4px;color:var(--accent);background:var(--surface2);border-radius:999px;padding:1px 5px}
+.dark .ob{background:#262E2B;color:#3DDC84}
+.ver{margin:22px 20px 0;text-align:center;font:500 12px/16px var(--font);color:var(--muted)}
+.scrim3{position:absolute;inset:0;background:rgba(3,27,11,.42);z-index:8}
+.dark .scrim3{background:rgba(0,0,0,.7)}
+.dlg{position:absolute;left:28px;right:28px;top:280px;z-index:9;background:var(--surface);border-radius:28px;padding:24px 20px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 18px 48px rgba(3,27,11,.22)}
+.dark .dlg{background:#151A18;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.dt{margin:0;font:700 20px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.dx{margin:6px 0 20px;font:500 15px/22px var(--font);color:var(--muted)}
+.dlg .btn{width:100%}
+.dlg .btn.danger{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.dark .dlg .btn.danger{background:rgba(255,151,126,.12);color:#FF977E;--ci-a:#FF977E;--ci-b:#FF977E}
+.dlg .btn.ghost{margin-top:8px;background:none;border:0;box-shadow:none;color:var(--text)}
+
+.ptop2{margin:52px 16px 0;display:flex;align-items:center;gap:12px;height:48px}
+.tr2{padding:10px 0;align-items:center}
+.tr2+.sr:before,.sr+.tr2:before{left:0}
+.tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.tt p{margin:0;font:600 16px/20px var(--font);color:var(--text);display:flex;align-items:center;gap:8px}
+.tt span:not(.ob){font:500 13px/18px var(--font);color:var(--muted)}
+.inf .tt{flex-direction:column-reverse}
+.inf .tt p{font:600 16px/22px var(--font);letter-spacing:.2px}
+.lk2{width:16px;height:16px;color:var(--muted);opacity:.7}
+.dark .toggle{background:#262E2B}
+.dark .toggle i{background:#EEF3F0}
+.dark .toggle.on{background:#3DDC84}
+.dark .toggle.on i{background:#0B0E0D}
+.stt{height:26px;padding:0 10px;border-radius:999px;display:flex;align-items:center;gap:5px;font:600 12px/16px var(--font);background:var(--success-soft);color:var(--on-success-soft)}
+.stt i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.dark .stt{background:rgba(61,220,132,.14);color:#93EBB9}
+.sr .stt+.chev{margin-left:-4px}
+.foot{margin:28px 20px 0;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.foot p{margin:0;font:500 12px/17px var(--font);color:var(--muted)}
+.foot .wm svg{height:26px;width:auto}
+.dlg .ic2{width:56px;height:56px;border-radius:28px;display:flex;align-items:center;justify-content:center;background:var(--danger-soft);margin-bottom:14px;--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.dark .dlg .ic2{background:rgba(255,151,126,.12);--ci-a:#FF977E;--ci-b:#FF977E}
+.dlg .ic2 .ci{width:26px;height:26px}
+.rv2{font:600 13px/16px var(--font);color:var(--muted);margin-left:auto}
+.sr p .rv2{margin-left:auto}
+
+.fade{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(180deg,rgba(239,247,241,0),var(--canvas) 70%);pointer-events:none}
+.dark .fade{background:linear-gradient(180deg,rgba(0,0,0,0),#000 70%)}
+/*TB2*/
+.tb{left:20px;right:20px;bottom:30px;height:60px;padding:0 5px;gap:2px;box-shadow:0 6px 18px rgba(3,27,11,.08),0 0 0 1px rgba(3,27,11,.04)}
+.dark .tb{box-shadow:0 0 0 1px rgba(255,255,255,.07)}
+.ti{flex:1 1 0;min-width:0;width:auto;height:50px;gap:3px;font:600 10px/13px var(--font);letter-spacing:.1px;white-space:nowrap}
+.ti .ci{width:20px;height:20px}
+.ti.on{flex:1 1 0;padding:0;background:#031B0B;color:#FFFFFF;box-shadow:0 4px 12px rgba(3,27,11,.18)}
+.ti.on .ci{--ci-a:#3DDC84;--ci-b:#FF6FA0}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#0B0E0D;box-shadow:none}
+.dark .ti.on .ci{--ci-a:#0B783D;--ci-b:#FF4F8B}
+.dark .ti{color:rgba(238,243,240,.55)}
+/*TB2END*/
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+<div class="pg"><div class="ptop"><button class="round soft" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><b>Hesap</b></div><div class="pl"><div class="pin" style="top:0"><div class="sl"><div class="sr inf"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.6" width="12" height="18.8" rx="4" class="b"></rect><rect x="9.6" y="17" width="4.8" height="2" rx="1" class="a"></rect></svg><div class="tt"><span>Telefon numaran</span><p>+90 5•• ••• •• 01</p></div><svg class="lk2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.4" width="14" height="10.4" rx="3.4" fill="currentColor"></rect><path d="M8.4 10.4V8a3.6 3.6 0 0 1 7.2 0v2.4" fill="none" stroke="currentColor" stroke-width="2.4"></path></svg></div><div class="sr inf"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.6" y="11" width="16.8" height="10" rx="3.6" class="b"></rect><rect x="11" y="5.6" width="2" height="5.4" rx="1" class="a"></rect><path d="M12 2.4c1.4 1.4 1.4 2.6 0 3.4-1.4-.8-1.4-2 0-3.4z" class="a"></path></svg><div class="tt"><span>Doğum tarihin</span><p>05.03.2000</p></div><svg class="lk2" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.4" width="14" height="10.4" rx="3.4" fill="currentColor"></rect><path d="M8.4 10.4V8a3.6 3.6 0 0 1 7.2 0v2.4" fill="none" stroke="currentColor" stroke-width="2.4"></path></svg></div></div>
+<p class="nt">Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez; profilinde yalnızca yaşın görünür. Yanlış girdiysen İletişim'den bize yaz.</p>
+<div class="sl" style="margin-top:14px"><div class="sr" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.6h16a2.6 2.6 0 0 1 2.6 2.6v8a2.6 2.6 0 0 1-2.6 2.6H11l-5 3.4v-3.4H4a2.6 2.6 0 0 1-2.6-2.6v-8A2.6 2.6 0 0 1 4 5.6z" class="b"></path><circle cx="8" cy="12.2" r="1.5" class="a"></circle><circle cx="12" cy="12.2" r="1.5" class="a"></circle><circle cx="16" cy="12.2" r="1.5" class="a"></circle></svg><p>İletişim</p><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div></div>
+<div class="sl" style="margin-top:14px"><div class="sr dg" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="11" height="16" rx="4" class="b"></rect><path d="M10.6 12h10M17.4 8.4 21 12l-3.6 3.6" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg><p>Çıkış yap</p></div><div class="sr dg" role="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.4" y="7.4" width="13.2" height="14" rx="3.6" class="b"></rect><rect x="3.4" y="4.4" width="17.2" height="3.2" rx="1.6" class="a"></rect><rect x="9.2" y="2" width="5.6" height="3" rx="1.5" class="a"></rect></svg><p>Hesabımı sil</p></div></div>
+<div class="foot"><span class="wm"><svg viewBox="27 250 2254 757" width="95.3" height="32" role="img" aria-label="skall"><defs><clipPath id="wmL{{t.k}}"><rect x="1951" y="250" width="200" height="757" rx="100"></rect></clipPath></defs><path d="M295 1007Q219 1007 159.5 981.5Q100 956 65.5 911.5Q31 867 27 811L27 811L217 811Q221 838 242 853Q263 868 294 868L294 868Q318 868 332 858Q346 848 346 832L346 832Q346 811 323 801Q300 791 247 779L247 779Q187 767 147 752Q107 737 77.5 703Q48 669 48 611L48 611Q48 561 75 520.5Q102 480 154.5 456Q207 432 281 432L281 432Q391 432 454 486Q517 540 527 628L527 628L350 628Q345 601 326.5 586.5Q308 572 277 572L277 572Q253 572 240.5 581Q228 590 228 606L228 606Q228 626 251 636.5Q274 647 325 658L325 658Q386 671 426.5 687Q467 703 497.5 738.5Q528 774 528 835L528 835Q528 884 499.5 923Q471 962 418.5 984.5Q366 1007 295 1007L295 1007ZM1214 1000L975 1000L820 770L820 1000L624 1000L624 260L820 260L820 659L975 439L1210 439L989 721L1214 1000ZM1239 719Q1239 632 1270.5 567Q1302 502 1356.5 467Q1411 432 1478 432L1478 432Q1536 432 1578 455Q1620 478 1643 517L1643 517L1643 439L1839 439L1839 1000L1643 1000L1643 922Q1620 961 1577.5 984Q1535 1007 1478 1007L1478 1007Q1411 1007 1356.5 972Q1302 937 1270.5 871.5Q1239 806 1239 719L1239 719ZM1643 719Q1643 665 1613.5 634Q1584 603 1541 603L1541 603Q1497 603 1468 633.5Q1439 664 1439 719L1439 719Q1439 773 1468 804.5Q1497 836 1541 836L1541 836Q1584 836 1613.5 805Q1643 774 1643 719L1643 719Z" fill="var(--text)"></path><rect x="1951" y="250" width="200" height="757" rx="100" fill="#7B5CFF"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="#FF4F8B"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="var(--overlap)" clip-path="url(#wmL{{t.k}})"></rect></svg></span><p>Sürüm 0.11.0</p><p>Mekân verileri © OpenStreetMap katkıda bulunanlar (ODbL).</p></div>
+</div></div></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>

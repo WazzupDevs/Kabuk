@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>İstek gönder</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.cover{position:absolute;left:0;right:0;top:0;height:250px;background:url(/_blob/a84d04f0b90528f2c615940429dab13b) center 40%/cover}
+.cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28) 0,rgba(0,0,0,0) 34%,rgba(239,247,241,0) 55%,var(--canvas) 100%)}
+.dark .cover:after{background:linear-gradient(180deg,rgba(0,0,0,.35) 0,rgba(0,0,0,0) 34%,rgba(0,0,0,0) 55%,#000 100%)}
+.tp{position:absolute;left:16px;right:16px;top:52px;display:flex;justify-content:space-between;z-index:2}
+.tp .round{background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9)}
+.dark .tp .round{background:rgba(18,22,20,.72);border-color:rgba(255,255,255,.12)}
+.body{position:absolute;left:20px;right:20px;top:178px;display:flex;flex-direction:column;align-items:center}
+.pic{width:112px;height:112px;border-radius:50%;border:4px solid var(--canvas);background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;font:700 40px/1 var(--font);box-sizing:border-box}
+.nm{margin-top:12px;font:600 28px/34px var(--font);letter-spacing:-.6px;color:var(--text)}
+.bio{margin-top:4px;font:500 15px/22px var(--font);color:var(--muted);text-align:center}
+.acts{margin-top:20px;display:flex;gap:12px;width:100%}
+.acts .btn{flex:1;padding:0 12px}
+.btn.primary{--ci-a:var(--on-primary);--ci-b:var(--on-primary)}
+.btn.friend{background:var(--success-soft);color:var(--on-success-soft);--ci-a:var(--on-success-soft);--ci-b:var(--on-success-soft)}
+.dark .btn.friend{background:rgba(61,220,132,.14);color:#93EBB9;--ci-a:#93EBB9;--ci-b:#93EBB9}
+.dark .btn.primary{box-shadow:none}
+.sh{align-self:stretch;margin-top:28px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted)}
+.stats{align-self:stretch;margin-top:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.st{border-radius:22px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.st b{font:800 26px/32px var(--font);color:var(--text)}
+.st span{font:500 13px/17px var(--font);color:var(--muted)}
+.mut{align-self:stretch;margin-top:24px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:22px}
+.mut .stack .av{width:36px;height:36px;font-size:13px;margin-left:-10px;border-width:2px;border-color:var(--canvas)}
+.mut .stack .av:first-child{margin-left:0}
+.mut p{flex:1;font:500 15px/20px var(--font);color:var(--text)}
+.mut p span{color:var(--muted)}
+.mut p span{display:block}
+.last p span{display:block}
+.gm{width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex:none}
+.gm svg{width:26px;height:26px}
+.dark .gm{background:#1B211F}
+.chev{width:18px;height:18px;color:var(--muted)}
+
+.acts .wide{flex:1}
+.ctx{margin:12px 0 0;text-align:center;font:500 13px/18px var(--font);color:var(--muted)}
+.scrim{position:absolute;inset:0;background:rgba(3,27,11,.42);z-index:20}
+.dark .scrim{background:rgba(0,0,0,.7)}
+.dlg{position:absolute;left:28px;right:28px;top:250px;z-index:22;background:var(--surface);border-radius:28px;padding:24px 20px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 18px 48px rgba(3,27,11,.22)}
+.dark .dlg{background:#151A18;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.dt{margin:14px 0 0;font:700 21px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.dx{margin:6px 0 18px;font:500 15px/22px var(--font);color:var(--muted)}
+.dlg .btn{width:100%}
+.dlg .btn .ci{--ci-a:currentColor;--ci-b:currentColor}
+.dlg .btn.danger{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.dark .dlg .btn.danger{background:rgba(255,151,126,.12);color:#FF977E;--ci-a:#FF977E;--ci-b:#FF977E}
+.dlg .btn.ghost{margin-top:8px;background:none;border:0;box-shadow:none;color:var(--text)}
+.dark .dlg .btn.ghost{color:#EEF3F0}
+.dav{width:64px;height:64px;border-radius:32px;display:flex;align-items:center;justify-content:center;font:700 26px/1 var(--font);color:#fff;background:#2C63D6}
+.pvl{display:flex;gap:6px;justify-content:center;margin:0 0 18px;flex-wrap:wrap}
+.pvl span{height:28px;padding:0 10px;border-radius:999px;display:flex;align-items:center;font:600 12px/16px var(--font);background:var(--surface2);color:var(--text)}
+.dark .pvl span{background:#1B211F;color:#EEF3F0}
+.ei{width:56px;height:56px;border-radius:28px;display:flex;align-items:center;justify-content:center;background:rgba(214,64,40,.10);--ci-a:var(--danger,#C8381F);--ci-b:var(--danger,#C8381F)}
+.dark .ei{background:rgba(255,151,126,.12);--ci-a:#FF977E;--ci-b:#FF977E}
+.ei .ci{width:28px;height:28px}
+.chk{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:0 0 18px;padding:12px 0;border-top:1px solid rgba(3,27,11,.08);border-bottom:1px solid rgba(3,27,11,.08)}
+.dark .chk{border-color:rgba(255,255,255,.08)}
+.chk p{margin:0;flex:1;font:600 15px/20px var(--font);color:var(--text)}
+.chk p span{display:block;font:500 13px/18px var(--font);color:var(--muted)}
+.cb{width:24px;height:24px;border-radius:7px;flex:none;box-shadow:inset 0 0 0 2px rgba(3,27,11,.28);display:flex;align-items:center;justify-content:center}
+.cb svg{width:18px;height:18px;display:none;color:#fff}
+.cb.on{background:#031B0B;box-shadow:none}.cb.on svg{display:block}
+.dark .cb{box-shadow:inset 0 0 0 2px rgba(255,255,255,.3)}
+.dark .cb.on{background:rgba(255,255,255,.94)}.dark .cb.on svg{color:#0B0E0D}
+.ssh{position:absolute;left:8px;right:8px;bottom:8px;z-index:22;background:var(--surface);border-radius:28px;padding:10px 20px 34px;box-shadow:0 -8px 40px rgba(3,27,11,.18)}
+.dark .ssh{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.ssh .grb{width:40px;height:5px;border-radius:3px;background:rgba(3,27,11,.18);margin:0 auto 16px}
+.dark .ssh .grb{background:rgba(255,255,255,.22)}
+.ssh h2{margin:0;font:700 21px/26px var(--font);letter-spacing:-.3px;color:var(--text)}
+.ssh .sx{margin:4px 0 10px;font:500 14px/20px var(--font);color:var(--muted)}
+.rr{display:flex;align-items:center;gap:12px;min-height:52px;position:relative}
+.rr+.rr:before{content:"";position:absolute;top:0;left:36px;right:0;border-top:1px solid rgba(3,27,11,.08)}
+.dark .rr+.rr:before{border-top-color:rgba(255,255,255,.08)}
+.rr p{margin:0;flex:1;font:600 16px/20px var(--font);color:var(--text)}
+.rr p span{display:block;font:500 13px/17px var(--font);color:var(--muted)}
+.rd{width:24px;height:24px;border-radius:12px;flex:none;box-shadow:inset 0 0 0 2px rgba(3,27,11,.28)}
+.rd.on{box-shadow:inset 0 0 0 7px #031B0B}
+.dark .rd{box-shadow:inset 0 0 0 2px rgba(255,255,255,.3)}.dark .rd.on{box-shadow:inset 0 0 0 7px rgba(255,255,255,.94)}
+.nta{margin-top:10px;height:72px;border-radius:18px;background:var(--surface2);padding:12px 14px;box-sizing:border-box;font:500 15px/20px var(--font);color:var(--muted);display:flex;justify-content:space-between}
+.nta small{align-self:flex-end;font:500 12px/16px var(--font)}
+.dark .nta{background:#1B211F}
+.ssh .btn{width:100%;margin-top:14px}
+.ssh .btn.danger{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.dark .ssh .btn.danger{background:rgba(255,151,126,.12);color:#FF977E;--ci-a:#FF977E;--ci-b:#FF977E}
+.ob{font:700 10px/14px var(--font);letter-spacing:.4px;color:var(--accent);background:var(--surface2);border-radius:999px;padding:2px 7px;margin-left:6px;display:inline-block;vertical-align:1px}
+.dark .ob{background:#1B211F;color:#3DDC84}
+.pop{top:104px;z-index:22}
+
+.pop{position:absolute;right:12px;top:104px;width:292px;z-index:8;background:var(--surface);border-radius:28px;padding:16px 8px 8px;box-shadow:0 18px 48px rgba(3,27,11,.22),0 0 0 1px rgba(3,27,11,.06)}
+.dark .pop{background:#151A18;box-shadow:0 18px 48px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08)}
+.pt{display:flex;justify-content:space-between;align-items:baseline;padding:0 12px;font:500 13px/18px var(--font);color:var(--muted)}
+.pt b{font:700 14px/18px var(--font);color:var(--text)}
+.pbar{margin:10px 12px 8px;height:5px;border-radius:3px;background:var(--surface2);overflow:hidden}
+.dark .pbar{background:#262E2B}
+.pbar i{display:block;height:100%;width:72%;border-radius:3px;background:var(--primary)}
+.dark .pbar i{background:#3DDC84}
+.pi{display:flex;align-items:center;gap:14px;min-height:48px;padding:6px 12px;border-radius:18px;--ci-a:var(--primary);--ci-b:var(--primary)}
+.dark .pi{--ci-a:#3DDC84;--ci-b:#3DDC84}
+.pi .ci{width:22px;height:22px;flex:none}
+.pi p{flex:1;margin:0;font:600 16px/20px var(--font);color:var(--text)}
+.pi p span{display:block;font:500 13px/17px var(--font);color:var(--muted)}
+.pi .rv{font:500 14px/18px var(--font);color:var(--muted)}
+.pi.off p{color:var(--muted)}
+.pi.off .ci{opacity:.5}
+.obx{font:700 10px/14px var(--font);letter-spacing:.4px;color:var(--accent);background:var(--surface2);border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:2px;display:inline-block}
+.dark .obx{background:#1B211F;color:#3DDC84}
+.pi p span.obx{display:inline-block;font:700 10px/14px var(--font);color:var(--accent)}
+.dark .pi p span.obx{color:#3DDC84}
+.pi{position:relative}
+.pi+.pi:before{content:"";position:absolute;top:0;left:48px;right:12px;border-top:1px solid rgba(3,27,11,.10)}
+.dark .pi+.pi:before{border-top-color:rgba(255,255,255,.10)}
+.psep{height:1px;margin:6px 12px;background:rgba(3,27,11,.08)}
+.dark .psep{background:rgba(255,255,255,.08)}
+.pi.dg p{color:var(--danger,#C8381F)}
+.pi.dg{--ci-a:var(--danger,#C8381F);--ci-b:var(--danger,#C8381F)}
+.dark .pi.dg p{color:#FF977E}
+.dark .pi.dg{--ci-a:#FF977E;--ci-b:#FF977E}
+.tg{width:44px;height:26px;border-radius:13px;background:var(--surface2);position:relative;flex:none;box-shadow:inset 0 0 0 1px rgba(3,27,11,.10)}
+.dark .tg{background:#262E2B;box-shadow:none}
+.tg:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:10px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="cover"></div>
+<div class="tp">
+<button class="round" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+<button class="round" aria-label="Diğer: sessize al, şikâyet et, engelle"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2" class="a"></circle><circle cx="12" cy="12" r="2.2" class="a"></circle><circle cx="12" cy="19" r="2.2" class="a"></circle></svg></button>
+</div>
+<div class="body">
+<div class="pic" style="background:#2C63D6">E</div>
+<p class="nm">Ece, 24</p>
+<p class="bio">Kahvesiz oyun oynamam</p>
+<div class="acts"><button class="btn primary wide"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7.8" r="3.5" class="a"></circle><rect x="2.8" y="13.6" width="12.4" height="7" rx="3.5" class="b"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" transform="rotate(90 18.6 10)" class="a"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" class="a"></rect></svg>Arkadaşlık isteği gönder</button></div><p class="ctx">Mekan sohbetinden<span class="ob">ÖNERİ</span></p>
+</div>
+<div class="scrim"></div><div class="dlg" role="alertdialog" aria-label="İstek gönder"><span class="dav">E</span>
+<p class="dt">Ece'ye istek gönderilsin mi?</p>
+<p class="dx" style="margin-bottom:12px">İstek gönderirsen profilin ona görünür:</p>
+<div class="pvl"><span>Adın</span><span>Yaşın</span><span>Fotoğrafın</span></div>
+<button class="btn primary"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7.8" r="3.5" class="a"></circle><rect x="2.8" y="13.6" width="12.4" height="7" rx="3.5" class="b"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" transform="rotate(90 18.6 10)" class="a"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" class="a"></rect></svg>İsteği gönder</button><button class="btn ghost">Vazgeç</button></div></div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>

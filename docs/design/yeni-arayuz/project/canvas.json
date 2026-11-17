@@ -1,0 +1,1969 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "AkisYaz.dc.html": {
+   "h": 844,
+   "title": "30 Akışa yaz · yazılmış, masa ekli · açık | koyu",
+   "w": 820,
+   "x": 9900,
+   "y": 15000
+  },
+  "AkisYazBos.dc.html": {
+   "h": 844,
+   "title": "29 Akışa yaz · boş · açık | koyu",
+   "w": 820,
+   "x": 9000,
+   "y": 15000
+  },
+  "AktivitelerBaglantiYok.dc.html": {
+   "h": 844,
+   "title": "66 Bağlantı yok (Aktiviteler örneği) · açık | koyu",
+   "w": 820,
+   "x": 9000,
+   "y": 21250
+  },
+  "AktivitelerBos.dc.html": {
+   "h": 844,
+   "title": "07 Aktiviteler · etkinlik yok · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 7500
+  },
+  "AktivitelerDolu.dc.html": {
+   "h": 844,
+   "title": "07a Aktiviteler · etkinlik var · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 7500
+  },
+  "AktivitelerHata.dc.html": {
+   "h": 844,
+   "title": "66a Hata (Aktiviteler örneği) · açık | koyu",
+   "w": 820,
+   "x": 9900,
+   "y": 21250
+  },
+  "Arkadaslar.dc.html": {
+   "h": 844,
+   "title": "06 Arkadaşlar · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 6250
+  },
+  "ArkadaslarKaydir.dc.html": {
+   "h": 844,
+   "title": "06b Arkadaşlar · kaydırılmış · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 6250
+  },
+  "Arsiv.dc.html": {
+   "h": 844,
+   "title": "01f Arşivlenenler · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 0
+  },
+  "ArsivBos.dc.html": {
+   "h": 844,
+   "title": "01h Arşiv · boş · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 0
+  },
+  "ArsivUzunBas.dc.html": {
+   "h": 844,
+   "title": "01g Arşiv · uzun basma menüsü · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 0
+  },
+  "AyarBildirim.dc.html": {
+   "h": 844,
+   "title": "03l Ayarlar · Bildirim ayarları · açık | koyu",
+   "w": 820,
+   "x": 9000,
+   "y": 2500
+  },
+  "AyarBildirimKapali.dc.html": {
+   "h": 844,
+   "title": "63 Ayarlar · Bildirim izni kapalı · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 21250
+  },
+  "AyarGizlilik.dc.html": {
+   "h": 844,
+   "title": "03m Ayarlar · Gizlilik · açık | koyu",
+   "w": 820,
+   "x": 9900,
+   "y": 2500
+  },
+  "AyarHesap.dc.html": {
+   "h": 844,
+   "title": "03n Ayarlar · Hesap · açık | koyu",
+   "w": 820,
+   "x": 10800,
+   "y": 2500
+  },
+  "AyarHesapSil.dc.html": {
+   "h": 844,
+   "title": "03o Ayarlar · Hesabı sil onayı · açık | koyu",
+   "w": 820,
+   "x": 11700,
+   "y": 2500
+  },
+  "Ayarlar.dc.html": {
+   "h": 844,
+   "title": "03i Ayarlar · açık | koyu",
+   "w": 820,
+   "x": 7200,
+   "y": 2500
+  },
+  "AyarlarCikis.dc.html": {
+   "h": 844,
+   "title": "03k Ayarlar · çıkış onayı · açık | koyu",
+   "w": 820,
+   "x": 8100,
+   "y": 2500
+  },
+  "Bildirimler.dc.html": {
+   "h": 844,
+   "title": "04 Bildirimler · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 3750
+  },
+  "DmDuzenle.dc.html": {
+   "h": 844,
+   "title": "02d DM · mesajı düzenleme · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 1250
+  },
+  "DmDuzenlendi.dc.html": {
+   "h": 844,
+   "title": "02e DM · düzenlenmiş mesajlar · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 1250
+  },
+  "DmMesajMenu.dc.html": {
+   "h": 844,
+   "title": "02b DM · mesaja uzun basma (gelen mesaj) · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 1250
+  },
+  "DmMesajMenuBen.dc.html": {
+   "h": 844,
+   "title": "02c DM · mesaja uzun basma (kendi mesajın) · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 1250
+  },
+  "DmSohbet.dc.html": {
+   "h": 844,
+   "title": "02 DM sohbeti · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 1250
+  },
+  "EngelleOnay.dc.html": {
+   "h": 844,
+   "title": "61 Engelle onayı · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 20000
+  },
+  "Engellenenler.dc.html": {
+   "h": 844,
+   "title": "03p Gizlilik · Engellenenler · açık | koyu",
+   "w": 820,
+   "x": 12600,
+   "y": 2500
+  },
+  "EngellenenlerBos.dc.html": {
+   "h": 844,
+   "title": "03q Gizlilik · Engellenenler boş · açık | koyu",
+   "w": 820,
+   "x": 13500,
+   "y": 2500
+  },
+  "GecitAcik.dc.html": {
+   "h": 844,
+   "title": "13 Geçit açıldı · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 12500
+  },
+  "GecitSoru.dc.html": {
+   "h": 844,
+   "title": "12 Geçit · günün sorusu · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 12500
+  },
+  "Gecmis.dc.html": {
+   "h": 844,
+   "title": "08 Aktiviteler · geçmiş · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 8750
+  },
+  "GecmisKaydir.dc.html": {
+   "h": 844,
+   "title": "08b Aktiviteler geçmiş · kaydırılmış · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 8750
+  },
+  "GecmisMasa.dc.html": {
+   "h": 844,
+   "title": "09 Geçmiş masa sayfası · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 10000
+  },
+  "GuncellemeGerekli.dc.html": {
+   "h": 844,
+   "title": "65 Güncelleme gerekli · açık | koyu",
+   "w": 820,
+   "x": 8100,
+   "y": 21250
+  },
+  "HediyeOranlar.dc.html": {
+   "h": 844,
+   "title": "62c Hediye paketi · Oranlar · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 21250
+  },
+  "HediyePaket.dc.html": {
+   "h": 844,
+   "title": "62 Hediye paketleri · açılacak paket yok · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 21250
+  },
+  "HediyePaketAc.dc.html": {
+   "h": 844,
+   "title": "62a Hediye paketleri · 1 paket açılabilir · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 21250
+  },
+  "HediyePaketKilit.dc.html": {
+   "h": 844,
+   "title": "62b Hediye paketleri · Gümüş kilitli · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 21250
+  },
+  "HediyeSonuc.dc.html": {
+   "h": 844,
+   "title": "62e Hediye paketi · çıkan aksesuar · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 21250
+  },
+  "HediyeYirt.dc.html": {
+   "h": 844,
+   "title": "62d Hediye paketi · yırtma · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 21250
+  },
+  "IsteklerBos.dc.html": {
+   "h": 844,
+   "title": "05 İstekler boş · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 5000
+  },
+  "IsteklerDolu.dc.html": {
+   "h": 844,
+   "title": "05a Mesajlar · İstekler dolu · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 5000
+  },
+  "KapsulSusle.dc.html": {
+   "h": 844,
+   "title": "03f Kapsülünü süsle · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 2500
+  },
+  "KayitAcilis.dc.html": {
+   "h": 844,
+   "title": "47 Kayıt · Açılış · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 18750
+  },
+  "KayitAd.dc.html": {
+   "h": 844,
+   "title": "51 Kayıt 4/7 · Ad · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 18750
+  },
+  "KayitCinsiyet.dc.html": {
+   "h": 844,
+   "title": "54 Kayıt 6/7 · Cinsiyet · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 18750
+  },
+  "KayitDogum.dc.html": {
+   "h": 844,
+   "title": "52 Kayıt 5/7 · Doğum tarihi · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 18750
+  },
+  "KayitDogumOnay.dc.html": {
+   "h": 844,
+   "title": "53 Kayıt 5/7 · Doğum tarihi onayı · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 18750
+  },
+  "KayitFoto.dc.html": {
+   "h": 844,
+   "title": "55 Kayıt 7/7 · Profil fotoğrafı · açık | koyu",
+   "w": 820,
+   "x": 7200,
+   "y": 18750
+  },
+  "KayitKod.dc.html": {
+   "h": 844,
+   "title": "50 Kayıt 3/7 · SMS kodu · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 18750
+  },
+  "KayitMetinler.dc.html": {
+   "h": 844,
+   "title": "56 Metinler güncellendi · açık | koyu",
+   "w": 820,
+   "x": 8100,
+   "y": 18750
+  },
+  "KayitOnay.dc.html": {
+   "h": 844,
+   "title": "48 Kayıt 1/7 · Başlamadan önce · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 18750
+  },
+  "KayitTelefon.dc.html": {
+   "h": 844,
+   "title": "49 Kayıt 2/7 · Telefon numarası · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 18750
+  },
+  "Kesfet.dc.html": {
+   "h": 844,
+   "title": "10 Keşfet · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 11250
+  },
+  "KesfetHarita.dc.html": {
+   "h": 844,
+   "title": "11 Keşfet · harita · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 11250
+  },
+  "KesfetKaydir.dc.html": {
+   "h": 844,
+   "title": "10c Keşfet · kaydırılmış (örnek 8 mekan) · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 11250
+  },
+  "KesfetSemtIcerde.dc.html": {
+   "h": 844,
+   "title": "10b Keşfet · semt sohbetindesin · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 11250
+  },
+  "Main.dc.html": {
+   "h": 844,
+   "title": "01 Mesajlar · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0
+  },
+  "Masa.dc.html": {
+   "h": 844,
+   "title": "33 Masa · dolu · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 16250
+  },
+  "MasaAt.dc.html": {
+   "h": 844,
+   "title": "38 Masadan at onayı · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 16250
+  },
+  "MasaBitti.dc.html": {
+   "h": 844,
+   "title": "64 Masa bitti · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 21250
+  },
+  "MasaBittiArkadas.dc.html": {
+   "h": 844,
+   "title": "64a Masa bitti · arkadaş oldunuz · açık | koyu",
+   "w": 820,
+   "x": 7200,
+   "y": 21250
+  },
+  "MasaDavet.dc.html": {
+   "h": 844,
+   "title": "36 Masana davet et sayfası · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 16250
+  },
+  "MasaKur.dc.html": {
+   "h": 844,
+   "title": "32a Masa kur · açık | koyu",
+   "w": 820,
+   "x": 13500,
+   "y": 15000
+  },
+  "MasaKurGorsel.dc.html": {
+   "h": 844,
+   "title": "32c Masa kur · masa görseli seç · açık | koyu",
+   "w": 820,
+   "x": 15300,
+   "y": 15000
+  },
+  "MasaKurLobi.dc.html": {
+   "h": 844,
+   "title": "32b Masa kur · lobide, niyet · açık | koyu",
+   "w": 820,
+   "x": 14400,
+   "y": 15000
+  },
+  "MasaSecenek.dc.html": {
+   "h": 844,
+   "title": "34 Masa · seçenekler menüsü · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 16250
+  },
+  "MasaSohbet.dc.html": {
+   "h": 844,
+   "title": "37 Masa sohbeti · boş · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 16250
+  },
+  "Masadakiler.dc.html": {
+   "h": 844,
+   "title": "35 Masadakiler · sheet · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 16250
+  },
+  "MekanAkis.dc.html": {
+   "h": 844,
+   "title": "27 Mekan · akış · açık | koyu",
+   "w": 820,
+   "x": 7200,
+   "y": 15000
+  },
+  "MekanAkisKaydir.dc.html": {
+   "h": 844,
+   "title": "28 Mekan · akış kaydırılmış · açık | koyu",
+   "w": 820,
+   "x": 8100,
+   "y": 15000
+  },
+  "MekanAnonimGec.dc.html": {
+   "h": 844,
+   "title": "25b Mekan · anonime geç onayı · açık | koyu",
+   "w": 820,
+   "x": 12600,
+   "y": 15000
+  },
+  "MekanAyril.dc.html": {
+   "h": 844,
+   "title": "26 Mekandan ayrıl onayı · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 15000
+  },
+  "MekanDetay.dc.html": {
+   "h": 844,
+   "title": "17 Mekan detayı · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 13750
+  },
+  "MekanKaydir.dc.html": {
+   "h": 844,
+   "title": "23 Mekan · kaydırılmış, açık masalar · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 15000
+  },
+  "MekanKonum.dc.html": {
+   "h": 844,
+   "title": "18 Konum doğrulama · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 13750
+  },
+  "MekanKonumDisari.dc.html": {
+   "h": 844,
+   "title": "11c Mekan · mekanın dışındasın · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 13750
+  },
+  "MekanKonumIzin.dc.html": {
+   "h": 844,
+   "title": "11b Mekan · konum izni kapalı · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 13750
+  },
+  "MekanLobiAc.dc.html": {
+   "h": 844,
+   "title": "21 Masanı lobiye aç · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 15000
+  },
+  "MekanMasa.dc.html": {
+   "h": 844,
+   "title": "20 Mekan · masan var, lobide değil · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 15000
+  },
+  "MekanMasaDolu.dc.html": {
+   "h": 844,
+   "title": "22 Mekan · masa dolu, lobide · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 15000
+  },
+  "MekanMasaYok.dc.html": {
+   "h": 844,
+   "title": "19 Mekan · masan yok · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 15000
+  },
+  "MekanProfil.dc.html": {
+   "h": 844,
+   "title": "57 Mekan sohbetinden profil · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 20000
+  },
+  "MekanProfilGec.dc.html": {
+   "h": 844,
+   "title": "25 Profiline geç onayı · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 15000
+  },
+  "MekanProfilIstek.dc.html": {
+   "h": 844,
+   "title": "58 Arkadaşlık isteği onayı · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 20000
+  },
+  "MekanProfilMenu.dc.html": {
+   "h": 844,
+   "title": "59 Profil ⋮ menüsü · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 20000
+  },
+  "MekanSecenek.dc.html": {
+   "h": 844,
+   "title": "24 Mekan · seçenekler menüsü · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 15000
+  },
+  "MekanSohbet.dc.html": {
+   "h": 844,
+   "title": "31 Mekan sohbeti · açık | koyu",
+   "w": 820,
+   "x": 10800,
+   "y": 15000
+  },
+  "MekanSohbetSecenek.dc.html": {
+   "h": 844,
+   "title": "32 Mekan sohbeti · seçenekler menüsü · açık | koyu",
+   "w": 820,
+   "x": 11700,
+   "y": 15000
+  },
+  "MesajlarKaydir.dc.html": {
+   "h": 844,
+   "title": "01b Mesajlar · kaydırılmış · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0
+  },
+  "MesajlarSohbetSil.dc.html": {
+   "h": 844,
+   "title": "01e Sohbeti sil onayı · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 0
+  },
+  "MesajlarUzunBas.dc.html": {
+   "h": 844,
+   "title": "01c Mesajlar · sohbete uzun basma menüsü · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 0
+  },
+  "MesajlarUzunBasSabit.dc.html": {
+   "h": 844,
+   "title": "01d Mesajlar · sabitli sohbete uzun basma · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 0
+  },
+  "Odadakiler.dc.html": {
+   "h": 844,
+   "title": "16 Odadakiler · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 12500
+  },
+  "OyunLobi.dc.html": {
+   "h": 844,
+   "title": "39 Oyun lobisi · bekleniyor, başlat pasif · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 17500
+  },
+  "OyunLobiGozlemci.dc.html": {
+   "h": 844,
+   "title": "44 Oyun lobisi · gözlemciler var (masa sahibi) · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 17500
+  },
+  "OyunLobiHazir.dc.html": {
+   "h": 844,
+   "title": "40 Oyun lobisi · herkes hazır · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 17500
+  },
+  "OyunLobiKatilimci.dc.html": {
+   "h": 844,
+   "title": "41 Oyun lobisi · katılımcı, hazır değil · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 17500
+  },
+  "OyunLobiKatilimciHazir.dc.html": {
+   "h": 844,
+   "title": "42 Oyun lobisi · katılımcı, hazır · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 17500
+  },
+  "OyunLobiKisiMenu.dc.html": {
+   "h": 844,
+   "title": "43 Oyun lobisi · kişi menüsü (masa sahibi) · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 17500
+  },
+  "ProfilBaskasi.dc.html": {
+   "h": 844,
+   "title": "03 Başkasının profili · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 2500
+  },
+  "ProfilBen.dc.html": {
+   "h": 844,
+   "title": "03b Profilim · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 2500
+  },
+  "ProfilBenKaydir.dc.html": {
+   "h": 844,
+   "title": "03c Profilim · kaydırılmış · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 2500
+  },
+  "ProfilDuzenle.dc.html": {
+   "h": 844,
+   "title": "03d Profili düzenle · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 2500
+  },
+  "ProfilDuzenleYaz.dc.html": {
+   "h": 844,
+   "title": "03e Profili düzenle · değişiklik var · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 2500
+  },
+  "SemtSecenek.dc.html": {
+   "h": 844,
+   "title": "15 Semt sohbeti · seçenekler menüsü · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 12500
+  },
+  "SemtSohbet.dc.html": {
+   "h": 844,
+   "title": "14 Semt sohbeti · ilk gelen · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 12500
+  },
+  "SessizAlinanlar.dc.html": {
+   "h": 844,
+   "title": "03r Gizlilik · Sessize alınanlar · açık | koyu",
+   "w": 820,
+   "x": 14400,
+   "y": 2500
+  },
+  "SessizAlinanlarBos.dc.html": {
+   "h": 844,
+   "title": "03s Gizlilik · Sessize alınanlar boş · açık | koyu",
+   "w": 820,
+   "x": 15300,
+   "y": 2500
+  },
+  "SikayetEt.dc.html": {
+   "h": 844,
+   "title": "60 Şikayet et · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 20000
+  },
+  "TakimLobi.dc.html": {
+   "h": 844,
+   "title": "45 Takımlı oyun lobisi · Kinshi · masa sahibi · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 17500
+  },
+  "TakimLobiKisiMenu.dc.html": {
+   "h": 844,
+   "title": "46 Takımlı lobi · kişi menüsü (masa sahibi) · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 17500
+  },
+  "TumAksesuarlar.dc.html": {
+   "h": 844,
+   "title": "03g Tüm aksesuarlar · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 2500
+  },
+  "TumAksesuarlarKaydir.dc.html": {
+   "h": 844,
+   "title": "03h Tüm aksesuarlar: kaydırınca · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 2500
+  },
+  "YasalMetin.dc.html": {
+   "h": 844,
+   "title": "03t Yasal metin (4 belge aynı şablon) · açık | koyu",
+   "w": 820,
+   "x": 16200,
+   "y": 2500
+  },
+  "HareketDegerler.dc.html": {
+   "h": 1040,
+   "title": "70 Hareket · ortak değerler (MOTION adları)",
+   "w": 1400,
+   "x": 0,
+   "y": 0,
+   "page": "hareket"
+  },
+  "HareketTablo.dc.html": {
+   "h": 4100,
+   "title": "71 Hareket tablosu · uzun basma, dialog, liste, DM, Süsle, katalog, Odadakiler, bilet",
+   "w": 1400,
+   "x": 1500,
+   "y": 0,
+   "page": "hareket"
+  },
+  "SusleRenk.dc.html": {
+   "h": 844,
+   "title": "72 Kapsülünü süsle · Renk sekmesi · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 22500
+  },
+  "SusleGoz.dc.html": {
+   "h": 844,
+   "title": "73 Kapsülünü süsle · Göz sekmesi · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 22500
+  },
+  "SusleYuz.dc.html": {
+   "h": 844,
+   "title": "74 Kapsülünü süsle · Yüz sekmesi · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 22500
+  },
+  "SusleAgiz.dc.html": {
+   "h": 844,
+   "title": "75 Kapsülünü süsle · Ağız sekmesi (ÖNERİ), ağız boş · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 22500
+  },
+  "SusleGovde.dc.html": {
+   "h": 844,
+   "title": "76 Kapsülünü süsle · Gövde sekmesi · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 22500
+  },
+  "SusleKaydetPasif.dc.html": {
+   "h": 844,
+   "title": "77 Kapsülünü süsle · değişiklik yok, Kaydet pasif · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 22500
+  },
+  "SusleKaydediliyor.dc.html": {
+   "h": 844,
+   "title": "78 Kapsülünü süsle · kaydediliyor · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 22500
+  },
+  "SusleKaydedilemedi.dc.html": {
+   "h": 844,
+   "title": "79 Kapsülünü süsle · kaydedilemedi · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 22500
+  },
+  "SusleCikis.dc.html": {
+   "h": 844,
+   "title": "80 Kapsülünü süsle · kaydetmeden çıkış onayı · açık | koyu",
+   "w": 820,
+   "x": 7200,
+   "y": 22500
+  },
+  "TumSecili.dc.html": {
+   "h": 844,
+   "title": "81 Tüm aksesuarlar · parça seçili (ÖNERİ: Kapsülüne tak) · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 23750
+  },
+  "TumTakim.dc.html": {
+   "h": 844,
+   "title": "82 Tüm aksesuarlar · takım seçili · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 23750
+  },
+  "TumAra.dc.html": {
+   "h": 844,
+   "title": "83 Tüm aksesuarlar · arama açık · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 23750
+  },
+  "TumAraBos.dc.html": {
+   "h": 844,
+   "title": "84 Tüm aksesuarlar · arama sonuçsuz · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 23750
+  },
+  "OrtakKurallar.dc.html": {
+   "h": 2320,
+   "title": "85 Ortak kurallar · onay, örtü, yükleniyor, hata, 320 dp",
+   "w": 1400,
+   "x": 0,
+   "y": 25000
+  },
+  "YukleniyorListe.dc.html": {
+   "h": 844,
+   "title": "86 Yükleniyor · liste (Mesajlar) · açık | koyu",
+   "w": 820,
+   "x": 1500,
+   "y": 25000
+  },
+  "YukleniyorProfil.dc.html": {
+   "h": 844,
+   "title": "87 Yükleniyor · profil · açık | koyu",
+   "w": 820,
+   "x": 2400,
+   "y": 25000
+  },
+  "YukleniyorSohbet.dc.html": {
+   "h": 844,
+   "title": "88 Yükleniyor · sohbet (DM) · açık | koyu",
+   "w": 820,
+   "x": 3300,
+   "y": 25000
+  },
+  "DarMesajlar.dc.html": {
+   "h": 844,
+   "title": "89 320 dp, en büyük yazı · Mesajlar · açık | koyu",
+   "w": 680,
+   "x": 0,
+   "y": 27500
+  },
+  "DarProfilim.dc.html": {
+   "h": 844,
+   "title": "90 320 dp, en büyük yazı · Profilim · açık | koyu",
+   "w": 680,
+   "x": 780,
+   "y": 27500
+  },
+  "DarSusle.dc.html": {
+   "h": 844,
+   "title": "91 320 dp, en büyük yazı · Kapsülünü süsle · açık | koyu",
+   "w": 680,
+   "x": 1560,
+   "y": 27500
+  },
+  "DarOdadakiler.dc.html": {
+   "h": 844,
+   "title": "92 320 dp, en büyük yazı · Odadakiler · açık | koyu",
+   "w": 680,
+   "x": 2340,
+   "y": 27500
+  },
+  "DarOyunLobi.dc.html": {
+   "h": 844,
+   "title": "93 320 dp, en büyük yazı · Oyun lobisi · açık | koyu",
+   "w": 680,
+   "x": 3120,
+   "y": 27500
+  },
+  "OdaProfilli.dc.html": {
+   "h": 844,
+   "title": "94 Odadakiler · profilinle görünüyorsun · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 28750
+  },
+  "OdaUzun.dc.html": {
+   "h": 844,
+   "title": "95 Odadakiler · uzun liste, kaydırılmış · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 28750
+  },
+  "OdaMenu.dc.html": {
+   "h": 844,
+   "title": "96 Odadakiler · satır ⋮ menüsü · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 28750
+  },
+  "OdaTek.dc.html": {
+   "h": 844,
+   "title": "97 Odadakiler · odada yalnız sen · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 28750
+  },
+  "SemtDolu.dc.html": {
+   "h": 844,
+   "title": "98 Semt sohbeti · dolu · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 30000
+  },
+  "SemtSureBitti.dc.html": {
+   "h": 844,
+   "title": "99 Semt sohbeti · süre bitti, devam sorusu · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 30000
+  },
+  "SemtKapandi.dc.html": {
+   "h": 844,
+   "title": "100 Semte git · oturum kapandı · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 30000
+  },
+  "SemtDisarida.dc.html": {
+   "h": 844,
+   "title": "101 Semte git · semtin dışındasın · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 30000
+  },
+  "SemtKonum.dc.html": {
+   "h": 844,
+   "title": "102 Semte git · semtin bulunuyor · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 30000
+  },
+  "OrtakArkadaslar.dc.html": {
+   "h": 844,
+   "title": "103 Ortak arkadaşlar listesi · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 31250
+  },
+  "MesajlarSabitDolu.dc.html": {
+   "h": 844,
+   "title": "104 Mesajlar · 5 sabit dolu, Sabitle kapalı · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 31250
+  },
+  "MesajlarArsivRozet.dc.html": {
+   "h": 844,
+   "title": "105 Mesajlar · arşivde okunmamış · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 31250
+  },
+  "MesajlarSilindi.dc.html": {
+   "h": 844,
+   "title": "106 Mesajlar · sohbet silindikten sonra · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 31250
+  },
+  "DmMenuSureDoldu.dc.html": {
+   "h": 844,
+   "title": "107 DM · 15 dakika geçmiş kendi mesajı · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 31250
+  },
+  "DmDuzenleKlavye.dc.html": {
+   "h": 844,
+   "title": "108 DM · düzenlerken klavye açık · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 31250
+  },
+  "MesajlarBos.dc.html": {
+   "h": 844,
+   "title": "109 Mesajlar · boş · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 32500
+  },
+  "BildirimlerBos.dc.html": {
+   "h": 844,
+   "title": "110 Bildirimler · boş · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 32500
+  },
+  "ArkadaslarBos.dc.html": {
+   "h": 844,
+   "title": "111 Arkadaşlar · boş · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 32500
+  },
+  "KesfetBos.dc.html": {
+   "h": 844,
+   "title": "112 Keşfet · mekan yok · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 32500
+  },
+  "DmBos.dc.html": {
+   "h": 844,
+   "title": "113 DM · henüz mesaj yok · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 32500
+  },
+  "MesajlarAra.dc.html": {
+   "h": 844,
+   "title": "114 Mesajlar · arama, klavye açık · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 33750
+  },
+  "MesajlarAraBos.dc.html": {
+   "h": 844,
+   "title": "115 Mesajlar · arama sonuçsuz · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 33750
+  },
+  "KesfetAra.dc.html": {
+   "h": 844,
+   "title": "116 Keşfet · arama, klavye açık · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 33750
+  },
+  "KesfetAraBos.dc.html": {
+   "h": 844,
+   "title": "117 Keşfet · arama sonuçsuz · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 33750
+  },
+  "DmKlavye.dc.html": {
+   "h": 844,
+   "title": "118 DM · klavye açık, yazarken · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 35000
+  },
+  "DmYanit.dc.html": {
+   "h": 844,
+   "title": "119 DM · yanıt yazarken · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 35000
+  },
+  "DmFotoOnizleme.dc.html": {
+   "h": 844,
+   "title": "120 DM · fotoğraf gönder (ÖNERİ) · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 35000
+  },
+  "DmFotoMesaj.dc.html": {
+   "h": 844,
+   "title": "121 DM · fotoğraf mesajı (ÖNERİ) · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 35000
+  },
+  "DmTepkiSenin.dc.html": {
+   "h": 844,
+   "title": "122 DM · senin tepkin · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 35000
+  },
+  "CheckInNokta.dc.html": {
+   "h": 844,
+   "title": "123 Check-in · nokta seçimi · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 36250
+  },
+  "CheckInKimlik.dc.html": {
+   "h": 844,
+   "title": "124 Check-in · profilinle ya da anonim (ÖNERİ) · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 36250
+  },
+  "MasaIstekGelen.dc.html": {
+   "h": 844,
+   "title": "125 Masa · katılma isteği geldi (sahip) · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 36250
+  },
+  "MasaIstekBekliyor.dc.html": {
+   "h": 844,
+   "title": "126 Mekan · katılma isteği bekliyor · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 36250
+  },
+  "MasaIstekMusaitDegil.dc.html": {
+   "h": 844,
+   "title": "127 Mekan · masa müsait değil (red = zaman aşımı) · açık | koyu",
+   "w": 820,
+   "x": 3600,
+   "y": 36250
+  },
+  "MasaBuradayim.dc.html": {
+   "h": 844,
+   "title": "128 Mekan · süren masalar, Bu masadayım · açık | koyu",
+   "w": 820,
+   "x": 4500,
+   "y": 36250
+  },
+  "MasaBuradayimGelen.dc.html": {
+   "h": 844,
+   "title": "129 Masa · Bu masadayım isteği geldi (sahip) · açık | koyu",
+   "w": 820,
+   "x": 5400,
+   "y": 36250
+  },
+  "MasaDavetGeldi.dc.html": {
+   "h": 844,
+   "title": "130 Bildirimler · masa daveti geldi · açık | koyu",
+   "w": 820,
+   "x": 6300,
+   "y": 36250
+  },
+  "MasaDavetSuresiDoldu.dc.html": {
+   "h": 844,
+   "title": "131 Bildirimler · davetin süresi doldu · açık | koyu",
+   "w": 820,
+   "x": 7200,
+   "y": 36250
+  },
+  "MasaCikarildin.dc.html": {
+   "h": 844,
+   "title": "132 Masadan çıkarıldın · açık | koyu",
+   "w": 820,
+   "x": 8100,
+   "y": 36250
+  },
+  "KayitKodHatali.dc.html": {
+   "h": 844,
+   "title": "133 Kayıt · kod hatalı · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 37500
+  },
+  "KayitKodYeniden.dc.html": {
+   "h": 844,
+   "title": "134 Kayıt · kodu yeniden gönder · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 37500
+  },
+  "KayitKodCokDeneme.dc.html": {
+   "h": 844,
+   "title": "135 Kayıt · çok fazla deneme · açık | koyu",
+   "w": 820,
+   "x": 1800,
+   "y": 37500
+  },
+  "KayitYasAlti.dc.html": {
+   "h": 844,
+   "title": "136 Kayıt · 18 yaş altı · açık | koyu",
+   "w": 820,
+   "x": 2700,
+   "y": 37500
+  },
+  "MasaOyunSec.dc.html": {
+   "h": 844,
+   "title": "137 Masa · oyun seç (sahip, kaydırılmış) · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 38750
+  },
+  "MasaOyunOyla.dc.html": {
+   "h": 844,
+   "title": "138 Masa · oyunu oyla (katılımcı, kaydırılmış) · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 38750
+  },
+  "VampirOylama.dc.html": {
+   "h": 844,
+   "title": "139 Vampir Köylü · Gündüz oylaması · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-vampir"
+  },
+  "VampirSonuc.dc.html": {
+   "h": 844,
+   "title": "140 Vampir Köylü · Sonuç · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-vampir"
+  },
+  "SignumTahmin.dc.html": {
+   "h": 844,
+   "title": "141 Signum · Tahmin turu · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-signum"
+  },
+  "SignumSonuc.dc.html": {
+   "h": 844,
+   "title": "142 Signum · Sonuç · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-signum"
+  },
+  "KinshiAnlatici.dc.html": {
+   "h": 844,
+   "title": "143 Kinshi · Anlatıcı · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-kinshi"
+  },
+  "KinshiSonuc.dc.html": {
+   "h": 844,
+   "title": "144 Kinshi · Sonuç · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-kinshi"
+  },
+  "KrotIpucu.dc.html": {
+   "h": 844,
+   "title": "145 Krot · İpucu turu · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-krot"
+  },
+  "KrotSonuc.dc.html": {
+   "h": 844,
+   "title": "146 Krot · Sonuç · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-krot"
+  },
+  "SprengjaBomba.dc.html": {
+   "h": 844,
+   "title": "147 Sprengja · Bomba sende (süre gizli) · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-sprengja"
+  },
+  "SprengjaSonuc.dc.html": {
+   "h": 844,
+   "title": "148 Sprengja · Sonuç · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-sprengja"
+  },
+  "KauphollTahmin.dc.html": {
+   "h": 844,
+   "title": "149 Kaupholl · Tahmin · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-kaupholl"
+  },
+  "KauphollSonuc.dc.html": {
+   "h": 844,
+   "title": "150 Kaupholl · Sonuç · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-kaupholl"
+  },
+  "KibritOy.dc.html": {
+   "h": 844,
+   "title": "151 Kibrit · Gizli oy · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-kibrit"
+  },
+  "KibritSonuc.dc.html": {
+   "h": 844,
+   "title": "152 Kibrit · Sonuç · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-kibrit"
+  },
+  "IbreTahmin.dc.html": {
+   "h": 844,
+   "title": "153 İbre · Tahmin (Yakında) · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-ibre"
+  },
+  "IbreSonuc.dc.html": {
+   "h": 844,
+   "title": "154 İbre · Sonuç (Yakında) · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-ibre"
+  },
+  "HarfTur.dc.html": {
+   "h": 844,
+   "title": "155 Harf Kapmaca · Tur (Yakında) · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-harf"
+  },
+  "HarfSonuc.dc.html": {
+   "h": 844,
+   "title": "156 Harf Kapmaca · Sonuç (Yakında) · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-harf"
+  },
+  "SarkiTur.dc.html": {
+   "h": 844,
+   "title": "157 Şarkıda Geçsin · Tur (Yakında) · açık | koyu",
+   "w": 820,
+   "x": 0,
+   "y": 0,
+   "page": "oyun-sarki"
+  },
+  "SarkiSonuc.dc.html": {
+   "h": 844,
+   "title": "158 Şarkıda Geçsin · Sonuç (Yakında) · açık | koyu",
+   "w": 820,
+   "x": 900,
+   "y": 0,
+   "page": "oyun-sarki"
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-11-14T20:14:00Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "view": "canvas"
+ },
+ "noteOrder": [
+  "r1",
+  "r10",
+  "r11",
+  "r2",
+  "r3",
+  "r4",
+  "r5",
+  "r6",
+  "r7",
+  "r8",
+  "r9",
+  "r13",
+  "r14",
+  "r15",
+  "r16",
+  "r17",
+  "r18",
+  "r19",
+  "r20",
+  "r21",
+  "r22",
+  "r23",
+  "r24",
+  "r25",
+  "r26",
+  "r27",
+  "r28",
+  "r29"
+ ],
+ "notes": {
+  "r1": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Mesajlar",
+   "w": 240,
+   "x": 0,
+   "y": -260
+  },
+  "r10": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Mekan detayı · giriş",
+   "w": 240,
+   "x": 0,
+   "y": 13490
+  },
+  "r11": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Mekan sekmesi",
+   "w": 240,
+   "x": 0,
+   "y": 14740
+  },
+  "r13": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Oyun lobisi",
+   "w": 240,
+   "x": 0,
+   "y": 17240
+  },
+  "r2": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "DM sohbeti",
+   "w": 240,
+   "x": 0,
+   "y": 990
+  },
+  "r3": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Başkasının profili",
+   "w": 240,
+   "x": 0,
+   "y": 2240
+  },
+  "r4": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Bildirimler",
+   "w": 240,
+   "x": 0,
+   "y": 3490
+  },
+  "r5": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "İstekler",
+   "w": 240,
+   "x": 0,
+   "y": 4740
+  },
+  "r6": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Arkadaşlar",
+   "w": 240,
+   "x": 0,
+   "y": 5990
+  },
+  "r7": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Aktiviteler",
+   "w": 240,
+   "x": 0,
+   "y": 7240
+  },
+  "r8": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Keşfet",
+   "w": 240,
+   "x": 0,
+   "y": 10990
+  },
+  "r9": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Semte git · Geçit",
+   "w": 240,
+   "x": 0,
+   "y": 12240
+  },
+  "r14": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Kapsülünü süsle · sekmeler ve kayıt",
+   "w": 240,
+   "x": 0,
+   "y": 22240
+  },
+  "r15": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Tüm aksesuarlar · hâller",
+   "w": 240,
+   "x": 0,
+   "y": 23490
+  },
+  "r16": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Ortak kurallar · yükleniyor",
+   "w": 240,
+   "x": 0,
+   "y": 24740
+  },
+  "r17": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "320 dp, en büyük yazı",
+   "w": 240,
+   "x": 0,
+   "y": 27240
+  },
+  "r18": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Kayıt",
+   "w": 240,
+   "x": 0,
+   "y": 18490
+  },
+  "r19": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Mekan sohbetinden profil",
+   "w": 240,
+   "x": 0,
+   "y": 19740
+  },
+  "r20": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Hediye, ayar, masa bitti, güncelleme, hata",
+   "w": 240,
+   "x": 0,
+   "y": 20990
+  },
+  "r21": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Odadakiler · hâller",
+   "w": 240,
+   "x": 0,
+   "y": 28490
+  },
+  "r22": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Semt sohbeti · hâller",
+   "w": 240,
+   "x": 0,
+   "y": 29740
+  },
+  "r23": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Ortak arkadaş · Mesajlar · DM",
+   "w": 240,
+   "x": 0,
+   "y": 30990
+  },
+  "r24": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Boş hâller",
+   "w": 240,
+   "x": 0,
+   "y": 32240
+  },
+  "r25": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Arama açık",
+   "w": 240,
+   "x": 0,
+   "y": 33490
+  },
+  "r26": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "DM · klavye, yanıt, fotoğraf, tepki",
+   "w": 240,
+   "x": 0,
+   "y": 34740
+  },
+  "r27": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Check-in ve masa · hâller",
+   "w": 240,
+   "x": 0,
+   "y": 35990
+  },
+  "r28": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Kayıt · hâller",
+   "w": 240,
+   "x": 0,
+   "y": 37240
+  },
+  "r29": {
+   "kind": "title1",
+   "maxW": 820,
+   "text": "Masa · oyun seçimi ve oylama",
+   "w": 240,
+   "x": 0,
+   "y": 38490
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "MesajlarKaydir.dc.html",
+  "MesajlarUzunBas.dc.html",
+  "MesajlarUzunBasSabit.dc.html",
+  "MesajlarSohbetSil.dc.html",
+  "Arsiv.dc.html",
+  "ArsivUzunBas.dc.html",
+  "ArsivBos.dc.html",
+  "DmSohbet.dc.html",
+  "DmMesajMenu.dc.html",
+  "DmMesajMenuBen.dc.html",
+  "DmDuzenle.dc.html",
+  "DmDuzenlendi.dc.html",
+  "ProfilBaskasi.dc.html",
+  "ProfilBen.dc.html",
+  "ProfilBenKaydir.dc.html",
+  "ProfilDuzenle.dc.html",
+  "ProfilDuzenleYaz.dc.html",
+  "KapsulSusle.dc.html",
+  "TumAksesuarlar.dc.html",
+  "TumAksesuarlarKaydir.dc.html",
+  "Ayarlar.dc.html",
+  "AyarlarCikis.dc.html",
+  "AyarBildirim.dc.html",
+  "AyarBildirimKapali.dc.html",
+  "AyarGizlilik.dc.html",
+  "AyarHesap.dc.html",
+  "AyarHesapSil.dc.html",
+  "Engellenenler.dc.html",
+  "EngellenenlerBos.dc.html",
+  "SessizAlinanlar.dc.html",
+  "SessizAlinanlarBos.dc.html",
+  "YasalMetin.dc.html",
+  "Bildirimler.dc.html",
+  "IsteklerDolu.dc.html",
+  "IsteklerBos.dc.html",
+  "Arkadaslar.dc.html",
+  "ArkadaslarKaydir.dc.html",
+  "AktivitelerBos.dc.html",
+  "AktivitelerDolu.dc.html",
+  "Gecmis.dc.html",
+  "GecmisKaydir.dc.html",
+  "GecmisMasa.dc.html",
+  "Kesfet.dc.html",
+  "KesfetHarita.dc.html",
+  "KesfetSemtIcerde.dc.html",
+  "KesfetKaydir.dc.html",
+  "GecitSoru.dc.html",
+  "GecitAcik.dc.html",
+  "SemtSohbet.dc.html",
+  "SemtSecenek.dc.html",
+  "Odadakiler.dc.html",
+  "MekanDetay.dc.html",
+  "MekanKonum.dc.html",
+  "MekanKonumIzin.dc.html",
+  "MekanKonumDisari.dc.html",
+  "MekanMasaYok.dc.html",
+  "MekanMasa.dc.html",
+  "MekanLobiAc.dc.html",
+  "MekanMasaDolu.dc.html",
+  "MekanKaydir.dc.html",
+  "MekanSecenek.dc.html",
+  "MekanProfilGec.dc.html",
+  "MekanAyril.dc.html",
+  "MekanAkis.dc.html",
+  "MekanAkisKaydir.dc.html",
+  "AkisYazBos.dc.html",
+  "AkisYaz.dc.html",
+  "MekanSohbet.dc.html",
+  "MekanSohbetSecenek.dc.html",
+  "MekanAnonimGec.dc.html",
+  "MasaKur.dc.html",
+  "MasaKurLobi.dc.html",
+  "MasaKurGorsel.dc.html",
+  "Masa.dc.html",
+  "MasaSecenek.dc.html",
+  "Masadakiler.dc.html",
+  "MasaDavet.dc.html",
+  "MasaSohbet.dc.html",
+  "MasaAt.dc.html",
+  "OyunLobi.dc.html",
+  "OyunLobiHazir.dc.html",
+  "OyunLobiKatilimci.dc.html",
+  "OyunLobiKatilimciHazir.dc.html",
+  "OyunLobiKisiMenu.dc.html",
+  "OyunLobiGozlemci.dc.html",
+  "TakimLobi.dc.html",
+  "TakimLobiKisiMenu.dc.html",
+  "KayitAcilis.dc.html",
+  "KayitOnay.dc.html",
+  "KayitTelefon.dc.html",
+  "KayitKod.dc.html",
+  "KayitAd.dc.html",
+  "KayitDogum.dc.html",
+  "KayitDogumOnay.dc.html",
+  "KayitCinsiyet.dc.html",
+  "KayitFoto.dc.html",
+  "KayitMetinler.dc.html",
+  "MekanProfil.dc.html",
+  "MekanProfilIstek.dc.html",
+  "MekanProfilMenu.dc.html",
+  "SikayetEt.dc.html",
+  "EngelleOnay.dc.html",
+  "HediyePaket.dc.html",
+  "HediyePaketAc.dc.html",
+  "HediyePaketKilit.dc.html",
+  "HediyeOranlar.dc.html",
+  "HediyeYirt.dc.html",
+  "HediyeSonuc.dc.html",
+  "MasaBitti.dc.html",
+  "MasaBittiArkadas.dc.html",
+  "GuncellemeGerekli.dc.html",
+  "AktivitelerBaglantiYok.dc.html",
+  "AktivitelerHata.dc.html",
+  "HareketDegerler.dc.html",
+  "HareketTablo.dc.html",
+  "SusleRenk.dc.html",
+  "SusleGoz.dc.html",
+  "SusleYuz.dc.html",
+  "SusleAgiz.dc.html",
+  "SusleGovde.dc.html",
+  "SusleKaydetPasif.dc.html",
+  "SusleKaydediliyor.dc.html",
+  "SusleKaydedilemedi.dc.html",
+  "SusleCikis.dc.html",
+  "TumSecili.dc.html",
+  "TumTakim.dc.html",
+  "TumAra.dc.html",
+  "TumAraBos.dc.html",
+  "OrtakKurallar.dc.html",
+  "YukleniyorListe.dc.html",
+  "YukleniyorProfil.dc.html",
+  "YukleniyorSohbet.dc.html",
+  "DarMesajlar.dc.html",
+  "DarProfilim.dc.html",
+  "DarSusle.dc.html",
+  "DarOdadakiler.dc.html",
+  "DarOyunLobi.dc.html",
+  "OdaProfilli.dc.html",
+  "OdaUzun.dc.html",
+  "OdaMenu.dc.html",
+  "OdaTek.dc.html",
+  "SemtDolu.dc.html",
+  "SemtSureBitti.dc.html",
+  "SemtKapandi.dc.html",
+  "SemtDisarida.dc.html",
+  "SemtKonum.dc.html",
+  "OrtakArkadaslar.dc.html",
+  "MesajlarSabitDolu.dc.html",
+  "MesajlarArsivRozet.dc.html",
+  "MesajlarSilindi.dc.html",
+  "DmMenuSureDoldu.dc.html",
+  "DmDuzenleKlavye.dc.html",
+  "MesajlarBos.dc.html",
+  "BildirimlerBos.dc.html",
+  "ArkadaslarBos.dc.html",
+  "KesfetBos.dc.html",
+  "DmBos.dc.html",
+  "MesajlarAra.dc.html",
+  "MesajlarAraBos.dc.html",
+  "KesfetAra.dc.html",
+  "KesfetAraBos.dc.html",
+  "DmKlavye.dc.html",
+  "DmYanit.dc.html",
+  "DmFotoOnizleme.dc.html",
+  "DmFotoMesaj.dc.html",
+  "DmTepkiSenin.dc.html",
+  "CheckInNokta.dc.html",
+  "CheckInKimlik.dc.html",
+  "MasaIstekGelen.dc.html",
+  "MasaIstekBekliyor.dc.html",
+  "MasaIstekMusaitDegil.dc.html",
+  "MasaBuradayim.dc.html",
+  "MasaBuradayimGelen.dc.html",
+  "MasaDavetGeldi.dc.html",
+  "MasaDavetSuresiDoldu.dc.html",
+  "MasaCikarildin.dc.html",
+  "KayitKodHatali.dc.html",
+  "KayitKodYeniden.dc.html",
+  "KayitKodCokDeneme.dc.html",
+  "KayitYasAlti.dc.html",
+  "MasaOyunSec.dc.html",
+  "MasaOyunOyla.dc.html",
+  "VampirOylama.dc.html",
+  "VampirSonuc.dc.html",
+  "SignumTahmin.dc.html",
+  "SignumSonuc.dc.html",
+  "KinshiAnlatici.dc.html",
+  "KinshiSonuc.dc.html",
+  "KrotIpucu.dc.html",
+  "KrotSonuc.dc.html",
+  "SprengjaBomba.dc.html",
+  "SprengjaSonuc.dc.html",
+  "KauphollTahmin.dc.html",
+  "KauphollSonuc.dc.html",
+  "KibritOy.dc.html",
+  "KibritSonuc.dc.html",
+  "IbreTahmin.dc.html",
+  "IbreSonuc.dc.html",
+  "HarfTur.dc.html",
+  "HarfSonuc.dc.html",
+  "SarkiTur.dc.html",
+  "SarkiSonuc.dc.html"
+ ],
+ "pages": [
+  {
+   "id": "ekranlar",
+   "name": "Ekranlar"
+  },
+  {
+   "id": "hareket",
+   "name": "Hareket"
+  },
+  {
+   "id": "oyun-vampir",
+   "name": "Oyun · Vampir Köylü"
+  },
+  {
+   "id": "oyun-signum",
+   "name": "Oyun · Signum"
+  },
+  {
+   "id": "oyun-kinshi",
+   "name": "Oyun · Kinshi"
+  },
+  {
+   "id": "oyun-krot",
+   "name": "Oyun · Krot"
+  },
+  {
+   "id": "oyun-sprengja",
+   "name": "Oyun · Sprengja"
+  },
+  {
+   "id": "oyun-kaupholl",
+   "name": "Oyun · Kaupholl"
+  },
+  {
+   "id": "oyun-kibrit",
+   "name": "Oyun · Kibrit"
+  },
+  {
+   "id": "oyun-ibre",
+   "name": "Oyun · İbre"
+  },
+  {
+   "id": "oyun-harf",
+   "name": "Oyun · Harf Kapmaca"
+  },
+  {
+   "id": "oyun-sarki",
+   "name": "Oyun · Şarkıda Geçsin"
+  }
+ ],
+ "title": "skall yeni arayüz"
+}

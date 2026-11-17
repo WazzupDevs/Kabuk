@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Kaupholl: tahmin</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+
+.gt{position:absolute;left:16px;right:16px;top:52px;display:flex;align-items:center;gap:10px;z-index:3}
+.gt .round{flex:none;--ci-a:var(--text);--ci-b:var(--text)}
+.dark .gt .round{background:#121614;border-color:rgba(255,255,255,.08);box-shadow:none}
+.gl{width:56px;height:40px;border-radius:12px;object-fit:cover;flex:none}
+.gn{flex:1;min-width:0;display:flex;flex-direction:column}
+.gn b{font:700 17px/22px var(--font);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gn span{font:500 13px/18px var(--font);color:var(--muted);white-space:nowrap}
+.tmr{flex:none;height:40px;padding:0 12px 0 8px;border-radius:999px;display:flex;align-items:center;gap:4px;background:var(--surface);box-shadow:var(--shadow-raised);font:700 15px/20px var(--font);color:var(--text);font-variant-numeric:tabular-nums;--ci-a:var(--text);--ci-b:var(--muted)}
+.dark .tmr{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08);--ci-a:#EEF3F0}
+.tmr .ci{width:22px;height:22px}
+.tmr.nt{padding:0 14px;font-size:13px;color:var(--muted)}
+.gs{position:absolute;left:20px;right:20px;top:112px;bottom:var(--gfb,170px);display:flex;flex-direction:column;gap:12px}
+.gf{position:absolute;left:20px;right:20px;bottom:34px;display:flex;flex-direction:column;gap:8px;z-index:3}
+.gf .btn{width:100%;height:56px;font:600 16px/20px var(--font)}
+.gf .row{display:flex;gap:8px}.gf .row .btn{flex:1;width:auto}
+.gf .btn.ghost{background:none;border:0;box-shadow:none;color:var(--text);height:44px}
+.hint{margin:0;text-align:center;font:500 13px/18px var(--font);color:var(--muted)}
+.card{border-radius:28px;background:var(--surface);box-shadow:var(--glass-shadow);padding:20px;box-sizing:border-box}
+.dark .card{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.kick{margin:0;font:700 12px/16px var(--font);letter-spacing:.4px;color:var(--muted)}
+.q1{margin:4px 0 0;font:700 24px/30px var(--font);letter-spacing:-.4px;color:var(--text)}
+.q2{margin:6px 0 0;font:500 14px/20px var(--font);color:var(--muted)}
+.gav{width:44px;height:44px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}
+.dark .gav{background:#1B211F}
+.gav img{width:100%;height:100%;object-fit:cover}
+.gav.me{background:#E2456F;color:#fff;font:700 16px/1 var(--font)}
+.pg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 6px}
+.pc{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border-radius:18px;position:relative}
+.pc p{margin:0;font:600 11px/14px var(--font);color:var(--text);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:clip}
+.pc .gav{width:52px;height:52px}
+.pc.on{background:var(--surface);box-shadow:inset 0 0 0 2px var(--text)}
+.dark .pc.on{background:#121614;box-shadow:inset 0 0 0 2px #EEF3F0}
+.pc.off{opacity:.38}
+.pc .vb{position:absolute;top:4px;right:6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--text);color:var(--canvas);font:700 11px/20px var(--font);text-align:center;box-sizing:border-box}
+.dark .pc .vb{background:#EEF3F0;color:#000}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;background:var(--surface2);font:600 12px/16px var(--font);color:var(--text)}
+.dark .tag{background:#1B211F;color:#EEF3F0}
+.ob{font:700 10px/14px var(--font);letter-spacing:.4px;color:var(--accent);background:var(--surface2);border-radius:999px;padding:2px 7px;margin-left:6px;display:inline-block;vertical-align:1px}
+.dark .ob{background:#1B211F;color:#3DDC84}
+.mor{--tc:#7B5CFF}.pem{--tc:#FF4F8B}
+.sc{display:flex;gap:8px}
+.sc span{flex:1;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);box-shadow:var(--shadow-raised);font:700 14px/18px var(--font);color:var(--text)}
+.dark .sc span{background:#121614;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.sc span i{width:10px;height:10px;border-radius:50%;background:var(--tc)}
+.rs-h{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.rs-h img{width:200px;height:auto;border-radius:20px;margin-bottom:8px}
+.rs-h h1{margin:0;font:800 30px/36px var(--font);letter-spacing:-.6px;color:var(--text)}
+.rs-h p{margin:0;font:500 14px/20px var(--font);color:var(--muted)}
+.rl{display:flex;flex-direction:column}
+.rr{display:flex;align-items:center;gap:12px;min-height:56px;position:relative}
+.rr+.rr:before{content:"";position:absolute;top:0;left:56px;right:0;border-top:1px solid var(--hair)}
+.rr .gav{width:40px;height:40px}
+.rr p{margin:0;flex:1;min-width:0;font:600 15px/20px var(--font);color:var(--text)}
+.rr p span{display:block;font:500 13px/17px var(--font);color:var(--muted)}
+.rr .pt{font:700 15px/20px var(--font);color:var(--text)}
+.rr .win{color:var(--accent)}.dark .rr .win{color:#3DDC84}
+.sec{margin:0;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted)}
+.num{display:flex;align-items:center;gap:10px;height:64px;padding:0 18px;border-radius:20px;background:var(--surface);box-shadow:inset 0 0 0 2px var(--text);font:800 30px/36px var(--font);color:var(--text)}
+.dark .num{background:#121614;box-shadow:inset 0 0 0 2px #EEF3F0}
+.num i{width:2px;height:30px;background:var(--text)}
+.num span{margin-left:auto;font:600 15px/20px var(--font);color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips .tag.dn{background:var(--success-soft);color:var(--on-success-soft)}
+.dark .chips .tag.dn{background:rgba(61,220,132,.14);color:#93EBB9}
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+<div class="gt"><button class="round soft" aria-label="Oyundan çık"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11m0-11-11 11" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="3" stroke-linecap="round"></path></svg></button><img class="gl" src="/_blob/f7dee805f0f4469cc3dc9eb547925e60" alt=""><div class="gn"><b>Soru 3/7</b><span>Tahminini yaz</span></div><span class="tmr" role="timer" aria-label="Kalan süre 0:24"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.4 4.4h11.2v2.4c0 2-1.3 3.6-3.6 5.2 2.3 1.6 3.6 3.2 3.6 5.2v2.4H6.4v-2.4c0-2 1.3-3.6 3.6-5.2-2.3-1.6-3.6-3.2-3.6-5.2Z" class="b"></path><path d="M9.2 18.4c0-1.3 1.2-2.4 2.8-3.4 1.6 1 2.8 2.1 2.8 3.4Z" class="a"></path><rect x="4.4" y="2.4" width="15.2" height="2.8" rx="1.4" class="a"></rect><rect x="4.4" y="18.8" width="15.2" height="2.8" rx="1.4" class="a"></rect></svg>0:24</span></div><div class="gs"><div class="card"><p class="kick">SORU KARTI</p><p class="q1">Galata Kulesi kaç metre yüksekliğinde?</p><p class="q2">Cevap: metre</p></div><p class="sec">TAHMİNİN · KİMSE GÖRMEZ</p><div class="num">67<i></i><span>metre</span></div><div class="chips"><span class="tag dn">luna-zh78 · kesinleştirdi</span><span class="tag dn">terra-sd62 · yazdı</span><span class="tag">sol-nz73 · yazmadı</span><span class="tag">terra-fv10 · yazmadı</span></div><p class="hint">2/5 kişi yazdı · 1 kesinleştirdi</p></div><div class="gf"><button class="btn primary">Tahmini gönder</button></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>

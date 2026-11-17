@@ -35,6 +35,10 @@ e. **DM düzenleme:** kendi metin mesajı, gönderildikten sonraki 15 dakika iç
 
 f. **Kapsül kaydı:** Süsle ve Tüm aksesuarlar tek taslağı paylaşır; Kaydet yalnız Süsle'de; sunucuda tek atomik yazma (`profile/save-look`).
 
+## Panolar depoda (17 Kasım, proje sahibinin kararı)
+
+Canlı tuvalin bütün panoları (203 pano, `canvas.json`, üç css; sürüm 1794920928-8d77) `docs/design/yeni-arayuz/project/` altındadır; numara → dosya eşlemesi `docs/design/yeni-arayuz/ESLEME.md`, resimlerin (blob) hangi panoda kullanıldığı `BLOBLAR.md`. Yeni oturum panoları indirmez, buradan okur; `mobil` ajanına dosya yolu verilir. Resimler depoda değildir: gereken resim Artifact aracıyla tek tek indirilir. Tuval değişince proje sahibi söyler; o zaman değişen panolar yeniden indirilip bu klasör ve iki eşleme dosyası güncellenir.
+
 ## 17 Kasım kararları (proje sahibi)
 
 Mekan akışı ayrı dosyada: `docs/decisions/mekan-akisi.md`. Aşağıdakiler henüz uygulanmadı; her biri sunucu paketi ve `guvenlik` denetimiyle gelir, değişmez kural metnine dokunan PR proje sahibinin "onaylandı"sıyla birleşir.

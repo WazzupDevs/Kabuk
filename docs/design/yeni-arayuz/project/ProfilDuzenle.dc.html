@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Profili düzenle</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hd{display:flex;align-items:center;justify-content:space-between}
+.acts{display:flex;gap:8px}
+.round{position:relative}
+.round .nd{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--buzz);border:2px solid var(--canvas)}
+.srch{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);color:var(--placeholder);--ci-a:var(--muted);--ci-b:var(--muted)}
+.sg{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);height:44px;padding:4px}
+.sg span{gap:6px}
+.dark .sg span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.cnt{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--buzz);color:var(--on-buzz);font:700 11px/20px var(--font);text-align:center;box-sizing:border-box}
+.lbl{display:flex;align-items:center;gap:6px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted);padding:0 4px;--ci-a:var(--muted);--ci-b:var(--muted)}
+.lst{padding:0;display:flex;flex-direction:column;margin:0 -20px}
+.rw{padding:10px 20px!important}
+.rw+.rw:before{display:none!important}
+.lst+.lst{margin-top:8px}
+.rw{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:72px;position:relative}
+.rw+.rw:before{content:"";position:absolute;top:0;left:76px;right:16px;border-top:1px solid var(--hair)}
+.rw .av{width:48px;height:48px;font-size:17px}
+.mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.l1,.l2{display:flex;align-items:center;gap:8px}
+.nm{font:600 16px/22px var(--font);color:var(--text);flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.tm{font:500 13px/18px var(--font);color:var(--muted);flex:none}
+.tm.new{color:var(--accent);font-weight:700}
+.pv{font:500 15px/22px var(--font);color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);display:flex;align-items:center;gap:4px}
+.pv.un{color:var(--text);font-weight:600}
+.pv.first{font-style:italic}
+.tick{width:18px;height:18px;flex:none;color:var(--read)}
+.mu{width:16px;height:16px;flex:none;--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc{display:flex;align-items:center;gap:12px;height:48px;padding:0 16px;border-radius:999px;color:var(--text);font:600 15px/22px var(--font);--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc .n{margin-left:auto;font:600 13px/18px var(--font);color:var(--muted)}
+.chev{width:18px;height:18px;color:var(--muted)}
+.tb{position:absolute;left:16px;right:16px;bottom:34px;height:68px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:0 6px}
+.ti{width:68px;height:56px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font:600 11px/14px var(--font)}
+.ti .ci{width:22px;height:22px}
+.ti.on{background:#FFFFFF;color:var(--text);box-shadow:var(--shadow-raised)}
+.ti.on .ci{--ci-a:var(--accent);--ci-b:var(--buzz);--ci-bo:1}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#031B0B}
+.dark .ti.on .ci{--ci-a:#0B783D}
+.aura{display:none}
+.pe{position:absolute;inset:0;padding:52px 20px 0;display:flex;flex-direction:column}
+.ptb{display:flex;align-items:center;gap:12px;height:48px}
+.ptb .round{--ci-a:var(--text)}
+.dark .ptb .round{background:#121614;border-color:rgba(255,255,255,.08);box-shadow:none}
+.ptb h1{flex:1;margin:0;font:700 19px/24px var(--font);letter-spacing:-.3px;color:var(--text)}
+.ptb .btn{height:40px;padding:0 18px;font:600 15px/20px var(--font)}
+.ecov{position:relative;margin-top:16px;height:150px;border-radius:22px;background:url(/_blob/edc11ca5adcd4b5e9a480c92b598fb36) center 60%/cover}
+.chip2{position:absolute;right:10px;top:10px;height:34px;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;background:rgba(3,27,11,.62);color:#fff;font:600 13px/16px var(--font);--ci-a:#fff;--ci-b:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.chip2 .ci{width:16px;height:16px}
+.eav{position:relative;align-self:center;margin-top:-52px;width:104px;height:104px}
+.eav .pic{width:104px;height:104px;border-radius:50%;border:4px solid var(--canvas);background:#0E8745;color:#fff;display:flex;align-items:center;justify-content:center;font:700 38px/1 var(--font);box-sizing:border-box}
+.dark .eav .pic{border-color:#000;background:#0B783D}
+.eav .cb{position:absolute;right:-2px;bottom:0;width:38px;height:38px;border-radius:50%;background:#031B0B;border:3px solid var(--canvas);display:flex;align-items:center;justify-content:center;--ci-a:#fff;--ci-b:rgba(255,255,255,.6)}
+.dark .eav .cb{background:rgba(255,255,255,.94);border-color:#000;--ci-a:#0B0E0D;--ci-b:rgba(11,14,13,.5)}
+.eav .cb .ci{width:18px;height:18px}
+.fl{display:flex;justify-content:space-between;align-items:baseline;margin:20px 4px 8px;font:600 13px/18px var(--font);color:var(--text)}
+.fl span{font:500 12px/16px var(--font);color:var(--muted)}
+.fi{min-height:52px;border-radius:16px;padding:0 16px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid rgba(3,27,11,.10);font:500 16px/22px var(--font);color:var(--text);box-sizing:border-box;--ci-a:var(--muted);--ci-b:var(--muted)}
+.dark .fi{background:#121614;border-color:rgba(255,255,255,.08)}
+.fi.ta{align-items:flex-start;padding-top:14px;min-height:92px}
+.fi.on{border:2px solid var(--text);padding:0 15px}
+.fi.ta.on{padding-top:13px}
+.dark .fi.on{border-color:#EEF3F0}
+.fi i{display:inline-block;width:2px;height:20px;margin-left:1px;vertical-align:-4px;background:var(--accent)}
+.dark .fi i{background:#3DDC84}
+.fi .v{flex:1}
+.fi .ci{width:20px;height:20px}
+.fi.ro{background:transparent;color:var(--muted)}
+.dark .fi.ro{background:transparent}
+.lk{color:var(--text);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.fh{margin:8px 4px 0;font:500 13px/18px var(--font);color:var(--muted)}
+
+.fade{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(180deg,rgba(239,247,241,0),var(--canvas) 70%);pointer-events:none}
+.dark .fade{background:linear-gradient(180deg,rgba(0,0,0,0),#000 70%)}
+/*TB2*/
+.tb{left:20px;right:20px;bottom:30px;height:60px;padding:0 5px;gap:2px;box-shadow:0 6px 18px rgba(3,27,11,.08),0 0 0 1px rgba(3,27,11,.04)}
+.dark .tb{box-shadow:0 0 0 1px rgba(255,255,255,.07)}
+.ti{flex:1 1 0;min-width:0;width:auto;height:50px;gap:3px;font:600 10px/13px var(--font);letter-spacing:.1px;white-space:nowrap}
+.ti .ci{width:20px;height:20px}
+.ti.on{flex:1 1 0;padding:0;background:#031B0B;color:#FFFFFF;box-shadow:0 4px 12px rgba(3,27,11,.18)}
+.ti.on .ci{--ci-a:#3DDC84;--ci-b:#FF6FA0}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#0B0E0D;box-shadow:none}
+.dark .ti.on .ci{--ci-a:#0B783D;--ci-b:#FF4F8B}
+.dark .ti{color:rgba(238,243,240,.55)}
+/*TB2END*/
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+<div class="pe">
+<div class="ptb"><button class="round soft" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><h1>Profili düzenle</h1><button class="btn primary off" disabled="">Kaydet</button></div>
+<div class="ecov" role="img" aria-label="Kapak görseli"><button class="chip2"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="6.4" width="18.8" height="14" rx="4.4" class="b"></rect><rect x="8" y="3.4" width="8" height="4.4" rx="2.2" class="b"></rect><circle cx="12" cy="13.4" r="3.8" class="a"></circle></svg>Kapağı değiştir</button></div>
+<div class="eav"><span class="pic">G</span><button class="cb" aria-label="Profil fotoğrafını değiştir"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="6.4" width="18.8" height="14" rx="4.4" class="b"></rect><rect x="8" y="3.4" width="8" height="4.4" rx="2.2" class="b"></rect><circle cx="12" cy="13.4" r="3.8" class="a"></circle></svg></button></div>
+<p class="fl">Görünen ad<span>5/24</span></p>
+<div class="fi"><span class="v">Fırat</span></div>
+<p class="fh">Arkadaşların ve profilinle olduğun yerdekiler görür.</p>
+<p class="fl">Tanıtım<span>23/80</span></p>
+<div class="fi ta"><span class="v">dünyanın en sadık adamı</span></div>
+<p class="fl">Doğum tarihi</p>
+<div class="fi ro" aria-readonly="true"><span class="v">14 Mart 2000</span><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11.4" rx="3.6" class="b"></rect><path d="M8 10.4V8a4 4 0 0 1 8 0v2.4" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.6"></path><rect x="10.7" y="13.6" width="2.6" height="4.4" rx="1.3" class="a"></rect></svg></div>
+<p class="fh">Doğum tarihin değiştirilemez, profilinde yalnızca yaşın görünür. Yanlışsa <a class="lk" href="#">bizimle iletişime geç</a>.</p>
+</div>
+
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>

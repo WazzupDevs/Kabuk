@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Masa bitti arkadaş oldunuz</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hpw{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:52px}
+.hpt{display:flex;align-items:center;gap:12px;height:56px;padding:0 20px}
+.hpt h1{flex:1;margin:0;font:700 21px/28px var(--font);letter-spacing:-.3px;color:var(--text)}
+.car{position:relative;height:410px;margin-top:24px}
+.car .pp{position:absolute;top:50%;left:50%;display:block;filter:drop-shadow(0 14px 18px rgba(3,27,11,.22))}
+.dark .car .pp{filter:drop-shadow(0 14px 18px rgba(0,0,0,.6))}
+.car .c{width:236px;transform:translate(-50%,-50%);z-index:2}
+.car .l{width:168px;transform:translate(-50%,-50%) translateX(-150px) rotate(-7deg)}
+.car .r{width:168px;transform:translate(-50%,-50%) translateX(150px) rotate(7deg)}
+.car .s{position:absolute;left:50%;transform:translate(-50%,-50%);z-index:3;display:flex;align-items:center;gap:4px;height:24px;padding:0 9px 0 7px;border-radius:999px;background:rgba(3,27,11,.78);color:#fff;font:600 11px/1 var(--font)}
+.car .s svg{width:12px;height:12px}
+.car .sl{top:300px;margin-left:-150px}.car .sr{top:300px;margin-left:150px}
+.car .sc{top:338px}
+.bd{position:absolute;z-index:3;left:50%;top:28px;margin-left:98px;min-width:26px;height:26px;border-radius:999px;background:var(--buzz);color:#fff;font:700 13px/26px var(--font);text-align:center;box-shadow:0 0 0 3px var(--canvas)}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.dots i{width:6px;height:6px;border-radius:3px;background:var(--hair-strong,rgba(3,27,11,.18))}
+.dots i.on{width:20px;background:var(--text)}
+.dark .dots i{background:rgba(255,255,255,.22)}.dark .dots i.on{background:#fff}
+.inf{display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:20px;padding:0 24px}
+.inf h2{margin:0;font:700 21px/28px var(--font);color:var(--text)}
+.inf .st{margin-top:4px;font:600 15px/20px var(--font);color:var(--text)}
+.inf .st.ok{color:var(--success)}.dark .inf .st.ok{color:#3DDC84}
+.pr{display:flex;align-items:center;gap:8px;margin-top:10px;font:600 13px/18px var(--font);color:var(--muted)}
+.pr span{display:flex;gap:4px}.pr b{width:28px;height:6px;border-radius:3px;background:rgba(3,27,11,.12)}
+.pr b.on{background:var(--success)}.dark .pr b{background:rgba(255,255,255,.16)}.dark .pr b.on{background:#3DDC84}
+.inf .nt{margin-top:6px;font:500 13px/18px var(--font);color:var(--muted);max-width:280px}
+.fx{position:absolute;left:20px;right:20px;bottom:46px;display:flex;gap:12px}
+.fx .btn{flex:1;height:56px}
+.oneri{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;background:var(--success-soft);color:var(--on-success-soft);font:700 10px/14px var(--font);letter-spacing:.3px;vertical-align:middle}
+.mbw{position:absolute;inset:0;display:flex;flex-direction:column;padding:52px 20px 0}
+.mbt{display:flex;align-items:center;justify-content:flex-end;height:56px}
+.hero{width:350px;height:200px;border-radius:28px;object-fit:cover;display:block;box-shadow:var(--shadow-card)}
+.mh{margin-top:16px;text-align:center}
+.mh h1{margin:0;font:700 32px/38px var(--font);letter-spacing:-.6px;color:var(--text)}
+.mh p{margin:4px 0 0;font:500 15px/20px var(--font);color:var(--muted)}
+.sec{margin:20px 4px 2px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted)}
+.pr2{display:flex;align-items:center;gap:12px;min-height:64px}
+.pr2+.pr2{border-top:1px solid var(--hair)}
+.ava{width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:700 16px/1 var(--font)}
+.ava.kp{background:var(--surface2);overflow:hidden}.ava.kp img{width:44px;height:44px;object-fit:cover}
+.pt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pt b{font:600 16px/22px var(--font);color:var(--text)}
+.pt span{font:500 13px/18px var(--font);color:var(--muted)}
+.pt span.ok{color:var(--success)}.dark .pt span.ok{color:#3DDC84}
+.pr2 .btn{height:40px;padding:0 16px;font-size:14px;flex:none}
+.pr2 .btn svg{width:16px;height:16px}
+.toast{position:absolute;left:20px;right:20px;top:60px;z-index:5;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:20px;background:#031B0B;color:#fff;box-shadow:0 12px 30px rgba(3,27,11,.3)}
+.dark .toast{background:#fff;color:#031B0B}
+.toast .tt2{flex:1;font:600 14px/19px var(--font)}
+.toast .tt2 small{display:block;font:500 12px/16px var(--font);opacity:.7}
+.toast .btn{height:36px;padding:0 14px;font-size:13px;background:rgba(255,255,255,.14);color:#fff;border:0;box-shadow:none}
+.dark .toast .btn{background:rgba(3,27,11,.08);color:#031B0B}
+.cf{position:absolute;inset:0;pointer-events:none;z-index:4}
+.cf i{position:absolute;width:7px;height:16px;border-radius:4px}
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="mbw"><div class="mbt"></div><img class="hero" src="/_blob/29229bd9ca500e7fdf7664f3d7c32b2d" alt="Uçan Halı masası"><div class="mh"><h1>Masa bitti</h1><p>Uçan Halı · 4 kişi · 38 dk</p></div><p class="sec">Masadakiler · İkiniz de eklerseniz arkadaş olursunuz</p><div class="pr2"><span class="ava" style="background:#0E8745">E</span><div class="pt"><b>Elif, 23</b><span class="ok">Arkadaşsınız</span></div><button class="btn soft"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" fill="currentColor"></path></svg>Mesaj</button></div><div class="pr2"><span class="ava" style="background:#2C63D6">M</span><div class="pt"><b>Mert, 24</b><span class="ok">Arkadaşsınız</span></div><button class="btn soft"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" fill="currentColor"></path></svg>Mesaj</button></div><div class="pr2"><span class="ava" style="background:#7B5CFF">Z</span><div class="pt"><b>Zeynep, 22</b><span class="">Onun eklemesi bekleniyor</span></div><button class="btn off"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Eklendi</button></div><div class="pr2"><span class="ava kp"><img src="/_blob/5b08ad2794fd1d89773aad25ff20b4e6" alt=""></span><div class="pt"><b>luna-te89</b><span class="">Anonim katıldı · eklenemez</span></div></div></div><div class="cf"><i style="left:40px;top:90px;background:#3DDC84;transform:rotate(-24deg)"></i><i style="left:96px;top:70px;background:#FF4F8B;transform:rotate(30deg)"></i><i style="left:300px;top:84px;background:#FFB547;transform:rotate(-38deg)"></i><i style="left:340px;top:130px;background:#3DDC84;transform:rotate(18deg)"></i><i style="left:200px;top:58px;background:#FF4F8B;transform:rotate(-8deg)"></i><i style="left:24px;top:160px;background:#FFB547;transform:rotate(40deg)"></i></div><div class="toast"><div class="tt2">Mert ile arkadaş oldunuz<small>Artık birbirinize mesaj atabilirsiniz.</small></div><button class="btn">Mesaj at</button></div><div class="fx"><button class="btn primary">Mekâna dön</button></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>
