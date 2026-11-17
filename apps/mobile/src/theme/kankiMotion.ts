@@ -76,17 +76,6 @@ export type KankiPlace = {
 // The board's frame the places are measured in.
 export const KANKI_FRAME_WIDTH = 350;
 
-// Main: seven buddies in the scene, back row first (the later ones stand in front).
-export const WELCOME_KANKI: readonly KankiPlace[] = [
-  { id: 'b83534', left: 70, bottom: 100, width: 72, height: 95 },
-  { id: '7d5ef2', left: 208, bottom: 100, width: 72, height: 95 },
-  { id: '3c95b1', left: 139, bottom: 108, width: 72, height: 95 },
-  { id: '4957ac', left: -10, bottom: 62, width: 96, height: 126 },
-  { id: '1a80a9', left: 264, bottom: 62, width: 96, height: 126 },
-  { id: '6f419d', left: 34, bottom: -18, width: 118, height: 155 },
-  { id: 'f280a5', left: 198, bottom: -18, width: 118, height: 155 },
-];
-
 // Aura v71 settings pages: one still riso buddy standing in a bottom corner of the screen
 // (`.stand` in the phone, its feet 30 over the screen's bottom), behind the page.
 export const PAGE_KANKI = {

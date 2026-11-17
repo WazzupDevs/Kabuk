@@ -2,7 +2,6 @@ import { router, useFocusEffect } from 'expo-router';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import {
   type LayoutChangeEvent,
-  Pressable,
   ScrollView,
   type StyleProp,
   StyleSheet,
@@ -18,10 +17,11 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Btn, T } from '@/aura/kit';
-import { RisoKanki, SignupScene, useKankiClock } from '@/aura/RisoKanki';
+import { Btn } from '@/aura/kit';
+import { IntroStage } from '@/aura/IntroStage';
+import { useLoopActive } from '@/components/Loader';
 import { WordmarkRow } from '@/features/venue/VenueHead';
 import { useLaunchStore } from '@/features/launch/launchStore';
 import { introCopy } from '@/features/onboarding/introGate';
@@ -29,22 +29,20 @@ import { useOnboardingStore } from '@/features/onboarding/store';
 import { UnderAge } from '@/features/onboarding/UnderAge';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { copyFrame, type CopyPart, INTRO, introMinHeight } from '@/theme/introScene';
+import { copyFrame, type CopyPart, INTRO, INTRO_STAGE, introMinHeight } from '@/theme/introScene';
 import { AURA } from '@/theme/aura';
-import { WELCOME_KANKI } from '@/theme/kankiMotion';
-import { KIT } from '@/theme/auraKit';
 import { SIGNUP, SIGNUP_TYPE } from '@/theme/signup';
 import { SIGNUP_FONT_SCALE, useSignupLook } from '@/features/onboarding/look';
 import { useTheme } from '@/theme/ThemeProvider';
-import { OPACITY, SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 // The scene plays once per launch (K-27): coming back to this screen (from "Başlamadan önce", K-28,
 // or after an under-18 sign-up) shows it at its end.
 let played = false;
 
-// The first screen (docs/SPEC_V4.md §4.C; v45 §2): the logo, the scene "Aynı mekanda, aynı
-// masada.", what the app does and "Başla", which opens "Başlamadan önce", the first of the seven
-// steps (K-26).
+// The first screen (docs/SPEC_V4.md §4.C; yeni arayüz tuvali, pano 47 KayitAcilis): the riso scene,
+// the logo, "Aynı mekanda, aynı masada.", what the app does and "Başla", which opens "Başlamadan
+// önce", the first of the seven steps (K-26).
 export default function WelcomeScreen() {
   // Set when sign-up ended under 18: the account was deleted, nothing was kept.
   const underAge = useOnboardingStore((s) => s.underAge);
@@ -62,28 +60,27 @@ export default function WelcomeScreen() {
 function Welcome() {
   const { scheme, shape } = useTheme();
   const reduce = useReduceMotion();
-  const insets = useSafeAreaInsets();
+  const active = useLoopActive();
   const look = useSignupLook();
-  const { height: windowHeight } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   // The scene waits for the launch curtain to open (src/features/launch/LaunchCurtain.tsx).
   const curtain = useLaunchStore((s) => s.curtain);
   // Seen before in this launch (K-27, K-28): it stands at its end. Read once, as the screen opens.
   const [seen] = useState(() => played);
   const t = useSharedValue<number>(seen || reduce ? INTRO.endMs : 0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const clock = useKankiClock();
 
-  // The words, "Başla" and "Geç" on React's side (introGate.ts): each stands still once its
-  // motion ends, all of them at once with reduce motion, and at the cap if the curtain never opens.
-  // They never wait for the UI thread's frames or for the curtain's signal.
+  // The words and "Başla" on React's side (introGate.ts): each stands still once its motion ends,
+  // all of them at once with reduce motion, and at the cap if the curtain never opens. They never
+  // wait for the UI thread's frames or for the curtain's signal.
   const [mountedAt] = useState(() => Date.now());
   const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [skipped, setSkipped] = useState(false);
+  const [cut, setCut] = useState(false);
   const [now, setNow] = useState(mountedAt);
   const copy = introCopy({
     sinceMount: now - mountedAt,
     sinceStart: startedAt === null ? null : now - startedAt,
-    still: seen || reduce || skipped,
+    still: seen || reduce || cut,
   });
   useEffect(() => {
     if (copy.next === null) return undefined;
@@ -126,11 +123,9 @@ function Welcome() {
     if (reduce) t.set(INTRO.endMs);
   }, [reduce, t]);
 
-  // "Geç" and "Başla" jump to the end; the words stand at once.
-  const skip = () => {
-    t.set(INTRO.endMs);
-    setSkipped(true);
-  };
+  // The board's endless loops (bob, swing, twinkle) run from the scene's start, or at once when it
+  // stands at its end; never with reduce motion, only on top with the app in front.
+  const loops = !reduce && active && (seen || copy.giveUp || startedAt !== null);
   // A new size (the safe area arriving late, a turned screen, a new text size) lays the scene out
   // again where it is: every frame is a function of the size and the time, so nothing is skipped.
   const onSceneLayout = (e: LayoutChangeEvent) => {
@@ -159,22 +154,30 @@ function Welcome() {
           bounces={false}
           overScrollMode="never"
         >
+          {/* KayitAcilis `.stage`: edge to edge, no taller than the board's 390 x 470. */}
           <View
             onLayout={onSceneLayout}
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
             style={{
               flexGrow: 1,
+              marginHorizontal: -shape.screenPadding,
               minHeight: introMinHeight(windowHeight),
+              maxHeight: Math.max(
+                introMinHeight(windowHeight),
+                (windowWidth * INTRO_STAGE.height) / INTRO_STAGE.width,
+              ),
             }}
           >
-            {/* U39 (Main): the riso venue, no floor glow and no round table; seven riso buddies
-                breathing, swaying, blinking and two hopping (§13.1). */}
-            <SignupScene width={box?.w ?? 0}>
-              {(k) =>
-                WELCOME_KANKI.map((p) => <RisoKanki key={p.id} place={p} scale={k} clock={clock} />)
-              }
-            </SignupScene>
+            {box ? (
+              <IntroStage
+                width={box.w}
+                height={box.h}
+                t={t}
+                still={copy.stageStill}
+                loops={loops}
+              />
+            ) : null}
           </View>
           <Words
             part="logo"
@@ -185,24 +188,23 @@ function Welcome() {
             <WordmarkRow small />
           </Words>
           <View style={{ alignItems: 'center', marginTop: SIGNUP.welcome.titleTop - WELCOME_GAP }}>
-            <View accessible accessibilityRole="header" accessibilityLabel={tr.signup.welcomeTitle}>
-              <Words part="line1" t={t} still={copy.shown.includes('line1')}>
-                <Text
-                  maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
-                  style={[SIGNUP_TYPE.title, { color: look.ink, textAlign: 'center' }]}
-                >
-                  {tr.signup.welcomeHalves[0]}
-                </Text>
-              </Words>
-              <Words part="line2" t={t} still={copy.shown.includes('line2')}>
-                <Text
-                  maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
-                  style={[SIGNUP_TYPE.title, { color: look.ink, textAlign: 'center' }]}
-                >
-                  {tr.signup.welcomeHalves[1]}
-                </Text>
-              </Words>
-            </View>
+            <Words part="title" t={t} still={copy.shown.includes('title')}>
+              <View
+                accessible
+                accessibilityRole="header"
+                accessibilityLabel={tr.signup.welcomeTitle}
+              >
+                {tr.signup.welcomeHalves.map((half) => (
+                  <Text
+                    key={half}
+                    maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+                    style={[SIGNUP_TYPE.title, { color: look.ink, textAlign: 'center' }]}
+                  >
+                    {half}
+                  </Text>
+                ))}
+              </View>
+            </Words>
             <Words
               part="body"
               t={t}
@@ -217,11 +219,12 @@ function Welcome() {
               </Text>
             </Words>
           </View>
+          {/* KayitAcilis `.kft`: at the screen's bottom. */}
           <Words
             part="foot"
             t={t}
             still={copy.shown.includes('foot')}
-            style={{ gap: SIGNUP.footGap, alignItems: 'stretch' }}
+            style={{ gap: SIGNUP.footGap, alignItems: 'stretch', marginTop: 'auto' }}
           >
             <Btn
               block
@@ -229,7 +232,9 @@ function Welcome() {
               testID="welcome-start"
               label={tr.signup.start}
               onPress={() => {
-                skip();
+                // The words stand at once; the scene goes to its end.
+                t.set(INTRO.endMs);
+                setCut(true);
                 router.push('/agree');
               }}
             />
@@ -241,42 +246,12 @@ function Welcome() {
             </Text>
           </Words>
         </ScrollView>
-        {copy.skip ? (
-          <Pressable
-            testID="intro-skip"
-            accessibilityRole="button"
-            onPress={skip}
-            // Under the status bar: an absolute child ignores the SafeAreaView's padding, and the
-            // button sat on the battery (audit M15-24).
-            style={[
-              styles.skipSpot,
-              { top: insets.top + SPACING[3], right: insets.right + SPACING[3] },
-            ]}
-          >
-            {({ pressed }) => (
-              <View
-                style={[
-                  styles.skip,
-                  {
-                    borderRadius: KIT.size.btnSm,
-                    backgroundColor: KIT[scheme].raised,
-                    borderWidth: KIT.size.edge,
-                    borderColor: KIT[scheme].raisedEdge,
-                    opacity: pressed ? OPACITY.pressed : 1,
-                  },
-                ]}
-              >
-                <T v="btnSm">{tr.signup.skip}</T>
-              </View>
-            )}
-          </Pressable>
-        ) : null}
       </SafeAreaView>
     </View>
   );
 }
 
-// A piece of the words coming in with the scene (src/theme/introScene.ts → copyFrame). Still, it
+// A piece of the words coming in after the scene (src/theme/introScene.ts → copyFrame). Still, it
 // is a plain view that React draws in full: nothing on the UI thread can hold it back
 // (introGate.ts).
 function Words({
@@ -294,7 +269,7 @@ function Words({
 }) {
   const motion = useAnimatedStyle(() => {
     const f = copyFrame(part, t.value);
-    return { opacity: f.opacity, transform: [{ translateY: f.dy }] };
+    return { opacity: f.opacity, transform: [{ translateY: f.dy }, { scale: f.scale }] };
   });
   if (still) return <View style={style}>{children}</View>;
   return <Animated.View style={[style, motion]}>{children}</Animated.View>;
@@ -304,14 +279,4 @@ const WELCOME_GAP = 22;
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  skipSpot: {
-    position: 'absolute',
-  },
-  skip: {
-    minWidth: SPACING[16],
-    minHeight: TOUCH.min,
-    paddingHorizontal: SPACING[4],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });
