@@ -2325,12 +2325,13 @@ export const tr = {
     peopleSub: (table: string, seats: string, full: boolean) =>
       [table, seats, full ? 'Masa dolu' : null].filter((part) => part).join(' · '),
     peopleNote: 'Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
-    // "At" beside a person (the owner's; K-88 without a block) and its dialog.
-    kick: 'At',
-    kickLabel: (alias: string) => `${alias} kişisini masadan at`,
-    kickTitle: (alias: string) => `${alias} masadan atılsın mı?`,
+    // "Çıkar" beside a person (the owner's; K-88 without a block) and its dialog. The board's
+    // "At / Masadan at" is not used: the words are K-88's "Masadan çıkar".
+    kick: 'Çıkar',
+    kickLabel: (alias: string) => `${alias} kişisini masadan çıkar`,
+    kickTitle: (alias: string) => `${alias} masadan çıkarılsın mı?`,
     kickBody: (table: string) => `${table} masasından çıkarılır ve yeri boşalır.`,
-    kickConfirm: 'Masadan at',
+    kickConfirm: 'Masadan çıkar',
   },
   // "Masa kur" (v46 data-kur; docs/SPEC_V4.md §4.E).
   // Test bots (dev project only): the owner seats bots that play by themselves.

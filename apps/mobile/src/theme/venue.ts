@@ -63,9 +63,10 @@ export const VENUE = {
     face: { side: 32, ring: 2.5, pitch: 25, seatPitch: 28, dash: 2, plus: 14 },
     // The thin fill 6 high, 3 round.
     meter: 6,
-    // The buttons under the picture (`.bt2`): 10 in and under, 10 under the picture, 8 apart, 40
-    // high, 10 inside, their icons 18 and 6 from the words.
-    buttons: { pad: 10, gap: 8, height: 40, padX: 10, icon: 18, iconGap: 6 },
+    // The buttons under the picture (`.bt2`): 10 in and under, 10 under the picture, 8 apart, 10
+    // inside, their icons 18 and 6 from the words. Their height is the kit's small button (36,
+    // KIT.size.btnSm; the board draws 40).
+    buttons: { pad: 10, gap: 8, padX: 10, icon: 18, iconGap: 6 },
   },
   // The strip it folds into (`.mc`): 8 in at its left and 10 at its right, 12 between its parts;
   // the picture 14 round in a 2 edge; its lines 2 apart, the own face 20 and 6 from the words; the
