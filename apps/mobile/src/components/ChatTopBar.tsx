@@ -2,13 +2,13 @@ import type { ReactNode } from 'react';
 import { Animated, Pressable, useWindowDimensions, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Glass, PulseDot, T, useKit, usePress } from '@/aura/kit';
+import { Glass, PulseDot, Round, T, useKit, usePress } from '@/aura/kit';
 import { FxMoves } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { isNarrow } from '@/lib/narrow';
 import { KIT } from '@/theme/auraKit';
 import { DM } from '@/theme/dm';
-import { SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 type Props = {
   title: string;
@@ -36,8 +36,9 @@ type Props = {
   actions?: ReactNode;
   // U25 (MasaSohbeti `.hpill`): the capsule without a face 20 in.
   compact?: boolean;
-  // The DM's own bar (tuval Dm, theme/dm.ts): 14 from the sides, the face (38) 7 in and 10 from the
-  // name (16.5/800), the menu 6 from the capsule's right; the heights stay the owner's 44.
+  // The DM's own bar (yeni arayüz tuvali, DmSohbet; theme/dm.ts): 16 from the sides, the soft back
+  // round 44, the capsule 52, the face (40) 6 in and 10 from the name (16/600) over its line (12/16),
+  // the menu's 44 round 2 from the capsule's right.
   dm?: boolean;
 };
 
@@ -96,7 +97,7 @@ export function ChatTopBar({
         {subtitle ? (
           <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
             {live ? <PulseDot /> : null}
-            <T v="fine" style={{ flexShrink: 1 }}>
+            <T v={dm ? 'dmSub' : 'fine'} style={{ flexShrink: 1 }}>
               {subtitle}
             </T>
           </View>
@@ -104,14 +105,16 @@ export function ChatTopBar({
       </View>
     </>
   );
+  // The DM's capsule (yeni arayüz tuvali, DmSohbet `.who`): 52 high.
+  const pill = dm ? DM.bar.pill : PILL;
   // The avatar and the name sit straight in the capsule's row: a two-line name grows the capsule,
   // never spills out of it.
   const whoStyle = {
     flex: 1,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    minHeight: PILL,
-    paddingVertical: dm ? (PILL - KIT.size.av.bar) / 2 : PILL_INSET,
+    minHeight: pill,
+    paddingVertical: dm ? 0 : PILL_INSET,
     gap: dm ? DM.bar.nameGap : SPACING[2.5],
   };
   const right = faces !== null || !!toggle || !!actions;
@@ -126,7 +129,16 @@ export function ChatTopBar({
           paddingVertical: SPACING[1.5],
         }}
       >
-        {onBack ? (
+        {onBack && dm ? (
+          // DmSohbet: the soft round 44 (`.round.soft`).
+          <Round
+            side={KIT.size.round}
+            icon="back"
+            label={tr.common.back}
+            onPress={onBack}
+            testID="chat-back"
+          />
+        ) : onBack ? (
           // The whole circle is the button and sinks as one.
           <Pressable
             testID="chat-back"
@@ -154,12 +166,12 @@ export function ChatTopBar({
         ) : null}
         <Glass
           frost
-          radius={PILL / 2}
+          radius={pill / 2}
           style={{
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            minHeight: PILL,
+            minHeight: pill,
             paddingLeft: compact
               ? KIT.chatPillPadX
               : leading
@@ -167,13 +179,9 @@ export function ChatTopBar({
                   ? DM.bar.faceIn
                   : PILL_INSET
                 : SPACING[4],
-            // The DM's menu (a 44 touch, its 38 round drawn) 6 from the capsule's right.
-            paddingRight: right
-              ? dm
-                ? DM.bar.moreIn - (TOUCH.min - DM.bar.more) / 2
-                : 0
-              : PILL_PAD_RIGHT,
-            gap: SPACING[1],
+            // The DM's menu (its 44 round) 2 from the capsule's right.
+            paddingRight: right ? (dm ? DM.bar.moreIn : 0) : PILL_PAD_RIGHT,
+            gap: dm ? 0 : SPACING[1],
           }}
         >
           {onPressTitle ? (

@@ -1,22 +1,19 @@
 import type { DmInboxThread } from '@shared/api/friends.ts';
-import { normalize } from '@shared/trText.ts';
+import { normalize, upperTr } from '@shared/trText.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useDeferredValue, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { CapIcon } from '@/aura/CapIcon';
 import { GlassSearch } from '@/aura/GlassSearch';
 import { Av, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
-import { useTabBarSpace } from '@/components/TabBar';
 import { Toast, type ToastMessage } from '@/components/Toast';
-import { EmptyCard } from '@/features/explore/EmptyCard';
 import { pruneDmCache } from '@/features/friends/dmCache';
-import { ArchivedRow, InboxCard, PinnedHead, useThreadMenu } from '@/features/friends/InboxRows';
+import { ArchivedRow, InboxList, PinnedHead, useThreadMenu } from '@/features/friends/InboxRows';
 import { openDm } from '@/features/friends/openDm';
 import { useSessionStore } from '@/features/auth/session';
 import { restoreDm, useDmInbox, useFriends, useRequestCount } from '@/features/friends/queries';
@@ -26,10 +23,10 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
-import { ListMove, ListMoveArea, PopIn, StickyField, useListMoves } from '@/motion';
+import { ListMove, ListMoveArea, StickyField, useListMoves } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
-import { SPACING } from '@/theme/tokens';
+import { ICON } from '@/theme/tokens';
 
 type Tab = 'chats' | 'requests';
 
@@ -48,118 +45,107 @@ export default function MessagesScreen() {
   const asked = useDeferredValue(query);
   const requests = useRequestCount();
   const now = useNow(60_000);
-  const { scheme } = useKit();
+  const { c, scheme } = useKit();
   // "Sohbet silindi" once a conversation is cleared (tuval MesajlarSilindi).
   const [notice, setNotice] = useState<ToastMessage | null>(null);
   const onCleared = () => setNotice({ id: Date.now(), title: tr.messages.cleared });
 
+  // Searching (tuval MesajlarAra, MesajlarAraBos): the tabs step aside and the conversations found
+  // stand under the field.
+  const searching = normalize(query).trim() !== '';
   return (
     <View style={{ flex: 1 }}>
       <Screen
         edges={['top']}
         refreshable
         side={M.side}
+        barSide={M.side}
+        barTop={M.top}
         padTop={M.fieldTop}
-        gap={M.listTop}
+        gap={M.gap}
         top={
-          // tuval Mesajlar: the title 36/800 15 under the status bar, 6 in from the cards at its
-          // left and the bell 2 in at its right (the screen's top stands 20 in, 8 down).
+          // Yeni arayüz tuvali, Main (`.hd`): the title (32/500) at the left, the new message's
+          // soft round (Telegram Android's pencil, the owner's call, 30 Ekim) and the bell at the
+          // right, 8 apart.
           <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginTop: M.headTop,
-              marginLeft: M.titleIn,
-              marginRight: M.bellIn,
-            }}
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
-            <T v="exploreTitle" accessibilityRole="header">
+            <T v="display" accessibilityRole="header">
               {tr.tabs.messages}
             </T>
-            <NotificationsBell />
+            <View style={{ flexDirection: 'row', gap: M.actsGap }}>
+              <Round
+                side={KIT.size.round}
+                icon="edit"
+                testID="messages-new"
+                label={tr.messages.newMessage}
+                onPress={() => setPicking(true)}
+              />
+              <NotificationsBell />
+            </View>
           </View>
         }
       >
         <StickyField band side={M.side}>
-          <View style={{ gap: SPACING[3] }}>
+          <View style={{ gap: M.gap }}>
             <GlassSearch
               testID="messages-search"
               value={query}
               onChangeText={setQuery}
               placeholder={tr.messages.search}
+              height={KIT.size.field}
+              trailing={
+                query ? (
+                  <Round
+                    glassy={false}
+                    side={KIT.size.btnSm}
+                    icon="close"
+                    iconSize={ICON.md}
+                    color={c.muted}
+                    label={tr.messages.clearSearch}
+                    testID="messages-search-clear"
+                    onPress={() => setQuery('')}
+                  />
+                ) : undefined
+              }
             />
-            {/* tuval Mesajlar: the tabs a glass capsule 48, 24 round, the chosen part white, the
-                words 15/700. */}
-            <Seg<Tab>
-              board={{
-                item: M.tabs.item,
-                radius: M.tabs.radius,
-                type: 'tabsBoard',
-                face: M[scheme].tabsGlass,
-                onShadow: M[scheme].tabOnShadow || undefined,
-              }}
-              value={tab}
-              onChange={setTab}
-              accessibilityLabel={tr.messages.tabs}
-              options={[
-                { value: 'chats', label: tr.messages.chatsTab, testID: 'messages-tab-chats' },
-                {
-                  value: 'requests',
-                  label: tr.messages.requestsTab,
-                  badge: requests,
-                  testID: 'messages-tab-requests',
-                },
-              ]}
-            />
+            {searching ? null : (
+              // `.sg`: Aktiviteler's tabs, a glass capsule 44, the chosen part white, 14/600.
+              <Seg<Tab>
+                board={{
+                  item: M.tabs.item,
+                  radius: M.tabs.radius,
+                  type: 'btnSm',
+                  face: M[scheme].tabsGlass,
+                  onShadow: M[scheme].tabOnShadow || undefined,
+                }}
+                value={tab}
+                onChange={setTab}
+                accessibilityLabel={tr.messages.tabs}
+                options={[
+                  { value: 'chats', label: tr.messages.chatsTab, testID: 'messages-tab-chats' },
+                  {
+                    value: 'requests',
+                    label: tr.messages.requestsTab,
+                    badge: requests,
+                    testID: 'messages-tab-requests',
+                  },
+                ]}
+              />
+            )}
           </View>
         </StickyField>
-        {tab === 'chats' ? (
+        {tab === 'chats' || searching ? (
           <Chats now={new Date(now)} query={asked} onCleared={onCleared} />
         ) : (
           <RequestList now={new Date(now)} />
         )}
       </Screen>
-      {/* A new message, as Telegram Android's pencil (the owner's call, 30 Ekim): a friend to
-          write to. */}
-      {tab === 'chats' ? <NewMessageButton onPress={() => setPicking(true)} /> : null}
       <FriendPicker visible={picking} onClose={() => setPicking(false)} />
       <Toast message={notice} testID="messages-toast" />
     </View>
   );
 }
-
-// The round "+" at the bottom right, over the list and above the tab bar; it pops in. iskelet.md →
-// 2.1 and 5.4: a prominent glass round.
-function NewMessageButton({ onPress }: { onPress: () => void }) {
-  const barSpace = useTabBarSpace();
-  // tuval Mesajlar: 26 from the right, 22 over the tab bar; the plus 24.
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        right: M.newChat.right,
-        bottom: barSpace + M.newChat.aboveBar,
-      }}
-    >
-      <PopIn rise={NEW_CHAT_RISE}>
-        <Round
-          glass="prominent"
-          side={NEW_CHAT}
-          testID="messages-new"
-          label={tr.messages.newMessage}
-          onPress={onPress}
-        >
-          <CapIcon name="plus" color={KIT.onPrimary} soft={NEW_CHAT_SOFT} size={M.newChat.icon} />
-        </Round>
-      </PopIn>
-    </View>
-  );
-}
-const NEW_CHAT = KIT.size.newChat;
-const NEW_CHAT_RISE = 12;
-// The plus's second stroke on the prominent glass (as a prominent button's icon: .62).
-const NEW_CHAT_SOFT = 0.62;
 
 // The conversations whose name holds what is searched (@shared/trText.ts → normalize: Turkish
 // lowercase, ç ğ ı ö ş ü folded; CLAUDE.md rule 7).
@@ -267,7 +253,8 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
       <View className="flex-1 justify-center">
         <EmptyState
           kind="empty"
-          riso="chats"
+          riso="messages"
+          compact
           title={tr.messages.empty}
           body={tr.messages.emptyHint}
         />
@@ -282,24 +269,34 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   const pinned = searching ? [] : chats.filter((t) => t.pinned);
   const rest = searching ? byName(inbox.data, query) : chats.filter((t) => !t.pinned);
   if (searching && rest.length === 0) {
-    // iskelet.md → 3.4: nothing found, on the small empty card.
+    // Yeni arayüz tuvali, MesajlarAraBos: nothing found, the riso and its two lines in the middle.
     return (
-      <EmptyCard
-        testID="messages-no-match"
-        title={tr.messages.noMatch}
-        body={tr.messages.noMatchHint}
-      />
+      <View testID="messages-no-match" className="flex-1 justify-center">
+        <EmptyState
+          kind="empty"
+          riso="search"
+          compact
+          title={tr.messages.noMatch}
+          body={tr.messages.noMatchHint}
+        />
+      </View>
     );
   }
   return (
-    // The room under the last row for the "+" over it.
-    <ListMoveArea moves={moves} style={{ paddingBottom: NEW_CHAT, gap: SPACING[2] }}>
+    // tuval Main: 12 between the parts, the two lists 8 more apart (`.lst+.lst`).
+    <ListMoveArea moves={moves} style={{ gap: M.gap }}>
+      {searching ? (
+        // `.rlbl`: how many were found, 4 under the field.
+        <T v="eyebrow" style={{ marginTop: M.resultTop }} testID="messages-found">
+          {upperTr(tr.messages.found(rest.length))}
+        </T>
+      ) : null}
       {pinned.length > 0 ? (
         <>
           <ListMove id="pinned-head" version={version} rise={false}>
             <PinnedHead count={pinned.length} />
           </ListMove>
-          <InboxCard
+          <InboxList
             threads={pinned}
             now={now}
             onHold={menu.open}
@@ -309,13 +306,14 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
         </>
       ) : null}
       {rest.length > 0 ? (
-        <InboxCard
+        <InboxList
           threads={rest}
           now={now}
           onHold={menu.open}
           from={pinned.length}
           version={version}
           raised={menu.lastKind === 'unpin'}
+          above={pinned.length > 0 ? M.listGap : 0}
         />
       ) : null}
       {!searching && archived.length > 0 ? (

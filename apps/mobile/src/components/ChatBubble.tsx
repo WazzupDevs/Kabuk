@@ -33,7 +33,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
-import { shadowParts } from '@/components/NativeShadow';
+import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { bubblePath } from '@/lib/bubblePath';
 import { svgKey } from '@/lib/svgKey';
@@ -256,9 +256,11 @@ export function ChatBubble({
         paddingRight: DM.bubble.padRight,
       }
     : { paddingHorizontal: KIT.size.bubblePadX, paddingVertical: KIT.size.bubblePadY };
-  const msgType = dm ? KIT_TYPE.msgDm : KIT_TYPE.msg;
-  const tail = dm ? DM.tail : { width: KIT.size.tailW, height: KIT.size.tailH };
-  const mineLine = mine && !dm;
+  const msgType = KIT_TYPE.msg;
+  // The DM's bubbles have no tail (yeni arayüz tuvali, DmSohbet `.msg`): the run's last keeps its
+  // 6 corner at the author's foot.
+  const tail = { width: KIT.size.tailW, height: KIT.size.tailH };
+  const mineLine = mine;
   const share = dm ? DM.share : MINE_SHARE;
   // The words on a coloured bubble are white: another's, and a set's balloon.
   const onColour = !mine || skin !== null;
@@ -276,11 +278,12 @@ export function ChatBubble({
         ? paint.mineMuted
         : paint.themMuted;
   const inside = !mine && nameInk !== undefined;
-  const R = KIT.size.bubbleRadius;
+  const R = dm ? DM.bubble.radius : KIT.size.bubbleRadius;
   const near = KIT.size.bubbleInner;
-  const sideTop = first ? R : near;
-  // The run's last bubble has its tail at the foot (Telegram Android), the others' too.
-  const sideFoot = last ? 0 : near;
+  const sideTop = dm || first ? R : near;
+  // The run's last bubble has its tail at the foot (Telegram Android), the others' too; in a DM
+  // the last's foot corner is 6 and the others round.
+  const sideFoot = dm ? (last ? DM.bubble.foot : R) : last ? 0 : near;
   // [top left, top right, bottom right, bottom left]
   const radii = (mine ? [R, sideTop, sideFoot, R] : [sideTop, R, R, sideFoot]) as readonly [
     number,
@@ -289,7 +292,7 @@ export function ChatBubble({
     number,
   ];
   const big = quote ? 0 : emojiOnly(text);
-  const fill = skin ? skin.chipOn : mine ? paint.mine : paint[kind];
+  const fill = skin ? skin.chipOn : mine ? paint.mine : dm ? D.them : paint[kind];
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
   const bubbleShadow = shadowParts(
     shadowOff,
@@ -331,7 +334,8 @@ export function ChatBubble({
   // Telegram Android: the reactions inside the bubble, under the words, the time at the right of
   // their row (the owner's call, 30 Ekim); under a big emoji, outside.
   const hasChips = !!reactions && reactions.length > 0;
-  const chipsInside = hasChips && !big;
+  // A DM's reactions are pills under the bubble (DmSohbet `.rxs`).
+  const chipsInside = hasChips && !big && !dm;
   const chipPaint = !onColour
     ? { bg: withAlpha(KIT.primary, CHIP_ALPHA), bgOn: KIT.primary, ink: fg, inkOn: KIT.onPrimary }
     : { bg: withAlpha(fg, CHIP_ALPHA_ON), bgOn: fg, ink: fg, inkOn: fill };
@@ -376,7 +380,7 @@ export function ChatBubble({
   );
   function face(lifted: boolean) {
     const skinned = skin !== null && !big && !plain;
-    const shaped = last && !big && box !== null && !skinned && !plain;
+    const shaped = last && !big && box !== null && !skinned && !plain && !dm;
     return (
       <View
         ref={lifted ? undefined : faceRef}
@@ -448,7 +452,7 @@ export function ChatBubble({
               tailW={tail.width}
               tailH={tail.height}
             />
-          ) : last && !big ? (
+          ) : last && !big && !dm ? (
             <BubbleTail
               side={mine ? 'right' : 'left'}
               color={fill}
@@ -476,7 +480,9 @@ export function ChatBubble({
               </RNText>
             </Pressable>
           ) : null}
-          {quote ? <QuoteBlock quote={quote} onColor={onColour} onPress={onPressQuote} /> : null}
+          {quote ? (
+            <QuoteBlock quote={quote} onColor={onColour} dm={dm} onPress={onPressQuote} />
+          ) : null}
           {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
             React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
             into each other): the text ends with an invisible copy of the time, which makes the
@@ -578,7 +584,17 @@ export function ChatBubble({
     );
   }
   const chips =
-    hasChips && big ? (
+    hasChips && dm ? (
+      <View
+        style={{
+          alignSelf: mine ? 'flex-end' : 'flex-start',
+          marginTop: DM.reactions.top - SPACING[1],
+          marginBottom: DM.reactions.bottom,
+        }}
+      >
+        <DmReactionPills reactions={reactions ?? []} onToggle={onToggleReaction} />
+      </View>
+    ) : hasChips && big ? (
       <View style={{ alignSelf: mine ? 'flex-end' : 'flex-start' }}>
         <ReactionChips
           reactions={reactions ?? []}
@@ -1164,15 +1180,45 @@ function BigEmoji({
 function QuoteBlock({
   quote,
   onColor,
+  dm,
   onPress,
 }: {
   quote: ChatQuote;
   // In another's bubble (the chat's colour): the quote in white.
   onColor: boolean;
+  // A DM's (yeni arayüz tuvali, DmSohbet `.q`): in another's bubble a white veil without the bar,
+  // 10 round, 6 / 10 inside, the name 12/700 and the words 13/500.
+  dm?: boolean;
   onPress?: () => void;
 }) {
   const mine = onColor;
   const { colors, shape } = useTheme();
+  const { scheme } = useKit();
+  if (dm && onColor) {
+    const q = DM[scheme].quote;
+    return (
+      <Pressable
+        testID="chat-quote"
+        disabled={!onPress}
+        onPress={onPress}
+        accessibilityRole={onPress ? 'button' : undefined}
+        style={{
+          marginBottom: SPACING[1],
+          paddingHorizontal: DM.quote.padX,
+          paddingVertical: DM.quote.padY,
+          borderRadius: DM.quote.radius,
+          backgroundColor: q.fill,
+        }}
+      >
+        <RNText style={[KIT_TYPE.bucket, { color: q.name }]}>{quote.name}</RNText>
+        {quote.text ? (
+          <RNText style={[KIT_TYPE.placeSub, { color: q.text }]} numberOfLines={1}>
+            {quote.text}
+          </RNText>
+        ) : null}
+      </Pressable>
+    );
+  }
   return (
     <Pressable
       testID="chat-quote"
@@ -1336,6 +1382,73 @@ function ReactionChips({
   );
 }
 
+// A DM's reactions (yeni arayüz tuvali, DmSohbet `.rx`, DmTepkiSenin `.rx.mine`): pills on the
+// surface under the bubble, 30 high, the face 22 and its count (12/600) in the ink; the viewer's own
+// in a 2 ring of the ink. A tap takes the viewer's own back or leaves that one.
+function DmReactionPills({
+  reactions,
+  onToggle,
+}: {
+  reactions: readonly ChatReaction[];
+  onToggle?: (emoji: string) => void;
+}) {
+  const { scheme } = useKit();
+  const look = DM[scheme].reaction;
+  const P = DM.reactions;
+  const shadowOff = useLabOff('golge');
+  const shadow = boxShadowParts(shadowOff, look.shadow || undefined, P.height / 2);
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: P.gap }}>
+      {reactions.map((r) => (
+        <Pressable
+          key={r.emoji}
+          accessibilityRole="button"
+          accessibilityState={{ selected: r.mine }}
+          accessibilityLabel={tr.chat.reactionChip(
+            isReaction(r.emoji) ? tr.chat.reactions[r.emoji] : r.emoji,
+            r.count,
+            r.mine,
+          )}
+          disabled={!onToggle}
+          onPress={() => onToggle?.(r.emoji)}
+          hitSlop={(TOUCH.min - P.height) / 2}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: P.inner,
+              height: P.height,
+              paddingLeft: P.padLeft,
+              paddingRight: P.padRight,
+              borderRadius: P.height / 2,
+              backgroundColor: look.fill,
+              boxShadow: shadow.boxShadow,
+            }}
+          >
+            {shadow.node}
+            {r.mine ? (
+              // The board's inset ring: drawn over the pill, its words do not move.
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: P.height / 2,
+                  borderWidth: DM.mineRing,
+                  borderColor: look.ink,
+                }}
+              />
+            ) : null}
+            <ReactionFace emoji={r.emoji} size="pill" />
+            <RNText style={[KIT_TYPE.tag, TABULAR, { color: look.ink }]}>{String(r.count)}</RNText>
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 // The room the time takes in the words, with "düzenlendi" before it (an en space for the 4 between
 // them).
 function stampRoom(time: string, edited: string | undefined): string {
@@ -1400,10 +1513,7 @@ function Stamp({
 }) {
   if (dm) {
     return (
-      <RNText
-        accessible={hidden ? false : undefined}
-        style={[KIT_TYPE.msgTime, TABULAR, { color }]}
-      >
+      <RNText accessible={hidden ? false : undefined} style={[KIT_TYPE.stamp, TABULAR, { color }]}>
         {children}
       </RNText>
     );
@@ -1499,15 +1609,22 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
   const { scheme, c } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
-  // The dots in the bubble's words' colour: white on the DM blue, the ink elsewhere.
-  const dotInk = kind === 'dm' ? paint.themInk : c.ink;
+  // A DM's (yeni arayüz tuvali, DmSohbet `.typing`): another's bubble 34 high, 14 in, 18 round
+  // with the 6 foot, no shadow; its three dots 8, 5 apart, pink, amber and blue.
+  const dm = kind === 'dm';
+  const T = DM.typing;
+  // The dots in the bubble's words' colour elsewhere: white on the chat's colour, the ink.
+  const dotInk = dm ? paint.themInk : c.ink;
+  const dotsDm = DM[scheme].typingDots;
   const shadowOff = useLabOff('golge');
-  const typingShadow = shadowParts(shadowOff, KIT.chatShadow[kind], undefined, [
+  const typingShadow = shadowParts(shadowOff, dm ? undefined : KIT.chatShadow[kind], undefined, [
     KIT.size.msgRadius,
     KIT.size.msgRadius,
     KIT.size.msgRadius,
     KIT.size.msgTail,
   ]);
+  const R = dm ? DM.bubble.radius : KIT.size.msgRadius;
+  const dot = dm ? T.dot : DOT;
   return (
     <View
       style={{
@@ -1526,16 +1643,16 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          gap: SPACING[1],
-          paddingHorizontal: SPACING[3] + SPACING[0.5],
-          paddingVertical: SPACING[3],
+          gap: dm ? T.gap : SPACING[1],
+          paddingHorizontal: dm ? T.padX : SPACING[3] + SPACING[0.5],
+          ...(dm ? { height: T.height, marginTop: T.top } : { paddingVertical: SPACING[3] }),
           // Another's bubble in the chat's colour with three white dots (the owner's call, 29 Ekim).
-          backgroundColor: paint[kind],
+          backgroundColor: dm ? DM[scheme].them : paint[kind],
           boxShadow: typingShadow.boxShadow,
-          borderTopLeftRadius: KIT.size.msgRadius,
-          borderTopRightRadius: KIT.size.msgRadius,
-          borderBottomRightRadius: KIT.size.msgRadius,
-          borderBottomLeftRadius: KIT.size.msgTail,
+          borderTopLeftRadius: R,
+          borderTopRightRadius: R,
+          borderBottomRightRadius: R,
+          borderBottomLeftRadius: dm ? DM.bubble.foot : KIT.size.msgTail,
         }}
       >
         {typingShadow.node}
@@ -1543,10 +1660,10 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
           <Animated.View
             key={i}
             style={{
-              width: DOT,
-              height: DOT,
+              width: dot,
+              height: dot,
               borderRadius: shape.radius.pill,
-              backgroundColor: dotInk,
+              backgroundColor: dm ? (dotsDm[i] ?? dotInk) : dotInk,
               opacity: d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
               transform: [
                 {

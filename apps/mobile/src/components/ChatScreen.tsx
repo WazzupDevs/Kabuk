@@ -1450,6 +1450,35 @@ export function DayLine({
   const lineRef = useContext(DayLineRefContext);
   const shadowOff = useLabOff('golge');
   const dm = useChatKind() === 'dm';
+  if (fresh && dm) {
+    // Yeni arayüz tuvali, DmSohbet `.new`: the words (12/600, the ink) on a glass pill between two
+    // hairlines, 8 apart, 8 above and under.
+    const look = DM[scheme];
+    const line = { flex: 1, height: KIT.size.hair, backgroundColor: look.freshLine };
+    return (
+      <View
+        className="flex-row items-center"
+        style={{ gap: DM.fresh.gap, marginVertical: DM.fresh.margin }}
+      >
+        <View style={line} />
+        <View
+          style={{
+            ...gradientStyle(look.day.fill),
+            borderWidth: KIT.size.edge,
+            borderColor: look.day.edge,
+            borderRadius: KIT.size.chip,
+            paddingHorizontal: DM.day.padX,
+            paddingVertical: DM.day.padY,
+          }}
+        >
+          <RNText maxFontSizeMultiplier={DAY_SCALE} style={[KIT_TYPE.day, { color: look.dayInk }]}>
+            {label}
+          </RNText>
+        </View>
+        <View style={line} />
+      </View>
+    );
+  }
   if (fresh) {
     // docs/design/aura → Mekan sohbeti: "Yeni mesaj" in pink between two soft pink lines.
     const ink = scheme === 'dark' ? tags.pink.fg : KIT.nameInk;
@@ -1471,14 +1500,14 @@ export function DayLine({
     );
   }
   // iskelet.md → 5.5 and 2.2: a glass pill ("Dün", "Bugün"), the clear glass drawn without a live
-  // blur (it is one of the stream's rows). In a DM (tuval Dm): 28 high, 12 in, 12.5/700 in the ink,
-  // 6 under the message above and 12 over the next (the row's own 8 of it), its own shadow.
+  // blur (it is one of the stream's rows). In a DM (yeni arayüz tuvali, DmSohbet `.flow .day`): 4 /
+  // 12 inside, 12/600 in the ink, no shadow, 10 under the message above and 8 over the next.
   const g = dm ? DM[scheme].day : KIT.button[scheme].clear;
   const shadow = shadowParts(
     shadowOff,
     g.shadow || undefined,
     g.inset || undefined,
-    dm ? DM.day.height / 2 : KIT.size.chip,
+    KIT.size.chip,
     true,
     KIT.size.edge,
   );
@@ -1488,25 +1517,21 @@ export function DayLine({
       className="self-center"
       style={{
         marginTop: floating ? 0 : dm ? DM.day.top : SPACING[2.5],
+        // In a DM the row's own 8 under it is the board's 8.
         marginBottom: floating ? 0 : dm ? DM.day.bottom - SPACING[2] : SPACING[1.5],
         ...gradientStyle(g.fill),
         borderWidth: KIT.size.edge,
         borderColor: g.edge,
         boxShadow: shadow.boxShadow,
-        borderRadius: dm ? DM.day.height / 2 : KIT.size.chip,
+        borderRadius: KIT.size.chip,
         paddingHorizontal: dm ? DM.day.padX : KIT.size.dayPadX,
-        ...(dm
-          ? { minHeight: DM.day.height, justifyContent: 'center' as const }
-          : { paddingVertical: KIT.size.dayPadY }),
+        paddingVertical: dm ? DM.day.padY : KIT.size.dayPadY,
       }}
     >
       {shadow.node}
       <RNText
         maxFontSizeMultiplier={DAY_SCALE}
-        style={[
-          dm ? KIT_TYPE.dayPill : KIT_TYPE.day,
-          { color: fresh ? KIT.primary : dm ? DM[scheme].dayInk : c.muted },
-        ]}
+        style={[KIT_TYPE.day, { color: fresh ? KIT.primary : dm ? DM[scheme].dayInk : c.muted }]}
       >
         {label}
       </RNText>

@@ -307,6 +307,9 @@ export const tr = {
     search: 'Sohbet ara',
     noMatch: 'Sohbet bulunamadı',
     noMatchHint: 'Başka bir ad dene.',
+    // Over the search's rows (tuval MesajlarAra: "2 SOHBET", upperTr) and its × (MesajlarAra).
+    found: (n: number) => `${n} sohbet`,
+    clearSearch: 'Temizle',
     // With the dots beside it (v45).
     typing: 'yazıyor',
     stamp: (iso: string, stamp: InboxStamp) =>
@@ -665,6 +668,11 @@ export const tr = {
     typing: 'yazıyor',
     // Under the name in the DM's top bar (iskelet.md → 5.5).
     typingTitle: 'yazıyor…',
+    // Under the name otherwise (yeni arayüz tuvali, DmSohbet): the capsule opens the profile.
+    seeProfile: 'Profili gör',
+    // No message yet (yeni arayüz tuvali, DmBos).
+    emptyTitle: 'Henüz mesaj yok.',
+    emptyHint: 'İlk mesajı sen yaz.',
     // docs/SPEC_V4.md §4.X: a message of one's own, edited within 15 minutes.
     edit: 'Düzenle',
     editing: 'Mesajı düzenle',

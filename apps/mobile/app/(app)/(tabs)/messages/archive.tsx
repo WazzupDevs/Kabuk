@@ -4,21 +4,22 @@ import { View } from 'react-native';
 import { T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
-import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { Toast, type ToastMessage } from '@/components/Toast';
-import { InboxCard, useThreadMenu } from '@/features/friends/InboxRows';
+import { InboxList, useThreadMenu } from '@/features/friends/InboxRows';
 import { useDmInbox } from '@/features/friends/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
-import { ListMoveArea, useListMoves } from '@/motion';
+import { BarBack, ListMoveArea, useListMoves } from '@/motion';
+import { KIT } from '@/theme/auraKit';
+import { FLAT } from '@/theme/flatLists';
 import { MESSAGES as M } from '@/theme/messages';
 import { SPACING } from '@/theme/tokens';
 
-// Arşivlenenler (docs/SPEC_V4.md §4.X; tuval Arsiv, ArsivUzunBas, ArsivBos): the archived
-// conversations, from the same dm/inbox as Mesajlar, newest first. A new message keeps a
+// Arşivlenenler (docs/SPEC_V4.md §4.X; yeni arayüz tuvali: Arsiv, ArsivUzunBas, ArsivBos): the
+// archived conversations, from the same dm/inbox as Mesajlar, newest first. A new message keeps a
 // conversation here with its unread; a long press takes it out ("Arşivden çıkar") or clears it.
 export default function ArchiveScreen() {
   const inbox = useDmInbox();
@@ -33,17 +34,33 @@ export default function ArchiveScreen() {
   });
   const now = new Date(useNow(60_000));
   const archived = inbox.data ? splitInbox(inbox.data).archived : [];
+  const B = FLAT.bar;
   return (
     <View style={{ flex: 1 }}>
       <Screen
         list
         refreshable
         side={M.side}
+        barSide={M.side}
+        barTop={B.top}
+        padTop={B.fieldTop}
+        gap={M.gap}
         top={
-          <PageTop
-            title={tr.messages.archived}
-            sub={archived.length > 0 ? tr.messages.archivedCount(archived.length) : undefined}
-          />
+          // `.ptop`: the round back button and the title over "N sohbet", 12 apart (Arkadaşlar's
+          // top row).
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', gap: B.gap, minHeight: B.row }}
+          >
+            <BarBack side={KIT.size.round} />
+            <View style={{ flex: 1 }}>
+              <T v="pageBarTitle" accessibilityRole="header">
+                {tr.messages.archived}
+              </T>
+              {archived.length > 0 ? (
+                <T v="fine">{tr.messages.archivedCount(archived.length)}</T>
+              ) : null}
+            </View>
+          </View>
         }
       >
         {inbox.isPending || loading ? (
@@ -64,15 +81,19 @@ export default function ArchiveScreen() {
           <View testID="archive-empty" style={{ flex: 1, justifyContent: 'center' }}>
             <EmptyState
               kind="empty"
+              compact
               title={tr.messages.archivedEmpty}
               body={tr.messages.archivedEmptyHint}
             />
           </View>
         ) : (
-          <View testID="archive-list" style={{ gap: SPACING[3] }}>
-            <T v="fine">{tr.messages.archivedHint}</T>
+          <View testID="archive-list" style={{ gap: M.gap }}>
+            {/* `.ahint`: 4 in. */}
+            <T v="fine" style={{ paddingHorizontal: SPACING[1] }}>
+              {tr.messages.archivedHint}
+            </T>
             <ListMoveArea moves={moves}>
-              <InboxCard
+              <InboxList
                 threads={archived}
                 now={now}
                 onHold={menu.open}

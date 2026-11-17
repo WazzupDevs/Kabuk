@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Mesajlar: arama</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#DCE9DE;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.pair{display:flex;gap:40px;width:820px;height:844px}
+.hd{display:flex;align-items:center;justify-content:space-between}
+.acts{display:flex;gap:8px}
+.round{position:relative}
+.round .nd{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--buzz);border:2px solid var(--canvas)}
+.srch{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);color:var(--placeholder);--ci-a:var(--muted);--ci-b:var(--muted)}
+.sg{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);height:44px;padding:4px}
+.sg span{gap:6px}
+.dark .sg span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.cnt{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--buzz);color:var(--on-buzz);font:700 11px/20px var(--font);text-align:center;box-sizing:border-box}
+.lbl{display:flex;align-items:center;gap:6px;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted);padding:0 4px;--ci-a:var(--muted);--ci-b:var(--muted)}
+.lst{padding:0;display:flex;flex-direction:column;margin:0 -20px}
+.rw{padding:10px 20px!important}
+.rw+.rw:before{display:none!important}
+.lst+.lst{margin-top:8px}
+.rw{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:72px;position:relative}
+.rw+.rw:before{content:"";position:absolute;top:0;left:76px;right:16px;border-top:1px solid var(--hair)}
+.rw .av{width:48px;height:48px;font-size:17px}
+.mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.l1,.l2{display:flex;align-items:center;gap:8px}
+.nm{font:600 16px/22px var(--font);color:var(--text);flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.tm{font:500 13px/18px var(--font);color:var(--muted);flex:none}
+.tm.new{color:var(--accent);font-weight:700}
+.pv{font:500 15px/22px var(--font);color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);display:flex;align-items:center;gap:4px}
+.pv.un{color:var(--text);font-weight:600}
+.pv.first{font-style:italic}
+.tick{width:18px;height:18px;flex:none;color:var(--read)}
+.mu{width:16px;height:16px;flex:none;--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc{display:flex;align-items:center;gap:12px;height:48px;padding:0 16px;border-radius:999px;color:var(--text);font:600 15px/22px var(--font);--ci-a:var(--muted);--ci-b:var(--muted)}
+.arc .n{margin-left:auto;font:600 13px/18px var(--font);color:var(--muted)}
+.chev{width:18px;height:18px;color:var(--muted)}
+.tb{position:absolute;left:16px;right:16px;bottom:34px;height:68px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:0 6px}
+.ti{width:68px;height:56px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font:600 11px/14px var(--font)}
+.ti .ci{width:22px;height:22px}
+.ti.on{background:#FFFFFF;color:var(--text);box-shadow:var(--shadow-raised)}
+.ti.on .ci{--ci-a:var(--accent);--ci-b:var(--buzz);--ci-bo:1}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#031B0B}
+.dark .ti.on .ci{--ci-a:#0B783D}
+.fade{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(180deg,rgba(239,247,241,0),var(--canvas) 70%);pointer-events:none}
+.dark .fade{background:linear-gradient(180deg,rgba(0,0,0,0),#000 70%)}
+/*TB2*/
+.tb{left:20px;right:20px;bottom:30px;height:60px;padding:0 5px;gap:2px;box-shadow:0 6px 18px rgba(3,27,11,.08),0 0 0 1px rgba(3,27,11,.04)}
+.dark .tb{box-shadow:0 0 0 1px rgba(255,255,255,.07)}
+.ti{flex:1 1 0;min-width:0;width:auto;height:50px;gap:3px;font:600 10px/13px var(--font);letter-spacing:.1px;white-space:nowrap}
+.ti .ci{width:20px;height:20px}
+.ti.on{flex:1 1 0;padding:0;background:#031B0B;color:#FFFFFF;box-shadow:0 4px 12px rgba(3,27,11,.18)}
+.ti.on .ci{--ci-a:#3DDC84;--ci-b:#FF6FA0}
+.dark .ti.on{background:rgba(255,255,255,.94);color:#0B0E0D;box-shadow:none}
+.dark .ti.on .ci{--ci-a:#0B783D;--ci-b:#FF4F8B}
+.dark .ti{color:rgba(238,243,240,.55)}
+/*TB2END*/
+.field.filled .val{flex:1;min-width:0;color:var(--text)}
+.field.filled .val i{display:inline-block;width:2px;height:20px;margin-left:1px;vertical-align:-4px;background:var(--accent)}
+.dark .field.filled .val i{background:#3DDC84}
+.field .clr{background:none;border:0;padding:0;margin-right:-10px;width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted)}
+.field .clr .ci{width:20px;height:20px}
+.rlbl{margin:4px 0 0;font:600 12px/16px var(--font);letter-spacing:.24px;color:var(--muted)}
+.kb{height:292px;background:#D2D8D4;padding:8px 3px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:11px;position:relative}
+.dark .kb{background:#1A1D1C}
+.kr{display:flex;gap:5px;justify-content:center}
+.kr.r2{padding:0 9px}
+.k{flex:1;height:43px;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 0 rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;font:400 21px/1 -apple-system,system-ui,sans-serif;color:#000}
+.dark .k{background:#4A4D4C;color:#fff;box-shadow:0 1px 0 rgba(0,0,0,.6)}
+.k.f{background:#ABB3AE;font-size:15px}
+.dark .k.f{background:#2E3130}
+.k svg{width:22px;height:22px}
+.w2{flex:1.5}.w3{flex:2.2}
+.k.sp{flex:5.4;font-size:15px;color:#333}
+.dark .k.sp{color:#ddd}
+.hbar{position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:#000}
+.dark .hbar{background:#fff}
+.kbx{position:absolute;left:0;right:0;bottom:0;z-index:7}
+
+</style>
+</helmet>
+<div class="pair">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="{{t.cls}}">
+<div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+<div class="content" style="gap:12px">
+
+<div class="hd">
+<h1 class="display">Mesajlar</h1>
+<div class="acts">
+<button class="round soft" aria-label="Yeni mesaj"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9.4" width="16.4" height="5.2" rx="2.6" transform="rotate(-45 11.2 12)" class="a"></rect><rect x="12.4" y="18.4" width="8.6" height="2.8" rx="1.4" class="b"></rect></svg></button>
+<button class="round soft" aria-label="Bildirimler"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path class="b" d="M9.5 19.2a2.6 2.6 0 0 0 5 0z"></path><path d="M12 3.6c-3.4 0-5.6 2.6-5.6 5.9v3.4L4.8 15.6c-.4.7.1 1.6.9 1.6h12.6c.8 0 1.3-.9.9-1.6l-1.6-2.7V9.5c0-3.3-2.2-5.9-5.6-5.9z" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.6" stroke-linejoin="round"></path></svg><i class="nd"></i></button>
+</div>
+</div>
+
+<label class="field srch filled"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.4" cy="10.4" r="6.4" class="o"></circle><rect x="14.4" y="15.6" width="7.6" height="3.4" rx="1.7" transform="rotate(45 18.2 17.3)" class="a"></rect></svg><span class="val">f<i></i></span><button class="clr" aria-label="Temizle"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.4" fill="currentColor" opacity=".22"></circle><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg></button></label>
+
+
+
+
+
+
+<p class="rlbl">2 SOHBET</p>
+<div class="lst">
+<div class="rw"><span class="av c2">F</span><div class="mid"><div class="l1"><p class="nm">Fevve</p><span class="tm new">Dün</span></div><div class="l2"><p class="pv un">Deneme</p><b class="cnt">2</b></div></div></div>
+<div class="rw"><span class="av c5">F</span><div class="mid"><div class="l1"><p class="nm">Furkan<svg class="mu ci" viewBox="0 0 24 24" aria-label="Sessizde" role="img"><path class="b" d="M12 3.6c-3.4 0-5.6 2.6-5.6 5.9v3.4L4.8 15.6c-.4.7.1 1.6.9 1.6h12.6c.8 0 1.3-.9.9-1.6l-1.6-2.7V9.5c0-3.3-2.2-5.9-5.6-5.9z"></path><rect x="1.6" y="10.6" width="20.8" height="2.8" rx="1.4" transform="rotate(45 12 12)" class="a"></rect></svg></p><span class="tm">Per</span></div><div class="l2"><p class="pv">Kasnakaka</p></div></div></div>
+</div>
+
+
+
+</div>
+<div class="fade"></div>
+<nav class="glass tb">
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="b"></circle><path d="M16.6 7.4 13.9 13.9 7.4 16.6 10.1 10.1Z" class="a"></path><circle cx="12" cy="12" r="1.3" class="w"></circle></svg>Keşfet</span>
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.4" y="5.6" width="17.2" height="15" rx="4.6" class="b"></rect><rect x="4.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 8 5.4)" class="a"></rect><rect x="12.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 16 5.4)" class="a"></rect><rect x="6.5" y="12.1" width="11" height="2.6" rx="1.3" class="a"></rect></svg>Aktiviteler</span>
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mk{{t.k}}" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#mk{{t.k}})"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></g><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></svg>Mekan</span>
+<span class="ti on"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" class="b"></path><circle cx="8.2" cy="10.6" r="1.5" class="a"></circle><circle cx="12" cy="10.6" r="1.5" class="a"></circle><circle cx="15.8" cy="10.6" r="1.5" class="a"></circle></svg>Mesajlar</span>
+<span class="ti"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.6" r="3.9" class="a"></circle><rect x="4.6" y="13.6" width="14.8" height="7.4" rx="3.7" class="b"></rect></svg>Profil</span>
+</nav>
+<div class="kb kbx" aria-hidden="true"><div class="kr"><span class="k ">q</span><span class="k ">w</span><span class="k ">e</span><span class="k ">r</span><span class="k ">t</span><span class="k ">y</span><span class="k ">u</span><span class="k ">ı</span><span class="k ">o</span><span class="k ">p</span><span class="k ">ğ</span><span class="k ">ü</span></div><div class="kr r2"><span class="k ">a</span><span class="k ">s</span><span class="k ">d</span><span class="k ">f</span><span class="k ">g</span><span class="k ">h</span><span class="k ">j</span><span class="k ">k</span><span class="k ">l</span><span class="k ">ş</span><span class="k ">i</span></div><div class="kr"><span class="k f w2"><svg viewBox="0 0 24 24"><path d="M12 4 4 12.5h4.5V20h7v-7.5H20Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="k ">z</span><span class="k ">x</span><span class="k ">c</span><span class="k ">v</span><span class="k ">b</span><span class="k ">n</span><span class="k ">m</span><span class="k ">ö</span><span class="k ">ç</span><span class="k f w2"><svg viewBox="0 0 24 24"><path d="M9 5h11v14H9l-6-7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="m12 9 6 6m0-6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></span></div><div class="kr"><span class="k f w3">123</span><span class="k f w2">🙂</span><span class="k sp">boşluk</span><span class="k f w3">ara</span></div><i class="hbar"></i></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { themes: [ { cls: 'phone', k: 'L' }, { cls: 'phone dark pA', k: 'D' } ] };
+}
+}
+</script>
+</body>
+</html>
