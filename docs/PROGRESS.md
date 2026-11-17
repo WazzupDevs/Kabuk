@@ -1,5 +1,13 @@
 # İlerleme
 
+## Devir notu (17 Kasım 2026, gece): Dalga 5'in sunucu paketleri ve ekranları bitti, oyun içi kaldı
+
+- Birleşenler: #704 "Masadan çıkar" ve kart düğmesi 36; #705 Süsle düzeltmeleri (sekmeler, kapsülün yeri, kısa ekran); #706 "Gönderdiğin" (`friends/sent`, `friends/withdraw`, `friend_presses`); #707 semt ekranları (12, 13, 100–102); #708 Açılış sahnesi (2,3 sn, "Geç" yok); #709 Odadakiler (`district-chat/people`; engel süzmez, kimlik değiştirenin satırı zaman taşımaz); #710 ve #711 görsel maddeler (Profilim 236/112, şeritte adlar, nadirlik noktası, mor hale, bilet dolgusu); #712 bütün panolar depoda. Açık: #713 İstekler harf rozeti (`ci` yeşilse birleştir); #714 akışta gönderiden profil ve istek (kural 4 ve 10: proje sahibinin "onaylandı"sıyla).
+- Panolar artık `docs/design/yeni-arayuz/project/` altında (203 pano; eşleme `ESLEME.md`, resimler `BLOBLAR.md`): yeni oturum indirmez. Resimler depoda değil; gereken tek tek Artifact aracıyla indirilir.
+- Kalan: oyun içi ekranlar (tuvalde 10 oyunun sayfası; oyun başına bir paket, önce `mimar`). Küçükler: semt sohbetinde "süre bitti, devam?" dialogu (99 `SemtSureBitti`), `district/closed.tsx` (panosu yok), Odadakiler'de profilli satırdan profil açma, akışta gönderiden engelleme (sunucusu yok), `RisoKanki`'nin kullanılmayan `clock`'u.
+- Telefonda hiç görülmeyenler: bu oturumun bütün ekranları (Süsle düzeltmesi ve hale, Profilim ölçüleri ve bilet, Açılış, semt ekranları, Odadakiler, "Gönderdiğin", harf rozeti) ve önceki notun listesi. Süsle'de hale boyu `CAPSULE_HALE.ratio` ile ayarlanır.
+- Tuzaklar (öncekilere ek): `mobil` ajanının worktree'si `.claude/worktrees/` altında dururken kökte `pnpm check` lint ve format'ta düşer (iş bitince `git worktree remove`); ajan yanlışlıkla ortak kopyaya yazabilir (dönüşte `git status`); oturum yeniden başlarsa `dockerd` ve yerel Supabase kapanır; main'le çakışan PR'da `ci` hiç başlamaz (koşu yoksa önce çakışmaya bak); `friends.test.ts`'te "İstek gönder" yolunu deneyen test kaydı `friend_open = false` yapar.
+
 ## Devir notu (17 Kasım 2026, akşam): Dalga 5, sunucu paketleri ve masa ekranı
 
 - Birleşenler: #698 Mekan akışının istemcisi; #700 akışta uzun gönderi hatası (280); #702 masa ekranı (panolar 33–36, 38; Bitir ve Ayrıl ⋮ menüsünde, E2E 05/06/13 uyarlandı ama koşulmadı; davet artık sayfa `room-invite/[id]`). Açık, `ci` yeşil, proje sahibinin "onaylandı"sını bekliyor: #699 ortak arkadaş (`friends/mutual`, kural 4) ve #701 DM'de mesaj silme (`dm/delete`, kural 10; saatlik sürüm temizliği yeniden yazıldı). İkisini de `guvenlik` denetledi, bulgu yok.
