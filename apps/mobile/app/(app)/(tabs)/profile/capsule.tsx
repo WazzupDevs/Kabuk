@@ -175,8 +175,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     },
   });
   const dirty = changed && !save.isSuccess;
-  // Saving, the dialog stays; a failed save closes it and says so on the screen, over the bar
-  // (audit PRO-3).
+  // Saving, the dialog stays; a failed save keeps it open and says so in the top notice over it,
+  // "Tekrar dene" saving again (Ortak kurallar C4, SusleKaydedilemedi).
   const askToLeave = useCallback(() => {
     const id = confirm({
       title: tr.capsule.unsavedTitle,
@@ -185,13 +185,10 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       confirmLabel: tr.capsule.saveAndLeave,
       cancelLabel: tr.common.cancel,
       testID: 'capsule-leave-save',
+      errorTitle: tr.capsule.saveFailed,
       onConfirm: async () => {
-        try {
-          await save.mutateAsync();
-          router.back();
-        } catch {
-          // The error shows on the screen (save.isError); the dialog closes.
-        }
+        await save.mutateAsync();
+        router.back();
       },
       children: (
         <Btn

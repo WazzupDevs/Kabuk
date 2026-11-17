@@ -72,7 +72,6 @@ export function SemtSheetFixture({ sheet }: { sheet: 'options' | 'end' }) {
             options={endSessionOptions(async () => undefined)}
             visible
             running={null}
-            error={null}
             onConfirm={noop}
             onOther={noop}
             onCancel={noop}

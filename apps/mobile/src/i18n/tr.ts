@@ -600,6 +600,7 @@ export const tr = {
     report: 'Şikayet et',
     block: 'Engelle',
     alsoReport: 'Şikayet de et',
+    alsoReportNote: 'Neden olduğunu sonraki adımda seçersin.',
     blockConfirm: 'Engelle',
     blockHint:
       'Birbirinizi lobide, isteklerde ve arkadaş listesinde bir daha görmezsiniz. Karşı tarafa bildirilmez.',
@@ -672,6 +673,8 @@ export const tr = {
     clearAll: 'Hepsini çıkar',
     save: 'Kaydet',
     savedShort: 'Kaydedildi',
+    // SusleKaydedilemedi (79): the failure notice's title.
+    saveFailed: 'Kaydedilemedi',
     unsavedTitle: 'Değişiklikler kaydedilmedi',
     unsavedBody: 'Kaydetmeden çıkarsan kapsülün eski hâline döner.',
     saveAndLeave: 'Kaydet ve çık',
