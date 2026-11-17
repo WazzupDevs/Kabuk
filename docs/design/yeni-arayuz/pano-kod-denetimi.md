@@ -1,6 +1,6 @@
 # Yeni arayüz tuvali: pano–kod denetimi (17 Kasım 2026)
 
-Beş denetimin ham bulguları (pano kaynağı ile kodun karşılaştırması; telefonda doğrulanmadı, "emin değil" işaretliler dahil). Düzeltilen madde bu dosyadan silinir. Sekme çubuğu (#721) ve A'nın 2–11 maddeleri (ortak parçalar paketi) düzeltildi; A1 zemin, A12 bar bandı ve karar gerektirenler açık.
+Beş denetimin ham bulguları (pano kaynağı ile kodun karşılaştırması; telefonda doğrulanmadı, "emin değil" işaretliler dahil). Düzeltilen madde bu dosyadan silinir. Sekme çubuğu (#721) ve A'nın 1–11 maddeleri (ortak parçalar, zemin, canlı nokta) düzeltildi; A12 bar bandı ve karar gerektirenler açık.
 
 ## B (mesajlar, sosyal)
 AKTİVİTELER: 1 etkinlik kartı eski (EventCard.tsx; pano AktivitelerDolu .evc 148/r22 kapak resmi, sarı tür etiketi, düzenleyen) — veri yok (tür, düzenleyen), karar ister. 2 "Bugün · 3" liste başlığı yok. 3 Hediye kartı eski (GIFT_CARD 170 koyu; pano .gift 76 cam, 3 kanki, chevron). 4 başlık üstünde şehir eyebrow fazla. 5 geçmiş satırında sonuç etiketi fazla.
@@ -10,14 +10,12 @@ ARKADAŞLAR: 16 arama üstünde peek kanki yok. 17 "Mesaj gönder" 32 yüksek mi
 MESAJLAR/DM: 20 uzun basma menüsü: Sessize al, Profilini gör, Engelle yok. 21 arşiv boş resmi yok. 22 DM "Sohbette ara" yok (özellik yok). 23 DM yazma alanı ikonları (emoji, dosya, kamera, ses) ve pasif gönder yok; 120/121 ÖNERİ alınmadı.
 UYUYOR: Mesajlar, Arşiv dolu, DM sohbet, Geçmiş, Geçmiş masa, Arkadaşlar satırı, Bildirim iskeleti.
 ## A (ortak parçalar)
-1 ZEMİN: panolarda renk bulutu yok (ekran.css .aura display:none; düz #EFF7F1); kod her ekranda AuraBackground (Screen.tsx:207, ChatScreen:1304, TableEnd:78, KibritGame:257, TableScene). Karar belgesi yok.
 2 HATA/BAĞLANTI YOK (66/66a): 210×172 riso kanki, başlık 15/20 600, cümle 13/18, "Tekrar dene" soft 44; kod EmptyState.tsx:161-196 disk+ikon, 27 çağrı. Resim depoda yok.
 3 BOŞ DURUM: 150×100 kesik resim çerçevesiz, 15/20 600, 13/18, ortada; kod 240×165 kartlı, üstten hizalı (EmptyState.tsx:80-85,226-272).
 4 ÜST BAR düğmesi 44 (kod topBtn 46, auraKit.ts:864, motion/TopBar.tsx).
 5 SEKME ALTI SOLMA: 150, %70'te tam opak; kod 160, en çok .92 (aura.ts:115,45-50,83-88).
 6 AVATAR: halka 2px surface (koyuda #151A18), koyuda gölge yok, gövde düz renk c1..c5; kod beyaz halka, koyuda gölge, gradyan (kit.tsx:1409, auraKit.ts:652).
 7 SettingsRow (Hesap vb.): min 56, 16/20 600, ikon metin renginde, ok 18; kod 64, ikon muted, ok 20 (features/settings/SettingsRow.tsx:36).
-8 CANLI NOKTA: 8, pembe buzz, halka sabit, hareketsiz; kod yeşil + dalga (kit.tsx:965-1075). emin değil.
 9 CheckMark/radyo: 24 r7, ink dolgu, tik 18; kod yeşil r8 tik 16 (Checkbox.tsx:20, Choice.tsx:141). emin değil.
 10 Anahtar düğmesi koyuda surface, gölgesiz. küçük.
 11 Odak halkası 4px (kod 3; iskelet 5.8 3 diyor).
