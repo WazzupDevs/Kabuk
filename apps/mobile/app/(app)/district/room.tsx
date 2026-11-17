@@ -1,4 +1,3 @@
-import type { DistrictSession } from '@shared/api/district.ts';
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import {
   canRetry,
@@ -24,8 +23,8 @@ import {
 } from '@shared/venueChat.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
-import { useEffect, useMemo, useReducer, useState } from 'react';
-import { Animated, Easing, View } from 'react-native';
+import { useEffect, useEffectEvent, useMemo, useReducer, useState } from 'react';
+import { View } from 'react-native';
 
 import { Btn, Round, T, useKit } from '@/aura/kit';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
@@ -48,7 +47,7 @@ import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageE
 import { OlderFoot } from '@/features/chat/OlderFoot';
 import { useOlderPages } from '@/features/chat/useOlderPages';
 import { asksToContinue } from '@/features/district/continueNotice';
-import { Foot, TimeChip, WarnRow } from '@/features/district/parts';
+import { TimeChip } from '@/features/district/parts';
 import { PeopleSheet } from '@/features/district/People';
 import { DISTRICT_MUTES_KEY, OptionsSheet, useEndSession } from '@/features/district/RoomSheets';
 import {
@@ -65,12 +64,10 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, districtApi, districtChatApi, friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { confirm } from '@/lib/overlayStore';
+import { closeOverlay, confirm } from '@/lib/overlayStore';
 import { requestKey } from '@/lib/requestKey';
 import { useFlash } from '@/lib/useFlash';
 import { useNow } from '@/lib/useNow';
-import { useReduceMotion } from '@/lib/useReduceMotion';
-import { MOTION } from '@/theme/aura';
 import { nameInk } from '@/theme/nameInk';
 import { KIT } from '@/theme/auraKit';
 import { CHAT_LOOK } from '@/theme/chatLook';
@@ -150,6 +147,9 @@ function DistrictRoomBody() {
   const [dismissed, setDismissed] = useState<string | null>(null);
   const continues = !!state.data && asksToContinue(state.data);
   const sheetOpen = grace && continues && dismissed !== session?.endsAt;
+  useContinueDialog(sheetOpen, session?.graceEndsAt ?? null, () =>
+    setDismissed(session?.endsAt ?? null),
+  );
 
   const [outbox, dispatch] = useReducer(outboxReducer, []);
   const [sentIds, setSentIds] = useState<ReadonlyMap<string, string>>(new Map());
@@ -570,13 +570,6 @@ function DistrictRoomBody() {
         />
       }
     >
-      {session ? (
-        <ContinueSheet
-          visible={sheetOpen}
-          session={session}
-          onClose={() => setDismissed(session.endsAt)}
-        />
-      ) : null}
       <OptionsSheet
         visible={options}
         onClose={() => setOptions(false)}
@@ -676,17 +669,11 @@ const BENCH_ART = require('../../../assets/riso/semt/chat-bos.webp') as number;
 // The picture's own 419 x 320.
 const BENCH_RATIO = 320 / 419;
 
-// SemtDevam: the session's 2 hours are over; Evet gives 2 more in the same room, Hayır closes it.
-// Out of the sheet (a tap outside, back) is no answer: the extra time runs on (§8.3).
-function ContinueSheet({
-  visible,
-  session,
-  onClose,
-}: {
-  visible: boolean;
-  session: DistrictSession;
-  onClose: () => void;
-}) {
+// SemtSureBitti (99): the session's 2 hours are over, asked in the centred dialog; Evet gives 2
+// more in the same room, Hayır closes it. Out of the dialog (a tap outside, back, something else
+// opening) is no answer: the extra time runs on (§8.3) and the chip opens it again. A failed try
+// keeps the dialog open with its error in the notice over it.
+function useContinueDialog(open: boolean, graceEndsAt: string | null, onDismiss: () => void) {
   const queryClient = useQueryClient();
   const extend = useMutation({
     meta: FEEL_ERROR,
@@ -701,87 +688,53 @@ function ContinueSheet({
     mutationFn: () => districtApi.leave(),
     onSuccess: (next) => putDistrictState(queryClient, next),
   });
-  const error = extend.error ?? leave.error;
-  const busy = extend.isPending || leave.isPending;
-  return (
-    <Sheet
-      visible={visible}
-      onClose={onClose}
-      title={tr.district.cont.title}
-      footer={
-        <Foot>
-          {error ? <WarnRow tone="danger" text={errorMessage(error)} /> : null}
-          <Btn
-            block
-            label={tr.district.cont.yes}
-            testID="district-continue-yes"
-            loading={extend.isPending}
-            disabled={leave.isPending}
-            onPress={() => !busy && extend.mutate()}
-          />
-          <Btn
-            block
-            variant="glassy"
-            label={tr.district.cont.no}
-            testID="district-continue-no"
-            loading={leave.isPending}
-            disabled={extend.isPending}
-            onPress={() => !busy && leave.mutate()}
-          />
-        </Foot>
-      }
-    >
-      <T v="body">{tr.district.cont.body}</T>
-      {visible ? <GraceBar graceEndsAt={session.graceEndsAt} /> : null}
-    </Sheet>
-  );
+  const yes = useEffectEvent(() => extend.mutateAsync());
+  const no = useEffectEvent(() => leave.mutateAsync());
+  const dismissed = useEffectEvent(onDismiss);
+  useEffect(() => {
+    if (!open || !graceEndsAt) return undefined;
+    const id = confirm({
+      icon: 'clock',
+      title: tr.district.cont.title,
+      note: tr.district.cont.body,
+      tone: 'plain',
+      confirmLabel: tr.district.cont.yes,
+      testID: 'district-continue-yes',
+      onConfirm: async () => {
+        await yes();
+      },
+      other: {
+        label: tr.district.cont.no,
+        testID: 'district-continue-no',
+        onPress: async () => {
+          await no();
+        },
+      },
+      onCancel: () => dismissed(),
+      children: <ClosesIn graceEndsAt={graceEndsAt} />,
+    });
+    return () => closeOverlay(id, false);
+  }, [open, graceEndsAt]);
 }
 
-// `.prog` and the words under it: the extra time going down, linear (semteGit.continueBar).
-function GraceBar({ graceEndsAt }: { graceEndsAt: string }) {
-  const { scheme } = useKit();
-  const reduce = useReduceMotion();
+// `.dw`: the extra time going down, in words, in a soft pill.
+function ClosesIn({ graceEndsAt }: { graceEndsAt: string }) {
+  const { colors } = useTheme();
+  const { c } = useKit();
   const now = useNow(1000);
-  const total = MOTION.semteGit.continueBar.durationS;
   const left = secondsUntil(graceEndsAt, new Date(now));
-  const [fill] = useState(() => new Animated.Value(Math.min(1, left / total)));
-  useEffect(() => {
-    const ms = Math.max(0, Date.parse(graceEndsAt) - Date.now());
-    fill.setValue(Math.min(1, ms / 1000 / total));
-    if (reduce) return undefined;
-    const run = Animated.timing(fill, {
-      toValue: 0,
-      duration: ms,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    });
-    run.start();
-    return () => run.stop();
-  }, [graceEndsAt, fill, total, reduce]);
-  const p = SEMT.progress;
   const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   return (
-    <View style={{ gap: SPACING[2] }}>
-      <View
-        style={{
-          height: p.height,
-          borderRadius: p.height / 2,
-          backgroundColor: p[scheme].track,
-          overflow: 'hidden',
-        }}
-      >
-        <Animated.View
-          style={{
-            height: p.height,
-            width: '100%',
-            borderRadius: p.height / 2,
-            backgroundColor: p[scheme].fill,
-            transformOrigin: 'left',
-            transform: [{ scaleX: reduce ? Math.min(1, left / total) : fill }],
-          }}
-        />
-      </View>
-      <T v="fine" accessibilityLiveRegion="polite">
+    <View
+      style={{
+        alignSelf: 'center',
+        borderRadius: KIT.layer.size.dialogPill.radius,
+        paddingVertical: KIT.layer.size.dialogPill.padY,
+        paddingHorizontal: KIT.layer.size.dialogPill.padX,
+        backgroundColor: colors.surface2,
+      }}
+    >
+      <T v="fine" center color={c.ink} accessibilityLiveRegion="polite">
         {tr.district.cont.closesIn(clock)}
       </T>
     </View>

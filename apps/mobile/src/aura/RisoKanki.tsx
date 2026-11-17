@@ -1,20 +1,11 @@
 import { Image } from 'expo-image';
 import { type ReactNode } from 'react';
 import { type ImageSourcePropType, StyleSheet, View } from 'react-native';
-import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
-import { useReduceMotion } from '@/lib/useReduceMotion';
-import {
-  KANKI_BEATS,
-  KANKI_ORIGIN,
-  KANKI_SHADOW,
-  kankiFrame,
-  type KankiId,
-  type KankiPlace,
-} from '@/theme/kankiMotion';
+import { KANKI_SHADOW, type KankiId, type KankiPlace } from '@/theme/kankiMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 
-// The riso buddies (assets/riso/buddies, 320x420), and the closed-eye picture of those that blink.
+// The riso buddies (assets/riso/buddies, 320x420).
 const OPEN: Record<KankiId, ImageSourcePropType> = {
   b83534: require('../../assets/riso/buddies/riso_b83534.webp'),
   '7d5ef2': require('../../assets/riso/buddies/riso_7d5ef2.webp'),
@@ -31,15 +22,6 @@ const OPEN: Record<KankiId, ImageSourcePropType> = {
   'peek-1': require('../../assets/riso/peek-1.webp'),
   'peek-2': require('../../assets/riso/peek-2.webp'),
 };
-const CLOSED: Partial<Record<KankiId, ImageSourcePropType>> = {
-  b83534: require('../../assets/riso/buddies/riso_b83534_c.webp'),
-  '7d5ef2': require('../../assets/riso/buddies/riso_7d5ef2_c.webp'),
-  '3c95b1': require('../../assets/riso/buddies/riso_3c95b1_c.webp'),
-  '4957ac': require('../../assets/riso/buddies/riso_4957ac_c.webp'),
-  '1a80a9': require('../../assets/riso/buddies/riso_1a80a9_c.webp'),
-  '6f419d': require('../../assets/riso/buddies/riso_6f419d_c.webp'),
-  f280a5: require('../../assets/riso/buddies/riso_f280a5_c.webp'),
-};
 
 // Where a buddy stands, scaled from the board's 350 wide frame to the scene's width.
 function placeStyle(p: KankiPlace, k: number) {
@@ -54,89 +36,39 @@ function placeStyle(p: KankiPlace, k: number) {
   };
 }
 
-// One riso buddy (`.stand`): its picture over a soft shadow at its feet. With `clock` it moves
-// (§13.1); without it, or with reduce motion, it stands still with its eyes open. `shadow: false`
-// for one that looks over a field (`.peek`, no shadow on the board).
+// One riso buddy (`.stand`): its still picture over a soft shadow at its feet. `shadow: false` for
+// one that looks over a field (`.peek`, no shadow on the board).
 export function RisoKanki({
   place,
   scale,
-  clock,
   shadow = true,
   children,
 }: {
   place: KankiPlace;
   scale: number;
-  clock?: SharedValue<number>;
   shadow?: boolean;
   children?: ReactNode;
 }) {
   const { scheme } = useTheme();
-  const reduce = useReduceMotion();
-  const beat = KANKI_BEATS[place.id];
-  const moving = !!clock && !!beat && !reduce;
-  const closedSource = CLOSED[place.id];
-  const body = useAnimatedStyle(() => {
-    if (!moving || !clock || !beat) return {};
-    const f = kankiFrame(beat, clock.value);
-    return {
-      transform: [
-        { translateY: f.translateY * scale },
-        { rotate: `${f.rotate}deg` },
-        { scaleX: f.scaleX },
-        { scaleY: f.scaleY },
-      ],
-    };
-  });
-  const open = useAnimatedStyle(() => {
-    if (!moving || !clock || !beat) return { opacity: 1 };
-    return { opacity: kankiFrame(beat, clock.value).closed ? 0 : 1 };
-  });
-  const closed = useAnimatedStyle(() => {
-    if (!moving || !clock || !beat) return { opacity: 0 };
-    return { opacity: kankiFrame(beat, clock.value).closed ? 1 : 0 };
-  });
-  const foot = useAnimatedStyle(() => {
-    if (!moving || !clock || !beat) return {};
-    const s = kankiFrame(beat, clock.value).shadow;
-    return { opacity: s, transform: [{ scale: s }] };
-  });
   const box = placeStyle(place, scale);
   return (
     <View pointerEvents="none" style={box}>
       {shadow ? (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              left: `${((1 - KANKI_SHADOW.width) / 2) * 100}%`,
-              width: `${KANKI_SHADOW.width * 100}%`,
-              bottom: `${KANKI_SHADOW.bottom * 100}%`,
-              height: `${KANKI_SHADOW.height * 100}%`,
-              borderRadius: box.width,
-              backgroundColor: scheme === 'dark' ? KANKI_SHADOW.colorDark : KANKI_SHADOW.color,
-              filter: [{ blur: KANKI_SHADOW.blur }],
-            },
-            foot,
-          ]}
+        <View
+          style={{
+            position: 'absolute',
+            left: `${((1 - KANKI_SHADOW.width) / 2) * 100}%`,
+            width: `${KANKI_SHADOW.width * 100}%`,
+            bottom: `${KANKI_SHADOW.bottom * 100}%`,
+            height: `${KANKI_SHADOW.height * 100}%`,
+            borderRadius: box.width,
+            backgroundColor: scheme === 'dark' ? KANKI_SHADOW.colorDark : KANKI_SHADOW.color,
+            filter: [{ blur: KANKI_SHADOW.blur }],
+          }}
         />
       ) : null}
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          { transformOrigin: `${KANKI_ORIGIN.x * 100}% ${KANKI_ORIGIN.y * 100}%` },
-          body,
-        ]}
-      >
-        <Animated.View style={[StyleSheet.absoluteFill, open]}>
-          <Image source={OPEN[place.id]} style={StyleSheet.absoluteFill} contentFit="contain" />
-        </Animated.View>
-        {moving && closedSource ? (
-          <Animated.View style={[StyleSheet.absoluteFill, closed]}>
-            <Image source={closedSource} style={StyleSheet.absoluteFill} contentFit="contain" />
-          </Animated.View>
-        ) : null}
-        {children}
-      </Animated.View>
+      <Image source={OPEN[place.id]} style={StyleSheet.absoluteFill} contentFit="contain" />
+      {children}
     </View>
   );
 }

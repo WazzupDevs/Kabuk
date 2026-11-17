@@ -207,13 +207,15 @@ export function Dialog({
                 loading={running === 'other'}
               />
             ) : null}
-            <Btn
-              block
-              variant="glassy"
-              testID={testID ? `${testID}-cancel` : undefined}
-              label={options.cancelLabel}
-              onPress={onCancel}
-            />
+            {options.cancelLabel ? (
+              <Btn
+                block
+                variant="glassy"
+                testID={testID ? `${testID}-cancel` : undefined}
+                label={options.cancelLabel}
+                onPress={onCancel}
+              />
+            ) : null}
           </View>
         </ScrollView>
       </Reanimated.View>
