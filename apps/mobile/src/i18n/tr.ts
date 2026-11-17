@@ -345,6 +345,16 @@ export const tr = {
     requestKind: 'Arkadaşlık isteği',
     noRequests: 'Bekleyen istek yok',
     noRequestsHint: 'Biri seni arkadaş olarak eklemek isterse burada görürsün.',
+    // İstekler's "Masa" section (yeni arayüz tuvali: IsteklerDolu): the join requests to the
+    // caller's table and the table invites sent to the caller.
+    requestsMasaHead: (n: number) => `Masa · ${n}`,
+    requestsMasaWants: 'Katılmak istiyor',
+    requestsMasaGroup: (people: number) => `${people} kişi katılmak istiyor`,
+    requestsMasaInvited: 'Seni masasına çağırıyor',
+    requestsMasaAccept: (name: string) => `${name} katılma isteğini kabul et`,
+    requestsMasaDecline: (name: string) => `${name} katılma isteğini reddet`,
+    requestsMasaInviteAccept: (name: string) => `${name} davetine katıl`,
+    requestsMasaInviteDecline: (name: string) => `${name} davetini reddet`,
     decline: (name: string) => `${name} isteğini reddet`,
     accept: (name: string) => `${name} isteğini kabul et`,
     // DM yönetimi (docs/SPEC_V4.md §4.X; tuval MesajlarUzunBas, MesajlarUzunBasSabit, ArsivUzunBas,

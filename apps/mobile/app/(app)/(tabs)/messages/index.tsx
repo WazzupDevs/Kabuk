@@ -17,6 +17,7 @@ import { ArchivedRow, InboxList, PinnedHead, useThreadMenu } from '@/features/fr
 import { openDm } from '@/features/friends/openDm';
 import { useSessionStore } from '@/features/auth/session';
 import { restoreDm, useDmInbox, useFriends, useRequestCount } from '@/features/friends/queries';
+import { useMasaRequestCount } from '@/features/friends/MasaRequests';
 import { RequestList } from '@/features/friends/RequestList';
 import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
@@ -52,6 +53,7 @@ export default function MessagesScreen() {
   const asked = useDeferredValue(query);
   const requests = useRequestCount();
   const now = useNow(60_000);
+  const masaRequests = useMasaRequestCount(now);
   const { c, scheme } = useKit();
   // "Sohbet silindi" once a conversation is cleared (tuval MesajlarSilindi).
   const [notice, setNotice] = useState<ToastMessage | null>(null);
@@ -134,7 +136,7 @@ export default function MessagesScreen() {
                   {
                     value: 'requests',
                     label: tr.messages.requestsTab,
-                    badge: requests,
+                    badge: requests + masaRequests,
                     testID: 'messages-tab-requests',
                   },
                 ]}
