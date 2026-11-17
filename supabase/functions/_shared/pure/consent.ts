@@ -5,8 +5,10 @@
 // raised once, with the 4.5 client.
 // 2026-11: the full texts (docs/legal/, docs/decisions/yasal-metinler.md): the terms with the
 // community rules; the KVKK notice with every legal ground named and none of them consent.
+// KVKK 2026-11-16: the earlier texts of an edited DM, kept for reports (docs/decisions/dm-ilk-hal.md);
+// the terms did not change.
 export const CURRENT_TERMS_VERSION = '2026-11';
-export const CURRENT_KVKK_VERSION = '2026-11';
+export const CURRENT_KVKK_VERSION = '2026-11-16';
 // The location notice at check-in (which text the person was shown; stored on the first check-in).
 // draft-0: the "açık rıza veriyorum" box of the check-in sheet.
 // draft-1: no box; the text over "Konumumu kullan" (aura 31, docs/decisions/aura-31.md). An app

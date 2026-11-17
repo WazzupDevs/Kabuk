@@ -16,6 +16,10 @@ export function canEditDm(sentAt: string, now: number): boolean {
   return Number.isFinite(at) && now - at <= DM_EDIT_WINDOW_MS;
 }
 
+// Real edits (a new text) of one message, at most; a sixth answers edit_limit. The same text again
+// is no edit. dm_edit holds the same number (dmManage.test.ts checks that both agree).
+export const DM_EDIT_MAX = 5;
+
 // Edits per account per window (dm_edit_rate_hit, asked before dm_edit; over it: rate_limited).
 export const DM_EDIT_RATE = { windowSeconds: 60, windowMax: 10 } as const;
 
