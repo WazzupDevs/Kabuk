@@ -3,23 +3,18 @@ import { Stack, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, View } from 'react-native';
 
-import { Btn } from '@/aura/kit';
-import { Banner } from '@/components/Banner';
 import { ProfilePhoto } from '@/components/ProfilePhoto';
 import { useProfile } from '@/features/account/useProfile';
+import { InfoRows } from '@/features/onboarding/InfoRows';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { resetOnboarding, useOnboardingStore } from '@/features/onboarding/store';
-import { useFriend } from '@/features/onboarding/useFriend';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
 import { useProfileView } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { finishLabel } from '@/lib/signupSteps';
-import { KIT } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { SIGNUP } from '@/theme/signup';
 
 // The photo, the last sign-up step (7/7; v45 §1): optional and addable later from Profil. An empty
 // dashed circle and "Fotoğraf ekle", which opens the library or camera sheet (v45: .sup-ph). The
@@ -32,16 +27,12 @@ export default function PhotoStep() {
   const [sheet, setSheet] = useState(false);
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
-  const { colors, shape } = useTheme();
   const gender = useOnboardingStore((s) => s.gender) ?? view.data?.gender ?? null;
-  const friend = useFriend();
   const photoUrl = view.data?.photoUrl ?? null;
   // A photo put up earlier counts too (the app was closed on this step after the upload): the
   // circle, the button and the finish label say the same thing.
   const hasPhoto = photoSet || photoUrl !== null;
   const photoNote = gender !== null && !mayStayAnonymous(gender) && !hasPhoto;
-  // Aura v71 (KayitFoto `.pick`): the empty picker 120, its dashed line 3.
-  const side = KIT.size.photoPick;
 
   // The profile is sent: Android's back would step into the birth date and the gender again,
   // which have nothing left to do. This is the last step, so back does nothing here.
@@ -69,60 +60,58 @@ export default function PhotoStep() {
         testID="signup-photo-step"
         title={tr.signup.photoTitle}
         body={tr.signup.photoBody}
-        friend={friend}
-        action={{
-          testID: 'signup-finish',
-          icon: 'check',
-          label: finishLabel(hasPhoto, {
-            finish: tr.signup.finish,
-            noPhoto: tr.signup.finishNoPhoto,
-          }),
-          onPress: finish,
-        }}
+        // KayitFoto: "Fotoğraf ekle" is the main button and "Fotoğrafsız bitir" the quiet one under
+        // it; with a photo set, "Bitir" is the main one and the photo can be changed (K-29).
+        action={
+          hasPhoto
+            ? { testID: 'signup-finish', label: tr.signup.finish, onPress: finish }
+            : {
+                testID: 'signup-photo-add',
+                label: tr.profile.photoAdd,
+                onPress: () => setSheet(true),
+              }
+        }
+        secondary={
+          hasPhoto
+            ? {
+                testID: 'signup-photo-add',
+                label: tr.profile.photoChange,
+                onPress: () => setSheet(true),
+              }
+            : {
+                testID: 'signup-finish',
+                label: finishLabel(hasPhoto, {
+                  finish: tr.signup.finish,
+                  noPhoto: tr.signup.finishNoPhoto,
+                }),
+                onPress: finish,
+              }
+        }
       >
-        <View className="gap-3">
-          <View className="items-center gap-3">
-            {photoUrl ? (
-              <ProfilePhoto url={photoUrl} name={own.data?.display_name} size="hero" />
-            ) : (
-              <View
-                accessible={false}
-                style={{
-                  width: side,
-                  height: side,
-                  borderRadius: shape.radius.pill,
-                  // skall tuvali (KayitFoto, `.picker`): a dashed control ring on the surface.
-                  borderWidth: KIT.size.photoPickLine,
-                  borderStyle: 'dashed',
-                  borderColor: colors.control,
-                  backgroundColor: colors.surface,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <AppIcon name="photo" size={ICON.xl} color={colors.accent} />
-              </View>
-            )}
-            <Btn
-              testID="signup-photo-add"
-              sm
-              variant="glassy"
-              icon="photo"
-              label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
-              onPress={() => setSheet(true)}
-            />
+        {photoUrl ? (
+          <View style={{ alignItems: 'center', marginTop: SIGNUP.fieldTop }}>
+            <ProfilePhoto url={photoUrl} name={own.data?.display_name} size="hero" />
           </View>
-          {photoNote ? (
-            <Banner tone="warn" testID="photo-needed-note" body={tr.signup.photoNeededNote} />
-          ) : null}
-        </View>
+        ) : null}
+        <InfoRows
+          items={[
+            ...(photoNote
+              ? [
+                  {
+                    icon: 'warn' as const,
+                    text: tr.signup.photoWarn,
+                    warn: true,
+                    testID: 'photo-needed-note',
+                  },
+                ]
+              : []),
+            { icon: 'user', text: tr.signup.photoLater },
+          ]}
+        />
         <PhotoSheet
           visible={sheet}
           onClose={() => setSheet(false)}
-          onSet={() => {
-            setPhotoSet(true);
-            friend.react('ok');
-          }}
+          onSet={() => setPhotoSet(true)}
         />
       </SignupStep>
     </>

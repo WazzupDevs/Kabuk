@@ -1,12 +1,9 @@
 import { forwardRef, useState } from 'react';
 import { Text as RNText, TextInput, type TextInputProps, View } from 'react-native';
 
-import { Glass, useKit } from '@/aura/kit';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
-
-import { Text } from './Text';
+import { ErrorLine } from '@/features/onboarding/ErrorLine';
+import { SIGNUP_FONT_SCALE, useSignupLook } from '@/features/onboarding/look';
+import { SIGNUP, SIGNUP_TYPE } from '@/theme/signup';
 
 type Props = Omit<TextInputProps, 'style' | 'value' | 'maxLength' | 'placeholderTextColor'> & {
   value: string;
@@ -14,75 +11,58 @@ type Props = Omit<TextInputProps, 'style' | 'value' | 'maxLength' | 'placeholder
   error?: string | null;
 };
 
-const BOX = 60;
-const BOX_RADIUS = 16;
-// The dark scheme's caret in the next box (KayitKoyu: 2 × 26).
-const CARET_W = 2;
-const CARET_H = 26;
-
-// The one-time code as one box per digit (canvas: Doğrulama kodu). A single invisible field lies
-// over the boxes, so typing, pasting and SMS autofill work as in a plain field; the box that takes
-// the next digit is drawn in the accent.
+// The one-time code as one box per digit (yeni arayüz tuvali: KayitKod `.otp`): the surface 58 high,
+// 16 round, a 1 px inset line; the box that takes the next digit is lined 2 px in the ink with its
+// caret; a wrong code lines every box 2 px in the danger colour (KayitKodHatali) and says why under
+// them. A single invisible field lies over the boxes, so typing, pasting and SMS autofill work as
+// in a plain field.
 export const CodeInput = forwardRef<TextInput, Props>(function CodeInput(
   { value, length, error, ...rest },
   ref,
 ) {
-  const { c, scheme } = useKit();
-  const { colors } = useTheme();
-  const dark = scheme === 'dark';
+  const look = useSignupLook();
   const [focused, setFocused] = useState(false);
   const next = Math.min(value.length, length - 1);
+  const C = SIGNUP.code;
 
   return (
-    <View className="gap-2">
-      {/* docs/design/aura → Kod: the six boxes on one glass card; the filled ones white, the next
-          one ringed in the primary, the rest softer. */}
-      <Glass style={{ padding: KIT.size.rowGap }}>
-        <View className="flex-row" style={{ gap: SPACING[2] }}>
-          {Array.from({ length }, (_, i) => {
-            const active = focused && i === next;
-            return (
-              <View
-                key={i}
-                className="flex-1 items-center justify-center"
-                style={{
-                  height: BOX,
-                  borderRadius: BOX_RADIUS,
-                  // Aura v75 KayitKoyu: in the dark the filled and the next box #1B211F, the rest
-                  // #151A18, the next one ringed in the accent with no halo and its caret.
-                  backgroundColor:
-                    i < value.length || active
-                      ? dark
-                        ? colors.surface2
-                        : KIT.white
-                      : dark
-                        ? colors.surface
-                        : c.day,
-                  borderWidth: error ? 2 : 0,
-                  borderColor: KIT.danger,
-                  boxShadow: active
-                    ? dark
-                      ? `0px 0px 0px 2px ${colors.accent}`
-                      : `0px 0px 0px 2px ${KIT.primary}, 0px 0px 0px 6px ${KIT.primaryRing}`
-                    : undefined,
-                }}
-              >
-                {dark && active && !value[i] ? (
-                  <View
-                    style={{
-                      width: CARET_W,
-                      height: CARET_H,
-                      borderRadius: CARET_W / 2,
-                      backgroundColor: colors.accent,
-                    }}
-                  />
-                ) : (
-                  <RNText style={[KIT_TYPE.code, { color: c.ink }]}>{value[i] ?? ''}</RNText>
-                )}
-              </View>
-            );
-          })}
-        </View>
+    <View>
+      <View style={{ flexDirection: 'row', gap: C.gap }}>
+        {Array.from({ length }, (_, i) => {
+          const active = focused && i === next && !error;
+          const ring = error ? look.danger : active ? look.lineOn : look.line;
+          return (
+            <View
+              key={i}
+              style={{
+                flex: 1,
+                height: C.height,
+                borderRadius: C.radius,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: look.field,
+                boxShadow: `inset 0px 0px 0px ${active || error ? SIGNUP.field.lineOn : SIGNUP.field.line}px ${ring}`,
+              }}
+            >
+              {active && !value[i] ? (
+                <View
+                  style={{
+                    width: C.caret.width,
+                    height: C.caret.height,
+                    backgroundColor: look.ink,
+                  }}
+                />
+              ) : (
+                <RNText
+                  maxFontSizeMultiplier={SIGNUP_FONT_SCALE}
+                  style={[SIGNUP_TYPE.code, { color: look.ink }]}
+                >
+                  {value[i] ?? ''}
+                </RNText>
+              )}
+            </View>
+          );
+        })}
         {/* No noteTyping here (K-30): the last digit sends the code, and a wrong code is felt. */}
         <TextInput
           ref={ref}
@@ -100,12 +80,8 @@ export const CodeInput = forwardRef<TextInput, Props>(function CodeInput(
           }}
           style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, opacity: 0.02 }}
         />
-      </Glass>
-      {error ? (
-        <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">
-          {error}
-        </Text>
-      ) : null}
+      </View>
+      {error ? <ErrorLine text={error} /> : null}
     </View>
   );
 });

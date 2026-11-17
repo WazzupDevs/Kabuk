@@ -3,7 +3,6 @@
 // leaves it.
 export const BUTTON_ALLOWED: readonly string[] = [
   'app/(app)/design-preview.tsx',
-  'app/(auth)/otp.tsx',
   'src/components/RouteError.tsx',
   'src/features/design/capsuleMeasurePreview.tsx',
   'src/features/design/measurePreview.tsx',

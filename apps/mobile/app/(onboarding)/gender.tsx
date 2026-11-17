@@ -7,7 +7,7 @@ import { GenderChoice, useSetGender } from '@/features/account/GenderChoice';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
-import { useFriend } from '@/features/onboarding/useFriend';
+import { InfoRows } from '@/features/onboarding/InfoRows';
 import { signupError, useCompleteSignup } from '@/features/onboarding/useCompleteSignup';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -25,7 +25,6 @@ export default function GenderStep() {
   const submit = useCompleteSignup();
   const save = useSetGender();
   const pending = submit.isPending || save.isPending;
-  const friend = useFriend();
 
   // The profile went (Android's back from the photo step): the photo step is the only way on, not
   // the one-time question for older accounts. Not while this step sends it: its own success opens
@@ -46,14 +45,12 @@ export default function GenderStep() {
       step={signingUp ? 'gender' : undefined}
       testID="signup-gender-step"
       title={signingUp ? tr.signup.genderLabel : tr.signup.genderGateTitle}
-      body={signingUp ? tr.signup.genderHint : tr.signup.genderGateBody}
+      body={signingUp ? undefined : tr.signup.genderGateBody}
       onBack={signingUp ? () => router.back() : undefined}
       error={error}
-      friend={friend}
       action={{
         testID: signingUp ? 'gender-continue' : 'gender-save',
         label: signingUp ? tr.signup.continue : tr.signup.genderSave,
-        icon: signingUp ? 'forward' : undefined,
         disabled: gender === null,
         loading: pending,
         onPress: () => {
@@ -63,15 +60,15 @@ export default function GenderStep() {
         },
       }}
     >
-      <GenderChoice
-        value={gender}
-        onChange={(g) => {
-          setGender(g);
-          friend.react('nod');
-        }}
-        disabled={pending}
-        bare={signingUp}
-      />
+      <GenderChoice value={gender} onChange={setGender} disabled={pending} />
+      {signingUp ? (
+        <InfoRows
+          items={[
+            { icon: 'eyeOff', text: tr.signup.genderPrivate },
+            { icon: 'lock', text: tr.signup.genderLocked },
+          ]}
+        />
+      ) : null}
     </SignupStep>
   );
 }
