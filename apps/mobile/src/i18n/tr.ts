@@ -974,6 +974,9 @@ export const tr = {
       closedNote: 'Yarın yeni soru gelir.',
       opensIn: (h: number, m: number) => `Açılmasına ${h} sa ${m} dk`,
       inRoom: (name: string) => `${name} sohbetindesin`,
+      // The eyebrows on the card's riso scene (Kesfet, KesfetSemtIcerde).
+      sceneEyebrow: 'Semt sohbeti',
+      roomEyebrow: 'Sohbettesin',
       backToRoom: 'Odaya dön',
       outsideTitle: 'Geçit henüz senin semtinde yok',
       outsideNote: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",

@@ -38,6 +38,47 @@ export const EXPLORE = {
   // button (`.clr`) 36 round, its icon 20, 10 into the field's right padding; the map button 8 to
   // its right.
   field: { padX: 20, gap: 8, icon: 20, clear: 36, clearIcon: 20, clearOut: -10, rowGap: 8 },
+  // The buddies over the search (`.sr .kk`): 178 wide (the picture's 600 × 340), 64 from the right,
+  // their foot 22 over the field's foot, under the field.
+  peek: { width: 178, height: 101, right: 64, bottom: 22 },
+  // The empty list and the search that finds nothing (KesfetBos, KesfetAraBos `.emp`): 10 under the
+  // place line, 24 from the sides; the riso 100 × 82 and 120 × 98; the title 12 under it, the
+  // sentence 4 under that and 240 wide at most.
+  empty: {
+    top: 10,
+    side: 24,
+    list: { width: 100, height: 82 },
+    search: { width: 120, height: 98 },
+    titleTop: 12,
+    noteTop: 4,
+    noteWidth: 240,
+  },
+  // Semte Git as the board draws it (Kesfet, KesfetSemtIcerde `.semt`): the riso scene under it,
+  // 200 high at least, 18 inside, 22 round; the words in its left 58 %; the dot 8, 6 from the
+  // eyebrow; the title 6 under it, the note 4 under that, the time 8 under the title with its 18
+  // clock 6 from the words; the button at the foot on its 0 4 10 shadow. In the room the eyebrow
+  // and its dot are pink, the dot in a 4 ring.
+  scene: {
+    minHeight: 200,
+    pad: 18,
+    radius: 22,
+    words: '58%',
+    dot: 8,
+    dotRing: 4,
+    eyebrowGap: 6,
+    titleTop: 6,
+    noteTop: 4,
+    metaTop: 8,
+    metaGap: 6,
+    metaIcon: 18,
+    eyebrow: '#7CF0B0',
+    roomEyebrow: '#FF8FB8',
+    roomDot: '#FF4F8B',
+    roomDotRing: 'rgba(255, 79, 139, 0.28)',
+    title: '#FFFFFF',
+    note: 'rgba(255, 255, 255, 0.8)',
+    meta: 'rgba(255, 255, 255, 0.86)',
+  },
   // The kind chips (`.ch .chip`): 14 in, 8 apart, each growing to share the row.
   chip: { padX: 14, gap: 8 },
   // The place button (`.cty`): 10 in at its left, 8 at its right, 6 between its parts, the pin 18,

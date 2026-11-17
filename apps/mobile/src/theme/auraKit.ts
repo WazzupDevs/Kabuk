@@ -69,6 +69,12 @@ export const KIT_TYPE = {
   kesfetName: t(600, 16, 22),
   kesfetSub: t(500, 13, 18),
   kesfetStatus: t(600, 12, 16),
+  // The empty list's title (`.et`, 15, 600) and Semte Git's title on its scene (`.semt .tt`, 18,
+  // 700, -0.3 px), its note (13, 500) and time (14, 500).
+  kesfetEmptyTitle: t(600, 15, 20),
+  semtTitle: t(700, 18, 23, -0.3 / 18),
+  semtNote: t(500, 13, 18),
+  semtMeta: t(500, 14, 18),
   mapLegend: t(600, 11, 14),
   mapAttr: t(500, 10, 14),
   mapName: t(600, 16, 21),

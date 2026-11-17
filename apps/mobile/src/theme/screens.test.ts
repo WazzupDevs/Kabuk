@@ -51,11 +51,13 @@ describe("the app's Keşfet", () => {
     expect(screen).toMatch(/from '@\/aura\/kit'/);
     // Yeni arayüz tuvali Kesfet: the white search field with the round to the map, pinned; each
     // venue a row on the ground; the riso empty state; the motion from the kit.
-    for (const part of ['<SearchRow', '<ClearButton', '<Chip', '<PlaceRow', '<EmptyState']) {
+    for (const part of ['<SearchRow', '<ClearButton', '<Chip', '<PlaceRow', '<ListEmpty']) {
       expect(screen, part).toContain(part);
     }
     expect(screen).toMatch(/<StickyField band side=\{L\.side\}>/);
-    expect(screen).toMatch(/riso="venues"/);
+    for (const riso of ['peek-explore', 'empty-explore', 'empty-search']) {
+      expect(screen, riso).toContain(`assets/riso/${riso}.webp`);
+    }
     expect(screen).toMatch(/from '@\/motion'/);
   });
 

@@ -17,7 +17,15 @@ import { hasActiveTable } from '@shared/navigation.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
 import { type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Image,
+  type ImageSourcePropType,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
@@ -25,7 +33,6 @@ import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, Glass, Li, Live, Round, T, useKit } from '@/aura/kit';
 import { useTabOpenings } from '@/aura/motion';
-import { RisoPeekOver } from '@/aura/Peek';
 import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
@@ -54,7 +61,6 @@ import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
-import { EXPLORE_PEEK } from '@/theme/kankiMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -325,20 +331,22 @@ function ListBody({
             <Reveal index={0} openings={openings}>
               <Question now={now} />
             </Reveal>
-            {/* 5.1: a buddy looks over the search's top edge; it scrolls with the content. */}
+            {/* Kesfet `.sr .kk`: the buddies look over the search's top edge, under the field,
+                64 from the right, their foot 22 over the field's; they scroll with the content. */}
             {ready ? (
-              <View
-                pointerEvents="none"
+              <Image
+                source={PEEK}
+                fadeDuration={0}
+                resizeMode="contain"
+                accessible={false}
                 style={{
                   position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: -L.fieldTop,
-                  height: 0,
+                  right: EXPLORE.peek.right,
+                  bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
+                  width: EXPLORE.peek.width,
+                  height: EXPLORE.peek.height,
                 }}
-              >
-                <RisoPeekOver places={EXPLORE_PEEK} />
-              </View>
+              />
             ) : null}
           </View>
           {ready ? (
@@ -688,15 +696,12 @@ function VenueList({
           // KesfetBos, KesfetAraBos: nothing at all, or a filter or a search that finds nothing,
           // said by its cause under the riso.
           <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay} openings={openings}>
-            <View testID={listed.length === 0 ? 'explore-empty' : 'explore-no-match'}>
-              <EmptyState
-                kind="empty"
-                riso="venues"
-                compact
-                title={copy.title}
-                body={copy.hint ?? ''}
-              />
-            </View>
+            <ListEmpty
+              testID={listed.length === 0 ? 'explore-empty' : 'explore-no-match'}
+              search={empty === 'search'}
+              title={copy.title}
+              body={copy.hint}
+            />
           </Reveal>
         ) : (
           // A university with several campuses is one row opening its campuses (docs/SPEC_V4.md
@@ -748,6 +753,56 @@ function VenueList({
         place={place}
       />
     </>
+  );
+}
+
+// The board's riso pictures: the buddies over the search (`.kk`), the empty list (KesfetBos) and the
+// search that finds nothing (KesfetAraBos).
+const PEEK = require('../../../../assets/riso/peek-explore.webp') as ImageSourcePropType;
+const EMPTY_LIST = require('../../../../assets/riso/empty-explore.webp') as ImageSourcePropType;
+const EMPTY_SEARCH = require('../../../../assets/riso/empty-search.webp') as ImageSourcePropType;
+
+// KesfetBos, KesfetAraBos `.emp`: the riso, its title 12 under it and the sentence 4 under that,
+// centred, 10 under the place line, 24 from the sides.
+function ListEmpty({
+  testID,
+  search,
+  title,
+  body,
+}: {
+  testID: string;
+  search: boolean;
+  title: string;
+  body: string | null;
+}) {
+  const { c } = useKit();
+  const e = EXPLORE.empty;
+  const picture = search ? e.search : e.list;
+  return (
+    <View
+      testID={testID}
+      style={{ alignItems: 'center', paddingTop: e.top, paddingHorizontal: e.side }}
+    >
+      <Image
+        source={search ? EMPTY_SEARCH : EMPTY_LIST}
+        fadeDuration={0}
+        resizeMode="contain"
+        accessible={false}
+        style={{ width: picture.width, height: picture.height }}
+      />
+      <View style={{ marginTop: e.titleTop }}>
+        <T v="kesfetEmptyTitle" center accessibilityRole="header">
+          {title}
+        </T>
+      </View>
+      {body ? (
+        <View style={{ marginTop: e.noteTop, maxWidth: e.noteWidth }}>
+          <T v="kesfetSub" center color={c.muted}>
+            {body}
+          </T>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
