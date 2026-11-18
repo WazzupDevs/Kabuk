@@ -20,7 +20,7 @@ import {
   type VenueChatMessage,
   venueChatChannel,
 } from '@shared/venueChat.ts';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { memo, useEffect, useMemo, useReducer, useState } from 'react';
 import { View } from 'react-native';
@@ -40,6 +40,7 @@ import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
+import { CHAT_MUTES_KEY, ChatOptionsMenu } from '@/features/chat/ChatOptionsMenu';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useFreshLine } from '@/features/chat/fresh';
 import { OlderFoot } from '@/features/chat/OlderFoot';
@@ -68,7 +69,7 @@ import {
 } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { CapIcon } from '@/aura/CapIcon';
-import { Av, Btn, Glass, Round, T } from '@/aura/kit';
+import { Av, Btn, Glass, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { CHAT_LOOK } from '@/theme/chatLook';
@@ -81,7 +82,7 @@ import { useLatestCallback } from '@/lib/useLatestCallback';
 import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
-import { type ColorScheme, ICON, SPACING } from '@/theme/tokens';
+import { type ColorScheme, SPACING } from '@/theme/tokens';
 import { FxMoves } from '@/components/FxSvg';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
@@ -114,7 +115,7 @@ function VenueChatScreenBody() {
   const currentRoom = useCurrentRoom(table.data);
   const identity = page.data?.identity ?? table.data?.identity ?? null;
   const photo = useOwnPhoto();
-  const [sheet, setSheet] = useState<'options' | 'identity' | null>(null);
+  const [sheet, setSheet] = useState<'identity' | null>(null);
   const [person, setPerson] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
   const [blocking, setBlocking] = useState<VenueChatMessage | null>(null);
@@ -453,17 +454,8 @@ function VenueChatScreenBody() {
               />
             ) : null
           }
-          // The menu is a soft round of its own outside the capsule (`.round.soft`).
-          more={
-            <Round
-              side={KIT.size.round}
-              icon="moreV"
-              iconSize={ICON.md}
-              label={tr.venueChat.options}
-              testID="venue-chat-options"
-              onPress={() => setSheet('options')}
-            />
-          }
+          // MekanSohbetSecenek: the soft round outside the capsule and the menu grown out of it.
+          more={<ChatOptionsMenu label={tr.venueChat.options} testID="venue-chat-options" />}
         />
       }
       composer={
@@ -491,11 +483,6 @@ function VenueChatScreenBody() {
           onChanged={refresh}
         />
       ) : null}
-      <OptionsSheet
-        visible={sheet === 'options'}
-        onClose={() => setSheet(null)}
-        onChanged={refresh}
-      />
       <Sheet visible={person !== null} onClose={() => setPerson(null)}>
         {person ? (
           <>
@@ -582,62 +569,7 @@ function VenueChatScreenBody() {
   );
 }
 
-const MUTES_KEY = ['venueChatMutes'] as const;
-
-// skall tuvali (MekanSohbetiSecenekler): the people the viewer muted, each with "Sesi aç".
-function OptionsSheet({
-  visible,
-  onClose,
-  onChanged,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  onChanged: () => void;
-}) {
-  const queryClient = useQueryClient();
-  const mutes = useQuery({
-    queryKey: MUTES_KEY,
-    queryFn: () => venueChatApi.mutes(),
-    enabled: visible,
-  });
-  const unmute = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: (id: string) => venueChatApi.unmute(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: MUTES_KEY });
-      onChanged();
-    },
-  });
-  const list = mutes.data?.mutes ?? [];
-  return (
-    <Sheet visible={visible} onClose={onClose} title={tr.venueChat.open}>
-      <View style={{ gap: SPACING[1.5] }}>
-        <T v="fine" ink>
-          {tr.venueChat.mutedTitle}
-        </T>
-        {mutes.isPending ? (
-          <Loader />
-        ) : list.length === 0 ? (
-          <T v="fine">{tr.venueChat.mutedNone}</T>
-        ) : (
-          <Menu>
-            {list.map((m) => (
-              <MenuItem
-                key={m.id}
-                label={m.label}
-                note={tr.venueChat.unmute}
-                icon={m.profiled ? 'person-outline' : 'happy-outline'}
-                loading={unmute.isPending && unmute.variables === m.id}
-                onPress={() => unmute.mutate(m.id)}
-              />
-            ))}
-          </Menu>
-        )}
-      </View>
-      <Btn block variant="glassy" label={tr.venueChat.done} onPress={onClose} />
-    </Sheet>
-  );
-}
+const MUTES_KEY = CHAT_MUTES_KEY;
 
 function venueQuote(q: VenueChatMessage['replyTo'], scheme: ColorScheme, accent: string) {
   const base = toChatQuote(q);
@@ -651,7 +583,7 @@ function faceOf(m: VenueChatMessage, size: number, inStream = false) {
       kind="profile"
       name={senderLabel(m)}
       photoUrl={m.photoUrl}
-      size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'}
+      size={size === CHAT_LOOK.face ? 'md' : 'xl'}
     />
   ) : m.senderLook ? (
     // In the stream the face moves only on the screen (ChatLookAvatar); elsewhere always.
@@ -661,7 +593,7 @@ function faceOf(m: VenueChatMessage, size: number, inStream = false) {
       <LookAvatar look={m.senderLook} size={size} />
     )
   ) : (
-    <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
+    <Avatar kind="table" alias={senderLabel(m)} size={size === CHAT_LOOK.face ? 'md' : 'xl'} />
   );
 }
 
@@ -791,7 +723,7 @@ const VenueMessageRow = memo(function VenueMessageRow({
             last={last}
             time={tr.chat.time(m.createdAt)}
             name={m.fromMe ? undefined : label}
-            avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm, true)}
+            avatar={m.fromMe ? undefined : faceOf(m, CHAT_LOOK.face, true)}
             nameInk={m.fromMe ? undefined : nameInk(scheme, label)}
             onPressSender={m.fromMe ? undefined : () => onPerson?.(m)}
           />

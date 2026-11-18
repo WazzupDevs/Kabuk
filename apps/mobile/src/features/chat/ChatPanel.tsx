@@ -27,7 +27,7 @@ import {
   DayLine,
   dayLabel,
 } from '@/components/ChatScreen';
-import { ChatEmptyCard } from '@/components/ChatEmptyCard';
+import { ChatEmptyCard, ChatSuggestions } from '@/components/ChatEmptyCard';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
@@ -35,10 +35,12 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { haptic } from '@/lib/haptics';
 import { sameRowProps } from '@/lib/rowEqual';
 import { useLatestCallback } from '@/lib/useLatestCallback';
 import { useFlash } from '@/lib/useFlash';
 import { CHAT_LOOK } from '@/theme/chatLook';
+import { DM } from '@/theme/dm';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -323,26 +325,34 @@ export function useRoomChatList(
         />
       </View>
     ) : (
-      // MasaSohbet `.emp` (yeni arayüz tuvali): a card of the surface with the riso over its top
-      // edge, 40 from the sides, 72 over the message bar. The board's suggestion chips are not
-      // drawn (no behaviour is given them).
-      <View
-        className="flex-1 justify-end"
-        style={{
-          paddingHorizontal: CHAT_LOOK.empty.side,
-          paddingBottom: CHAT_LOOK.empty.masa.aboveBar,
-        }}
-        testID="room-chat-empty"
-      >
-        <ChatEmptyCard
-          source={TABLE_ART}
-          ratio={TABLE_RATIO}
-          art={CHAT_LOOK.empty.masa.art}
-          lift={CHAT_LOOK.empty.masa.artUp}
-          title={tr.chat.tableEmptyTitle}
-          body={tr.chat.tableEmptyBody(people ?? 1)}
-          label={tr.chat.tableEmptyLabel}
-        />
+      // MasaSohbet `.emp`, `.sug` (yeni arayüz tuvali): a card of the surface with the riso over
+      // its top edge, 40 from the screen's sides, 24 over the board's three suggestions, which
+      // stand 12 over the message bar; a tap sends one as the message bar does.
+      <View className="flex-1 justify-end" testID="room-chat-empty">
+        <View style={{ paddingHorizontal: CHAT_LOOK.empty.side - DM.side }}>
+          <ChatEmptyCard
+            source={TABLE_ART}
+            ratio={TABLE_RATIO}
+            art={CHAT_LOOK.empty.masa.art}
+            lift={CHAT_LOOK.empty.masa.artUp}
+            title={tr.chat.tableEmptyTitle}
+            body={tr.chat.tableEmptyBody(people ?? 1)}
+            label={tr.chat.tableEmptyLabel}
+          />
+        </View>
+        <View style={{ marginTop: CHAT_LOOK.suggest.cardGap }}>
+          <ChatSuggestions
+            items={tr.chat.tableSuggest}
+            label={tr.chat.suggestLabel}
+            testID="room-chat-suggest"
+            onSend={(text) => {
+              const body = prepareMessage(text);
+              if (!body) return;
+              haptic('sent');
+              chat.submit(body, () => undefined);
+            }}
+          />
+        </View>
       </View>
     ),
   };
@@ -500,7 +510,7 @@ export function RoomComposer({ chat }: { chat: RoomChat }) {
   return (
     <DraftComposer
       sendLabel={tr.chat.send}
-      placeholder={tr.chat.placeholder}
+      placeholder={tr.chat.tablePlaceholder}
       prepare={prepareMessage}
       maxLength={MAX_MESSAGE_LENGTH}
       onSend={chat.submit}

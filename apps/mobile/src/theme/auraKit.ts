@@ -147,6 +147,13 @@ export const KIT_TYPE = {
   menuRow: t(600, 15.5, 20),
   // The ⋮ menu's row (MekanSecenek `.pi p`: 600 16/20).
   popRow: t(600, 16, 20),
+  // Its value at the right (SemtSecenek `.pi .rv`: 500 14/18, muted).
+  popValue: t(500, 14, 18),
+  // The group chats' first-message card's title (SemtSohbet, MasaSohbet `.et`: 700 16/22), their
+  // suggestion chips (`.sug span`: 600 13/18) and the district's time chip (`.tmr`: 700 13/18).
+  chatEmptyTitle: t(700, 16, 22),
+  chatSuggest: t(600, 13, 18),
+  chatTime: t(700, 13, 18),
   confirmTitle: t(800, 21, 27, -0.02),
   confirmNote: t(500, 14, 20),
   confirmBtn: t(800, 16.5, 21),
@@ -1319,6 +1326,11 @@ export const KIT = {
       menuPadTop: 16,
       menuPadX: 8,
       menuPadBottom: 8,
+      // A ⋮ menu whose first row is a row, not a heading (SemtSecenek, MekanSohbetSecenek: 8 all
+      // round).
+      menuPadTight: 8,
+      // An off row's icon (`.pi.off .ci`).
+      menuOffIcon: 0.5,
       menuEdge: 12,
       menuRow: 48,
       menuRowPadX: 12,

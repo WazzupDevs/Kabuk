@@ -32,11 +32,26 @@ export const CHAT_LOOK = {
   },
   // The district chat's time chip (SemtSohbet `.tmr`): 32 high, 8 in at the clock (18) and 12 after
   // the words, 6 apart; its look the empty card's (the surface, no glass).
-  timeChip: { height: 32, padLeft: 8, padRight: 12, gap: 6, icon: 18 },
+  // 116 from the board's top: 12 under the bar's 52 capsule (the bar's own 6 under it, and 6).
+  timeChip: { height: 32, padLeft: 8, padRight: 12, gap: 6, icon: 18, top: 6 },
+  // A face beside another's run (SemtDolu, MekanSohbet `.ga`, `/*AVBUYUK*/`): 40.
+  face: 40,
+  // The day's pill in the venue and the district chat (`.flow .day`): 28 inside its 1 line, 12 in.
+  day: { height: 28 },
+  // The first message's suggestions (`.sug`): 12 over the message bar, a row from 12 at the left
+  // to the screen's right edge, 8 apart; each 36 high, 14 in. The table's card 24 over them.
+  suggest: { height: 36, padX: 14, gap: 8, cardGap: 24 },
+  // Under the top bar (SemtSohbet, MekanSohbet `.band`): the chat's ground to the bar's top (the
+  // board's 40 % of 132), then fading out; 132 under a 47 status bar.
+  band: {
+    below: 85,
+    semt: { light: '#F5E9D8', dark: '#000000' },
+    mekan: { light: '#DDEFE2', dark: '#000000' },
+  },
   // The first message's card (`.emp`): 24 round, 20 / 22 / 22 inside, the riso 122 wide standing 62
   // above it; its title 16/22 (700) and its sentence 13/18 (500) 8 and 4 under; the table's riso
-  // 150 wide and 70 above, the card's foot 170 over the screen's (the bar's 98 and 72 over it);
-  // the district's 40 from the sides, centred.
+  // 150 wide and 70 above, the card 24 over the suggestions; 40 from the screen's sides (the
+  // stream's 12 and 28), the district's centred.
   empty: {
     radius: 24,
     padTop: 20,
@@ -47,7 +62,7 @@ export const CHAT_LOOK = {
     titleTop: 8,
     bodyTop: 4,
     side: 40,
-    masa: { art: 150, artUp: 70, aboveBar: 72 },
+    masa: { art: 150, artUp: 70 },
   },
   light: {
     emptyCard: {
@@ -55,8 +70,15 @@ export const CHAT_LOOK = {
       shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
       edge: '',
     },
+    // `.sug span`: the surface on `--glass-shadow`.
+    suggest: {
+      fill: '#FFFFFF',
+      shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
+      edge: '',
+    },
   },
   dark: {
     emptyCard: { fill: '#121614', shadow: '', edge: 'rgba(255, 255, 255, 0.08)' },
+    suggest: { fill: '#121614', shadow: '', edge: 'rgba(255, 255, 255, 0.10)' },
   },
 } as const;

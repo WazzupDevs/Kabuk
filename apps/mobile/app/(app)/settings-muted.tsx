@@ -30,7 +30,12 @@ export default function MutedScreen() {
   const unmute = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (id: string) => venueChatApi.unmute(id),
-    onSettled: () => void queryClient.invalidateQueries({ queryKey: MUTES_KEY }),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: MUTES_KEY });
+      // Opened from a chat's ⋮ menu: the chat under it shows the person's messages again.
+      void queryClient.invalidateQueries({ queryKey: ['venueChat'] });
+      void queryClient.invalidateQueries({ queryKey: ['district', 'chat'] });
+    },
   });
   const now = useNow(60000);
   const list = mutes.data?.mutes ?? [];
