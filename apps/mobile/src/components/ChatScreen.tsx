@@ -41,7 +41,7 @@ import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
+import { type ColorScheme, ICON, SPACING } from '@/theme/tokens';
 
 import { type WallpaperCanvas, wallpaperCanvas } from '@/theme/chatWallpaper';
 
@@ -66,8 +66,9 @@ import { GlassTarget } from '@/components/LiquidGlass';
 import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { gradientStyle } from '@/theme/gradient';
-import { type ChatWall, ChatKindContext, kindOfWall } from './chatKind';
+import { type ChatWall, ChatKindContext, kindOfWall, useChatKind } from './chatKind';
 import { DM } from '@/theme/dm';
+import { CHAT_LOOK } from '@/theme/chatLook';
 import { ChatMetaContext } from './chatMeta';
 import { metaHiddenAt } from '@/lib/chatMeta';
 import { PopHostContext, PopOpenContext, usePopHostState, usePopOpen } from './popHost';
@@ -1313,7 +1314,28 @@ export function ChatScreen<T extends ChatListItem>({
                         endRef={end}
                         keyboardOffset={bottomPad}
                         band={
-                          bandUnderBar && banded && canvas ? (
+                          bandUnderBar && banded && canvas && (wall === 'semt' || wall === 'mekan') ? (
+                            // SemtSohbet, MekanSohbet `.band`: the chat's ground, not the picture.
+                            <View
+                              pointerEvents="none"
+                              style={{
+                                position: 'absolute',
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                                height: insets.top + CHAT_LOOK.band.below,
+                                ...gradientStyle(
+                                  chatBand(
+                                    wall,
+                                    scheme,
+                                    // Solid to the bar's top (the board's 40 % of 132).
+                                    (insets.top + SPACING[1.5]) /
+                                      (insets.top + CHAT_LOOK.band.below),
+                                  ),
+                                ),
+                              }}
+                            />
+                          ) : bandUnderBar && banded && canvas ? (
                             <WallBand
                               kind={banded}
                               canvas={canvas}
@@ -1434,6 +1456,14 @@ export function ChatScreen<T extends ChatListItem>({
   );
 }
 
+// The band under the venue and the district chat's top bar (`.band`): the chat's ground to `solid`
+// of it (a share), then fading out.
+function chatBand(wall: 'semt' | 'mekan', scheme: ColorScheme, solidTo: number): string {
+  const ground = CHAT_LOOK.band[wall][scheme];
+  const solid = Math.round(solidTo * 100);
+  return `linear-gradient(180deg, ${ground} 0%, ${ground} ${solid}%, ${withAlpha(ground, 0)} 100%)`;
+}
+
 // "Bugün" or "3 Ekim" over a day's first message; fresh: "Yeni mesajlar" over the first message
 // that came while the chat was closed, in the link colour (skall.css → `.day.new`).
 export function DayLine({
@@ -1449,6 +1479,8 @@ export function DayLine({
   const { scheme } = useKit();
   const lineRef = useContext(DayLineRefContext);
   const shadowOff = useLabOff('golge');
+  // The venue and the district chat's day (SemtDolu, MekanSohbet `.flow .day`): 28 high in its line.
+  const tall = useChatKind() === 'mekan' && !fresh;
   // Every chat draws the day and the unread line as the DM's board does (yeni arayüz tuvali,
   // DmSohbet, MekanSohbet, MasaSohbet, SemtSohbet: the same `.day`, `.new`).
   if (fresh) {
@@ -1506,7 +1538,9 @@ export function DayLine({
         boxShadow: shadow.boxShadow,
         borderRadius: KIT.size.chip,
         paddingHorizontal: DM.day.padX,
-        paddingVertical: DM.day.padY,
+        paddingVertical: tall ? 0 : DM.day.padY,
+        minHeight: tall ? CHAT_LOOK.day.height + 2 * KIT.size.edge : undefined,
+        justifyContent: 'center',
       }}
     >
       {shadow.node}
