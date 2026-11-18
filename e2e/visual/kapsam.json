@@ -1857,7 +1857,13 @@
     "acilis": "Semt sohbeti → sağ üstteki ⋮",
     "tema": "acik",
     "durum": "ekran-semt-secenekler",
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "15",
@@ -1873,7 +1879,13 @@
     "acilis": "Semt sohbeti → sağ üstteki ⋮",
     "tema": "koyu",
     "durum": "ekran-semt-secenekler",
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "16",
