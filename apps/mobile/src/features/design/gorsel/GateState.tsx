@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoopsHeld } from '@/components/Loader';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { FrameWidth } from '@/lib/useNarrow';
 import { setSchemePreference, useSchemePreference, useTheme } from '@/theme/ThemeProvider';
 import { type ColorScheme, SPACING } from '@/theme/tokens';
 
@@ -98,7 +99,13 @@ export function GateState({
         >
           {entry ? (
             <LoopsHeld.Provider value>
-              {width ? <View style={{ width }}>{entry.render()}</View> : entry.render()}
+              {width ? (
+                <FrameWidth.Provider value={width}>
+                  <View style={{ width }}>{entry.render()}</View>
+                </FrameWidth.Provider>
+              ) : (
+                entry.render()
+              )}
             </LoopsHeld.Provider>
           ) : (
             <Text testID="gorsel-yok">{tr.design.gate.unknown(stateKey)}</Text>

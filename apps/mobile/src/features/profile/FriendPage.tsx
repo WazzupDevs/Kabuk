@@ -87,7 +87,7 @@ export function FriendPage({
           <>
             <MenuItem
               cap="report"
-              label={tr.chat.report}
+              label={tr.safety.report}
               testID="profile-report"
               onPress={() => {
                 close();

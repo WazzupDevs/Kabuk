@@ -14,6 +14,7 @@ import { tr } from '@/i18n/tr';
 import { BarBack } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
+import { MUTUAL_BTN } from '@/theme/person';
 
 // OrtakArkadaslar (103): the friends the viewer and this friend have in common, opened from the
 // friend's profile (rule 4: only a friend's profile asks for them). The back button with the
@@ -96,7 +97,13 @@ export function MutualFriends({ publicId, name }: { publicId: string; name?: str
                 </View>
                 {threadId ? (
                   <Btn
-                    sm
+                    bar={KIT.size.rowBtnSm}
+                    look={{
+                      type: 'setupShuffle',
+                      padLeft: MUTUAL_BTN.pad,
+                      padRight: MUTUAL_BTN.pad,
+                    }}
+                    style={{ minWidth: MUTUAL_BTN.minWidth }}
                     variant="glassy"
                     label={tr.friends.messageSend}
                     accessibilityLabel={tr.friends.message(label)}

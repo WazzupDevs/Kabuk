@@ -136,9 +136,7 @@ describe('K9: Profili düzenle', () => {
     expect(edit).not.toMatch(/footer=\{/);
     expect(edit).toMatch(/bar=\{KIT\.size\.btnBar\}\s+testID="profile-save"/);
     expect(edit).toMatch(/disabled=\{!changed && !save\.isSuccess\}/);
-    expect(edit).toMatch(/style=\{\{ minWidth: KIT\.saveMinWidth \}\}/);
     const kit = code('src/theme/auraKit.ts');
-    expect(kit).toMatch(/saveMinWidth: 96,/);
     expect(kit).toMatch(/btnBar: 40,/);
   });
 });

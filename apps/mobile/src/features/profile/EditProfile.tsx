@@ -120,7 +120,7 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
         >
           <Btn
             bar={E.coverBtn.height}
-            lead={<CapIcon name="camera" color={KIT.white} soft={1} size={E.coverBtn.icon} />}
+            lead={<CapIcon name="camera" color={KIT.white} soft={0.6} size={E.coverBtn.icon} />}
             testID="cover-menu"
             label={tr.profile.coverChange}
             fill={look.coverBtnFill}
@@ -166,7 +166,7 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
               justifyContent: 'center',
             }}
           >
-            <CapIcon name="camera" color={look.cameraInk} soft={1} size={C.icon} />
+            <CapIcon name="camera" color={look.cameraInk} soft={0.6} size={C.icon} />
           </View>
         </Tap>
       </View>
@@ -377,7 +377,6 @@ function EditForm({
             loading={save.isPending}
             look={{ type: 'holdRow', padLeft: E.barPad, padRight: E.barPad }}
             onPress={onSave}
-            style={{ minWidth: KIT.saveMinWidth }}
           />
         </View>
       }

@@ -1,6 +1,6 @@
 import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -64,15 +64,10 @@ function ProfilePage({
   gateScroll,
 }: {
   y: ReturnType<typeof useScrollOffset>;
-  // The visual gate's ScrollProfile state: the page scrolled this far (ProfilBenKaydir), with the room
-  // under it to do so. Never set in the app.
+  // The visual gate's scrolled state (ProfilBenKaydir): the room under the page to scroll this far
+  // (the board is 320 down with nothing under it; the gate's flow drags). Never set in the app.
   gateScroll?: number;
 }) {
-  // The gate's scrolled state: the offset the bar reads and the content moved up by it (a phone
-  // cannot scroll past its content, the board's page is 320 down with nothing under it).
-  useEffect(() => {
-    if (gateScroll) y.set(gateScroll);
-  }, [gateScroll, y]);
   const { scheme } = useTheme();
   const { c } = useKit();
   const insets = useSafeAreaInsets();
@@ -109,7 +104,7 @@ function ProfilePage({
     <View style={{ flex: 1, backgroundColor: ground }}>
       <AuraBackground />
       <ScreenStatusBar style={onBar && scheme === 'light' ? 'dark' : 'light'} />
-      <ScrollBody y={y} contentContainerStyle={{ flexGrow: 1, marginTop: -(gateScroll ?? 0) }}>
+      <ScrollBody y={y} contentContainerStyle={{ flexGrow: 1 }}>
         {coverOff ? (
           <View style={{ height: coverHeight }} />
         ) : (
@@ -124,7 +119,7 @@ function ProfilePage({
           style={{
             marginTop: -OWN.photoOver,
             paddingHorizontal: B.side,
-            paddingBottom: barSpace ? insets.bottom + SCROLL_PAD : SPACING[8],
+            paddingBottom: (barSpace ? insets.bottom + SCROLL_PAD : SPACING[8]) + (gateScroll ?? 0),
           }}
         >
           {data ? (
@@ -296,34 +291,37 @@ function FriendsCard({ friends, narrow }: { friends: readonly Friend[]; narrow: 
   const faces = friends.slice(0, OWN.stackMax);
   const side = OWN.stack;
   return (
-    <Tap
-      testID="profile-friends"
-      accessibilityRole="button"
-      accessibilityLabel={tr.profile.friendsCount(friends.length)}
-      onPress={() => router.push('/profile/friends')}
-      style={narrow ? undefined : { flex: 1, minWidth: 0 }}
-    >
-      <Glass
-        face={B[scheme].card}
-        radius={KIT.size.btn / 2}
-        style={{
-          minHeight: narrow ? B.buttonNarrow : KIT.size.btn,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: F.gap,
-          paddingLeft: faces.length > 0 ? F.padLeft : F.padLeftBare,
-          paddingRight: F.padRight,
-        }}
+    <View style={narrow ? undefined : { flex: 1, minWidth: 0 }}>
+      <Tap
+        testID="profile-friends"
+        accessibilityRole="button"
+        accessibilityLabel={tr.profile.friendsCount(friends.length)}
+        onPress={() => router.push('/profile/friends')}
+        style={{ width: '100%' }}
       >
-        {faces.length > 0 ? <FaceStack faces={faces} side={side} /> : null}
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <T v="btnSm" ink fit lines={1}>
-            {tr.profile.friendsSub(friends.length)}
-          </T>
-        </View>
-        <CapIcon name="chevron" color={c.muted} soft={1} size={F.chevron} />
-      </Glass>
-    </Tap>
+        <Glass
+          face={B[scheme].card}
+          radius={KIT.size.btn / 2}
+          style={{
+            width: '100%',
+            minHeight: narrow ? B.buttonNarrow : KIT.size.btn,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: F.gap,
+            paddingLeft: faces.length > 0 ? F.padLeft : F.padLeftBare,
+            paddingRight: F.padRight,
+          }}
+        >
+          {faces.length > 0 ? <FaceStack faces={faces} side={side} /> : null}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T v="btnSm" ink fit lines={1}>
+              {tr.profile.friendsSub(friends.length)}
+            </T>
+          </View>
+          <CapIcon name="chevron" color={c.muted} soft={1} size={F.chevron} />
+        </Glass>
+      </Tap>
+    </View>
   );
 }
 

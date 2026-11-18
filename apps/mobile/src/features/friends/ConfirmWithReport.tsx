@@ -54,6 +54,7 @@ function ReportOption() {
       testID="confirm-also-report"
       onPress={() => useOption.setState((s) => ({ alsoReport: !s.alsoReport }))}
       style={{
+        width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         gap: L.checkRowGap,

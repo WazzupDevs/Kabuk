@@ -1,6 +1,6 @@
 import type { ProfileView } from '@shared/api/profile.ts';
 import { router } from 'expo-router';
-import { type ReactNode, useRef, useState } from 'react';
+import { Children, Fragment, isValidElement, type ReactNode, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -31,6 +31,15 @@ import { PERSON, PERSON_TYPE } from '@/theme/person';
 import { PROFILE_PAGE } from '@/theme/profileCover';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+
+// The menu's rows as the menu counts them (its hairlines come between its children): a fragment
+// is one child, so its own children stand in its place.
+function rows(node: ReactNode): ReactNode {
+  if (isValidElement<{ children?: ReactNode }>(node) && node.type === Fragment) {
+    return Children.toArray(node.props.children);
+  }
+  return node;
+}
 
 const P = PROFILE_PAGE;
 const O = P.other;
@@ -266,7 +275,7 @@ function OtherPage({
       </View>
       {menu && anchor ? (
         <Menu anchor={anchor} visible={open} onClose={() => setOpen(false)}>
-          {menu(() => setOpen(false))}
+          {rows(menu(() => setOpen(false)))}
         </Menu>
       ) : null}
     </View>

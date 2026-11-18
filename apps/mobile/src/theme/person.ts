@@ -85,7 +85,10 @@ export const PERSON_TYPE = {
 
 // MekanProfilIstek `.pvl`: the chips of what a request shows, 28 high, 10 in, 6 apart, 18 over the
 // buttons.
-export const REQUEST_SHOWN = { height: 28, padX: 10, gap: 6, bottom: 18 } as const;
+export const REQUEST_SHOWN = { height: 28, padX: 10, gap: 6, bottom: 0 } as const;
+
+// OrtakArkadaslar `.mbt`: "Mesaj gönder" 32 high (the kit's row button), 112 wide at least, 14 in.
+export const MUTUAL_BTN = { pad: 14, minWidth: 112 } as const;
 
 // SikayetEt `.rr`: a reason's row 52 high, the radio and the words 12 apart.
 export const REPORT_PICK = { row: 52, gap: 12 } as const;

@@ -25,6 +25,9 @@ import { GATE_NOW } from './deterministic';
 // the app: every face is its letter.
 const OWN_ID = 'gorsel';
 const DAY = 24 * 60 * 60_000;
+// A cover is there (the boards draw one): a 1 px picture stands for it, cut to fill.
+const COVER =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
 function GateClient({ seed, children }: { seed: (c: QueryClient) => void; children: ReactNode }) {
   const [client] = useState(() => {
@@ -162,7 +165,7 @@ const OWN_VIEW: ProfileView = {
   age: 26,
   bio: 'dünyanın en sadık adamı',
   photoUrl: null,
-  coverUrl: null,
+  coverUrl: COVER,
   badges: [],
   capsuleNick: 'terra-uc44',
   capsuleLook: 'c:krem e:klasik x:shurikentokasi x:simsekgozler x:gecepelerini',

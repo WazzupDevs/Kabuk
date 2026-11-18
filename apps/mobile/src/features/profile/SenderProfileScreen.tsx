@@ -209,7 +209,7 @@ export function SenderProfileScreen({
                   {report ? (
                     <MenuItem
                       cap="report"
-                      label={tr.chat.report}
+                      label={tr.safety.report}
                       testID={ids.report}
                       onPress={() => {
                         close();

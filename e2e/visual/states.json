@@ -295,7 +295,15 @@
       "baz": false,
       "pano": {
         "dosya": "ProfilBenKaydir"
-      }
+      },
+      "uygulamaAdimlar": [
+        {
+          "kaydir": 320
+        },
+        {
+          "bekle": 1500
+        }
+      ]
     },
     {
       "id": "ekran-profil-ben-dar",
