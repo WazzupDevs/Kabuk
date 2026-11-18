@@ -1,5 +1,7 @@
 # Basic checks on every PR and on main. Branch protection requires the single job named "ci",
-# which passes only when both "checks" and "integration" pass (CLAUDE.md → "CI ve main").
+# which passes only when "checks" passes and "integration" passes or was not needed (CLAUDE.md →
+# "Çalışma şekli"; docs/decisions/ci-orta-yol.md): the integration tests run on main and on a PR
+# that changes anything outside the app, the documents and the visual gate.
 name: ci
 
 on:
@@ -15,6 +17,48 @@ permissions:
   contents: read
 
 jobs:
+  # Does this run need the integration tests? Always on main. On a PR, only when it changes a file
+  # outside the paths that cannot reach the server or the shared code: the app (apps/mobile/), the
+  # documents (docs/, root *.md), the visual gate and E2E (e2e/, scripts/visual/, scripts/e2e/) and
+  # the session's own files (.claude/). supabase/ (with _shared/), content/, the other scripts, the
+  # workflows, the lock file and anything new run them. If the file list cannot be read, they run.
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      integration: ${{ steps.pick.outputs.integration }}
+    steps:
+      - id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" != pull_request ]; then
+            echo "Not a pull request: the integration tests run."
+            echo "integration=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! files=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" \
+            --jq '.[] | .filename, (.previous_filename // empty)'); then
+            echo "The PR's files could not be read: the integration tests run."
+            echo "integration=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          other=$(printf '%s\n' "$files" |
+            grep -vE '^(apps/mobile/|docs/|e2e/|scripts/visual/|scripts/e2e/|\.claude/)|^[^/]+\.md$' || true)
+          if [ -n "$other" ]; then
+            echo "Files that can reach the server or the shared code: the integration tests run."
+            printf '%s\n' "$other" | head -n 50
+            echo "integration=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Only the app, documents and the visual gate changed: no integration tests."
+            echo "integration=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # typecheck (mobile, scripts, pure/, Edge Functions with deno check, root), lint, format, unit
   # tests, and the legal site build when the repo has it.
   checks:
@@ -87,6 +131,8 @@ jobs:
   # Integration tests against the local stack, the same commands as on a developer machine
   # (CLAUDE.md → pnpm test:integration). globalSetup pauses pg_cron for the run.
   integration:
+    needs: changes
+    if: needs.changes.outputs.integration == 'true'
     runs-on: ubuntu-24.04
     # 25: the suite alone took 755 s with Signum and Sprengja (5 Kasım), and Kibrit adds its own.
     timeout-minutes: 25
@@ -209,12 +255,23 @@ jobs:
   # The one required status check.
   ci:
     if: always()
-    needs: [checks, integration]
+    needs: [changes, checks, integration]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
-      - name: checks and integration passed
+      # integration may be skipped only when "changes" said it was not needed.
+      - name: checks passed, integration passed or was not needed
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          NEEDED: ${{ needs.changes.outputs.integration }}
+          CHECKS: ${{ needs.checks.result }}
+          INTEGRATION: ${{ needs.integration.result }}
         run: |
-          echo "checks: ${{ needs.checks.result }}, integration: ${{ needs.integration.result }}"
-          test "${{ needs.checks.result }}" = success
-          test "${{ needs.integration.result }}" = success
+          echo "changes: $CHANGES (integration needed: $NEEDED), checks: $CHECKS, integration: $INTEGRATION"
+          test "$CHANGES" = success
+          test "$CHECKS" = success
+          if [ "$NEEDED" = false ]; then
+            test "$INTEGRATION" = skipped
+          else
+            test "$INTEGRATION" = success
+          fi
