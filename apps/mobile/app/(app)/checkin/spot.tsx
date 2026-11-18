@@ -24,7 +24,6 @@ export default function CheckinSpotScreen() {
       title={tr.checkin.spotTitle}
       titleType="locateTitle"
       subtitle={venue.name}
-      closeButton={false}
       footer={
         <Btn
           block
