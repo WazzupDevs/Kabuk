@@ -163,6 +163,7 @@ const KEEP_VISIBLE = { minIndexForVisible: 0 } as const;
 export const ChatRow = memo(function ChatRow({
   id,
   first,
+  day,
   mine,
   children,
 }: {
@@ -170,6 +171,9 @@ export const ChatRow = memo(function ChatRow({
   // A run's first message: the room between two writers above it (iskelet.md → 5.5: 12, a run's
   // bubbles 3 apart).
   first?: boolean;
+  // Opened by a day line (DmSohbet `.flow .day`: 10 under the message above, no `.gap`): the day's
+  // own 10 stands for the room between writers.
+  day?: boolean;
   // The reader's own: it grows from its own side when it comes in.
   mine?: boolean;
   children: (jumpTo: (id: string) => void) => ReactNode;
@@ -195,7 +199,7 @@ export const ChatRow = memo(function ChatRow({
       onLayout={jump?.row(id)}
       style={{
         gap: SPACING[2],
-        marginTop: first ? KIT.size.runApart - KIT.size.runGap : 0,
+        marginTop: first && !day ? KIT.size.runApart - KIT.size.runGap : 0,
         // It grows from the side its bubble stands on.
         transformOrigin: mine ? 'right center' : 'left center',
       }}
@@ -1497,7 +1501,12 @@ export function DayLine({
     return (
       <View
         className="flex-row items-center"
-        style={{ gap: DM.fresh.gap, marginVertical: DM.fresh.margin }}
+        // 8 under it and the stream's 2 (`.flow{gap:2}`) to the bubble: the row's 8 counts.
+        style={{
+          gap: DM.fresh.gap,
+          marginTop: DM.fresh.margin,
+          marginBottom: DM.fresh.margin + KIT.size.runGap - SPACING[2],
+        }}
       >
         <View style={line} />
         <View
@@ -1536,8 +1545,8 @@ export function DayLine({
       className="self-center"
       style={{
         marginTop: floating ? 0 : DM.day.top,
-        // The row's own 8 under it is the board's 8.
-        marginBottom: floating ? 0 : DM.day.bottom - SPACING[2],
+        // The board's 8 and the stream's 2 (`.flow{gap:2}`) under it; the row's 8 counts.
+        marginBottom: floating ? 0 : DM.day.bottom + KIT.size.runGap - SPACING[2],
         ...gradientStyle(g.fill),
         borderWidth: KIT.size.edge,
         borderColor: g.edge,

@@ -735,7 +735,7 @@ const DmRow = memo(function DmRow({
   onDiscard: (m: OutboxMessage) => void;
 }) {
   return (
-    <ChatRow id={rowKey} first={first} mine={!!out || !!m?.from_me}>
+    <ChatRow id={rowKey} first={first} day={day !== null} mine={!!out || !!m?.from_me}>
       {(jumpTo) => (
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
