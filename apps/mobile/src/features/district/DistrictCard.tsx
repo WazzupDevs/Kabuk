@@ -221,15 +221,17 @@ function StripFace({
           {title}
         </T>
       </View>
-      <Btn
-        sm
-        variant="primary"
-        label={label}
-        testID={testID}
-        loading={loading}
-        onPress={onPress}
-        look={{ padLeft: g.stripButtonPadX, padRight: g.stripButtonPadX }}
-      />
+      <View style={{ alignSelf: 'center' }}>
+        <Btn
+          sm
+          variant="primary"
+          label={label}
+          testID={testID}
+          loading={loading}
+          onPress={onPress}
+          look={{ padLeft: g.stripButtonPadX, padRight: g.stripButtonPadX }}
+        />
+      </View>
     </View>
   );
 }

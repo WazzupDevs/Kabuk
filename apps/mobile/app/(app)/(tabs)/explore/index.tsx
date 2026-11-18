@@ -516,20 +516,17 @@ function KindChip({
     </T>
   );
   return (
-    <Tap
-      testID={testID}
-      accessibilityState={{ selected: on }}
-      onPress={onPress}
-      style={{ flexGrow: 1 }}
-    >
-      {on ? (
-        <View style={[shape, { backgroundColor: c.chipOn }]}>{words}</View>
-      ) : (
-        <Glass face={map ? EXPLORE[scheme].solid : undefined} radius={h / 2} style={shape}>
-          {words}
-        </Glass>
-      )}
-    </Tap>
+    <View style={{ flexGrow: 1, flexBasis: 'auto' }}>
+      <Tap testID={testID} accessibilityState={{ selected: on }} onPress={onPress}>
+        {on ? (
+          <View style={[shape, { backgroundColor: c.chipOn }]}>{words}</View>
+        ) : (
+          <Glass face={map ? EXPLORE[scheme].solid : undefined} radius={h / 2} style={shape}>
+            {words}
+          </Glass>
+        )}
+      </Tap>
+    </View>
   );
 }
 

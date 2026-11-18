@@ -164,7 +164,7 @@ export function ExploreMap({
     const first = venueBounds(venues);
     if (first) setOpening(first);
   }
-  const padding = mapPadding(headerHeight, tabBarHeight, SPACING[6]);
+  const padding = mapPadding(headerHeight, tabBarHeight, PIN_EDGE);
   const keyboard = useKeyboardState((k) => (k.isVisible ? k.height : 0));
   // A venue that left the data (deactivated) closes its card.
   const card = selected ? (venues.find((v) => v.id === selected) ?? null) : null;
@@ -479,6 +479,10 @@ export function ExploreMap({
     </View>
   );
 }
+
+// How far the opening camera keeps a pin from the edges: the chosen pin's radius and ring and a 12 margin
+// (24 cut the pins of two far venues in half at the screen's sides).
+const PIN_EDGE = MAP_PIN.selectedRadius + MAP_PIN.selectedRing + SPACING[3];
 
 // The map's camera moves (a cluster opened, the venues shown again).
 const CAMERA_MS = 400;
