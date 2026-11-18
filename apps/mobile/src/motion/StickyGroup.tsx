@@ -2,20 +2,16 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { runOnJS, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
 
-import { type ScreenScroll, useScreenScroll } from '@/motion/ScrollScreen';
-import { ramp, stickyBandAt, stickyLift } from '@/motion/scrollMath';
-import { AURA, barBandCss } from '@/theme/aura';
+import { AURA, barBandCss, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { EXPLORE } from '@/theme/explore';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
-// Keşfet's pinned head (yeni arayüz tuvali KesfetKaydir `.sbar2`; docs/decisions/kaydirma.md: Keşfet
-// stays as the board draws it): the search and the chips pin together under the top once they reach
-// it, and Semte Git's small strip comes in under them as its card goes under the band. It is
-// StickyField's pin (the same offsets, the same status band) for a group of parts instead of one
-// field; the strip hangs under the group without taking room in the list, so nothing under moves
-// when it comes in.
+import { ramp, stickyBandAt, stickyLift } from './scrollMath';
+import { type ScreenScroll, useScreenScroll } from './ScrollScreen';
+
+// Where the group pins and how far the band reaches under it (StickyField's own placing, for the
+// group and what hangs under it), read when it is laid out and when the content changes size.
 function place(scroll: ScreenScroll, anchor: View, extra: number) {
   anchor.measureInWindow((_x, top, _w, height) => {
     const viewport = scroll.viewportTop.get();
@@ -26,26 +22,35 @@ function place(scroll: ScreenScroll, anchor: View, extra: number) {
   });
 }
 
-// Long enough for the screen's cascade to have ended (hareket.json → stagger, dissolve).
+// Long enough for a screen's cascade to have ended (hareket.json → stagger, dissolve).
 const SETTLED_MS = 700;
 
-export function ExploreStickyHead({
-  group,
-  strip,
+// Several parts that pin together (Keşfet's search and kind chips, yeni arayüz tuvali KesfetKaydir
+// `.sbar2`; docs/decisions/kaydirma.md): StickyField's pin (the same offsets, the same band and
+// status band) for a group instead of one field, and a part that hangs under the group and comes in
+// as the content goes under it (Keşfet's Semte Git strip). The hanging part takes no room in the
+// content, so nothing under the group moves when it comes in: it fades in linearly over the scroll
+// `from` to `to` px past the pin, `height` tall and `gap` under the group, and the band reaches
+// down to it as it comes.
+export function StickyGroup({
   side,
+  hang,
+  children,
 }: {
-  group: ReactNode;
-  // Semte Git's strip; null when the card has none to give (shut, outside, not read).
-  strip: ReactNode;
+  // How far the group stands from the screen's sides, so its band reaches them.
   side: number;
+  hang?: { node: ReactNode; height: number; gap: number; from: number; to: number };
+  children: ReactNode;
 }) {
   const scroll = useScreenScroll();
   const { scheme } = useTheme();
-  const k = EXPLORE.sticky;
   const [anchor, setAnchor] = useState<View | null>(null);
   const [groupHeight, setGroupHeight] = useState(0);
-  const [stripOn, setStripOn] = useState(false);
-  const extra = strip ? k.stripGap + k.stripHeight : 0;
+  const [hangOn, setHangOn] = useState(false);
+  const extra = hang ? hang.gap + hang.height : 0;
+  const from = hang?.from ?? 0;
+  const to = hang?.to ?? 0;
+  const fadePx = MOTION.scroll.stickyFadePx;
   const measure = () => {
     if (scroll && anchor) place(scroll, anchor, extra);
   };
@@ -61,17 +66,14 @@ export function ExploreStickyHead({
       if (before !== null && now !== before) runOnJS(measure)();
     },
   );
-  // How far the strip has come in: from `from` to `to` past the pin, linear.
-  const arrived = (): number => {
-    'worklet';
-    if (!scroll) return 0;
-    const pinAt = scroll.stickyAt.get();
-    return pinAt < 0 ? 0 : ramp(scroll.y.get(), pinAt + k.from, pinAt + k.to);
-  };
   useAnimatedReaction(
-    () => arrived() > 0.6,
+    () => {
+      if (!scroll) return false;
+      const pinAt = scroll.stickyAt.get();
+      return pinAt >= 0 && ramp(scroll.y.get(), pinAt + from, pinAt + to) > 0.6;
+    },
     (on, was) => {
-      if (on !== was) runOnJS(setStripOn)(on);
+      if (on !== was) runOnJS(setHangOn)(on);
     },
   );
   const lift = useAnimatedStyle(() => {
@@ -79,19 +81,20 @@ export function ExploreStickyHead({
     const pinAt = scroll ? scroll.stickyAt.get() : -1;
     return { transform: [{ translateY: stickyLift(y, pinAt) }] };
   });
-  const fadePx = 80;
   const top = KIT.size.stickyTop;
   const foot = Math.round(AURA.topBar.bandHeight * AURA.topBar.bandFade);
   const band = useAnimatedStyle(() => {
     if (!scroll) return { opacity: 0 };
-    return {
-      opacity: stickyBandAt(scroll.y.get(), scroll.stickyAt.get(), fadePx),
-      bottom: -(foot + extra * arrived()),
-    };
+    const y = scroll.y.get();
+    const pinAt = scroll.stickyAt.get();
+    const arrived = pinAt < 0 ? 0 : ramp(y, pinAt + from, pinAt + to);
+    return { opacity: stickyBandAt(y, pinAt, fadePx), bottom: -(foot + extra * arrived) };
   });
-  const stripStyle = useAnimatedStyle(() => {
-    const t = arrived();
-    return { opacity: t, transform: [{ translateY: (1 - t) * -k.stripGap }] };
+  const hung = useAnimatedStyle(() => {
+    if (!scroll) return { opacity: 0 };
+    const pinAt = scroll.stickyAt.get();
+    const arrived = pinAt < 0 ? 0 : ramp(scroll.y.get(), pinAt + from, pinAt + to);
+    return { opacity: arrived, transform: [{ translateY: (arrived - 1) * extra * 0.2 }] };
   });
   return (
     <View
@@ -111,16 +114,16 @@ export function ExploreStickyHead({
             band,
           ]}
         />
-        {group}
-        {strip ? (
+        {children}
+        {hang ? (
           <Animated.View
-            pointerEvents={stripOn ? 'box-none' : 'none'}
+            pointerEvents={hangOn ? 'box-none' : 'none'}
             style={[
-              { position: 'absolute', left: 0, right: 0, top: '100%', marginTop: k.stripGap },
-              stripStyle,
+              { position: 'absolute', left: 0, right: 0, top: '100%', marginTop: hang.gap },
+              hung,
             ]}
           >
-            {strip}
+            {hang.node}
           </Animated.View>
         ) : null}
       </Animated.View>

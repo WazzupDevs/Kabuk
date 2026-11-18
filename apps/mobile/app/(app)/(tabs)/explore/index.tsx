@@ -44,9 +44,9 @@ import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DistrictCard, DistrictStrip } from '@/features/district/DistrictCard';
 import { ExploreMap } from '@/features/explore/ExploreMap';
-import { ExploreStickyHead } from '@/features/explore/ExploreStickyHead';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { Bucket } from '@/features/explore/Bucket';
+import { kindLabel } from '@/features/explore/kindLabel';
 import { EventTag } from '@/features/explore/EventTag';
 import { type CityVenue, useCityVenues } from '@/features/explore/useExploreVenues';
 import { errorMessage } from '@/i18n/errors';
@@ -57,7 +57,7 @@ import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, ScrollScreen, SlideFrom, Tap } from '@/motion';
+import { LargeTitle, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
 import { StickyStatusBand } from '@/motion/StickyField';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
@@ -373,22 +373,25 @@ function ListBody({
             // Over what scrolls under it once pinned: the search and the chips pin together, and
             // Semte Git's strip comes in under them (KesfetKaydir).
             <View style={{ zIndex: 1, marginTop: searching ? L.searchTop : L.fieldTop }}>
-              <ExploreStickyHead
+              <StickyGroup
                 side={L.side}
-                strip={<DistrictStrip />}
-                group={
-                  <>
-                    <Reveal index={1} openings={openings}>
-                      {search}
-                    </Reveal>
-                    <View style={{ marginTop: L.chipsTop }}>
-                      <Reveal index={2} openings={openings}>
-                        {chips}
-                      </Reveal>
-                    </View>
-                  </>
-                }
-              />
+                hang={{
+                  node: <DistrictStrip />,
+                  height: EXPLORE.sticky.stripHeight,
+                  gap: EXPLORE.sticky.stripGap,
+                  from: EXPLORE.sticky.from,
+                  to: EXPLORE.sticky.to,
+                }}
+              >
+                <Reveal index={1} openings={openings}>
+                  {search}
+                </Reveal>
+                <View style={{ marginTop: L.chipsTop }}>
+                  <Reveal index={2} openings={openings}>
+                    {chips}
+                  </Reveal>
+                </View>
+              </StickyGroup>
             </View>
           ) : null}
         </>
@@ -937,11 +940,11 @@ function VenueRow({ venue: v, onPress }: { venue: CityVenue; onPress: () => void
   return (
     <PlaceRow
       testID={`explore-venue-${v.name}`}
-      accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
+      accessibilityLabel={`${v.name}, ${kindLabel(v.kind)}, ${tr.explore.buckets[v.bucket]}`}
       onPress={onPress}
       kind={type}
       name={v.name}
-      sub={tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}
+      sub={tr.explore.venueSub(kindLabel(v.kind), v.district)}
       bucket={v.bucket}
     />
   );

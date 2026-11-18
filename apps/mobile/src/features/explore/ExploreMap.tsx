@@ -37,6 +37,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
 
+import { kindLabel } from './kindLabel';
 import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
 
@@ -629,7 +630,7 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
           <T v="mapName">{venue.name}</T>
           <T v="kesfetSub" color={c.muted}>
             {tr.explore.mapSub(
-              tr.explore.typeLabel[type],
+              kindLabel(venue.kind),
               venue.district,
               tr.explore.buckets[venue.bucket],
             )}
@@ -757,7 +758,7 @@ function StackCard({ venues }: { venues: readonly ExploreVenue[] }) {
               <VenueThumb kind={type} size={VENUE_THUMB.size} />
               <View style={{ flex: 1, gap: SPACING[0.5] }}>
                 <T v="sec">{venue.name}</T>
-                <T v="fineLg">{tr.explore.venueSub(tr.explore.typeLabel[type], venue.district)}</T>
+                <T v="fineLg">{tr.explore.venueSub(kindLabel(venue.kind), venue.district)}</T>
               </View>
               <CapIcon name="forward" color={c.muted} />
             </Li>
