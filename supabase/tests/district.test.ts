@@ -444,8 +444,11 @@ describe('the room chat', () => {
     expect(seen.status, JSON.stringify(seen.body)).toBe(200);
     expect(seen.body).toMatchObject({ displayName: 'Ayşe', bio: 'Sahilde yürürüm' });
     expect(JSON.stringify(seen.body)).not.toMatch(/public_?id|user_?id/i);
-    // The same twice (IDEMPOTENT_CALLS: profile/get).
-    expect((await get(b.c, ref)).body).toEqual(seen.body);
+    // The same twice (IDEMPOTENT_CALLS: profile/get). The photo's signed URL carries its own
+    // expiry, so two calls a second apart differ in the token alone: compared without it.
+    const unsigned = (body: unknown): unknown =>
+      JSON.parse(JSON.stringify(body).replace(/token=[^"&]+/g, 'token='));
+    expect(unsigned((await get(b.c, ref)).body)).toEqual(unsigned(seen.body));
 
     // Across a block, either way: the list is the same and the profile is the row's own fields.
     for (const [blocker, blocked] of [
