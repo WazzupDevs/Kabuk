@@ -459,7 +459,7 @@ export function MenuItem({
             gap: L.holdGap,
             min: L.holdRow,
             padX: L.holdRowPadX,
-            padY: 0,
+            padY: disabled ? L.holdOffPadY : 0,
             radius: L.holdRowRadius,
             hairIn: L.holdHairIn,
             hairOut: L.holdRowPadX,
@@ -488,8 +488,10 @@ export function MenuItem({
       : onPress,
   );
   const sheet = look === 'sheet';
-  // An off row in the ⋮ menu (`.pi.off`): its words muted, its icon at half.
-  const off = !!disabled && look === 'pop';
+  // An off row in the ⋮ menu (`.pi.off`): its words muted, its icon at half; in the long-press
+  // menu (MesajlarSabitDolu `.pi.off`) its icon at 40 %.
+  const off = !!disabled && look !== 'sheet';
+  const hold = look === 'hold';
   const ink = negative
     ? sheet
       ? colors.onDangerSoft
@@ -547,7 +549,7 @@ export function MenuItem({
             />
           ) : null}
           {cap ? (
-            <View style={{ opacity: off ? L.menuOffIcon : 1 }}>
+            <View style={{ opacity: off ? (hold ? L.holdOffIcon : L.menuOffIcon) : 1 }}>
               <CapIcon
                 name={cap}
                 size={iconSize}
@@ -561,7 +563,11 @@ export function MenuItem({
           ) : null}
           <View
             className="flex-1"
-            style={{ gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }}
+            style={
+              hold
+                ? { gap: L.holdNoteTop }
+                : { gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }
+            }
           >
             {!sheet ? (
               <T v={look === 'pop' ? 'popRow' : 'holdRow'} color={ink}>
@@ -572,7 +578,13 @@ export function MenuItem({
                 {label}
               </T>
             )}
-            {note ? <Text variant="fine">{note}</Text> : null}
+            {note && hold ? (
+              <T v="menuNote" color={colors.muted}>
+                {note}
+              </T>
+            ) : note ? (
+              <Text variant="fine">{note}</Text>
+            ) : null}
           </View>
           {loading ? <Loader kind="meet" size={ICON.md} delay={0} label={null} /> : null}
           {!loading && count !== undefined ? (

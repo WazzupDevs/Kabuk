@@ -1379,6 +1379,11 @@ export const KIT = {
       holdIcon: 20,
       holdGap: 14,
       holdHairIn: 46,
+      // An off row (MesajlarSabitDolu `.pi.off`): 8 above and under, its icon at 40 %; its note
+      // (`.pi p .ps`, 12/16 muted) 1 under the words.
+      holdOffPadY: 8,
+      holdOffIcon: 0.4,
+      holdNoteTop: 1,
       holdBand: 6,
       holdBlur: 6,
       // The sheet: 8 from the edges, 28 round, 12 / 20 / 34 inside; its handle 40 × 4, 16 over
