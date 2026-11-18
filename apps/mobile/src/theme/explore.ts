@@ -104,8 +104,8 @@ export const EXPLORE = {
     stripButtonPadX: 14,
     // `.ssm img{object-position:0% 12%}`.
     stripPicturePos: 0.12,
-    from: 215,
-    to: 255,
+    from: 140,
+    to: 200,
   },
   // The kind chips (`.ch .chip`): 14 in, 8 apart, each growing to share the row.
   chip: { padX: 14, gap: 8 },

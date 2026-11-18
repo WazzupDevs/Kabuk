@@ -443,8 +443,30 @@ function KindChips({
 }) {
   const narrow = useNarrow();
   const side = map ? EXPLORE.map.side : L.side;
-  // The row's own width: the chips share it (a percentage did not reach the scrolled copy).
-  const [width, setWidth] = useState(0);
+  const chips = EXPLORE_KINDS.map((k) => (
+    <KindChip
+      key={k}
+      testID={`explore-kind-${k}`}
+      label={tr.explore.kinds[k]}
+      narrow={narrow}
+      map={map}
+      on={kind === k}
+      onPress={() => {
+        if (k !== kind) onChoose(k);
+      }}
+    />
+  ));
+  const row = { flexDirection: 'row', alignSelf: 'stretch', gap: EXPLORE.chip.gap } as const;
+  // The chips share the line (`.ch`: a plain row, each `flex: 1 1 auto`). Only where they do not fit
+  // (320 dp, the largest text) the row scrolls sideways to the screen's edge, at least as wide as
+  // the screen.
+  if (!narrow) {
+    return (
+      <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.kindsLabel} style={row}>
+        {chips}
+      </View>
+    );
+  }
   return (
     <ScrollView
       horizontal
@@ -453,22 +475,9 @@ function KindChips({
       accessibilityRole="radiogroup"
       accessibilityLabel={tr.explore.kindsLabel}
       style={{ marginHorizontal: -side, overflow: 'visible' }}
-      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      contentContainerStyle={{ minWidth: width, gap: EXPLORE.chip.gap, paddingHorizontal: side }}
+      contentContainerStyle={{ ...row, flexGrow: 1, paddingHorizontal: side }}
     >
-      {EXPLORE_KINDS.map((k) => (
-        <KindChip
-          key={k}
-          testID={`explore-kind-${k}`}
-          label={tr.explore.kinds[k]}
-          narrow={narrow}
-          map={map}
-          on={kind === k}
-          onPress={() => {
-            if (k !== kind) onChoose(k);
-          }}
-        />
-      ))}
+      {chips}
     </ScrollView>
   );
 }
