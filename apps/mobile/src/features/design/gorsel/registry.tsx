@@ -5,6 +5,13 @@ import { PREVIEW_SETS } from '../previews';
 import { DmFixture } from './dmFixture';
 import { SemtEmptyFixture } from './semtEmptyFixture';
 import { SemtSheetFixture } from './semtFixture';
+import {
+  AccountFixture,
+  BlockedFixture,
+  LegalFixture,
+  MutedEmptyFixture,
+  SettingsFixture,
+} from './settingsFixture';
 
 // `full`: the state draws the whole screen itself (a game's stage), one page, no side padding.
 export type GateEntry = { render: () => ReactNode; full?: boolean };
@@ -23,4 +30,10 @@ export const GATE_STATES: Record<string, GateEntry> = {
   'ekran/semt/secenekler': { full: true, render: () => <SemtSheetFixture sheet="options" /> },
   'ekran/semt/oturum-kapat': { full: true, render: () => <SemtSheetFixture sheet="end" /> },
   'ekran/semt/bos': { full: true, render: () => <SemtEmptyFixture /> },
+  // The Ayarlar family: the routes themselves over the boards' sample (settingsFixture.tsx).
+  'ekran/ayarlar': { full: true, render: () => <SettingsFixture /> },
+  'ekran/ayarlar/hesap': { full: true, render: () => <AccountFixture /> },
+  'ekran/ayarlar/engellenenler': { full: true, render: () => <BlockedFixture /> },
+  'ekran/ayarlar/sessize-bos': { full: true, render: () => <MutedEmptyFixture /> },
+  'ekran/ayarlar/yasal': { full: true, render: () => <LegalFixture /> },
 };

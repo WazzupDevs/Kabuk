@@ -62,6 +62,46 @@
       "pano": {
         "dosya": "SemtSohbet"
       }
+    },
+    {
+      "id": "ekran-ayarlar",
+      "app": "ekran/ayarlar",
+      "baz": false,
+      "pano": {
+        "dosya": "Ayarlar"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-hesap",
+      "app": "ekran/ayarlar/hesap",
+      "baz": false,
+      "pano": {
+        "dosya": "AyarHesap"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-engellenenler",
+      "app": "ekran/ayarlar/engellenenler",
+      "baz": false,
+      "pano": {
+        "dosya": "Engellenenler"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-sessize-bos",
+      "app": "ekran/ayarlar/sessize-bos",
+      "baz": false,
+      "pano": {
+        "dosya": "SessizAlinanlarBos"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-yasal",
+      "app": "ekran/ayarlar/yasal",
+      "baz": false,
+      "pano": {
+        "dosya": "YasalMetin"
+      }
     }
   ]
 }

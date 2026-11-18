@@ -696,7 +696,7 @@
     ],
     "acilis": "Profil → Ayarlar",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-ayarlar",
     "hal": "eski",
     "muaf": [
       {
@@ -718,7 +718,7 @@
     ],
     "acilis": "Profil → Ayarlar",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-ayarlar",
     "hal": "eski",
     "muaf": [
       {
@@ -825,7 +825,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-ayarlar-hesap",
     "hal": "eski"
   },
   {
@@ -838,7 +838,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-ayarlar-hesap",
     "hal": "eski"
   },
   {
@@ -889,7 +889,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-ayarlar-engellenenler",
     "hal": "eski"
   },
   {
@@ -904,7 +904,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-ayarlar-engellenenler",
     "hal": "eski"
   },
   {
@@ -976,7 +976,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-ayarlar-sessize-bos",
     "hal": "eski"
   },
   {
@@ -990,7 +990,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-ayarlar-sessize-bos",
     "hal": "eski"
   },
   {
@@ -1008,7 +1008,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-ayarlar-yasal",
     "hal": "eski"
   },
   {
@@ -1026,7 +1026,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-ayarlar-yasal",
     "hal": "eski"
   },
   {
