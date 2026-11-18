@@ -429,9 +429,10 @@ jobs:
   # diff) with its similarity, soft; and with an older prototype rendered by Playwright at the same
   # size and fonts, soft. The soft ones are in the job summary (the reviewer decides). With the e2e
   # label, as the eight shards (not when only e2e-large has just been added), with the gorsel label
-  # alone (without the shards), nightly and by hand. No local stack: the route opens without signing in and reads nothing from the server. It starts with the
-  # build job and boots its emulator while Gradle builds, as the shards do. TEKRAR photographs every
-  # shot twice: the noise the hard threshold is set above (the summary's "Gürültü" table).
+  # alone (without the shards), nightly and by hand. No local stack: the route opens without
+  # signing in and reads nothing from the server. It starts with the build job and boots its
+  # emulator while Gradle builds, as the shards do. TEKRAR photographs every shot twice: the noise
+  # the hard threshold is set above (the summary's "Gürültü" table).
   visual:
     needs: changed
     if: >-

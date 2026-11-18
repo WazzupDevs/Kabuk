@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # The visual gate's phone part (CLAUDE.md → Görsel kapı), inside reactivecircus/android-emulator-
 # runner once the emulator (skin 780x1688) has booted: 390 × 844 dp at 2x, the boards' phone
-# (pano-goruntuleri: 780 × 1688 px), the app's text size 1.0, animations off; then one Maestro flow per shot of e2e/visual/states.json
-# (scripts/visual/make-flows.ts) and the candidates collected into $OUT/aday (and $OUT/aday2 with
+# (pano-goruntuleri: 780 × 1688 px), the app's text size 1.0, animations off; then one Maestro
+# flow per shot of e2e/visual/states.json (scripts/visual/make-flows.ts) and the candidates collected into $OUT/aday (and $OUT/aday2 with
 # TEKRAR=1). Env: OUT, APK (scripts/e2e/fetch-apk.sh), TEKRAR.
 set -euo pipefail
 mkdir -p "$OUT"
