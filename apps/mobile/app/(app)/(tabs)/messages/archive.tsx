@@ -47,7 +47,7 @@ export default function ArchiveScreen() {
         side={M.side}
         barSide={M.side}
         barTop={B.top}
-        padTop={M.archiveTop.fieldTop}
+        padTop={archived.length > 0 ? M.archiveTop.fieldTop : M.archiveTop.emptyTop}
         gap={M.gap}
         top={
           // `.ptop`: the round back button and the title over "N sohbet", 12 apart.

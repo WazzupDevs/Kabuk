@@ -36,11 +36,14 @@ export const MESSAGES = {
   // round, the title 26 over the count), not Arkadaşlar's 56; the count's line stands in the page's
   // 20 line (`.pt2 span` is inline: its 13/18 words sit lower). On the phone the count's letters
   // stand 2 higher in their line than Chrome draws them, so it is 4 under the title and the hint
-  // 2 less under the row (the hint stays where the board has it; Arsiv, measured 18 Kasım).
-  archiveTop: { countTop: 4, fieldTop: 10 },
-  // The empty states (MesajlarBos, MesajlarAraBos, ArsivBos `.emp`): 190 under the empty state, of
-  // which the list's foot keeps 90 (Screen → SCROLL_PAD).
-  emptyLift: 100,
+  // 2 less under the row (the hint stays where the board has it; Arsiv, measured 18 Kasım). With
+  // no count (ArsivBos) the row is the 44 round's and the page starts 4 + 12 under it.
+  archiveTop: { countTop: 4, fieldTop: 10, emptyTop: 12 },
+  // The empty states (MesajlarBos, MesajlarAraBos, ArsivBos `.emp`): centred between the part over
+  // it (12 under) and 190 from the board's foot, which is 100 over its tab bar (`.tb`: 30 + 60).
+  // On the phone the tab bar stands 12 over the safe area and the list's foot keeps 90 over it
+  // (Screen → SCROLL_PAD): 82 more puts the foot 100 over the bar as on the board.
+  emptyLift: 82,
   // "Sohbet silindi" (MesajlarSilindi `.snk`): 16 over the tab bar (106 from the foot).
   noticeAbove: 16,
   // A search's count over its rows (`.rlbl`): 4 under the field.
