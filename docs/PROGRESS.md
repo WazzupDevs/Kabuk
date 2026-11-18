@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (18 Kasım 2026, sabah): görsel doğrulama düzeni karar oldu, kanıtsız birleştirme yok
+
+- Proje sahibi görsel doğrulama düzenini bütün tuval için karara bağladı: `docs/decisions/gorsel-dogrulama.md` (beş madde, `mimar`'ın planı PR-1…PR-4, pano görüntüleri ayrı dalda, emülatör 390×844). Sıradaki iş PR-1 (kapsam kaydı, testleri, kanıt adımı, rapor, `gorsel-denetci` ajanı, CLAUDE.md "Hızlı yol" maddeleri), sonra PR-2 ve pilot.
+- Kanıtsız birleştirme yok: #734 (Ayarlar ailesi; satır düğmesi 34 ve silme cümlesi düzeltildi) ve `claude/mesajlar-dm` dalındaki Mesajlar ve DM paketi (ajan yazıyordu; worktree `.claude/worktrees/mesajlar`, ara commit'li) birleştirilmeden bekler; kanıtları pilotla gelir. Birleşmiş beş paket "yazıldı" basamağında, geriye dönük doğrulanacak.
+- Proje sahibi "tuvalin birebir aktarımı ne zaman" diye sordu: kalan 11 görünüş paketi sırayla, her biri bu düzenle yürür.
+
 ## Devir notu (18 Kasım 2026, sabaha karşı): kaydırma kararı, görsel doğrulama önerisi, bekleyenler
 
 - Proje sahibi kaydırmada yeni karar verdi (`docs/decisions/kaydirma.md`): Keşfet dışındaki kaydırılan ekranlarda üst bölüm gizlenip geri gelir (X ve Instagram akışı gibi), alt sekme çubuğu tamamen gizlenir; Keşfet tuvaldeki gibi sabitlenir. Ekranlar galeride tek tek önizlenip onaylanıyor (bağlantı o dosyada; ilk dördü hazır, sıradakiler listeli). Kod değişmedi; uygulamadan önce "geri, ⋮, bildirim de gizlensin mi" tek soruyla netleşecek.
