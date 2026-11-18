@@ -66,12 +66,15 @@ type Rgb = [number, number, number];
 const BACKDROP: Rgb = [96, 96, 104];
 const INK: Rgb = [255, 255, 255];
 
-// The label as the font can draw it: upper case (Turkish İ/I alike), unknown characters dropped.
+// The label as the font can draw it: upper case (Turkish İ/I alike), unknown characters dropped,
+// spaces collapsed.
 export function labelText(text: string): string {
   return [...text.toLocaleUpperCase('tr-TR')]
     .map((c) => FOLD[c] ?? c)
     .filter((c) => c in GLYPHS)
-    .join('');
+    .join('')
+    .replace(/ {2,}/g, ' ')
+    .trim();
 }
 
 // The label's width in image px.

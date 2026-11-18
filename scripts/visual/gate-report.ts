@@ -137,7 +137,7 @@ export function buildReport(
     mkdirSync(join(out, SIDE_DIR), { recursive: true });
     lines.push(
       '',
-      "### Pano ile yan yana: yumuşak, karar denetçide",
+      '### Pano ile yan yana: yumuşak, karar denetçide',
       '',
       'Solda pano, ortada uygulama, sağda fark; üstten hizalı, ölçeklenmeden. pixelmatch (renk eşiği 0,1); boyut farkı fark sayılır.',
       '',
