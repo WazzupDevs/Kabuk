@@ -443,6 +443,8 @@ function KindChips({
 }) {
   const narrow = useNarrow();
   const side = map ? EXPLORE.map.side : L.side;
+  // The row's own width: the chips share it (a percentage did not reach the scrolled copy).
+  const [width, setWidth] = useState(0);
   return (
     <ScrollView
       horizontal
@@ -451,7 +453,8 @@ function KindChips({
       accessibilityRole="radiogroup"
       accessibilityLabel={tr.explore.kindsLabel}
       style={{ marginHorizontal: -side, overflow: 'visible' }}
-      contentContainerStyle={{ minWidth: '100%', gap: EXPLORE.chip.gap, paddingHorizontal: side }}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      contentContainerStyle={{ minWidth: width, gap: EXPLORE.chip.gap, paddingHorizontal: side }}
     >
       {EXPLORE_KINDS.map((k) => (
         <KindChip

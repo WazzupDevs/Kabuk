@@ -98,10 +98,11 @@ export function StickyGroup({
     };
   });
   const hung = useAnimatedStyle(() => {
-    if (!scroll) return { opacity: 0 };
+    if (!scroll) return { transform: [{ translateY: -extra }] };
     const pinAt = scroll.stickyAt.get();
     const arrived = pinAt < 0 ? 0 : ramp(scroll.y.get(), pinAt + from, pinAt + to);
-    return { opacity: arrived, transform: [{ translateY: (arrived - 1) * extra * 0.2 }] };
+    // Opaque all the way: it slides down out of the group's foot, cut at that edge.
+    return { transform: [{ translateY: -extra * (1 - arrived) }] };
   });
   return (
     <View
@@ -130,15 +131,19 @@ export function StickyGroup({
         />
         {children}
         {hang ? (
-          <Animated.View
+          <View
             pointerEvents={hangOn ? 'box-none' : 'none'}
-            style={[
-              { position: 'absolute', left: 0, right: 0, top: '100%', marginTop: hang.gap },
-              hung,
-            ]}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: '100%',
+              height: extra,
+              overflow: 'hidden',
+            }}
           >
-            {hang.node}
-          </Animated.View>
+            <Animated.View style={[{ paddingTop: hang.gap }, hung]}>{hang.node}</Animated.View>
+          </View>
         ) : null}
       </Animated.View>
     </View>
