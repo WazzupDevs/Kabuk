@@ -46,6 +46,7 @@
     "visual:kanit": "pnpm --filter scripts visual:kanit",
     "visual:rapor": "pnpm --filter scripts visual:rapor",
     "visual:yerel": "pnpm --filter scripts visual:yerel",
+    "web:onizleme": "node --experimental-strip-types scripts/visual/web-onizleme.ts",
     "ota:production": "pnpm --filter scripts ota:production"
   },
   "pnpm": {
