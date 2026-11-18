@@ -185,5 +185,5 @@ Toplam 176 varlık; 127 tanesine en az bir pano başvuruyor, 49 tanesine hiçbir
 
 ## Notlar
 
-- 1290x2796 boyundaki 8 varlık ekran görüntüsü değil, sohbet duvar kâğıdıdır (564f379c… açılıp bakıldı: açık mavi zemin, çizgi kapsül/uzay deseni; ikisi depodaki `apps/mobile/assets/riso/wall-dm-light.webp` ve `wall-dm-dark.webp` ile birebir aynı, ama panolar bunlara değil png sürümlerine başvuruyor).
+- 1290x2796 boyundaki 8 varlık ekran görüntüsü değil, sohbet duvar kâğıdıdır (564f379c… açılıp bakıldı: açık mavi zemin, çizgi kapsül/uzay deseni; DM panolarının duvar kâğıdı bunlardır: 564f379c… açık, e7ec12cc… koyu; 18 Kasım'da `apps/mobile/assets/riso/wall-dm-light.webp` ve `wall-dm-dark.webp` bu ikisinden yeniden yapıldı, önceki dosyalar Aura v80 manzarasıydı).
 - `alt` metni olmayan satırlarda tür yalnız biçim ve boydur; içerik doğrulanmadı.

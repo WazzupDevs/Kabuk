@@ -9,7 +9,7 @@ import type { ChatWall } from './chatKind';
 
 // The chat walls as Telegram Android draws its chat backgrounds (the owner's call, 30 Ekim): one
 // picture from the top of the screen to its foot, a soft four-colour gradient with skall's quiet
-// pattern over it (scripts/art/walls.ts; DM and Mekan the riso landscapes, Aura v80), each chat its
+// pattern over it (scripts/art/walls.ts; Mekan the riso landscape, Aura v80; DM the new canvas's line pattern, DmSohbet), each chat its
 // own (DM, Masa, Mekan; light and dark). One image for the whole screen: a tile laid edge to edge left seams where its edges fell between
 // pixels. It stays where it is while the messages scroll over it and the keyboard comes and goes.
 const WALLS: Record<ChatWall, Record<ColorScheme, ImageSourcePropType>> = {
