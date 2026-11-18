@@ -32,6 +32,7 @@
     "visual:kapsam": "node --experimental-strip-types visual/kapsam.ts",
     "visual:kanit": "node --experimental-strip-types visual/kanit.ts",
     "visual:rapor": "node --experimental-strip-types visual/rapor.ts",
+    "visual:yerel": "node --experimental-strip-types visual/yerel.ts",
     "ota:production": "node --experimental-strip-types ota-production.ts"
   },
   "devDependencies": {

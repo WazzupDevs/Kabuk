@@ -14,7 +14,7 @@
     {
       "id": "galeri-kimlik",
       "app": "galeri/identity",
-      "sayfa": 3
+      "sayfa": 2
     },
     {
       "id": "galeri-olcu",
@@ -29,12 +29,26 @@
         "dosya": "docs/design/sistem/ekran/Dm.html",
         "adimlar": [],
         "kirp": ".phone"
+      },
+      "pano": {
+        "dosya": "DmSohbet"
       }
     },
     {
       "id": "ekran-semt-secenekler",
       "app": "ekran/semt/secenekler",
-      "baz": false
+      "baz": false,
+      "pano": {
+        "dosya": "SemtSecenek"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "district-chat-options"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
     },
     {
       "id": "ekran-semt-oturum-kapat",

@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  boardFile,
+  boardStates,
   buildKapsam,
   ESLEME_FILE,
   generate,
@@ -38,6 +40,18 @@ describe('kapsam.json', () => {
     expect(serializeKapsam(generate(ROOT).rows)).toBe(
       readFileSync(join(ROOT, KAPSAM_FILE), 'utf8'),
     );
+  });
+
+  it("names, on a board's rows, the state of states.json drawn after it (pano)", () => {
+    for (const s of loadStates(ROOT).durumlar) {
+      if (!s.pano) continue;
+      const board = rows.filter((r) => r.dosya === boardFile(s.pano?.dosya ?? ''));
+      expect(
+        board.map((r) => r.tema),
+        s.id,
+      ).toEqual([...TEMALAR]);
+      for (const r of board) expect(r.durum, `${r.pano}/${r.tema}`).toBe(s.id);
+    }
   });
 
   it('keeps every row in its rules', () => {
@@ -117,6 +131,35 @@ describe('kapsam.ts', () => {
       },
     ]);
     expect(d.get('41')).toEqual({ aile: 'Deneme', kod: '40 ile aynı; aynı' });
+  });
+
+  it("sets a linked board's durum over the row's own, and rejects a board ESLEME lacks", () => {
+    const panolar = [
+      { pano: '15', baslik: 'Semt', dosya: 'project/SemtSecenek.dc.html' },
+      { pano: '16', baslik: 'Diğer', dosya: 'project/Diger.dc.html' },
+    ];
+    const bagli = boardStates({
+      esik: 99,
+      durumlar: [
+        { id: 'ekran-semt', app: 'ekran/semt', pano: { dosya: 'SemtSecenek' } },
+        { id: 'galeri-a', app: 'galeri/a' },
+      ],
+    });
+    expect([...bagli]).toEqual([['project/SemtSecenek.dc.html', 'ekran-semt']]);
+    const old = buildKapsam(panolar, new Map(), new Map(), [], {
+      '15': { durum: 'eski-durum' },
+      '16': { durum: 'kendi' },
+    });
+    const rows = buildKapsam(panolar, new Map(), new Map(), old, {}, bagli);
+    expect(rows.map((r) => `${r.pano}/${r.tema}:${r.durum}`)).toEqual([
+      '15/acik:ekran-semt',
+      '15/koyu:ekran-semt',
+      '16/acik:kendi',
+      '16/koyu:kendi',
+    ]);
+    expect(() =>
+      buildKapsam(panolar, new Map(), new Map(), [], {}, new Map([['project/Yok.dc.html', 'x']])),
+    ).toThrow(/no board of ESLEME/);
   });
 
   it('keeps a row’s own fields, seeds a new board and writes the fields in order', () => {

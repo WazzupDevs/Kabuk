@@ -6,10 +6,14 @@
 // phone, or never to be drawn. Run again after ESLEME or the audit changes: a row's own fields
 // (hal, sebep, kanit, muaf, acilis, durum) are kept, a new board comes in as "eski" (or as TOHUM
 // says), the rest is rewritten from the sources, in a fixed order (a second run changes nothing).
+// A board that a state of e2e/visual/states.json names (`pano`) gets that state as its `durum`, in
+// both themes; the other rows keep theirs.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { type GateConfig, loadStates } from './states.ts';
 
 export const KAPSAM_FILE = 'e2e/visual/kapsam.json';
 export const ESLEME_FILE = 'docs/design/yeni-arayuz/ESLEME.md';
@@ -268,14 +272,30 @@ function row(fields: KapsamSatiri): KapsamSatiri {
   return r;
 }
 
-// The record: ESLEME's boards in its order, açık then koyu, the old rows' own fields kept.
+// The board file of a state's `pano` (states.ts → BoardLink): ESLEME's `project/<dosya>.dc.html`.
+export const boardFile = (dosya: string) => `project/${dosya}.dc.html`;
+
+// The states that name a board, by the board's file (ESLEME's `dosya`).
+export function boardStates(config: GateConfig): Map<string, string> {
+  return new Map(
+    config.durumlar.flatMap((s) => (s.pano ? [[boardFile(s.pano.dosya), s.id] as const] : [])),
+  );
+}
+
+// The record: ESLEME's boards in its order, açık then koyu, the old rows' own fields kept, the
+// `durum` of a board a state names (`bagli`, by board file) set to that state.
 export function buildKapsam(
   panolar: readonly Pano[],
   denetim: Map<string, Denetim>,
   kod: Map<string, string[]>,
   existing: readonly KapsamSatiri[],
   tohum: Record<string, Partial<Kendi>> = TOHUM,
+  bagli: ReadonlyMap<string, string> = new Map(),
 ): KapsamSatiri[] {
+  const files = new Set(panolar.map((p) => p.dosya));
+  for (const [file, id] of bagli) {
+    if (!files.has(file)) throw new Error(`states.json: ${id}: pano ${file} is no board of ESLEME`);
+  }
   const old = new Map(existing.map((r) => [`${r.pano}/${r.tema}`, r]));
   const out: KapsamSatiri[] = [];
   for (const p of panolar) {
@@ -299,6 +319,8 @@ export function buildKapsam(
             kanit: seed.kanit,
             muaf: seed.muaf,
           };
+      const linked = bagli.get(p.dosya);
+      if (linked) kendi.durum = linked;
       out.push(
         row({
           ...p,
@@ -342,7 +364,14 @@ export function generate(root: string): Uretim {
     .map((f) => ({ name: f.replace(/\.md$/, ''), text: readFileSync(join(dir, f), 'utf8') }));
   const denetim = parseDenetim(groups);
   const { kod, cozulemeyen } = resolveKod(denetim, trackedFiles(root));
-  const rows = buildKapsam(panolar, denetim, kod, readKapsam(root));
+  const rows = buildKapsam(
+    panolar,
+    denetim,
+    kod,
+    readKapsam(root),
+    TOHUM,
+    boardStates(loadStates(root)),
+  );
   const kodsuz = panolar.filter((p) => (kod.get(p.pano) ?? []).length === 0).map((p) => p.pano);
   return { rows, cozulemeyen, kodsuz };
 }
