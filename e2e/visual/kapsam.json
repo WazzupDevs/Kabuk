@@ -1234,7 +1234,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-istekler-bos",
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "İstekler paketi; çekim durumu eklendi"
+      }
+    ]
   },
   {
     "pano": "05",
@@ -1251,7 +1257,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-istekler-bos",
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "İstekler paketi; çekim durumu eklendi"
+      }
+    ]
   },
   {
     "pano": "05a",
