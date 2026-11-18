@@ -142,6 +142,10 @@ const SWIPE_MAX = SPACING[16] + SPACING[4];
 // for the read ticks.
 const TIME_GAP = '\u2003';
 const TICKS_ROOM = '\u2003\u2002';
+// A DM's (DmSohbet `.msg{gap:8}`, `.s svg` 16 with `gap:2`), in the time's 11 px: an en and a thin
+// space (5.5 + 2.3), and the ticks' 18 as an em, an en and a thin space.
+const DM_TIME_GAP = '\u2002\u2009';
+const DM_TICKS_ROOM = '\u2003\u2002\u2009';
 // The room's copy of the time is drawn at alpha 1/255: Android takes a nested text's fully
 // transparent colour (0) as "no colour" and draws it in the bubble's colour, so the copy showed
 // under the time (04:24 over 04:24).
@@ -588,7 +592,7 @@ export function ChatBubble({
                 {text}
                 {time && !state ? (
                   <Stamp dm={dm} color={withAlpha(fg, HIDDEN_ALPHA)} hidden>
-                    {`${TIME_GAP}${stampRoom(time, edited)}${mine && delivery ? TICKS_ROOM : ''}`}
+                    {`${dm ? DM_TIME_GAP : TIME_GAP}${stampRoom(time, edited)}${mine && delivery ? (dm ? DM_TICKS_ROOM : TICKS_ROOM) : ''}`}
                   </Stamp>
                 ) : null}
               </RNText>
@@ -1566,7 +1570,8 @@ function Stamp({
 }) {
   if (dm) {
     return (
-      <RNText accessible={hidden ? false : undefined} style={[KIT_TYPE.stamp, TABULAR, { color }]}>
+      // DmSohbet `.s`: the font's own figures (tabular ones ran the time ~10 % wider).
+      <RNText accessible={hidden ? false : undefined} style={[KIT_TYPE.stamp, { color }]}>
         {children}
       </RNText>
     );
