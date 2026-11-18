@@ -342,7 +342,7 @@ export function PersonRow({
   );
 }
 export const PERSON_HAIR = KIT.size.av.md + SPACING[3];
-// The row's small soft button (`.ur .btn.soft`: 14 inside, 13/16 600; the kit's small height; in
+// The row's small soft button (`.ur .btn.soft`: 14 inside, 13/16 600; the board's 34 high; in
 // the dark the flat #1B211F with the ink's words).
 const PERSON_BTN = {
   type: 'toastBtn',
@@ -364,7 +364,7 @@ export function PersonButton({
   const dark = scheme === 'dark';
   return (
     <Btn
-      sm
+      bar={KIT.size.rowBtnMd}
       variant="glassy"
       look={PERSON_BTN}
       fill={dark ? SETTINGS.dark.track : undefined}

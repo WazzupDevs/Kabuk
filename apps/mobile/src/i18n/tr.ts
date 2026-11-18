@@ -2875,7 +2875,7 @@ export const tr = {
     fixedNote:
       "Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez; profilinde yalnızca yaşın görünür. Yanlış girdiysen İletişim'den bize yaz.",
     deleteBody:
-      'Profilin, arkadaşların, mesajların ve aksesuarların kalıcı olarak silinir. Bu geri alınamaz.',
+      'Profilin, arkadaşların, mesajların ve aksesuarların kalıcı olarak silinir. Yedeklerden de 7 gün içinde silinir. Bu geri alınamaz.',
     blockedNote: 'Engellediğin kişi bunu görmez.',
     mutedNote:
       'Sessize aldığın kişi bunu görmez. Sessize alma o kimliğe bağlıdır: anonim adını sessize almak profilli mesajlarını gizlemez.',

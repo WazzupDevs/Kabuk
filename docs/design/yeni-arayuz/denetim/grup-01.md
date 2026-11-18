@@ -162,13 +162,9 @@ Kod: `app/(app)/settings.tsx`, `src/features/settings/SettingsParts.tsx`, `src/t
 | 1 | geri düğmesi | renk | `.round.soft` koyu `#121614`, kenar `.08` | bkz. C1 |
 | 2 | satırlar (Bildirimler, Gizlilik, Hesap) | uyuyor | 56 min, simge 24, aralık 14, ok 18, çizgi 38'den, çizgi `rgba(3,27,11,.10)` | ✓ (`settings.ts:16-20`, `SettingsParts.tsx:56-110`) |
 | 3 | "Oyunlara katılım" başlığı ve seg | uyuyor | 13/700 muted, üst 26 alt 8; seg 36, iz `--track`, aralık 4 | ✓ (`settings.ts`, `segBoard`) |
-| 4 | katılım notu | metin | "Her girişte anonim başlarsın. Girdikten sonra mekân menüsünden bir kez değiştirebilirsin." | "Her girişte bununla başlarsın." + (varsa) "Bu girişte … görünüyorsun. Değiştirmek için mekan ekranının menüsünü kullan; hakkın bir kez." (`tr.ts:2784-2790`, `settings.tsx:107-113`); ayrıca seçime göre değişen dinamik not |
-| 5 | Görünüm notu (Sistem) | metin | "Telefonunun temasını izler." | "Telefonunun ayarına uyar." (`tr.ts:2758`) |
 | 6 | Çıkış yap satırı | uyuyor | `.sr.dg`, üst 18, ok yok | ✓ (`settings.ts:signOut`, `settings.tsx:121-128`) |
 | 7 | "Test sürümü" başlığı | uyuyor | `.sh3` karışık harf | ✓ (`tr.ts:2799`) |
-| 8 | test satırı 1 | ikon | "Bileşen önizlemesini aç", göz simgesi + ok | metin ✓; simge `palette` (`settings.tsx:148`) |
 | 9 | test satırı 2 | metin/ikon/özellik yok | "Hata kaydını gönder", böcek simgesi + ok | satır yok; yerine "Çizim ölçümünü aç" (göz simgesi) (`settings.tsx:155`, `tr.ts:2525`); ÖZELLİK YOK: "Hata kaydını gönder" (grep: kodda hiçbir yerde yok) |
-| 10 | test bölümü altı not | fazla | panoda yok | `settings.tsx:163-165` (`drawLab.hint`) |
 Not (kural): "Oyunlara katılım" seç'i her hesapta görünür; kural 4/12 ("erkek ve belirtmeyende anonim seçim yalnızca mekan sohbetini etkiler") açısından pano nottaki "Her girişte anonim başlarsın" ifadesi cinsiyete dair bir ayrım göstermiyor, KURAL işareti yok. Karar proje sahibinin.
 
 ## 03k Ayarlar, çıkış onayı — project/AyarlarCikis.dc.html
@@ -178,9 +174,6 @@ Kod: `src/features/settings/signOutConfirm.ts`, `src/motion/Dialog.tsx`, `src/th
 | --- | --- | --- | --- | --- |
 | 1 | örtü | renk | açık `rgba(3,27,11,.42)`, koyu `rgba(0,0,0,.7)` | `look.scrim` DOĞRULANAMADI (`Dialog.tsx:96`; değer ayrıca okunmadı) |
 | 2 | kart konumu | düzen | üstten 280, yanlardan 28, zemin `--surface` (koyu `#151A18` + 1 px `.08` halka), gölge `0 18 48 .22` | dikey ortalı (`Dialog.tsx:styles.root justifyContent center`), yan 28 ✓ (`dialogInset`) |
-| 3 | başlık | yazı | "Çıkış yapılsın mı?" ✓ metin; 20/26 700 ls -.3 | `pageBarTitle` 21/26 700 (`Dialog.tsx:149`) |
-| 4 | metin | metin | "Tekrar girmek için telefon numaranla doğrulama yaparsın." 15/22 500 | "Masadaysan masadan da kalkarsın. Yeniden girmek için numarana kod gelir." (`tr.ts:2766`) |
-| 5 | Vazgeç | tür | ghost: zemin yok, kenar yok, gölge yok, üst 8, text rengi | `Btn variant="glassy"` (cam zemin) (`Dialog.tsx:206-213`) |
 | 6 | Çıkış yap düğmesi | uyuyor | `.btn.danger` + çıkış simgesi, genişlik %100, 48 | ✓ (`signOutConfirm.ts:22-24`) |
 | 7 | ikon diski | uyuyor | panoda yok; kod `confirmIcon` düğmede, disk yok | ✓ (`options.icon` verilmiyor) |
 
@@ -189,11 +182,7 @@ Kod: `app/(app)/settings-notifications.tsx`, `src/features/settings/SettingsPart
 Öğe sayısı: 14 · uyuyor: 8 · fark: 5 · fazla: 1 · özellik yok: 1
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | "Telefon bildirimleri" durum çipi | ölçü | `.stt`: 26 yüksek, iç 0 10, 7 px nokta + "Açık", 12/16 600, `--success-soft` | `Tag tone="green"` 24 yüksek, nokta yok (`settings-notifications.tsx:106`) |
-| 2 | Masa davetleri ipucu | metin | "Davet 2 dakika geçerli, kapatırsan kaçırabilirsin" | "Davetler 2 dakika geçerli; kapatırsan kaçırabilirsin" (`tr.ts:2817`) |
-| 3 | alt not | metin | "Masa daveti bildiriminde kişi, masa ve mekân adı yazmaz: "Bir arkadaşın seni masasına çağırıyor." Mekân sohbeti bildirim göndermez." | "Masa davetinin bildiriminde ad, masa adı ve mekan yazmaz: "Bir arkadaşın seni masasına çağırıyor". Mekan sohbeti bildirim göndermez." (`tr.ts:2822`) |
 | 4 | Mesajlar bölümü | düzen/özellik yok | iki satır: "Birebir mesajlar" + "Mesajı bildirimde göster" (**ÖNERİ**, kapalı, ipucu "Kapalıyken yalnızca "Yeni mesaj" yazar") aynı listede, çizgi 0'dan | yalnız "Birebir mesajlar" (liste dışı `SwitchRow`); ÖNERİ satırı yok, kod bilerek almamış (`settings-notifications.tsx:14-17,159-166`); ÖZELLİK YOK (sunucu ucu ve profil alanı yok) |
-| 5 | anahtar (koyu) | koyu | bkz. C2 | bkz. C2 |
 | 6 | Arkadaşlar listesi | uyuyor | iki `SwitchRow`, min 56, iç 10, çizgi 0'dan | ✓ (`SwitchRow`, `Group hairIn=0`) |
 | 7 | bölüm başlıkları, notlar | uyuyor | `.sh3`, `.nt` | ✓ |
 | 8 | telefon bildirimi kapalı kartı, soluk 0.45 | fazla | bu panoda yok (AyarBildirimKapali panosunda) | `settings-notifications.tsx:78-103` |
@@ -204,27 +193,17 @@ Kod: `app/(app)/settings-privacy.tsx`, `src/features/settings/SettingsParts.tsx`
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
 | 1 | Engellenenler sayacı | davranış | satırda sağda "3" (`.rv2` 13/16 600 muted) | sayaç yok; karar 3 ("no counts", `settings-privacy.tsx:21`) pano ile çelişir |
-| 2 | anonim ad notu | metin | "Anonim adın hesabına sabittir, anonimken ziyaretler arasında aynı adla tanınabilirsin. Adın ve profilin yalnızca profilinle girdiğinde ya da arkadaş olduğunda görünür." | "Anonim adın hesabına sabittir: anonimken ziyaretler arasında aynı adla tanınabilirsin. Adın, fotoğrafın ve profil kimliğin yalnızca profilinle göründüğünde ya da arkadaş olduğunda açılır." (`tr.ts:2827`) |
-| 3 | Yasal satırları | metin | "KVKK aydınlatma metni", "Kullanım koşulları", "Topluluk kuralları" | "KVKK Aydınlatma Metni", "Kullanım Koşulları", "Topluluk Kuralları" (`tr.ts:2771-2773`) |
 | 4 | "Kullanım istatistiği" satırı | boşluk | liste üstü 14, `.sl` içinde | `marginTop` 3+0.5 = 14 ✓; ipucu metni ✓ |
 | 5 | "Verilerin" bölümü (ÖNERİ) | özellik yok | başlık "Verilerin" + ÖNERİ rozeti; satır "Verilerimin kopyasını iste" (indirme simgesi); not "Hazır olunca indirme bağlantısı uygulamada bildirim olarak gelir." | yok; kod bilerek almamış (`settings-privacy.tsx:20-22`); ÖZELLİK YOK (sunucu ucu yok) |
 | 6 | Engellenenler/Sessize/Kapsül/Yasal satırları ve simgeleri (yasak, hoparlör-x, kişi, belge) | uyuyor | ✓ | ✓ (`block`, `mute`, `user`, `doc`) |
-| 7 | anahtar (koyu) | koyu | bkz. C2 | bkz. C2 |
 
 ## 03n Ayarlar · Hesap — project/AyarHesap.dc.html
 Kod: `app/(app)/settings-account.tsx`
 Öğe sayısı: 16 · uyuyor: 4 · fark: 12 · fazla: 2 · özellik yok: 0
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | sayfa iskeleti | düzen | Ayarlar ailesi: `.pg` bulutsuz zemin, geri düğmesi + 21/26 700 başlık aynı satırda (`.ptop`), içerik 20 kenar | `Screen top={<PageTop title=…/>}` (satır içi bar yok, `SettingsPage` kullanılmıyor, `settings-account.tsx:77`) |
-| 2 | telefon ve doğum tarihi | düzen | `.sr.inf` satırları, kartsız: sol simge 24 (telefon / takvim), sağda kilit 16 (`.lk2` %70); değer üstte 16/22 600 ls .2, etiket altta 13/18 500 muted (`column-reverse`) | `Glass` kart (iç `KIT.size.pad`), etiket (`fine`) üstte, değer (`h3Mono`/`h3`) altta, simge yok, kilit yok (`settings-account.tsx:79-96`) |
 | 3 | doğum tarihi değeri | metin | "05.03.2000" | `birthDateValue` "dd.mm.yyyy" ✓ (`tr.ts:2752`) |
 | 4 | etiketler | metin | "Telefon numaran", "Doğum tarihin" | ✓ (`tr.ts:2828,2750`) |
-| 5 | not | metin | "Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez; profilinde yalnızca yaşın görünür. Yanlış girdiysen İletişim'den bize yaz." | "Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez ve kimseye gösterilmez. Yanlış girdiysen İletişim'den bize yaz." (`tr.ts:2830`) |
-| 6 | İletişim satırı | düzen | ayrı `.sl` (üst 14), sohbet simgesi + ok | ✓ simge/ok; ayrı grup yerine `RowList` içinde Çıkış yap ve Hesabımı sil ile tek liste (`settings-account.tsx:98-120`) |
-| 7 | Çıkış yap / Hesabımı sil | düzen | ayrı `.sl` (üst 14), ikisi `.sr.dg` | aynı `RowList` içinde (`settings-account.tsx:107-119`) |
-| 8 | alt künye | boşluk | üst 28, aralık 6; marka işareti 26 yüksek; "Sürüm 0.11.0" 12/17 500; "Mekân verileri © OpenStreetMap katkıda bulunanlar (ODbL)." | `Wordmark` 20 (`SPACING[5]`), aralık 8, üst 24 (`SPACING[6]`), `fine` 13/18; "Mekan verileri …" (`settings-account.tsx:121-130`, `tr.ts:2778-2779`) |
-| 9 | bar geri düğmesi | renk | bkz. C1 | bkz. C1 |
 | 10 | hesap silme onay diyaloğu | fazla | bu panoda yok (AyarHesapSil'de) | `settings-account.tsx:55-70` |
 
 ## Kapsam
