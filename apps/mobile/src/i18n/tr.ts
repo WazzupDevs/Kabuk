@@ -54,6 +54,26 @@ const MONTH_SUFFIX = [
   "'ta",
 ];
 
+// A list row's short date (yeni arayüz tuvali Arsiv, MesajlarKaydir `.tm`: "12 Eki", "27 Ağu").
+const MONTHS_SHORT = [
+  'Oca',
+  'Şub',
+  'Mar',
+  'Nis',
+  'May',
+  'Haz',
+  'Tem',
+  'Ağu',
+  'Eyl',
+  'Eki',
+  'Kas',
+  'Ara',
+];
+function dayMonthShort(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()] ?? ''}`;
+}
+
 function dayMonth(iso: string): string {
   const d = new Date(iso);
   return `${d.getDate()} ${MONTHS[d.getMonth()] ?? ''}`;
@@ -332,7 +352,7 @@ export const tr = {
           ? 'Dün'
           : stamp.kind === 'weekday'
             ? (WEEKDAYS_SHORT[stamp.weekday] ?? '')
-            : dayMonth(iso),
+            : dayMonthShort(iso),
     unread: (n: number) => `${n} okunmamış mesaj`,
     row: (name: string, preview: string, unread: number) =>
       unread > 0 ? `${name}, ${preview}, ${unread} okunmamış` : `${name}, ${preview}`,

@@ -67,28 +67,34 @@ const KADIR = thread(5, {
 });
 const MAIN_ROWS = [ADEM, FEVVE, FURKAN, S2C, KADIR];
 
-// The twelve archived: Arsiv's eight in their order, four more under them.
-const ARCHIVE_NAMES: readonly [string, string, string, number][] = [
-  ['Tuncay', 'Tamamdır görüşürüz', '2025-10-12', 0],
-  ['Melis', 'Fotoğrafı attım', '2025-10-09', 0],
-  ['Barış', 'Yarın kafede misin?', '2025-10-02', 2],
-  ['Zeynep', 'Hahaha aynen', '2025-09-28', 0],
-  ['Onur', 'Oyun güzeldi', '2025-09-21', 0],
-  ['Ece', 'Sonra konuşuruz', '2025-09-14', 0],
-  ['Emre', '👍', '2025-09-03', 0],
-  ['Selin', 'Görüldü atma :)', '2025-08-27', 0],
-  ['Can', 'Vampir kimdi ya', '2025-08-20', 0],
-  ['Berk', 'Hahaha', '2025-08-11', 0],
-  ['Irmak', 'Teşekkürler', '2025-08-02', 0],
-  ['Deniz', 'Akşam masa kuralım mı?', '2025-07-25', 0],
+// The twelve archived (Main's "Arşivlenenler 12"): Arsiv's eight in their order, four more under
+// them. Melis's and Onur's last message is the caller's, read (Arsiv: the blue ticks).
+const ARCHIVE_NAMES: readonly [string, string, string, number, boolean][] = [
+  ['Tuncay', 'Tamamdır görüşürüz', '2025-10-12', 0, false],
+  ['Melis', 'Fotoğrafı attım', '2025-10-09', 0, true],
+  ['Barış', 'Yarın kafede misin?', '2025-10-02', 2, false],
+  ['Zeynep', 'Hahaha aynen', '2025-09-28', 0, false],
+  ['Onur', 'Oyun güzeldi', '2025-09-21', 0, true],
+  ['Ece', 'Sonra konuşuruz', '2025-09-14', 0, false],
+  ['Emre', '👍', '2025-09-03', 0, false],
+  ['Selin', 'Görüldü atma :)', '2025-08-27', 0, false],
+  ['Can', 'Vampir kimdi ya', '2025-08-20', 0, false],
+  ['Berk', 'Hahaha', '2025-08-11', 0, false],
+  ['Irmak', 'Teşekkürler', '2025-08-02', 0, false],
+  ['Deniz', 'Akşam masa kuralım mı?', '2025-07-25', 0, false],
 ];
-function archived(unreadAll: boolean): DmInboxThread[] {
-  return ARCHIVE_NAMES.map(([name, body, day, unread], i) =>
+// Arsiv's eight rows (no row under Selin, as the board; its count then reads "8 sohbet", the
+// board's "12 sohbet").
+const ARSIV_ROWS = 8;
+function archived(unreadAll: boolean, count = ARCHIVE_NAMES.length): DmInboxThread[] {
+  return ARCHIVE_NAMES.slice(0, count).map(([name, body, day, unread, mine], i) =>
     thread(20 + i, {
       displayName: name,
       lastBody: body,
       lastMessageAt: `${day}T18:00:00+03:00`,
       unreadCount: unreadAll ? unread : 0,
+      lastFromMe: mine,
+      lastStatus: mine ? 'read' : null,
       archived: true,
     }),
   );
@@ -104,11 +110,14 @@ const REQUESTS: VenueChatIncoming[] = [1, 2, 3].map((n) => ({
   createdAt: ago(n * MINUTE),
 }));
 
+// `requests`: "İstekler 3" (MesajlarBos draws none). The bell's dot: one notification unseen.
 function GateClient({
   inbox,
+  requests = true,
   children,
 }: {
   inbox: readonly DmInboxThread[];
+  requests?: boolean;
   children: React.ReactNode;
 }) {
   const [client] = useState(() => {
@@ -117,7 +126,8 @@ function GateClient({
     });
     c.setQueryData(friendKeys.inbox, inbox);
     c.setQueryData(friendKeys.incoming, []);
-    c.setQueryData(friendKeys.incomingChat, REQUESTS);
+    c.setQueryData(friendKeys.incomingChat, requests ? REQUESTS : []);
+    c.setQueryData(friendKeys.notifications, { notifications: [], unseen: 1 });
     return c;
   });
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
@@ -163,7 +173,7 @@ export function MesajlarFixture({ variant = 'main' }: { variant?: MesajlarVarian
           ]
         : [...MAIN_ROWS, ...archived(variant === 'archive-unread')];
   return (
-    <GateClient inbox={inbox}>
+    <GateClient inbox={inbox} requests={variant !== 'empty'}>
       <MessagesScreen />
     </GateClient>
   );
@@ -172,7 +182,7 @@ export function MesajlarFixture({ variant = 'main' }: { variant?: MesajlarVarian
 // Arsiv (01f), ArsivBos (01h): `empty` nothing archived, the chats are still there.
 export function ArchiveFixture({ empty = false }: { empty?: boolean }) {
   return (
-    <GateClient inbox={empty ? MAIN_ROWS : [...MAIN_ROWS, ...archived(true)]}>
+    <GateClient inbox={empty ? MAIN_ROWS : [...MAIN_ROWS, ...archived(true, ARSIV_ROWS)]}>
       <ArchiveScreen />
     </GateClient>
   );
