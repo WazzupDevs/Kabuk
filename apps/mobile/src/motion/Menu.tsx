@@ -329,7 +329,12 @@ function MenuPop({
       navigationBarTranslucent
       onRequestClose={onClose}
     >
-      {hold ? <SheetScrim hold opacity={fade} /> : null}
+      {hold ? (
+        <SheetScrim
+          hold
+          opacity={p.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' })}
+        />
+      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={tr.common.close}
