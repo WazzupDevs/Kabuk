@@ -14,9 +14,9 @@
       "apps/mobile/src/motion/TabBar.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar sekmesi",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-mesajlar",
     "hal": "eski",
     "muaf": [
       {
@@ -40,9 +40,9 @@
       "apps/mobile/src/motion/TabBar.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar sekmesi",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-mesajlar",
     "hal": "eski",
     "muaf": [
       {
@@ -94,9 +94,9 @@
       "apps/mobile/src/motion/Menu.tsx",
       "apps/mobile/src/theme/auraKit.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → bir sohbete uzun bas",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-mesajlar-uzun-bas",
     "hal": "eski"
   },
   {
@@ -110,9 +110,9 @@
       "apps/mobile/src/motion/Menu.tsx",
       "apps/mobile/src/theme/auraKit.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → bir sohbete uzun bas",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-mesajlar-uzun-bas",
     "hal": "eski"
   },
   {
@@ -126,9 +126,9 @@
       "apps/mobile/src/motion/Menu.tsx",
       "apps/mobile/src/theme/auraKit.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → sabitli sohbete uzun bas",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-mesajlar-sabit-uzun-bas",
     "hal": "eski"
   },
   {
@@ -142,9 +142,9 @@
       "apps/mobile/src/motion/Menu.tsx",
       "apps/mobile/src/theme/auraKit.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → sabitli sohbete uzun bas",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-mesajlar-sabit-uzun-bas",
     "hal": "eski"
   },
   {
@@ -158,9 +158,9 @@
       "apps/mobile/src/motion/Dialog.tsx",
       "apps/mobile/src/theme/auraKit.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → sohbete uzun bas → Sohbeti sil",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-mesajlar-sil-onay",
     "hal": "eski",
     "muaf": [
       {
@@ -180,9 +180,9 @@
       "apps/mobile/src/motion/Dialog.tsx",
       "apps/mobile/src/theme/auraKit.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → sohbete uzun bas → Sohbeti sil",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-mesajlar-sil-onay",
     "hal": "eski",
     "muaf": [
       {
@@ -202,9 +202,9 @@
       "apps/mobile/src/motion/TopBar.tsx",
       "apps/mobile/src/theme/flatLists.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → Arşivlenenler",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-arsiv",
     "hal": "eski"
   },
   {
@@ -218,9 +218,9 @@
       "apps/mobile/src/motion/TopBar.tsx",
       "apps/mobile/src/theme/flatLists.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → Arşivlenenler",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-arsiv",
     "hal": "eski"
   },
   {
@@ -232,9 +232,9 @@
       "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → Arşivlenenler → bir sohbete uzun bas",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-arsiv-uzun-bas",
     "hal": "eski"
   },
   {
@@ -246,9 +246,9 @@
       "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → Arşivlenenler → bir sohbete uzun bas",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-arsiv-uzun-bas",
     "hal": "eski"
   },
   {
@@ -262,7 +262,7 @@
     ],
     "acilis": "Mesajlar → Arşivlenenler, arşivde sohbet yokken",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-arsiv-bos",
     "hal": "yazildi"
   },
   {
@@ -276,7 +276,7 @@
     ],
     "acilis": "Mesajlar → Arşivlenenler, arşivde sohbet yokken",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-arsiv-bos",
     "hal": "yazildi"
   },
   {
@@ -797,7 +797,13 @@
     "tema": "acik",
     "durum": "ekran-ayarlar-bildirimler",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 734,
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "03l",
@@ -813,7 +819,13 @@
     "tema": "koyu",
     "durum": "ekran-ayarlar-bildirimler",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 734,
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "03m",
@@ -894,6 +906,10 @@
       {
         "pr": 734,
         "sebep": "hesabı sil onayı iletişim kutusu çekim durumu yok (kapı rotasında OverlayHost yok); ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -918,6 +934,10 @@
       {
         "pr": 734,
         "sebep": "hesabı sil onayı iletişim kutusu çekim durumu yok (kapı rotasında OverlayHost yok); ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -1119,7 +1139,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "04",
@@ -1137,7 +1163,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "05",
@@ -1232,7 +1264,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "06",
@@ -1247,7 +1285,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "06b",
@@ -1698,7 +1742,13 @@
     "acilis": "Keşfet → Semte git → Geçit → semt sohbeti, ilk giren",
     "tema": "acik",
     "durum": "ekran-semt-bos",
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "14",
@@ -1717,7 +1767,13 @@
     "acilis": "Keşfet → Semte git → Geçit → semt sohbeti, ilk giren",
     "tema": "koyu",
     "durum": "ekran-semt-bos",
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "15",
@@ -1873,6 +1929,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -1897,6 +1957,10 @@
     "muaf": [
       {
         "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
@@ -2042,7 +2106,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "24",
@@ -2057,7 +2127,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "25",
@@ -2301,7 +2377,13 @@
     "acilis": "Mekan → Mekan sohbeti",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "31",
@@ -2321,7 +2403,13 @@
     "acilis": "Mekan → Mekan sohbeti",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "32",
@@ -2336,7 +2424,13 @@
     "acilis": "Mekan sohbeti → sağ üstteki ⋮",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "32",
@@ -2351,7 +2445,13 @@
     "acilis": "Mekan sohbeti → sağ üstteki ⋮",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "32a",
@@ -3266,7 +3366,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "59",
@@ -3281,7 +3387,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "60",
@@ -4021,6 +4133,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -4040,6 +4156,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -4058,6 +4178,10 @@
     "muaf": [
       {
         "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
@@ -4078,6 +4202,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -4092,7 +4220,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "79",
@@ -4105,7 +4239,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "80",
@@ -4222,6 +4362,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -4241,6 +4385,10 @@
     "muaf": [
       {
         "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
@@ -4751,7 +4899,13 @@
     "acilis": "Keşfet → Semte git → semt sohbeti, mesajlar varken",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "98",
@@ -4767,7 +4921,13 @@
     "acilis": "Keşfet → Semte git → semt sohbeti, mesajlar varken",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "99",
@@ -4786,7 +4946,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "99",
@@ -4805,7 +4971,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "100",
@@ -4929,9 +5101,9 @@
       "apps/mobile/src/motion/Menu.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → beş sabit varken sohbete uzun bas",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-mesajlar-sabit-dolu",
     "hal": "eski"
   },
   {
@@ -4946,9 +5118,9 @@
       "apps/mobile/src/motion/Menu.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar → beş sabit varken sohbete uzun bas",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-mesajlar-sabit-dolu",
     "hal": "eski"
   },
   {
@@ -4961,9 +5133,9 @@
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/lib/dmManage.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar sekmesi, arşivde okunmamış varken",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-mesajlar-arsiv-rozet",
     "hal": "eski"
   },
   {
@@ -4976,9 +5148,9 @@
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/lib/dmManage.ts"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar sekmesi, arşivde okunmamış varken",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-mesajlar-arsiv-rozet",
     "hal": "eski"
   },
   {
@@ -5086,9 +5258,9 @@
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
       "apps/mobile/src/components/EmptyState.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar sekmesi, hiç sohbet yokken",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-mesajlar-bos",
     "hal": "eski"
   },
   {
@@ -5100,9 +5272,9 @@
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
       "apps/mobile/src/components/EmptyState.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mesajlar sekmesi, hiç sohbet yokken",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-mesajlar-bos",
     "hal": "eski"
   },
   {
@@ -5122,7 +5294,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "110",
@@ -5141,7 +5319,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "111",
@@ -5622,7 +5806,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "126",
@@ -5637,7 +5827,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "127",
@@ -5651,7 +5847,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "127",
@@ -5665,7 +5867,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "128",
@@ -5740,7 +5948,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "130",
@@ -5759,7 +5973,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "131",
@@ -5778,7 +5998,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "131",
@@ -5797,7 +6023,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "132",
@@ -5991,6 +6223,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
   },
@@ -6013,6 +6249,10 @@
     "muaf": [
       {
         "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
       }
     ]
