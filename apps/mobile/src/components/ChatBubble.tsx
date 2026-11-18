@@ -343,15 +343,31 @@ export function ChatBubble({
   // and the bubble stayed narrow (the owner's report, 30 Ekim). When only the time went down and
   // the two fit side by side, the words get that much room.
   const [widen, setWiden] = useState(0);
+  // A DM's time alone on the last line (DmSohbet `.msg`: a wrapping row, `.s` 4 over its 14 line
+  // and 8 under the words): its line 5 taller than a line of words.
+  const [stampAlone, setStampAlone] = useState(false);
   const onTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     if (widen) return;
     const lines = e.nativeEvent.lines;
+    const end = lines.at(-1);
+    const alone =
+      lines.length >= 2 &&
+      !!end &&
+      !!time &&
+      end.text.replace(/\s/g, '') === stampRoom(time, edited).replace(/\s/g, '');
     const [a, b] = lines;
-    if (lines.length !== 2 || !a || !b || !time) return;
-    if (b.text.replace(/\s/g, '') !== stampRoom(time, edited).replace(/\s/g, '')) return;
-    const need = Math.ceil(a.width + b.width + WIDEN_SLACK);
-    if (need <= maxText) setWiden(need);
+    if (alone && lines.length === 2 && a && b) {
+      const need = Math.ceil(a.width + b.width + WIDEN_SLACK);
+      if (need <= maxText) {
+        setWiden(need);
+        return;
+      }
+    }
+    if (dm && alone !== stampAlone) setStampAlone(alone);
   };
+  // DmSohbet `.q{width:100%}`: a bubble with a quote runs to its share of the row, the quote across
+  // it.
+  const wide = dm && !!quote && !big;
   // Telegram Android: the reactions inside the bubble, under the words, the time at the right of
   // their row (the owner's call, 30 Ekim); under a big emoji, outside.
   const hasChips = !!reactions && reactions.length > 0;
@@ -562,7 +578,12 @@ export function ChatBubble({
               </View>
             </>
           ) : (
-            <View style={widen ? { minWidth: widen } : undefined}>
+            <View
+              style={[
+                widen ? { minWidth: widen } : null,
+                stampAlone ? { paddingBottom: DM.time.aloneExtra } : null,
+              ]}
+            >
               <RNText style={[msgType, { color: gone ? muted : fg }]} onTextLayout={onTextLayout}>
                 {text}
                 {time && !state ? (
@@ -662,10 +683,10 @@ export function ChatBubble({
     return (
       <View
         style={{
-          alignItems: 'flex-end',
+          alignItems: wide ? 'stretch' : 'flex-end',
           gap: SPACING[1],
           alignSelf: 'flex-end',
-          maxWidth: `${share * 100}%`,
+          ...(wide ? { width: `${share * 100}%` } : { maxWidth: `${share * 100}%` }),
         }}
       >
         {bar}
@@ -831,13 +852,21 @@ export function ChatBubble({
       style={{
         gap: SPACING[1],
         alignSelf: 'flex-start',
-        maxWidth: `${(avatar ? THEIRS_SHARE : share) * 100}%`,
+        ...(wide
+          ? { width: `${share * 100}%` }
+          : { maxWidth: `${(avatar ? THEIRS_SHARE : share) * 100}%` }),
       }}
     >
       {head}
       {/* Not under the photo's indent: the bar is wider than the column there. */}
       {bar}
-      <View style={{ alignItems: 'flex-start', gap: SPACING[1], paddingLeft: avatar ? INDENT : 0 }}>
+      <View
+        style={{
+          alignItems: wide ? 'stretch' : 'flex-start',
+          gap: SPACING[1],
+          paddingLeft: avatar ? INDENT : 0,
+        }}
+      >
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
       </View>

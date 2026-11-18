@@ -1317,8 +1317,9 @@ export function ChatScreen<T extends ChatListItem>({
                           bandUnderBar &&
                           banded &&
                           canvas &&
-                          (wall === 'semt' || wall === 'mekan') ? (
-                            // SemtSohbet, MekanSohbet `.band`: the chat's ground, not the picture.
+                          (wall === 'semt' || wall === 'mekan' || wall === 'dm') ? (
+                            // SemtSohbet, MekanSohbet, DmSohbet `.band`: the chat's ground, not
+                            // the picture.
                             <View
                               pointerEvents="none"
                               style={{
@@ -1358,7 +1359,9 @@ export function ChatScreen<T extends ChatListItem>({
                           flexGrow: 1,
                           // tuval Dm: the bubbles 18 from the sides (12 and each row's 6).
                           paddingHorizontal: wall ? DM.side : shape.screenPadding,
-                          paddingTop: SPACING[3] + under,
+                          // DmSohbet: the last message 16 over the field (`.flow` 114, `.cmp`
+                          // 46 + 52), of which the bar keeps 8 over it.
+                          paddingTop: (wall === 'dm' ? SPACING[2] : SPACING[3]) + under,
                           paddingBottom: SPACING[2] + topHeight,
                           // iskelet.md → 5.5: a run's bubbles 2 apart, runs 12 (ChatRow).
                           gap: KIT.size.runGap,
@@ -1461,7 +1464,7 @@ export function ChatScreen<T extends ChatListItem>({
 
 // The band under the venue and the district chat's top bar (`.band`): the chat's ground to `solid`
 // of it (a share), then fading out.
-function chatBand(wall: 'semt' | 'mekan', scheme: ColorScheme, solidTo: number): string {
+function chatBand(wall: 'semt' | 'mekan' | 'dm', scheme: ColorScheme, solidTo: number): string {
   const ground = CHAT_LOOK.band[wall][scheme];
   const solid = Math.round(solidTo * 100);
   return `linear-gradient(180deg, ${ground} 0%, ${ground} ${solid}%, ${withAlpha(ground, 0)} 100%)`;
@@ -1558,6 +1561,10 @@ export function DayLine({
 }
 const DAY_SCALE = 1.3;
 
-export function dayLabel(day: Date, now = new Date()): string {
-  return sameDay(day, now) ? tr.chat.today : tr.chat.day(day.toISOString());
+// "Bugün", "Dün" (yeni arayüz tuvali, DmSohbet `.day`) or the date. `now` from Date.now (the visual
+// gate stops that clock).
+export function dayLabel(day: Date, now = new Date(Date.now())): string {
+  if (sameDay(day, now)) return tr.chat.today;
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  return sameDay(day, yesterday) ? tr.chat.yesterday : tr.chat.day(day.toISOString());
 }

@@ -738,6 +738,8 @@ export const tr = {
     typing: 'yazıyor',
     // Under the name in the DM's top bar (iskelet.md → 5.5).
     typingTitle: 'yazıyor…',
+    // Over the first unread message (yeni arayüz tuvali, DmSohbet `.new`): how many came.
+    unreadLine: (n: number) => `${n} yeni mesaj`,
     // What a screen reader hears for the "yazıyor" bubble (DmSohbet `.typing`).
     typingNamed: (name: string) => `${name} yazıyor`,
     // Under the name otherwise (yeni arayüz tuvali, DmSohbet): the capsule opens the profile.
@@ -1008,6 +1010,7 @@ export const tr = {
     discard: 'Sil',
     // Chat screens: a day line over each day's first message, the time under a run (Aşama 4).
     today: 'Bugün',
+    yesterday: 'Dün',
     day: (iso: string) => dayMonth(iso),
     time: (iso: string) => {
       const d = new Date(iso);

@@ -91,6 +91,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
     sendTestID,
     capsule,
     flush,
+    editing,
   },
   ref,
 ) {
@@ -98,6 +99,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
     return (
       <CapsuleBar
         flush={flush}
+        editing={editing}
         ref={ref}
         value={value}
         onChangeText={onChangeText}
@@ -352,10 +354,14 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
     KIT.size.edge,
   );
   const followEnd = useChatEnd();
-  // The send always there (MekanSohbet, MasaSohbet, SemtSohbet, DmBos `.snd`), the disabled grey
-  // with nothing to send; the DM's 44 then (DmBos), 52 once there is something (DmKlavye).
+  // The send always there in the group chats (MekanSohbet, MasaSohbet, SemtSohbet `.snd`), the
+  // disabled grey with nothing to send. The DM's (DmSohbet, DmKlavye `.cmp`): none with nothing to
+  // send, the field across the bar; 52 in the ink once there is something, grown in. An edit keeps
+  // its tick (DmDuzenle), grey while the words are unchanged.
   const always = kind !== 'dm';
-  const dmOff = kind === 'dm' && !flush && !!sendDisabled && !sending;
+  const dmBar = kind === 'dm' && !flush;
+  const dmOff = dmBar && !!editing && !!sendDisabled && !sending;
+  const dmHidden = dmBar && !editing && !!sendDisabled && !sending;
   const shown = true;
   const padLeft = dm ? DM.composer.padLeft : card.padLeft;
   const send = flush ? card.send : SEND_IN;
@@ -364,12 +370,12 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   const sendButton = (
     <SendIn
       dm={dm}
-      side={dm ? (dmOff ? DM.composer.sendOff : DM.composer.send) : send}
+      side={dm ? DM.composer.send : send}
       shown={shown}
       sending={!!sending}
       disabled={!!sendDisabled || !!sending}
       off={(always && !flush && !!sendDisabled && !sending) || dmOff}
-      steady
+      steady={!dmBar}
       label={sendLabel}
       testID={sendTestID}
       confirm={editing}
@@ -386,7 +392,8 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
       style={{
         paddingHorizontal: flush ? 0 : DM.composer.side,
         paddingTop: flush ? 0 : above ? SPACING[1] : SPACING[2],
-        paddingBottom: flush ? 0 : SPACING[4] + SPACING[0.5],
+        // DmSohbet `.cmp`: 46 over the board's foot, its 34 the system's (ChatScreen pads that).
+        paddingBottom: flush ? 0 : dmBar ? DM.composer.bottom : SPACING[4] + SPACING[0.5],
         gap: dm ? DM.composer.gap : SPACING[1.5],
       }}
     >
@@ -486,7 +493,9 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
             </View>
           )}
         </View>
-        {dm ? <View style={{ height: height, justifyContent: 'center' }}>{sendButton}</View> : null}
+        {dm && !dmHidden ? (
+          <View style={{ height: height, justifyContent: 'center' }}>{sendButton}</View>
+        ) : null}
       </View>
     </View>
   );

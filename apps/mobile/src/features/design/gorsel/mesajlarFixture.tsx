@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { friendKeys } from '@/features/friends/queries';
+import { goOffline } from '@/lib/offline';
 
 import ArchiveScreen from '../../../../app/(app)/(tabs)/messages/archive';
 import MessagesScreen from '../../../../app/(app)/(tabs)/messages';
@@ -121,6 +122,8 @@ function GateClient({
   children: React.ReactNode;
 }) {
   const [client] = useState(() => {
+    // Off the network (lib/offline.ts): the rows' "yazıyor" channels are not joined.
+    goOffline();
     const c = new QueryClient({
       defaultOptions: { queries: { staleTime: Infinity, retry: false } },
     });

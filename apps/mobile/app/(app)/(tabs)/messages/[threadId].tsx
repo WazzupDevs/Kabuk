@@ -97,6 +97,18 @@ function backToInbox(): void {
 
 export default function DmScreen() {
   const { threadId, publicId, name } = useLocalSearchParams<Params>();
+  return <DmThread threadId={threadId} publicId={publicId} name={name} />;
+}
+
+// The conversation itself, for the route and for the visual gate's `ekran/dm` (gorsel/dmFixture.tsx:
+// this component over a query cache filled with the board's sample, off the network). `gateTyping`:
+// the gate draws the friend typing (no Realtime there); never set by the app.
+export function DmThread({
+  threadId,
+  publicId,
+  name,
+  gateTyping = false,
+}: Params & { gateTyping?: boolean }) {
   const { scheme } = useTheme();
   useHideTabBar();
   const queryClient = useQueryClient();
@@ -115,7 +127,9 @@ export default function DmScreen() {
   const [confirm, setConfirm] = useState<'remove' | 'block' | null>(null);
   const [reporting, setReporting] = useState(false);
   const [outbox, dispatch] = useReducer(outboxReducer, []);
-  const { typing, notifyTyping, clearTyping } = useDmTyping(threadId);
+  const dmTyping = useDmTyping(threadId);
+  const { notifyTyping, clearTyping } = dmTyping;
+  const typing = dmTyping.typing || gateTyping;
 
   // How many of the friend's messages were unread when the DM opened (the inbox's count, read
   // before opening marks them read): the DM opens at the first of them, under its line.
@@ -446,7 +460,7 @@ export default function DmScreen() {
       first={row.first}
       last={row.last}
       day={row.day}
-      fresh={row.id === freshId}
+      fresh={row.id === freshId ? tr.dm.unreadLine(unreadAtOpen) : null}
       editing={row.id === editing?.id}
       answering={row.id !== undefined && row.id === reply.target?.id}
       morph={row.id === morphId}
@@ -706,7 +720,8 @@ const DmRow = memo(function DmRow({
   first: boolean;
   last: boolean;
   day: number | null;
-  fresh: boolean;
+  // DmSohbet `.new`: "2 yeni mesaj" over the first unread message.
+  fresh: string | null;
   editing: boolean;
   answering: boolean;
   morph: boolean;
@@ -724,7 +739,7 @@ const DmRow = memo(function DmRow({
       {(jumpTo) => (
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
-          {fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
+          {fresh ? <DayLine fresh label={fresh} /> : null}
           {m ? (
             <ServerBubble
               m={m}

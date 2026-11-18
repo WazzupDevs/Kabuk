@@ -2,6 +2,7 @@ import { createChannelRegistry, type OpenChannel } from '@shared/realtimeChannel
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useEffect, useRef } from 'react';
 
+import { isOffline } from '@/lib/offline';
 import { supabase } from '@/lib/supabase';
 
 // Every Realtime subscription of the app goes through this registry: one private channel per
@@ -25,7 +26,8 @@ export function useChannel<E>(
   });
 
   useEffect(() => {
-    if (!topic) return;
+    // Off the network (the visual gate) no channel is joined.
+    if (!topic || isOffline()) return;
     return registry.acquire<E>(
       topic,
       (emit) => opener.current(emit),

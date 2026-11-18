@@ -41,12 +41,14 @@ export const CHAT_LOOK = {
   // The first message's suggestions (`.sug`): 12 over the message bar, a row from 12 at the left
   // to the screen's right edge, 8 apart; each 36 high, 14 in. The table's card 24 over them.
   suggest: { height: 36, padX: 14, gap: 8, cardGap: 24 },
-  // Under the top bar (SemtSohbet, MekanSohbet `.band`): the chat's ground to the bar's top (the
+  // Under the top bar (SemtSohbet, MekanSohbet, DmSohbet `.band`): the chat's ground to the bar's top (the
   // board's 40 % of 132), then fading out; 132 under a 47 status bar.
   band: {
     below: 85,
     semt: { light: '#F5E9D8', dark: '#000000' },
     mekan: { light: '#DDEFE2', dark: '#000000' },
+    // DmSohbet `.band`: the wallpaper's blue, black in the dark.
+    dm: { light: '#D9E8F7', dark: '#000000' },
   },
   // The first message's card (`.emp`): 24 round, 20 / 22 / 22 inside, the riso 122 wide standing 62
   // above it; its title 16/22 (700) and its sentence 13/18 (500) 8 and 4 under; the table's riso
