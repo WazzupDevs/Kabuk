@@ -863,7 +863,8 @@ function ServerBubble({
               },
             ]
       }
-      delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
+      // DmSohbet: the ticks only on a run's last message (`.msg.me.g` has none).
+      delivery={m.from_me && last && isDelivery(m.status) ? m.status : undefined}
       // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar says who it is
       // and opens the profile.
     />
