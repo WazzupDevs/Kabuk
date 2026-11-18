@@ -143,6 +143,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const googleServicesFile = process.env.GOOGLE_SERVICES_JSON ?? './google-services.json';
   const hasGoogleServices = existsSync(resolve(__dirname, googleServicesFile));
   if (!config.name) throw new Error('app.json: expo.name is missing');
+  // The web preview of the visual gate (`pnpm web:onizleme`, scripts/visual/web-shot.ts) only:
+  // web is a platform only when SKALL_WEB_ONIZLEME=1, so app.json and every Android and iOS build
+  // stay as they are.
+  const webPreview = process.env.SKALL_WEB_ONIZLEME === '1';
 
   return withNotificationIcons(
     withClearNavigationBar(
@@ -151,6 +155,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           ...config,
           name: config.name,
           slug: config.slug ?? 'masa',
+          ...(webPreview
+            ? {
+                platforms: [...(config.platforms ?? []), 'web'],
+                web: { bundler: 'metro', output: 'single' },
+              }
+            : {}),
           android: {
             ...config.android,
             ...(hasGoogleServices ? { googleServicesFile } : {}),
