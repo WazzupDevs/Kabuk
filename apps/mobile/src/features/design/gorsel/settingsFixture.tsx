@@ -10,6 +10,8 @@ import SettingsScreen from '../../../../app/(app)/settings';
 import AccountScreen from '../../../../app/(app)/settings-account';
 import BlockedScreen from '../../../../app/(app)/settings-blocked';
 import MutedScreen from '../../../../app/(app)/settings-muted';
+import NotificationSettingsScreen from '../../../../app/(app)/settings-notifications';
+import PrivacyScreen from '../../../../app/(app)/settings-privacy';
 import { GATE_NOW } from './deterministic';
 
 // The Ayarlar family for the visual gate (`ekran/ayarlar…`): the routes themselves, drawn whole
@@ -32,10 +34,11 @@ function GateClient({ seed, children }: { seed: (c: QueryClient) => void; childr
 }
 
 // The own profile as the routes read it: the row (useProfile) and profile/get (useProfileView).
-function seedOwn(c: QueryClient, birthDate: string | null) {
+function seedOwn(c: QueryClient, birthDate: string | null, notify = false) {
   c.setQueryData(['profile', undefined], {
     public_id: PUBLIC_ID,
     default_participation: 'anonymous',
+    ...(notify ? { notify_dm: true, notify_friend_requests: true, notify_invites: true } : {}),
   });
   c.setQueryData(profileViewKeys.view(PUBLIC_ID), {
     publicId: PUBLIC_ID,
@@ -93,6 +96,29 @@ export function MutedEmptyFixture() {
   return (
     <GateClient seed={(c) => c.setQueryData(CHAT_MUTES_KEY, { mutes: [] })}>
       <MutedScreen />
+    </GateClient>
+  );
+}
+
+// AyarBildirim (03l): the phone lets them through, the three kinds on.
+export function NotificationsFixture() {
+  return (
+    <GateClient
+      seed={(c) => {
+        seedOwn(c, null, true);
+        c.setQueryData(['pushPermission'], true);
+      }}
+    >
+      <NotificationSettingsScreen />
+    </GateClient>
+  );
+}
+
+// AyarGizlilik (03m): the statistics switch on (the app's default).
+export function PrivacyFixture() {
+  return (
+    <GateClient seed={(c) => seedOwn(c, null)}>
+      <PrivacyScreen />
     </GateClient>
   );
 }

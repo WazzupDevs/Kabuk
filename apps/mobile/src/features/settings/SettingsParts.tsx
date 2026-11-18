@@ -2,7 +2,7 @@ import { Children, isValidElement, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { Btn, Li, type SegBoard, Switch, T, useKit } from '@/aura/kit';
+import { type AvBoard, Btn, Li, type SegBoard, Switch, T, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';

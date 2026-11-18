@@ -96,6 +96,22 @@
       }
     },
     {
+      "id": "ekran-ayarlar-bildirimler",
+      "app": "ekran/ayarlar/bildirimler",
+      "baz": false,
+      "pano": {
+        "dosya": "AyarBildirim"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-gizlilik",
+      "app": "ekran/ayarlar/gizlilik",
+      "baz": false,
+      "pano": {
+        "dosya": "AyarGizlilik"
+      }
+    },
+    {
       "id": "ekran-ayarlar-yasal",
       "app": "ekran/ayarlar/yasal",
       "baz": false,

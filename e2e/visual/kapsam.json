@@ -769,7 +769,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-ayarlar-bildirimler",
     "hal": "eski"
   },
   {
@@ -784,7 +784,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-ayarlar-bildirimler",
     "hal": "eski"
   },
   {
@@ -798,7 +798,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-ayarlar-gizlilik",
     "hal": "eski"
   },
   {
@@ -812,7 +812,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-ayarlar-gizlilik",
     "hal": "eski"
   },
   {
