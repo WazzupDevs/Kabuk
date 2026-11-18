@@ -40,6 +40,8 @@ function maskPhone(phone: string | undefined): string {
 // locked; what cannot be changed here; İletişim; Çıkış yap and Hesabımı sil in the soft red (asks
 // first, says what goes); the wordmark, the version and the map data's credit at the foot.
 const F = SETTINGS.foot;
+// A blank that keeps a line's height (not words: nothing to translate).
+const NBSP = ' ';
 
 export default function AccountScreen() {
   const phone = useSessionStore((s) => s.session?.user.phone);
@@ -80,13 +82,13 @@ export default function AccountScreen() {
       <View>
         <Group>
           <InfoRow icon="phone" label={tr.settings.phoneLabel} value={maskPhone(phone)} />
-          {birthDate ? (
-            <InfoRow
-              icon="calendar"
-              label={tr.settings.birthDate}
-              value={tr.settings.birthDateValue(birthDate)}
-            />
-          ) : null}
+          {/* Always there (the board); its value once the profile is read, the row's height kept. */}
+          <InfoRow
+            icon="calendar"
+            label={tr.settings.birthDate}
+            value={birthDate ? tr.settings.birthDateValue(birthDate) : NBSP}
+          />
+
         </Group>
         <View style={NOTES}>
           <Note>{tr.settings.fixedNote}</Note>
