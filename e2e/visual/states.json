@@ -54,6 +54,14 @@
       "id": "ekran-semt-oturum-kapat",
       "app": "ekran/semt/oturum-kapat",
       "baz": false
+    },
+    {
+      "id": "ekran-semt-bos",
+      "app": "ekran/semt/bos",
+      "baz": false,
+      "pano": {
+        "dosya": "SemtSohbet"
+      }
     }
   ]
 }

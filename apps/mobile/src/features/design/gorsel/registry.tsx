@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PREVIEW_SETS } from '../previews';
 
 import { DmFixture } from './dmFixture';
+import { SemtEmptyFixture } from './semtEmptyFixture';
 import { SemtSheetFixture } from './semtFixture';
 
 // `full`: the state draws the whole screen itself (a game's stage), one page, no side padding.
@@ -21,4 +22,5 @@ export const GATE_STATES: Record<string, GateEntry> = {
   'ekran/dm': { full: true, render: () => <DmFixture /> },
   'ekran/semt/secenekler': { full: true, render: () => <SemtSheetFixture sheet="options" /> },
   'ekran/semt/oturum-kapat': { full: true, render: () => <SemtSheetFixture sheet="end" /> },
+  'ekran/semt/bos': { full: true, render: () => <SemtEmptyFixture /> },
 };

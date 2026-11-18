@@ -1611,7 +1611,7 @@
     ],
     "acilis": "Keşfet → Semte git → Geçit → semt sohbeti, ilk giren",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-semt-bos",
     "hal": "yazildi"
   },
   {
@@ -1630,7 +1630,7 @@
     ],
     "acilis": "Keşfet → Semte git → Geçit → semt sohbeti, ilk giren",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-semt-bos",
     "hal": "yazildi"
   },
   {
