@@ -1233,7 +1233,11 @@ export const tr = {
       emptyTitle: 'Bugün ilk sen geldin',
       emptyBody: 'Odaya henüz kimse yazmadı. İlk mesajı sen yaz, gelenler görür.',
       // SemtSohbet `.sug`: the first message's suggestions (a tap sends one).
-      suggest: (name: string) => [`Selam ${name}! 👋`, 'Bu akşam ne yapıyorsunuz?', 'Önerin var mı?'],
+      suggest: (name: string) => [
+        `Selam ${name}! 👋`,
+        'Bu akşam ne yapıyorsunuz?',
+        'Önerin var mı?',
+      ],
       emptyLabel: 'Bankta oturan, yazmayı bekleyen kanki',
       friendRequest: 'Arkadaşlık isteği',
       leave: 'Sohbetten çık',

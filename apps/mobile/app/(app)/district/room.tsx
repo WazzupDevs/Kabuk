@@ -282,7 +282,7 @@ function DistrictRoomBody() {
         kind="profile"
         name={senderLabel(m)}
         photoUrl={m.photoUrl}
-          size={size === CHAT_LOOK.face ? 'md' : 'xl'}
+        size={size === CHAT_LOOK.face ? 'md' : 'xl'}
       />
     ) : m.senderLook ? (
       // In the stream the face moves only on the screen (ChatLookAvatar); elsewhere always.

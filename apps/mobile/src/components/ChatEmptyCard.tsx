@@ -91,6 +91,7 @@ export function ChatSuggestions({
       testID={testID}
       accessibilityLabel={label}
       showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       // The stream's 12 at the left; at the right out to the screen's edge.
       style={{ flexGrow: 0, marginRight: -DM.side }}

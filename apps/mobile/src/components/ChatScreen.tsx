@@ -1314,7 +1314,10 @@ export function ChatScreen<T extends ChatListItem>({
                         endRef={end}
                         keyboardOffset={bottomPad}
                         band={
-                          bandUnderBar && banded && canvas && (wall === 'semt' || wall === 'mekan') ? (
+                          bandUnderBar &&
+                          banded &&
+                          canvas &&
+                          (wall === 'semt' || wall === 'mekan') ? (
                             // SemtSohbet, MekanSohbet `.band`: the chat's ground, not the picture.
                             <View
                               pointerEvents="none"
