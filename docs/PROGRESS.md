@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (18 Kasım 2026, sabaha karşı): kaydırma kararı, görsel doğrulama önerisi, bekleyenler
+
+- Proje sahibi kaydırmada yeni karar verdi (`docs/decisions/kaydirma.md`): Keşfet dışındaki kaydırılan ekranlarda üst bölüm gizlenip geri gelir (X ve Instagram akışı gibi), alt sekme çubuğu tamamen gizlenir; Keşfet tuvaldeki gibi sabitlenir. Ekranlar galeride tek tek önizlenip onaylanıyor (bağlantı o dosyada; ilk dördü hazır, sıradakiler listeli). Kod değişmedi; uygulamadan önce "geri, ⋮, bildirim de gizlensin mi" tek soruyla netleşecek.
+- Açık taslak PR #734 (Ayarlar ailesi, 11 pano): kontroller yeşil, birleştirilmedi. Bekleyenler: proje sahibinin görsel doğrulama düzeni kararı (aşağıda), hesap silme onayından kalkan iki cümle, "Engellenenler 3" sayacı; ayrıca satır düğmesi 34 olacak (ajan 36 bıraktı), boş hâl resimleri tuvalden indirilecek, denetim satırları silinecek.
+- Görsel doğrulama önerisi (proje sahibi karar verecek): oturum hiçbir ekranı görmüyor, bütün iş "yazıldı" basamağında. Öneri: 203 pano için kayıt dosyası (eski / yazıldı / görüntüyle doğrulandı / telefonda doğrulandı) ve bir testle zorunlu kapsam; paket başına 2–4 ana ekranın görsel kapı görüntüsü panoyla yan yana, ayrı küçük denetçiyle; pilot Ayarlar (#734) ve semt menüsü (hatalı hâl `c9ef619`'da). Görsel kapı bugün yalnız 7 durum çekiyor (`e2e/visual/states.json`); gece E2E'si girişte takılıyor (son koşuda tema başına 4 görüntü, hepsi başarısız): ayrı paketle düzeltilmeli.
+- Bu ortamda Android emülatörü çalışmaz (SDK ve KVM yok); kaydırma ve hareket yalnız koddan okunur.
+
 ## Devir notu (18 Kasım 2026, gece): tam denetim, 18 Kasım kararları, Dalga 7'nin ilk beş paketi
 
 - Tam denetim bitti: 203 pano öğe öğe kodla karşılaştırıldı; dizin `docs/design/yeni-arayuz/pano-kod-denetimi.md` (yöntem, ortak farklar, paket sırası), bulgular `denetim/grup-00…15.md` (düzelen satır silinir; pano başlıklarındaki sayılar güncellenmez). Telefonda hiçbiri görülmedi.
