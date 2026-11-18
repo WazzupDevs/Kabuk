@@ -721,13 +721,8 @@
     "acilis": "Profil → Ayarlar",
     "tema": "acik",
     "durum": "ekran-ayarlar",
-    "hal": "eski",
-    "muaf": [
-      {
-        "pr": 738,
-        "sebep": "Test sürümü bölümüne salt okunur sürüm kimliği satırı; ekranın görünüşü bu PR’da doğrulanmıyor."
-      }
-    ]
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03i",
@@ -743,13 +738,8 @@
     "acilis": "Profil → Ayarlar",
     "tema": "koyu",
     "durum": "ekran-ayarlar",
-    "hal": "eski",
-    "muaf": [
-      {
-        "pr": 738,
-        "sebep": "Test sürümü bölümüne salt okunur sürüm kimliği satırı; ekranın görünüşü bu PR’da doğrulanmıyor."
-      }
-    ]
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03k",
@@ -806,7 +796,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-ayarlar-bildirimler",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03l",
@@ -821,7 +812,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-ayarlar-bildirimler",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03m",
@@ -835,7 +827,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-ayarlar-gizlilik",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03m",
@@ -849,7 +842,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-ayarlar-gizlilik",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03n",
@@ -862,7 +856,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-ayarlar-hesap",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03n",
@@ -875,7 +870,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-ayarlar-hesap",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03o",
@@ -938,7 +934,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-ayarlar-engellenenler",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03p",
@@ -953,7 +950,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-ayarlar-engellenenler",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03q",
@@ -1049,7 +1047,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-ayarlar-sessize-bos",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03s",
@@ -1063,7 +1062,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-ayarlar-sessize-bos",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03t",
@@ -1081,7 +1081,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-ayarlar-yasal",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "03t",
@@ -1099,7 +1100,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-ayarlar-yasal",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 734
   },
   {
     "pano": "04",
