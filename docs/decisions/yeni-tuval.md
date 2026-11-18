@@ -74,6 +74,16 @@ Kural değişenler:
 - **P5 Akış gönderisine masa kartı** (kural 4, §4.Y): yalnız masa sahibi ekler.
 - **P6 Haritada konum noktası, "Konumuma git" ve uzaklık** (kural 6): konum cihazda kalır, sunucuya gitmez; KVKK metni ve mağaza beyanı güncellenir.
 
+Diğer cevaplar (18 Kasım):
+
+- **İbre, Harf Kapmaca ve Şarkıda Geçsin uygulamaya gelmeyecek.** "Yakında" kayıtları, Masa kur'daki üç oyun etiketi ve resimleri kaldırılır; Masa kur'un etiketleri panodaki altılı olur (Vampir Köylü, Signum, Kinshi, Krot, Sprengja, Kaupholl; sunucuda `rooms_game_tag_check` değişir); ürün belgesinden çıkar. Panoları (153–158) aktarılmaz.
+- **"Sohbet kuralları"** kısa bir kurallar sayfası açar; metnin taslağı PR'dan önce proje sahibine gösterilir.
+- **Lobide "Hazırım" ve sahibin kişi menüsü gelir** (takıma al, gözlemciye al, masadan at): sunucu paketi; oyunu yine yalnız sahip başlatır (kural 3).
+- **Ayarlar'da üç yeni satır gelir:** "Mesajı bildirimde göster" (varsayılan kapalı; SPEC'in "önizleme yok" kararı değişir), "Verilerimin kopyasını iste" (KVKK; dökümde başkasının kimliği yok), "Hata kaydını gönder".
+- **"Noktasız" check-in yok** (satır çizilmez; sunucu nokta ister). **Hediyede "Atla" yok** (8 Kasım kararı kalır).
+- **Haritada konum izni** yalnız "Konumuma git"e basınca sorulur.
+- **Nick değişikliğinde** var olan hesabın son eki korunur, yalnız önek değişir; cinsiyeti boş hesap `sol-` alır (oturumun varsayımı, proje sahibine yazıldı).
+
 Kabul edilen yeni açıklıklar (proje sahibine söylendi): lobide kapsül görününce mekan sohbetinde aynı kapsülle yazan kişinin masası anlaşılır; Odadakiler'de anonim satır kapsülüyle görününce satır o kişinin mesajlarına ve geliş zamanına bağlanır; nick öneki anonim yazanın cinsiyetini söyler.
 
 ## Panolar depoda (17 Kasım, proje sahibinin kararı)
