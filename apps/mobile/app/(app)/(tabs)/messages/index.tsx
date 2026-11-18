@@ -151,11 +151,14 @@ export default function MessagesScreen() {
             )}
           </View>
         </StickyField>
-        {tab === 'chats' || searching ? (
-          <Chats now={new Date(now)} query={asked} onCleared={onCleared} />
-        ) : (
-          <RequestList now={new Date(now)} />
-        )}
+        {/* The room under the tabs: the empty and loading states centre in it (Screen → fills). */}
+        <View style={{ flexGrow: 1 }}>
+          {tab === 'chats' || searching ? (
+            <Chats now={new Date(now)} query={asked} onCleared={onCleared} />
+          ) : (
+            <RequestList now={new Date(now)} />
+          )}
+        </View>
       </Screen>
       <FriendPicker visible={picking} onClose={() => setPicking(false)} />
       <Toast
@@ -272,11 +275,13 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   }
   if (inbox.data.length === 0) {
     return (
-      <View className="flex-1 justify-center">
+      // MesajlarBos `.emp`: in the middle of the page less 190 at its foot, the sentence at most 240.
+      <View className="flex-1 justify-center" style={{ paddingBottom: M.emptyLift }}>
         <EmptyState
           kind="empty"
           riso="messages"
           compact
+          settings
           title={tr.messages.empty}
           body={tr.messages.emptyHint}
         />
@@ -293,11 +298,16 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   if (searching && rest.length === 0) {
     // Yeni arayüz tuvali, MesajlarAraBos: nothing found, the riso and its two lines in the middle.
     return (
-      <View testID="messages-no-match" className="flex-1 justify-center">
+      <View
+        testID="messages-no-match"
+        className="flex-1 justify-center"
+        style={{ paddingBottom: M.emptyLift }}
+      >
         <EmptyState
           kind="empty"
           riso="search"
           compact
+          settings
           title={tr.messages.noMatch}
           body={tr.messages.noMatchHint}
         />

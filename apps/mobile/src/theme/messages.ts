@@ -32,9 +32,9 @@ export const MESSAGES = {
   // words 20 in as the row's), 22 round.
   lifted: { side: 12, padX: 8, radius: 22 },
   ticks: { width: 18 },
-  // Arşivlenenler with none (ArsivBos `.emp`): 190 under the empty state, of which the list's foot
-  // keeps 90 (Screen → SCROLL_PAD).
-  archiveEmptyLift: 100,
+  // The empty states (MesajlarBos, MesajlarAraBos, ArsivBos `.emp`): 190 under the empty state, of
+  // which the list's foot keeps 90 (Screen → SCROLL_PAD).
+  emptyLift: 100,
   // "Sohbet silindi" (MesajlarSilindi `.snk`): 16 over the tab bar (106 from the foot).
   noticeAbove: 16,
   // A search's count over its rows (`.rlbl`): 4 under the field.

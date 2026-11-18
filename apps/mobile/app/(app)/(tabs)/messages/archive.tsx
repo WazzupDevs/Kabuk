@@ -86,12 +86,14 @@ export default function ArchiveScreen() {
           // ArsivBos `.emp`: in the middle of the page less 190 at its foot (the list keeps 90).
           <View
             testID="archive-empty"
-            style={{ flex: 1, justifyContent: 'center', paddingBottom: M.archiveEmptyLift }}
+            style={{ flex: 1, justifyContent: 'center', paddingBottom: M.emptyLift }}
           >
             <EmptyState
               kind="empty"
               riso="archive"
               compact
+              // `.ed`: at most 240 wide, no room over the picture.
+              settings
               title={tr.messages.archivedEmpty}
               body={tr.messages.archivedEmptyHint}
             />
