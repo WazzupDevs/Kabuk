@@ -41,17 +41,18 @@ function row(
   };
 }
 
-// Newest first, as dm_messages_page sends them.
-const PAGE: DmPageRow[] = [
+// Newest first, as dm_messages_page sends them. DmSohbet `.rxs`: Bayıldım 1, Kahkaha 2; the held
+// message's board (DmMesajMenu `.f.sel`) has the viewer's own Bayıldım on it (`mine`).
+const page = (mine: boolean): DmPageRow[] => [
   row('m7', 'Nerelerdesin?', at(15, '18:10'), false),
   row('m6', 'Bana köylü düşsün bu sefer', at(15, '18:08'), false, {
     reply_to: { id: 'm4', body: MINE, from_me: true },
   }),
   row('m5', 'Geliyorum, 10 dk', at(14, '22:14'), false, {
     reactions: [
-      { emoji: 'begen', from_me: false },
-      { emoji: 'ask', from_me: false },
-      { emoji: 'ask', from_me: false },
+      { emoji: 'ask', from_me: mine },
+      { emoji: 'kahkaha', from_me: false },
+      { emoji: 'kahkaha', from_me: false },
     ],
   }),
   row('m4', MINE, at(14, '22:10'), true),
@@ -90,7 +91,7 @@ const FRIENDS: Friend[] = [
   },
 ];
 
-export function DmFixture() {
+export function DmFixture({ mine = false }: { mine?: boolean }) {
   const [client] = useState(() => {
     goOffline();
     const c = new QueryClient({
@@ -98,7 +99,7 @@ export function DmFixture() {
     });
     c.setQueryData(friendKeys.inbox, INBOX);
     c.setQueryData(friendKeys.list, FRIENDS);
-    c.setQueryData(friendKeys.dm(THREAD), { pages: [PAGE], pageParams: [null] });
+    c.setQueryData(friendKeys.dm(THREAD), { pages: [page(mine)], pageParams: [null] });
     return c;
   });
   return (

@@ -36,7 +36,7 @@
     },
     {
       "id": "ekran-dm-mesaj-menu",
-      "app": "ekran/dm",
+      "app": "ekran/dm/tepkili",
       "baz": false,
       "pano": {
         "dosya": "DmMesajMenu"

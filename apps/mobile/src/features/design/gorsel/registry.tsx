@@ -30,6 +30,8 @@ export const GATE_STATES: Record<string, GateEntry> = {
   ...Object.fromEntries(PREVIEW_SETS.map((s) => [`galeri/${s.key}`, { render: s.render }])),
   // The screens rebuilt from the skall tuvali, with its sample data.
   'ekran/dm': { full: true, render: () => <DmFixture /> },
+  // DmMesajMenu: the held message carries the viewer's own reaction (its face ringed in the bar).
+  'ekran/dm/tepkili': { full: true, render: () => <DmFixture mine /> },
   'ekran/semt/secenekler': { full: true, render: () => <SemtSheetFixture sheet="options" /> },
   'ekran/semt/oturum-kapat': { full: true, render: () => <SemtSheetFixture sheet="end" /> },
   'ekran/semt/bos': { full: true, render: () => <SemtEmptyFixture /> },
