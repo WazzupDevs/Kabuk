@@ -42,6 +42,9 @@
     "latency:sprengja": "pnpm --filter scripts latency:sprengja",
     "functions:deploy": "pnpm --filter scripts functions:deploy",
     "visual:accept": "pnpm --filter scripts visual:accept",
+    "visual:kapsam": "pnpm --filter scripts visual:kapsam",
+    "visual:kanit": "pnpm --filter scripts visual:kanit",
+    "visual:rapor": "pnpm --filter scripts visual:rapor",
     "ota:production": "pnpm --filter scripts ota:production"
   },
   "pnpm": {

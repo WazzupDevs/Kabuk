@@ -1,0 +1,6468 @@
+[
+  {
+    "pano": "01",
+    "baslik": "Mesajlar",
+    "dosya": "project/Main.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/TabBar.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/features/notifications/Bell.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01",
+    "baslik": "Mesajlar",
+    "dosya": "project/Main.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/TabBar.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/features/notifications/Bell.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01b",
+    "baslik": "Mesajlar · kaydırılmış",
+    "dosya": "project/MesajlarKaydir.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/Screen.tsx",
+      "apps/mobile/src/motion/StickyField.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01b",
+    "baslik": "Mesajlar · kaydırılmış",
+    "dosya": "project/MesajlarKaydir.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/Screen.tsx",
+      "apps/mobile/src/motion/StickyField.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01c",
+    "baslik": "Mesajlar · sohbete uzun basma menüsü",
+    "dosya": "project/MesajlarUzunBas.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01c",
+    "baslik": "Mesajlar · sohbete uzun basma menüsü",
+    "dosya": "project/MesajlarUzunBas.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01d",
+    "baslik": "Mesajlar · sabitli sohbete uzun basma",
+    "dosya": "project/MesajlarUzunBasSabit.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01d",
+    "baslik": "Mesajlar · sabitli sohbete uzun basma",
+    "dosya": "project/MesajlarUzunBasSabit.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01e",
+    "baslik": "Sohbeti sil onayı",
+    "dosya": "project/MesajlarSohbetSil.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01e",
+    "baslik": "Sohbeti sil onayı",
+    "dosya": "project/MesajlarSohbetSil.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01f",
+    "baslik": "Arşivlenenler",
+    "dosya": "project/Arsiv.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/TopBar.tsx",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01f",
+    "baslik": "Arşivlenenler",
+    "dosya": "project/Arsiv.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/TopBar.tsx",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01g",
+    "baslik": "Arşiv · uzun basma menüsü",
+    "dosya": "project/ArsivUzunBas.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01g",
+    "baslik": "Arşiv · uzun basma menüsü",
+    "dosya": "project/ArsivUzunBas.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "01h",
+    "baslik": "Arşiv · boş",
+    "dosya": "project/ArsivBos.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "Mesajlar → Arşivlenenler, arşivde sohbet yokken",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "01h",
+    "baslik": "Arşiv · boş",
+    "dosya": "project/ArsivBos.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/archive.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "Mesajlar → Arşivlenenler, arşivde sohbet yokken",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "02",
+    "baslik": "DM sohbeti",
+    "dosya": "project/DmSohbet.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/ChatWallpaper.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "Mesajlar → bir sohbete bas",
+    "tema": "acik",
+    "durum": "ekran-dm",
+    "hal": "eski"
+  },
+  {
+    "pano": "02",
+    "baslik": "DM sohbeti",
+    "dosya": "project/DmSohbet.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/ChatWallpaper.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "Mesajlar → bir sohbete bas",
+    "tema": "koyu",
+    "durum": "ekran-dm",
+    "hal": "eski"
+  },
+  {
+    "pano": "02b",
+    "baslik": "DM · mesaja uzun basma (gelen mesaj)",
+    "dosya": "project/DmMesajMenu.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/MessagePop.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "02b",
+    "baslik": "DM · mesaja uzun basma (gelen mesaj)",
+    "dosya": "project/DmMesajMenu.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/MessagePop.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "02c",
+    "baslik": "DM · mesaja uzun basma (kendi mesajın)",
+    "dosya": "project/DmMesajMenuBen.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/MessagePop.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "02c",
+    "baslik": "DM · mesaja uzun basma (kendi mesajın)",
+    "dosya": "project/DmMesajMenuBen.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/MessagePop.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "02d",
+    "baslik": "DM · mesajı düzenleme",
+    "dosya": "project/DmDuzenle.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "02d",
+    "baslik": "DM · mesajı düzenleme",
+    "dosya": "project/DmDuzenle.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "02e",
+    "baslik": "DM · düzenlenmiş mesajlar",
+    "dosya": "project/DmDuzenlendi.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "02e",
+    "baslik": "DM · düzenlenmiş mesajlar",
+    "dosya": "project/DmDuzenlendi.dc.html",
+    "aile": "Mesajlar, Arşiv, DM sohbeti",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03",
+    "baslik": "Başkasının profili",
+    "dosya": "project/ProfilBaskasi.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "apps/mobile/src/features/profile/ProfileCover.tsx",
+      "apps/mobile/src/features/profile/ProfileFace.tsx",
+      "apps/mobile/src/theme/person.ts",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03",
+    "baslik": "Başkasının profili",
+    "dosya": "project/ProfilBaskasi.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "apps/mobile/src/features/profile/ProfileCover.tsx",
+      "apps/mobile/src/features/profile/ProfileFace.tsx",
+      "apps/mobile/src/theme/person.ts",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03b",
+    "baslik": "Profilim",
+    "dosya": "project/ProfilBen.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/index.tsx",
+      "apps/mobile/src/features/gifts/SetCard.tsx",
+      "apps/mobile/src/features/profile/IdentityTicket.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/ownProfile.ts",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03b",
+    "baslik": "Profilim",
+    "dosya": "project/ProfilBen.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/index.tsx",
+      "apps/mobile/src/features/gifts/SetCard.tsx",
+      "apps/mobile/src/features/profile/IdentityTicket.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/ownProfile.ts",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03c",
+    "baslik": "Profilim · kaydırılmış",
+    "dosya": "project/ProfilBenKaydir.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/index.tsx",
+      "apps/mobile/src/motion/TopBar.tsx",
+      "apps/mobile/src/theme/aura.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03c",
+    "baslik": "Profilim · kaydırılmış",
+    "dosya": "project/ProfilBenKaydir.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/index.tsx",
+      "apps/mobile/src/motion/TopBar.tsx",
+      "apps/mobile/src/theme/aura.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03d",
+    "baslik": "Profili düzenle",
+    "dosya": "project/ProfilDuzenle.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
+      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/PageTop.tsx",
+      "apps/mobile/src/theme/profileEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03d",
+    "baslik": "Profili düzenle",
+    "dosya": "project/ProfilDuzenle.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
+      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/PageTop.tsx",
+      "apps/mobile/src/theme/profileEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03e",
+    "baslik": "Profili düzenle · değişiklik var",
+    "dosya": "project/ProfilDuzenleYaz.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
+      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/PageTop.tsx",
+      "apps/mobile/src/theme/profileEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03e",
+    "baslik": "Profili düzenle · değişiklik var",
+    "dosya": "project/ProfilDuzenleYaz.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
+      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/PageTop.tsx",
+      "apps/mobile/src/theme/profileEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03f",
+    "baslik": "Kapsülünü süsle",
+    "dosya": "project/KapsulSusle.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/features/capsule/SusleFilter.tsx",
+      "apps/mobile/src/features/capsule/SusleTabs.tsx",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03f",
+    "baslik": "Kapsülünü süsle",
+    "dosya": "project/KapsulSusle.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/features/capsule/SusleFilter.tsx",
+      "apps/mobile/src/features/capsule/SusleTabs.tsx",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03g",
+    "baslik": "Tüm aksesuarlar",
+    "dosya": "project/TumAksesuarlar.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/accessories.tsx",
+      "apps/mobile/src/features/capsule/CatalogTile.tsx",
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03g",
+    "baslik": "Tüm aksesuarlar",
+    "dosya": "project/TumAksesuarlar.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/accessories.tsx",
+      "apps/mobile/src/features/capsule/CatalogTile.tsx",
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03h",
+    "baslik": "Tüm aksesuarlar: kaydırınca",
+    "dosya": "project/TumAksesuarlarKaydir.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/accessories.tsx",
+      "apps/mobile/src/features/capsule/CatalogTile.tsx",
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03h",
+    "baslik": "Tüm aksesuarlar: kaydırınca",
+    "dosya": "project/TumAksesuarlarKaydir.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/accessories.tsx",
+      "apps/mobile/src/features/capsule/CatalogTile.tsx",
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03i",
+    "baslik": "Ayarlar",
+    "dosya": "project/Ayarlar.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings.tsx",
+      "apps/mobile/src/features/profile/AppearanceSetting.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx",
+      "apps/mobile/src/theme/settings.ts"
+    ],
+    "acilis": "Profil → Ayarlar",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 738,
+        "sebep": "Test sürümü bölümüne salt okunur sürüm kimliği satırı; ekranın görünüşü bu PR’da doğrulanmıyor."
+      }
+    ]
+  },
+  {
+    "pano": "03i",
+    "baslik": "Ayarlar",
+    "dosya": "project/Ayarlar.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings.tsx",
+      "apps/mobile/src/features/profile/AppearanceSetting.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx",
+      "apps/mobile/src/theme/settings.ts"
+    ],
+    "acilis": "Profil → Ayarlar",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 738,
+        "sebep": "Test sürümü bölümüne salt okunur sürüm kimliği satırı; ekranın görünüşü bu PR’da doğrulanmıyor."
+      }
+    ]
+  },
+  {
+    "pano": "03k",
+    "baslik": "Ayarlar · çıkış onayı",
+    "dosya": "project/AyarlarCikis.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/src/features/settings/signOutConfirm.ts",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03k",
+    "baslik": "Ayarlar · çıkış onayı",
+    "dosya": "project/AyarlarCikis.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/src/features/settings/signOutConfirm.ts",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03l",
+    "baslik": "Ayarlar · Bildirim ayarları",
+    "dosya": "project/AyarBildirim.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings-notifications.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03l",
+    "baslik": "Ayarlar · Bildirim ayarları",
+    "dosya": "project/AyarBildirim.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings-notifications.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03m",
+    "baslik": "Ayarlar · Gizlilik",
+    "dosya": "project/AyarGizlilik.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings-privacy.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03m",
+    "baslik": "Ayarlar · Gizlilik",
+    "dosya": "project/AyarGizlilik.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings-privacy.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03n",
+    "baslik": "Ayarlar · Hesap",
+    "dosya": "project/AyarHesap.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings-account.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03n",
+    "baslik": "Ayarlar · Hesap",
+    "dosya": "project/AyarHesap.dc.html",
+    "aile": "profil, kapsül süsleme, ayarlar",
+    "kod": [
+      "apps/mobile/app/(app)/settings-account.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03o",
+    "baslik": "Ayarlar · Hesabı sil onayı",
+    "dosya": "project/AyarHesapSil.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-account.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/OverlayHost.tsx",
+      "apps/mobile/src/features/settings/SettingsRow.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03o",
+    "baslik": "Ayarlar · Hesabı sil onayı",
+    "dosya": "project/AyarHesapSil.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-account.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/OverlayHost.tsx",
+      "apps/mobile/src/features/settings/SettingsRow.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03p",
+    "baslik": "Gizlilik · Engellenenler",
+    "dosya": "project/Engellenenler.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-blocked.tsx",
+      "apps/mobile/src/features/chat/BlockedList.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03p",
+    "baslik": "Gizlilik · Engellenenler",
+    "dosya": "project/Engellenenler.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-blocked.tsx",
+      "apps/mobile/src/features/chat/BlockedList.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03q",
+    "baslik": "Gizlilik · Engellenenler boş",
+    "dosya": "project/EngellenenlerBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-blocked.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/chat/BlockedList.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03q",
+    "baslik": "Gizlilik · Engellenenler boş",
+    "dosya": "project/EngellenenlerBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-blocked.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/chat/BlockedList.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03r",
+    "baslik": "Gizlilik · Sessize alınanlar",
+    "dosya": "project/SessizAlinanlar.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-muted.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03r",
+    "baslik": "Gizlilik · Sessize alınanlar",
+    "dosya": "project/SessizAlinanlar.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-muted.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03s",
+    "baslik": "Gizlilik · Sessize alınanlar boş",
+    "dosya": "project/SessizAlinanlarBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-muted.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03s",
+    "baslik": "Gizlilik · Sessize alınanlar boş",
+    "dosya": "project/SessizAlinanlarBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/settings-muted.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03t",
+    "baslik": "Yasal metin (4 belge aynı şablon)",
+    "dosya": "project/YasalMetin.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/legal/[doc].tsx",
+      "apps/mobile/app/kvkk.tsx",
+      "apps/mobile/app/privacy.tsx",
+      "apps/mobile/app/rules.tsx",
+      "apps/mobile/app/terms.tsx",
+      "apps/mobile/src/components/LegalText.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "03t",
+    "baslik": "Yasal metin (4 belge aynı şablon)",
+    "dosya": "project/YasalMetin.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/legal/[doc].tsx",
+      "apps/mobile/app/kvkk.tsx",
+      "apps/mobile/app/privacy.tsx",
+      "apps/mobile/app/rules.tsx",
+      "apps/mobile/app/terms.tsx",
+      "apps/mobile/src/components/LegalText.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "04",
+    "baslik": "Bildirimler",
+    "dosya": "project/Bildirimler.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "04",
+    "baslik": "Bildirimler",
+    "dosya": "project/Bildirimler.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "05",
+    "baslik": "İstekler boş",
+    "dosya": "project/IsteklerBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/friends/RequestList.tsx",
+      "apps/mobile/src/motion/TabBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "05",
+    "baslik": "İstekler boş",
+    "dosya": "project/IsteklerBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/friends/RequestList.tsx",
+      "apps/mobile/src/motion/TabBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "05a",
+    "baslik": "Mesajlar · İstekler dolu",
+    "dosya": "project/IsteklerDolu.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/friends/MasaRequests.tsx",
+      "apps/mobile/src/features/friends/RequestList.tsx",
+      "apps/mobile/src/features/friends/RequestRowView.tsx",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "05a",
+    "baslik": "Mesajlar · İstekler dolu",
+    "dosya": "project/IsteklerDolu.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/friends/MasaRequests.tsx",
+      "apps/mobile/src/features/friends/RequestList.tsx",
+      "apps/mobile/src/features/friends/RequestRowView.tsx",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "06",
+    "baslik": "Arkadaşlar",
+    "dosya": "project/Arkadaslar.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "06",
+    "baslik": "Arkadaşlar",
+    "dosya": "project/Arkadaslar.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "06b",
+    "baslik": "Arkadaşlar · kaydırılmış",
+    "dosya": "project/ArkadaslarKaydir.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
+      "apps/mobile/src/components/Screen.tsx",
+      "apps/mobile/src/motion/StickyField.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "06b",
+    "baslik": "Arkadaşlar · kaydırılmış",
+    "dosya": "project/ArkadaslarKaydir.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
+      "apps/mobile/src/components/Screen.tsx",
+      "apps/mobile/src/motion/StickyField.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "07",
+    "baslik": "Aktiviteler · etkinlik yok",
+    "dosya": "project/AktivitelerBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "07",
+    "baslik": "Aktiviteler · etkinlik yok",
+    "dosya": "project/AktivitelerBos.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "07a",
+    "baslik": "Aktiviteler · etkinlik var",
+    "dosya": "project/AktivitelerDolu.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/activities/EventCard.tsx",
+      "apps/mobile/src/features/explore/useExploreVenues.ts",
+      "supabase/functions/_shared/pure/explore.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "07a",
+    "baslik": "Aktiviteler · etkinlik var",
+    "dosya": "project/AktivitelerDolu.dc.html",
+    "aile": "Panolar 03o–07a",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/activities/EventCard.tsx",
+      "apps/mobile/src/features/explore/useExploreVenues.ts",
+      "supabase/functions/_shared/pure/explore.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "08",
+    "baslik": "Aktiviteler · geçmiş",
+    "dosya": "project/Gecmis.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "08",
+    "baslik": "Aktiviteler · geçmiş",
+    "dosya": "project/Gecmis.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "08b",
+    "baslik": "Aktiviteler geçmiş · kaydırılmış",
+    "dosya": "project/GecmisKaydir.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/StickyField.tsx",
+      "apps/mobile/src/motion/TopBar.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "08b",
+    "baslik": "Aktiviteler geçmiş · kaydırılmış",
+    "dosya": "project/GecmisKaydir.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/StickyField.tsx",
+      "apps/mobile/src/motion/TopBar.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/flatLists.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "09",
+    "baslik": "Geçmiş masa sayfası",
+    "dosya": "project/GecmisMasa.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/friends/historyActions.tsx",
+      "apps/mobile/src/motion/Sheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "09",
+    "baslik": "Geçmiş masa sayfası",
+    "dosya": "project/GecmisMasa.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/features/friends/historyActions.tsx",
+      "apps/mobile/src/motion/Sheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "10",
+    "baslik": "Keşfet",
+    "dosya": "project/Kesfet.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/features/district/DistrictCard.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/explore.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "10",
+    "baslik": "Keşfet",
+    "dosya": "project/Kesfet.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/features/district/DistrictCard.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/explore.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "10b",
+    "baslik": "Keşfet · semt sohbetindesin",
+    "dosya": "project/KesfetSemtIcerde.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/src/features/district/DistrictCard.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "10b",
+    "baslik": "Keşfet · semt sohbetindesin",
+    "dosya": "project/KesfetSemtIcerde.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/src/features/district/DistrictCard.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "10c",
+    "baslik": "Keşfet · kaydırılmış (örnek 8 mekan)",
+    "dosya": "project/KesfetKaydir.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/motion/StickyField.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "10c",
+    "baslik": "Keşfet · kaydırılmış (örnek 8 mekan)",
+    "dosya": "project/KesfetKaydir.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/motion/StickyField.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "11",
+    "baslik": "Keşfet · harita",
+    "dosya": "project/KesfetHarita.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/src/features/explore/ExploreMap.tsx",
+      "apps/mobile/src/theme/tokens.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "11",
+    "baslik": "Keşfet · harita",
+    "dosya": "project/KesfetHarita.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/src/features/explore/ExploreMap.tsx",
+      "apps/mobile/src/theme/tokens.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "11b",
+    "baslik": "Mekan · konum izni kapalı",
+    "dosya": "project/MekanKonumIzin.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/features/checkin/LocateNotice.tsx",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "11b",
+    "baslik": "Mekan · konum izni kapalı",
+    "dosya": "project/MekanKonumIzin.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/features/checkin/LocateNotice.tsx",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "11c",
+    "baslik": "Mekan · mekanın dışındasın",
+    "dosya": "project/MekanKonumDisari.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/features/checkin/LocateNotice.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "11c",
+    "baslik": "Mekan · mekanın dışındasın",
+    "dosya": "project/MekanKonumDisari.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/features/checkin/LocateNotice.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "12",
+    "baslik": "Geçit · günün sorusu",
+    "dosya": "project/GecitSoru.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/gate.tsx",
+      "apps/mobile/src/features/district/parts.tsx",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "12",
+    "baslik": "Geçit · günün sorusu",
+    "dosya": "project/GecitSoru.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/gate.tsx",
+      "apps/mobile/src/features/district/parts.tsx",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "13",
+    "baslik": "Geçit açıldı",
+    "dosya": "project/GecitAcik.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/open.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "13",
+    "baslik": "Geçit açıldı",
+    "dosya": "project/GecitAcik.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/open.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "14",
+    "baslik": "Semt sohbeti · ilk gelen",
+    "dosya": "project/SemtSohbet.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatEmptyCard.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "Keşfet → Semte git → Geçit → semt sohbeti, ilk giren",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "14",
+    "baslik": "Semt sohbeti · ilk gelen",
+    "dosya": "project/SemtSohbet.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatEmptyCard.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "Keşfet → Semte git → Geçit → semt sohbeti, ilk giren",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "15",
+    "baslik": "Semt sohbeti · seçenekler menüsü",
+    "dosya": "project/SemtSecenek.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/Menu.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx"
+    ],
+    "acilis": "Semt sohbeti → sağ üstteki ⋮",
+    "tema": "acik",
+    "durum": "ekran-semt-secenekler",
+    "hal": "yazildi"
+  },
+  {
+    "pano": "15",
+    "baslik": "Semt sohbeti · seçenekler menüsü",
+    "dosya": "project/SemtSecenek.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/Menu.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx"
+    ],
+    "acilis": "Semt sohbeti → sağ üstteki ⋮",
+    "tema": "koyu",
+    "durum": "ekran-semt-secenekler",
+    "hal": "yazildi"
+  },
+  {
+    "pano": "16",
+    "baslik": "Odadakiler",
+    "dosya": "project/Odadakiler.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "16",
+    "baslik": "Odadakiler",
+    "dosya": "project/Odadakiler.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "17",
+    "baslik": "Mekan detayı",
+    "dosya": "project/MekanDetay.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
+      "apps/mobile/src/features/explore/Bucket.tsx",
+      "apps/mobile/src/features/explore/WeekEmpty.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "17",
+    "baslik": "Mekan detayı",
+    "dosya": "project/MekanDetay.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
+      "apps/mobile/src/features/explore/Bucket.tsx",
+      "apps/mobile/src/features/explore/WeekEmpty.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "18",
+    "baslik": "Konum doğrulama",
+    "dosya": "project/MekanKonum.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/features/checkin/LocateNotice.tsx",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "18",
+    "baslik": "Konum doğrulama",
+    "dosya": "project/MekanKonum.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/features/checkin/LocateNotice.tsx",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "19",
+    "baslik": "Mekan · masan yok",
+    "dosya": "project/MekanMasaYok.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/features/venueChat/VenueChatCard.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "19",
+    "baslik": "Mekan · masan yok",
+    "dosya": "project/MekanMasaYok.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/features/venueChat/VenueChatCard.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "20",
+    "baslik": "Mekan · masan var, lobide değil",
+    "dosya": "project/MekanMasa.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "20",
+    "baslik": "Mekan · masan var, lobide değil",
+    "dosya": "project/MekanMasa.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "21",
+    "baslik": "Masanı lobiye aç",
+    "dosya": "project/MekanLobiAc.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/rooms/LobbyChoices.tsx",
+      "apps/mobile/src/features/rooms/OpenLobbySheet.tsx",
+      "apps/mobile/src/motion/Sheet.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "21",
+    "baslik": "Masanı lobiye aç",
+    "dosya": "project/MekanLobiAc.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/rooms/LobbyChoices.tsx",
+      "apps/mobile/src/features/rooms/OpenLobbySheet.tsx",
+      "apps/mobile/src/motion/Sheet.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "22",
+    "baslik": "Mekan · masa dolu, lobide",
+    "dosya": "project/MekanMasaDolu.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "22",
+    "baslik": "Mekan · masa dolu, lobide",
+    "dosya": "project/MekanMasaDolu.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "23",
+    "baslik": "Mekan · kaydırılmış, açık masalar",
+    "dosya": "project/MekanKaydir.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/features/venueChat/VenueChatCard.tsx",
+      "apps/mobile/src/theme/aura.ts",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "23",
+    "baslik": "Mekan · kaydırılmış, açık masalar",
+    "dosya": "project/MekanKaydir.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/features/venueChat/VenueChatCard.tsx",
+      "apps/mobile/src/theme/aura.ts",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "24",
+    "baslik": "Mekan · seçenekler menüsü",
+    "dosya": "project/MekanSecenek.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "24",
+    "baslik": "Mekan · seçenekler menüsü",
+    "dosya": "project/MekanSecenek.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/auraKit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "25",
+    "baslik": "Profiline geç onayı",
+    "dosya": "project/MekanProfilGec.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/checkin/IdentitySheet.tsx",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "Mekan → ⋮ → Profiline geç",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "25",
+    "baslik": "Profiline geç onayı",
+    "dosya": "project/MekanProfilGec.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/checkin/IdentitySheet.tsx",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "Mekan → ⋮ → Profiline geç",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "25b",
+    "baslik": "Mekan · anonime geç onayı",
+    "dosya": "project/MekanAnonimGec.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/checkin/IdentitySheet.tsx",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "Mekan → ⋮ → Anonim görün",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "25b",
+    "baslik": "Mekan · anonime geç onayı",
+    "dosya": "project/MekanAnonimGec.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/src/features/checkin/IdentitySheet.tsx",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "Mekan → ⋮ → Anonim görün",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "26",
+    "baslik": "Mekandan ayrıl onayı",
+    "dosya": "project/MekanAyril.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "Mekan → ⋮ → Mekandan ayrıl",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "26",
+    "baslik": "Mekandan ayrıl onayı",
+    "dosya": "project/MekanAyril.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "Mekan → ⋮ → Mekandan ayrıl",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "27",
+    "baslik": "Mekan · akış",
+    "dosya": "project/MekanAkis.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/venueFeed/FeedView.tsx",
+      "apps/mobile/src/features/venueFeed/PostRow.tsx",
+      "apps/mobile/src/features/venueFeed/WriteField.tsx",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "27",
+    "baslik": "Mekan · akış",
+    "dosya": "project/MekanAkis.dc.html",
+    "aile": "Panolar 16–27",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/venueFeed/FeedView.tsx",
+      "apps/mobile/src/features/venueFeed/PostRow.tsx",
+      "apps/mobile/src/features/venueFeed/WriteField.tsx",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "28",
+    "baslik": "Mekan · akış kaydırılmış",
+    "dosya": "project/MekanAkisKaydir.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/features/venueFeed/FeedView.tsx",
+      "apps/mobile/src/features/venueFeed/PostRow.tsx",
+      "apps/mobile/src/theme/venue.ts",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "28",
+    "baslik": "Mekan · akış kaydırılmış",
+    "dosya": "project/MekanAkisKaydir.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/features/venueFeed/FeedView.tsx",
+      "apps/mobile/src/features/venueFeed/PostRow.tsx",
+      "apps/mobile/src/theme/venue.ts",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "29",
+    "baslik": "Akışa yaz · boş",
+    "dosya": "project/AkisYazBos.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-feed/compose.tsx",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "29",
+    "baslik": "Akışa yaz · boş",
+    "dosya": "project/AkisYazBos.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-feed/compose.tsx",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "30",
+    "baslik": "Akışa yaz · yazılmış, masa ekli",
+    "dosya": "project/AkisYaz.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-feed/compose.tsx",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "30",
+    "baslik": "Akışa yaz · yazılmış, masa ekli",
+    "dosya": "project/AkisYaz.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-feed/compose.tsx",
+      "apps/mobile/src/theme/venueFeed.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "31",
+    "baslik": "Mekan sohbeti",
+    "dosya": "project/MekanSohbet.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-chat/index.tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/dm.ts",
+      "apps/mobile/src/theme/nameInk.ts"
+    ],
+    "acilis": "Mekan → Mekan sohbeti",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "31",
+    "baslik": "Mekan sohbeti",
+    "dosya": "project/MekanSohbet.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-chat/index.tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/dm.ts",
+      "apps/mobile/src/theme/nameInk.ts"
+    ],
+    "acilis": "Mekan → Mekan sohbeti",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "32",
+    "baslik": "Mekan sohbeti · seçenekler menüsü",
+    "dosya": "project/MekanSohbetSecenek.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-chat/index.tsx",
+      "apps/mobile/src/components/Menu.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "Mekan sohbeti → sağ üstteki ⋮",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "32",
+    "baslik": "Mekan sohbeti · seçenekler menüsü",
+    "dosya": "project/MekanSohbetSecenek.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/venue-chat/index.tsx",
+      "apps/mobile/src/components/Menu.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "Mekan sohbeti → sağ üstteki ⋮",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "32a",
+    "baslik": "Masa kur",
+    "dosya": "project/MasaKur.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/CreateTableSheet.tsx",
+      "apps/mobile/src/features/rooms/LobbyChoices.tsx",
+      "apps/mobile/src/theme/tableSetup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "32a",
+    "baslik": "Masa kur",
+    "dosya": "project/MasaKur.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/CreateTableSheet.tsx",
+      "apps/mobile/src/features/rooms/LobbyChoices.tsx",
+      "apps/mobile/src/theme/tableSetup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "32b",
+    "baslik": "Masa kur · lobide, niyet",
+    "dosya": "project/MasaKurLobi.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/CreateTableSheet.tsx",
+      "apps/mobile/src/features/rooms/LobbyChoices.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "32b",
+    "baslik": "Masa kur · lobide, niyet",
+    "dosya": "project/MasaKurLobi.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/CreateTableSheet.tsx",
+      "apps/mobile/src/features/rooms/LobbyChoices.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "32c",
+    "baslik": "Masa kur · masa görseli seç",
+    "dosya": "project/MasaKurGorsel.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/CreateTableSheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "32c",
+    "baslik": "Masa kur · masa görseli seç",
+    "dosya": "project/MasaKurGorsel.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/CreateTableSheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "33",
+    "baslik": "Masa · dolu",
+    "dosya": "project/Masa.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "33",
+    "baslik": "Masa · dolu",
+    "dosya": "project/Masa.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "34",
+    "baslik": "Masa · seçenekler menüsü",
+    "dosya": "project/MasaSecenek.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/components/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "34",
+    "baslik": "Masa · seçenekler menüsü",
+    "dosya": "project/MasaSecenek.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/components/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "35",
+    "baslik": "Masadakiler · sheet",
+    "dosya": "project/Masadakiler.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/RoomPeople.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "35",
+    "baslik": "Masadakiler · sheet",
+    "dosya": "project/Masadakiler.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/src/features/rooms/RoomPeople.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "36",
+    "baslik": "Masana davet et sayfası",
+    "dosya": "project/MasaDavet.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room-invite/[id].tsx",
+      "apps/mobile/src/features/rooms/InvitePage.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "36",
+    "baslik": "Masana davet et sayfası",
+    "dosya": "project/MasaDavet.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room-invite/[id].tsx",
+      "apps/mobile/src/features/rooms/InvitePage.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "37",
+    "baslik": "Masa sohbeti · boş",
+    "dosya": "project/MasaSohbet.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room-chat/[id].tsx",
+      "apps/mobile/src/components/ChatEmptyCard.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/features/chat/ChatPanel.tsx",
+      "apps/mobile/src/theme/chatLook.ts"
+    ],
+    "acilis": "Mekan → masan → Masa sohbeti, mesaj yokken",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "37",
+    "baslik": "Masa sohbeti · boş",
+    "dosya": "project/MasaSohbet.dc.html",
+    "aile": "Panolar 28–37",
+    "kod": [
+      "apps/mobile/app/(app)/room-chat/[id].tsx",
+      "apps/mobile/src/components/ChatEmptyCard.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/features/chat/ChatPanel.tsx",
+      "apps/mobile/src/theme/chatLook.ts"
+    ],
+    "acilis": "Mekan → masan → Masa sohbeti, mesaj yokken",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "38",
+    "baslik": "Masadan at onayı",
+    "dosya": "project/MasaAt.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/RoomPeople.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/motion/Sheet.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "38",
+    "baslik": "Masadan at onayı",
+    "dosya": "project/MasaAt.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/RoomPeople.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/motion/Sheet.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "39",
+    "baslik": "Oyun lobisi · bekleniyor, başlat pasif",
+    "dosya": "project/OyunLobi.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "39",
+    "baslik": "Oyun lobisi · bekleniyor, başlat pasif",
+    "dosya": "project/OyunLobi.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "40",
+    "baslik": "Oyun lobisi · herkes hazır",
+    "dosya": "project/OyunLobiHazir.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "40",
+    "baslik": "Oyun lobisi · herkes hazır",
+    "dosya": "project/OyunLobiHazir.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "41",
+    "baslik": "Oyun lobisi · katılımcı, hazır değil",
+    "dosya": "project/OyunLobiKatilimci.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "41",
+    "baslik": "Oyun lobisi · katılımcı, hazır değil",
+    "dosya": "project/OyunLobiKatilimci.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "42",
+    "baslik": "Oyun lobisi · katılımcı, hazır",
+    "dosya": "project/OyunLobiKatilimciHazir.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "42",
+    "baslik": "Oyun lobisi · katılımcı, hazır",
+    "dosya": "project/OyunLobiKatilimciHazir.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "43",
+    "baslik": "Oyun lobisi · kişi menüsü (masa sahibi)",
+    "dosya": "project/OyunLobiKisiMenu.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/components/Menu.tsx",
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/lib/api.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "43",
+    "baslik": "Oyun lobisi · kişi menüsü (masa sahibi)",
+    "dosya": "project/OyunLobiKisiMenu.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/components/Menu.tsx",
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/lib/api.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "44",
+    "baslik": "Oyun lobisi · gözlemciler var (masa sahibi)",
+    "dosya": "project/OyunLobiGozlemci.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "44",
+    "baslik": "Oyun lobisi · gözlemciler var (masa sahibi)",
+    "dosya": "project/OyunLobiGozlemci.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "45",
+    "baslik": "Takımlı oyun lobisi · Kinshi · masa sahibi",
+    "dosya": "project/TakimLobi.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiGame.tsx",
+      "apps/mobile/src/theme/gameColors.ts",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "45",
+    "baslik": "Takımlı oyun lobisi · Kinshi · masa sahibi",
+    "dosya": "project/TakimLobi.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiGame.tsx",
+      "apps/mobile/src/theme/gameColors.ts",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "46",
+    "baslik": "Takımlı lobi · kişi menüsü (masa sahibi)",
+    "dosya": "project/TakimLobiKisiMenu.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/components/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "46",
+    "baslik": "Takımlı lobi · kişi menüsü (masa sahibi)",
+    "dosya": "project/TakimLobiKisiMenu.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/src/components/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "47",
+    "baslik": "Kayıt · Açılış",
+    "dosya": "project/KayitAcilis.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/welcome.tsx",
+      "apps/mobile/src/aura/IntroStage.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/theme/introScene.ts",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "47",
+    "baslik": "Kayıt · Açılış",
+    "dosya": "project/KayitAcilis.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/welcome.tsx",
+      "apps/mobile/src/aura/IntroStage.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/theme/introScene.ts",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "48",
+    "baslik": "Kayıt 1/7 · Başlamadan önce",
+    "dosya": "project/KayitOnay.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/agree.tsx",
+      "apps/mobile/src/features/onboarding/ConsentBoxes.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "48",
+    "baslik": "Kayıt 1/7 · Başlamadan önce",
+    "dosya": "project/KayitOnay.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/agree.tsx",
+      "apps/mobile/src/features/onboarding/ConsentBoxes.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "49",
+    "baslik": "Kayıt 2/7 · Telefon numarası",
+    "dosya": "project/KayitTelefon.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/phone.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx",
+      "apps/mobile/src/features/onboarding/SignupField.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "49",
+    "baslik": "Kayıt 2/7 · Telefon numarası",
+    "dosya": "project/KayitTelefon.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/phone.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx",
+      "apps/mobile/src/features/onboarding/SignupField.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "50",
+    "baslik": "Kayıt 3/7 · SMS kodu",
+    "dosya": "project/KayitKod.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "50",
+    "baslik": "Kayıt 3/7 · SMS kodu",
+    "dosya": "project/KayitKod.dc.html",
+    "aile": "Panolar 38–50",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "51",
+    "baslik": "Kayıt 4/7 · Ad",
+    "dosya": "project/KayitAd.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/name.tsx",
+      "apps/mobile/src/features/onboarding/SignupField.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "51",
+    "baslik": "Kayıt 4/7 · Ad",
+    "dosya": "project/KayitAd.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/name.tsx",
+      "apps/mobile/src/features/onboarding/SignupField.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "52",
+    "baslik": "Kayıt 5/7 · Doğum tarihi",
+    "dosya": "project/KayitDogum.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/birth.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx",
+      "apps/mobile/src/features/onboarding/SignupField.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "52",
+    "baslik": "Kayıt 5/7 · Doğum tarihi",
+    "dosya": "project/KayitDogum.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/birth.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx",
+      "apps/mobile/src/features/onboarding/SignupField.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "53",
+    "baslik": "Kayıt 5/7 · Doğum tarihi onayı",
+    "dosya": "project/KayitDogumOnay.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/birth.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "53",
+    "baslik": "Kayıt 5/7 · Doğum tarihi onayı",
+    "dosya": "project/KayitDogumOnay.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/birth.tsx",
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "54",
+    "baslik": "Kayıt 6/7 · Cinsiyet",
+    "dosya": "project/KayitCinsiyet.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/gender.tsx",
+      "apps/mobile/src/features/account/GenderChoice.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "54",
+    "baslik": "Kayıt 6/7 · Cinsiyet",
+    "dosya": "project/KayitCinsiyet.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/gender.tsx",
+      "apps/mobile/src/features/account/GenderChoice.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "55",
+    "baslik": "Kayıt 7/7 · Profil fotoğrafı",
+    "dosya": "project/KayitFoto.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/extras.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "55",
+    "baslik": "Kayıt 7/7 · Profil fotoğrafı",
+    "dosya": "project/KayitFoto.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/extras.tsx",
+      "apps/mobile/src/features/onboarding/InfoRows.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "56",
+    "baslik": "Metinler güncellendi",
+    "dosya": "project/KayitMetinler.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/consents.tsx",
+      "apps/mobile/src/features/onboarding/ConsentBoxes.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "56",
+    "baslik": "Metinler güncellendi",
+    "dosya": "project/KayitMetinler.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(onboarding)/consents.tsx",
+      "apps/mobile/src/features/onboarding/ConsentBoxes.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "57",
+    "baslik": "Mekan sohbetinden profil",
+    "dosya": "project/MekanProfil.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/venue-chat/[messageId].tsx",
+      "apps/mobile/src/features/profile/ProfileCard.tsx",
+      "apps/mobile/src/features/profile/ProfileCover.tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "57",
+    "baslik": "Mekan sohbetinden profil",
+    "dosya": "project/MekanProfil.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/venue-chat/[messageId].tsx",
+      "apps/mobile/src/features/profile/ProfileCard.tsx",
+      "apps/mobile/src/features/profile/ProfileCover.tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "58",
+    "baslik": "Arkadaşlık isteği onayı",
+    "dosya": "project/MekanProfilIstek.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "58",
+    "baslik": "Arkadaşlık isteği onayı",
+    "dosya": "project/MekanProfilIstek.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "59",
+    "baslik": "Profil ⋮ menüsü",
+    "dosya": "project/MekanProfilMenu.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "59",
+    "baslik": "Profil ⋮ menüsü",
+    "dosya": "project/MekanProfilMenu.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/motion/Menu.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "60",
+    "baslik": "Şikayet et",
+    "dosya": "project/SikayetEt.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/src/features/chat/ReportModal.tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/Sheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "60",
+    "baslik": "Şikayet et",
+    "dosya": "project/SikayetEt.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/src/features/chat/ReportModal.tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/Sheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "61",
+    "baslik": "Engelle onayı",
+    "dosya": "project/EngelleOnay.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/src/features/friends/ConfirmWithReport.tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "61",
+    "baslik": "Engelle onayı",
+    "dosya": "project/EngelleOnay.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/src/features/friends/ConfirmWithReport.tsx",
+      "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62",
+    "baslik": "Hediye paketleri · açılacak paket yok",
+    "dosya": "project/HediyePaket.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/PackRing.tsx",
+      "apps/mobile/src/features/gifts/art.ts",
+      "apps/mobile/src/features/gifts/stage.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62",
+    "baslik": "Hediye paketleri · açılacak paket yok",
+    "dosya": "project/HediyePaket.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/PackRing.tsx",
+      "apps/mobile/src/features/gifts/art.ts",
+      "apps/mobile/src/features/gifts/stage.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62a",
+    "baslik": "Hediye paketleri · 1 paket açılabilir",
+    "dosya": "project/HediyePaketAc.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/PackRing.tsx",
+      "apps/mobile/src/features/gifts/art.ts",
+      "apps/mobile/src/features/gifts/stage.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62a",
+    "baslik": "Hediye paketleri · 1 paket açılabilir",
+    "dosya": "project/HediyePaketAc.dc.html",
+    "aile": "Panolar 51–62a",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/PackRing.tsx",
+      "apps/mobile/src/features/gifts/art.ts",
+      "apps/mobile/src/features/gifts/stage.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62b",
+    "baslik": "Hediye paketleri · Gümüş kilitli",
+    "dosya": "project/HediyePaketKilit.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/PackRing.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62b",
+    "baslik": "Hediye paketleri · Gümüş kilitli",
+    "dosya": "project/HediyePaketKilit.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/PackRing.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62c",
+    "baslik": "Hediye paketi · Oranlar",
+    "dosya": "project/HediyeOranlar.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/OddsSheet.tsx",
+      "apps/mobile/src/motion/Sheet.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62c",
+    "baslik": "Hediye paketi · Oranlar",
+    "dosya": "project/HediyeOranlar.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/OddsSheet.tsx",
+      "apps/mobile/src/motion/Sheet.tsx",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62d",
+    "baslik": "Hediye paketi · yırtma",
+    "dosya": "project/HediyeYirt.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/Rip.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62d",
+    "baslik": "Hediye paketi · yırtma",
+    "dosya": "project/HediyeYirt.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/gifts.tsx",
+      "apps/mobile/src/features/gifts/Rip.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62e",
+    "baslik": "Hediye paketi · çıkan aksesuar",
+    "dosya": "project/HediyeSonuc.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/gifts/OpenedCard.tsx",
+      "apps/mobile/src/features/gifts/art.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "62e",
+    "baslik": "Hediye paketi · çıkan aksesuar",
+    "dosya": "project/HediyeSonuc.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/gifts/OpenedCard.tsx",
+      "apps/mobile/src/features/gifts/art.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "63",
+    "baslik": "Ayarlar · Bildirim izni kapalı",
+    "dosya": "project/AyarBildirimKapali.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/settings-notifications.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/settings.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "63",
+    "baslik": "Ayarlar · Bildirim izni kapalı",
+    "dosya": "project/AyarBildirimKapali.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/settings-notifications.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/settings.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "64",
+    "baslik": "Masa bitti",
+    "dosya": "project/MasaBitti.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/rooms/TableEnd.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/tableSetup.ts",
+      "supabase/functions/_shared/pure/tableEnd.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "64",
+    "baslik": "Masa bitti",
+    "dosya": "project/MasaBitti.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/rooms/TableEnd.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/tableSetup.ts",
+      "supabase/functions/_shared/pure/tableEnd.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "64a",
+    "baslik": "Masa bitti · arkadaş oldunuz",
+    "dosya": "project/MasaBittiArkadas.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/friends/historyActions.tsx",
+      "apps/mobile/src/features/rooms/TableEnd.tsx",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "64a",
+    "baslik": "Masa bitti · arkadaş oldunuz",
+    "dosya": "project/MasaBittiArkadas.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/friends/historyActions.tsx",
+      "apps/mobile/src/features/rooms/TableEnd.tsx",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "65",
+    "baslik": "Güncelleme gerekli",
+    "dosya": "project/GuncellemeGerekli.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/components/Wordmark.tsx",
+      "apps/mobile/src/features/update/UpdateRequired.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/kankiMotion.ts"
+    ],
+    "acilis": "Uygulamanın açılışı, sürüm en düşük sürümün altındayken",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "65",
+    "baslik": "Güncelleme gerekli",
+    "dosya": "project/GuncellemeGerekli.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/components/Wordmark.tsx",
+      "apps/mobile/src/features/update/UpdateRequired.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/kankiMotion.ts"
+    ],
+    "acilis": "Uygulamanın açılışı, sürüm en düşük sürümün altındayken",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "66",
+    "baslik": "Bağlantı yok (Aktiviteler örneği)",
+    "dosya": "project/AktivitelerBaglantiYok.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/components/ConnectionBanner.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "Aktiviteler sekmesi, internet kapalıyken",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "66",
+    "baslik": "Bağlantı yok (Aktiviteler örneği)",
+    "dosya": "project/AktivitelerBaglantiYok.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/components/ConnectionBanner.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "Aktiviteler sekmesi, internet kapalıyken",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "66a",
+    "baslik": "Hata (Aktiviteler örneği)",
+    "dosya": "project/AktivitelerHata.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/components/ConnectionBanner.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "Aktiviteler sekmesi, sunucu hata verince",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "66a",
+    "baslik": "Hata (Aktiviteler örneği)",
+    "dosya": "project/AktivitelerHata.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/activities.tsx",
+      "apps/mobile/src/components/ConnectionBanner.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/features/gifts/GiftCard.tsx",
+      "apps/mobile/src/motion/TabBar.tsx",
+      "apps/mobile/src/theme/activities.ts",
+      "apps/mobile/src/theme/gifts.ts"
+    ],
+    "acilis": "Aktiviteler sekmesi, sunucu hata verince",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "70",
+    "baslik": "Hareket · ortak değerler (MOTION adları)",
+    "dosya": "project/HareketDegerler.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/capsule/motion.ts",
+      "apps/mobile/src/motion/Tap.tsx",
+      "apps/mobile/src/motion/menuPlace.ts",
+      "apps/mobile/src/motion/useSheetMotion.ts",
+      "apps/mobile/src/theme/aura.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "ekran değil: kural/hareket panosu, koddan denetlenir"
+  },
+  {
+    "pano": "70",
+    "baslik": "Hareket · ortak değerler (MOTION adları)",
+    "dosya": "project/HareketDegerler.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/src/features/capsule/motion.ts",
+      "apps/mobile/src/motion/Tap.tsx",
+      "apps/mobile/src/motion/menuPlace.ts",
+      "apps/mobile/src/motion/useSheetMotion.ts",
+      "apps/mobile/src/theme/aura.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "ekran değil: kural/hareket panosu, koddan denetlenir"
+  },
+  {
+    "pano": "71",
+    "baslik": "Hareket tablosu · uzun basma, dialog, liste, DM, Süsle, katalog, Odadakiler, bilet",
+    "dosya": "project/HareketTablo.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/features/profile/LivingLook.tsx",
+      "apps/mobile/src/motion/CatalogMotion.tsx",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/motion/ListMove.tsx",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/Tap.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "ekran değil: kural/hareket panosu, koddan denetlenir"
+  },
+  {
+    "pano": "71",
+    "baslik": "Hareket tablosu · uzun basma, dialog, liste, DM, Süsle, katalog, Odadakiler, bilet",
+    "dosya": "project/HareketTablo.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/features/profile/LivingLook.tsx",
+      "apps/mobile/src/motion/CatalogMotion.tsx",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/motion/ListMove.tsx",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/Tap.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "ekran değil: kural/hareket panosu, koddan denetlenir"
+  },
+  {
+    "pano": "72",
+    "baslik": "Kapsülünü süsle · Renk sekmesi",
+    "dosya": "project/SusleRenk.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/components/CapsuleHale.tsx",
+      "apps/mobile/src/features/capsule/SusleFilter.tsx",
+      "apps/mobile/src/features/capsule/SusleTabs.tsx",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "72",
+    "baslik": "Kapsülünü süsle · Renk sekmesi",
+    "dosya": "project/SusleRenk.dc.html",
+    "aile": "Panolar 62b–72",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/components/CapsuleHale.tsx",
+      "apps/mobile/src/features/capsule/SusleFilter.tsx",
+      "apps/mobile/src/features/capsule/SusleTabs.tsx",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "73",
+    "baslik": "Kapsülünü süsle · Göz sekmesi",
+    "dosya": "project/SusleGoz.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "73",
+    "baslik": "Kapsülünü süsle · Göz sekmesi",
+    "dosya": "project/SusleGoz.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "74",
+    "baslik": "Kapsülünü süsle · Yüz sekmesi",
+    "dosya": "project/SusleYuz.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "74",
+    "baslik": "Kapsülünü süsle · Yüz sekmesi",
+    "dosya": "project/SusleYuz.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "75",
+    "baslik": "Kapsülünü süsle · Ağız sekmesi (ÖNERİ), ağız boş",
+    "dosya": "project/SusleAgiz.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "75",
+    "baslik": "Kapsülünü süsle · Ağız sekmesi (ÖNERİ), ağız boş",
+    "dosya": "project/SusleAgiz.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "76",
+    "baslik": "Kapsülünü süsle · Gövde sekmesi",
+    "dosya": "project/SusleGovde.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "76",
+    "baslik": "Kapsülünü süsle · Gövde sekmesi",
+    "dosya": "project/SusleGovde.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/options.ts",
+      "apps/mobile/src/features/capsule/tileArt.ts",
+      "apps/mobile/src/motion/SnapStrip.tsx",
+      "apps/mobile/src/motion/TopBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "77",
+    "baslik": "Kapsülünü süsle · değişiklik yok, Kaydet pasif",
+    "dosya": "project/SusleKaydetPasif.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/aura/kit.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "77",
+    "baslik": "Kapsülünü süsle · değişiklik yok, Kaydet pasif",
+    "dosya": "project/SusleKaydetPasif.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/aura/kit.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "78",
+    "baslik": "Kapsülünü süsle · kaydediliyor",
+    "dosya": "project/SusleKaydediliyor.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/aura/kit.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "78",
+    "baslik": "Kapsülünü süsle · kaydediliyor",
+    "dosya": "project/SusleKaydediliyor.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/aura/kit.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "79",
+    "baslik": "Kapsülünü süsle · kaydedilemedi",
+    "dosya": "project/SusleKaydedilemedi.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/components/Toast.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "79",
+    "baslik": "Kapsülünü süsle · kaydedilemedi",
+    "dosya": "project/SusleKaydedilemedi.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/components/Toast.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "80",
+    "baslik": "Kapsülünü süsle · kaydetmeden çıkış onayı",
+    "dosya": "project/SusleCikis.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "80",
+    "baslik": "Kapsülünü süsle · kaydetmeden çıkış onayı",
+    "dosya": "project/SusleCikis.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/lib/overlayStore.ts",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "81",
+    "baslik": "Tüm aksesuarlar · parça seçili (ÖNERİ: Kapsülüne tak)",
+    "dosya": "project/TumSecili.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/GridWindow.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "81",
+    "baslik": "Tüm aksesuarlar · parça seçili (ÖNERİ: Kapsülüne tak)",
+    "dosya": "project/TumSecili.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/motion/GridWindow.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "82",
+    "baslik": "Tüm aksesuarlar · takım seçili",
+    "dosya": "project/TumTakim.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "82",
+    "baslik": "Tüm aksesuarlar · takım seçili",
+    "dosya": "project/TumTakim.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/features/capsule/catalog.ts",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "83",
+    "baslik": "Tüm aksesuarlar · arama açık",
+    "dosya": "project/TumAra.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/aura/kit.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "83",
+    "baslik": "Tüm aksesuarlar · arama açık",
+    "dosya": "project/TumAra.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/aura/kit.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "84",
+    "baslik": "Tüm aksesuarlar · arama sonuçsuz",
+    "dosya": "project/TumAraBos.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "84",
+    "baslik": "Tüm aksesuarlar · arama sonuçsuz",
+    "dosya": "project/TumAraBos.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "85",
+    "baslik": "Ortak kurallar · onay, örtü, yükleniyor, hata, 320 dp",
+    "dosya": "project/OrtakKurallar.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/components/ButtonRow.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Loader.tsx",
+      "apps/mobile/src/components/OverlayHost.tsx",
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/motion/TabBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "ekran değil: kural/hareket panosu, koddan denetlenir"
+  },
+  {
+    "pano": "85",
+    "baslik": "Ortak kurallar · onay, örtü, yükleniyor, hata, 320 dp",
+    "dosya": "project/OrtakKurallar.dc.html",
+    "aile": "Panolar 73–85",
+    "kod": [
+      "apps/mobile/src/components/ButtonRow.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Loader.tsx",
+      "apps/mobile/src/components/OverlayHost.tsx",
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/motion/Dialog.tsx",
+      "apps/mobile/src/motion/TabBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "ekran değil: kural/hareket panosu, koddan denetlenir"
+  },
+  {
+    "pano": "86",
+    "baslik": "Yükleniyor · liste (Mesajlar)",
+    "dosya": "project/YukleniyorListe.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Loader.tsx",
+      "apps/mobile/src/components/TabBar.tsx",
+      "apps/mobile/src/motion/TabBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "86",
+    "baslik": "Yükleniyor · liste (Mesajlar)",
+    "dosya": "project/YukleniyorListe.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Loader.tsx",
+      "apps/mobile/src/components/TabBar.tsx",
+      "apps/mobile/src/motion/TabBar.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "87",
+    "baslik": "Yükleniyor · profil",
+    "dosya": "project/YukleniyorProfil.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "apps/mobile/src/features/profile/ProfileCard.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "87",
+    "baslik": "Yükleniyor · profil",
+    "dosya": "project/YukleniyorProfil.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "apps/mobile/src/features/profile/ProfileCard.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "88",
+    "baslik": "Yükleniyor · sohbet (DM)",
+    "dosya": "project/YukleniyorSohbet.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "88",
+    "baslik": "Yükleniyor · sohbet (DM)",
+    "dosya": "project/YukleniyorSohbet.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "89",
+    "baslik": "320 dp, en büyük yazı · Mesajlar",
+    "dosya": "project/DarMesajlar.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "89",
+    "baslik": "320 dp, en büyük yazı · Mesajlar",
+    "dosya": "project/DarMesajlar.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "90",
+    "baslik": "320 dp, en büyük yazı · Profilim",
+    "dosya": "project/DarProfilim.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/index.tsx",
+      "apps/mobile/src/components/ButtonRow.tsx",
+      "apps/mobile/src/features/gifts/SetCard.tsx",
+      "apps/mobile/src/features/profile/IdentityTicket.tsx",
+      "apps/mobile/src/theme/ownProfile.ts",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "90",
+    "baslik": "320 dp, en büyük yazı · Profilim",
+    "dosya": "project/DarProfilim.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/index.tsx",
+      "apps/mobile/src/components/ButtonRow.tsx",
+      "apps/mobile/src/features/gifts/SetCard.tsx",
+      "apps/mobile/src/features/profile/IdentityTicket.tsx",
+      "apps/mobile/src/theme/ownProfile.ts",
+      "apps/mobile/src/theme/profileCover.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "91",
+    "baslik": "320 dp, en büyük yazı · Kapsülünü süsle",
+    "dosya": "project/DarSusle.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/features/capsule/SusleFilter.tsx",
+      "apps/mobile/src/features/capsule/SusleTabs.tsx",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "91",
+    "baslik": "320 dp, en büyük yazı · Kapsülünü süsle",
+    "dosya": "project/DarSusle.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/capsule.tsx",
+      "apps/mobile/src/features/capsule/SusleFilter.tsx",
+      "apps/mobile/src/features/capsule/SusleTabs.tsx",
+      "apps/mobile/src/theme/capsuleEdit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "92",
+    "baslik": "320 dp, en büyük yazı · Odadakiler",
+    "dosya": "project/DarOdadakiler.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "92",
+    "baslik": "320 dp, en büyük yazı · Odadakiler",
+    "dosya": "project/DarOdadakiler.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "93",
+    "baslik": "320 dp, en büyük yazı · Oyun lobisi",
+    "dosya": "project/DarOyunLobi.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "93",
+    "baslik": "320 dp, en büyük yazı · Oyun lobisi",
+    "dosya": "project/DarOyunLobi.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/src/features/games/GameLobby.tsx",
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/lobby.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "94",
+    "baslik": "Odadakiler · profilinle görünüyorsun",
+    "dosya": "project/OdaProfilli.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "94",
+    "baslik": "Odadakiler · profilinle görünüyorsun",
+    "dosya": "project/OdaProfilli.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "95",
+    "baslik": "Odadakiler · uzun liste, kaydırılmış",
+    "dosya": "project/OdaUzun.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "95",
+    "baslik": "Odadakiler · uzun liste, kaydırılmış",
+    "dosya": "project/OdaUzun.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "96",
+    "baslik": "Odadakiler · satır ⋮ menüsü",
+    "dosya": "project/OdaMenu.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "96",
+    "baslik": "Odadakiler · satır ⋮ menüsü",
+    "dosya": "project/OdaMenu.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "97",
+    "baslik": "Odadakiler · odada yalnız sen",
+    "dosya": "project/OdaTek.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "97",
+    "baslik": "Odadakiler · odada yalnız sen",
+    "dosya": "project/OdaTek.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/People.tsx",
+      "apps/mobile/src/features/district/RoomSheets.tsx",
+      "apps/mobile/src/theme/chatLook.ts",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "98",
+    "baslik": "Semt sohbeti · dolu",
+    "dosya": "project/SemtDolu.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/theme/chatLook.ts"
+    ],
+    "acilis": "Keşfet → Semte git → semt sohbeti, mesajlar varken",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "98",
+    "baslik": "Semt sohbeti · dolu",
+    "dosya": "project/SemtDolu.dc.html",
+    "aile": "Panolar 86–98",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/theme/chatLook.ts"
+    ],
+    "acilis": "Keşfet → Semte git → semt sohbeti, mesajlar varken",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "99",
+    "baslik": "Semt sohbeti · süre bitti, devam sorusu",
+    "dosya": "project/SemtSureBitti.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/parts.tsx",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "99",
+    "baslik": "Semt sohbeti · süre bitti, devam sorusu",
+    "dosya": "project/SemtSureBitti.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/room.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/IdentityToggle.tsx",
+      "apps/mobile/src/features/district/parts.tsx",
+      "apps/mobile/src/motion/Dialog.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "100",
+    "baslik": "Semte git · oturum kapandı",
+    "dosya": "project/SemtKapandi.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/ended.tsx",
+      "apps/mobile/src/features/district/parts.tsx",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "100",
+    "baslik": "Semte git · oturum kapandı",
+    "dosya": "project/SemtKapandi.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/ended.tsx",
+      "apps/mobile/src/features/district/parts.tsx",
+      "apps/mobile/src/theme/semt.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "101",
+    "baslik": "Semte git · semtin dışındasın",
+    "dosya": "project/SemtDisarida.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/outside.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "101",
+    "baslik": "Semte git · semtin dışındasın",
+    "dosya": "project/SemtDisarida.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/outside.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "102",
+    "baslik": "Semte git · semtin bulunuyor",
+    "dosya": "project/SemtKonum.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/locate.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "102",
+    "baslik": "Semte git · semtin bulunuyor",
+    "dosya": "project/SemtKonum.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/district/locate.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "103",
+    "baslik": "Ortak arkadaşlar listesi",
+    "dosya": "project/OrtakArkadaslar.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "supabase/functions/_shared/pure/api/friends.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "103",
+    "baslik": "Ortak arkadaşlar listesi",
+    "dosya": "project/OrtakArkadaslar.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/people/[publicId].tsx",
+      "supabase/functions/_shared/pure/api/friends.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "104",
+    "baslik": "Mesajlar · 5 sabit dolu, Sabitle kapalı",
+    "dosya": "project/MesajlarSabitDolu.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "104",
+    "baslik": "Mesajlar · 5 sabit dolu, Sabitle kapalı",
+    "dosya": "project/MesajlarSabitDolu.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/SheetScrim.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "105",
+    "baslik": "Mesajlar · arşivde okunmamış",
+    "dosya": "project/MesajlarArsivRozet.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/lib/dmManage.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "105",
+    "baslik": "Mesajlar · arşivde okunmamış",
+    "dosya": "project/MesajlarArsivRozet.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/lib/dmManage.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "106",
+    "baslik": "Mesajlar · sohbet silindikten sonra",
+    "dosya": "project/MesajlarSilindi.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "106",
+    "baslik": "Mesajlar · sohbet silindikten sonra",
+    "dosya": "project/MesajlarSilindi.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "107",
+    "baslik": "DM · 15 dakika geçmiş kendi mesajı",
+    "dosya": "project/DmMenuSureDoldu.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/MessagePop.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "107",
+    "baslik": "DM · 15 dakika geçmiş kendi mesajı",
+    "dosya": "project/DmMenuSureDoldu.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/MessagePop.tsx",
+      "apps/mobile/src/motion/Menu.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "108",
+    "baslik": "DM · düzenlerken klavye açık",
+    "dosya": "project/DmDuzenleKlavye.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "108",
+    "baslik": "DM · düzenlerken klavye açık",
+    "dosya": "project/DmDuzenleKlavye.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "109",
+    "baslik": "Mesajlar · boş",
+    "dosya": "project/MesajlarBos.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "109",
+    "baslik": "Mesajlar · boş",
+    "dosya": "project/MesajlarBos.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "110",
+    "baslik": "Bildirimler · boş",
+    "dosya": "project/BildirimlerBos.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "110",
+    "baslik": "Bildirimler · boş",
+    "dosya": "project/BildirimlerBos.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "111",
+    "baslik": "Arkadaşlar · boş",
+    "dosya": "project/ArkadaslarBos.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/friends.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "111",
+    "baslik": "Arkadaşlar · boş",
+    "dosya": "project/ArkadaslarBos.dc.html",
+    "aile": "Panolar 99–111",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/profile/friends.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "112",
+    "baslik": "Keşfet · mekan yok",
+    "dosya": "project/KesfetBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/components/TabBar.tsx",
+      "apps/mobile/src/features/district/DistrictCard.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/explore.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "112",
+    "baslik": "Keşfet · mekan yok",
+    "dosya": "project/KesfetBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/components/TabBar.tsx",
+      "apps/mobile/src/features/district/DistrictCard.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/explore.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "113",
+    "baslik": "DM · henüz mesaj yok",
+    "dosya": "project/DmBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "113",
+    "baslik": "DM · henüz mesaj yok",
+    "dosya": "project/DmBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatTopBar.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "114",
+    "baslik": "Mesajlar · arama, klavye açık",
+    "dosya": "project/MesajlarAra.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "114",
+    "baslik": "Mesajlar · arama, klavye açık",
+    "dosya": "project/MesajlarAra.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/features/friends/InboxRows.tsx",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "115",
+    "baslik": "Mesajlar · arama sonuçsuz",
+    "dosya": "project/MesajlarAraBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "115",
+    "baslik": "Mesajlar · arama sonuçsuz",
+    "dosya": "project/MesajlarAraBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
+      "apps/mobile/src/components/EmptyState.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "116",
+    "baslik": "Keşfet · arama, klavye açık",
+    "dosya": "project/KesfetAra.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/theme/explore.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "116",
+    "baslik": "Keşfet · arama, klavye açık",
+    "dosya": "project/KesfetAra.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/theme/explore.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "117",
+    "baslik": "Keşfet · arama sonuçsuz",
+    "dosya": "project/KesfetAraBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "117",
+    "baslik": "Keşfet · arama sonuçsuz",
+    "dosya": "project/KesfetAraBos.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "118",
+    "baslik": "DM · klavye açık, yazarken",
+    "dosya": "project/DmKlavye.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "118",
+    "baslik": "DM · klavye açık, yazarken",
+    "dosya": "project/DmKlavye.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "119",
+    "baslik": "DM · yanıt yazarken",
+    "dosya": "project/DmYanit.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "119",
+    "baslik": "DM · yanıt yazarken",
+    "dosya": "project/DmYanit.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/components/Composer.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/dm.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "120",
+    "baslik": "DM · fotoğraf gönder (ÖNERİ)",
+    "dosya": "project/DmFotoOnizleme.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "120",
+    "baslik": "DM · fotoğraf gönder (ÖNERİ)",
+    "dosya": "project/DmFotoOnizleme.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "121",
+    "baslik": "DM · fotoğraf mesajı (ÖNERİ)",
+    "dosya": "project/DmFotoMesaj.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "121",
+    "baslik": "DM · fotoğraf mesajı (ÖNERİ)",
+    "dosya": "project/DmFotoMesaj.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/messages/[threadId].tsx",
+      "apps/mobile/src/components/ChatBubble.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "122",
+    "baslik": "DM · senin tepkin",
+    "dosya": "project/DmTepkiSenin.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "122",
+    "baslik": "DM · senin tepkin",
+    "dosya": "project/DmTepkiSenin.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/src/components/ChatBubble.tsx",
+      "apps/mobile/src/components/ChatScreen.tsx",
+      "apps/mobile/src/i18n/tr.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "123",
+    "baslik": "Check-in · nokta seçimi",
+    "dosya": "project/CheckInNokta.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/components/Choice.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/features/checkin/SpotPicker.tsx",
+      "apps/mobile/src/features/explore/Bucket.tsx",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "Keşfet → mekan → Check-in → nokta seçimi",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "123",
+    "baslik": "Check-in · nokta seçimi",
+    "dosya": "project/CheckInNokta.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
+      "apps/mobile/app/(app)/checkin/index.tsx",
+      "apps/mobile/src/components/Choice.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/features/checkin/SpotPicker.tsx",
+      "apps/mobile/src/features/explore/Bucket.tsx",
+      "apps/mobile/src/theme/venueDetail.ts"
+    ],
+    "acilis": "Keşfet → mekan → Check-in → nokta seçimi",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "124",
+    "baslik": "Check-in · profilinle ya da anonim (ÖNERİ)",
+    "dosya": "project/CheckInKimlik.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/src/features/checkin/IdentitySheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "124",
+    "baslik": "Check-in · profilinle ya da anonim (ÖNERİ)",
+    "dosya": "project/CheckInKimlik.dc.html",
+    "aile": "Panolar 112–124",
+    "kod": [
+      "apps/mobile/src/features/checkin/IdentitySheet.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "125",
+    "baslik": "Masa · katılma isteği geldi (sahip)",
+    "dosya": "project/MasaIstekGelen.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/app/(app)/_layout.tsx",
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/IncomingRequest.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "Mekan → kendi masan, biri Katıl’a basınca",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "125",
+    "baslik": "Masa · katılma isteği geldi (sahip)",
+    "dosya": "project/MasaIstekGelen.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/app/(app)/_layout.tsx",
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/IncomingRequest.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/features/rooms/TableCard.tsx",
+      "apps/mobile/src/features/venue/VenueHead.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "Mekan → kendi masan, biri Katıl’a basınca",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "126",
+    "baslik": "Mekan · katılma isteği bekliyor",
+    "dosya": "project/MasaIstekBekliyor.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "126",
+    "baslik": "Mekan · katılma isteği bekliyor",
+    "dosya": "project/MasaIstekBekliyor.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "127",
+    "baslik": "Mekan · masa müsait değil (red = zaman aşımı)",
+    "dosya": "project/MasaIstekMusaitDegil.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "127",
+    "baslik": "Mekan · masa müsait değil (red = zaman aşımı)",
+    "dosya": "project/MasaIstekMusaitDegil.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/src/components/Toast.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "128",
+    "baslik": "Mekan · süren masalar, Bu masadayım",
+    "dosya": "project/MasaBuradayim.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "128",
+    "baslik": "Mekan · süren masalar, Bu masadayım",
+    "dosya": "project/MasaBuradayim.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/venue.tsx",
+      "apps/mobile/src/features/rooms/Lobby.tsx",
+      "apps/mobile/src/theme/venue.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "129",
+    "baslik": "Masa · Bu masadayım isteği geldi (sahip)",
+    "dosya": "project/MasaBuradayimGelen.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/src/features/rooms/IncomingRequest.tsx"
+    ],
+    "acilis": "Mekan → kendi masan, biri \"Bu masadayım\" deyince",
+    "tema": "acik",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "129",
+    "baslik": "Masa · Bu masadayım isteği geldi (sahip)",
+    "dosya": "project/MasaBuradayimGelen.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/src/features/rooms/IncomingRequest.tsx"
+    ],
+    "acilis": "Mekan → kendi masan, biri \"Bu masadayım\" deyince",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "yazildi"
+  },
+  {
+    "pano": "130",
+    "baslik": "Bildirimler · masa daveti geldi",
+    "dosya": "project/MasaDavetGeldi.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "130",
+    "baslik": "Bildirimler · masa daveti geldi",
+    "dosya": "project/MasaDavetGeldi.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "131",
+    "baslik": "Bildirimler · davetin süresi doldu",
+    "dosya": "project/MasaDavetSuresiDoldu.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "131",
+    "baslik": "Bildirimler · davetin süresi doldu",
+    "dosya": "project/MasaDavetSuresiDoldu.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/notifications.tsx",
+      "apps/mobile/src/aura/Peek.tsx",
+      "apps/mobile/src/components/RouteSheet.tsx",
+      "apps/mobile/src/components/SheetCard.tsx",
+      "apps/mobile/src/theme/auraKit.ts",
+      "apps/mobile/src/theme/flatLists.ts",
+      "apps/mobile/src/theme/messages.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "132",
+    "baslik": "Masadan çıkarıldın",
+    "dosya": "project/MasaCikarildin.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/TableEnd.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/tableSetup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "132",
+    "baslik": "Masadan çıkarıldın",
+    "dosya": "project/MasaCikarildin.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/TableEnd.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/tableSetup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "133",
+    "baslik": "Kayıt · kod hatalı",
+    "dosya": "project/KayitKodHatali.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx",
+      "apps/mobile/src/features/auth/authErrors.ts",
+      "apps/mobile/src/features/onboarding/ErrorLine.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "133",
+    "baslik": "Kayıt · kod hatalı",
+    "dosya": "project/KayitKodHatali.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx",
+      "apps/mobile/src/features/auth/authErrors.ts",
+      "apps/mobile/src/features/onboarding/ErrorLine.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "134",
+    "baslik": "Kayıt · kodu yeniden gönder",
+    "dosya": "project/KayitKodYeniden.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx",
+      "apps/mobile/src/features/auth/authErrors.ts",
+      "apps/mobile/src/features/onboarding/ErrorLine.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "134",
+    "baslik": "Kayıt · kodu yeniden gönder",
+    "dosya": "project/KayitKodYeniden.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx",
+      "apps/mobile/src/features/auth/authErrors.ts",
+      "apps/mobile/src/features/onboarding/ErrorLine.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "135",
+    "baslik": "Kayıt · çok fazla deneme",
+    "dosya": "project/KayitKodCokDeneme.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx",
+      "apps/mobile/src/features/auth/authErrors.ts",
+      "apps/mobile/src/features/onboarding/ErrorLine.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "135",
+    "baslik": "Kayıt · çok fazla deneme",
+    "dosya": "project/KayitKodCokDeneme.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(auth)/otp.tsx",
+      "apps/mobile/src/components/CodeInput.tsx",
+      "apps/mobile/src/features/auth/authErrors.ts",
+      "apps/mobile/src/features/onboarding/ErrorLine.tsx",
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "136",
+    "baslik": "Kayıt · 18 yaş altı",
+    "dosya": "project/KayitYasAlti.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/features/onboarding/UnderAge.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "136",
+    "baslik": "Kayıt · 18 yaş altı",
+    "dosya": "project/KayitYasAlti.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/src/features/onboarding/SignupStep.tsx",
+      "apps/mobile/src/features/onboarding/UnderAge.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "apps/mobile/src/theme/signup.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "137",
+    "baslik": "Masa · oyun seç (sahip, kaydırılmış)",
+    "dosya": "project/MasaOyunSec.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "137",
+    "baslik": "Masa · oyun seç (sahip, kaydırılmış)",
+    "dosya": "project/MasaOyunSec.dc.html",
+    "aile": "Panolar 125–137",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "138",
+    "baslik": "Masa · oyunu oyla (katılımcı, kaydırılmış)",
+    "dosya": "project/MasaOyunOyla.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "138",
+    "baslik": "Masa · oyunu oyla (katılımcı, kaydırılmış)",
+    "dosya": "project/MasaOyunOyla.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/rooms/PosterCard.tsx",
+      "apps/mobile/src/features/rooms/TableScene.tsx",
+      "apps/mobile/src/theme/room.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "139",
+    "baslik": "Vampir Köylü · Gündüz oylaması",
+    "dosya": "project/VampirOylama.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/vampir/RoundTable.tsx",
+      "apps/mobile/src/features/games/vampir/VampirPlay.tsx",
+      "apps/mobile/src/theme/vampirTableSize.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "139",
+    "baslik": "Vampir Köylü · Gündüz oylaması",
+    "dosya": "project/VampirOylama.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/vampir/RoundTable.tsx",
+      "apps/mobile/src/features/games/vampir/VampirPlay.tsx",
+      "apps/mobile/src/theme/vampirTableSize.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "140",
+    "baslik": "Vampir Köylü · Sonuç",
+    "dosya": "project/VampirSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/features/games/vampir/VampirParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "140",
+    "baslik": "Vampir Köylü · Sonuç",
+    "dosya": "project/VampirSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/vampir/VampirGame.tsx",
+      "apps/mobile/src/features/games/vampir/VampirParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "141",
+    "baslik": "Signum · Tahmin turu",
+    "dosya": "project/SignumTahmin.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/riso/RisoParts.tsx",
+      "apps/mobile/src/features/games/signum/SignumGame.tsx",
+      "apps/mobile/src/features/games/signum/SignumParts.tsx",
+      "apps/mobile/src/theme/signum.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "141",
+    "baslik": "Signum · Tahmin turu",
+    "dosya": "project/SignumTahmin.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/riso/RisoParts.tsx",
+      "apps/mobile/src/features/games/signum/SignumGame.tsx",
+      "apps/mobile/src/features/games/signum/SignumParts.tsx",
+      "apps/mobile/src/theme/signum.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "142",
+    "baslik": "Signum · Sonuç",
+    "dosya": "project/SignumSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/signum/SignumGame.tsx",
+      "apps/mobile/src/features/games/signum/SignumParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "142",
+    "baslik": "Signum · Sonuç",
+    "dosya": "project/SignumSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/signum/SignumGame.tsx",
+      "apps/mobile/src/features/games/signum/SignumParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "143",
+    "baslik": "Kinshi · Anlatıcı",
+    "dosya": "project/KinshiAnlatici.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/GameStage.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiBoard.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiGame.tsx",
+      "apps/mobile/src/theme/kinshiPlay.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "143",
+    "baslik": "Kinshi · Anlatıcı",
+    "dosya": "project/KinshiAnlatici.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/GameStage.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiBoard.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiGame.tsx",
+      "apps/mobile/src/theme/kinshiPlay.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "144",
+    "baslik": "Kinshi · Sonuç",
+    "dosya": "project/KinshiSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/kinshi/KinshiBoard.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiGame.tsx",
+      "apps/mobile/src/theme/kinshiPlay.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "144",
+    "baslik": "Kinshi · Sonuç",
+    "dosya": "project/KinshiSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/kinshi/KinshiBoard.tsx",
+      "apps/mobile/src/features/games/kinshi/KinshiGame.tsx",
+      "apps/mobile/src/theme/kinshiPlay.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "145",
+    "baslik": "Krot · İpucu turu",
+    "dosya": "project/KrotIpucu.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sahtekar/KrotBoard.tsx",
+      "apps/mobile/src/features/games/sahtekar/KrotGame.tsx",
+      "apps/mobile/src/theme/krot.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "145",
+    "baslik": "Krot · İpucu turu",
+    "dosya": "project/KrotIpucu.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sahtekar/KrotBoard.tsx",
+      "apps/mobile/src/features/games/sahtekar/KrotGame.tsx",
+      "apps/mobile/src/theme/krot.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "146",
+    "baslik": "Krot · Sonuç",
+    "dosya": "project/KrotSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sahtekar/KrotBoard.tsx",
+      "apps/mobile/src/features/games/sahtekar/KrotGame.tsx",
+      "apps/mobile/src/theme/krot.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "146",
+    "baslik": "Krot · Sonuç",
+    "dosya": "project/KrotSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sahtekar/KrotBoard.tsx",
+      "apps/mobile/src/features/games/sahtekar/KrotGame.tsx",
+      "apps/mobile/src/theme/krot.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "147",
+    "baslik": "Sprengja · Bomba sende (süre gizli)",
+    "dosya": "project/SprengjaBomba.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sprengja/SprengjaBoards.tsx",
+      "apps/mobile/src/features/games/sprengja/SprengjaGame.tsx",
+      "apps/mobile/src/theme/sprengja.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "147",
+    "baslik": "Sprengja · Bomba sende (süre gizli)",
+    "dosya": "project/SprengjaBomba.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sprengja/SprengjaBoards.tsx",
+      "apps/mobile/src/features/games/sprengja/SprengjaGame.tsx",
+      "apps/mobile/src/theme/sprengja.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "148",
+    "baslik": "Sprengja · Sonuç",
+    "dosya": "project/SprengjaSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sprengja/SprengjaBoards.tsx",
+      "apps/mobile/src/features/games/sprengja/SprengjaGame.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "148",
+    "baslik": "Sprengja · Sonuç",
+    "dosya": "project/SprengjaSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/sprengja/SprengjaBoards.tsx",
+      "apps/mobile/src/features/games/sprengja/SprengjaGame.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "149",
+    "baslik": "Kaupholl · Tahmin",
+    "dosya": "project/KauphollTahmin.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/kaupholl/KauphollGame.tsx",
+      "apps/mobile/src/features/games/kaupholl/KauphollParts.tsx",
+      "apps/mobile/src/features/games/riso/RisoParts.tsx",
+      "apps/mobile/src/theme/kaupholl.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "149",
+    "baslik": "Kaupholl · Tahmin",
+    "dosya": "project/KauphollTahmin.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/kaupholl/KauphollGame.tsx",
+      "apps/mobile/src/features/games/kaupholl/KauphollParts.tsx",
+      "apps/mobile/src/features/games/riso/RisoParts.tsx",
+      "apps/mobile/src/theme/kaupholl.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "150",
+    "baslik": "Kaupholl · Sonuç",
+    "dosya": "project/KauphollSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/kaupholl/KauphollGame.tsx",
+      "apps/mobile/src/features/games/kaupholl/KauphollParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "150",
+    "baslik": "Kaupholl · Sonuç",
+    "dosya": "project/KauphollSonuc.dc.html",
+    "aile": "Panolar 138–150",
+    "kod": [
+      "apps/mobile/src/features/games/kaupholl/KauphollGame.tsx",
+      "apps/mobile/src/features/games/kaupholl/KauphollParts.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "151",
+    "baslik": "Kibrit · Gizli oy",
+    "dosya": "project/KibritOy.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/games/kibrit/KibritBoards.tsx",
+      "apps/mobile/src/features/games/kibrit/KibritGame.tsx",
+      "apps/mobile/src/theme/kibrit.ts"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "151",
+    "baslik": "Kibrit · Gizli oy",
+    "dosya": "project/KibritOy.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/app/(app)/room/[id].tsx",
+      "apps/mobile/src/features/games/kibrit/KibritBoards.tsx",
+      "apps/mobile/src/features/games/kibrit/KibritGame.tsx",
+      "apps/mobile/src/theme/kibrit.ts"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "152",
+    "baslik": "Kibrit · Sonuç",
+    "dosya": "project/KibritSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/games/kibrit/KibritBoards.tsx",
+      "apps/mobile/src/features/games/kibrit/KibritGame.tsx"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "152",
+    "baslik": "Kibrit · Sonuç",
+    "dosya": "project/KibritSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/games/kibrit/KibritBoards.tsx",
+      "apps/mobile/src/features/games/kibrit/KibritGame.tsx"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "eski"
+  },
+  {
+    "pano": "153",
+    "baslik": "İbre · Tahmin (Yakında)",
+    "dosya": "project/IbreTahmin.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/design/previews.tsx",
+      "apps/mobile/src/features/games/ibre/Ibre.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "153",
+    "baslik": "İbre · Tahmin (Yakında)",
+    "dosya": "project/IbreTahmin.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/design/previews.tsx",
+      "apps/mobile/src/features/games/ibre/Ibre.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "154",
+    "baslik": "İbre · Sonuç (Yakında)",
+    "dosya": "project/IbreSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/design/previews.tsx",
+      "apps/mobile/src/features/games/ibre/Ibre.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "154",
+    "baslik": "İbre · Sonuç (Yakında)",
+    "dosya": "project/IbreSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/design/previews.tsx",
+      "apps/mobile/src/features/games/ibre/Ibre.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "155",
+    "baslik": "Harf Kapmaca · Tur (Yakında)",
+    "dosya": "project/HarfTur.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/games/say/Say.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "155",
+    "baslik": "Harf Kapmaca · Tur (Yakında)",
+    "dosya": "project/HarfTur.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/games/say/Say.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "156",
+    "baslik": "Harf Kapmaca · Sonuç (Yakında)",
+    "dosya": "project/HarfSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/games/say/Say.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "156",
+    "baslik": "Harf Kapmaca · Sonuç (Yakında)",
+    "dosya": "project/HarfSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/features/games/say/Say.tsx",
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "157",
+    "baslik": "Şarkıda Geçsin · Tur (Yakında)",
+    "dosya": "project/SarkiTur.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "157",
+    "baslik": "Şarkıda Geçsin · Tur (Yakında)",
+    "dosya": "project/SarkiTur.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "158",
+    "baslik": "Şarkıda Geçsin · Sonuç (Yakında)",
+    "dosya": "project/SarkiSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "acik",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  },
+  {
+    "pano": "158",
+    "baslik": "Şarkıda Geçsin · Sonuç (Yakında)",
+    "dosya": "project/SarkiSonuc.dc.html",
+    "aile": "Panolar 151–158",
+    "kod": [
+      "apps/mobile/src/i18n/tr.ts",
+      "content/games.json"
+    ],
+    "acilis": "",
+    "tema": "koyu",
+    "durum": null,
+    "hal": "cizilmeyecek",
+    "sebep": "Proje sahibinin kararı (18 Kasım): bu oyun uygulamaya gelmeyecek."
+  }
+]
