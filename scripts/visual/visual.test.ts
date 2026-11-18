@@ -27,6 +27,7 @@ import {
 import { buildReport, pageHints } from './gate-report.ts';
 import { appFonts, fontFaces, pageScript, SCALE, VIEWPORT, withRoboto } from './prototype.ts';
 import { boardsWanted } from './render-pano.ts';
+import { parseArgs, writeCandidates } from './yerel.ts';
 import { GAP, LABEL_BAND, labelText, labelWidth, sideBySide } from './sideBySide.ts';
 import {
   boardImage,
@@ -965,6 +966,36 @@ describe("visual gate: the candidates in a job's log", () => {
     const found = candidatesFromLog(log);
     expect([...found.keys()]).toEqual(['ekran-x-light-1.png', 'ekran-x-dark-1.png']);
     expect(found.get('ekran-x-dark-1.png')?.equals(a)).toBe(true);
+  });
+});
+
+describe('visual gate: the board beside the app from a job log (pnpm visual:yerel)', () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'gorsel-'));
+  });
+  afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+  it("takes --log, --out and --pano, after pnpm's --", () => {
+    expect(parseArgs(['--', '--log', 'a.txt', '--out', 'o'])).toEqual({
+      log: 'a.txt',
+      out: 'o',
+      pano: undefined,
+    });
+    expect(parseArgs(['--log', 'a.txt', '--out', 'o', '--pano', 'p']).pano).toBe('p');
+    expect(() => parseArgs(['--log', 'a.txt'])).toThrow('usage');
+  });
+
+  it('writes the candidates and names the ones the log printed empty', () => {
+    const a = PNG.sync.write(png(2, 2));
+    const log = [
+      `2026-11-18T01:02:03.4567890Z ADAY ekran-x-light-1.png ${a.toString('base64')}`,
+      '2026-11-18T01:02:03.4567890Z ADAY ekran-x-dark-1.png ',
+    ].join('\n');
+    const r = writeCandidates(log, dir);
+    expect(r).toEqual({ names: ['ekran-x-light-1.png'], empty: ['ekran-x-dark-1.png'] });
+    expect(readFileSync(join(dir, 'aday', 'ekran-x-light-1.png')).equals(a)).toBe(true);
+    expect(existsSync(join(dir, 'aday', 'ekran-x-dark-1.png'))).toBe(false);
   });
 });
 

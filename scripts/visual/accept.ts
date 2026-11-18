@@ -11,16 +11,22 @@
 // that reads the repo's actions) or the GitHub MCP tools; --log reads the candidates from the
 // visual job's log as saved to a file (a PR run prints each as `ADAY <name>.png <base64>`,
 // scripts/visual/run-on-emulator.sh; the MCP tools read job logs). .claude/skills/e2e → Görsel kapı.
+// --deneme (anywhere): only says what it would take, each candidate's size beside the emulator's
+// frame, and writes nothing.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
-import { candidatesFromLog } from './compare.ts';
-import { BASELINE_DIR, loadStates, shots } from './states.ts';
+import { candidatesFromLog, pngOf, tryReadPng } from './compare.ts';
+import { BASELINE_DIR, FRAME_WIDTH_PX, loadStates, shots } from './states.ts';
 
-const args = process.argv.slice(2).filter((a) => a !== '--');
+const argv = process.argv.slice(2).filter((a) => a !== '--');
+const dryRun = argv.includes('--deneme');
+const args = argv.filter((a) => a !== '--deneme');
 const root = join(import.meta.dirname, '..', '..');
+// pnpm runs the script in scripts/: paths given on the command line are from where it was typed.
+const fromCaller = (p: string) => resolve(process.env.INIT_CWD ?? process.cwd(), p);
 const usage =
   'usage: pnpm visual:accept <PR number> | --dir <folder> | --log <job log file>, then [state id …]';
 
@@ -49,7 +55,7 @@ let only: string[];
 if (args[0] === '--log') {
   const file = args[1];
   if (!file) throw new Error(usage);
-  const found = candidatesFromLog(readFileSync(resolve(file), 'utf8'));
+  const found = candidatesFromLog(readFileSync(fromCaller(file), 'utf8'));
   if (found.size === 0) throw new Error(`${file}: no ADAY lines in it`);
   const dir = mkdtempSync(join(tmpdir(), 'gorsel-'));
   mkdirSync(join(dir, 'aday'));
@@ -59,7 +65,7 @@ if (args[0] === '--log') {
 } else if (args[0] === '--dir') {
   const dir = args[1];
   if (!dir) throw new Error(usage);
-  const full = resolve(dir);
+  const full = fromCaller(dir);
   if (!existsSync(join(full, 'aday'))) throw new Error(`${full}: no aday/ folder in it`);
   source = { dir: full, from: full };
   only = args.slice(2);
@@ -70,18 +76,28 @@ if (args[0] === '--log') {
   only = rest;
 }
 
-mkdirSync(join(root, BASELINE_DIR), { recursive: true });
+if (!dryRun) mkdirSync(join(root, BASELINE_DIR), { recursive: true });
 const taken: string[] = [];
 const missing: string[] = [];
 for (const shot of shots(loadStates(root))) {
   if (!shot.baseline || (only.length > 0 && !only.includes(shot.state.id))) continue;
-  try {
-    const png = readFileSync(join(source.dir, 'aday', `${shot.name}.png`));
-    writeFileSync(join(root, BASELINE_DIR, `${shot.name}.png`), png);
-    taken.push(shot.name);
-  } catch {
+  const file = join(source.dir, 'aday', `${shot.name}.png`);
+  // An empty or broken candidate is never a baseline.
+  const png = pngOf(tryReadPng(file));
+  if (!png) {
     missing.push(shot.name);
+    continue;
   }
+  if (dryRun) {
+    const note =
+      shot.state.uygulamaKirp || png.width === FRAME_WIDTH_PX ? '' : ' (not the frame width)';
+    console.log(`would take ${shot.name}: ${png.width}×${png.height}${note}`);
+  } else {
+    writeFileSync(join(root, BASELINE_DIR, `${shot.name}.png`), readFileSync(file));
+  }
+  taken.push(shot.name);
 }
-console.log(`${taken.length} baseline(s) from ${source.from} into ${BASELINE_DIR}`);
-if (missing.length > 0) console.log(`not in the artifact: ${missing.join(', ')}`);
+console.log(
+  `${taken.length} baseline(s) from ${source.from} ${dryRun ? 'would go' : 'into'} ${BASELINE_DIR}${dryRun ? ' (--deneme: nothing written)' : ''}`,
+);
+if (missing.length > 0) console.log(`not in the artifact (or unreadable): ${missing.join(', ')}`);
