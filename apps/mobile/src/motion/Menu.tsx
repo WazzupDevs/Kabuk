@@ -166,7 +166,9 @@ function MenuCard({
   const layer = KIT.layer[scheme];
   const L = KIT.layer.size;
   const hold = look === 'hold';
-  const plain = children.filter((row) => !isNegative(row));
+  // DmMenuSureDoldu: the note stands last, under the red rows (`.psep`, Sil, then `.pnote`).
+  const notes = children.filter(isNote);
+  const plain = children.filter((row) => !isNegative(row) && !isNote(row));
   const negative = children.filter(isNegative);
   const banded = hold && negative.length > 0 && plain.length > 0;
   const group = (rows: ReactNode[], from: number) =>
@@ -198,6 +200,7 @@ function MenuCard({
           />
         ) : null}
         {group(negative, plain.length)}
+        {notes}
       </Look.Provider>
     </View>
   );
@@ -230,6 +233,10 @@ export function MenuNote({ children }: { children: string }) {
 // Where a button's menu measures it from: its box in the window, as the menu's Modal reads it.
 export function measureMenuAnchor(view: View | null, done: (anchor: MenuAnchor) => void): void {
   view?.measureInWindow((x, y, width, height) => done({ x, y, width, height }));
+}
+
+function isNote(row: ReactNode): boolean {
+  return isValidElement(row) && row.type === MenuNote;
 }
 
 function isNegative(row: ReactNode): boolean {
