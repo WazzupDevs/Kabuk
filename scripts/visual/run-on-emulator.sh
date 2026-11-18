@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The visual gate's phone part (CLAUDE.md → Görsel kapı), inside reactivecircus/android-emulator-
-# runner once the emulator (skin 720x1280) has booted: 360 dp at 2x, v46's width, the app's text
-# size 1.0, animations off; then one Maestro flow per shot of e2e/visual/states.json
+# runner once the emulator (skin 780x1688) has booted: 390 × 844 dp at 2x, the boards' phone
+# (pano-goruntuleri: 780 × 1688 px), the app's text size 1.0, animations off; then one Maestro flow per shot of e2e/visual/states.json
 # (scripts/visual/make-flows.ts) and the candidates collected into $OUT/aday (and $OUT/aday2 with
 # TEKRAR=1). Env: OUT, APK (scripts/e2e/fetch-apk.sh), TEKRAR.
 set -euo pipefail
@@ -10,6 +10,8 @@ mkdir -p "$OUT"
 source "$(dirname "$0")/../e2e/fetch-apk.sh"
 
 adb install -r -g "$APK"
+# The skin sets the screen; the size again here, in case an emulator image ignores the skin.
+adb shell wm size 780x1688
 adb shell wm density 320
 adb shell settings put system font_scale 1.0
 adb shell settings put global hide_error_dialogs 1 || true

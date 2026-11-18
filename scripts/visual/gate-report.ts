@@ -1,12 +1,30 @@
-// The visual gate's report after its run (scripts/visual/run-on-emulator.sh, render-prototype.ts):
-// the hard gate's result, the similarity table beside the design prototype with its diff images,
-// and the noise when every shot was photographed twice. report.ts prints it into the job summary
+// The visual gate's report after its run (scripts/visual/run-on-emulator.sh, render-prototype.ts,
+// render-pano.ts): the hard gate's result, the app beside its board (yanyana/: board | app | diff,
+// with the similarity; soft, the reviewer decides), the similarity table beside the design
+// prototype with its diff images, and the noise when every shot was photographed twice. report.ts prints it into the job summary
 // and writes the result (Gate) to <out>/kapi.json, which the workflow's last step reads.
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { PNG } from 'pngjs';
+
 import { junitCases, maestroMatch, readPng, similarity, thresholdFor } from './compare.ts';
-import { hasBaseline, loadStates, shots, THEMES } from './states.ts';
+import { sideBySide } from './sideBySide.ts';
+import {
+  boardImage,
+  FRAME_WIDTH_PX,
+  hasBaseline,
+  loadStates,
+  pngWidth,
+  shots,
+  staleBaseline,
+  THEMES,
+} from './states.ts';
+
+// Where render-pano.ts puts a state's board image, converted to PNG: <out>/pano/<id>-<theme>.png.
+export const BOARD_DIR = 'pano';
+// The side-by-side images: <out>/yanyana/<id>-<theme>.png.
+export const SIDE_DIR = 'yanyana';
 
 export type Gate = {
   ok: boolean;
@@ -17,6 +35,9 @@ export type Gate = {
   noCandidate: string[];
   // Shots that expect a baseline and have none yet.
   noBaseline: string[];
+  // Shots whose baseline is of another width than the emulator's frame (an earlier emulator): not
+  // compared, to be accepted again.
+  staleBaseline: string[];
   // The worst match of two photos of the same state (Maestro's measure), when photographed twice.
   worstNoise: number | null;
 };
@@ -49,7 +70,13 @@ export function buildReport(
   const failed = cases.filter((c) => !c.ok);
   const noCandidate = all.filter((s) => !existsSync(join(out, 'aday', `${s.name}.png`)));
   const noBaseline = all.filter((s) => s.baseline && !hasBaseline(root, s));
-  const ok = ran && failed.length === 0 && noCandidate.length === 0 && noBaseline.length === 0;
+  const stale = all.filter((s) => s.baseline && staleBaseline(root, s));
+  const ok =
+    ran &&
+    failed.length === 0 &&
+    noCandidate.length === 0 &&
+    noBaseline.length === 0 &&
+    stale.length === 0;
   lines.push(
     `### Görsel kapı: ${ok ? 'geçti' : 'GEÇMEDİ'}`,
     '',
@@ -91,6 +118,53 @@ export function buildReport(
       `Baz görüntüsü olmayan ${noBaseline.length} görüntü (adaylar \`aday/\` içinde; CTO onayından sonra \`gorsel-baz\` etiketi ve \`pnpm visual:accept <PR>\`): ` +
         noBaseline.map((s) => `\`${s.name}\``).join(', '),
     );
+  }
+
+  if (stale.length > 0) {
+    const widths = [
+      ...new Set(stale.map((s) => pngWidth(join(root, 'e2e/visual/baz', `${s.name}.png`)))),
+    ];
+    lines.push(
+      '',
+      `Baz görüntüsü eski boyda olan ${stale.length} görüntü (${widths.join(', ')} px; emülatörün çerçevesi ${FRAME_WIDTH_PX} px): karşılaştırılmadı. Adaylar \`aday/\` içinde; CTO onayından sonra \`gorsel-baz\` etiketi ve \`pnpm visual:accept <PR>\`: ` +
+        stale.map((s) => `\`${s.name}\``).join(', '),
+    );
+  }
+
+  // The app beside its board (soft: the similarity never fails the gate).
+  const boarded = config.durumlar.filter((s) => s.pano);
+  if (boarded.length > 0) {
+    mkdirSync(join(out, SIDE_DIR), { recursive: true });
+    lines.push(
+      '',
+      "### Pano ile yan yana: yumuşak, karar denetçide",
+      '',
+      'Solda pano, ortada uygulama, sağda fark; üstten hizalı, ölçeklenmeden. pixelmatch (renk eşiği 0,1); boyut farkı fark sayılır.',
+      '',
+      '| Durum | Tema | Pano | Benzerlik | Boyut (uygulama / pano) | Yan yana |',
+      '| --- | --- | --- | ---: | --- | --- |',
+    );
+    for (const s of boarded) {
+      for (const theme of THEMES) {
+        const board = s.pano ? boardImage(s.pano, theme) : '';
+        const app = `aday/${s.id}-${theme}-1.png`;
+        const pano = `${BOARD_DIR}/${s.id}-${theme}.png`;
+        const side = `${SIDE_DIR}/${s.id}-${theme}.png`;
+        const a = existsSync(join(out, app)) ? readPng(join(out, app)) : null;
+        const b = existsSync(join(out, pano)) ? readPng(join(out, pano)) : null;
+        const r = a && b ? similarity(a, b) : null;
+        const image = sideBySide([
+          { label: b ? 'PANO' : 'PANO YOK', image: b },
+          { label: a ? 'UYGULAMA' : 'UYGULAMA YOK', image: a },
+          { label: r ? `FARK %${r.percent.toFixed(1)}` : 'FARK -', image: r?.diff ?? null },
+        ]);
+        writeFileSync(join(out, side), PNG.sync.write(image));
+        lines.push(
+          `| ${s.id} | ${theme} | \`${board}\`${b ? '' : ' (yok)'} | ${r ? `%${r.percent.toFixed(1)}` : '–'} | ` +
+            `${a ? `${a.width}×${a.height}` : 'yok'} / ${b ? `${b.width}×${b.height}` : 'yok'} | ${thumb(side)} |`,
+        );
+      }
+    }
   }
 
   // The soft report: the app beside the prototype, for the states that name their counterpart.
@@ -164,6 +238,7 @@ export function buildReport(
       failed: failed.map((c) => c.name),
       noCandidate: noCandidate.map((s) => s.name),
       noBaseline: noBaseline.map((s) => s.name),
+      staleBaseline: stale.map((s) => s.name),
       worstNoise: worst,
     },
   };

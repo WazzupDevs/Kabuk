@@ -1,8 +1,27 @@
 // The visual gate's Maestro flows (CLAUDE.md → Görsel kapı), one file per shot so a failing
-// comparison never stops the rest: open the state's route, wait for it to settle,
-// photograph its frame (the candidate) and, when a baseline exists, assertScreenshot against it.
-// Written by make-flows.ts.
-import { baselinePath, hasBaseline, type Shot } from './states.ts';
+// comparison never stops the rest: open the state's route, wait for it to settle, do the state's
+// app steps (a real button pressed, time let run), photograph its frame (the candidate) and, when a
+// baseline of the emulator's size exists, assertScreenshot against it. Written by make-flows.ts.
+import { type AppStep, baselinePath, hasBaseline, type Shot, staleBaseline } from './states.ts';
+
+// A testID no screen has: waiting for it to show is a plain wait of its timeout.
+export const NEVER_THERE = 'gorsel-bekle';
+
+// The state's app steps as Maestro commands: `bas` taps the element by its testID (Maestro waits
+// for it to be there), `bekle` waits that long.
+export function appSteps(steps: readonly AppStep[]): string[] {
+  return steps.flatMap((step) =>
+    'bas' in step
+      ? ['- tapOn:', `    id: ${step.bas}`]
+      : [
+          '- extendedWaitUntil:',
+          '    visible:',
+          `      id: ${NEVER_THERE}`,
+          `    timeout: ${step.bekle}`,
+          '    optional: true',
+        ],
+  );
+}
 
 export const CANDIDATE = 'aday__';
 export const CANDIDATE_AGAIN = 'aday2__';
@@ -51,6 +70,7 @@ function open(shot: Shot, n: number): string[] {
     '    id: gorsel-yok',
     '- assertNotVisible:',
     '    id: gorsel-eksik-sayfa',
+    ...appSteps(shot.state.uygulamaAdimlar ?? []),
   ];
 }
 
@@ -94,7 +114,7 @@ export function flowFor(
     ...photo(CANDIDATE, shot),
   ];
   if (again) lines.push(...open(shot, n + 100000), ...photo(CANDIDATE_AGAIN, shot));
-  if (shot.baseline && hasBaseline(root, shot)) {
+  if (shot.baseline && hasBaseline(root, shot) && !staleBaseline(root, shot)) {
     lines.push(
       '- assertScreenshot:',
       `    path: ${baselinePath(root, shot)}`,

@@ -6,6 +6,9 @@
 # shards run once more in light at the largest text size (font_scale 1.3): twelve jobs. On a PR the
 # `e2e-large` label does the same: added, it runs the build and the four large jobs alone, after
 # the run still going (the eight others pass first); while it is on, every push runs all twelve.
+# The `gorsel` label runs the visual gate alone (the build and the `visual` job, none of the
+# shards): added, and on every push while it is on; with `e2e` or `e2e-large` on the gate runs in
+# their run anyway, so adding `gorsel` then runs nothing and cancels nothing.
 #
 # A shard whose flows fail because Maestro's driver on the phone crashed or could not be reached,
 # or because the Edge Functions server stopped while they ran, runs once more on a fresh phone
@@ -19,8 +22,8 @@
 name: e2e
 
 on:
-  # On a PR only with the `e2e` or `e2e-large` label: when one is added, and on every push while
-  # one is on.
+  # On a PR only with the `e2e`, `e2e-large` or `gorsel` label: when one is added, and on every
+  # push while one is on.
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     # Only docs and tests (unit and integration): nothing new for the app, no run. The E2E flows and
@@ -39,12 +42,18 @@ on:
 
 # A PR's new push (or the e2e label added again) replaces its run that is still going, as in
 # ci.yml. Adding e2e-large never cancels: its four large jobs wait until the run still going (the
-# eight) has finished, then run; a new push still replaces both. Another label checks nothing new:
-# it gets a group of its own, so it never cancels the run.
+# eight) has finished, then run; a new push still replaces both. `gorsel` added replaces the run
+# still going, as `e2e` does, only when neither `e2e` nor `e2e-large` is on (then the gate is
+# already in their run and the new one runs nothing). Another label checks nothing new: it gets a
+# group of its own, so it never cancels the run.
 concurrency:
   group: >-
     e2e-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'e2e'
-    && github.event.label.name != 'e2e-large' && format('-{0}', github.run_id) || '' }}
+    && github.event.label.name != 'e2e-large'
+    && !(github.event.label.name == 'gorsel'
+    && !contains(github.event.pull_request.labels.*.name, 'e2e')
+    && !contains(github.event.pull_request.labels.*.name, 'e2e-large'))
+    && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.event.action != 'labeled' || github.event.label.name != 'e2e-large' }}
 
 permissions:
@@ -83,17 +92,22 @@ jobs:
           fi
 
   # One release APK for every run: light or dark is picked at runtime in Ayarlar → Tasarım (test).
-  # On a PR: the e2e or e2e-large label just added, or a push while either is on.
+  # On a PR: the e2e or e2e-large label just added, gorsel just added while neither of them is on,
+  # or a push while any of the three is on.
   build:
     needs: changed
     if: >-
       needs.changed.outputs.run != 'false' && !cancelled() &&
       (github.event_name != 'pull_request' ||
       (github.event.action == 'labeled' &&
-       (github.event.label.name == 'e2e' || github.event.label.name == 'e2e-large')) ||
+       (github.event.label.name == 'e2e' || github.event.label.name == 'e2e-large' ||
+        (github.event.label.name == 'gorsel' &&
+         !contains(github.event.pull_request.labels.*.name, 'e2e') &&
+         !contains(github.event.pull_request.labels.*.name, 'e2e-large')))) ||
       (github.event.action != 'labeled' &&
        (contains(github.event.pull_request.labels.*.name, 'e2e') ||
-        contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
+        contains(github.event.pull_request.labels.*.name, 'e2e-large') ||
+        contains(github.event.pull_request.labels.*.name, 'gorsel'))))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -407,13 +421,15 @@ jobs:
 
   # The visual gate (CLAUDE.md → Görsel kapı): the states of e2e/visual/states.json (the design
   # gallery's sets, game phases) opened in the app's hidden route with a fixed state (timers
-  # frozen, motion off, randomness seeded) and photographed in light and dark on a phone at v46's
-  # width and density (360 dp at 2x: skin 720x1280, density 320). Two comparisons: with the app's
-  # own baselines (e2e/visual/baz/, Maestro assertScreenshot), the hard gate that fails the job;
-  # and with v46's prototype rendered by Playwright at the same size and fonts, the soft similarity
-  # report in the job summary with the diff images (the CTO decides). With the e2e label, as the
-  # eight shards (not when only e2e-large has just been added), nightly and by hand. No local
-  # stack: the route opens without signing in and reads nothing from the server. It starts with the
+  # frozen, motion off, randomness seeded), the state's app steps done (a real button pressed),
+  # and photographed in light and dark on a phone of the boards' size (390 × 844 dp at 2x: skin
+  # 780x1688, density 320). Three comparisons: with the app's own baselines (e2e/visual/baz/,
+  # Maestro assertScreenshot), the hard gate that fails the job; with the state's board (states.json
+  # → `pano`, the image from the pano-goruntuleri branch), set beside it in yanyana/ (board | app |
+  # diff) with its similarity, soft; and with an older prototype rendered by Playwright at the same
+  # size and fonts, soft. The soft ones are in the job summary (the reviewer decides). With the e2e
+  # label, as the eight shards (not when only e2e-large has just been added), with the gorsel label
+  # alone (without the shards), nightly and by hand. No local stack: the route opens without signing in and reads nothing from the server. It starts with the
   # build job and boots its emulator while Gradle builds, as the shards do. TEKRAR photographs every
   # shot twice: the noise the hard threshold is set above (the summary's "Gürültü" table).
   visual:
@@ -421,10 +437,15 @@ jobs:
     if: >-
       needs.changed.outputs.run != 'false' && !cancelled() &&
       (github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && github.event.label.name == 'e2e') ||
+      (github.event.action == 'labeled' &&
+       (github.event.label.name == 'e2e' ||
+        (github.event.label.name == 'gorsel' &&
+         !contains(github.event.pull_request.labels.*.name, 'e2e') &&
+         !contains(github.event.pull_request.labels.*.name, 'e2e-large')))) ||
       (github.event.action != 'labeled' &&
        (contains(github.event.pull_request.labels.*.name, 'e2e') ||
-        contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
+        contains(github.event.pull_request.labels.*.name, 'e2e-large') ||
+        contains(github.event.pull_request.labels.*.name, 'gorsel'))))
     runs-on: ubuntu-24.04
     # The build (~8 min) and the shots (each state opened in the running app, scripts/visual/flow.ts)
     # well inside it; aim: no longer than the E2E shards (~25 min).
@@ -482,6 +503,18 @@ jobs:
         run: |
           mkdir -p "$OUT"
           node --experimental-strip-types scripts/visual/render-prototype.ts . "$OUT"
+      # The boards' images (the pano-goruntuleri branch, one commit, ~37 MB of WebP; never on main):
+      # fetched shallow with the checkout's own token, the tree unpacked outside the checkout, and
+      # the boards states.json names converted to PNG by Playwright's Chromium, pixel for pixel
+      # (scripts/visual/render-pano.ts → $OUT/pano/). Without the branch the report says "PANO YOK";
+      # the gate does not fail on it.
+      - name: Board images (pano-goruntuleri, Playwright)
+        continue-on-error: true
+        run: |
+          git fetch --depth 1 --no-tags origin pano-goruntuleri
+          mkdir -p "$RUNNER_TEMP/pano"
+          git archive FETCH_HEAD | tar -x -C "$RUNNER_TEMP/pano"
+          node --experimental-strip-types scripts/visual/render-pano.ts . "$RUNNER_TEMP/pano" "$OUT"
       - name: Maestro
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.10.0 bash
@@ -514,7 +547,7 @@ jobs:
           arch: x86_64
           target: google_apis
           ram-size: 4096M
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 720x1280
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 780x1688
           disable-animations: true
           script: bash scripts/visual/run-on-emulator.sh
       # The run's images are in its e2e-run-visual artifact, so the report names them; the baselines

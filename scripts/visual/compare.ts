@@ -33,6 +33,8 @@ export type Similarity = {
   width: number;
   height: number;
   sameSize: boolean;
+  // The diff image (pixelmatch's: the differing pixels red over the faded first image).
+  diff: PNG;
 };
 
 // pixelmatch with its default colour threshold (0.1) and anti-aliasing detection on.
@@ -50,6 +52,7 @@ export function similarity(a: PNG, b: PNG, diffFile?: string): Similarity {
     width,
     height,
     sameSize: a.width === b.width && a.height === b.height,
+    diff,
   };
 }
 
@@ -89,6 +92,15 @@ export function junitCases(xml: string): CaseResult[] {
     cases.push({ name, ok, message: failure ? unescapeXml(failure[2] ?? '').trim() : '' });
   }
   return cases;
+}
+
+// The candidates in a job log (scripts/visual/run-on-emulator.sh prints them on a PR): `ADAY <name>.png <base64>` lines (a timestamp may come first).
+export function candidatesFromLog(log: string): Map<string, Buffer> {
+  const out = new Map<string, Buffer>();
+  for (const m of log.matchAll(/ADAY ([a-z0-9-]+\.png) ([A-Za-z0-9+/]+=*)\s*$/gm)) {
+    if (m[1] && m[2]) out.set(m[1], Buffer.from(m[2], 'base64'));
+  }
+  return out;
 }
 
 function unescapeXml(s: string): string {
