@@ -727,6 +727,13 @@ describe('visual gate: the app steps in the flow', () => {
     ]);
   });
 
+  it('holds by testID', () => {
+    expect(appSteps([{ uzunBas: 'inbox-Fevve' }])).toEqual([
+      '- longPressOn:',
+      '    id: inbox-Fevve',
+    ]);
+  });
+
   it('does them after the state has settled, before the photo and the comparison', () => {
     const [shot] = shots(config);
     mkdirSync(join(root, 'e2e/visual/baz'), { recursive: true });
