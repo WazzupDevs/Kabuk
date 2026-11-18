@@ -29,7 +29,10 @@ export type PrototypeState = {
 // What the app's route is made to do after it has opened the state, before the photo
 // (flow.ts turns them into Maestro commands): a real button pressed or held (its testID), or time let run
 // (ms) for what the press opened to settle.
-export type AppStep = { bas: string } | { uzunBas: string } | { bekle: number };
+// `kaydir` drags the screen's content up by about that many dp (a slow drag from three quarters down
+// the screen: no fling), for a board that draws the screen scrolled.
+export type AppStep =
+  { bas: string } | { uzunBas: string } | { bekle: number } | { kaydir: number };
 
 // The board of the new canvas the state is drawn after (docs/design/yeni-arayuz/ESLEME.md): its
 // file's stem (`project/<dosya>.dc.html`), whose images are on the `pano-goruntuleri` branch as
@@ -153,6 +156,10 @@ export function parseStates(raw: unknown): GateConfig {
 
 const TEST_ID = /^[\p{L}\p{N}]+(-[\p{L}\p{N}]+)*$/u;
 
+// One drag starts three quarters down the screen and ends no higher than a tenth from its top.
+export const DRAG_FROM = 0.75;
+export const MAX_DRAG_DP = Math.floor(VIEWPORT_HEIGHT * (DRAG_FROM - 0.1));
+
 function checkAppSteps(id: string, steps: unknown): void {
   if (!Array.isArray(steps)) throw new Error(`states.json: ${id}: uygulamaAdimlar is a list`);
   for (const step of steps as unknown[]) {
@@ -166,10 +173,15 @@ function checkAppSteps(id: string, steps: unknown): void {
           typeof step.bekle === 'number' &&
           Number.isInteger(step.bekle) &&
           step.bekle > 0 &&
-          step.bekle <= 10000));
+          step.bekle <= 10000) ||
+        ('kaydir' in step &&
+          typeof step.kaydir === 'number' &&
+          Number.isInteger(step.kaydir) &&
+          step.kaydir > 0 &&
+          step.kaydir <= MAX_DRAG_DP));
     if (!ok) {
       throw new Error(
-        `states.json: ${id}: an app step is { "bas": "<testID>" }, { "uzunBas": "<testID>" } or { "bekle": <ms, 1 to 10000> }`,
+        `states.json: ${id}: an app step is { "bas": "<testID>" }, { "uzunBas": "<testID>" }, { "bekle": <ms, 1 to 10000> } or { "kaydir": <dp, 1 to ${MAX_DRAG_DP}> }`,
       );
     }
   }
