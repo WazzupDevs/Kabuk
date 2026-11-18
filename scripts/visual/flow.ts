@@ -65,12 +65,27 @@ function open(shot: Shot, n: number): string[] {
     '    commands:',
     '      - stopApp',
     ...[link, ...settle(60000, false)].map((l) => `      ${l}`),
-    // The route knows the state, and the list has its page count right (GateState).
+    // The route knows the state, and the list has its page count right (GateState): one n at a
+    // time, so a wrong count's failure names the count it takes (gate-report.ts → pageHints).
     '- assertNotVisible:',
     '    id: gorsel-yok',
+    ...pageCheck(),
+    ...appSteps(shot.state.uygulamaAdimlar ?? []),
+  ];
+}
+
+// GateState's wrong-page-count banner carries `gorsel-sayfa-gereken-<n>`, n the pages the state
+// takes; checked for 1 … PAGE_NEEDED_MAX by name, then the banner itself (a count above it).
+export const PAGE_NEEDED = 'gorsel-sayfa-gereken-';
+export const PAGE_NEEDED_MAX = 10;
+export function pageCheck(): string[] {
+  return [
+    ...Array.from({ length: PAGE_NEEDED_MAX }, (_, i) => [
+      '- assertNotVisible:',
+      `    id: ${PAGE_NEEDED}${i + 1}`,
+    ]).flat(),
     '- assertNotVisible:',
     '    id: gorsel-eksik-sayfa',
-    ...appSteps(shot.state.uygulamaAdimlar ?? []),
   ];
 }
 
@@ -86,16 +101,27 @@ const DISMISS_SYSTEM_DIALOG = [
   '          id: android:id/aerr_wait',
 ];
 
-// What the photo is cropped to: the frame, or the state's own element (`uygulamaKirp`).
-const cropId = (shot: Shot) => shot.state.uygulamaKirp ?? 'gorsel-cerceve';
+// What the photo is cropped to: the state's own element (`uygulamaKirp`), else the frame, except
+// after app steps: what they open (a menu) can be its own window (a Modal) above the route's, and
+// while it is open Maestro does not see the frame (PR #739's first run: "Element not found:
+// gorsel-cerceve"), so the whole screen is photographed. A full screen state's frame is the whole
+// screen anyway (780 × 1688); a dialog drawn in the route (ekran-semt-oturum-kapat) needs no step.
+export function cropId(shot: Shot): string | null {
+  if (shot.state.uygulamaKirp) return shot.state.uygulamaKirp;
+  if ((shot.state.uygulamaAdimlar ?? []).length > 0) return null;
+  return 'gorsel-cerceve';
+}
+const cropOn = (shot: Shot): string[] => {
+  const id = cropId(shot);
+  return id ? ['    cropOn:', `      id: ${id}`] : [];
+};
 
 function photo(prefix: string, shot: Shot): string[] {
   return [
     ...DISMISS_SYSTEM_DIALOG,
     '- takeScreenshot:',
     `    path: ${prefix}${shot.name}`,
-    '    cropOn:',
-    `      id: ${cropId(shot)}`,
+    ...cropOn(shot),
   ];
 }
 
@@ -118,8 +144,7 @@ export function flowFor(
     lines.push(
       '- assertScreenshot:',
       `    path: ${baselinePath(root, shot)}`,
-      '    cropOn:',
-      `      id: ${cropId(shot)}`,
+      ...cropOn(shot),
       `    thresholdPercentage: ${threshold}`,
     );
   }

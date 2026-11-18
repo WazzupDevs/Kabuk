@@ -116,7 +116,9 @@ export function GateState({
               backgroundColor: theme.colors.danger,
             }}
           >
-            <Text variant="label" tone="onDanger">
+            {/* The count in a testID too: the gate's flow names it when it fails
+                (scripts/visual/flow.ts → pageCheck). */}
+            <Text variant="label" tone="onDanger" testID={`gorsel-sayfa-gereken-${needed}`}>
               {tr.design.gate.pageCount(pages, needed)}
             </Text>
           </View>

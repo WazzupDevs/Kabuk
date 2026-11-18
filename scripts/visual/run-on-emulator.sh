@@ -35,12 +35,23 @@ maestro test "$OUT/akis" \
 mkdir -p "$OUT/aday" "$OUT/aday2"
 while IFS= read -r -d '' f; do
   name=$(basename "$f")
+  # A takeScreenshot that failed half way (its crop's element gone) leaves an empty file: not a
+  # candidate (the report names the shot as not photographed).
+  if [ ! -s "$f" ]; then
+    echo "skipped an empty candidate: $name"
+    continue
+  fi
   case "$name" in
     aday2__*) cp "$f" "$OUT/aday2/${name#aday2__}" ;;
     aday__*) cp "$f" "$OUT/aday/${name#aday__}" ;;
   esac
 done < <(find "$OUT/maestro" -type f -name 'aday*__*.png' -print0)
 echo "candidates: $(find "$OUT/aday" -name '*.png' | wc -l), again: $(find "$OUT/aday2" -name '*.png' | wc -l)"
+# The page counts the route asked for (GateState's banner, "Bu durum N sayfa, listede M"; the
+# flow's failure names it too, gorsel-sayfa-gereken-<n>), into the log: a session without the
+# artifact reads them there.
+grep -rhoE 'Bu durum [0-9]+ sayfa, listede [0-9]+|gorsel-sayfa-gereken-[0-9]+' "$OUT/maestro" "$OUT/report.xml" 2>/dev/null |
+  sort | uniq -c | sed 's/^/page count: /' || true
 # A failed assertScreenshot writes its diff (the differing areas boxed) beside the baseline,
 # <name>_diff.png (Maestro 2.10.0, ScreenshotMatch); moved out of the checkout into maestro-fark/.
 mkdir -p "$OUT/maestro-fark"

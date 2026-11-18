@@ -2,7 +2,7 @@
 // assertScreenshot: the app beside v46 (the soft similarity report, a decision for the CTO), two
 // photos of the same state (the noise the hard threshold is set above, in Maestro's own measure)
 // and Maestro's JUnit report (which shots failed the hard gate).
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
@@ -10,6 +10,30 @@ import { PNG } from 'pngjs';
 export function readPng(file: string): PNG {
   return PNG.sync.read(readFileSync(file));
 }
+
+// What a photo the report reads turned out to be: missing, there but not a PNG it can decode (an
+// empty file from a screenshot that failed half way, a cut one), or the image.
+export type PngRead =
+  { kind: 'missing' } | { kind: 'unreadable'; reason: string } | { kind: 'ok'; png: PNG };
+
+// readPng that never throws: one bad photo must not stop the report (gate-report.ts).
+export function tryReadPng(file: string): PngRead {
+  if (!existsSync(file)) return { kind: 'missing' };
+  let bytes: Buffer;
+  try {
+    bytes = readFileSync(file);
+  } catch (e) {
+    return { kind: 'unreadable', reason: e instanceof Error ? e.message : String(e) };
+  }
+  if (bytes.length === 0) return { kind: 'unreadable', reason: '0 bayt' };
+  try {
+    return { kind: 'ok', png: PNG.sync.read(bytes) };
+  } catch (e) {
+    return { kind: 'unreadable', reason: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export const pngOf = (r: PngRead): PNG | null => (r.kind === 'ok' ? r.png : null);
 
 // `png` on a w × h canvas, top left; the rest is magenta, so a size difference counts as a
 // difference.

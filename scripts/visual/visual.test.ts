@@ -13,8 +13,17 @@ import {
   padTo,
   similarity,
   thresholdFor,
+  tryReadPng,
 } from './compare.ts';
-import { appSteps, flowFor, NEVER_THERE, shotLink } from './flow.ts';
+import {
+  appSteps,
+  cropId,
+  flowFor,
+  NEVER_THERE,
+  PAGE_NEEDED_MAX,
+  pageCheck,
+  shotLink,
+} from './flow.ts';
 import { buildReport, pageHints } from './gate-report.ts';
 import { appFonts, fontFaces, pageScript, SCALE, VIEWPORT, withRoboto } from './prototype.ts';
 import { boardsWanted } from './render-pano.ts';
@@ -238,6 +247,7 @@ describe('visual gate: the Maestro flows', () => {
     expect(flow).toContain('id: gorsel-hazir-3');
     expect(flow).toContain('id: gorsel-yok');
     expect(flow).toContain('id: gorsel-eksik-sayfa');
+    expect(flow).toContain(`${pageCheck().join('\n')}\n`);
     expect(flow).toContain('path: aday__galeri-oyun-light-1');
     expect(flow).toContain('id: gorsel-cerceve');
     expect(flow).not.toContain('assertScreenshot');
@@ -254,6 +264,18 @@ describe('visual gate: the Maestro flows', () => {
     const flow = flowFor(root, shot ?? fail(), 1, 99.5, false);
     expect(flow).not.toContain('gorsel-cerceve');
     expect(flow.match(/cropOn:\n {6}id: gorsel-oge/g)).toHaveLength(2);
+  });
+
+  it('checks the page count one n at a time, so a failure names the count', () => {
+    const lines = pageCheck();
+    expect(lines.slice(0, 4)).toEqual([
+      '- assertNotVisible:',
+      '    id: gorsel-sayfa-gereken-1',
+      '- assertNotVisible:',
+      '    id: gorsel-sayfa-gereken-2',
+    ]);
+    expect(lines).toContain(`    id: gorsel-sayfa-gereken-${PAGE_NEEDED_MAX}`);
+    expect(lines.slice(-2)).toEqual(['- assertNotVisible:', '    id: gorsel-eksik-sayfa']);
   });
 
   it('presses Wait on a system "isn\'t responding" dialog before the photo', () => {
@@ -410,6 +432,7 @@ describe('visual gate: the report', () => {
       ok: true,
       failed: [],
       noCandidate: [],
+      unreadable: [],
       noBaseline: [],
       staleBaseline: [],
       worstNoise: null,
@@ -438,6 +461,7 @@ describe('visual gate: the report', () => {
       ok: false,
       failed: ['galeri-oyun-light-1'],
       noCandidate: ['oyun-x-dark-1'],
+      unreadable: [],
       noBaseline: ['galeri-oyun-dark-1'],
       staleBaseline: [],
       worstNoise: null,
@@ -474,6 +498,38 @@ describe('visual gate: the report', () => {
     );
     expect([...pageHints(out)]).toEqual([['galeri-oyun', { listed: 1, needed: 5 }]]);
     expect(buildReport(root, out).text).toContain('| galeri-oyun | 1 | 5 |');
+  });
+
+  it("names the page count from the failed flow's message (flow.ts → pageCheck)", () => {
+    photographAll();
+    baselines();
+    writeFileSync(
+      join(out, 'report.xml'),
+      '<testsuites><testsuite><testcase name="galeri-oyun-dark-1" status="ERROR"><failure>Assertion is false: id: gorsel-sayfa-gereken-2 is not visible</failure></testcase></testsuite></testsuites>',
+    );
+    expect(buildReport(root, out).text).toContain('| galeri-oyun | 1 | 2 |');
+  });
+
+  it('survives an empty or broken candidate: names it, fails, writes the rest', () => {
+    photographAll();
+    baselines();
+    writeFileSync(join(out, 'aday', 'galeri-oyun-dark-1.png'), '');
+    writeFileSync(join(out, 'aday', 'oyun-x-light-1.png'), 'not a png');
+    mkdirSync(join(out, 'aday2'), { recursive: true });
+    write(join(out, 'aday2', 'galeri-oyun-dark-1.png'), png(4, 4));
+    mkdirSync(join(out, 'prototip'), { recursive: true });
+    write(join(out, 'prototip', 'oyun-x-light.png'), png(4, 4));
+    write(join(out, 'prototip', 'oyun-x-dark.png'), png(4, 4));
+    writeFileSync(join(out, 'report.xml'), passing(all));
+    const { gate, text } = buildReport(root, out);
+    expect(gate.ok).toBe(false);
+    expect(gate.noCandidate).toEqual([]);
+    expect(gate.unreadable).toEqual(['galeri-oyun-dark-1', 'oyun-x-light-1']);
+    expect(text).toContain('Aday okunamadı');
+    expect(text).toContain('`galeri-oyun-dark-1` (0 bayt)');
+    expect(text).toContain('| oyun-x | light | – | – | okunamadı |');
+    expect(text).toContain('| oyun-x | dark | %100.0 |');
+    expect(text).toContain('| galeri-oyun-dark-1 | okunamadı |');
   });
 
   it("measures the noise of two photos of the same state in Maestro's measure", () => {
@@ -682,6 +738,27 @@ describe('visual gate: the app steps in the flow', () => {
     expect(flow.indexOf('- assertScreenshot:')).toBeGreaterThan(flow.indexOf('- takeScreenshot:'));
   });
 
+  it('photographs the whole screen after them: what they open can be its own window', () => {
+    const [shot] = shots(config);
+    mkdirSync(join(root, 'e2e/visual/baz'), { recursive: true });
+    write(join(root, 'e2e/visual/baz/ekran-x-light-1.png'), png(FRAME_WIDTH_PX, 2));
+    expect(cropId(shot ?? fail())).toBeNull();
+    const flow = flowFor(root, shot ?? fail(), 4, 99.5, false);
+    expect(flow).not.toContain('cropOn');
+    expect(flow).toContain('- takeScreenshot:\n    path: aday__ekran-x-light-1\n');
+    // Its own element, if it names one, still wins.
+    const own = shots({
+      esik: 99.5,
+      durumlar: [{ ...config.durumlar[0], id: 'ekran-y', uygulamaKirp: 'gorsel-oge' }],
+    } as GateConfig)[0];
+    expect(cropId(own ?? fail())).toBe('gorsel-oge');
+    // The repo's menu state, the one #739's first run lost.
+    const menu = shots(loadStates(ROOT)).find((s) => s.state.id === 'ekran-semt-secenekler');
+    expect(menu && cropId(menu)).toBeNull();
+    const dialog = shots(loadStates(ROOT)).find((s) => s.state.id === 'ekran-semt-oturum-kapat');
+    expect(dialog && cropId(dialog)).toBe('gorsel-cerceve');
+  });
+
   it('does them again for the second photo (TEKRAR), after its own open', () => {
     const [shot] = shots(config);
     const flow = flowFor(root, shot ?? fail(), 4, 99.5, true);
@@ -839,6 +916,40 @@ describe('visual gate: the report beside the board', () => {
     for (const theme of ['light', 'dark']) {
       expect(existsSync(join(out, 'yanyana', `ekran-x-${theme}.png`))).toBe(true);
     }
+  });
+
+  it('still writes the side by side image when the candidate is empty, its column labelled', () => {
+    write(join(out, 'pano', 'ekran-x-light.png'), png(4, 4));
+    write(join(out, 'pano', 'ekran-x-dark.png'), png(4, 4));
+    writeFileSync(join(out, 'aday', 'ekran-x-light-1.png'), '');
+    write(join(out, 'aday', 'ekran-x-dark-1.png'), png(4, 4));
+    const { gate, text } = buildReport(root, out);
+    expect(gate.unreadable).toEqual(['ekran-x-light-1']);
+    expect(text).toContain('| ekran-x | light | `Dar-acik.webp` | – | okunamadı / 4×4 |');
+    expect(text).toContain('| ekran-x | dark | `Dar-koyu.webp` | %100.0 | 4×4 / 4×4 |');
+    for (const theme of ['light', 'dark']) {
+      expect(existsSync(join(out, 'yanyana', `ekran-x-${theme}.png`))).toBe(true);
+    }
+  });
+});
+
+describe('visual gate: reading a photo that may be bad', () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'gorsel-'));
+  });
+  afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+  it('says missing, unreadable (empty, cut, not a PNG) or gives the image, never throws', () => {
+    expect(tryReadPng(join(dir, 'yok.png')).kind).toBe('missing');
+    writeFileSync(join(dir, 'bos.png'), '');
+    expect(tryReadPng(join(dir, 'bos.png'))).toEqual({ kind: 'unreadable', reason: '0 bayt' });
+    const whole = PNG.sync.write(png(8, 8));
+    writeFileSync(join(dir, 'kesik.png'), whole.subarray(0, whole.length - 20));
+    expect(tryReadPng(join(dir, 'kesik.png')).kind).toBe('unreadable');
+    writeFileSync(join(dir, 'iyi.png'), whole);
+    const ok = tryReadPng(join(dir, 'iyi.png'));
+    expect(ok.kind === 'ok' && ok.png.width).toBe(8);
   });
 });
 
