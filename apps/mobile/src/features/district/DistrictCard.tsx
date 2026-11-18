@@ -1,7 +1,7 @@
 import { secondsUntil } from '@shared/district.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
@@ -13,7 +13,6 @@ import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
-import { KIT } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
 import { gradientStyle } from '@/theme/gradient';
 import { SEMT } from '@/theme/semt';
@@ -65,7 +64,8 @@ export function DistrictCard() {
       <Scene
         room
         title={tr.district.card.inRoom(s.district.name)}
-        meta={grace ? tr.district.continueChip : tr.district.left(h, m)}
+        meta={grace ? tr.district.continueChip : tr.district.leftAmount(h, m)}
+        metaWord={grace ? undefined : tr.district.leftWord}
       >
         <CardButton
           label={tr.district.card.backToRoom}
@@ -114,6 +114,123 @@ export function DistrictCard() {
   );
 }
 
+// The card's small strip once it has scrolled under the pinned head (KesfetKaydir `.ssm`): the
+// same scene, its eyebrow and the district's name over the button. Only where the card has the
+// button to give (Semte git, Odaya dön); shut, outside and unread draw none.
+export function DistrictStrip() {
+  const state = useDistrictState();
+  const enter = useEnterDistrict({ replace: false });
+  if (!DISTRICT_VISIBLE || !state.data) return null;
+  const s = state.data;
+  if (s.session && s.district) {
+    return (
+      <StripFace
+        room
+        title={tr.district.card.inRoom(s.district.name)}
+        label={tr.district.card.backToRoom}
+        testID="district-strip-room"
+        onPress={() => router.push('/district/room')}
+      />
+    );
+  }
+  if (s.located === 'outside' || s.gate === 'failed') return null;
+  return (
+    <StripFace
+      title={
+        s.district ? tr.district.card.stripTitle(s.district.name) : tr.district.card.stripTitleNone
+      }
+      label={tr.district.card.go}
+      testID="district-strip-go"
+      loading={enter.isPending}
+      onPress={() => {
+        const to = districtScreen(s);
+        if (to) router.push(to);
+        else enter.mutate();
+      }}
+    />
+  );
+}
+
+function StripFace({
+  room,
+  title,
+  label,
+  testID,
+  loading,
+  onPress,
+}: {
+  room?: boolean;
+  title: string;
+  label: string;
+  testID: string;
+  loading?: boolean;
+  onPress: () => void;
+}) {
+  const k = EXPLORE.scene;
+  const g = EXPLORE.sticky;
+  const [width, setWidth] = useState(0);
+  // The scene covers the strip with its top 12 % kept (`object-position: 0% 12%`).
+  const pictureHeight = (width * 600) / 1050;
+  const eyebrow = room ? k.roomEyebrow : k.eyebrow;
+  return (
+    <View
+      testID="district-strip"
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{
+        height: g.stripHeight,
+        borderRadius: g.stripRadius,
+        overflow: 'hidden',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: g.stripGapIn,
+        paddingLeft: g.stripPadLeft,
+        paddingRight: g.stripPadRight,
+      }}
+    >
+      <Image
+        source={room ? SCENE_ROOM : SCENE}
+        fadeDuration={0}
+        resizeMode="cover"
+        accessible={false}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: Math.min(0, (g.stripHeight - pictureHeight) * g.stripPicturePos),
+          width,
+          height: Math.max(pictureHeight, g.stripHeight),
+        }}
+      />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: k.eyebrowGap }}>
+          <View
+            style={{
+              width: g.stripDot,
+              height: g.stripDot,
+              borderRadius: g.stripDot / 2,
+              backgroundColor: room ? k.roomDot : k.eyebrow,
+            }}
+          />
+          <T v="mapLegend" color={eyebrow} style={{ letterSpacing: 0.24 }}>
+            {upperTr(room ? tr.district.card.roomEyebrow : tr.district.card.sceneEyebrow)}
+          </T>
+        </View>
+        <T v="kesfetEmptyTitle" strong color={k.title}>
+          {title}
+        </T>
+      </View>
+      <Btn
+        sm
+        variant="primary"
+        label={label}
+        testID={testID}
+        loading={loading}
+        onPress={onPress}
+        look={{ padLeft: g.stripButtonPadX, padRight: g.stripButtonPadX }}
+      />
+    </View>
+  );
+}
+
 // The board's riso scenes under the card (Kesfet: the gate; KesfetSemtIcerde: the bench, in the
 // room). In both schemes alike: the board draws the same picture on the dark side.
 const SCENE = require('../../../assets/riso/semt/kesfet-semt.webp') as ImageSourcePropType;
@@ -127,12 +244,15 @@ function Scene({
   title,
   note,
   meta,
+  metaWord,
   children,
 }: {
   room?: boolean;
   title: string;
   note?: string;
+  // The time in bold, then its word (KesfetSemtIcerde `.tm`: `<b>1 sa 24 dk</b> kaldı`).
   meta?: string;
+  metaWord?: string;
   children: ReactNode;
 }) {
   const k = EXPLORE.scene;
@@ -183,9 +303,14 @@ function Scene({
             }}
           >
             <CapIcon name="clock" color={k.eyebrow} size={k.metaIcon} />
-            <T v="semtMeta" color={k.meta}>
+            <T v="semtMeta" strong={metaWord !== undefined} color={metaWord ? k.title : k.meta}>
               {meta}
             </T>
+            {metaWord ? (
+              <T v="semtMeta" color={k.meta}>
+                {metaWord}
+              </T>
+            ) : null}
           </View>
         ) : null}
         <View style={{ flexGrow: 1 }} />
@@ -386,11 +511,7 @@ function CardButton({
         loading={loading}
         testID={testID}
         onPress={onPress}
-        trail={
-          soft ? undefined : (
-            <CapIcon name="forward" color={KIT.onPrimary} size={EXPLORE.district.chevron} />
-          )
-        }
+        look={{ padLeft: EXPLORE.scene.buttonPadX, padRight: EXPLORE.scene.buttonPadX }}
       />
     </View>
   );

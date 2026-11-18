@@ -21,6 +21,7 @@ import { describeEventTime } from '@shared/explore.ts';
 import { type ReactNode, useMemo, useRef, useState } from 'react';
 import { Image, type ImageSourcePropType, View } from 'react-native';
 import { useKeyboardState } from 'react-native-keyboard-controller';
+import Svg, { Line, Path } from 'react-native-svg';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Glass, Li, RowList, Round, T, Tag, useKit } from '@/aura/kit';
@@ -92,7 +93,10 @@ export function ExploreMap({
   empty,
   headerHeight,
   tabBarHeight,
+  initialSelected,
 }: {
+  // The venue chosen when it opens (the visual gate's card).
+  initialSelected?: string;
   venues: readonly ExploreVenue[];
   // The list's words for an empty result, by its cause (kabul raporu §9.1).
   empty: { title: string; hint: string | null };
@@ -106,7 +110,7 @@ export function ExploreMap({
   const camera = useRef<CameraRef>(null);
   const map = useRef<MapRef>(null);
   const source = useRef<GeoJSONSourceRef>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(initialSelected ?? null);
   // E2E waits on this (testID below): the style, its glyphs and the venue layers are drawn.
   const [ready, setReady] = useState(false);
 
@@ -619,23 +623,8 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
     : null;
   return (
     <Tap accessibilityLabel={venue.name} onPress={() => openVenue(venue.id)}>
-      <MapFace testID="explore-map-card" row>
-        <View>
-          <VenueThumb kind={type} size={m.picture} radius={m.pictureRadius} shadow="" />
-          <Image
-            source={BUDDY}
-            fadeDuration={0}
-            resizeMode="contain"
-            accessible={false}
-            style={{
-              position: 'absolute',
-              right: m.buddy.right,
-              bottom: m.buddy.bottom,
-              width: m.buddy.width,
-              height: m.buddy.height,
-            }}
-          />
-        </View>
+      <Ticket testID="explore-map-card" picture={TICKET_PICTURE[type]}>
+        <VenueThumb kind={type} size={m.picture} radius={m.pictureRadius} shadow="" />
         <View style={{ flex: 1, minWidth: 0, gap: EXPLORE.row.lineGap }}>
           <T v="mapName">{venue.name}</T>
           <T v="kesfetSub" color={c.muted}>
@@ -661,13 +650,98 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
         >
           <CapIcon name="forward" color={colors.accent} size={m.goIcon} />
         </Round>
-      </MapFace>
+      </Ticket>
     </Tap>
   );
 }
 
-// A buddy at the map card's picture (assets/riso/buddies).
-const BUDDY = require('../../../assets/riso/buddies/riso_6f419d.webp') as ImageSourcePropType;
+// The ticket's picture block, the venue's type picture (the list rows' own files).
+const TICKET_PICTURE: Record<ReturnType<typeof venueType>, ImageSourcePropType> = {
+  kafe: require('../../../assets/riso/venue-kafe.webp') as ImageSourcePropType,
+  cay: require('../../../assets/riso/venue-cay.webp') as ImageSourcePropType,
+  yemek: require('../../../assets/riso/venue-yemek.webp') as ImageSourcePropType,
+  kampus: require('../../../assets/riso/venue-kampus.webp') as ImageSourcePropType,
+};
+
+// The map card as the board draws it (KesfetHarita `.vc`): a ticket. The picture's block at the left
+// edge, a notch at the top and foot of the perforation 104 in with a dashed line between them, then
+// the 56 picture, the words and the round; the face white (the dark scheme's #121614) with the
+// shape cut out of it, so the map shows through the notches; no shadow (the board's mask cuts it).
+function Ticket({
+  testID,
+  picture,
+  children,
+}: {
+  testID: string;
+  picture: ImageSourcePropType;
+  children: ReactNode;
+}) {
+  const { scheme } = useKit();
+  const m = EXPLORE.map;
+  const k = m.ticket;
+  const face = EXPLORE[scheme].solid;
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  const { w, h } = box;
+  const r = m.cardRadius;
+  const n = k.notch;
+  // Clockwise from the top left, the notches bitten into the top and foot edges.
+  const shape =
+    `M${r} 0H${k.cut - n}A${n} ${n} 0 0 0 ${k.cut + n} 0H${w - r}A${r} ${r} 0 0 1 ${w} ${r}` +
+    `V${h - r}A${r} ${r} 0 0 1 ${w - r} ${h}H${k.cut + n}A${n} ${n} 0 0 0 ${k.cut - n} ${h}` +
+    `H${r}A${r} ${r} 0 0 1 0 ${h - r}V${r}A${r} ${r} 0 0 1 ${r} 0Z`;
+  return (
+    <View
+      testID={testID}
+      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
+      style={{
+        minHeight: m.cardMinHeight,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: m.cardGap,
+        paddingVertical: m.cardPad,
+        paddingRight: m.cardPad,
+        paddingLeft: k.block + k.blockGap + m.cardGap,
+      }}
+    >
+      {w > 0 ? (
+        <Svg width={w} height={h} style={{ position: 'absolute', left: 0, top: 0 }}>
+          <Path d={shape} fill={face.fill} stroke={face.edge} strokeWidth={1} />
+          <Line
+            x1={k.cut}
+            x2={k.cut}
+            y1={k.lineIn}
+            y2={h - k.lineIn}
+            stroke={scheme === 'light' ? k.lineLight : k.lineDark}
+            strokeWidth={k.line}
+            strokeDasharray={k.dash.join(' ')}
+          />
+        </Svg>
+      ) : null}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: k.block,
+          borderTopLeftRadius: r,
+          borderBottomLeftRadius: r,
+          overflow: 'hidden',
+        }}
+      >
+        <Image
+          source={picture}
+          fadeDuration={0}
+          resizeMode="cover"
+          accessible={false}
+          style={{ width: k.block, height: '100%' }}
+        />
+      </View>
+      {children}
+    </View>
+  );
+}
 
 // A stack's venues (one address, one disc on the map): each a row to its page.
 function StackCard({ venues }: { venues: readonly ExploreVenue[] }) {

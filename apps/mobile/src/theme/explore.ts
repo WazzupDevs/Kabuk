@@ -27,6 +27,9 @@ export const EXPLORE = {
     side: 20,
     titleTop: 4,
     fieldTop: 66,
+    // KesfetAra, KesfetAraBos `.sr{margin-top:56}`: with something typed the line, the question and
+    // the buddies are gone and the search stands 56 under the content's top.
+    searchTop: 56,
     chipsTop: 10,
     districtTop: 20,
     sectionTop: 24,
@@ -45,7 +48,11 @@ export const EXPLORE = {
   // place line, 24 from the sides; the riso 100 × 82 and 120 × 98; the title 12 under it, the
   // sentence 4 under that and 240 wide at most.
   empty: {
-    top: 10,
+    // 6 here and the rows' 4 over it: the board's 10 under the place line.
+    top: 6,
+    // KesfetAraBos `.emp{padding:0 24px 150px}`: the search that finds nothing stands in the
+    // middle of what is left above this much.
+    bottom: 150,
     side: 24,
     list: { width: 100, height: 82 },
     search: { width: 120, height: 98 },
@@ -71,6 +78,8 @@ export const EXPLORE = {
     metaTop: 8,
     metaGap: 6,
     metaIcon: 18,
+    // The button's 18 at either side (`.semt .btn`: padding 0 18).
+    buttonPadX: 18,
     eyebrow: '#7CF0B0',
     roomEyebrow: '#FF8FB8',
     roomDot: '#FF4F8B',
@@ -78,6 +87,25 @@ export const EXPLORE = {
     title: '#FFFFFF',
     note: 'rgba(255, 255, 255, 0.8)',
     meta: 'rgba(255, 255, 255, 0.86)',
+  },
+  // The head pinned once scrolled (KesfetKaydir `.sbar2`): the search, the chips and, once Semte Git's
+  // card has gone under it, its small strip (`.ssm`: 60 high, 18 round, 0 10 0 16 in, 10 between its
+  // parts; its eyebrow's dot 7; the button's 14 in), 10 under the chips. The strip comes in over
+  // `from` to `to` px past the pin: the card (20 under the chips, 200 high) is under the band by
+  // `to`.
+  sticky: {
+    stripGap: 10,
+    stripHeight: 60,
+    stripRadius: 18,
+    stripPadLeft: 16,
+    stripPadRight: 10,
+    stripGapIn: 10,
+    stripDot: 7,
+    stripButtonPadX: 14,
+    // `.ssm img{object-position:0% 12%}`.
+    stripPicturePos: 0.12,
+    from: 150,
+    to: 220,
   },
   // The kind chips (`.ch .chip`): 14 in, 8 apart, each growing to share the row.
   chip: { padX: 14, gap: 8 },
@@ -140,7 +168,20 @@ export const EXPLORE = {
     cardMinHeight: 96,
     picture: 56,
     pictureRadius: 16,
-    buddy: { width: 26, height: 34, right: -8, bottom: -6 },
+    // The card as a ticket (`.vc .bl`, `.pf`): the picture's block 94 wide at the left edge, 6 and
+    // then the 18 gap before the 56 picture; the perforation 104 from the left: a notch of 10.5 at
+    // top and foot and a dashed 2 line between them, 14 in from both.
+    ticket: {
+      block: 94,
+      blockGap: 6,
+      cut: 104,
+      notch: 10.5,
+      line: 2,
+      lineIn: 14,
+      dash: [6, 4],
+      lineLight: 'rgba(3, 27, 11, 0.35)',
+      lineDark: 'rgba(255, 255, 255, 0.3)',
+    },
     goIcon: 18,
     control: 48,
     controlOver: 12,
