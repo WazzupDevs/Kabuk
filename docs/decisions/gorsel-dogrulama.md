@@ -25,3 +25,13 @@ Ek kararlar (18 Kasım): pano görüntüleri bir kez çizilip ayrı bir dala yaz
 Bu düzenin yakalayamayacakları: gerçek sunucu verisiyle çıkan hâller, hareket ve zamanlama, cam ve bulanıklık, dokunsal geri bildirim, büyük yazı ve 320 dp (durumu yazılmadıkça), cihaz farkı. En büyük belirsizlik: panoların tuvaldeki gibi çizilebilmesi ve 390 dp emülatörde var olan bazların tutması.
 
 Kurulana kadar: #734 (Ayarlar) ve Mesajlar/DM paketi `ci` yeşil olsa da birleştirilmez; kanıtları pilotla gelir.
+
+## 18 Kasım öğle: pilotun sonucu ve beş karar
+
+Pilot bitti: çekim durumları #740, Ayarlar ailesi #734 (7 pano), Mesajlar, Arşiv ve DM #737 (13 pano) görüntüyle doğrulanıp birleşti. Hatalı sürümde denetçi 25-30 fark buldu; benzerlik yüzdesi tek başına yanıltıcı çıktı (baştan sona farklı Hesap ekranı %95). Bir aile CI ile yaklaşık 2,5 saat sürdü, çoğu koşu beklemekti. Proje sahibinin kararları (sohbette, seçenekli):
+
+1. **Mesaj menüsünde "Bildir":** satır çizilir ve var olan konuşma bildirimine (`safety` → `report`, `target: 'dm'`) bağlanır; tek mesajı bildiren uç yazılmaz.
+2. **Paralel yazan ajan:** dosyaları kesişmeyen ayrı ailelerde aynı anda iki yazan ajan çalışabilir; ortak parça işi tek ajandadır (11 Kasım'ın "en çok bir yazan ajan" kuralının yerine).
+3. **Doğrulama kapsamı:** her ekran en az bir kez, artı yapısı değişen hâller (boş, menü açık, dialog, hata), iki temada; yalnız verisi değişen hâl çekilmez.
+4. **Emülatör:** proje sahibi bir bilgisayarını iki emülatörle (390×844, yoğunluk 320) Remote Control üzerinden bağlar; görsel kanıt oradan alınır.
+5. **CI:** entegrasyon testleri yalnız sunucu ya da ortak kod (`supabase/`, `_shared/`) değişen PR'da koşar; GitHub'daki görsel kapı gece koşusunda kalır; kanıt adımı ve hızlı denetimler her PR'da kalır. `ci.yml` değişikliği ayrı PR'dır; CLAUDE.md → "Çalışma şekli" o PR'da güncellenir.
