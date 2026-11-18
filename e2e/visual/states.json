@@ -24,7 +24,6 @@
     {
       "id": "ekran-dm",
       "app": "ekran/dm",
-      "baz": false,
       "prototip": {
         "dosya": "docs/design/sistem/ekran/Dm.html",
         "adimlar": [],
@@ -37,7 +36,6 @@
     {
       "id": "ekran-dm-mesaj-menu",
       "app": "ekran/dm/tepkili",
-      "baz": false,
       "pano": {
         "dosya": "DmMesajMenu"
       },
@@ -53,7 +51,6 @@
     {
       "id": "ekran-dm-menu-sure-doldu",
       "app": "ekran/dm",
-      "baz": false,
       "pano": {
         "dosya": "DmMenuSureDoldu"
       },
@@ -147,7 +144,6 @@
     {
       "id": "ekran-mesajlar",
       "app": "ekran/mesajlar",
-      "baz": false,
       "pano": {
         "dosya": "Main"
       }
@@ -155,7 +151,6 @@
     {
       "id": "ekran-mesajlar-uzun-bas",
       "app": "ekran/mesajlar",
-      "baz": false,
       "pano": {
         "dosya": "MesajlarUzunBas"
       },
@@ -171,7 +166,6 @@
     {
       "id": "ekran-mesajlar-sabit-uzun-bas",
       "app": "ekran/mesajlar",
-      "baz": false,
       "pano": {
         "dosya": "MesajlarUzunBasSabit"
       },
@@ -187,7 +181,6 @@
     {
       "id": "ekran-mesajlar-sil-onay",
       "app": "ekran/mesajlar",
-      "baz": false,
       "pano": {
         "dosya": "MesajlarSohbetSil"
       },
@@ -209,7 +202,6 @@
     {
       "id": "ekran-mesajlar-bos",
       "app": "ekran/mesajlar/bos",
-      "baz": false,
       "pano": {
         "dosya": "MesajlarBos"
       }
@@ -233,7 +225,6 @@
     {
       "id": "ekran-mesajlar-sabit-dolu",
       "app": "ekran/mesajlar/sabit-dolu",
-      "baz": false,
       "pano": {
         "dosya": "MesajlarSabitDolu"
       },
@@ -249,7 +240,6 @@
     {
       "id": "ekran-mesajlar-arsiv-rozet",
       "app": "ekran/mesajlar/arsiv-rozet",
-      "baz": false,
       "pano": {
         "dosya": "MesajlarArsivRozet"
       }
@@ -257,7 +247,6 @@
     {
       "id": "ekran-arsiv",
       "app": "ekran/arsiv",
-      "baz": false,
       "pano": {
         "dosya": "Arsiv"
       }
@@ -265,7 +254,6 @@
     {
       "id": "ekran-arsiv-uzun-bas",
       "app": "ekran/arsiv",
-      "baz": false,
       "pano": {
         "dosya": "ArsivUzunBas"
       },
@@ -281,7 +269,6 @@
     {
       "id": "ekran-arsiv-bos",
       "app": "ekran/arsiv/bos",
-      "baz": false,
       "pano": {
         "dosya": "ArsivBos"
       }

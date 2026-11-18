@@ -17,13 +17,8 @@
     "acilis": "Mesajlar sekmesi",
     "tema": "acik",
     "durum": "ekran-mesajlar",
-    "hal": "eski",
-    "muaf": [
-      {
-        "pr": 734,
-        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
-      }
-    ]
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01",
@@ -43,13 +38,8 @@
     "acilis": "Mesajlar sekmesi",
     "tema": "koyu",
     "durum": "ekran-mesajlar",
-    "hal": "eski",
-    "muaf": [
-      {
-        "pr": 734,
-        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
-      }
-    ]
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01b",
@@ -109,7 +99,8 @@
     "acilis": "Mesajlar → bir sohbete uzun bas",
     "tema": "acik",
     "durum": "ekran-mesajlar-uzun-bas",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01c",
@@ -125,7 +116,8 @@
     "acilis": "Mesajlar → bir sohbete uzun bas",
     "tema": "koyu",
     "durum": "ekran-mesajlar-uzun-bas",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01d",
@@ -141,7 +133,8 @@
     "acilis": "Mesajlar → sabitli sohbete uzun bas",
     "tema": "acik",
     "durum": "ekran-mesajlar-sabit-uzun-bas",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01d",
@@ -157,7 +150,8 @@
     "acilis": "Mesajlar → sabitli sohbete uzun bas",
     "tema": "koyu",
     "durum": "ekran-mesajlar-sabit-uzun-bas",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01e",
@@ -173,13 +167,8 @@
     "acilis": "Mesajlar → sohbete uzun bas → Sohbeti sil",
     "tema": "acik",
     "durum": "ekran-mesajlar-sil-onay",
-    "hal": "eski",
-    "muaf": [
-      {
-        "pr": 734,
-        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
-      }
-    ]
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01e",
@@ -195,13 +184,8 @@
     "acilis": "Mesajlar → sohbete uzun bas → Sohbeti sil",
     "tema": "koyu",
     "durum": "ekran-mesajlar-sil-onay",
-    "hal": "eski",
-    "muaf": [
-      {
-        "pr": 734,
-        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
-      }
-    ]
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01f",
@@ -217,7 +201,8 @@
     "acilis": "Mesajlar → Arşivlenenler",
     "tema": "acik",
     "durum": "ekran-arsiv",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01f",
@@ -233,7 +218,8 @@
     "acilis": "Mesajlar → Arşivlenenler",
     "tema": "koyu",
     "durum": "ekran-arsiv",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01g",
@@ -247,7 +233,8 @@
     "acilis": "Mesajlar → Arşivlenenler → bir sohbete uzun bas",
     "tema": "acik",
     "durum": "ekran-arsiv-uzun-bas",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01g",
@@ -261,7 +248,8 @@
     "acilis": "Mesajlar → Arşivlenenler → bir sohbete uzun bas",
     "tema": "koyu",
     "durum": "ekran-arsiv-uzun-bas",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01h",
@@ -275,7 +263,8 @@
     "acilis": "Mesajlar → Arşivlenenler, arşivde sohbet yokken",
     "tema": "acik",
     "durum": "ekran-arsiv-bos",
-    "hal": "yazildi"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "01h",
@@ -289,7 +278,8 @@
     "acilis": "Mesajlar → Arşivlenenler, arşivde sohbet yokken",
     "tema": "koyu",
     "durum": "ekran-arsiv-bos",
-    "hal": "yazildi"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "02",
@@ -310,7 +300,8 @@
     "acilis": "Mesajlar → bir sohbete bas",
     "tema": "acik",
     "durum": "ekran-dm",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "02",
@@ -331,7 +322,8 @@
     "acilis": "Mesajlar → bir sohbete bas",
     "tema": "koyu",
     "durum": "ekran-dm",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "02b",
@@ -347,7 +339,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-dm-mesaj-menu",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "02b",
@@ -363,7 +356,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-dm-mesaj-menu",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "02c",
@@ -5304,7 +5298,8 @@
     "acilis": "Mesajlar → beş sabit varken sohbete uzun bas",
     "tema": "acik",
     "durum": "ekran-mesajlar-sabit-dolu",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "104",
@@ -5321,7 +5316,8 @@
     "acilis": "Mesajlar → beş sabit varken sohbete uzun bas",
     "tema": "koyu",
     "durum": "ekran-mesajlar-sabit-dolu",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "105",
@@ -5336,7 +5332,8 @@
     "acilis": "Mesajlar sekmesi, arşivde okunmamış varken",
     "tema": "acik",
     "durum": "ekran-mesajlar-arsiv-rozet",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "105",
@@ -5351,7 +5348,8 @@
     "acilis": "Mesajlar sekmesi, arşivde okunmamış varken",
     "tema": "koyu",
     "durum": "ekran-mesajlar-arsiv-rozet",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "106",
@@ -5411,7 +5409,8 @@
     "acilis": "",
     "tema": "acik",
     "durum": "ekran-dm-menu-sure-doldu",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "107",
@@ -5429,7 +5428,8 @@
     "acilis": "",
     "tema": "koyu",
     "durum": "ekran-dm-menu-sure-doldu",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "108",
@@ -5485,7 +5485,8 @@
     "acilis": "Mesajlar sekmesi, hiç sohbet yokken",
     "tema": "acik",
     "durum": "ekran-mesajlar-bos",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "109",
@@ -5499,7 +5500,8 @@
     "acilis": "Mesajlar sekmesi, hiç sohbet yokken",
     "tema": "koyu",
     "durum": "ekran-mesajlar-bos",
-    "hal": "eski"
+    "hal": "goruntuyle-dogrulandi",
+    "kanit": 737
   },
   {
     "pano": "110",
