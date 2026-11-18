@@ -12,7 +12,7 @@ Bu karar şunları değiştirir; metinleri uygulamanın PR'ında güncellenir: C
 
 ## Açık kalanlar (proje sahibine soruldu, yanıt bekliyor)
 
-- Gezinme ve bildirim düğmeleri (geri, ⋮, bildirim, kimlik seçici) de gizlensin mi? Önizlemede hepsi gizleniyor ve proje sahibi önizlemeyi onayladı; oturumun önerisi bu düğmelerin kalmasıydı. Uygulamadan önce tek soruyla netleştirilir.
+- **Cevaplandı (18 Kasım gece):** gezinme ve bildirim düğmeleri (geri, ⋮, bildirim, kimlik seçici) de üst bölümle birlikte gizlenir, önizlemedeki gibi.
 - Sıradaki ekranlar galeriye eklenecek: Aktiviteler (Etkinlikler, Geçmiş), Mekân → Masalar, Arşiv, Profilim, başkasının profili, mekan detayı, Hesap, Profili düzenle, yasal metin, kapsül galerisi, Tüm aksesuarlar, masada oyun seç.
 - Tuvalin hareket kuralı ("kaydırmaya bağlı hareketler doğrusaldır ve azaltta durur") gizlenip geri gelen davranışın oturma geçişiyle birlikte yeniden yazılmalı; "hareketi azalt" açıkken oturma anında olur.
 

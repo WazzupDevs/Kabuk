@@ -1,5 +1,13 @@
 # İlerleme
 
+## Devir notu (18 Kasım 2026, gece): gören oturum kararı, iki aile doğrulamada
+
+- Proje sahibi yeni çalışma düzenini onayladı (`docs/decisions/calisma-duzeni.md`): ekran işleri emülatörlü yerel oturumda (geliştirme sürümü + Metro; yönerge sohbette verildi, kurulup kurulmadığı bilinmiyor), bulut oturumu sunucu ve takip; sonra bir kerelik tuval–kit eşlemesi, pano parmak izi, durum tablosu. Tarayıcı ön izleme denemesi `claude/web-onizleme` dalında (ajan çalışıyordu; sonucu görülmedi).
+- Açık, taslak, kanıt bekliyor: #745 Keşfet (beşinci çekim koşuyordu: çip satırı düz satır oldu, kaydırılmış hâlde şeridin yeri; tur 2'de altı görünüm temizdi) ve #747 profil (üçüncü çekim koşuyordu; tur 2'de 7 görünüm temiz, kalan: dar düzen, kaydırılmış bant, menü, engelle onayı, istek, ortak arkadaş yüzü). Çalışma kopyaları `.claude/worktrees/agent-a7166515…` (Keşfet), `agent-a4b7edca…` (profil); birleşince `git worktree remove`.
+- Birleşenler: #744 CI orta yol (entegrasyon yalnız sunucuya değebilecek PR'da), #746 çekime `kaydir` adımı ve APK indirmesinde yeniden deneme, #748 PR koşusu yalnız kendi durumlarını çeker (88 çekim 40 dakikaya sığmadı). Kaydırma sorusu cevaplandı: hepsi gizlenir.
+- Bilinenler: entegrasyon koşusunda yerel fonksiyon sunucusu bir kez `exit 135` ile çıktı ve `checkin/check-in` 502 aldı (nedeni aranmadı); derlemede bir kez Maven'dan bouncycastle sürüm listesi okunamadı (yeniden koşuda geçti); açık temada çekimde durum çubuğu simgeleri soluk; Engelle ikonu 23 yerde panodaki yasak işaretine döndü; menünün kırmızı satır ikon gövdesi yarı saydam oldu (ortak `Menu.tsx`).
+- Panodan bilerek ayrılanlar proje sahibine yazıldı (Keşfet: masa sayıları, konum, "Yol tarifi", pin hapı, tür resmi; profil: ÖNERİ notları, şikayette not alanı, doğum tarihi değeri, kapak çipi menüsü); `davranis-eksikleri.md`'ye henüz işlenmedi.
+
 ## Devir notu (18 Kasım 2026, öğle): görsel doğrulama çalışıyor, iki aile doğrulandı
 
 - Düzen uçtan uca çalışıyor (#738, #739, pilot #740): PR'a `gorsel` etiketi → görsel koşu → günlük `gh api repos/WazzupDevs/Kabuk/actions/jobs/<id>/logs` ile iner (MCP günlük aracı büyük günlükte düşüyor) → `pnpm visual:yerel -- --log … --out …` (`PLAYWRIGHT_CHROMIUM=/usr/bin/google-chrome`) → `gorsel-denetci` (orta model yetiyor) → düzeltme → temizse `states.json`'dan `baz: false` kalkar, `pnpm visual:accept -- --log …`, kapsam satırı `goruntuyle-dogrulandi` + `kanit`, `gorsel-baz` etiketi. Benzerlik yüzdesi yanıltır (boş zemin); hükmü denetçi verir. Çekimde sabit ~19 dp üst kayma ve alt gezinme payı cihaz farkıdır, sekme çubuğu çizilmez.
