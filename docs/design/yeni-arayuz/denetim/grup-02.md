@@ -3,7 +3,7 @@
 Notlar: Pano değerleri skall.css + ekran.css + koyu.css + pano içi `<style>` ile çözüldü. Kod değerleri `KIT.size.*`, `SETTINGS`, `FLAT`, `MESSAGES`, `ACTIVITIES`, `GIFT_CARD`, `KIT.layer.size.*` ve `tr.ts` ile sayıya kadar çözüldü. Kapsül ikonlarının iç çizgileri (SVG yolları) tek tek karşılaştırılmadı: yalnız ad ve boy. Telefonun alt güvenli alanı panoda 34 sabit; koddaki değer cihaza bağlı olduğundan alt boşluklar için DOĞRULANAMADI yazıldı. Ortak parçalar (sayfa üstü, dialog, sekme çubuğu, küçük düğme) ilk geçtiği panoda tam yazıldı.
 
 ## 03o Ayarlar · Hesabı sil onayı — project/AyarHesapSil.dc.html
-Kod: app/(app)/settings-account.tsx; src/motion/Dialog.tsx; src/components/OverlayHost.tsx; src/lib/overlayStore.ts; src/features/settings/SettingsRow.tsx; src/aura/kit.tsx (RowList, Li, Btn)
+Kod: app/(app)/settings-account.tsx; src/motion/Dialog.tsx; src/components/OverlayHost.tsx; src/lib/overlayStore.ts; src/features/settings/SettingsParts.tsx; src/aura/kit.tsx (RowList, Li, Btn)
 Öğe sayısı: 30 · uyuyor: 11 · fark: 17 · fazla: 1 · doğrulanamadı: 2
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |

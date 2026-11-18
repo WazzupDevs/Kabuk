@@ -850,7 +850,7 @@
       "apps/mobile/app/(app)/settings-account.tsx",
       "apps/mobile/src/aura/kit.tsx",
       "apps/mobile/src/components/OverlayHost.tsx",
-      "apps/mobile/src/features/settings/SettingsRow.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx",
       "apps/mobile/src/lib/overlayStore.ts",
       "apps/mobile/src/motion/Dialog.tsx"
     ],
@@ -868,7 +868,7 @@
       "apps/mobile/app/(app)/settings-account.tsx",
       "apps/mobile/src/aura/kit.tsx",
       "apps/mobile/src/components/OverlayHost.tsx",
-      "apps/mobile/src/features/settings/SettingsRow.tsx",
+      "apps/mobile/src/features/settings/SettingsParts.tsx",
       "apps/mobile/src/lib/overlayStore.ts",
       "apps/mobile/src/motion/Dialog.tsx"
     ],
