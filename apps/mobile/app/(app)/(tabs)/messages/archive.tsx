@@ -47,21 +47,20 @@ export default function ArchiveScreen() {
         side={M.side}
         barSide={M.side}
         barTop={B.top}
-        padTop={B.fieldTop}
+        padTop={M.archiveTop.fieldTop}
         gap={M.gap}
         top={
-          // `.ptop`: the round back button and the title over "N sohbet", 12 apart (Arkadaşlar's
-          // top row).
-          <View
-            style={{ flexDirection: 'row', alignItems: 'center', gap: B.gap, minHeight: B.row }}
-          >
+          // `.ptop`: the round back button and the title over "N sohbet", 12 apart.
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: B.gap }}>
             <BarBack side={KIT.size.round} />
             <View style={{ flex: 1 }}>
               <T v="pageBarTitle" accessibilityRole="header">
                 {tr.messages.archived}
               </T>
               {archived.length > 0 ? (
-                <T v="fine">{tr.messages.archivedCount(archived.length)}</T>
+                <T v="fine" style={{ marginTop: M.archiveTop.countTop }}>
+                  {tr.messages.archivedCount(archived.length)}
+                </T>
               ) : null}
             </View>
           </View>
