@@ -26,7 +26,7 @@ import { Redirect, router } from 'expo-router';
 import { useEffect, useEffectEvent, useMemo, useReducer, useState } from 'react';
 import { View } from 'react-native';
 
-import { Btn, Round, T, useKit } from '@/aura/kit';
+import { Btn, T, useKit } from '@/aura/kit';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { ChatBubble, skinMovers } from '@/components/ChatBubble';
@@ -35,12 +35,13 @@ import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
-import { ChatEmptyCard } from '@/components/ChatEmptyCard';
+import { ChatEmptyCard, ChatSuggestions } from '@/components/ChatEmptyCard';
 import { IdentityToggle } from '@/components/IdentityToggle';
 import { Loader } from '@/components/Loader';
 import { ChatLookAvatar, LookAvatar } from '@/components/LookAvatar';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
+import { ChatOptionsMenu } from '@/features/chat/ChatOptionsMenu';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useFreshLine } from '@/features/chat/fresh';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
@@ -49,7 +50,7 @@ import { useOlderPages } from '@/features/chat/useOlderPages';
 import { asksToContinue } from '@/features/district/continueNotice';
 import { TimeChip } from '@/features/district/parts';
 import { PeopleSheet } from '@/features/district/People';
-import { DISTRICT_MUTES_KEY, OptionsSheet, useEndSession } from '@/features/district/RoomSheets';
+import { DISTRICT_MUTES_KEY, useEndSession } from '@/features/district/RoomSheets';
 import {
   districtKeys,
   putDistrictState,
@@ -64,6 +65,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, districtApi, districtChatApi, friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { haptic } from '@/lib/haptics';
 import { closeOverlay, confirm } from '@/lib/overlayStore';
 import { requestKey } from '@/lib/requestKey';
 import { useFlash } from '@/lib/useFlash';
@@ -71,10 +73,10 @@ import { useNow } from '@/lib/useNow';
 import { nameInk } from '@/theme/nameInk';
 import { KIT } from '@/theme/auraKit';
 import { CHAT_LOOK } from '@/theme/chatLook';
-import { SEMT } from '@/theme/semt';
+import { DM } from '@/theme/dm';
 import { SET_BALLOONS, type SetBalloon } from '@/theme/setBalloons';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 // The district room (SemtOda, SemtOdaHal, SemtOdaBos, SemtDevam; docs/SPEC_V4.md §4.V): the venue
 // chat's stream, bubbles and bar (venue-chat/index.tsx) for the person's own open session. No head
@@ -103,7 +105,6 @@ function DistrictRoomBody() {
   const reactions = useDistrictChatReactions(roomId);
   const [person, setPerson] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
-  const [options, setOptions] = useState(false);
   const [people, setPeople] = useState(false);
   const endSession = useEndSession();
   const older = useOlderPages({
@@ -199,6 +200,13 @@ function DistrictRoomBody() {
     reply.clear();
     deliver(m);
   };
+  // A suggestion's words, sent as the message bar sends them (the same check, the same way).
+  const suggest = (text: string) => {
+    const body = prepareVenueMessage(text);
+    if (!body || !session) return;
+    haptic('sent');
+    submit(body, () => undefined);
+  };
   const retry = (m: OutboxMessage) => {
     dispatch({ type: 'retry', localId: m.localId });
     deliver(m);
@@ -274,7 +282,7 @@ function DistrictRoomBody() {
         kind="profile"
         name={senderLabel(m)}
         photoUrl={m.photoUrl}
-        size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'}
+          size={size === CHAT_LOOK.face ? 'md' : 'xl'}
       />
     ) : m.senderLook ? (
       // In the stream the face moves only on the screen (ChatLookAvatar); elsewhere always.
@@ -284,7 +292,7 @@ function DistrictRoomBody() {
         <LookAvatar look={m.senderLook} size={size} />
       )
     ) : (
-      <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
+      <Avatar kind="table" alias={senderLabel(m)} size={size === CHAT_LOOK.face ? 'md' : 'xl'} />
     );
 
   const onPage = useMemo(() => new Set((messages ?? []).map((m) => m.id)), [messages]);
@@ -443,7 +451,7 @@ function DistrictRoomBody() {
               last={last}
               time={tr.chat.time(m.createdAt)}
               name={m.fromMe ? undefined : senderLabel(m)}
-              avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm, true)}
+              avatar={m.fromMe ? undefined : faceOf(m, CHAT_LOOK.face, true)}
               nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
               onPressSender={m.fromMe ? undefined : () => setPerson(m)}
             />
@@ -494,11 +502,14 @@ function DistrictRoomBody() {
               />
             </View>
           ) : (
-            <FirstHere />
+            <FirstHere
+              suggestions={session ? tr.district.room.suggest(name) : []}
+              onSend={suggest}
+            />
           ),
       }}
       top={
-        <View style={{ gap: SEMT.timeChip.top }}>
+        <View style={{ gap: CHAT_LOOK.timeChip.top }}>
           <ChatTopBar
             dm
             onBack={() => router.back()}
@@ -520,15 +531,15 @@ function DistrictRoomBody() {
                 />
               ) : null
             }
-            // The menu is a soft round of its own outside the capsule (`.round.soft`).
+            // SemtSecenek: the soft round outside the capsule and the menu grown out of it.
             more={
-              <Round
-                side={KIT.size.round}
-                icon="moreV"
-                iconSize={ICON.md}
+              <ChatOptionsMenu
                 label={tr.district.room.options}
                 testID="district-chat-options"
-                onPress={() => setOptions(true)}
+                peopleTestID="district-people-open"
+                leaveTestID="district-end"
+                onPeople={() => setPeople(true)}
+                onLeave={endSession}
               />
             }
           />
@@ -571,19 +582,6 @@ function DistrictRoomBody() {
         />
       }
     >
-      <OptionsSheet
-        visible={options}
-        onClose={() => setOptions(false)}
-        onChanged={refresh}
-        onEnd={() => {
-          setOptions(false);
-          endSession();
-        }}
-        onPeople={() => {
-          setOptions(false);
-          setPeople(true);
-        }}
-      />
       <PeopleSheet visible={people} onClose={() => setPeople(false)} district={name} />
       <Sheet visible={person !== null} onClose={() => setPerson(null)}>
         {person ? (
@@ -647,22 +645,37 @@ function DistrictRoomBody() {
 const GRACE_READ_AFTER_MS = 1500;
 
 // SemtSohbet `.emp` (yeni arayüz tuvali): a card of the surface with the bench riso over its top
-// edge, "Bugün ilk sen geldin" and the words, 40 from the sides, in the middle of the stream. The
-// board's suggestion chips are not drawn (no behaviour is given them).
-function FirstHere() {
+// edge, "Bugün ilk sen geldin" and the words, 40 from the sides, in the middle of the stream; the
+// board's three suggestions (`.sug`) 12 over the message bar, a tap sends one.
+function FirstHere({
+  suggestions,
+  onSend,
+}: {
+  suggestions: readonly string[];
+  onSend: (text: string) => void;
+}) {
   return (
-    <View
-      className="flex-1 justify-center"
-      style={{ paddingHorizontal: CHAT_LOOK.empty.side }}
-      testID="district-chat-empty"
-    >
-      <ChatEmptyCard
-        source={BENCH_ART}
-        ratio={BENCH_RATIO}
-        title={tr.district.room.emptyTitle}
-        body={tr.district.room.emptyBody}
-        label={tr.district.room.emptyLabel}
-      />
+    <View className="flex-1" testID="district-chat-empty">
+      <View
+        className="flex-1 justify-center"
+        style={{ paddingHorizontal: CHAT_LOOK.empty.side - DM.side }}
+      >
+        <ChatEmptyCard
+          source={BENCH_ART}
+          ratio={BENCH_RATIO}
+          title={tr.district.room.emptyTitle}
+          body={tr.district.room.emptyBody}
+          label={tr.district.room.emptyLabel}
+        />
+      </View>
+      {suggestions.length > 0 ? (
+        <ChatSuggestions
+          items={suggestions}
+          label={tr.chat.suggestLabel}
+          onSend={onSend}
+          testID="district-chat-suggest"
+        />
+      ) : null}
     </View>
   );
 }

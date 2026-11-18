@@ -590,12 +590,14 @@ export function TimeChip({
   testID?: string;
 }) {
   const { scheme } = useKit();
+  const { colors } = useTheme();
   const c = chat ? { ...SEMT.timeChip, ...CHAT_LOOK.timeChip } : SEMT.timeChip;
   const look = CHAT_LOOK[scheme].emptyCard;
   const content = (
     <>
-      <CapIcon name="clock" color={SEMT.eyebrow[scheme]} size={c.icon} />
-      <T v="fine" strong>
+      {/* SemtSohbet `.tmr`: the clock in --accent, the time 700 13/18, "kaldı" 500 muted. */}
+      <CapIcon name="clock" color={chat ? colors.accent : SEMT.eyebrow[scheme]} size={c.icon} />
+      <T v={chat ? 'chatTime' : 'fine'} strong={!chat}>
         {text}
       </T>
       {note ? <T v="fine">{note}</T> : null}
