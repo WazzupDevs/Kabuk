@@ -26,6 +26,17 @@ export type PrototypeState = {
   genislik?: number;
 };
 
+// What the app's route is made to do after it has opened the state, before the photo
+// (flow.ts turns them into Maestro commands): a real button pressed (its testID), or time let run
+// (ms) for what the press opened to settle.
+export type AppStep = { bas: string } | { bekle: number };
+
+// The board of the new canvas the state is drawn after (docs/design/yeni-arayuz/ESLEME.md): its
+// file's stem (`project/<dosya>.dc.html`), whose images are on the `pano-goruntuleri` branch as
+// `<dosya>-acik.webp` and `<dosya>-koyu.webp`. Set beside the app's photo (gate-report.ts →
+// yanyana/), and the board's rows in e2e/visual/kapsam.json name this state (pnpm visual:kapsam).
+export type BoardLink = { dosya: string };
+
 export type GateState = {
   // File name stem: `<id>-<tema>-<page>.png`.
   id: string;
@@ -36,10 +47,14 @@ export type GateState = {
   sayfa?: number;
   // The same state in the prototype: set beside it in the similarity report.
   prototip?: PrototypeState;
+  // The board it is drawn after: set beside it, with the diff, in yanyana/.
+  pano?: BoardLink;
+  // Pressed and waited for after the state has opened, before the photo.
+  uygulamaAdimlar?: AppStep[];
   // false: photographed and set beside the prototype, never compared with a baseline (a trial
   // entry).
   baz?: boolean;
-  // Drawn this wide (dp) on the 360 emulator, and the prototype at this width (the small-screen
+  // Drawn this wide (dp) on the 390 emulator, and the prototype at this width (the small-screen
   // check is at 320).
   genislik?: number;
   // Photographed cropped to this element of the frame (a testID), not the whole frame: a
@@ -53,8 +68,14 @@ export type GateConfig = {
   durumlar: GateState[];
 };
 
-// The gate emulator's width in dp (scripts/visual/run-on-emulator.sh; prototype.ts → VIEWPORT).
-export const VIEWPORT_WIDTH = 360;
+// The gate emulator's screen in dp, the boards' phone (390 × 844; scripts/visual/run-on-emulator.sh,
+// e2e.yml → visual's skin; prototype.ts → VIEWPORT), at SCALE px per dp.
+export const VIEWPORT_WIDTH = 390;
+export const VIEWPORT_HEIGHT = 844;
+export const SCALE = 2;
+// The width (px) of a photo of the whole frame: a baseline of another width was taken on an
+// earlier emulator and is accepted again (flow.ts leaves its comparison out, the report says so).
+export const FRAME_WIDTH_PX = VIEWPORT_WIDTH * SCALE;
 
 export const THEMES = ['light', 'dark'] as const;
 export type Theme = (typeof THEMES)[number];
@@ -81,6 +102,7 @@ export function parseStates(raw: unknown): GateConfig {
   }
   if (!Array.isArray(c.durumlar)) throw new Error('states.json: durumlar is a list');
   const seen = new Set<string>();
+  const boards = new Map<string, string>();
   for (const s of c.durumlar) {
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(s.id ?? '')) {
       throw new Error(`states.json: id "${s.id}" is lowercase words joined by "-"`);
@@ -100,14 +122,56 @@ export function parseStates(raw: unknown): GateConfig {
       s.genislik !== undefined &&
       (!Number.isInteger(s.genislik) || s.genislik < 280 || s.genislik > VIEWPORT_WIDTH)
     ) {
-      throw new Error(`states.json: ${s.id}: genislik is a whole number of dp, 280 to 360`);
+      throw new Error(
+        `states.json: ${s.id}: genislik is a whole number of dp, 280 to ${VIEWPORT_WIDTH}`,
+      );
     }
     if (s.uygulamaKirp !== undefined && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(s.uygulamaKirp)) {
       throw new Error(`states.json: ${s.id}: uygulamaKirp is a testID`);
     }
     if (s.prototip !== undefined) checkPrototype(s.id, s.prototip);
+    if (s.pano !== undefined) {
+      const keys = typeof s.pano === 'object' && s.pano !== null ? Object.keys(s.pano) : [];
+      if (
+        keys.length !== 1 ||
+        keys[0] !== 'dosya' ||
+        typeof s.pano.dosya !== 'string' ||
+        !/^[A-Z][A-Za-z0-9]*$/.test(s.pano.dosya)
+      ) {
+        throw new Error(
+          `states.json: ${s.id}: pano is { "dosya": "<Board>" }, the board file's stem (project/<Board>.dc.html)`,
+        );
+      }
+      const other = boards.get(s.pano.dosya);
+      if (other) throw new Error(`states.json: ${s.id}: pano ${s.pano.dosya} is ${other}'s too`);
+      boards.set(s.pano.dosya, s.id);
+    }
+    if (s.uygulamaAdimlar !== undefined) checkAppSteps(s.id, s.uygulamaAdimlar);
   }
   return { esik: c.esik, durumlar: c.durumlar };
+}
+
+function checkAppSteps(id: string, steps: unknown): void {
+  if (!Array.isArray(steps)) throw new Error(`states.json: ${id}: uygulamaAdimlar is a list`);
+  for (const step of steps as unknown[]) {
+    const ok =
+      typeof step === 'object' &&
+      step !== null &&
+      Object.keys(step).length === 1 &&
+      (('bas' in step &&
+        typeof step.bas === 'string' &&
+        /^[a-z0-9]+(-[a-z0-9]+)*$/.test(step.bas)) ||
+        ('bekle' in step &&
+          typeof step.bekle === 'number' &&
+          Number.isInteger(step.bekle) &&
+          step.bekle > 0 &&
+          step.bekle <= 10000));
+    if (!ok) {
+      throw new Error(
+        `states.json: ${id}: an app step is { "bas": "<testID>" } or { "bekle": <ms, 1 to 10000> }`,
+      );
+    }
+  }
 }
 
 function checkPrototype(id: string, p: PrototypeState): void {
@@ -178,4 +242,26 @@ export function baselinePath(root: string, shot: Shot): string {
 
 export function hasBaseline(root: string, shot: Shot): boolean {
   return existsSync(baselinePath(root, shot));
+}
+
+// A PNG's width from its header (IHDR: bytes 16–19), without decoding it.
+export function pngWidth(file: string): number {
+  const head = readFileSync(file).subarray(0, 24);
+  if (head.toString('latin1', 12, 16) !== 'IHDR') throw new Error(`${file}: not a PNG`);
+  return head.readUInt32BE(16);
+}
+
+// A baseline of the whole frame taken at another width than the emulator's (an earlier emulator):
+// never compared, accepted again (pnpm visual:accept). A state cropped to its own element
+// (`uygulamaKirp`) has its own width and is never stale by it.
+export function staleBaseline(root: string, shot: Shot): boolean {
+  if (shot.state.uygulamaKirp || !hasBaseline(root, shot)) return false;
+  return pngWidth(baselinePath(root, shot)) !== FRAME_WIDTH_PX;
+}
+
+// The board images' branch and their names on it, by theme.
+export const BOARD_BRANCH = 'pano-goruntuleri';
+const BOARD_THEME: Record<Theme, 'acik' | 'koyu'> = { light: 'acik', dark: 'koyu' };
+export function boardImage(board: BoardLink, theme: Theme): string {
+  return `${board.dosya}-${BOARD_THEME[theme]}.webp`;
 }

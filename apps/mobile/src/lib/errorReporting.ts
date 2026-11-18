@@ -25,6 +25,21 @@ export function setReportingUser(userId: string | null): void {
   Sentry.setUser(userId ? { id: userId } : null);
 }
 
+// Whether reports go anywhere in this build (Ayarlar's test row shows only then).
+export const errorReportingOn = !!dsn;
+
+// Ayarlar → Test sürümü → "Hata kaydını gönder": one message, sent as a crash is (the user id,
+// the breadcrumbs, the device), through the same filter (beforeSend, beforeBreadcrumb); nothing
+// new is gathered. Resolves true once Sentry took it off the phone.
+export async function sendErrorLog(): Promise<boolean> {
+  if (!dsn) return false;
+  Sentry.captureMessage('Error log sent from Ayarlar', {
+    level: 'info',
+    fingerprint: ['manual-error-log'],
+  });
+  return Sentry.flush();
+}
+
 export function reportError(error: unknown): void {
   if (!dsn) return;
   Sentry.captureException(error);

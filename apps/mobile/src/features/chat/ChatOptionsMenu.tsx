@@ -26,7 +26,6 @@ export function ChatOptionsMenu({
   onLeave,
   peopleTestID,
   leaveTestID,
-  openAt,
 }: {
   label: string;
   testID: string;
@@ -34,12 +33,10 @@ export function ChatOptionsMenu({
   onLeave?: () => void;
   peopleTestID?: string;
   leaveTestID?: string;
-  // Open from the start, grown from here (the visual gate's sample, ekran/semt/secenekler).
-  openAt?: MenuAnchor;
 }) {
   const ref = useRef<View>(null);
-  const [anchor, setAnchor] = useState<MenuAnchor | null>(openAt ?? null);
-  const [open, setOpen] = useState(!!openAt);
+  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
+  const [open, setOpen] = useState(false);
   const mutes = useQuery({
     queryKey: CHAT_MUTES_KEY,
     queryFn: () => venueChatApi.mutes(),

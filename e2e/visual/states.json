@@ -14,7 +14,7 @@
     {
       "id": "galeri-kimlik",
       "app": "galeri/identity",
-      "sayfa": 3
+      "sayfa": 2
     },
     {
       "id": "galeri-olcu",
@@ -29,17 +29,88 @@
         "dosya": "docs/design/sistem/ekran/Dm.html",
         "adimlar": [],
         "kirp": ".phone"
+      },
+      "pano": {
+        "dosya": "DmSohbet"
       }
     },
     {
       "id": "ekran-semt-secenekler",
       "app": "ekran/semt/secenekler",
-      "baz": false
+      "baz": false,
+      "pano": {
+        "dosya": "SemtSecenek"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "district-chat-options"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
     },
     {
       "id": "ekran-semt-oturum-kapat",
       "app": "ekran/semt/oturum-kapat",
       "baz": false
+    },
+    {
+      "id": "ekran-semt-bos",
+      "app": "ekran/semt/bos",
+      "baz": false,
+      "pano": {
+        "dosya": "SemtSohbet"
+      }
+    },
+    {
+      "id": "ekran-ayarlar",
+      "app": "ekran/ayarlar",
+      "pano": {
+        "dosya": "Ayarlar"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-hesap",
+      "app": "ekran/ayarlar/hesap",
+      "pano": {
+        "dosya": "AyarHesap"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-engellenenler",
+      "app": "ekran/ayarlar/engellenenler",
+      "pano": {
+        "dosya": "Engellenenler"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-sessize-bos",
+      "app": "ekran/ayarlar/sessize-bos",
+      "pano": {
+        "dosya": "SessizAlinanlarBos"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-bildirimler",
+      "app": "ekran/ayarlar/bildirimler",
+      "pano": {
+        "dosya": "AyarBildirim"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-gizlilik",
+      "app": "ekran/ayarlar/gizlilik",
+      "pano": {
+        "dosya": "AyarGizlilik"
+      }
+    },
+    {
+      "id": "ekran-ayarlar-yasal",
+      "app": "ekran/ayarlar/yasal",
+      "pano": {
+        "dosya": "YasalMetin"
+      }
     }
   ]
 }

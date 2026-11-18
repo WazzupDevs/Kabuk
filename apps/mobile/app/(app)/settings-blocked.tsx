@@ -1,19 +1,14 @@
-import { View } from 'react-native';
-
 import { BlockedList } from '@/features/chat/BlockedList';
 import { Lede, SettingsPage } from '@/features/settings/SettingsParts';
 import { tr } from '@/i18n/tr';
-import { SPACING } from '@/theme/tokens';
 
 // Engellenenler (yeni arayüz tuvali, Engellenenler, EngellenenlerBos): its line, then each block with
-// "Engeli kaldır" on the ground.
+// "Engeli kaldır" on the ground; without any, the empty state in the page's middle.
 export default function BlockedScreen() {
   return (
     <SettingsPage list title={tr.settings.blocked}>
       <Lede>{tr.settings.blockedNote}</Lede>
-      <View style={{ marginTop: SPACING[3] }}>
-        <BlockedList />
-      </View>
+      <BlockedList style={{ flexGrow: 1 }} />
     </SettingsPage>
   );
 }

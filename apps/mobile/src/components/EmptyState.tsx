@@ -47,6 +47,9 @@ type Props = {
   // Inside its own card that keeps the room around it (tuval DmBos `.demp .emp`): no room of its
   // own, the title 10 under the picture.
   inCard?: boolean;
+  // Ayarlar ailesi (EngellenenlerBos, SessizAlinanlarBos `.emp`): no room over the picture (the page
+  // centres it) and the sentence at most 240 wide.
+  settings?: boolean;
 };
 
 // Aura v76 BosDurumlar (640x440 exports; the DM's first message and the venue's week reuse the
@@ -93,6 +96,9 @@ const RISO_BOARD: Partial<
   search: { width: 120, height: 80, radius: 0, shadow: 'none' },
   dm: { width: 120, height: 98, radius: 0, shadow: 'none' },
   archive: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  // EngellenenlerBos, SessizAlinanlarBos: the boards' own 360 × 294 cut-outs.
+  blocked: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  muted: { width: 120, height: 98, radius: 0, shadow: 'none' },
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,
@@ -155,10 +161,12 @@ export function EmptyState({
   compact,
   inPage,
   inCard,
+  settings,
 }: Props) {
   if (kind === 'empty')
     return (
       <Empty
+        settings={settings}
         title={title}
         body={body}
         action={action}
@@ -232,10 +240,12 @@ function StateWords({
   title,
   body,
   titleTop = KIT.size.emptyTitleTop,
+  noteMax = KIT.size.emptyNoteMax,
 }: {
   title?: string;
   body: string;
   titleTop?: number;
+  noteMax?: number;
 }) {
   return (
     <>
@@ -250,7 +260,7 @@ function StateWords({
         center
         style={{
           marginTop: title ? KIT.size.emptyNoteTop : KIT.size.emptyTitleTop,
-          maxWidth: KIT.size.emptyNoteMax,
+          maxWidth: noteMax,
         }}
       >
         {body}
@@ -299,7 +309,8 @@ function Empty({
   picture,
   risoId,
   inCard,
-}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'inCard'> & {
+  settings,
+}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'inCard' | 'settings'> & {
   // The riso picture's name: its wrapper's testID (`empty-riso-<ad>`, E2E K14).
   risoId?: EmptyRiso;
   picture?: {
@@ -315,7 +326,7 @@ function Empty({
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: inCard ? 0 : small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
+        paddingTop: inCard || settings ? 0 : small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
         paddingHorizontal: inCard ? 0 : KIT.size.emptyPad,
       }}
     >
@@ -330,6 +341,7 @@ function Empty({
         title={title}
         body={body}
         titleTop={inCard ? KIT.size.emptyTitleTopCard : undefined}
+        noteMax={settings ? KIT.size.emptyNoteMaxSm : undefined}
       />
       {action ? (
         <View style={{ marginTop: KIT.size.emptyActionTop }}>
