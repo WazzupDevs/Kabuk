@@ -90,6 +90,7 @@ export default function ArchiveScreen() {
           >
             <EmptyState
               kind="empty"
+              riso="archive"
               compact
               title={tr.messages.archivedEmpty}
               body={tr.messages.archivedEmptyHint}
