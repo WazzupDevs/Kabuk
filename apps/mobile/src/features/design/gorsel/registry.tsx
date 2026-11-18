@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PREVIEW_SETS } from '../previews';
 
 import { DmFixture } from './dmFixture';
+import { ArchiveFixture, MesajlarFixture } from './mesajlarFixture';
 import { SemtEmptyFixture } from './semtEmptyFixture';
 import { SemtSheetFixture } from './semtFixture';
 import {
@@ -32,6 +33,19 @@ export const GATE_STATES: Record<string, GateEntry> = {
   'ekran/semt/secenekler': { full: true, render: () => <SemtSheetFixture sheet="options" /> },
   'ekran/semt/oturum-kapat': { full: true, render: () => <SemtSheetFixture sheet="end" /> },
   'ekran/semt/bos': { full: true, render: () => <SemtEmptyFixture /> },
+  // The Mesajlar family: the routes themselves over the boards' sample (mesajlarFixture.tsx).
+  'ekran/mesajlar': { full: true, render: () => <MesajlarFixture /> },
+  'ekran/mesajlar/bos': { full: true, render: () => <MesajlarFixture variant="empty" /> },
+  'ekran/mesajlar/sabit-dolu': {
+    full: true,
+    render: () => <MesajlarFixture variant="pinned-full" />,
+  },
+  'ekran/mesajlar/arsiv-rozet': {
+    full: true,
+    render: () => <MesajlarFixture variant="archive-unread" />,
+  },
+  'ekran/arsiv': { full: true, render: () => <ArchiveFixture /> },
+  'ekran/arsiv/bos': { full: true, render: () => <ArchiveFixture empty /> },
   // The Ayarlar family: the routes themselves over the boards' sample (settingsFixture.tsx).
   'ekran/ayarlar': { full: true, render: () => <SettingsFixture /> },
   'ekran/ayarlar/hesap': { full: true, render: () => <AccountFixture /> },

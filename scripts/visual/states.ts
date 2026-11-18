@@ -151,7 +151,7 @@ export function parseStates(raw: unknown): GateConfig {
   return { esik: c.esik, durumlar: c.durumlar };
 }
 
-const TEST_ID = /^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/;
+const TEST_ID = /^[\p{L}\p{N}]+(-[\p{L}\p{N}]+)*$/u;
 
 function checkAppSteps(id: string, steps: unknown): void {
   if (!Array.isArray(steps)) throw new Error(`states.json: ${id}: uygulamaAdimlar is a list`);

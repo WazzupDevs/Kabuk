@@ -8,11 +8,11 @@ import { Composer } from '@/components/Composer';
 import { IconButton } from '@/components/IconButton';
 import { tr } from '@/i18n/tr';
 
-// The DM screen with the skall tuvali's sample (docs/design/sistem/ekran/Dm.html), for the visual
+// The DM screen with the board's sample (docs/design/yeni-arayuz/project/DmSohbet.dc.html), for the visual
 // gate's `ekran/dm`: the same components the route draws (app/(app)/(tabs)/messages/[threadId].tsx),
 // fed fixed data, no server.
-const NAME = 'Ece';
-const FIRST = 'Bugünkü Kapsül Anlat çok iyiydi';
+const NAME = 'Fevve';
+const MINE = 'Vampir masası kuruluyor';
 
 export function DmFixture() {
   const noop = () => undefined;
@@ -46,24 +46,30 @@ export function DmFixture() {
       }
     >
       <DayLine label="Dün" />
-      <ChatBubble text={FIRST} mine={false} first time="22:10" />
+      <ChatBubble text="Selam, bu akşam çıkıyor musun?" mine={false} first time="22:02" />
+      <ChatBubble text="Kampüstekiler toplanıyormuş" mine={false} first={false} time="22:02" />
+      <ChatBubble text="Bu akşam Lale'de misin?" mine first time="22:10" />
+      <ChatBubble text={MINE} mine first={false} time="22:10" delivery="read" />
       <ChatBubble
-        text="Evet ya, son tur efsaneydi"
-        mine
+        text="Geliyorum, 10 dk"
+        mine={false}
         first
-        time="22:12"
-        delivery="read"
-        quote={{ name: NAME, text: FIRST }}
-        reactions={[{ emoji: 'ask', count: 1, mine: false }]}
+        time="22:14"
+        reactions={[
+          { emoji: 'begen', count: 1, mine: false },
+          { emoji: 'ask', count: 2, mine: false },
+        ]}
       />
       <DayLine label="Bugün" />
-      <ChatBubble text="Yarın Kapsül Anlat'a var mısın?" mine={false} first time="21:39" />
+      <DayLine label={tr.chat.newMessages(2)} fresh />
       <ChatBubble
-        text="Geçen sefer çok iyiydi, bu sefer kesin kazanırız"
+        text="Bana köylü düşsün bu sefer"
         mine={false}
-        first={false}
-        time="21:40"
+        first
+        time="18:08"
+        quote={{ name: tr.chat.you, text: MINE }}
       />
+      <ChatBubble text="Nerelerdesin?" mine={false} first={false} time="18:10" />
       <TypingBubble />
     </ChatScreen>
   );

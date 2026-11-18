@@ -111,6 +111,132 @@
       "pano": {
         "dosya": "YasalMetin"
       }
+    },
+    {
+      "id": "ekran-mesajlar",
+      "app": "ekran/mesajlar",
+      "baz": false,
+      "pano": {
+        "dosya": "Main"
+      }
+    },
+    {
+      "id": "ekran-mesajlar-uzun-bas",
+      "app": "ekran/mesajlar",
+      "baz": false,
+      "pano": {
+        "dosya": "MesajlarUzunBas"
+      },
+      "uygulamaAdimlar": [
+        {
+          "uzunBas": "inbox-Fevve"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-mesajlar-sabit-uzun-bas",
+      "app": "ekran/mesajlar",
+      "baz": false,
+      "pano": {
+        "dosya": "MesajlarUzunBasSabit"
+      },
+      "uygulamaAdimlar": [
+        {
+          "uzunBas": "inbox-Adem"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-mesajlar-sil-onay",
+      "app": "ekran/mesajlar",
+      "baz": false,
+      "pano": {
+        "dosya": "MesajlarSohbetSil"
+      },
+      "uygulamaAdimlar": [
+        {
+          "uzunBas": "inbox-Fevve"
+        },
+        {
+          "bekle": 1500
+        },
+        {
+          "bas": "inbox-menu-clear"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-mesajlar-bos",
+      "app": "ekran/mesajlar/bos",
+      "baz": false,
+      "pano": {
+        "dosya": "MesajlarBos"
+      }
+    },
+    {
+      "id": "ekran-mesajlar-sabit-dolu",
+      "app": "ekran/mesajlar/sabit-dolu",
+      "baz": false,
+      "pano": {
+        "dosya": "MesajlarSabitDolu"
+      },
+      "uygulamaAdimlar": [
+        {
+          "uzunBas": "inbox-Fevve"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-mesajlar-arsiv-rozet",
+      "app": "ekran/mesajlar/arsiv-rozet",
+      "baz": false,
+      "pano": {
+        "dosya": "MesajlarArsivRozet"
+      }
+    },
+    {
+      "id": "ekran-arsiv",
+      "app": "ekran/arsiv",
+      "baz": false,
+      "pano": {
+        "dosya": "Arsiv"
+      }
+    },
+    {
+      "id": "ekran-arsiv-uzun-bas",
+      "app": "ekran/arsiv",
+      "baz": false,
+      "pano": {
+        "dosya": "ArsivUzunBas"
+      },
+      "uygulamaAdimlar": [
+        {
+          "uzunBas": "inbox-Barış"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-arsiv-bos",
+      "app": "ekran/arsiv/bos",
+      "baz": false,
+      "pano": {
+        "dosya": "ArsivBos"
+      }
     }
   ]
 }

@@ -662,7 +662,7 @@ describe('visual gate: the board and the app steps in the states list', () => {
     ['a board without its file', { pano: {} }],
     ['app steps that are no list', { uygulamaAdimlar: { bas: 'x' } }],
     ['an app step of two kinds', { uygulamaAdimlar: [{ bas: 'x', bekle: 1 }] }],
-    ['an app step pressing no testID', { uygulamaAdimlar: [{ bas: 'Seçenekler' }] }],
+    ['an app step pressing no testID', { uygulamaAdimlar: [{ bas: 'Seçenekler menüsü' }] }],
     ['a wait of 0', { uygulamaAdimlar: [{ bekle: 0 }] }],
     ['a wait over 10 s', { uygulamaAdimlar: [{ bekle: 10001 }] }],
     ['a step of another kind', { uygulamaAdimlar: [{ tikla: 'x' }] }],
