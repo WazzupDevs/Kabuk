@@ -30,7 +30,7 @@ export function segBoard(scheme: 'light' | 'dark'): SegBoard {
 }
 
 // Rows one under another on the ground (`.sl`), a hairline between them from the words to the
-// row's right edge.
+// row's right edge, laid over the row's top (`.sr+.sr:before`: it takes no height).
 export function Group({
   children,
   hairIn = SETTINGS.row.hairIn,
@@ -48,9 +48,13 @@ export function Group({
         <View key={isValidElement(row) && row.key !== null ? row.key : i}>
           {i > 0 ? (
             <View
+              pointerEvents="none"
               style={{
+                position: 'absolute',
+                top: 0,
+                left: hairIn,
+                right: 0,
                 height: KIT.size.hair,
-                marginLeft: hairIn,
                 backgroundColor: SETTINGS[scheme].hair,
               }}
             />
