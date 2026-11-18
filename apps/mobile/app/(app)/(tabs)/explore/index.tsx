@@ -58,7 +58,7 @@ import { useNow } from '@/lib/useNow';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
 import { LargeTitle, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
-import { StickyStatusBand } from '@/motion/StickyField';
+import { StickyGroupStatusBand } from '@/motion/StickyGroup';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
@@ -293,7 +293,7 @@ export function ExploreView({ start }: { start?: ExploreStart }) {
             </ListBody>
           </ScrollViewport>
         )}
-        {showMap ? null : <StickyStatusBand />}
+        {showMap ? null : <StickyGroupStatusBand />}
       </SafeAreaView>
     </ScrollScreen>
   );

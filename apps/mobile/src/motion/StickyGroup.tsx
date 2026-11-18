@@ -1,8 +1,9 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { runOnJS, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
 
-import { AURA, barBandCss, MOTION } from '@/theme/aura';
+import { AURA, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -83,12 +84,18 @@ export function StickyGroup({
   });
   const top = KIT.size.stickyTop;
   const foot = Math.round(AURA.topBar.bandHeight * AURA.topBar.bandFade);
+  const baseHeight = top + groupHeight + foot;
+  const fullHeight = baseHeight + extra;
   const band = useAnimatedStyle(() => {
     if (!scroll) return { opacity: 0 };
     const y = scroll.y.get();
     const pinAt = scroll.stickyAt.get();
     const arrived = pinAt < 0 ? 0 : ramp(y, pinAt + from, pinAt + to);
-    return { opacity: stickyBandAt(y, pinAt, fadePx), bottom: -(foot + extra * arrived) };
+    // The band grows down to the hung part as it comes (a scale from the top, no layout move).
+    return {
+      opacity: stickyBandAt(y, pinAt, fadePx),
+      transform: [{ scaleY: (baseHeight + extra * arrived) / fullHeight }],
+    };
   });
   const hung = useAnimatedStyle(() => {
     if (!scroll) return { opacity: 0 };
@@ -109,8 +116,15 @@ export function StickyGroup({
         <Animated.View
           pointerEvents="none"
           style={[
-            { position: 'absolute', left: -side, right: -side, top: -top },
-            gradientStyle(barBandCss(scheme, top + groupHeight + foot)),
+            {
+              position: 'absolute',
+              left: -side,
+              right: -side,
+              top: -top,
+              height: fullHeight,
+              transformOrigin: 'top',
+            },
+            gradientStyle(solidBandCss(scheme, fullHeight, foot)),
             band,
           ]}
         />
@@ -128,5 +142,39 @@ export function StickyGroup({
         ) : null}
       </Animated.View>
     </View>
+  );
+}
+
+// The band behind the group in the screen's own ground, opaque down to its foot, whose last `foot`
+// px fade out (KesfetKaydir: nothing of the list shows through the pinned head).
+function solidBandCss(scheme: 'light' | 'dark', height: number, foot: number): string {
+  const b = AURA[scheme].bar;
+  const ground = AURA[scheme].ground;
+  const solid = Math.round(((height - foot) / height) * 1000) / 10;
+  return `linear-gradient(180deg, ${ground} 0%, ${ground} ${solid}%, ${b.clear} 100%)`;
+}
+
+// The status bar's band for a screen that pins a StickyGroup: the screen's ground, opaque, coming
+// in with the group's band (StickyStatusBand's own is the bar band at 84 %).
+export function StickyGroupStatusBand() {
+  const scroll = useScreenScroll();
+  const insets = useSafeAreaInsets();
+  const { scheme } = useTheme();
+  const fadePx = MOTION.scroll.stickyFadePx;
+  const top = insets.top;
+  const style = useAnimatedStyle(() => {
+    if (!scroll || scroll.viewportTop.get() > top + 1) return { opacity: 0 };
+    return { opacity: stickyBandAt(scroll.y.get(), scroll.stickyAt.get(), fadePx) };
+  });
+  if (!scroll || top <= 0) return null;
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        { position: 'absolute', left: 0, right: 0, top: 0, height: top },
+        { backgroundColor: AURA[scheme].ground },
+        style,
+      ]}
+    />
   );
 }
