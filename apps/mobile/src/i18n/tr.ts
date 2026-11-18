@@ -2835,6 +2835,11 @@ export const tr = {
     accountTitle: 'Hesap',
     // The test build's rows at Ayarlar's foot (iskelet.md → 5.9).
     testSection: 'Test sürümü',
+    // The test section's read-only line: the update's id (its first 8 characters, "yerleşik" for
+    // the binary's own bundle) and the native build number, for the release report.
+    buildId: (id: string, build: string | null) =>
+      build ? `Sürüm kimliği ${id} · derleme ${build}` : `Sürüm kimliği ${id}`,
+    buildIdEmbedded: 'yerleşik',
     phone: {
       title: 'Telefon bildirimleri',
       on: 'Açık. Kapatırsan telefonun ayarlarından yeniden açabilirsin.',
