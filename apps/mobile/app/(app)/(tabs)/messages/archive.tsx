@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
@@ -13,6 +14,7 @@ import { tr } from '@/i18n/tr';
 import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
 import { BarBack, ListMoveArea, useListMoves } from '@/motion';
+import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
 import { MESSAGES as M } from '@/theme/messages';
@@ -22,6 +24,7 @@ import { SPACING } from '@/theme/tokens';
 // archived conversations, from the same dm/inbox as Mesajlar, newest first. A new message keeps a
 // conversation here with its unread; a long press takes it out ("Arşivden çıkar") or clears it.
 export default function ArchiveScreen() {
+  const insets = useSafeAreaInsets();
   const inbox = useDmInbox();
   const loading = useLoaderHold(inbox.isPending);
   // The motion table's A3: a row taken out of the archive or cleared leaves, the others close up;
@@ -110,7 +113,12 @@ export default function ArchiveScreen() {
           </View>
         )}
       </Screen>
-      <Toast message={notice} testID="archive-toast" />
+      <Toast
+        message={notice}
+        pill
+        bottom={insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height + M.noticeAbove}
+        testID="archive-toast"
+      />
     </View>
   );
 }

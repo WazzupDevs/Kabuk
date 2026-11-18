@@ -224,6 +224,7 @@ export const KIT_TYPE = {
   inboxArchived: t(600, 15, 22),
   inboxCount: t(600, 13, 18),
   toastTitle: t(600, 14, 19),
+  toastPill: t(600, 14, 18),
   toastSub: t(500, 12, 16),
   // The toast's button (SusleKaydedilemedi): 13/600.
   toastBtn: t(600, 13, 16),
@@ -1380,6 +1381,10 @@ export const KIT = {
       toastButton: 36,
       toastButtonPadX: 14,
       toastSubOpacity: 0.7,
+      // The short notice as a capsule in the middle (tuval MesajlarSilindi `.snk`): 44 high, 18
+      // in, its one line 600 14/18.
+      toastPill: 44,
+      toastPillPadX: 18,
       // EngelleOnay's "Şikayet de et" row: 12 over and under its words, 12 from the box to them;
       // the box 24, 7 round, its line 2, its check 18.
       checkRowPad: 12,

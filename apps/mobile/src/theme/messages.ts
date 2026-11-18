@@ -35,6 +35,8 @@ export const MESSAGES = {
   // Arşivlenenler with none (ArsivBos `.emp`): 190 under the empty state, of which the list's foot
   // keeps 90 (Screen → SCROLL_PAD).
   archiveEmptyLift: 100,
+  // "Sohbet silindi" (MesajlarSilindi `.snk`): 16 over the tab bar (106 from the foot).
+  noticeAbove: 16,
   // A search's count over its rows (`.rlbl`): 4 under the field.
   resultTop: 4,
   // The buddies over Bildirimler's sheet (Peek): 56 × 70, 40 in from the left and 44 from the

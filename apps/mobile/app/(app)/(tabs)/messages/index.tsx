@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useState } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GlassSearch } from '@/aura/GlassSearch';
 import { Av, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
@@ -25,6 +26,7 @@ import { tr } from '@/i18n/tr';
 import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
 import { ListMove, ListMoveArea, StickyField, useListMoves } from '@/motion';
+import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
 import { ICON } from '@/theme/tokens';
@@ -39,6 +41,7 @@ type Tab = 'chats' | 'requests';
 // a friend without messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the
 // open friend requests waiting for the caller (RequestList); their count is on its tab.
 export default function MessagesScreen() {
+  const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<Tab>('chats');
   // "Bak" in Bildirimler opens İstekler (`?tab=requests`).
   const { tab: wantedTab } = useLocalSearchParams<{ tab?: string }>();
@@ -155,7 +158,12 @@ export default function MessagesScreen() {
         )}
       </Screen>
       <FriendPicker visible={picking} onClose={() => setPicking(false)} />
-      <Toast message={notice} testID="messages-toast" />
+      <Toast
+        message={notice}
+        pill
+        bottom={insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height + M.noticeAbove}
+        testID="messages-toast"
+      />
     </View>
   );
 }

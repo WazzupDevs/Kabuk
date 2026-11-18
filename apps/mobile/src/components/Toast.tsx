@@ -31,6 +31,9 @@ type Props = {
   // Or from its parent's foot (Mekan's request notice over the tab bar, MasaIstekBekliyor `.snk`):
   // it then comes up into place rather than down.
   bottom?: number;
+  // A capsule in the middle, as wide as its one line (tuval MesajlarSilindi `.snk`: "Sohbet
+  // silindi"); for a notice without a line under it, an icon or a button.
+  pill?: boolean;
   testID?: string;
 };
 
@@ -41,7 +44,7 @@ export const TOAST_TOP = SPACING[16] - SPACING[0.5];
 // round, title 14/600, a line under it, a 36 button at the end. It sits over the content and lets
 // touches through except on its own button. Screen readers hear it once, announced. Its values
 // are KIT.layer's.
-export function Toast({ message, top = TOAST_TOP, bottom, testID }: Props) {
+export function Toast({ message, top = TOAST_TOP, bottom, pill, testID }: Props) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const layer = KIT.layer[scheme];
@@ -90,6 +93,7 @@ export function Toast({ message, top = TOAST_TOP, bottom, testID }: Props) {
         ...(bottom === undefined ? { top } : { bottom }),
         left: size.toastSide,
         right: size.toastSide,
+        alignItems: pill ? 'center' : undefined,
         opacity: progress.interpolate({
           inputRange: [0, 1],
           outputRange: [0, 1],
@@ -109,21 +113,33 @@ export function Toast({ message, top = TOAST_TOP, bottom, testID }: Props) {
       }}
     >
       <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: size.toastGap,
-          paddingVertical: size.toastPad,
-          paddingRight: size.toastPad,
-          paddingLeft: size.toastPadLeft,
-          borderRadius: size.toastRadius,
-          backgroundColor: layer.toast,
-          boxShadow: layer.toastShadow,
-        }}
+        style={
+          pill
+            ? {
+                flexDirection: 'row',
+                alignItems: 'center',
+                minHeight: size.toastPill,
+                paddingHorizontal: size.toastPillPadX,
+                borderRadius: size.toastPill / 2,
+                backgroundColor: layer.toast,
+                boxShadow: layer.toastShadow,
+              }
+            : {
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: size.toastGap,
+                paddingVertical: size.toastPad,
+                paddingRight: size.toastPad,
+                paddingLeft: size.toastPadLeft,
+                borderRadius: size.toastRadius,
+                backgroundColor: layer.toast,
+                boxShadow: layer.toastShadow,
+              }
+        }
       >
         {lead}
-        <View style={{ flex: 1 }}>
-          <T v="toastTitle" color={layer.onToast}>
+        <View style={pill ? { flexShrink: 1 } : { flex: 1 }}>
+          <T v={pill ? 'toastPill' : 'toastTitle'} color={layer.onToast}>
             {shown.title}
           </T>
           {shown.sub ? (
