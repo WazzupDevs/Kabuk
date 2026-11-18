@@ -31,7 +31,9 @@ if [ ! -f "$APK" ]; then
   echo "APK artifact ready ${SECONDS} s into this script"
   mkdir -p "$(dirname "$APK")"
   # The API answers with a redirect to signed storage; curl does not send the token on to it.
-  curl -sfL "${auth[@]}" -o "$APK.zip" "$url"
+  # Sent again on any failure: the storage answered an error once right after the artifact was
+  # listed (18 Kasım, #747's visual job: curl exit 22, no screenshots).
+  curl -sfL --retry 5 --retry-all-errors --retry-delay 5 "${auth[@]}" -o "$APK.zip" "$url"
   unzip -o -q "$APK.zip" -d "$(dirname "$APK")"
 fi
 test -f "$APK"
