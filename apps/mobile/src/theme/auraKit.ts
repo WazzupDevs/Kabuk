@@ -994,6 +994,8 @@ export const KIT = {
     // picture small and unframed (150 across, a card's or a sheet's 120; no corner, no shadow).
     emptyMark: { width: 28, height: 42 },
     emptyTitleTop: 12,
+    // In a card of its own (DmBos `.demp .et`): 10.
+    emptyTitleTopCard: 10,
     emptyNoteTop: 4,
     emptyNoteMax: 260,
     emptyActionTop: 16,
@@ -1122,10 +1124,11 @@ export const KIT = {
     msgRadius: 22,
     msgTail: 8,
     // Chat bubbles (iskelet.md → 5.5): 20 round, 7 where a run's bubbles face each other, the run's
-    // last one with a tail 7 × 12; a run's bubbles 3 apart, 12 when the writer changes.
+    // last one with a tail 7 × 12; a run's bubbles 2 apart (yeni arayüz tuvali, DmKlavye, MekanSohbet,
+    // SemtSohbet `.flow{gap:2}`), 12 when the writer changes.
     bubbleRadius: 20,
     bubbleInner: 7,
-    runGap: 3,
+    runGap: 2,
     runApart: 12,
     bubblePadX: 12,
     bubblePadY: 7,

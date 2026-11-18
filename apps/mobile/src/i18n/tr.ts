@@ -702,7 +702,8 @@ export const tr = {
     },
   },
   dm: {
-    placeholder: 'Mesaj yaz…',
+    // Yeni arayüz tuvali (DmSohbet `.ph`).
+    placeholder: 'Mesaj yaz',
     send: 'Gönder',
     report: 'Konuşmayı şikayet et',
     delivery: {
@@ -714,6 +715,8 @@ export const tr = {
     typing: 'yazıyor',
     // Under the name in the DM's top bar (iskelet.md → 5.5).
     typingTitle: 'yazıyor…',
+    // What a screen reader hears for the "yazıyor" bubble (DmSohbet `.typing`).
+    typingNamed: (name: string) => `${name} yazıyor`,
     // Under the name otherwise (yeni arayüz tuvali, DmSohbet): the capsule opens the profile.
     seeProfile: 'Profili gör',
     // No message yet (yeni arayüz tuvali, DmBos).

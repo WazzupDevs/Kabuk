@@ -352,10 +352,11 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
     KIT.size.edge,
   );
   const followEnd = useChatEnd();
-  // The group chats' send (MekanSohbet, MasaSohbet, SemtSohbet `.snd`) always there, the disabled
-  // grey with nothing to send; the DM's only once there is something.
+  // The send always there (MekanSohbet, MasaSohbet, SemtSohbet, DmBos `.snd`), the disabled grey
+  // with nothing to send; the DM's 44 then (DmBos), 52 once there is something (DmKlavye).
   const always = kind !== 'dm';
-  const shown = flush || always || !sendDisabled || !!sending;
+  const dmOff = kind === 'dm' && !flush && !!sendDisabled && !sending;
+  const shown = true;
   const padLeft = dm ? DM.composer.padLeft : card.padLeft;
   const send = flush ? card.send : SEND_IN;
   const sendRight = flush ? card.padRight : SEND_INSET;
@@ -363,12 +364,12 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   const sendButton = (
     <SendIn
       dm={dm}
-      side={dm ? DM.composer.send : send}
+      side={dm ? (dmOff ? DM.composer.sendOff : DM.composer.send) : send}
       shown={shown}
       sending={!!sending}
       disabled={!!sendDisabled || !!sending}
-      off={always && !flush && !!sendDisabled && !sending}
-      steady={always}
+      off={(always && !flush && !!sendDisabled && !sending) || dmOff}
+      steady
       label={sendLabel}
       testID={sendTestID}
       confirm={editing}
@@ -406,10 +407,18 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
           <ReplyStrip quote={replyTo} onCancel={onCancelReply} />
         )
       ) : null}
-      {/* DmSohbet, DmKlavye `.cmp`: the field and, once there is something to send, the send
-          beside it, 8 apart. */}
+      {/* DmBos, DmKlavye `.cmp`: the field and the send beside it, 8 apart, in the field's
+          middle while it is one line. */}
       <View
-        style={dm ? { flexDirection: 'row', alignItems: 'flex-end', gap: DM.composer.gap } : null}
+        style={
+          dm
+            ? {
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                gap: DM.composer.gap,
+              }
+            : null
+        }
       >
         <View
           style={{
@@ -477,7 +486,7 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
             </View>
           )}
         </View>
-        {dm && shown ? sendButton : null}
+        {dm ? <View style={{ height: height, justifyContent: 'center' }}>{sendButton}</View> : null}
       </View>
     </View>
   );

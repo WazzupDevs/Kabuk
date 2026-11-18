@@ -72,10 +72,10 @@ appId: app.kabuk.mobile
 - tapOn:
     id: inbox-Bot Masa
 - extendedWaitUntil:
-    visible: Henüz mesaj yok. İlk mesajı sen yaz.
+    visible: İlk mesajı sen yaz.
     timeout: 15000
 - assertVisible:
-    id: empty-riso-chat
+    id: empty-riso-dm
 - takeScreenshot: 26-dm-empty
 - tapOn:
     id: dm-input

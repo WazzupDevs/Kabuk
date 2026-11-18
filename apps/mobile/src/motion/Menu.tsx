@@ -66,9 +66,12 @@ export function Menu({
   lifted,
   side,
   label,
+  floatWidth,
 }: {
   children: ReactNode;
   float?: boolean;
+  // With `float`: its own width (DmMesajMenu `.hold .pop`: 220).
+  floatWidth?: number;
   // With `hold`: the held row raised over the scrim at its place (tuval MesajlarUzunBas `.rw.ub`),
   // the menu at least `side` from the screen's sides (`.pop{left:20}`), and its name read out
   // (`aria-label`).
@@ -112,7 +115,13 @@ export function Menu({
   }
   if (float) {
     return (
-      <View style={{ width: L.holdWidth, borderRadius: L.holdRadius, boxShadow: shadow.boxShadow }}>
+      <View
+        style={{
+          width: floatWidth ?? L.holdWidth,
+          borderRadius: L.holdRadius,
+          boxShadow: shadow.boxShadow,
+        }}
+      >
         {shadow.node}
         <MenuCard look="hold">{rows}</MenuCard>
       </View>

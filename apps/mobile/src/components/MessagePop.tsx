@@ -9,6 +9,8 @@ import { haptic } from '@/lib/haptics';
 import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 import { useOverlaySlot } from '@/lib/useOverlaySlot';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { KIT } from '@/theme/auraKit';
+import { DM } from '@/theme/dm';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -82,13 +84,14 @@ export function MessagePop({
   // The bubble, drawn again over the scrim.
   children: ReactNode;
 }) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
+  const look = DM[scheme].pick;
   const reduce = useReduceMotion();
   useLeaveKeyboard(true);
   useOverlaySlot('hold', true, onClose);
   // The reaction bar's soft shadow natively (NativeShadow.tsx): it pops in.
   const shadowOff = useLabOff('golge');
-  const barShadow = boxShadowParts(shadowOff, shape.shadow.sheet, shape.radius.pill);
+  const barShadow = boxShadowParts(shadowOff, look.shadow || undefined, shape.radius.pill);
   const screen = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [height, setHeight] = useState<number | null>(null);
@@ -135,12 +138,15 @@ export function MessagePop({
             accessibilityRole="menu"
             accessibilityLabel={tr.chat.react}
             entering={reduce || !placed ? undefined : popIn(BAR_FROM)}
+            // DmMesajMenu `.rbar`: the surface, 4 inside, the faces 2 apart.
             style={{
               flexDirection: 'row',
-              gap: SPACING[0.5],
-              padding: SPACING[1],
+              gap: DM.pick.gap,
+              padding: DM.pick.pad,
               borderRadius: shape.radius.pill,
-              backgroundColor: colors.surface,
+              backgroundColor: look.fill,
+              borderWidth: look.edge ? KIT.size.edge : 0,
+              borderColor: look.edge || undefined,
               boxShadow: barShadow.boxShadow,
               transformOrigin: mine ? 'right bottom' : 'left bottom',
             }}
@@ -165,12 +171,15 @@ export function MessagePop({
                       reduce || !placed ? undefined : popIn(FACE_FROM, (i + 1) * FACE_STEP_MS)
                     }
                     className="items-center justify-center"
+                    // `.f` 40, `.f.sel` on --surface2 in a 2 ring of the ink.
                     style={{
-                      width: SPACING[10] + SPACING[0.5],
-                      height: SPACING[10],
-                      borderRadius: SPACING[5],
+                      width: DM.pick.slot,
+                      height: DM.pick.slot,
+                      borderRadius: DM.pick.slot / 2,
+                      borderWidth: current === emoji ? DM.pick.ring : 0,
+                      borderColor: look.selRing,
                       backgroundColor:
-                        pressed || current === emoji ? colors.surface2 : 'transparent',
+                        current === emoji ? look.sel : pressed ? colors.surface2 : 'transparent',
                       transform: [{ scale: pressed ? 1.12 : 1 }],
                     }}
                   >
@@ -197,7 +206,7 @@ export function MessagePop({
             entering={reduce || !placed ? undefined : popIn(MENU_FROM)}
             style={{ transformOrigin: mine ? 'right top' : 'left top' }}
           >
-            <Menu float>
+            <Menu float floatWidth={DM.pick.menu}>
               {actions.map((a) => (
                 <MenuItem
                   key={a.label}

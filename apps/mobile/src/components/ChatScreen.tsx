@@ -1360,7 +1360,7 @@ export function ChatScreen<T extends ChatListItem>({
                           paddingHorizontal: wall ? DM.side : shape.screenPadding,
                           paddingTop: SPACING[3] + under,
                           paddingBottom: SPACING[2] + topHeight,
-                          // iskelet.md → 5.5: a run's bubbles 3 apart, runs 12 (ChatRow).
+                          // iskelet.md → 5.5: a run's bubbles 2 apart, runs 12 (ChatRow).
                           gap: KIT.size.runGap,
                         }}
                       />
@@ -1376,7 +1376,7 @@ export function ChatScreen<T extends ChatListItem>({
                         keyboardOffset={bottomPad}
                         contentContainerStyle={{
                           flexGrow: 1,
-                          // 16 at the sides; iskelet.md → 5.5: a run's bubbles 3 apart, runs 12.
+                          // 16 at the sides; iskelet.md → 5.5: a run's bubbles 2 apart, runs 12.
                           paddingHorizontal: shape.screenPadding,
                           paddingTop: SPACING[2] + topHeight,
                           paddingBottom: SPACING[3] + under,

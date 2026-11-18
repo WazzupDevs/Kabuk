@@ -44,6 +44,9 @@ type Props = {
   // Under a page's own heading and switch (Aura v75 AktivitelerHal): the loader at the page's top;
   // the error's icon 28.
   inPage?: boolean;
+  // Inside its own card that keeps the room around it (tuval DmBos `.demp .emp`): no room of its
+  // own, the title 10 under the picture.
+  inCard?: boolean;
 };
 
 // Aura v76 BosDurumlar (640x440 exports; the DM's first message and the venue's week reuse the
@@ -151,6 +154,7 @@ export function EmptyState({
   riso,
   compact,
   inPage,
+  inCard,
 }: Props) {
   if (kind === 'empty')
     return (
@@ -159,6 +163,7 @@ export function EmptyState({
         body={body}
         action={action}
         small={small || compact}
+        inCard={inCard}
         risoId={riso}
         picture={
           riso
@@ -223,16 +228,19 @@ export function EmptyState({
 
 // `.et` and `.ed`: the title 12 under the picture, the sentence 4 under it, at most 260 wide; a
 // sentence alone stands in the title's place, in the text colour.
-function StateWords({ title, body }: { title?: string; body: string }) {
+function StateWords({
+  title,
+  body,
+  titleTop = KIT.size.emptyTitleTop,
+}: {
+  title?: string;
+  body: string;
+  titleTop?: number;
+}) {
   return (
     <>
       {title ? (
-        <T
-          v="stateTitle"
-          center
-          accessibilityRole="header"
-          style={{ marginTop: KIT.size.emptyTitleTop }}
-        >
+        <T v="stateTitle" center accessibilityRole="header" style={{ marginTop: titleTop }}>
           {title}
         </T>
       ) : null}
@@ -290,7 +298,8 @@ function Empty({
   small,
   picture,
   risoId,
-}: Pick<Props, 'title' | 'body' | 'action' | 'small'> & {
+  inCard,
+}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'inCard'> & {
   // The riso picture's name: its wrapper's testID (`empty-riso-<ad>`, E2E K14).
   risoId?: EmptyRiso;
   picture?: {
@@ -306,8 +315,8 @@ function Empty({
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
-        paddingHorizontal: KIT.size.emptyPad,
+        paddingTop: inCard ? 0 : small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
+        paddingHorizontal: inCard ? 0 : KIT.size.emptyPad,
       }}
     >
       {picture ? (
@@ -317,7 +326,11 @@ function Empty({
       ) : (
         <EmptyMark />
       )}
-      <StateWords title={title} body={body} />
+      <StateWords
+        title={title}
+        body={body}
+        titleTop={inCard ? KIT.size.emptyTitleTopCard : undefined}
+      />
       {action ? (
         <View style={{ marginTop: KIT.size.emptyActionTop }}>
           <Btn

@@ -91,6 +91,8 @@ type Props = {
   edited?: string;
   // The message being edited in the message bar: outlined (tuval DmDuzenle).
   editing?: boolean;
+  // The message being answered: ringed at its edge (tuval DmYanit `.msg.sel`).
+  answering?: boolean;
   // The bubble takes a new size on springs.morph (A4 4.4: an edit's new text): set from when its
   // edit starts, so the change finds it ready.
   morph?: boolean;
@@ -176,6 +178,7 @@ export function ChatBubble({
   time,
   edited,
   editing = false,
+  answering = false,
   morph = false,
   menuNote,
   delivery,
@@ -321,6 +324,11 @@ export function ChatBubble({
     true,
     mineLine && !big ? KIT.size.edge : 0,
   );
+  // Held over the scrim, the DM's bubble rises on a deeper shadow (DmMesajMenu `.hold .msg`).
+  const heldShadow =
+    kind === 'dm' && !big && D.heldShadow
+      ? shadowParts(shadowOff, D.heldShadow, undefined, radii, true, mineLine ? KIT.size.edge : 0)
+      : bubbleShadow;
   // The widest a bubble's words may run (the stream's width less the screen's padding, at the
   // bubble's share of it), for keeping the time beside a one-line message (below).
   const { width: screenWidth } = useWindowDimensions();
@@ -392,6 +400,7 @@ export function ChatBubble({
     </Pressable>
   );
   function face(lifted: boolean) {
+    const sh = lifted ? heldShadow : bubbleShadow;
     const skinned = skin !== null && !big && !plain;
     const shaped = last && !big && box !== null && !skinned && !plain && !dm;
     return (
@@ -422,9 +431,9 @@ export function ChatBubble({
                     backgroundColor: shaped ? undefined : fill,
                     borderWidth: KIT.size.edge,
                     borderColor: shaped ? 'transparent' : paint.mineEdge,
-                    boxShadow: bubbleShadow.boxShadow,
+                    boxShadow: sh.boxShadow,
                   }
-                : { backgroundColor: shaped ? undefined : fill, boxShadow: bubbleShadow.boxShadow },
+                : { backgroundColor: shaped ? undefined : fill, boxShadow: sh.boxShadow },
             big
               ? {
                   opacity: state === 'sending' ? 0.6 : 1,
@@ -439,12 +448,12 @@ export function ChatBubble({
                   opacity: state === 'sending' ? 0.6 : 1,
                 },
             skin && skinned ? skinFace(skin, mine, scheme, first, last) : null,
-            editing && !lifted
+            (editing || answering) && !lifted
               ? {
                   outlineWidth: DM.editing.outline,
                   outlineStyle: 'solid',
                   outlineColor: inkLine,
-                  outlineOffset: DM.editing.offset,
+                  outlineOffset: editing ? DM.editing.offset : 0,
                 }
               : null,
           ]}
@@ -452,8 +461,8 @@ export function ChatBubble({
           {skin && skinned ? (
             <SkinFrame skin={skin} mine={mine} first={first} last={last} moves={skinMoves} />
           ) : null}
-          {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
-          {big || skinned ? null : bubbleShadow.node}
+          {/* Held, the bubble keeps its tail, no ring (ui 1.1); the DM's on its held shadow. */}
+          {big || skinned ? null : sh.node}
           {skinned ? null : shaped ? (
             <BubbleShape
               mine={mine}
@@ -1218,7 +1227,7 @@ function QuoteBlock({
         onPress={onPress}
         accessibilityRole={onPress ? 'button' : undefined}
         style={{
-          marginBottom: SPACING[1],
+          marginBottom: DM.quote.gap,
           paddingHorizontal: DM.quote.padX,
           paddingVertical: DM.quote.padY,
           borderRadius: DM.quote.radius,
@@ -1594,7 +1603,16 @@ const SENT_TICK = 'M5 12.5l4.2 4.2L17 8.4';
 const TYPING_MS = 400;
 
 // The other side is typing: three dots in a left bubble, rising in turn; still under reduce motion.
-export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: string }) {
+// `label`: what a screen reader hears (DmSohbet `.typing`: "Fevve yazıyor").
+export function TypingBubble({
+  avatar,
+  testID,
+  label = tr.dm.typing,
+}: {
+  avatar?: ReactNode;
+  testID?: string;
+  label?: string;
+}) {
   const { shape } = useTheme();
   const reduce = useReduceMotion();
   // Stopped while another screen or a sheet covers the chat and in the background (A-36).
@@ -1642,7 +1660,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
       }}
       accessible
       accessibilityLiveRegion="polite"
-      accessibilityLabel={tr.dm.typing}
+      accessibilityLabel={label}
       testID={testID}
     >
       {avatar}
