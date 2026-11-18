@@ -9,6 +9,7 @@ import { ReportModal } from '@/features/chat/ReportModal';
 import { tr } from '@/i18n/tr';
 import { closeOverlay, confirm } from '@/lib/overlayStore';
 import { Tap } from '@/motion';
+import { REPORT_PICK } from '@/theme/person';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -82,7 +83,7 @@ function ReportOption() {
             <CapIcon name="check" size={L.checkMark} color={look.onCheckOn} soft={1} />
           ) : null}
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, minWidth: 0, marginRight: -REPORT_PICK.bleed }}>
           <T v="body" color={c.ink} style={KIT_TYPE.checkRow}>
             {tr.friends.alsoReport}
           </T>

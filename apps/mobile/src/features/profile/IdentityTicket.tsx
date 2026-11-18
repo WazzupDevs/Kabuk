@@ -234,7 +234,20 @@ export function IdentityTicket({
           {narrow ? null : <View style={{ marginTop: TICKET.buttonTop }}>{star}</View>}
         </View>
       </View>
-      {narrow ? <View style={{ marginTop: TICKET.buttonBelow.top }}>{star}</View> : null}
+      {narrow ? (
+        // DarProfilim `.tbtn`: a main button under the ticket, full width, 52 high at least.
+        <View style={{ marginTop: TICKET.buttonBelow.top, alignSelf: 'stretch' }}>
+          <Btn
+            block
+            bar={TICKET.buttonBelow.height}
+            icon="star"
+            label={tr.capsule.edit}
+            testID="profile-capsule-edit"
+            look={{ icon: TICKET.buttonBelow.icon }}
+            onPress={() => router.push('/profile/capsule')}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }

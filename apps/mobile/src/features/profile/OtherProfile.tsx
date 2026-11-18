@@ -116,7 +116,9 @@ function OtherPage({
   const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
   const openMenu = () =>
     measureMenuAnchor(moreRef.current, (at) => {
-      setAnchor(at);
+      // The board's menu stands 12 from the screen's edge, the ⋮ 16: the anchor reaches 4 further
+      // right, so the menu's right edge (the button's) does.
+      setAnchor({ ...at, width: at.width + B.menuReach });
       setOpen(true);
     });
   // The status bar's icons: light over the cover, the scheme's once the band is in (5.2).

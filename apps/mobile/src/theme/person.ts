@@ -40,6 +40,8 @@ export const PERSON = {
   },
   // YukleniyorProfil: the loader's centre 470 from the screen's top.
   loaderAt: 470,
+  // The ⋮ menu's right edge 4 past the button's (12 from the screen's edge on the boards, the button 16).
+  menuReach: 4,
   // Without a cover: the paper's foot fading into the ground over its last 90.
   paperFoot: 90,
   dot: 1.3,
@@ -107,4 +109,6 @@ export const MUTUAL_BTN = {
 } as const;
 
 // SikayetEt `.rr`: a reason's row 52 high, the radio and the words 12 apart.
-export const REPORT_PICK = { row: 52, gap: 12 } as const;
+// The block dialog's "Şikayet de et" note lets its line run 8 into the row's side: the board's sentence
+// fills the 258 beside the box almost to the dp, and a hair wider on the phone wrapped it.
+export const REPORT_PICK = { row: 52, gap: 12, bleed: 8 } as const;
