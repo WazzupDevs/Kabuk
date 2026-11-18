@@ -82,21 +82,16 @@ Kod: `app/(app)/venue-chat/index.tsx`, `src/components/ChatTopBar.tsx`, `ChatScr
 
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | Duvar kâğıdı | resim | açık blob 02674155 / koyu e72abde7 (PNG 1290×2796, tam ekran, `background-size:cover`) | `ChatScreen wall="mekan"` → `CHAT_WALLS.mekan` üretilmiş SVG deseni, zemin #DDEBE6 / #0A121A (chatWalls.generated.ts); iki blobun depoda karşılığı yok (BLOBLAR.md:13,164 "yok") |
-| 2 | Bar altı band: 132 yüksek, #DDEFE2 (koyu #000) %40'a kadar düz, sonra sönük | düzen/renk | `.band` | `ChatScreen.tsx:1258-1267` bandUnderBar: duvar yeniden çizilir (düz renk bandı yok) → FARK, DOĞRULANAMADI derinliği |
 | 3 | Üst çubuk altyazısı "14 kişi" | özellik yok | `.nm span` 12/16 | `venue-chat/index.tsx:436-442` yerine canlı nokta + son yazanların yüzleri (`Writers`, :818-851); kodda "kişi sayısı verisi yok" notu |
 | 3k | (3'e not) KURAL 4: mekan sohbetinin kişi sayısı hiçbir yanıtta yok (sayı yalnız semt odası üyelerine, Odadakiler); presence yok | kural | — | CLAUDE.md kural 4 |
 | 4 | Başlıkta canlı nokta ve yazan yüzleri | fazla | yok | `ChatTopBar.tsx:97-100` `live`, `under={<Writers>}` (belgeli: 8 Kasım kararı, davranis-eksikleri.md:73) |
 | 5 | Kimlik anahtarı | ölçü/renk | bkz. ORTAK-A | `chatLook.ts:13` toggle slot 36 pad 3; ring/dim/gövde farkı aynı |
 | 6 | ⋮ yuvarlak (dışarıda, `.round.soft`) | uyuyor | 44, moreV 20 | `venue-chat/index.tsx:457-464` Round 44 / ICON.md ✓ |
-| 7 | Akıştaki karşı taraf yüzü | ölçü | 40×40 (`.ga` AVBUYUK) | `index.tsx:793` `faceOf(m, AVATAR_SIZE.sm, true)` = 32 (Avatar.tsx:22 `sm: SPACING[8]`) |
-| 8 | Gönderen isim rengi | renk | bkz. ORTAK-C | `nameInk.ts` |
 | 9 | Okunmamış çizgisi metni | metin | "1 yeni mesaj" (`.new`) | `tr.chat.newLine` "Okunmamış mesajlar" (tr.ts:1009; belgeli: CLAUDE.md "Okunmamış mesajlar çizgisi", 30 Ekim kararı) |
 | 10 | "sol-k9p1 yazıyor" + üç noktalı yazıyor balonu | özellik yok | `.typing` (balon 34 yüksek, 3 nokta 8, renkli) | yok; mekan sohbetinde yazıyor kanalı yok |
 | 10k | (10'a not) KURAL 9: istemcinin yayın yaptığı tek kanal `dm_typing`; mekan sohbetinde yazıyor göstergesi yeni kanal ister; ayrıca isim + "yazıyor" nick'i yazanı canlı açar | kural | — | CLAUDE.md kural 9 |
 | 11 | Mesaj çubuğunda yazı başlangıcı | boşluk | alan iç 6 + yazı 4 = 10 (emojisiz) | `DM.composer.padLeft` 20 (dm.ts:65; yorum: "board draws them after its emoji") |
 | 12 | Tepki hapları (`.rx` 30 yüksek, 4/10 iç, 22 yüz, 4 boşluk, altta 4/6, 6 aralık) | uyuyor | — | `dm.ts:18-29` değerler eşit (sayıya eklendi) |
-| 13 | Gün hapı "Bugün": 28 yüksek (`.flow .day` height 28, 0 12 iç, 1px çizgi) | ölçü | 28 | `ChatScreen.tsx:1439-1500` + `dm.ts:47` padY 4 + 16 satır + 2×1 çizgi = 26; renk/kenar/12-600/üst 10 alt 8 ✓ |
 | 14 | Takı balonu: gradyan #1F7A47→#0E5530, 2px #E8C14A çerçeve, 18 köşe, yaprak | renk/ölçü | `.msg.me.sk` | `setBalloons.ts:66-73` elf: dolgu #07391D→#0E6E4A, köşe 22 (sıkı 6), iç 12/18/12/20, kenar 2 ✓ (altın gradyan çizgi), yaprak yok (köşe süsleri ayrı) → FARK |
 | 15 | FAZLA: yanıt şeridi, bilgi Banner'ı, kişi sayfası (Profil/Sessize al/Şikayet/Engelle) | fazla | yok | `index.tsx:468-482`, `:498-555` |
 
@@ -112,13 +107,8 @@ Kod: `app/(app)/venue-chat/index.tsx:587-640` (`OptionsSheet`), `src/components/
 
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | Menü biçimi | düzen | ⋮'den büyüyen cam açılır menü: sağdan 12, üstten 112, 292 geniş, 28 köşe, iç 8, gölge `0 18 48 rgba(3,27,11,.22)` | `index.tsx:493-497` alt sayfa (`Sheet title="Mekan sohbeti"`, "Tamam" düğmeli); `KIT.layer.menu*` (292/28/16-8-8/12) kodda var ama burada kullanılmıyor |
 | 2 | Satır "Mekandakiler" + sağda "14 kişi" | özellik yok | `.pi` simge (iki kişi) + `.rv` | yok |
 | 2k | (2'ye not) KURAL 4: kişi sayısı + kimlerin mekanda olduğu listesi | kural | — | CLAUDE.md kural 4 |
-| 3 | Satır "Sessize aldıkların" + sağda "Kimse yok" (kapalı satır, simge opaklık .5) | metin/düzen | satır + değer | `index.tsx:605-621` başlık `T fine ink` "Sessize aldıkların" + "Sessize aldığın kimse yok." (tr.ts:1076-1077: `mutedNone`); satır değil metin |
-| 4 | Satır "Sohbet kuralları" | özellik yok | `.pi` bilgi simgesi | yok (belgeli benzeri: davranis-eksikleri.md:65 Masa için "davranışı tanımsız") |
-| 5 | Satır içi ayırıcı: 48'den 12 içeri, rgba(3,27,11,.10) | renk | — | `menuHair` (KIT.layer menüsü) kullanılırsa ✓; bu sayfada Menu kullanılmadığı için yok |
-| 6 | FAZLA: "Tamam" düğmesi, sayfa başlığı, sessize alınanlar listesi satırı "Sesi aç" | fazla | yok | `index.tsx:588-640` |
 
 ---
 
@@ -245,12 +235,9 @@ Kod: `app/(app)/room-chat/[id].tsx`, `src/features/chat/ChatPanel.tsx:300-345`, 
 
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | Mesaj yer tutucusu | metin | "Masaya yaz…" | `tr.chat.placeholder` "Mesaj yaz…" (tr.ts:955; `RoomComposer` ChatPanel.tsx:498-510) |
 | 2 | ⋮ menü yuvarlağı (sağ, 44) | özellik yok | "Masa sohbeti seçenekleri" | `room-chat/[id].tsx:93-96` yorum: "has no options to open" (belgeli) |
-| 3 | Öneri çipleri: "Selam masa! 👋", "Hangi oyunu açalım?", "Ben hazırım" (36 yüksek, kartın altında) | özellik yok | `.sug` | `ChatPanel.tsx:326-327` "not drawn (no behaviour is given them)" (belgeli) |
 | 4 | Mesaj alanında emoji düğmesi (40) | özellik yok | `.fld .ib` | yok (`dm.ts:62-64` "the app has not") |
 | 5 | Yazı başlangıcı | boşluk | 6 + 40 + 2 + 4 = 52 | `DM.composer.padLeft` 20 (emoji düğmesi olmadığı için; ayrı karar) |
-| 6 | Duvar resmi | resim | blob 520a563c (açık ve koyu aynı, 900×1950) | `room-chat/[id].tsx:70-72` `TABLE_CARD_TALL[icon]` (masanın uzun riso kartı); blobun depodaki karşılığı BLOBLAR.md:49 "yok", eşit mi → DOĞRULANAMADI |
 | 7 | FAZLA: yanıt şeridi, not Banner'ı | fazla | yok | `ChatPanel.tsx:498-510` |
 
 Uyanlar: geri yuvarlak 44, kapsül 52 (başlık "Masa sohbeti" 16/20 600, "Uçan Halı · 12 kişi" 12/16), boş kart ("Masada henüz mesaj yok" 16/22 700, "İlk mesajı sen yaz. Masadaki 12 kişi görür." 13/18; resim 150 geniş, 70 yukarıda, 40 yandan, 72 üstte; zemin #FFF/#121614), gönder 52, band yok ✓ (masa için `bandUnderBar` kapalı).
