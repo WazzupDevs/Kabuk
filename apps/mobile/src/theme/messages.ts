@@ -34,8 +34,10 @@ export const MESSAGES = {
   ticks: { width: 18 },
   // Arşivlenenler's top (Arsiv, ArsivBos `.ptop`, `.pt2`): the row as high as its parts (the 44
   // round, the title 26 over the count), not Arkadaşlar's 56; the count's line stands in the page's
-  // 20 line (`.pt2 span` is inline: its 13/18 words sit 2 lower); the hint 4 + 12 under the row.
-  archiveTop: { countTop: 2, fieldTop: 12 },
+  // 20 line (`.pt2 span` is inline: its 13/18 words sit lower). On the phone the count's letters
+  // stand 2 higher in their line than Chrome draws them, so it is 4 under the title and the hint
+  // 2 less under the row (the hint stays where the board has it; Arsiv, measured 18 Kasım).
+  archiveTop: { countTop: 4, fieldTop: 10 },
   // The empty states (MesajlarBos, MesajlarAraBos, ArsivBos `.emp`): 190 under the empty state, of
   // which the list's foot keeps 90 (Screen → SCROLL_PAD).
   emptyLift: 100,
