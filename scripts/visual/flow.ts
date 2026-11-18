@@ -2,26 +2,42 @@
 // comparison never stops the rest: open the state's route, wait for it to settle, do the state's
 // app steps (a real button pressed, time let run), photograph its frame (the candidate) and, when a
 // baseline of the emulator's size exists, assertScreenshot against it. Written by make-flows.ts.
-import { type AppStep, baselinePath, hasBaseline, type Shot, staleBaseline } from './states.ts';
+import {
+  type AppStep,
+  baselinePath,
+  DRAG_FROM,
+  hasBaseline,
+  type Shot,
+  staleBaseline,
+  VIEWPORT_HEIGHT,
+} from './states.ts';
 
 // A testID no screen has: waiting for it to show is a plain wait of its timeout.
 export const NEVER_THERE = 'gorsel-bekle';
 
 // The state's app steps as Maestro commands: `bas` taps the element by its testID (Maestro waits
-// for it to be there), `uzunBas` holds it, `bekle` waits that long.
+// for it to be there), `uzunBas` holds it, `bekle` waits that long, `kaydir` drags the content up by
+// about that many dp (a slow drag in whole percents of the screen: no fling).
 export function appSteps(steps: readonly AppStep[]): string[] {
   return steps.flatMap((step) =>
     'bas' in step
       ? ['- tapOn:', `    id: ${step.bas}`]
       : 'uzunBas' in step
         ? ['- longPressOn:', `    id: ${step.uzunBas}`]
-        : [
-            '- extendedWaitUntil:',
-            '    visible:',
-            `      id: ${NEVER_THERE}`,
-            `    timeout: ${step.bekle}`,
-            '    optional: true',
-          ],
+        : 'kaydir' in step
+          ? [
+              '- swipe:',
+              `    start: 50%, ${Math.round(DRAG_FROM * 100)}%`,
+              `    end: 50%, ${Math.round((DRAG_FROM - step.kaydir / VIEWPORT_HEIGHT) * 100)}%`,
+              '    duration: 1500',
+            ]
+          : [
+              '- extendedWaitUntil:',
+              '    visible:',
+              `      id: ${NEVER_THERE}`,
+              `    timeout: ${step.bekle}`,
+              '    optional: true',
+            ],
   );
 }
 

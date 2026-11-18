@@ -727,6 +727,15 @@ describe('visual gate: the app steps in the flow', () => {
     ]);
   });
 
+  it('drags the content up by about the dp asked', () => {
+    expect(appSteps([{ kaydir: 211 }])).toEqual([
+      '- swipe:',
+      '    start: 50%, 75%',
+      '    end: 50%, 50%',
+      '    duration: 1500',
+    ]);
+  });
+
   it('holds by testID', () => {
     expect(appSteps([{ uzunBas: 'inbox-Fevve' }])).toEqual([
       '- longPressOn:',
