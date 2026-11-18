@@ -21,15 +21,6 @@ import { inflectTr } from '@shared/trText.ts';
 
 import type { VenueKind } from '@shared/venueKind.ts';
 
-// The accusative ("Ece'yi", "Adem'i") from the genitive's own vowel ("Ece'nin", "Adem'in"):
-// trText.ts has genitive, dative and locative only (docs: @shared is not touched here).
-function accusativeTr(name: string): string {
-  const g = inflectTr(name, 'genitive');
-  const afterVowel = /'n(.)n$/.exec(g);
-  if (afterVowel) return g.replace(/'n.n$/, `'y${afterVowel[1]}`);
-  return g.replace(/'(.)n$/, "'$1");
-}
-
 // Address (hitap): a person is "sen", a table "siz"; a sentence never mixes the two. What a phone
 // chooses for itself (a room's intent and participation, "Arkadaş ekle") is a person's: in Faz 2
 // everyone chooses for themselves (canvas: Faz 2 · 22.5 → Metinler).
@@ -1359,7 +1350,7 @@ export const tr = {
     report: 'Şikayet et',
     reportTitle: 'Neden şikayet ediyorsun?',
     // SikayetEt (60): "Ece'yi neden şikayet ediyorsun?" and the red button.
-    reportNamedTitle: (name: string) => `${accusativeTr(name)} neden şikayet ediyorsun?`,
+    reportNamedTitle: (name: string) => `${inflectTr(name, 'accusative')} neden şikayet ediyorsun?`,
     reportSend: 'Şikayeti gönder',
     reasons: {
       harassment: 'Taciz',

@@ -125,6 +125,20 @@ describe('inflectTr', () => {
     expect(genitive('Suricat')).toBe("Suricat'ın");
   });
 
+  it('puts the accusative after an apostrophe, with y after a vowel', () => {
+    const accusative = (name: string) => inflectTr(name, 'accusative');
+    expect(accusative('Ece')).toBe("Ece'yi");
+    expect(accusative('Adem')).toBe("Adem'i");
+    expect(accusative('Martı')).toBe("Martı'yı");
+    expect(accusative('Deniz')).toBe("Deniz'i");
+    expect(accusative('Baykuş')).toBe("Baykuş'u");
+    expect(accusative('Doğu')).toBe("Doğu'yu");
+    expect(accusative('Gül')).toBe("Gül'ü");
+    expect(accusative('Öykü')).toBe("Öykü'yü");
+    expect(accusative('Suricat')).toBe("Suricat'ı");
+    expect(accusative('kapsul-ab12')).toBe("kapsul-ab12'yi");
+  });
+
   it('puts the locative after an apostrophe, t after a voiceless consonant', () => {
     const locative = (name: string) => inflectTr(name, 'locative');
     expect(locative('İstanbul')).toBe("İstanbul'da");
