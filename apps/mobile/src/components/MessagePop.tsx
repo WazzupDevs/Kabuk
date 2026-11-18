@@ -108,7 +108,11 @@ export function MessagePop({
   // pass, their entering animations stayed where the stack first stood (the owner's report, 4 Kasım:
   // the faces and the menu at the screen's top, the message at its foot). `placed` mounts them anew.
   const placed = height !== null;
+  // DmMesajMenu `.hold>.rbar`, `.hold>.pop`: the faces and the menu at the bubble's own edge (left
+  // 0, or right 0 on the viewer's own), not the screen's padding; never nearer the far edge.
   const side = shape.screenPadding;
+  const left = mine ? side : Math.min(at.x, side);
+  const right = mine ? Math.min(screen.width - at.x - at.width, side) : side;
   return (
     <Modal transparent visible animationType="fade" statusBarTranslucent onRequestClose={onClose}>
       <SheetScrim hold opacity={1} />
@@ -123,8 +127,8 @@ export function MessagePop({
         onLayout={(e) => setHeight(e.nativeEvent.layout.height)}
         style={{
           position: 'absolute',
-          left: side,
-          right: side,
+          left,
+          right,
           top,
           gap,
           alignItems: mine ? 'flex-end' : 'flex-start',
@@ -194,8 +198,8 @@ export function MessagePop({
           pointerEvents="none"
           style={{
             width: at.width,
-            marginLeft: mine ? 0 : at.x - side,
-            marginRight: mine ? screen.width - side - at.x - at.width : 0,
+            marginLeft: mine ? 0 : at.x - left,
+            marginRight: mine ? screen.width - right - at.x - at.width : 0,
           }}
         >
           {children}
