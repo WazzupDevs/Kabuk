@@ -249,6 +249,36 @@ export function shots(config: GateConfig): Shot[] {
   });
 }
 
+// The pull request a run belongs to (GitHub's own environment), or null: the nightly run, a run
+// by hand, a developer's machine.
+export function pullRequestOf(env: Record<string, string | undefined>): number | null {
+  const ref = /^refs\/pull\/(\d+)\//.exec(env.GITHUB_REF ?? '');
+  return env.GITHUB_EVENT_NAME === 'pull_request' && ref ? Number(ref[1]) : null;
+}
+
+// The shots one run takes. Every shot outside a pull request (the nightly run is the gate for all
+// the baselines). On a pull request only what that PR is about, so that its run stays inside the
+// job's time as the list grows (18 Kasım: 88 shots ran out of 40 minutes): a state still on trial
+// (`baz: false`), a shot whose baseline is not there yet, and a state a row of
+// e2e/visual/kapsam.json names with this PR as its evidence (its baselines came with this PR and
+// are compared here). A PR with none of these photographs everything.
+export function runShots(
+  root: string,
+  config: GateConfig,
+  env: Record<string, string | undefined> = {},
+): Shot[] {
+  const all = shots(config);
+  const pr = pullRequestOf(env);
+  if (pr === null) return all;
+  const file = join(root, 'e2e/visual/kapsam.json');
+  const rows = existsSync(file)
+    ? (JSON.parse(readFileSync(file, 'utf8')) as { durum?: string | null; kanit?: number }[])
+    : [];
+  const cited = new Set(rows.filter((r) => r.kanit === pr && r.durum).map((r) => r.durum));
+  const own = all.filter((s) => !s.baseline || !hasBaseline(root, s) || cited.has(s.state.id));
+  return own.length > 0 ? own : all;
+}
+
 export function baselinePath(root: string, shot: Shot): string {
   return join(root, BASELINE_DIR, `${shot.name}.png`);
 }
