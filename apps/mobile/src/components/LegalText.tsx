@@ -206,7 +206,7 @@ function Meta() {
               backgroundColor: pill.bg,
             }}
           >
-            <T v="draftPill" color={pill.fg}>
+            <T v="draftPill" color={c.muted}>
               {tr.legal.draftTag}
             </T>
           </View>

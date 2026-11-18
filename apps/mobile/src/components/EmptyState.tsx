@@ -93,20 +93,9 @@ const RISO_BOARD: Partial<
   search: { width: 120, height: 80, radius: 0, shadow: 'none' },
   dm: { width: 120, height: 98, radius: 0, shadow: 'none' },
   archive: { width: 120, height: 98, radius: 0, shadow: 'none' },
-  // EngellenenlerBos, SessizAlinanlarBos: 120 across; the app's 640 × 440 pictures (not the boards'
-  // 360 × 294 ones) keep their own shape in it.
-  blocked: {
-    width: 120,
-    height: Math.round(120 * KIT.size.emptyRisoAspect),
-    radius: 0,
-    shadow: 'none',
-  },
-  muted: {
-    width: 120,
-    height: Math.round(120 * KIT.size.emptyRisoAspect),
-    radius: 0,
-    shadow: 'none',
-  },
+  // EngellenenlerBos, SessizAlinanlarBos: the boards' own 360 × 294 cut-outs.
+  blocked: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  muted: { width: 120, height: 98, radius: 0, shadow: 'none' },
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,

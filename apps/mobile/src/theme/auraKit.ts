@@ -207,7 +207,9 @@ export const KIT_TYPE = {
   dialogTitle: t(700, 20, 26, -0.3 / 20),
   legalHead: t(700, 18, 24, -0.2 / 18),
   legalText: t(500, 15, 23),
-  draftPill: t(700, 13, 16, 0.2 / 13),
+  // YasalMetin `.drf` as the board draws it: `.meta span` (500 13/18, muted) wins over `.drf`'s own
+  // font and colour; only its 0.2 px spacing stays.
+  draftPill: t(500, 13, 18, 0.2 / 13),
   // Yeni arayüz (Ayarlar, 16 Kasım): a page's title beside its back button (21, 700, -0.3 px), a
   // section's head in small letters (13, 700). The dialog's title is the page's; its words 15/500;
   // the long-press menu's row 15/600; the toast's title 14/600 and its line 12/500.
