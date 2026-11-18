@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (18 Kasım 2026, öğle): görsel doğrulama çalışıyor, iki aile doğrulandı
+
+- Düzen uçtan uca çalışıyor (#738, #739, pilot #740): PR'a `gorsel` etiketi → görsel koşu → günlük `gh api repos/WazzupDevs/Kabuk/actions/jobs/<id>/logs` ile iner (MCP günlük aracı büyük günlükte düşüyor) → `pnpm visual:yerel -- --log … --out …` (`PLAYWRIGHT_CHROMIUM=/usr/bin/google-chrome`) → `gorsel-denetci` (orta model yetiyor) → düzeltme → temizse `states.json`'dan `baz: false` kalkar, `pnpm visual:accept -- --log …`, kapsam satırı `goruntuyle-dogrulandi` + `kanit`, `gorsel-baz` etiketi. Benzerlik yüzdesi yanıltır (boş zemin); hükmü denetçi verir. Çekimde sabit ~19 dp üst kayma ve alt gezinme payı cihaz farkıdır, sekme çubuğu çizilmez.
+- Doğrulanıp birleşen: Ayarlar ailesi (#734, 7 pano) ve Mesajlar, Arşiv, DM (#737, 13 pano; DM duvar kâğıdı panonunki oldu, `PullScroll` kalan yeri alıyor, çekimde ağ kapalı: `src/lib/offline.ts`). Kararsız iki entegrasyon testi düzeldi (#741); Vampir testindeki tek seferlik 503'ün kökü bulunmadı.
+- Proje sahibinden beklenen: mesaj menüsünde "Bildir" (öneri: var olan konuşma bildirimine bağlamak; tek mesaj ucu ayrı sunucu paketi), boş Mesajlar'da çizimin yerine telefonda bakması; ayrıca paralel yazan ajan, doğrulama kapsamı (öneri B), bilgisayarı emülatör olarak bağlama (bir aile CI ile ~2,5 saat, yerelde ~yarım saat), CI'ın kırpılması, kaydırma galerisindeki açık sorular.
+- Sıradaki: kalan görünüş paketleri aynı düzenle (profil ailesi; Süsle; İstekler/Bildirimler/Arkadaşlar/Aktiviteler: `ekran-istekler-bos` çekimi hazır, resmi ve yeri yanlış; Keşfet ve harita; Mekân sekmesi; kayıt ve semt; hediye; masa ve lobi; oyunlar), birleşmiş paketlerin (#727–#733) geriye dönük doğrulaması, Ayarlar'ın iki dialoguna çekim (kapıda `OverlayHost` artık var), semt seçenekler menüsünde "i" ikonu ve kart ölçüsü, karşılaştırma aracında üst kaymanın düşülmesi, logo renkleri (pano mor-pembe), Engellenenler'de anonim kapsülü (sunucu), kural değiştiren paketler P1–P6 (her biri `guvenlik` denetimi ve proje sahibinin açık "onaylandı"sı).
+
 ## Devir notu (18 Kasım 2026, sabah): görsel doğrulama düzeni karar oldu, kanıtsız birleştirme yok
 
 - Proje sahibi görsel doğrulama düzenini bütün tuval için karara bağladı: `docs/decisions/gorsel-dogrulama.md` (beş madde, `mimar`'ın planı PR-1…PR-4, pano görüntüleri ayrı dalda, emülatör 390×844). Sıradaki iş PR-1 (kapsam kaydı, testleri, kanıt adımı, rapor, `gorsel-denetci` ajanı, CLAUDE.md "Hızlı yol" maddeleri), sonra PR-2 ve pilot.
