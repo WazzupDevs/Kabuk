@@ -360,8 +360,10 @@ describe('dm/edit (§4.X)', () => {
     expect((await page(a, threadId))[1]).toMatchObject({ body: 'Yarın 8de', from_me: true });
     expect(await sql`select 1 from public.dm_messages where body like '%7de%'`).toHaveLength(0);
     for (const client of [a, b]) {
-      expect(JSON.stringify(await page(client, threadId))).not.toContain('7de');
-      expect(JSON.stringify(await inboxOf(client))).not.toContain('7de');
+      // The whole old text, not three letters of it: "7de" also turns up in a thread's or a
+      // message's random id.
+      expect(JSON.stringify(await page(client, threadId))).not.toContain('Yarın 7de');
+      expect(JSON.stringify(await inboxOf(client))).not.toContain('Yarın 7de');
     }
     // An edit is no new message: b, who answered after it, has nothing unread.
     expect(byThread(await inboxOf(b), threadId)?.unreadCount).toBe(0);
