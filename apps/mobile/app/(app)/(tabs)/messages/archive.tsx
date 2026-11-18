@@ -64,13 +64,14 @@ export default function ArchiveScreen() {
         }
       >
         {inbox.isPending || loading ? (
-          <View style={{ marginTop: SPACING[12] }}>
+          <View className="flex-1">
             <EmptyState kind="loading" body={tr.common.loading} />
           </View>
         ) : !inbox.data ? (
           <EmptyState
             kind="error"
             body={errorMessage(inbox.error)}
+            error={inbox.error}
             action={{
               label: tr.common.retry,
               onPress: () => void inbox.refetch(),

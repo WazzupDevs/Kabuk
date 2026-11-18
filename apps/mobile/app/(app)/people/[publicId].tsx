@@ -93,8 +93,9 @@ export default function PersonScreen() {
         </View>
       ) : failed ? (
         <EmptyState
-          icon="cloud-offline-outline"
+          kind="error"
           body={errorMessage(view.error)}
+          error={view.error}
           action={{
             label: tr.common.retry,
             onPress: () => void view.refetch(),
@@ -399,7 +400,7 @@ function CoverPage({
         }}
       >
         <Round
-          glass="clear"
+          glass="cover"
           icon="back"
           side={KIT.size.topBtn}
           iconSize={B.bar.back}
@@ -437,7 +438,7 @@ function CoverPage({
         </View>
         <View ref={moreRef} collapsable={false}>
           <Round
-            glass="clear"
+            glass="cover"
             icon="moreV"
             side={KIT.size.topBtn}
             iconSize={B.bar.more}

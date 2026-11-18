@@ -74,6 +74,7 @@ export default function VenueDetailScreen() {
           <EmptyState
             kind="error"
             body={errorMessage(error)}
+            error={error}
             action={{ label: tr.common.retry, onPress: () => void refetch() }}
           />
         </View>

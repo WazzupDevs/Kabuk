@@ -58,6 +58,9 @@ export type ConfirmOptions = {
   children?: ReactNode;
   // Names the action; the cancel gets `${testID}-cancel` (as ConfirmSheet).
   testID?: string;
+  // `hold`: opened from a long-press menu, over the menu's lighter scrim (Ortak kurallar C2,
+  // MesajlarSohbetSil `.ubs`); otherwise the dialog's.
+  scrim?: 'hold';
   // Under the buttons, small (MasaIstekGelen `.dnote`: what a "Reddet" shows the other side).
   footnote?: string;
   // The action cannot be pressed now (a table that would pass 12 people cannot be accepted).

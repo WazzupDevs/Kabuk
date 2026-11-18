@@ -279,7 +279,7 @@ function Face({
   }, [reduce, delay, late, pop, ring]);
   const face = KIT.size.av.roomFace;
   // The face in a ring of the card's ground (`.fcs .av`: 0 0 0 2px var(--surface)).
-  const board = { ring: F.ring, ringColor: VENUE[scheme].faceRing, shadow: '' };
+  const board = { ring: F.ring, ringColor: VENUE[scheme].faceRing, shadow: '', outside: true };
   return (
     <View>
       <Animated.View

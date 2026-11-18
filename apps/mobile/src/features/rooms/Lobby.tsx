@@ -234,6 +234,7 @@ export function Lobby({
         <EmptyState
           kind="error"
           body={errorMessage(tables.error)}
+          error={tables.error}
           action={{ label: tr.common.retry, onPress: () => void tables.refetch() }}
         />
       ) : open.length === 0 ? (

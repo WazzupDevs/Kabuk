@@ -213,7 +213,7 @@ function seen(css: string, ground: string): string {
 describe('buttons', () => {
   it.each(['light', 'dark'] as const)('the clear one reads (%s)', (scheme) => {
     const b = BUTTON_GLASS[scheme].clear;
-    const grounds = [...over(b.fill, AURA[scheme].ground), b.solid];
+    const grounds = [seen(b.fill, AURA[scheme].ground), b.solid];
     expect(grounds.length).toBe(2);
     for (const ground of grounds) {
       expect(contrastRatio(b.ink, ground)).toBeGreaterThanOrEqual(AA_TEXT);

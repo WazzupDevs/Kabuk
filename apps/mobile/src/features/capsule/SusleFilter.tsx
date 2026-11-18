@@ -47,6 +47,7 @@ export function SusleFilter({
             key={p ?? ''}
             label={p ?? tr.capsule.allPacks}
             on={p === open}
+            filter
             onPress={() => onPick(p)}
           />
         ))}

@@ -118,6 +118,7 @@ export function TableEnd({
             <EmptyState
               kind="error"
               body={errorMessage(records.error)}
+              error={records.error}
               action={{ label: tr.common.retry, onPress: () => void records.refetch() }}
             />
           ) : records.data.length > 0 ? (

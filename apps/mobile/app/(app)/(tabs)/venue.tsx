@@ -145,6 +145,7 @@ export default function VenueScreen() {
           <EmptyState
             kind="error"
             body={errorMessage(checkIn.error)}
+            error={checkIn.error}
             action={{ label: tr.common.retry, onPress: () => void checkIn.refetch() }}
           />
         </View>

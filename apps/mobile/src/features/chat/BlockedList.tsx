@@ -42,6 +42,7 @@ export function BlockedList() {
       <EmptyState
         kind="error"
         body={errorMessage(blocks.error)}
+        error={blocks.error}
         action={{ label: tr.common.retry, onPress: () => void blocks.refetch() }}
       />
     );

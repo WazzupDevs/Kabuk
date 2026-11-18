@@ -63,6 +63,7 @@ function PeopleBody({ district, onOpen }: { district: string; onOpen: (ref: stri
         kind="error"
         compact
         body={errorMessage(people.error)}
+        error={people.error}
         action={{
           label: tr.common.retry,
           onPress: () => void people.refetch(),

@@ -161,7 +161,7 @@ export function ChatTopBar({
                   justifyContent: 'center',
                 }}
               >
-                <CapIcon name="back" color={c.ink} />
+                <CapIcon name="back" color={c.ink} size={KIT.size.roundIcon} />
               </Glass>
             </Animated.View>
           </Pressable>

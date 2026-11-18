@@ -61,8 +61,9 @@ export default function ConsentsAfterCode() {
       <Screen>
         <View className="flex-1 justify-center">
           <EmptyState
-            icon="cloud-offline-outline"
+            kind="error"
             body={errorMessage(profile.error)}
+            error={profile.error}
             action={{
               label: tr.common.retry,
               onPress: () => void profile.refetch(),

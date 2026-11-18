@@ -77,6 +77,7 @@ export default function AccessoriesScreen() {
         <EmptyState
           kind="error"
           body={errorMessage(view.error)}
+          error={view.error}
           action={{ label: tr.common.retry, onPress: () => void view.refetch() }}
         />
       </View>
@@ -371,6 +372,7 @@ function WearBar({ set, bottom, onPress }: { set: boolean; bottom: number; onPre
       ) : null}
       <Btn
         block
+        tall
         testID="catalog-wear"
         label={set ? tr.capsule.wearSet : tr.capsule.wearSelected}
         onPress={onPress}

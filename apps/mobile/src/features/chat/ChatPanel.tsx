@@ -318,6 +318,7 @@ export function useRoomChatList(
         <EmptyState
           kind="error"
           body={errorMessage(chat.messages.error)}
+          error={chat.messages.error}
           action={{ label: tr.common.retry, onPress: () => void chat.messages.refetch() }}
         />
       </View>

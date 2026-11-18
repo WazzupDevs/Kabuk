@@ -26,14 +26,21 @@ function code(path: string): string {
 }
 
 describe('K1: the size scale', () => {
-  // The main button 48 (the owner's call, 16 Kasım; docs/design/iskelet.md → 2.1), the long one 56.
-  it('main 48, long 56, small 36, round 44, chip 36, field 48', () => {
+  // The boards' sizes (the owner's call, 18 Kasım): main 48, big and long 56, small 36, a bar's 40,
+  // a row's 32 / 34 / 40, round 44, chip 36 (40 where its board draws 40), Süsle's filter chip 28.
+  it('main 48, big 56, small 36, bar 40, round 44, chip 36 / 40, filter chip 28, field 48', () => {
     expect(KIT.size.btn).toBe(48);
     expect(KIT.size.btnTall).toBe(56);
+    expect(KIT.size.btnBig).toBe(56);
     expect(KIT.size.btnSm).toBe(36);
+    expect(KIT.size.btnBar).toBe(40);
+    expect([KIT.size.rowBtnSm, KIT.size.rowBtnMd, KIT.size.rowBtnLg]).toEqual([32, 34, 40]);
     expect(KIT.size.round).toBe(44);
     expect(KIT.size.chip).toBe(36);
-    expect(KIT.size.chipLg).toBe(36);
+    expect(KIT.size.chipLg).toBe(40);
+    expect(code('app/(app)/(tabs)/explore/index.tsx')).toMatch(/KIT\.size\.chipLg/);
+    expect(code('src/features/rooms/LobbyChoices.tsx')).toMatch(/<Chip\s+key=\{v\}\s+lg/);
+    expect(KIT.size.chipFilter).toBe(28);
     expect(KIT.light.field).toBeDefined();
     // The form field's height: the many-line field's 22 round and the single-line 48 are the kit's.
     expect(KIT.size.btnRow).toBe(48);
@@ -54,9 +61,9 @@ describe('K2: the chat top bar', () => {
 
 describe('K3: the message field and send button', () => {
   const composer = code('src/components/Composer.tsx');
-  it('44 high, 22 round', () => {
-    expect(KIT.size.composerField).toBe(44);
-    expect(KIT.size.composerSend).toBe(44);
+  it('52 high, 26 round (`.fld`, `.snd`)', () => {
+    expect(KIT.size.composerField).toBe(52);
+    expect(KIT.size.composerSend).toBe(52);
     expect(composer).toMatch(/const SIZE = KIT\.size\.composerField/);
     expect(composer).toMatch(/const SEND = KIT\.size\.composerSend/);
     expect(composer).toMatch(/borderRadius: SIZE \/ 2/);

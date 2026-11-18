@@ -29,12 +29,22 @@ describe('the sheet (iskelet.md → 3.5, 4.3)', () => {
     expect(over.opacity).toBe(1);
   });
 
-  it('opens on springs.sheet and floats 8 in, 28 round, its close button 38', () => {
+  // skall.css `.sheet`, `.grab`: the handle 40 × 4 in --control, 12 under the top; `.sh-t` 21/26 700.
+  it('its handle 40 × 4, 12 under its top edge; its title 700 21/26', () => {
+    expect(kitSize('grabW')).toBe(40);
+    expect(kitSize('grabH')).toBe(4);
+    expect(kitSize('sheetPadTop')).toBe(12);
+    expect(KIT.layer.light.sheetGrab).toBe('#C6E0CC');
+    expect(KIT.layer.dark.sheetGrab).toBe('#2A332F');
+    expect(code('src/motion/Sheet.tsx')).toMatch(/'sheetTitle'\)/);
+  });
+
+  it('opens on springs.sheet and floats 8 in, 28 round, without a close button', () => {
     expect(MOTION.springs.sheet).toEqual({ stiffness: 260, damping: 24, mass: 1 });
     expect(code('src/motion/useSheetMotion.ts')).toMatch(/springConfig\(MOTION\.springs\.sheet\)/);
     expect(kitSize('sheetInset')).toBe(8);
     expect(KIT.layer.size.sheetRadius).toBe(28);
-    expect(kitSize('sheetClose')).toBe(38);
+    expect(code('src/components/SheetCard.tsx')).not.toMatch(/sheet-close|icon="close"/);
   });
 
   it('leaves on the leaving curve by its own height, and is not put back while still drawn', () => {
@@ -61,9 +71,10 @@ describe('the sheet (iskelet.md → 3.5, 4.3)', () => {
     expect(card).not.toMatch(/sheetFadeTop|sheetFadeBottom/);
   });
 
-  it('a confirmation: danger and a clear cancel', () => {
+  // Yeni arayüz tuvali `.dlg .btn.ghost`: the way out without a fill.
+  it('a confirmation: danger and a ghost cancel', () => {
     const confirm = code('src/motion/Dialog.tsx');
-    expect(confirm).toMatch(/variant="glassy"/);
+    expect(confirm).toMatch(/variant="ghost"/);
     expect(confirm).toMatch(/variant=\{danger \? 'danger' : 'primary'\}/);
   });
 });
@@ -154,6 +165,14 @@ describe('the centred confirmation (Hareket tablosu A2, Ortak kurallar C1, C2)',
     expect(dialog).toMatch(/duration: d\.inMs, easing: ARRIVE/);
     expect(dialog).toMatch(/duration: d\.outMs, easing: LEAVE/);
     expect(dialog).toMatch(/if \(reduce\)/);
+  });
+
+  // Yeni arayüz tuvali `.dlg`: its buttons' icon 24, a little over the middle; opened from a
+  // long-press menu, that menu's scrim (Ortak kurallar C2).
+  it('its icons 24, over the middle, the held scrim when asked', () => {
+    expect(KIT.layer.size.dialogButtonIcon).toBe(24);
+    expect(KIT.layer.size.dialogAbove).toBeLessThan(0.5);
+    expect(dialog).toMatch(/options\.scrim === 'hold' \? look\.holdScrim : look\.scrim/);
   });
 
   it('a flat scrim, no blur; 28 in and 28 round', () => {

@@ -263,6 +263,7 @@ export function Btn({
   sm,
   mid,
   tall,
+  big,
   bar,
   block,
   snug,
@@ -287,8 +288,10 @@ export function Btn({
   sm?: boolean;
   // Mekan's "Masa kur": 44 high, 15.
   mid?: boolean;
-  // The venue page's and the check-in sheet's button: 58 high.
+  // The venue page's and the check-in sheet's button: 56 high.
   tall?: boolean;
+  // `.btn.big` (the semt pages): 56 high, 700 17/22.
+  big?: boolean;
   // In a bar of round buttons: a button as tall as they are, `bar` high (the owner's report, 29
   // Ekim: Masa's "Bitir" stood shorter than the rounds beside it). Beside 48 rounds 18 inside and
   // 16 (Masa); beside 44 the small one's.
@@ -355,14 +358,16 @@ export function Btn({
       ? KIT.size.btnSm
       : mid
         ? KIT.size.btnMid
-        : tall
-          ? KIT.size.btnTall
-          : KIT.size.btn;
-  const big = bar ? bar >= KIT.size.roundLg : false;
-  const small = sm || (!!bar && !big);
+        : big
+          ? KIT.size.btnBig
+          : tall
+            ? KIT.size.btnTall
+            : KIT.size.btn;
+  const wide = bar ? bar >= KIT.size.roundLg : false;
+  const small = sm || (!!bar && !wide);
   const padX = snug
     ? KIT.size.btnPadXSnug
-    : big || mid
+    : wide || mid
       ? KIT.size.btnPadXMid
       : small
         ? KIT.size.btnPadXSm
@@ -373,7 +378,9 @@ export function Btn({
       ? KIT_TYPE.btnMid
       : small
         ? KIT_TYPE.btnSm
-        : KIT_TYPE.btn;
+        : big
+          ? KIT_TYPE.btnBig
+          : KIT_TYPE.btn;
   // The soft outer shadow drawn natively (NativeShadow.tsx); the top light, the bottom line and the
   // white edge inside are inset shadows. A flat `fill` has none.
   const shadow =
@@ -632,7 +639,7 @@ export function Round({
                     ? {
                         backgroundColor: frosted ? undefined : c.raisedRound,
                         borderWidth: KIT.size.edge,
-                        borderColor: c.raisedEdge,
+                        borderColor: c.raisedRoundEdge,
                         boxShadow: shadow?.boxShadow,
                       }
                     : null,
@@ -645,7 +652,14 @@ export function Round({
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
-          (children ?? (icon ? <CapIcon name={icon} color={fg} size={iconSize} /> : null))
+          (children ??
+          (icon ? (
+            <CapIcon
+              name={icon}
+              color={fg}
+              size={iconSize ?? (s >= KIT.size.round ? KIT.size.roundIcon : KIT.size.icon)}
+            />
+          ) : null))
         )}
         {badge && !dot ? (
           <View style={{ position: 'absolute', top: -BADGE_OUT, right: -BADGE_OUT }}>
@@ -653,14 +667,15 @@ export function Round({
           </View>
         ) : null}
         {dot && dotLook ? (
+          // `side` across with its ring inside (`.nd`, border-box: 9 with a 2 ring, the pink 5).
           <View
             style={{
               position: 'absolute',
-              top: dotLook.top - dotLook.ring,
-              right: dotLook.right - dotLook.ring,
-              width: dotLook.side + 2 * dotLook.ring,
-              height: dotLook.side + 2 * dotLook.ring,
-              borderRadius: dotLook.side / 2 + dotLook.ring,
+              top: dotLook.top,
+              right: dotLook.right,
+              width: dotLook.side,
+              height: dotLook.side,
+              borderRadius: dotLook.side / 2,
               borderWidth: dotLook.ring,
               borderColor: dotLook.ringColor,
               backgroundColor: dotLook.color,
@@ -763,6 +778,7 @@ export function Chip({
   lg,
   md,
   narrow,
+  filter,
   icon,
   accessibilityLabel,
   fixed,
@@ -772,12 +788,15 @@ export function Chip({
   onPress?: () => void;
   testID?: string;
   tall?: boolean;
-  // Kapsülün's slots: 40 high, 18 inside, 15.
+  // Where the board draws a 40 chip (Keşfet, MekanLobiAc `.chip`): 40 high, 16 inside, 14/18.
   lg?: boolean;
   // U19: Mekan's spot, 40 high, 16 inside, 14.
   md?: boolean;
   // Aura v75 KesfetHaritaDar: 320 dp or the largest text (src/lib/narrow.ts), 46 high and 15.
   narrow?: boolean;
+  // Süsle's filter (`.flt span`): 28 high, 11 inside, 12/16; --surface2 without a line or shadow,
+  // its words muted (in the dark 60 %); chosen as every chosen chip.
+  filter?: boolean;
   // U35: a worn part's chip leads with its close icon, 10 in on that side.
   icon?: CapIconName;
   accessibilityLabel?: string;
@@ -788,18 +807,22 @@ export function Chip({
   const { c } = useKit();
   const press = usePress();
   const frosted = useFrost() && !on;
-  const h = narrow
-    ? KIT.size.chipNarrow
-    : lg || md
-      ? KIT.size.chipLg
-      : tall
-        ? KIT.size.chipTall
-        : KIT.size.chip;
+  const h = filter
+    ? KIT.size.chipFilter
+    : narrow
+      ? KIT.size.chipNarrow
+      : lg
+        ? KIT.size.chipLg
+        : md
+          ? KIT.size.chip
+          : tall
+            ? KIT.size.chipTall
+            : KIT.size.chip;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
     shadowOff,
-    on ? undefined : c.chipShadow || undefined,
+    on || filter ? undefined : c.chipShadow || undefined,
     undefined,
     h / 2,
     true,
@@ -821,33 +844,43 @@ export function Chip({
         style={{
           height: h,
           paddingLeft: icon ? KIT.size.chipIconPadLeft : undefined,
-          paddingHorizontal: md
-            ? KIT.size.chipMdPadX
-            : lg
-              ? KIT.size.chipLgPadX
-              : tall
-                ? KIT.size.chipTallPadX
-                : KIT.size.chipPadX,
+          paddingHorizontal: filter
+            ? KIT.size.chipFilterPadX
+            : md
+              ? KIT.size.chipMdPadX
+              : lg
+                ? KIT.size.chipLgPadX
+                : tall
+                  ? KIT.size.chipTallPadX
+                  : KIT.size.chipPadX,
           borderRadius: h,
           flexDirection: 'row',
           alignItems: 'center',
           gap: KIT.size.chipGap,
-          backgroundColor: on ? c.chipOn : frosted ? undefined : c.raisedChip,
-          borderWidth: KIT.size.edge,
+          backgroundColor: on ? c.chipOn : filter ? c.infoRow : frosted ? undefined : c.raisedChip,
+          borderWidth: filter ? 0 : KIT.size.edge,
           borderColor: on ? c.chipOn : c.raisedEdge,
           boxShadow: shadow.boxShadow,
           transform: [{ scale: press.scale }],
         }}
       >
         {shadow.node}
-        {on ? null : <FrostOf height={h} fill={c.raisedChip} />}
+        {on || filter ? null : <FrostOf height={h} fill={c.raisedChip} />}
         {icon ? <CapIcon name={icon} color={c.muted} size={KIT.size.iconSm} /> : null}
         <Text
           numberOfLines={1}
           maxFontSizeMultiplier={fixed ? 1 : MAX_FONT_SCALE}
           style={[
-            md ? KIT_TYPE.chipMd : tall || lg || narrow ? KIT_TYPE.chipLg : KIT_TYPE.chip,
-            { color: on ? c.onChipOn : c.ink },
+            filter
+              ? KIT_TYPE.chipFilter
+              : md
+                ? KIT_TYPE.chipMd
+                : lg
+                  ? KIT_TYPE.chipMd
+                  : tall || narrow
+                    ? KIT_TYPE.chipLg
+                    : KIT_TYPE.chip,
+            { color: on ? c.onChipOn : filter ? c.filterInk : c.ink },
           ]}
         >
           {label}
@@ -1292,8 +1325,8 @@ export function Av({
     | 'big'
     | 'hero'
     | 'edit';
-  // A board's own face (tuval Mesajlar, Dm): its white ring drawn outside the face (the face keeps
-  // its size), its colour and its shadow.
+  // A board's own face (tuval Mesajlar, Dm): its ring inside the face's size, its colour and its
+  // shadow.
   board?: AvBoard;
   // Something else in the ring (a capsule).
   children?: ReactNode;
@@ -1302,8 +1335,12 @@ export function Av({
   const side = KIT.size.av[size];
   const shadowOff = useLabOff('golge');
   if (board) {
-    const out = board.ring;
+    // The ring inside the face's size (ekran.css `.av`, border-box: a 48 face is 48 across, its
+    // picture 44); `outside`, around it (`.fcs .av`: a 2 px shadow ring).
+    const out = board.outside ? board.ring : 0;
     const outer = side + 2 * out;
+    const inset = board.outside ? 0 : board.ring;
+    const inner = side - 2 * inset;
     const boardShadow = boxShadowParts(shadowOff, board.shadow || undefined, outer / 2);
     return (
       <View style={{ width: side, height: side }}>
@@ -1324,9 +1361,12 @@ export function Av({
         <View
           style={[
             {
-              width: side,
-              height: side,
-              borderRadius: side / 2,
+              position: 'absolute',
+              left: inset,
+              top: inset,
+              width: inner,
+              height: inner,
+              borderRadius: inner / 2,
               overflow: 'hidden',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1341,7 +1381,7 @@ export function Av({
               source={{ uri: photoUrl, cacheKey: photoCacheKey(photoUrl) }}
               cachePolicy="memory-disk"
               transition={0}
-              style={{ width: side, height: side }}
+              style={{ width: inner, height: inner }}
               accessibilityIgnoresInvertColors
             />
           ) : (
@@ -1415,7 +1455,7 @@ export function Av({
   );
 }
 
-export type AvBoard = { ring: number; ringColor: string; shadow: string };
+export type AvBoard = { ring: number; ringColor: string; shadow: string; outside?: boolean };
 
 function initial(name: string): string {
   return upperTr(name.trim().charAt(0)) || '?';

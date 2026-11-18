@@ -242,8 +242,9 @@ export default function ExploreScreen() {
             >
               {failed ? (
                 <EmptyState
-                  icon="cloud-offline-outline"
+                  kind="error"
                   body={errorMessage(venues.error ?? cities.error)}
+                  error={venues.error ?? cities.error}
                   action={{
                     label: tr.checkin.retry,
                     onPress: () => {
@@ -461,7 +462,8 @@ function KindChip({
   onPress: () => void;
 }) {
   const { c, scheme } = useKit();
-  const h = narrow ? KIT.size.chipNarrow : KIT.size.chip;
+  // Kesfet `.chip`: 40 high.
+  const h = narrow ? KIT.size.chipNarrow : KIT.size.chipLg;
   const shape = {
     height: h,
     borderRadius: h / 2,

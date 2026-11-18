@@ -32,6 +32,7 @@ export default function DistrictOpenScreen() {
         <Foot>
           {enter.isError ? <WarnRow tone="danger" text={errorMessage(enter.error)} /> : null}
           <Btn
+            big
             block
             label={tr.district.open.enter}
             testID="district-enter"

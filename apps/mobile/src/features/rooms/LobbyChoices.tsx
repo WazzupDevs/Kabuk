@@ -38,8 +38,10 @@ export function LobbyChoices({
       </T>
       <View style={ROW}>
         {INTENTS.map((v) => (
+          // MekanLobiAc `.chip`: 40 high.
           <Chip
             key={v}
+            lg
             testID={`intent-${v}`}
             label={tr.intents[v]}
             on={intent === v}
@@ -64,6 +66,7 @@ export function LobbyChoices({
           {CONCEPTS.map((v) => (
             <Chip
               key={v}
+              lg
               testID={`game-tag-${v}`}
               label={tr.concepts[v]}
               on={tag === v}

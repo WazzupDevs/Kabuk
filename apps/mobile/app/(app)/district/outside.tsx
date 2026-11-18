@@ -20,6 +20,7 @@ export default function DistrictOutsideScreen() {
       footer={
         <Foot>
           <Btn
+            big
             block
             label={tr.district.backToExplore}
             testID="district-back-explore"

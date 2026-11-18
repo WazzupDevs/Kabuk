@@ -85,11 +85,11 @@ const Held = memo(
 );
 
 // A bottom sheet over a scrim (iskelet.md → 3.5): menus, confirmations and the join request.
-// Always a trust surface (`Quiet`): hairlines, one clear action. Its handle and title stay put, the
-// close button at the title's right; no "Tamam" or "Kapat" of its own. It opens on springs.sheet
+// Always a trust surface (`Quiet`): hairlines, one clear action. Its handle and title stay put; no close
+// button (the owner's call, 18 Kasım), no "Tamam" or "Kapat" of its own. It opens on springs.sheet
 // from 80 below and faded to 0.3 (useSheetMotion), the scrim fading in; it leaves down off the
-// screen; with reduce motion it appears and goes at once. A tap outside, Android's back button, a
-// pull down and its close button close it. Its card is the flat surface over a flat scrim (yeni
+// screen; with reduce motion it appears and goes at once. A tap outside, Android's back button and a
+// pull down close it. Its card is the flat surface over a flat scrim (yeni
 // arayüz tuvali: SikayetEt, Masadakiler).
 export function Sheet({
   visible,
@@ -193,7 +193,8 @@ export function Sheet({
                 <View className="flex-1">
                   <T
                     v={
-                      titleType ?? (titleArt ? 'sheetGame' : titleLarge ? 'sheetTitleLg' : 'title')
+                      titleType ??
+                      (titleArt ? 'sheetGame' : titleLarge ? 'sheetTitleLg' : 'sheetTitle')
                     }
                     center={centered}
                     accessibilityRole="header"
@@ -259,7 +260,6 @@ export function Sheet({
                     </InSheet>
                   ) : undefined
                 }
-                balance={centered}
                 fill={top !== undefined}
                 scrollRef={scrollRef}
                 look={look}

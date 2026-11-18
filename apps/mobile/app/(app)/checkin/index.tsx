@@ -141,7 +141,6 @@ export default function LocationScreen() {
       title={tr.checkin.sheetTitle}
       titleType="locateTitle"
       subtitle={venue.name}
-      closeButton={false}
       footer={
         <View style={{ gap: L.buttonsGap }}>
           {denied ? (

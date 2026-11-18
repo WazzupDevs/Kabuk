@@ -541,9 +541,10 @@ export function WarnRow({
   icon?: CapIconName;
   testID?: string;
 }) {
-  const { colors } = useTheme();
-  const ground = tone === 'danger' ? colors.dangerSoft : colors.warnSoft;
-  const ink = tone === 'danger' ? colors.onDangerSoft : colors.onWarnSoft;
+  const { scheme } = useTheme();
+  const k = KIT[scheme];
+  const ground = tone === 'danger' ? k.stripDanger : k.stripWarn;
+  const ink = tone === 'danger' ? k.onStripDanger : k.onStripWarn;
   return (
     <View
       testID={testID}

@@ -461,6 +461,8 @@ export const tr = {
     eventKind: 'Etkinlik',
     eventLabel: (title: string, venue: string, when: string) => `${title}, ${venue}, ${when}`,
     noEvents: 'Bugün etkinlik yok',
+    // AktivitelerHata `.ed`: under "Bir sorun oldu".
+    eventsError: 'Etkinlikler yüklenemedi. Birazdan yeniden dene.',
     // Geçmiş's small empty card's title (iskelet.md → 3.4).
     noHistory: 'Henüz geçmiş yok',
     noEventsHint:
@@ -1190,7 +1192,8 @@ export const tr = {
     },
     outside: {
       title: 'Geçit henüz senin semtinde yok',
-      body: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",
+      // SemtDisarida: the typographic apostrophe.
+      body: 'Şimdilik Beylikdüzü, Esenyurt ve Avcılar’da açık.',
       sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     ended: {
@@ -1199,7 +1202,8 @@ export const tr = {
       again: 'Yeniden gir',
       sceneLabel: 'Gece, açık Geçit kapısının önünde iki kanki, yanında bekçi kanki',
     },
-    backToExplore: "Keşfet'e dön",
+    // SemtDisarida, SemtKapandi: the typographic apostrophe.
+    backToExplore: 'Keşfet’e dön',
     close: 'Kapat',
     room: {
       title: (name: string) => `${name} sohbeti`,
@@ -2860,6 +2864,10 @@ export const tr = {
     offlineBody: 'Bağlanınca ekran kendiliğinden yenilenir.',
     // An error state or line while offline (audit M15-21): the connection, not "bir şeyler".
     offlineError: 'Bağlantı yok. Bağlanınca tekrar dene.',
+    // A page's state with no connection, and any page's that failed (Ortak kurallar C4;
+    // AktivitelerBaglantiYok, AktivitelerHata).
+    offlinePageBody: 'İnternete bağlanınca bu sayfa kendiliğinden yenilenir.',
+    errorTitle: 'Bir sorun oldu',
   },
   errors: {
     bad_request: 'İstek geçersiz.',

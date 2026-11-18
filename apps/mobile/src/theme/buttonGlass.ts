@@ -7,7 +7,9 @@
 // fill with the system's "reduce transparency" on (iskelet.md → 6.6): opaque, the same tone over the
 // scheme's ground. `off` is the disabled fill and words, no icon (`.btn.off`, `.btn.primary.off`).
 // `green` is the old green glass the send rounds keep (Composer, the venue chat card's strip): the
-// primary green stays for the send, a key, a badge and the live dot.
+// primary green stays for the send, a key, a badge and the live dot. `cover` a round over a picture
+// (the profile's cover, `.tp .round`): a see-through white, in the dark a see-through #121614.
+// In the dark the soft button is flat #1B211F in a 1 px line at 8 % (`.dark .st .btn.soft`).
 const SOFT_SHADOW = '0px 6px 16px rgba(4, 73, 35, 0.10)';
 const GREEN = 'linear-gradient(180deg, rgba(40, 170, 100, 0.92), rgba(14, 135, 69, 0.92))';
 const GREEN_SOLID = 'linear-gradient(180deg, #28AA64, #0E8745)';
@@ -68,6 +70,16 @@ export const BUTTON_GLASS = {
       ink: '#FFFFFF',
       off: OFF_LIGHT,
     },
+    cover: {
+      fill: 'rgba(255, 255, 255, 0.78)',
+      solid: '#FFFFFF',
+      pressed: '',
+      edge: 'rgba(255, 255, 255, 0.90)',
+      inset: '',
+      shadow: '',
+      ink: '#031B0B',
+      off: OFF_LIGHT,
+    },
   },
   dark: {
     prominent: {
@@ -82,10 +94,10 @@ export const BUTTON_GLASS = {
       off: { fill: '#1B211F', ink: 'rgba(238, 243, 240, 0.4)' },
     },
     clear: {
-      fill: 'rgba(18, 22, 20, 0.62)',
-      solid: '#121614',
+      fill: '#1B211F',
+      solid: '#1B211F',
       pressed: '',
-      edge: 'rgba(255, 255, 255, 0.10)',
+      edge: 'rgba(255, 255, 255, 0.08)',
       inset: '',
       shadow: '',
       ink: '#EEF3F0',
@@ -120,6 +132,16 @@ export const BUTTON_GLASS = {
       inset: 'inset 0px -1px 0px rgba(0, 40, 15, 0.25)',
       shadow: '0px 10px 22px rgba(0, 0, 0, 0.35)',
       ink: '#FFFFFF',
+      off: { fill: '#1F2623', ink: '#A3AEA8' },
+    },
+    cover: {
+      fill: 'rgba(18, 22, 20, 0.72)',
+      solid: '#121614',
+      pressed: '',
+      edge: 'rgba(255, 255, 255, 0.12)',
+      inset: '',
+      shadow: '',
+      ink: '#EEF3F0',
       off: { fill: '#1F2623', ink: '#A3AEA8' },
     },
   },

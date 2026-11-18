@@ -60,6 +60,7 @@ export function FeedView({ venueId }: { venueId: string }) {
             kind="error"
             inPage
             body={errorMessage(query.error)}
+            error={query.error}
             action={{ label: tr.common.retry, onPress: () => void query.refetch() }}
           />
         ) : posts.length === 0 ? (

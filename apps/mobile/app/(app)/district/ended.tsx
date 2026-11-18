@@ -25,13 +25,14 @@ export default function DistrictEndedScreen() {
         <Foot>
           {enter.isError ? <WarnRow tone="danger" text={errorMessage(enter.error)} /> : null}
           <Btn
+            big
             block
             label={tr.district.ended.again}
             testID="district-again"
             loading={enter.isPending}
             onPress={() => enter.mutate()}
           />
-          <Btn block variant="ghost" label={tr.district.backToExplore} onPress={back} />
+          <Btn big block variant="ghost" label={tr.district.backToExplore} onPress={back} />
         </Foot>
       }
     />

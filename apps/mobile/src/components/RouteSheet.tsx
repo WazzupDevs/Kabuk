@@ -28,8 +28,7 @@ import { ScreenStatusBar, StatusScrim } from './StatusScrim';
 // Bildirimler, mekana giriş and "Neredesin?" are sheets; the owner's decision, 27 Ekim). The route
 // is a transparent modal ((app)/_layout.tsx → SHEET); the screen under it stays as it was. The
 // sheet moves like Sheet (iskelet.md → 3.5: in on springs.sheet, out down off the screen;
-// useSheetMotion); a tap on the scrim, Android's back button, useCloseSheet(), its close button and
-// a pull down slide it out, then the route pops. Being part of the route, a screen pushed from it
+// useSheetMotion); a tap on the scrim, Android's back button, useCloseSheet() and a pull down slide it out, then the route pops. Being part of the route, a screen pushed from it
 // opens on top of it, unlike a Modal.
 const CloseContext = createContext<() => void>(() => undefined);
 
@@ -44,9 +43,9 @@ export function RouteSheet({
   peek,
   footer,
   look,
-  titleType = 'title',
+  // A sheet's title (`.sh-t`: 21/26, 700).
+  titleType = 'sheetTitle',
   subtitle,
-  closeButton,
 }: {
   title?: string;
   children: ReactNode;
@@ -61,8 +60,6 @@ export function RouteSheet({
   titleType?: KitTextVariant;
   // A quiet line under the title (the location sheet: the venue's name).
   subtitle?: string;
-  // False: no close button at the title's right; the scrim, back and a pull still close it.
-  closeButton?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const motion = useSheetMotion();
@@ -147,7 +144,6 @@ export function RouteSheet({
                 ) : undefined
               }
               look={look}
-              closeButton={closeButton}
               footer={
                 footer ? (
                   <InSheet>
