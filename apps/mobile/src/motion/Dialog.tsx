@@ -165,13 +165,19 @@ export function Dialog({
             <View
               style={[
                 styles.disc,
-                { backgroundColor: danger ? look.dialogDisc : colors.surface2 },
+                {
+                  backgroundColor: danger
+                    ? options.settings
+                      ? look.dialogDanger
+                      : look.dialogDisc
+                    : colors.surface2,
+                },
                 { marginBottom: L.dialogTitleGap },
               ]}
             >
               <CapIcon
                 name={options.icon}
-                size={L.dialogDiscIcon}
+                size={options.settings ? L.dialogDiscIconSm : L.dialogDiscIcon}
                 color={danger ? look.dialogIcon : colors.accent}
                 soft={1}
               />
@@ -181,7 +187,7 @@ export function Dialog({
             v="title"
             center
             color={kit.ink}
-            style={KIT_TYPE.pageBarTitle}
+            style={options.settings ? KIT_TYPE.dialogTitle : KIT_TYPE.pageBarTitle}
             accessibilityRole="header"
           >
             {title}

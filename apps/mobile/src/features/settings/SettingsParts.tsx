@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { Li, type SegBoard, Switch, T, useKit } from '@/aura/kit';
+import { Loader } from '@/components/Loader';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { Tap } from '@/motion/Tap';
@@ -62,13 +63,16 @@ export function Group({
 }
 
 // A row (`.sr`): its icon in the ink (in red for Çıkış yap), its words, and the chevron where it
-// opens a page.
+// opens a page (none on a red row nor with `chevron={false}`). `loading`: pressed and waiting, the
+// meeting capsules in the chevron's place and a second press does nothing.
 export function SettingsPageRow({
   testID,
   icon,
   label,
   onPress,
   danger,
+  chevron = !danger,
+  loading,
 }: {
   testID?: string;
   icon: CapIconName;
@@ -76,6 +80,8 @@ export function SettingsPageRow({
   onPress: () => void;
   // Çıkış yap: the soft danger's ink, no chevron.
   danger?: boolean;
+  chevron?: boolean;
+  loading?: boolean;
 }) {
   const { c } = useKit();
   const R = SETTINGS.row;
@@ -83,7 +89,7 @@ export function SettingsPageRow({
   return (
     <Li
       testID={testID}
-      onPress={onPress}
+      onPress={loading ? undefined : onPress}
       accessibilityLabel={label}
       padY={0}
       padX={0}
@@ -96,8 +102,74 @@ export function SettingsPageRow({
           {label}
         </T>
       </View>
-      {danger ? null : <CapIcon name="forward" color={c.muted} size={R.chevron} />}
+      {loading ? (
+        <Loader kind="meet" size={R.chevron} delay={0} label={null} />
+      ) : chevron ? (
+        <CapIcon name="forward" color={c.muted} size={R.chevron} />
+      ) : null}
     </Li>
+  );
+}
+
+// A row that cannot be changed here (Hesap `.sr.inf`): the icon, the value over its name (16/22 600
+// over 13/18 500 muted) and the lock at the right.
+export function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: CapIconName;
+  label: string;
+  value: string;
+}) {
+  const { c } = useKit();
+  const R = SETTINGS.row;
+  return (
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: R.gap, minHeight: R.height }}
+    >
+      <CapIcon name={icon} color={c.ink} size={R.icon} />
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
+        <T v="settingsValue" ink>
+          {value}
+        </T>
+        <T v="fine" color={c.muted}>
+          {label}
+        </T>
+      </View>
+      <View style={{ opacity: SETTINGS.lock.opacity }}>
+        <CapIcon name="lock" color={c.muted} size={SETTINGS.lock.size} />
+      </View>
+    </View>
+  );
+}
+
+// Telefon bildirimleri's state (`.stt`): a dot and the word on the soft green, a pill.
+export function StatusPill({ label }: { label: string }) {
+  const { scheme } = useKit();
+  const S = SETTINGS.status;
+  const look = SETTINGS[scheme].status;
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: S.gap,
+        height: S.height,
+        paddingHorizontal: S.padX,
+        borderRadius: S.height / 2,
+        backgroundColor: look.bg,
+      }}
+    >
+      <View
+        style={{ width: S.dot, height: S.dot, borderRadius: S.dot / 2, backgroundColor: look.fg }}
+      />
+      <T v="tag" color={look.fg}>
+        {label}
+      </T>
+    </View>
   );
 }
 
@@ -189,7 +261,7 @@ export function SwitchRow({
   // Not known yet: the switch waits (disabled) and shows off.
   loading?: boolean;
 }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const off = disabled || loading;
   return (
     <Tap
@@ -219,7 +291,7 @@ export function SwitchRow({
             {hint}
           </T>
         </View>
-        <Switch on={value} disabled={off} />
+        <Switch on={value} disabled={off} look={SETTINGS[scheme].switch} />
       </View>
     </Tap>
   );
@@ -259,7 +331,7 @@ export function PersonRow({
       }}
     >
       {face}
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
         <T v="settingsRow" ink>
           {name}
         </T>
@@ -270,3 +342,9 @@ export function PersonRow({
   );
 }
 export const PERSON_HAIR = KIT.size.av.md + SPACING[3];
+// The row's small soft button (`.ur .btn`: 14 inside, 13/16 600; the kit's small height).
+export const PERSON_BTN = {
+  type: 'toastBtn',
+  padLeft: SETTINGS.personBtn.padX,
+  padRight: SETTINGS.personBtn.padX,
+} as const;

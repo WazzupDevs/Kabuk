@@ -3,13 +3,18 @@ import { useMutation } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { Linking, View } from 'react-native';
 
-import { Glass, RowList, T } from '@/aura/kit';
-import { PageTop } from '@/components/PageTop';
-import { Screen } from '@/components/Screen';
+import { T } from '@/aura/kit';
 import { Wordmark } from '@/components/Wordmark';
 import { useProfile } from '@/features/account/useProfile';
 import { useSessionStore } from '@/features/auth/session';
-import { SettingsRow } from '@/features/settings/SettingsRow';
+import {
+  Group,
+  InfoRow,
+  Note,
+  NOTES,
+  SettingsPage,
+  SettingsPageRow,
+} from '@/features/settings/SettingsParts';
 import { useSignOutConfirm } from '@/features/settings/signOutConfirm';
 import { useProfileView } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
@@ -18,9 +23,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { confirm } from '@/lib/overlayStore';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
-import { KIT } from '@/theme/auraKit';
 import { SETTINGS } from '@/theme/settings';
-import { SPACING } from '@/theme/tokens';
 
 // The address in the legal texts (legalEntity.ts) unless the build names another: the row is always
 // there (App Store 1.2 and Google Play want a way to reach the developer in the app).
@@ -33,8 +36,11 @@ function maskPhone(phone: string | undefined): string {
   return `+${digits.slice(0, 2)} ${digits[2]}•• ••• •• ${digits.slice(-2)}`;
 }
 
-// Hesap (skall tuvali, Hesap, HesapSil): the phone number, masked; what cannot be changed here;
-// İletişim, Çıkış yap and Hesabımı sil (asks first, says what goes and when the backups follow).
+// Hesap (yeni arayüz tuvali, AyarHesap, AyarHesapSil): the phone number, masked, and the birth date,
+// locked; what cannot be changed here; İletişim; Çıkış yap and Hesabımı sil in the soft red (asks
+// first, says what goes); the wordmark, the version and the map data's credit at the foot.
+const F = SETTINGS.foot;
+
 export default function AccountScreen() {
   const phone = useSessionStore((s) => s.session?.user.phone);
   const own = useProfile();
@@ -50,76 +56,77 @@ export default function AccountScreen() {
       queryClient.clear();
     },
   });
-  // Hesabımı sil asks first in the centred confirmation (yeni arayüz tuvali, Ortak kurallar C1):
-  // what goes, when the backups follow, the red action. A failed try leaves it open with its error.
+  // Hesabımı sil asks first in the centred confirmation (yeni arayüz tuvali, AyarHesapSil): the
+  // soft red disc, what goes, the red action. A failed try leaves it open with its error.
   const askDelete = () => {
     remove.reset();
     confirm({
       title: tr.settings.deleteConfirmTitle,
-      note: `${tr.settings.deleteBody} ${tr.settings.deleteBackups}`,
+      note: tr.settings.deleteBody,
       tone: 'danger',
       confirmLabel: tr.settings.deleteAccount,
       confirmIcon: 'trash',
       cancelLabel: tr.common.cancel,
       testID: 'account-delete-confirm',
+      icon: 'trash',
+      settings: true,
       onConfirm: async () => {
         await remove.mutateAsync();
       },
     });
   };
   return (
-    <Screen top={<PageTop title={tr.settings.accountTitle} />}>
-      <View style={{ gap: KIT.size.rowGap }}>
-        <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
-          <View>
-            <T v="fine">{tr.settings.phoneLabel}</T>
-            <T v="h3Mono" ink>
-              {maskPhone(phone)}
-            </T>
-          </View>
+    <SettingsPage title={tr.settings.accountTitle}>
+      <View>
+        <Group>
+          <InfoRow icon="phone" label={tr.settings.phoneLabel} value={maskPhone(phone)} />
           {birthDate ? (
-            <View>
-              <T v="fine">{tr.settings.birthDate}</T>
-              <T v="h3" ink>
-                {tr.settings.birthDateValue(birthDate)}
-              </T>
-            </View>
+            <InfoRow
+              icon="calendar"
+              label={tr.settings.birthDate}
+              value={tr.settings.birthDateValue(birthDate)}
+            />
           ) : null}
-        </Glass>
-        <T v="fine">{tr.settings.fixedNote}</T>
-        <RowList inset={SETTINGS.row.hairIn}>
-          <SettingsRow
+        </Group>
+        <View style={NOTES}>
+          <Note>{tr.settings.fixedNote}</Note>
+        </View>
+        <View style={{ marginTop: SETTINGS.groupTop }}>
+          <SettingsPageRow
             icon="chat"
-            chevron
             label={tr.settings.contact}
             onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
           />
-          {/* In the warning colour, as in Ayarlar (the owner's report, 10 Kasım). */}
-          <SettingsRow
-            negative
-            icon="logout"
-            testID="account-sign-out"
-            label={tr.settings.signOut}
-            onPress={signOut.ask}
-          />
-          <SettingsRow
-            negative
-            icon="trash"
-            testID="account-delete"
-            label={tr.settings.deleteAccount}
-            onPress={askDelete}
-          />
-        </RowList>
-        <View style={{ alignItems: 'center', gap: SPACING[2], marginTop: SPACING[6] }}>
-          <Wordmark height={SPACING[5]} />
-          <T v="fine" center>
+        </View>
+        {/* In the soft red, as in Ayarlar (the owner's report, 10 Kasım). */}
+        <View style={{ marginTop: SETTINGS.groupTop }}>
+          <Group>
+            <SettingsPageRow
+              danger
+              icon="logout"
+              testID="account-sign-out"
+              label={tr.settings.signOut}
+              onPress={signOut.ask}
+            />
+            <SettingsPageRow
+              danger
+              icon="trash"
+              testID="account-delete"
+              label={tr.settings.deleteAccount}
+              onPress={askDelete}
+            />
+          </Group>
+        </View>
+        <View style={{ alignItems: 'center', gap: F.gap, marginTop: F.top }}>
+          <Wordmark height={F.mark} />
+          <T v="settingsFoot" center>
             {tr.settings.version(Constants.expoConfig?.version ?? '')}
           </T>
-          <T v="fine" center>
+          <T v="settingsFoot" center>
             {tr.settings.osm}
           </T>
         </View>
       </View>
-    </Screen>
+    </SettingsPage>
   );
 }

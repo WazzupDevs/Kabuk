@@ -14,16 +14,17 @@ import {
 import type { LegalDocKey } from '@/i18n/legalDocs.generated';
 import { tr } from '@/i18n/tr';
 import { analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics';
-import { SPACING } from '@/theme/tokens';
+import { SETTINGS } from '@/theme/settings';
 
 function openText(doc: LegalDocKey) {
   router.push({ pathname: '/legal/[doc]', params: { doc } });
 }
 
 // Gizlilik (yeni arayüz tuvali, AyarGizlilik): the pages of who the account blocked and muted (no
-// counts, karar 3), the capsule characters, what the anonymous name keeps, the usage statistics
-// switch (the owner's call, 12 Kasım: on unless turned off), then the texts. The board's "Verilerin"
-// (copy of the data) is its own proposal (ÖNERİ) and is not here.
+// counts, karar 3: the board's "3" beside Engellenenler waits for the owner's call), the capsule
+// characters, what the anonymous name keeps, the usage statistics switch (the owner's call, 12
+// Kasım: on unless turned off), then the texts. The board's "Verilerin" (copy of the data) is its
+// own proposal (ÖNERİ) and comes with its server work.
 export default function PrivacyScreen() {
   // Read from the phone; the switch shows once it is known.
   const [analytics, setAnalytics] = useState<boolean | null>(null);
@@ -60,7 +61,7 @@ export default function PrivacyScreen() {
         <View style={NOTES}>
           <Note>{tr.settings.nickPrivacy}</Note>
         </View>
-        <View style={{ marginTop: SPACING[3] + SPACING[0.5] }}>
+        <View style={{ marginTop: SETTINGS.groupTop }}>
           <SwitchRow
             testID="privacy-analytics"
             label={tr.settings.analyticsTitle}

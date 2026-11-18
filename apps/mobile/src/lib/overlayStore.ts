@@ -65,6 +65,9 @@ export type ConfirmOptions = {
   footnote?: string;
   // The action cannot be pressed now (a table that would pass 12 people cannot be accepted).
   confirmDisabled?: boolean;
+  // Ayarlar's own (AyarlarCikis, AyarHesapSil): the title 20/26, the disc the flat soft red with
+  // its icon 26.
+  settings?: boolean;
 };
 
 // What a non-dialog entry draws once its component moves here (a later package).

@@ -1644,7 +1644,17 @@ const SEG_SLIDE_MS = 300;
 // Masa kur's switch (docs/design/aura → MasaKur): 56 × 34, off a sunk lilac track, on the primary;
 // the white knob 3 in, sliding on the press spring (hareket.json). At once when motion is reduced.
 // Only the knob; the row around it is the control (its label, its role and its press).
-export function Switch({ on, disabled }: { on: boolean; disabled?: boolean }) {
+// `look`: a board's own track and knob colours (Ayarlar ailesi `.toggle`, theme/settings.ts).
+export type SwitchLook = { off: string; on: string; knob: string; knobOn: string };
+export function Switch({
+  on,
+  disabled,
+  look,
+}: {
+  on: boolean;
+  disabled?: boolean;
+  look?: SwitchLook;
+}) {
   const { c } = useKit();
   const reduce = useReduceMotion();
   const [x] = useState(() => new Animated.Value(on ? 1 : 0));
@@ -1672,7 +1682,7 @@ export function Switch({ on, disabled }: { on: boolean; disabled?: boolean }) {
         width: KIT.size.switchW,
         height: KIT.size.switchH,
         borderRadius: KIT.size.switchH / 2,
-        backgroundColor: on ? KIT.primary : c.switchOff,
+        backgroundColor: on ? (look?.on ?? KIT.primary) : (look?.off ?? c.switchOff),
         boxShadow: on ? undefined : c.switchInset || undefined,
         padding: inset,
         opacity: disabled ? DISABLED : 1,
@@ -1683,7 +1693,7 @@ export function Switch({ on, disabled }: { on: boolean; disabled?: boolean }) {
           width: KIT.size.switchKnob,
           height: KIT.size.switchKnob,
           borderRadius: KIT.size.switchKnob / 2,
-          backgroundColor: c.switchKnob,
+          backgroundColor: look ? (on ? look.knobOn : look.knob) : c.switchKnob,
           boxShadow: knob.boxShadow,
           transform: [
             { translateX: x.interpolate({ inputRange: [0, 1], outputRange: [0, travel] }) },

@@ -7,7 +7,6 @@ import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { patchProfile } from '@/features/account/patchProfile';
-import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { AppearanceSetting } from '@/features/profile/AppearanceSetting';
 import {
   Eyebrow,
@@ -26,6 +25,7 @@ import { openDrawLab } from '@/lib/drawLab';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { KIT } from '@/theme/auraKit';
 import { capsuleSkiaOn } from '@/theme/capsuleSkia';
+import { errorReportingOn, sendErrorLog } from '@/lib/errorReporting';
 import { SETTINGS } from '@/theme/settings';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -37,7 +37,8 @@ type Participation = 'profile' | 'anonymous';
 // Kasım), its back button and title still on the bar over the content. The pages first
 // (Bildirimler, Gizlilik, Hesap: pushed on the same stack), then "Oyunlara katılım" (the identity
 // each check-in starts with, §4.D) and its note, Görünüm, "Çıkış yap" in red (its confirmation),
-// and in a test build only the test rows at the foot.
+// and in a test build only the test rows at the foot (the board's two; Çizim ölçümü kept beside
+// them, a working tool the board does not draw).
 export default function SettingsScreen() {
   const P = SETTINGS.page;
   return (
@@ -67,7 +68,6 @@ function Body() {
   const queryClient = useQueryClient();
   const own = useProfile();
   const photo = useOwnPhoto();
-  const identity = useActiveTable().data?.identity.mode;
   const value: Participation =
     own.data?.default_participation === 'profile' ? 'profile' : 'anonymous';
   const participation = useMutation({
@@ -78,11 +78,6 @@ function Body() {
   });
   const signOut = useSignOutConfirm();
   const open = (path: Parameters<typeof router.push>[0]) => router.push(path);
-  const now = identity
-    ? identity === 'profiled'
-      ? tr.settings.participation.nowProfiled
-      : tr.settings.participation.nowAnonymous
-    : null;
   const photoNeeded = value === 'profile' && photo.known && !photo.has;
 
   return (
@@ -126,12 +121,12 @@ function Body() {
           },
         ]}
       />
-      {/* The board's one note: what the choice does, then (photo aside) this check-in's identity. */}
+      {/* The board's one note: what the choice does; under it why a profiled start waits. */}
       <View style={NOTES}>
         <Note>
-          {now && !photoNeeded
-            ? `${tr.settings.participation.sub} ${now}`
-            : tr.settings.participation.sub}
+          {value === 'profile'
+            ? tr.settings.participation.subProfiled
+            : tr.settings.participation.subAnonymous}
         </Note>
         {photoNeeded ? <Note color={c.warn}>{tr.settings.participation.photoNeeded}</Note> : null}
         {participation.isError ? (
@@ -153,16 +148,24 @@ function Body() {
   );
 }
 
-// "TEST SÜRÜMÜ" (preview builds and development only; production never renders it): the component
-// preview and Çizim ölçümü, as Tasarım (test) had them.
+// "Test sürümü" (preview builds and development only; production never renders it): the component
+// preview, Çizim ölçümü and, where Sentry is set up, "Hata kaydını gönder" (one message through the
+// same filter as a crash: the user id only, errorReporting.ts).
 function TestRows() {
+  const { c } = useKit();
+  const log = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: async () => {
+      if (!(await sendErrorLog())) throw new Error('error log not sent');
+    },
+  });
   return (
     <View>
       <Eyebrow label={tr.settings.testSection} />
       <Group>
         <SettingsPageRow
           testID="preview-open"
-          icon="palette"
+          icon="eye"
           label={tr.design.previewOpen}
           onPress={() => router.push('/design-preview')}
         />
@@ -172,10 +175,23 @@ function TestRows() {
           label={tr.design.drawLab.open}
           onPress={() => openDrawLab(true, capsuleSkiaOn(Platform.OS))}
         />
+        {errorReportingOn ? (
+          <SettingsPageRow
+            testID="send-error-log"
+            icon="report"
+            label={tr.settings.sendLog}
+            loading={log.isPending}
+            onPress={() => log.mutate()}
+          />
+        ) : null}
       </Group>
-      <View style={NOTES}>
-        <Note>{tr.design.drawLab.hint}</Note>
-      </View>
+      {log.isSuccess || log.isError ? (
+        <View style={NOTES}>
+          <Note color={log.isError ? c.warn : undefined}>
+            {log.isError ? tr.settings.sendLogFailed : tr.settings.sendLogDone}
+          </Note>
+        </View>
+      ) : null}
     </View>
   );
 }
