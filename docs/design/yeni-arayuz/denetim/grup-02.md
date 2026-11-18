@@ -3,29 +3,12 @@
 Notlar: Pano değerleri skall.css + ekran.css + koyu.css + pano içi `<style>` ile çözüldü. Kod değerleri `KIT.size.*`, `SETTINGS`, `FLAT`, `MESSAGES`, `ACTIVITIES`, `GIFT_CARD`, `KIT.layer.size.*` ve `tr.ts` ile sayıya kadar çözüldü. Kapsül ikonlarının iç çizgileri (SVG yolları) tek tek karşılaştırılmadı: yalnız ad ve boy. Telefonun alt güvenli alanı panoda 34 sabit; koddaki değer cihaza bağlı olduğundan alt boşluklar için DOĞRULANAMADI yazıldı. Ortak parçalar (sayfa üstü, dialog, sekme çubuğu, küçük düğme) ilk geçtiği panoda tam yazıldı.
 
 ## 03o Ayarlar · Hesabı sil onayı — project/AyarHesapSil.dc.html
-Kod: app/(app)/settings-account.tsx; src/motion/Dialog.tsx; src/components/OverlayHost.tsx; src/lib/overlayStore.ts; src/features/settings/SettingsRow.tsx; src/aura/kit.tsx (RowList, Li, Btn)
+Kod: app/(app)/settings-account.tsx; src/motion/Dialog.tsx; src/components/OverlayHost.tsx; src/lib/overlayStore.ts; src/features/settings/SettingsParts.tsx; src/aura/kit.tsx (RowList, Li, Btn)
 Öğe sayısı: 30 · uyuyor: 11 · fark: 17 · fazla: 1 · doğrulanamadı: 2
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | sayfa zemini | düzen | `.pg` düz canvas, bulut yok (koyuda #000) | Screen `plain` verilmemiş, AuraBackground çiziliyor (settings-account.tsx:71; Screen.tsx:207). SettingsPage `plain` verir, Hesap onu kullanmıyor |
-| 2 | sayfa üstü | düzen | `.ptop`: 44 geri düğmesi + başlık yanında, 21/26 700 −0.3, satır 48, üstten 52 | PageTop `inline` yok: büyük başlık 34/800 çubuğun altında (settings-account.tsx:71; PageTop.tsx:50-58). Kenar/üst: barSide, barTop, side, padTop verilmemiş (SettingsPage P.barTop 5, barSide 16, side 20 verir) |
-| 3 | telefon satırı | düzen/ikon | satır `.sr.inf` min 56: telefon kapsül ikonu 24 + değer üstte (600 16/22, harf aralığı .2px) + etiket altta (13/18) + kilit ikonu 16 muted .7 | Glass kart (pad 18) içinde etiket üstte, değer altta, ikon ve kilit yok; değer `h3Mono` 16/22 harf aralığı 0.64 (settings-account.tsx:73-79; auraKit.ts:251) |
-| 4 | doğum tarihi satırı | düzen/ikon/eksik | pasta kapsül ikonu 24 + `05.03.2000` + kilit 16; her zaman var | ikon ve kilit yok; `birthDate` yoksa satır hiç çıkmıyor (settings-account.tsx:80-87) |
-| 5 | not metni | metin | "Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez; profilinde yalnızca yaşın görünür. Yanlış girdiysen İletişim'den bize yaz." | "…değiştirilemez ve kimseye gösterilmez. Yanlış girdiysen İletişim'den bize yaz." (tr.ts:2829) |
-| 6 | dikey boşluklar | boşluk | bilgi satırları→not 8 (`.nt` margin-top), not→İletişim 14, İletişim→Çıkış grubu 14 | her parça arası 12 (KIT.size.rowGap) (settings-account.tsx:72) |
-| 7 | satır grubu görünümü | düzen | satırlar zeminde, kart yok (`.sl`), çizgi 38'den sağ kenara | `RowList` → cam kart (Glass sm, overflow hidden, radius 22) içinde, çizgi 16+38 (kit.tsx:1081-1118; settings-account.tsx:90) |
-| 8 | gruplama | düzen | İletişim tek başına bir grup; Çıkış yap + Hesabımı sil ayrı grup | üçü tek RowList: İletişim ile Çıkış arasında fazladan çizgi (settings-account.tsx:90-112) |
-| 9 | satır iç boşluğu | boşluk | `.sr`: yan boşluk 0, min 56 | SettingsRow Li `padX` 16 (liPadX) (SettingsRow.tsx:41-47) |
-| 10 | alt künye: marka | ölçü | 26 yüksek (svg `height:26px`) | Wordmark height SPACING[5]=20 (settings-account.tsx:114) |
-| 11 | alt künye: aralıklar | boşluk | üstten 28, öğeler arası 6 | üstten SPACING[6]=24, arası SPACING[2]=8 (settings-account.tsx:113) |
-| 12 | alt künye: yazı | yazı | 500 12/17 muted | `fine` 500 13/18 (settings-account.tsx:115-120) |
-| 13 | dialog başlığı | yazı | 700 20/26 −0.3 | `pageBarTitle` 700 21/26 (Dialog.tsx:166-173; auraKit.ts:197) |
-| 14 | dialog ikon disk içi | ölçü | ikon 26 | `dialogDiscIcon` 28 (auraKit.ts:1250) |
 | 15 | dialog ikon diski rengi (açık) | renk | `--danger-soft` #FBE1DB | `dialogDisc` rgba(214,64,40,.10) ≈ #FBECE9 (auraKit.ts:1160) |
-| 16 | "Vazgeç" düğmesi | düzen/renk | `.btn.ghost`: dolgu yok, çizgi yok, yazı `--text` | `variant="glassy"` (soft dolgu + kenar + gölge) (Dialog.tsx:211-218). Btn'de `ghost` varyantı var (kit.tsx:286) ama kullanılmıyor |
-| 17 | dialog metni | metin | "Profilin, arkadaşların, mesajların ve aksesuarların kalıcı olarak silinir. Bu geri alınamaz." | "Profilin, fotoğrafların, arkadaşlıkların, mesajların ve oyun geçmişin silinir. Masadaysan masadan çıkarsın. Bu geri alınamaz. Yedeklerden de 7 gün içinde silinir." (tr.ts:2831-2833; settings-account.tsx:59) |
 | 18 | dialog dikey yeri | düzen | `top:280` sabit | ekranda ortalı (Dialog.tsx `root` justifyContent center); içerik ≈350 yüksekse üst ≈247 |
-| 19 | FAZLA | fazla | yok | dialogda hata/bekleme dışında fazla öğe yok; sayfada `maskPhone` gizli numarası var (+90 5•• ••• •• 01) ✓ uyuyor. FAZLA: doğum tarihi yokken satır gizleme mantığı (bkz. #4) |
 | 20 | DOĞRULANAMADI | — | ikon iç çizgileri (telefon, pasta, kilit) | CapIcon'da `phone`, `cake`, `lock` adları var mı doğrulanmadı (yalnız chat, logout, trash kullanılıyor) |
 | 21 | DOĞRULANAMADI | — | dialogun alt boşluğu/yerleşim 390×844'te | cihaz güvenli alanı bağlı |
 
@@ -36,10 +19,7 @@ Kod: app/(app)/settings-blocked.tsx; src/features/chat/BlockedList.tsx; src/feat
 | --- | --- | --- | --- | --- |
 | 1 | satır alt satırı | metin/özellik yok | "Profilli", "Profilli", "Anonim adı" (kimlik türü) | `tr.common.ago(...)` zaman ("5 dk", "Dün"…) (BlockedList.tsx:61). `blocks` seçimi yalnız `blocked_alias, created_at` okuyor (BlockedList.tsx:23): profilli/anonim bilgisi istemcide yok → ÖZELLİK YOK (sunucuda alan gerekir) |
 | 2 | anonim satırın yüzü | resim | anonim kişi için kapsül kanki resmi 44 (blob 89846870…, 192×192) | `Av` ile baş harf dairesi (BlockedList.tsx:58). Kapsül görünüşü blocks'ta yok |
-| 3 | ad–alt satır aralığı | boşluk | `.tt` gap 2 | PersonRow'da aralık yok (SettingsParts.tsx:~270, `<View style={{flex:1}}>` içinde iki T) |
 | 4 | "Engeli kaldır" yüksekliği | ölçü | `.ur .btn` 34 | `Btn sm` 36 (KIT.size.btnSm, auraKit.ts:856) |
-| 5 | düğme iç boşluk/yazı | ölçü/yazı | padX 14, 13/16 600 | padX 16 (KIT.size.btnPadXSm), `btnSm` 14/18 (auraKit.ts:282) |
-| 6 | düğme koyu hâli | koyu | bg #1B211F, yazı #EEF3F0, kenar rgba(255,255,255,.08) | `BUTTON_GLASS.dark.clear`: dolgu rgba(18,22,20,.62), kenar rgba(255,255,255,.10) (buttonGlass.ts:84-93) |
 | 7 | yüz renkleri (baş harf) | renk | satır başına sabit renk (#2C63D6, #E2456F) | `Av` adın harfinden renk seçiyor; eşleşme DOĞRULANAMADI |
 | — | uyuyor | — | zemin düz, geri 44, başlık 21/700, lede 14/20 muted + 2 üst boşluk, liste 12 üstte, satır min 64, gap 12, çizgi 56'dan rgba(3,27,11,.10), yüz 44, ad 600 16/20 | SettingsPage plain+inline, Lede, PERSON_HAIR 56 |
 
@@ -49,8 +29,6 @@ Kod: settings-blocked.tsx; BlockedList.tsx; src/components/EmptyState.tsx (Empty
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
 | 1 | resim boyu | ölçü | 120×98 (blob c86d6437…, png 360×294: bahçe kapısı) | `riso="blocked"` RISO_FULL 150×103 (EmptyState.tsx:68-73, 130-140; yalnız `messages/search/dm` RISO_BOARD'da). Depo dosyası assets/riso/empty-blocked.webp 640×440: panodaki 360×294 ile en-boy oranı farklı (1.45 – 1.22) |
-| 2 | dikey yer | düzen | `.emp` top 130, bottom 190 arası ortalı (merkez ≈ y 392) | lede'nin 12 altında, üstten hizalı, `paddingTop` 26 (EmptyState.tsx:Empty; settings-blocked.tsx:15-17) |
-| 3 | açıklama genişliği | ölçü | max 240 | `emptyNoteMax` 260 (auraKit.ts, EmptyState.tsx StateWords) |
 | 4 | başlık/metin | metin | "Engellediğin kimse yok" / "Birini engellediğinde burada görünür, engeli de buradan kaldırırsın." | aynı ✓ (tr.ts:2841-2842) — uyuyor |
 
 ## 03r Gizlilik · Sessize alınanlar — project/SessizAlinanlar.dc.html
@@ -58,9 +36,6 @@ Kod: app/(app)/settings-muted.tsx; SettingsParts.tsx
 Öğe sayısı: 14 · uyuyor: 8 · fark: 5 · fazla: 0 · doğrulanamadı: 1
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | alt satır | metin | "Anonim adı" / "Profilli" yalnız | "Anonim adı · 2 sa" gibi zaman eklenmiş (settings-muted.tsx:68) |
-| 2 | ad–alt satır aralığı | boşluk | 2 | yok (bkz. 03p #3) |
-| 3 | "Sesi aç" düğmesi | ölçü/yazı/koyu | 34 yüksek, padX 14, 13/16; koyuda #1B211F | 36, padX 16, 14/18; koyuda rgba(18,22,20,.62) (bkz. 03p #4–6) |
 | 4 | profilli yüz | resim | baş harf dairesi (#0B783D "K") | `look` yoksa `Av` baş harf — uyuyor; anonimde `LookAvatar` kapsül ✓ uyuyor |
 | 5 | lede metni | metin | uyuyor | tr.ts:2834-2835 ✓ |
 | 6 | DOĞRULANAMADI | — | baş harf renkleri | bkz. 03p #7 |
@@ -71,8 +46,6 @@ Kod: settings-muted.tsx; EmptyState.tsx
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
 | 1 | resim | resim/ölçü | 120×98 (blob 4661361e…, png 360×294: megafon) | 150×103, webp 640×440 (empty-muted) (bkz. 03q #1) |
-| 2 | dikey yer | düzen | `.emp` top 190, bottom 190 arası ortalı (merkez ≈ y 422) | üstten hizalı (bkz. 03q #2) |
-| 3 | açıklama genişliği | ölçü | 240 | 260 |
 | 4 | metinler | metin | uyuyor | tr.ts:2843-2844 ✓ |
 
 ## 03t Yasal metin (4 belge aynı şablon) — project/YasalMetin.dc.html
@@ -80,17 +53,7 @@ Kod: app/privacy.tsx, kvkk.tsx, terms.tsx, rules.tsx, app/(app)/legal/[doc].tsx;
 Öğe sayısı: 14 · uyuyor: 3 · fark: 11 · fazla: 2 · doğrulanamadı: 1
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | sayfa zemini ve üst | düzen | düz canvas + inline başlık (44 geri + 21/700, "Gizlilik politikası") | Screen `list` ama `plain`/`inline` yok: bulutlu zemin, büyük başlık (LegalText.tsx:134-142; PageTop sayfa kipi) |
-| 2 | başlık metni | metin | "Gizlilik politikası" | "Gizlilik Politikası" (tr.ts:285). Terms/KVKK/Topluluk panoda yok; yalnız ilkinin yazımı farklı |
-| 3 | taslak rozeti | eksik | `.drf` "TASLAK": 24 yüksek, padX 9, 700 11/14 ls .2, #FFF1D6/#8A5A00 (koyu rgba(255,181,71,.14)/#FFC86B) + yanında "Yürürlük: 12 Kasım 2026" 13/18 muted | yok. Taslak, çubuk başlığının altında "Taslak: veri sorumlusu bilgileri eklenince yürürlüğe girer." alt satırı (tr.ts:289); yürürlük tarihi md'de düz paragraf "Yürürlük tarihi: …" |
-| 4 | taslak notu | metin/ölçü | `.dn` 13/18 muted, "Veri sorumlusu bilgileri eklenince yürürlüğe girer." (başında "Taslak:" yok), alt boşluk 14 | "Taslak: veri sorumlusu…" PageTop alt satırı (tr.ts:289; LegalText.tsx:140) |
-| 5 | bölüm başlığı | yazı | `h2` 700 18/24 −0.2, üst 22, alt 8 | `T v="title"` 600 21/27 (düzey 2), `h3` 600 16/22 (LegalText.tsx:78-81) |
-| 6 | gövde yazısı | yazı | 400 15/23, renk --text (koyuda rgba(238,243,240,.88)) | `legal` 500 15/24 (auraKit.ts:260), koyuda tam ink |
-| 7 | paragraf arası | boşluk | 12 | 16 (SPACING[4]) (LegalText.tsx:176) |
-| 8 | bağlantı | yazı/renk | 600, `--text` renkli, 1.5 alt çizgi, offset 3, çizgi rgba(3,27,11,.35) (koyuda #EEF3F0/.4) | 600 ama accent/primaryPressed renkli, alt çizgi yok (LegalText.tsx:57-65, 133) |
-| 9 | doc kenar boşluğu | boşluk | `.doc` margin 6 20 0 | ekran yanı + gap; üstte ek 6 yok |
 | 10 | gövde metni | metin | "…6698 sayılı KVKK kapsamındaki bilgilendirme…", "2. İşlenen veriler", "Bize ulaşmak için: support@skall.world" tek paragraf | docs/legal/gizlilik-politikasi.md: "…(KVKK)…", "2. Kısaca", ayrı paragraf. Pano örnek metin; gerçek md ile birebir değil (içerik kaynağı md) |
-| 11 | alt "Devam" + kanki | fazla | yok (pano kesik, alt yok) | `footer`: riso kanki + "Devam" düğmesi (LegalText.tsx:143-163; kankiMotion LEGAL_PEEK) → FAZLA |
 | 12 | tablo/liste blokları | fazla | panoda yok | tablo yığın satırları, liste (LegalText.tsx:98-150) panoda çizilmemiş → FAZLA (belgede var) |
 | 13 | DOĞRULANAMADI | — | koyu sayfa zemini #000 | Screen koyu zemini AURA.dark.ground; plain olmadığı için bulut |
 

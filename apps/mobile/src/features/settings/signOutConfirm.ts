@@ -20,6 +20,7 @@ export function useSignOutConfirm(): { ask: () => void } {
       confirmIcon: 'logout',
       cancelLabel: tr.common.cancel,
       testID: 'sign-out-confirm',
+      settings: true,
       onConfirm: async () => {
         await signOut.mutateAsync();
       },

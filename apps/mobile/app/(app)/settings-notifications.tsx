@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { AppState, Linking, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, T, Tag, useKit } from '@/aura/kit';
+import { Btn, T, useKit } from '@/aura/kit';
 import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -17,6 +17,7 @@ import {
   Note,
   NOTES,
   SettingsPage,
+  StatusPill,
   SwitchRow,
 } from '@/features/settings/SettingsParts';
 import { KIT } from '@/theme/auraKit';
@@ -118,7 +119,7 @@ export default function NotificationSettingsScreen() {
                   {tr.settings.phone.title}
                 </T>
               </View>
-              {permission.data ? <Tag tone="green" label={tr.settings.phone.onTag} /> : null}
+              {permission.data ? <StatusPill label={tr.settings.phone.onTag} /> : null}
             </View>
             <View style={NOTES}>
               <Note>{tr.settings.phone.onNote}</Note>

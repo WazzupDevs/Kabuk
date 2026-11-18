@@ -10,6 +10,8 @@ import {
   BlockedFixture,
   LegalFixture,
   MutedEmptyFixture,
+  NotificationsFixture,
+  PrivacyFixture,
   SettingsFixture,
 } from './settingsFixture';
 
@@ -35,5 +37,7 @@ export const GATE_STATES: Record<string, GateEntry> = {
   'ekran/ayarlar/hesap': { full: true, render: () => <AccountFixture /> },
   'ekran/ayarlar/engellenenler': { full: true, render: () => <BlockedFixture /> },
   'ekran/ayarlar/sessize-bos': { full: true, render: () => <MutedEmptyFixture /> },
+  'ekran/ayarlar/bildirimler': { full: true, render: () => <NotificationsFixture /> },
+  'ekran/ayarlar/gizlilik': { full: true, render: () => <PrivacyFixture /> },
   'ekran/ayarlar/yasal': { full: true, render: () => <LegalFixture /> },
 };

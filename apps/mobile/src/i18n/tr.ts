@@ -280,13 +280,16 @@ export const tr = {
     body: 'Hesabın açılmadı ve bilgilerin saklanmadı.',
   },
   legal: {
-    termsTitle: 'Kullanım Koşulları',
-    kvkkTitle: 'KVKK Aydınlatma Metni',
-    privacyTitle: 'Gizlilik Politikası',
-    communityTitle: 'Topluluk Kuralları',
-    // The texts themselves are docs/legal/*.md (legalDocs.generated.ts). Shown under the title
-    // until the data controller is named (@shared/legalEntity.ts → legalReady).
-    draftNotice: 'Taslak: veri sorumlusu bilgileri eklenince yürürlüğe girer.',
+    termsTitle: 'Kullanım koşulları',
+    kvkkTitle: 'KVKK aydınlatma metni',
+    privacyTitle: 'Gizlilik politikası',
+    communityTitle: 'Topluluk kuralları',
+    // The texts themselves are docs/legal/*.md (legalDocs.generated.ts). Yeni arayüz tuvali
+    // (YasalMetin): the draft pill and the note under it until the data controller is named
+    // (@shared/legalEntity.ts → legalReady), beside the date the texts take effect.
+    draftTag: 'TASLAK',
+    draftNotice: 'Veri sorumlusu bilgileri eklenince yürürlüğe girer.',
+    effective: (date: string) => `Yürürlük: ${date}`,
   },
   tabs: {
     explore: 'Keşfet',
@@ -2793,7 +2796,7 @@ export const tr = {
       title: 'Görünüm',
       options: { system: 'Sistem', light: 'Açık', dark: 'Koyu' },
       notes: {
-        system: 'Telefonunun ayarına uyar.',
+        system: 'Telefonunun temasını izler.',
         light: 'Her zaman açık tema.',
         dark: 'Her zaman koyu tema.',
       },
@@ -2801,31 +2804,32 @@ export const tr = {
     notifyFriendRequests: 'Arkadaşlık istekleri',
     signOut: 'Çıkış yap',
     signOutConfirmTitle: 'Çıkış yapılsın mı?',
-    signOutConfirmBody: 'Masadaysan masadan da kalkarsın. Yeniden girmek için numarana kod gelir.',
+    signOutConfirmBody: 'Tekrar girmek için telefon numaranla doğrulama yaparsın.',
     deleteAccount: 'Hesabımı sil',
     deleteConfirmTitle: 'Hesabın silinsin mi?',
     deleteConfirm: 'Sil',
     privacy: 'Gizlilik politikası',
-    kvkk: 'KVKK Aydınlatma Metni',
-    terms: 'Kullanım Koşulları',
-    community: 'Topluluk Kuralları',
+    kvkk: 'KVKK aydınlatma metni',
+    terms: 'Kullanım koşulları',
+    community: 'Topluluk kuralları',
     // Ayarlar → Gizlilik: usage statistics (PostHog) can be turned off (KVKK m. 11, itiraz).
     analyticsTitle: 'Kullanım istatistiği',
     analyticsNote: 'Hangi ekranların kullanıldığını sayar; adın, mesajların ve konumun gitmez',
     contact: 'İletişim',
     version: (v: string) => `Sürüm ${v}`,
-    osm: 'Mekan verileri © OpenStreetMap katkıda bulunanlar (ODbL).',
+    osm: 'Mekân verileri © OpenStreetMap katkıda bulunanlar (ODbL).',
     // skall tuvali (ProfilAyarlar, BildirimAyarlari, BildirimIzinKapali, Gizlilik, Hesap, HesapSil,
     // Engellenenler, SessizeAlinanlar).
     participation: {
       title: 'Oyunlara katılım',
-      sub: 'Her girişte bununla başlarsın.',
+      // Yeni arayüz tuvali (Ayarlar): what each check-in starts with; the profiled one's line is
+      // the board's anonymous one turned round.
+      subAnonymous:
+        'Her girişte anonim başlarsın. Girdikten sonra mekân menüsünden bir kez değiştirebilirsin.',
+      subProfiled:
+        'Her girişte profilinle başlarsın. Girdikten sonra mekân menüsünden bir kez değiştirebilirsin.',
       profile: 'Profilli',
       anonymous: 'Anonim',
-      nowProfiled:
-        'Bu girişte profilinle görünüyorsun. Değiştirmek için mekan ekranının menüsünü kullan; hakkın bir kez.',
-      nowAnonymous:
-        'Bu girişte anonim görünüyorsun. Değiştirmek için mekan ekranının menüsünü kullan; hakkın bir kez.',
       photoNeeded: 'Profilli başlamak için profil fotoğrafı gerekiyor.',
     },
     notificationSettings: 'Bildirim ayarları',
@@ -2835,6 +2839,10 @@ export const tr = {
     accountTitle: 'Hesap',
     // The test build's rows at Ayarlar's foot (iskelet.md → 5.9).
     testSection: 'Test sürümü',
+    // The test build's error log (Sentry, the same filter as a crash: errorReporting.ts).
+    sendLog: 'Hata kaydını gönder',
+    sendLogDone: 'Hata kaydı gönderildi.',
+    sendLogFailed: 'Hata kaydı gönderilemedi. Bağlanınca tekrar dene.',
     // The test section's read-only line: the update's id (its first 8 characters, "yerleşik" for
     // the binary's own bundle) and the native build number, for the release report.
     buildId: (id: string, build: string | null) =>
@@ -2857,23 +2865,22 @@ export const tr = {
     friendsSection: 'Arkadaşlar',
     requestsNote: 'Biri seni arkadaş olarak eklemek istediğinde',
     invitesTitle: 'Masa davetleri',
-    invitesNote: 'Davetler 2 dakika geçerli; kapatırsan kaçırabilirsin',
+    invitesNote: 'Davet 2 dakika geçerli, kapatırsan kaçırabilirsin',
     messagesSection: 'Mesajlar',
     dmTitle: 'Birebir mesajlar',
     dmNote: 'Arkadaşlarından gelen mesajlar',
     notifyFootnote:
-      'Masa davetinin bildiriminde ad, masa adı ve mekan yazmaz: "Bir arkadaşın seni masasına çağırıyor". Mekan sohbeti bildirim göndermez.',
+      'Masa daveti bildiriminde kişi, masa ve mekân adı yazmaz: "Bir arkadaşın seni masasına çağırıyor." Mekân sohbeti bildirim göndermez.',
     blocked: 'Engellenenler',
     muted: 'Sessize alınanlar',
     capsules: 'Kapsül karakterler',
     nickPrivacy:
-      'Anonim adın hesabına sabittir: anonimken ziyaretler arasında aynı adla tanınabilirsin. Adın, fotoğrafın ve profil kimliğin yalnızca profilinle göründüğünde ya da arkadaş olduğunda açılır.',
+      'Anonim adın hesabına sabittir, anonimken ziyaretler arasında aynı adla tanınabilirsin. Adın ve profilin yalnızca profilinle girdiğinde ya da arkadaş olduğunda görünür.',
     phoneLabel: 'Telefon numaran',
     fixedNote:
-      "Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez ve kimseye gösterilmez. Yanlış girdiysen İletişim'den bize yaz.",
+      "Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez; profilinde yalnızca yaşın görünür. Yanlış girdiysen İletişim'den bize yaz.",
     deleteBody:
-      'Profilin, fotoğrafların, arkadaşlıkların, mesajların ve oyun geçmişin silinir. Masadaysan masadan çıkarsın. Bu geri alınamaz.',
-    deleteBackups: 'Yedeklerden de 7 gün içinde silinir.',
+      'Profilin, arkadaşların, mesajların ve aksesuarların kalıcı olarak silinir. Yedeklerden de 7 gün içinde silinir. Bu geri alınamaz.',
     blockedNote: 'Engellediğin kişi bunu görmez.',
     mutedNote:
       'Sessize aldığın kişi bunu görmez. Sessize alma o kimliğe bağlıdır: anonim adını sessize almak profilli mesajlarını gizlemez.',
