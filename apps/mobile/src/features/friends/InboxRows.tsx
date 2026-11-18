@@ -309,7 +309,8 @@ export function ArchivedRow({
       {unread > 0 ? <Badge count={unread} /> : null}
       {/* The motion table's A3 3.4: the count's old number fades as the new one comes. */}
       <CountSwap value={String(count)}>
-        <T v="inboxCount" tabular color={c.muted}>
+        {/* Proportional digits (`.arc .n` has no tabular-nums): "12" as narrow as the board's. */}
+        <T v="inboxCount" color={c.muted}>
           {String(count)}
         </T>
       </CountSwap>
