@@ -6,6 +6,8 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+# Written by `expo start` (pnpm web:onizleme); this file already covers what it lists.
+apps/mobile/.gitignore
 apps/mobile/android/
 apps/mobile/ios/
 *.jks

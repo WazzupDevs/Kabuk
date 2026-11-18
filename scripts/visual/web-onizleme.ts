@@ -4,7 +4,7 @@
 // (app.config.ts, tailwind.config.js, metro.config.js → WEB_STUBS; the root is app/_layout.web.tsx),
 // so nothing here reaches an Android or iOS build. The Supabase address is a closed local port and
 // the key a placeholder: the gate's screens draw from their own data and never call the server;
-// no Sentry or PostHog key, so neither starts. A new file (a new `.web.tsx`) needs a restart.
+// no Sentry or PostHog key, so neither starts.
 import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,8 +21,9 @@ const child = spawn('npx', ['expo', 'start', '--web', ...port, ...extra], {
     SKALL_WEB_ONIZLEME: '1',
     // app.json lists no web platform; the Expo CLI's own web check reads only app.json.
     EXPO_NO_WEB_SETUP: '1',
-    // No browser window, no prompts.
-    CI: '1',
+    // No browser window. Not CI=1: under it Metro does not watch, and a change would need a
+    // restart.
+    BROWSER: 'none',
     EXPO_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:9',
     EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'web-onizleme',
     EXPO_PUBLIC_SENTRY_DSN: '',

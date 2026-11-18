@@ -2,7 +2,9 @@ import '../global.css';
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
+import { BackHandler } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { queryClient } from '@/lib/queryClient';
@@ -18,15 +20,30 @@ export { RouteError as ErrorBoundary } from '@/components/RouteError';
 // edge): the same insets here, so a screen sits where it sits in the Android shot.
 const GATE_INSETS = { top: 24, right: 0, bottom: 0, left: 0 };
 
+// react-native-web's BackHandler logs an error on every listener (the Android back key's sheets and
+// menus add one), and the development overlay puts that error in the shot. The browser has no back
+// key to listen to: a listener that does nothing.
+BackHandler.addEventListener = () => ({ remove: () => undefined });
+
+// A multiline TextInput is a <textarea>, two rows tall by default where Android's field grows from
+// one line: the browser sizes it to its text instead (Chromium 123 and later).
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = 'textarea { field-sizing: content; }';
+  document.head.appendChild(style);
+}
+
 export default function WebPreviewLayout() {
   return (
     <SafeAreaInsetsContext.Provider value={GATE_INSETS}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <Stack screenOptions={{ headerShown: false, animation: 'none' }} />
-          </ThemeProvider>
-        </QueryClientProvider>
+        <KeyboardProvider>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>
+              <Stack screenOptions={{ headerShown: false, animation: 'none' }} />
+            </ThemeProvider>
+          </QueryClientProvider>
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </SafeAreaInsetsContext.Provider>
   );
