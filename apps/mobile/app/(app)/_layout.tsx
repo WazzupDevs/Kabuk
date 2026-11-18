@@ -41,6 +41,7 @@ export default function GroupLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="notifications" options={SHEET} />
           <Stack.Screen name="checkin/index" options={SHEET} />
+          <Stack.Screen name="checkin/spot" options={SHEET} />
           <Stack.Screen name="spot" options={SHEET} />
         </Stack>
       </SafeAreaProvider>

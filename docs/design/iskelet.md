@@ -23,7 +23,7 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 - Yazı 600 16/20, küçük buton 600 14/18. Üst çubuktaki Kaydet'in değişiklik varken yazısı 800.
 - Yeşil (`--primary`) anahtar, rozet, canlı nokta ve gönder yuvarlağı için kalır (`buttonGlass.ts` → `green`).
 - Basma: Tap davranışı (2.3).
-- Yükseklikler: ana buton ve form alanı 48 (proje sahibinin kararı, 16 Kasım), mekan sayfası ve check-in sayfasının uzun butonu 56, satır içi küçük buton 36, yuvarlak ikon 44, üst çubuk butonları 44 (yeni arayüz tuvaliyle değişti, 17 Kasım; önce 46). Sheet başlığındaki X 38.
+- Yükseklikler: ana buton ve form alanı 48 (proje sahibinin kararı, 16 Kasım), mekan sayfası ve check-in sayfasının uzun butonu 56, satır içi küçük buton 36, yuvarlak ikon 44, üst çubuk butonları 44 (yeni arayüz tuvaliyle değişti, 17 Kasım; önce 46). Alt sayfada kapat (X) düğmesi yoktur (18 Kasım; sayfa dışarı dokununca, kaydırınca ve geri tuşuyla kapanır). 18 Kasım'dan beri boylar panodaki boydur: büyük buton 56 (semt, hediye, "Kapsülüne tak", Güncelle), çip 36 (Keşfet tür çipi ve "Masanı lobiye aç" 40), Süsle süzgeç çipi 28, üst satır butonu 40, sohbet yazma alanı 52, satır butonları panonun çizdiği boyda (32, 34, 40).
 - Üst çubuktaki Kaydet clear: değişiklik yokken yazı #9AAEA1, varken #0E8745 ve 800. Kaydedince yazı "Kaydedildi" olur, buton boyu sabit kalır (en az 96 genişlik).
 
 ### 2.2 Cam yüzeyler ve performans
