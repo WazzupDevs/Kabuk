@@ -17,7 +17,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "01",
@@ -37,7 +43,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "01b",
@@ -149,7 +161,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "01e",
@@ -165,7 +183,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "01f",
@@ -740,7 +764,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "çıkış onayı iletişim kutusu çekim durumu yok (kapı rotasında OverlayHost yok); ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "03k",
@@ -755,7 +785,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "çıkış onayı iletişim kutusu çekim durumu yok (kapı rotasında OverlayHost yok); ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "03l",
@@ -857,7 +893,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "hesabı sil onayı iletişim kutusu çekim durumu yok (kapı rotasında OverlayHost yok); ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "03o",
@@ -875,7 +917,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "hesabı sil onayı iletişim kutusu çekim durumu yok (kapı rotasında OverlayHost yok); ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "03p",
@@ -920,7 +968,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "Engellenenler boş hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      }
+    ]
   },
   {
     "pano": "03q",
@@ -935,7 +989,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "Engellenenler boş hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      }
+    ]
   },
   {
     "pano": "03r",
@@ -949,7 +1009,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "Sessize alınanlar dolu hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      }
+    ]
   },
   {
     "pano": "03r",
@@ -963,7 +1029,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "Sessize alınanlar dolu hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      }
+    ]
   },
   {
     "pano": "03s",
@@ -1114,7 +1186,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "05a",
@@ -1131,7 +1209,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "06",
@@ -1782,7 +1866,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "19",
@@ -1801,7 +1891,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "20",
@@ -2030,7 +2126,13 @@
     "acilis": "Mekan → ⋮ → Mekandan ayrıl",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "26",
@@ -2045,7 +2147,13 @@
     "acilis": "Mekan → ⋮ → Mekandan ayrıl",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "27",
@@ -2958,7 +3066,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "53",
@@ -2973,7 +3087,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "54",
@@ -3432,7 +3552,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "Bildirim izni kapalı hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      }
+    ]
   },
   {
     "pano": "63",
@@ -3449,7 +3575,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "Bildirim izni kapalı hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      }
+    ]
   },
   {
     "pano": "64",
@@ -3882,7 +4014,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "77",
@@ -3895,7 +4033,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "78",
@@ -3908,7 +4052,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "78",
@@ -3921,7 +4071,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "79",
@@ -3961,7 +4117,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "80",
@@ -3975,7 +4137,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "81",
@@ -4047,7 +4215,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "83",
@@ -4061,7 +4235,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "84",
@@ -5804,7 +5984,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "137",
@@ -5821,7 +6007,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 734,
+        "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      }
+    ]
   },
   {
     "pano": "138",
