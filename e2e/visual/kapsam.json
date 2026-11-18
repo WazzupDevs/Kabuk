@@ -65,7 +65,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: kaydırma"
+      }
+    ]
   },
   {
     "pano": "01b",
@@ -81,7 +87,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: kaydırma"
+      }
+    ]
   },
   {
     "pano": "01c",
@@ -367,7 +379,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: 15 dakika içindeki kendi mesajı (düzenleme penceresi)"
+      }
+    ]
   },
   {
     "pano": "02c",
@@ -383,7 +401,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: 15 dakika içindeki kendi mesajı (düzenleme penceresi)"
+      }
+    ]
   },
   {
     "pano": "02d",
@@ -398,7 +422,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: düzenleme 15 dakika içindeki kendi mesajını ister"
+      }
+    ]
   },
   {
     "pano": "02d",
@@ -413,7 +443,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: düzenleme 15 dakika içindeki kendi mesajını ister"
+      }
+    ]
   },
   {
     "pano": "02e",
@@ -428,7 +464,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: düzenlenmiş mesaj verisi"
+      }
+    ]
   },
   {
     "pano": "02e",
@@ -443,7 +485,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: düzenlenmiş mesaj verisi"
+      }
+    ]
   },
   {
     "pano": "03",
@@ -1225,6 +1273,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: istek verisi (ad, fotoğraf) çekim örneğinde yok"
       }
     ]
   },
@@ -1248,6 +1300,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: istek verisi (ad, fotoğraf) çekim örneğinde yok"
       }
     ]
   },
@@ -1822,7 +1878,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "16",
@@ -1839,7 +1901,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "17",
@@ -2671,7 +2739,13 @@
     "acilis": "Mekan → masan → Masa sohbeti, mesaj yokken",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar, ChatScreen); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "37",
@@ -2689,7 +2763,13 @@
     "acilis": "Mekan → masan → Masa sohbeti, mesaj yokken",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar, ChatScreen); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "38",
@@ -4476,7 +4556,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: yükleniyor"
+      }
+    ]
   },
   {
     "pano": "86",
@@ -4493,7 +4579,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: yükleniyor"
+      }
+    ]
   },
   {
     "pano": "87",
@@ -4537,7 +4629,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: yükleniyor"
+      }
+    ]
   },
   {
     "pano": "88",
@@ -4553,7 +4651,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: yükleniyor"
+      }
+    ]
   },
   {
     "pano": "89",
@@ -4568,7 +4672,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      }
+    ]
   },
   {
     "pano": "89",
@@ -4583,7 +4693,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      }
+    ]
   },
   {
     "pano": "90",
@@ -4671,7 +4787,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      }
+    ]
   },
   {
     "pano": "92",
@@ -4691,7 +4813,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      }
+    ]
   },
   {
     "pano": "93",
@@ -4743,7 +4871,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "94",
@@ -4763,7 +4897,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "95",
@@ -4783,7 +4923,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: kaydırma; ortak bileşen değişikliği (ChatTopBar)"
+      }
+    ]
   },
   {
     "pano": "95",
@@ -4803,7 +4949,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: kaydırma; ortak bileşen değişikliği (ChatTopBar)"
+      }
+    ]
   },
   {
     "pano": "96",
@@ -4823,7 +4975,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "96",
@@ -4843,7 +5001,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "97",
@@ -4863,7 +5027,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "97",
@@ -4883,7 +5053,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      }
+    ]
   },
   {
     "pano": "98",
@@ -5166,7 +5342,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: silme sonrası bildirim (sunucu çağrısı)"
+      }
+    ]
   },
   {
     "pano": "106",
@@ -5181,7 +5363,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: silme sonrası bildirim (sunucu çağrısı)"
+      }
+    ]
   },
   {
     "pano": "107",
@@ -5232,7 +5420,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: klavye ve yazma"
+      }
+    ]
   },
   {
     "pano": "108",
@@ -5247,7 +5441,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: klavye ve yazma"
+      }
+    ]
   },
   {
     "pano": "109",
@@ -5402,7 +5602,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: mesajsız DM"
+      }
+    ]
   },
   {
     "pano": "113",
@@ -5419,7 +5625,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: mesajsız DM"
+      }
+    ]
   },
   {
     "pano": "114",
@@ -5435,7 +5647,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: klavye ve yazma"
+      }
+    ]
   },
   {
     "pano": "114",
@@ -5451,7 +5669,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: klavye ve yazma"
+      }
+    ]
   },
   {
     "pano": "115",
@@ -5465,7 +5689,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: aramaya yazma"
+      }
+    ]
   },
   {
     "pano": "115",
@@ -5479,7 +5709,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: aramaya yazma"
+      }
+    ]
   },
   {
     "pano": "116",
@@ -5551,7 +5787,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: klavye ve yazma"
+      }
+    ]
   },
   {
     "pano": "118",
@@ -5569,7 +5811,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: klavye ve yazma"
+      }
+    ]
   },
   {
     "pano": "119",
@@ -5587,7 +5835,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: kaydırarak yanıtlama ve klavye"
+      }
+    ]
   },
   {
     "pano": "119",
@@ -5605,7 +5859,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "çekim adımı yok: kaydırarak yanıtlama ve klavye"
+      }
+    ]
   },
   {
     "pano": "120",
@@ -5641,7 +5901,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "özellik yok: DM'de fotoğraf gönderme yok (ÖNERİ panosu)"
+      }
+    ]
   },
   {
     "pano": "121",
@@ -5655,7 +5921,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "özellik yok: DM'de fotoğraf gönderme yok (ÖNERİ panosu)"
+      }
+    ]
   },
   {
     "pano": "122",
@@ -5670,7 +5942,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: okuyanın kendi tepkisi"
+      }
+    ]
   },
   {
     "pano": "122",
@@ -5685,7 +5963,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 737,
+        "sebep": "hâl çekimi yok: okuyanın kendi tepkisi"
+      }
+    ]
   },
   {
     "pano": "123",
