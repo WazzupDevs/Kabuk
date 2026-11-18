@@ -14,10 +14,12 @@ const out = resolve(outArg);
 // The report never dies without kapi.json: if building it throws all the same, the gate fails with
 // the error written there and in the summary (the Result step reads kapi.json).
 try {
-  const { text, gate } = buildReport(resolve(rootArg), out, {
-    images: process.env.GORSEL_URL,
-    baselines: process.env.GORSEL_BAZ_URL,
-  });
+  const { text, gate } = buildReport(
+    resolve(rootArg),
+    out,
+    { images: process.env.GORSEL_URL, baselines: process.env.GORSEL_BAZ_URL },
+    process.env,
+  );
   writeFileSync(join(out, 'kapi.json'), `${JSON.stringify(gate, null, 1)}\n`);
   console.log(text);
 } catch (e) {

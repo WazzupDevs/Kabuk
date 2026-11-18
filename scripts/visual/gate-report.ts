@@ -25,7 +25,7 @@ import {
   hasBaseline,
   loadStates,
   pngWidth,
-  shots,
+  runShots,
   staleBaseline,
   THEMES,
 } from './states.ts';
@@ -65,6 +65,8 @@ export function buildReport(
   root: string,
   out: string,
   urls: Urls = {},
+  // The run's environment (states.ts → runShots): a pull request's run takes its own states only.
+  env: Record<string, string | undefined> = {},
 ): { text: string; gate: Gate } {
   const at = (base: string | undefined, rel: string) =>
     base ? `${base.replace(/\/$/, '')}/${rel}` : rel;
@@ -72,7 +74,7 @@ export function buildReport(
   const thumb = (rel: string, base = urls.images) =>
     base ? `<a href="${at(base, rel)}"><img src="${at(base, rel)}" width="120"></a>` : `\`${rel}\``;
   const config = loadStates(root);
-  const all = shots(config);
+  const all = runShots(root, config, env);
   const lines: string[] = [];
 
   // The hard gate: every shot photographed, every expected baseline there, every flow passed.
