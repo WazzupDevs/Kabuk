@@ -10,6 +10,7 @@ import {
   listArea,
   Note,
   NOTES,
+  PERSON_FACE,
   PERSON_HAIR,
   PersonButton,
   PersonRow,
@@ -73,7 +74,7 @@ export default function MutedScreen() {
                   m.look ? (
                     <LookAvatar look={m.look} size={KIT.size.av.md} />
                   ) : (
-                    <Av size="md" name={m.label} />
+                    <Av size="md" name={m.label} board={PERSON_FACE} />
                   )
                 }
                 name={m.label}

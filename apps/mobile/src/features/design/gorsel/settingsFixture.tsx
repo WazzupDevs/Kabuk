@@ -99,7 +99,7 @@ export function MutedEmptyFixture() {
 
 // YasalMetin (03t): Gizlilik politikası, the board's text (the route, legal/[doc], draws this one).
 export function LegalFixture() {
-  return <LegalText doc="privacy" />;
+  return <LegalText inApp doc="privacy" />;
 }
 
 function iso(ago: number): string {

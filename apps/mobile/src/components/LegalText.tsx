@@ -241,7 +241,7 @@ export function LegalText({ doc, inApp }: { doc: LegalDocKey; inApp?: boolean })
       side={P.side}
       barSide={P.barSide}
       barTop={P.barTop}
-      padTop={P.top - SPACING[1] + D.top}
+      padTop={P.top - SPACING[1] + D.top - P.listPull}
       top={
         <PageTop
           title={TITLES[doc]}

@@ -3,10 +3,12 @@
 // for value where docs/design/iskelet.md → 5.9 gives no value of its own. The page's ground is the
 // canvas with no clouds (`.pg`), in the dark the flat black.
 export const SETTINGS = {
+  // `listPull`: a list page's (Screen `list`) first line stands 3 lower than a fixed page's; pulled
+  // back (measured against Engellenenler, Sessize alınanlar, YasalMetin).
   // The page's top (`.ptop`): 5 under the status bar, 16 from the sides, a 48 row with the 44 round
   // back button and the title 12 beside it. The content (`.pl`) starts under that row and is cut
   // there; its parts 20 from the sides, the first rows 4 under the row (`.sl`).
-  page: { barTop: 5, barSide: 16, barRow: 48, barGap: 12, side: 20, top: 4 },
+  page: { barTop: 5, barSide: 16, barRow: 48, barGap: 12, side: 20, top: 4, listPull: 3 },
   // A row (`.sr`): 56 at least, its icon 24 and 14 to the words, the chevron 18; the hairline from
   // 38 (under the words) to the row's right edge. No card: the rows lie on the ground.
   row: { height: 56, gap: 14, icon: 24, chevron: 18, hairIn: 38 },

@@ -201,13 +201,13 @@ export const KIT_TYPE = {
   // Ayarlar ailesi (yeni arayüz tuvali): Hesap's locked value (`.inf .tt p`: 16/22, 600, .2 px),
   // its foot (`.foot p`: 12/17, 500); the Ayarlar dialogs' title (`.dt`: 20/26, 700, -.3 px);
   // YasalMetin's heading (`.doc h2`: 18/24, 700, -.2 px), its text (`.doc p.b`: 15/23; the board's
-  // 400 is not among the app's faces, so 500) and its draft pill (`.drf`: 11/14, 700, .2 px).
+  // 400 is not among the app's faces, so 500) and its draft pill (`.drf`: 11/14, 700, .2 px on the board; drawn at 13/16, the board's face runs wider: the pill is about 70 across there).
   settingsValue: t(600, 16, 22, 0.2 / 16),
   settingsFoot: t(500, 12, 17),
   dialogTitle: t(700, 20, 26, -0.3 / 20),
   legalHead: t(700, 18, 24, -0.2 / 18),
   legalText: t(500, 15, 23),
-  draftPill: t(700, 11, 14, 0.2 / 11),
+  draftPill: t(700, 13, 16, 0.2 / 13),
   // Yeni arayüz (Ayarlar, 16 Kasım): a page's title beside its back button (21, 700, -0.3 px), a
   // section's head in small letters (13, 700). The dialog's title is the page's; its words 15/500;
   // the long-press menu's row 15/600; the toast's title 14/600 and its line 12/500.

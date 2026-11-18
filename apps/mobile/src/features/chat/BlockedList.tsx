@@ -14,6 +14,7 @@ import {
   listArea,
   Note,
   NOTES,
+  PERSON_FACE,
   PERSON_HAIR,
   PersonButton,
   PersonRow,
@@ -75,7 +76,7 @@ export function BlockedList({ style }: { style: { flexGrow: number } }) {
           {rows.map((b) => (
             <PersonRow
               key={b.id}
-              face={<Av size="md" name={b.blocked_alias} />}
+              face={<Av size="md" name={b.blocked_alias} board={PERSON_FACE} />}
               name={b.blocked_alias}
               // The board says "Profilli" or "Anonim adı" here; a block does not keep which, so
               // the day it was made.

@@ -301,7 +301,7 @@ export function SwitchRow({
 export function Lede({ children }: { children: string }) {
   const { c } = useKit();
   return (
-    <T v="note" color={c.muted} style={{ marginTop: SPACING[0.5] }}>
+    <T v="note" color={c.muted} style={{ marginTop: SPACING[0.5] - SETTINGS.page.listPull }}>
       {children}
     </T>
   );
@@ -341,6 +341,8 @@ export function PersonRow({
     </View>
   );
 }
+// The person's face (`.uav`): the plain 44 disc, no ring and no shadow.
+export const PERSON_FACE: AvBoard = { ring: 0, ringColor: 'transparent', shadow: '' };
 export const PERSON_HAIR = KIT.size.av.md + SPACING[3];
 // The row's small soft button (`.ur .btn.soft`: 14 inside, 13/16 600; the board's 34 high; in
 // the dark the flat #1B211F with the ink's words).
@@ -373,6 +375,8 @@ export function PersonButton({
       onPress={onPress}
       loading={loading}
       disabled={disabled}
+      // In the row's middle (`.ur` centres it).
+      style={{ alignSelf: 'center' }}
     />
   );
 }
