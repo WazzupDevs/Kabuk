@@ -15,12 +15,14 @@ import { BarBack } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
 import { MUTUAL_BTN } from '@/theme/person';
+import { useTheme } from '@/theme/ThemeProvider';
 
 // OrtakArkadaslar (103): the friends the viewer and this friend have in common, opened from the
 // friend's profile (rule 4: only a friend's profile asks for them). The back button with the
 // title over "Adem ile 2 ortak arkadaşınız var", the friends as flat rows: the face, the name over
 // since when, "Mesaj gönder" the DM. A row opens that friend's profile.
 export function MutualFriends({ publicId, name }: { publicId: string; name?: string }) {
+  const { scheme } = useTheme();
   const mutual = useMutualFriends(publicId, true);
   const friends = useFriends();
   const profile = useProfileView(name ? undefined : publicId);
@@ -90,7 +92,22 @@ export function MutualFriends({ publicId, name }: { publicId: string; name?: str
                 gap={R.gap}
                 minHeight={R.minHeight}
               >
-                <ProfileFace side={KIT.size.av.row} name={label} photoUrl={m.photoUrl} />
+                <View
+                  style={{
+                    width: KIT.size.av.row,
+                    height: KIT.size.av.row,
+                    borderRadius: KIT.size.av.row / 2,
+                    borderWidth: MUTUAL_BTN.faceRing,
+                    borderColor: MUTUAL_BTN[scheme].ring,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <ProfileFace
+                    side={KIT.size.av.row - 2 * MUTUAL_BTN.faceRing}
+                    name={label}
+                    photoUrl={m.photoUrl}
+                  />
+                </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T v="h3">{label}</T>
                   {friend ? <T v="fine">{tr.friends.since(friend.since)}</T> : null}

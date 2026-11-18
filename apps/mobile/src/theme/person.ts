@@ -85,10 +85,26 @@ export const PERSON_TYPE = {
 
 // MekanProfilIstek `.pvl`: the chips of what a request shows, 28 high, 10 in, 6 apart, 18 over the
 // buttons.
-export const REQUEST_SHOWN = { height: 28, padX: 10, gap: 6, bottom: 0 } as const;
+// The dialog puts 20 over the chips and 20 under them where the board has 12 and 18: pulled in by the
+// difference. The face 64 (`.dav`), no ring.
+export const REQUEST_SHOWN = {
+  height: 28,
+  padX: 10,
+  gap: 6,
+  up: -8,
+  bottom: -2,
+  face: 64,
+} as const;
 
 // OrtakArkadaslar `.mbt`: "Mesaj gönder" 32 high (the kit's row button), 112 wide at least, 14 in.
-export const MUTUAL_BTN = { pad: 14, minWidth: 112 } as const;
+// The face in its 2 ring of the card's ground (`.av`: the 48 includes the ring).
+export const MUTUAL_BTN = {
+  pad: 14,
+  minWidth: 112,
+  faceRing: 2,
+  light: { ring: '#FFFFFF' },
+  dark: { ring: '#121614' },
+} as const;
 
 // SikayetEt `.rr`: a reason's row 52 high, the radio and the words 12 apart.
 export const REPORT_PICK = { row: 52, gap: 12 } as const;

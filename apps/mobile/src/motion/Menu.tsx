@@ -521,7 +521,8 @@ export function MenuItem({
         ? { second: layer.holdDangerBody, soft: layer.holdDangerSoft }
         : { second: layer.holdIconBody, soft: layer.holdIconSoft }
       : look === 'pop'
-        ? { second: iconInk, soft: 1 }
+        ? // The red row's body at half (EngelleOnay's ban: the disc light, the bar dark).
+          { second: iconInk, soft: negative ? 0.5 : 1 }
         : null;
   return (
     <Pressable
@@ -573,7 +574,10 @@ export function MenuItem({
             style={
               hold
                 ? { gap: L.holdNoteTop }
-                : { gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }
+                : look === 'pop'
+                  ? // MekanProfilMenu `.pi p`: the note straight under the words, no room of its own.
+                    { gap: 0, paddingVertical: 0 }
+                  : { gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }
             }
           >
             {!sheet ? (
@@ -587,6 +591,10 @@ export function MenuItem({
             )}
             {note && hold ? (
               <T v="menuNote" color={colors.muted}>
+                {note}
+              </T>
+            ) : note && look === 'pop' ? (
+              <T v="liveSoft" color={colors.muted}>
                 {note}
               </T>
             ) : note ? (

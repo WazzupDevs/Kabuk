@@ -208,7 +208,7 @@ function seedOwn(c: QueryClient) {
 export function OwnProfileFixture({ scrolled }: { scrolled?: boolean }) {
   return (
     <GateClient seed={seedOwn}>
-      <OwnProfile gateScroll={scrolled ? 320 : undefined} />
+      <OwnProfile gateScroll={scrolled ? 380 : undefined} />
     </GateClient>
   );
 }

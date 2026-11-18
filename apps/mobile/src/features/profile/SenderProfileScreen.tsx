@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
-import { Av, T, useKit } from '@/aura/kit';
+import { T, useKit } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
 import { MenuItem } from '@/components/Menu';
@@ -15,6 +15,7 @@ import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { useFriends } from '@/features/friends/queries';
 import { FriendActions, RequestAction } from '@/features/profile/OtherActions';
 import { OtherProfile, OtherProfileLoading } from '@/features/profile/OtherProfile';
+import { ProfileFace } from '@/features/profile/ProfileFace';
 import { ProfileTopBar } from '@/features/profile/ProfileCard';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -61,6 +62,7 @@ function ShownChips() {
         flexWrap: 'wrap',
         justifyContent: 'center',
         gap: REQUEST_SHOWN.gap,
+        marginTop: REQUEST_SHOWN.up,
         marginBottom: REQUEST_SHOWN.bottom,
       }}
     >
@@ -118,7 +120,7 @@ export function SenderProfileScreen({
       title: name ? tr.venueChat.requestConfirmNamed(name) : tr.venueChat.requestConfirmTitle,
       note: tr.venueChat.requestShows,
       face: view.data ? (
-        <Av size="lg" name={name ?? ''} photoUrl={view.data.photoUrl} />
+        <ProfileFace side={REQUEST_SHOWN.face} name={name ?? ''} photoUrl={view.data.photoUrl} />
       ) : undefined,
       tone: 'plain',
       confirmLabel: tr.venueChat.requestConfirm,

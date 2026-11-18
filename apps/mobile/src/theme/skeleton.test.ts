@@ -208,9 +208,9 @@ describe('the own profile in one flow (ProfilBen, ProfilBenKaydir)', () => {
     expect(page).toMatch(/marginTop: -OWN\.photoOver/);
   });
 
-  it('the band comes in over 256–316 and the small photo with the name over 296–330', () => {
-    expect(OWN.band).toEqual([256, 316]);
-    expect(OWN.bar).toEqual([296, 330]);
+  it('the band comes in over 225–275 and the small photo with the name over 255–285', () => {
+    expect(OWN.band).toEqual([225, 275]);
+    expect(OWN.bar).toEqual([255, 285]);
     expect(OWN.barFace).toBe(36);
     expect(page).toMatch(/<BarBand from=\{OWN\.band\[0\]\} to=\{OWN\.band\[1\]\}/);
     expect(page).toMatch(/<BarArrive from=\{OWN\.bar\[0\]\} to=\{OWN\.bar\[1\]\}/);

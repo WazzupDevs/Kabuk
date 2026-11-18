@@ -68,13 +68,15 @@ export function GateState({
         <ReducedMotionConfig mode={ReduceMotion.Always} />
         <View
           testID="gorsel-cerceve"
-          style={{ flex: 1 }}
+          style={width ? { flex: 1, width, alignSelf: 'flex-start' } : { flex: 1 }}
           onLayout={(e) => {
             setFrame(Math.round(e.nativeEvent.layout.height));
             setContent(Math.round(e.nativeEvent.layout.height));
           }}
         >
-          <LoopsHeld.Provider value>{entry.render()}</LoopsHeld.Provider>
+          <FrameWidth.Provider value={width ?? null}>
+            <LoopsHeld.Provider value>{entry.render()}</LoopsHeld.Provider>
+          </FrameWidth.Provider>
           {settled !== null && settled === layout ? <Ready shot={shot} /> : null}
         </View>
       </View>
