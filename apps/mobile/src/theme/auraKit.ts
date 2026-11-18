@@ -1255,14 +1255,15 @@ export const KIT = {
       holdHair: 'rgba(3, 27, 11, 0.08)',
       holdBand: 'rgba(3, 27, 11, 0.05)',
       // The rows' icons and the red (MekanSecenek `.pi`: --primary; MesajlarUzunBas `.pi`: the
-      // ink with its body muted; `.dg`: --danger, its body at 35 % in the long-press menu).
+      // ink with its body muted; `.dg`: --danger, its body at 35 % in the long-press menu). The
+      // body (`.ci .b`) is drawn at --ci-bo, .5, over that: muted at 50 %, the red at 17.5 %.
       menuIcon: '#0E8745',
       menuDanger: '#A8301A',
       holdIcon: '#031B0B',
       holdIconBody: '#4A6550',
-      holdIconSoft: 1,
+      holdIconSoft: 0.5,
       holdDangerBody: '#C8381F',
-      holdDangerSoft: 0.35,
+      holdDangerSoft: 0.175,
       // The sheet: the surface, its handle (skall.css `.grab`: --control) and its shadow.
       sheet: '#FFFFFF',
       sheetGrab: '#C6E0CC',
@@ -1301,10 +1302,11 @@ export const KIT = {
       menuIcon: '#3DDC84',
       menuDanger: '#FF977E',
       holdIcon: '#EEF3F0',
+      // koyu: the body rgba(238,243,240,.45) and the red's at .35, each at .5 (`.ci .b`).
       holdIconBody: '#EEF3F0',
-      holdIconSoft: 0.45,
+      holdIconSoft: 0.225,
       holdDangerBody: '#FF977E',
-      holdDangerSoft: 0.35,
+      holdDangerSoft: 0.175,
       // SikayetEt's dark sheet: #121614 and a 1 px white ring.
       sheet: '#121614',
       sheetGrab: '#2A332F',
