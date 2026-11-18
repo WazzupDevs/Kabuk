@@ -44,88 +44,65 @@ export function ProfileCover({
   );
 }
 
-// A profile page's cover (docs/design/iskelet.md → 5.6, 5.7), `height` from the screen's top: the
-// person's picture or, without one, riso paper (another person's) or the riso scene (the own); the dark fade over its top, and its lower half
-// fading into the ground over a 14 px blurred copy of the picture. expo-image blurs the copy once
-// as it decodes it and keeps it in its memory cache, never again while the page scrolls (2.2); the
-// copy shows in steps, each more opaque, so its top has no seam.
+// A profile page's cover, `height` from the screen's top: the person's picture or, without one,
+// riso paper (another person's) or the riso scene (the own).
+// Another person's (ProfilBaskasi `.cover`): the picture cut to fill, one fade over it (the top
+// 28 % black to a third of it, its foot from 55 % into the ground); the paper's own foot over its
+// last 90. The own profile's (ProfilBen `.cov`): the picture alone, its lower corners 28 round, no
+// fade (`own`).
 export function ProfileCoverArt({
   url,
   height,
   paper,
+  own,
   accessibilityLabel,
 }: {
   url: string | null;
   height: number;
-  // Without a picture: riso paper (another person's, 5.6) rather than the own profile's riso scene.
+  // Without a picture: riso paper (another person's) rather than the own profile's riso scene.
   paper?: boolean;
+  // The own profile's cover: no fade, rounded at the foot.
+  own?: boolean;
   accessibilityLabel?: string;
 }) {
   const { scheme } = useTheme();
-  const P = PROFILE_PAGE;
-  // tuval Profil: another person's paper fades into the ground over its last 90, with no dark fade
-  // over its top (the dark fade is for a picture under the status bar).
+  // Another person's paper fades into the ground over its last 90, with no dark fade over its top
+  // (the dark fade is for a picture under the status bar).
   const onPaper = !url && !!paper;
-  const foot = onPaper ? PERSON.paperFoot : height * (1 - P.footFrom);
-  const step = foot / P.blurSteps.length;
   const source = url ? { uri: url, cacheKey: photoCacheKey(url) } : null;
   return (
     <View
       accessible={!!accessibilityLabel}
       accessibilityLabel={accessibilityLabel}
-      style={{ height, overflow: 'hidden' }}
+      style={{
+        height,
+        overflow: 'hidden',
+        borderBottomLeftRadius: own ? PROFILE_PAGE.own.coverRadius : 0,
+        borderBottomRightRadius: own ? PROFILE_PAGE.own.coverRadius : 0,
+      }}
     >
       {source ? (
-        <>
-          <Image
-            source={source}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            transition={0}
-            style={StyleSheet.absoluteFill}
-            accessibilityIgnoresInvertColors
-          />
-          {P.blurSteps.map((opacity, i) => (
-            <View
-              key={opacity}
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: height - foot + i * step,
-                height: foot - i * step,
-                overflow: 'hidden',
-                opacity,
-              }}
-            >
-              <Image
-                source={source}
-                blurRadius={P.blur}
-                contentFit="cover"
-                cachePolicy="memory"
-                transition={0}
-                style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height }}
-                accessibilityIgnoresInvertColors
-              />
-            </View>
-          ))}
-        </>
+        <Image
+          source={source}
+          contentFit="cover"
+          contentPosition={{ top: own ? '60%' : '40%', left: '50%' }}
+          cachePolicy="memory-disk"
+          transition={0}
+          style={StyleSheet.absoluteFill}
+          accessibilityIgnoresInvertColors
+        />
       ) : paper ? (
         <PersonPaper />
       ) : (
         <RisoCoverScene />
       )}
-      <View
-        style={[
-          { position: 'absolute', left: 0, right: 0, bottom: 0, height: foot },
-          gradientStyle(onPaper ? PERSON[scheme].paperFootCss : P.footCss[scheme]),
-        ]}
-      />
-      {onPaper ? null : (
+      {own ? null : (
         <View
+          pointerEvents="none"
           style={[
-            { position: 'absolute', left: 0, right: 0, top: 0, height: P.shade },
-            gradientStyle(P.shadeCss),
+            StyleSheet.absoluteFill,
+            gradientStyle(onPaper ? PERSON[scheme].paperFootCss : PERSON.coverShade[scheme]),
+            onPaper ? { top: height - PERSON.paperFoot } : null,
           ]}
         />
       )}

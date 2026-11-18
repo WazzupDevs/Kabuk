@@ -19,8 +19,8 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNarrow } from '@/lib/useNarrow';
 import { Tap } from '@/motion';
-import { SET_BALLOONS } from '@/theme/setBalloons';
 import { OWN_PROFILE, SET_CARD } from '@/theme/ownProfile';
+import { SET_BALLOONS } from '@/theme/setBalloons';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useState } from 'react';
@@ -62,18 +62,18 @@ export function SetCard() {
   const lead = counts.reduce((a, b) => (b.n > a.n ? b : a), counts[0] ?? { set: null, n: 0 });
   const filled = SET_REGION_ORDER.filter((r) => pieces[r]).length;
   const mixed = filled === SET_REGION_ORDER.length && !balloon;
-  const skin = balloon ? SET_BALLOONS[balloon] : null;
 
   const k = SET_CARD[scheme];
-  const chip = skin
-    ? { bg: skin.chipOn, fg: skin.name.ink }
+  // ProfilBen `.stag`: the success-soft pill once the balloon is on.
+  const chip = balloon
+    ? { bg: k.tagOn.bg, fg: k.tagOn.fg }
     : mixed
       ? { bg: k.count, fg: c.warn }
       : { bg: k.count, fg: c.ink };
   // yeni tuval ProfilBen (`.sh`, `.stag`, `.sd`, `.parts`): the small title and the balloon's tag on one
   // line, the note under them, the three parts' pictures under it; no card.
   return (
-    <View style={{ marginTop: OWN_PROFILE.gap, gap: SET_CARD.gap }}>
+    <View style={{ marginTop: OWN_PROFILE.sectionTop }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <T v="eyebrow" accessibilityRole="header">
@@ -82,15 +82,15 @@ export function SetCard() {
         </View>
         <View
           style={{
-            height: SET_CARD.count.height,
-            paddingHorizontal: SET_CARD.count.padX,
-            borderRadius: SET_CARD.count.height / 2,
+            height: SET_CARD.tag.height,
+            paddingHorizontal: SET_CARD.tag.padX,
+            borderRadius: SET_CARD.tag.height / 2,
             backgroundColor: chip.bg,
             justifyContent: 'center',
             flexShrink: 1,
           }}
         >
-          <T v="setCount" color={chip.fg} tabular lines={1} fit>
+          <T v="tag" color={chip.fg} tabular lines={1} fit>
             {balloon && lead.set
               ? tr.gifts.setChipOn(lead.set.name)
               : mixed
@@ -101,21 +101,23 @@ export function SetCard() {
           </T>
         </View>
       </View>
-      <T v="setNote" color={k.note}>
-        {balloon && lead.set
-          ? tr.gifts.setOn(lead.set.name)
-          : mixed
-            ? tr.gifts.setMixed
-            : filled > 0 && lead.set
-              ? tr.gifts.setMore(lead.set.name)
-              : tr.gifts.setHint}
-      </T>
+      <View style={{ marginTop: SET_CARD.noteTop }}>
+        <T v="note" color={k.note}>
+          {balloon && lead.set
+            ? tr.gifts.setOn(lead.set.name)
+            : mixed
+              ? tr.gifts.setMixed
+              : filled > 0 && lead.set
+                ? tr.gifts.setMore(lead.set.name)
+                : tr.gifts.setHint}
+        </T>
+      </View>
       <View
         style={{
           flexDirection: 'row',
           flexWrap: 'wrap',
-          rowGap: SET_CARD.slotsTop,
-          marginTop: SET_CARD.slotsTop - SET_CARD.gap,
+          rowGap: SET_CARD.slotsGap,
+          marginTop: SET_CARD.slotsTop,
         }}
       >
         {SET_REGION_ORDER.map((region) => {
@@ -128,7 +130,7 @@ export function SetCard() {
                   piece?.name ?? tr.gifts.setEmpty,
                 )}
                 onPress={() => setOpen(region)}
-                style={{ alignItems: 'center', gap: SET_CARD.slotGap }}
+                style={{ alignItems: 'center' }}
               >
                 {/* An empty slot 62 in the worn one's place (iskelet.md → 5.7). */}
                 <View
@@ -163,10 +165,12 @@ export function SetCard() {
                     )}
                   </View>
                 </View>
-                <T v="setSlot" ink center>
-                  {tr.gifts.setRegion[region]}
-                </T>
-                <T v="fine" center>
+                <View style={{ marginTop: SET_CARD.nameTop }}>
+                  <T v="btnSm" ink center>
+                    {tr.gifts.setRegion[region]}
+                  </T>
+                </View>
+                <T v="roomNote" color={c.muted} center>
                   {piece?.name ?? tr.gifts.setEmpty}
                 </T>
               </Tap>

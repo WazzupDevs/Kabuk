@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 
+import { CHAT_MUTES_KEY } from '@/features/chat/ChatOptionsMenu';
 import { refreshFriends } from '@/features/friends/queries';
 import { SenderProfileScreen } from '@/features/profile/SenderProfileScreen';
 import { useVenueChatProfile } from '@/features/venueChat/queries';
 import { track } from '@/lib/analytics';
-import { friendsApi, safetyApi } from '@/lib/api';
+import { friendsApi, safetyApi, venueChatApi } from '@/lib/api';
 
 // The sender of a profiled venue chat message, opened through the message (docs/SPEC_V3.md §7.5):
 // no public_id. The screen is the shared `SenderProfileScreen` (the district chat and the venue
@@ -22,6 +23,15 @@ export default function VenueChatProfileScreen() {
       report={{
         send: (reason) => safetyApi.reportVenueChat(messageId, reason),
         onSent: () => track('venue_chat_reported', {}),
+      }}
+      // MekanProfilMenu (59): "Sessize al" hides the person's messages, the screen closes.
+      mute={{
+        send: () => venueChatApi.mute(messageId),
+        onDone: () => {
+          void queryClient.invalidateQueries({ queryKey: CHAT_MUTES_KEY });
+          void queryClient.invalidateQueries({ queryKey: ['venueChat'] });
+          router.back();
+        },
       }}
       block={{
         send: (reason) => safetyApi.blockVenueChat(messageId, reason),

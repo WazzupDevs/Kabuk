@@ -1,3 +1,4 @@
+import { KIT_TYPE } from './auraKit';
 import type { ColorScheme } from './tokens';
 
 // The profile's cover and the anonymous identity's ticket (docs/SPEC_V4.md §4.W, "C · kapak ve
@@ -55,33 +56,18 @@ export const PROFILE_COVER = {
   } satisfies Record<ColorScheme, Record<string, string>>,
 } as const;
 
-// The profile pages (docs/design/iskelet.md → 5.6 and 5.7), on the canvas's phone, 390 wide: the
-// cover 230 (the own profile's: own.cover) from the screen's top, a dark fade over its top 110 (42 % at its top, tuval Benim), its lower half fading into the
-// ground with a 14 px blurred copy of the picture; the photo 124 in a 4 px white ring, centred at
-// (195, 196), the name's centre at (195, 291). The bar row's centre on the canvas is 73: the kit's
-// bar (8 under the status bar, 46 high) puts it there under a 42 status bar, so a screen moves the
-// canvas's heights by its own status bar less 42 and its widths from the centre by its width / 390.
+// The profile pages (docs/design/iskelet.md → 5.6 and 5.7; the yeni arayüz tuvali's ProfilBaskasi
+// and ProfilBen), on the canvas's phone, 390 wide: another person's cover 250 from the screen's top
+// (the own: 236), the photo 112 in a 4 ring of the ground's colour. The bar row's centre on the
+// canvas is 74: the kit's bar (8 under the status bar, 44 high) puts it there under a 44 status
+// bar, so a screen moves the canvas's heights by its own status bar less 44.
 export const PROFILE_PAGE = {
   canvasWidth: 390,
-  canvasStatus: 42,
-  cover: 230,
-  shade: 110,
-  shadeCss: 'linear-gradient(180deg, rgba(3, 27, 11, 0.42) 0%, rgba(3, 27, 11, 0) 100%)',
-  footFrom: 0.5,
-  footCss: {
-    light: 'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, #EFF7F1 100%)',
-    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 100%)',
-  },
-  // The blurred copy shows over the foot in these steps, each more opaque (no mask: a seam at its
-  // top would show), under the fade.
-  blur: 14,
-  blurSteps: [0.35, 0.7, 1] as const,
+  canvasStatus: 44,
+  cover: 250,
   face: 124,
   ring: 4,
   ringColor: '#FFFFFF',
-  faceAt: { x: 195, y: 196 },
-  nameAt: { x: 195, y: 291 },
-  barAt: 73,
   // Another person's (5.6): the cover at half the scroll; the photo shrinks to 0.75 over 60–180 and
   // fades over 120–190; the band comes in over 190–230 and the name into the bar over 230–260
   // (tuval Profil).
@@ -93,34 +79,28 @@ export const PROFILE_PAGE = {
     band: [190, 230] as const,
     bar: [230, 260] as const,
   },
-  // The own (5.7): the upper part moves at -0.35 of the scroll, fades over 120–300 and shrinks to
-  // 0.92; the panel (34 round, a handle) reaches the bar's foot at 316, where the photo (124 → 30,
-  // its ring 4 → 1.5) and the name (1 → 0.516) arrive in the bar at (152, 73) and (214, 73). The
-  // band comes in over the panel's last 60 before the bar.
-  // The own profile's cover and photo are the board's (ProfilBen, 17 Kasım): the cover 236 from the
-  // screen's top, the photo 112 (its 4 ring inside) overlapping it by 60: centred at (195, 232), the
-  // name 12 under it, centred at (195, 317).
+  // The own (ProfilBen, ProfilBenKaydir): the page is one flow, the cover (236, its foot 28 round)
+  // scrolling with it and the photo (112) over its foot by 60. Scrolled, the band (122 on the board)
+  // comes in over 256–316 and the small photo (36, 20 from the left, no ring) with the name (700
+  // 17/22, 12 beside the photo) into the bar over 296–330, the settings staying where they are.
   own: {
     cover: 236,
+    coverRadius: 28,
     photo: 112,
-    photoAt: { x: 195, y: 232 },
-    nameAt: { x: 195, y: 317 },
-    arrive: 316,
-    rise: 0.35,
-    riseFade: [120, 300] as const,
-    riseScale: 0.92,
-    face: 30,
-    ring: 1.5,
-    faceTo: { x: 152, y: 73 },
-    nameScale: 0.516,
-    nameTo: { x: 214, y: 73 },
+    photoOver: 60,
+    ring: 4,
     band: [256, 316] as const,
-    panelRadius: 34,
-    // "N arkadaş": the faces 28 over each other, 2.5 of the button's ground round each (2.4).
-    stack: 28,
-    stackGap: 2.5,
+    bar: [296, 330] as const,
+    barSide: 20,
+    barFace: 36,
+    barGap: 12,
+    // "N arkadaş": the faces 32 (10 over each other, a 2 ring of the button's ground), two at most
+    // (`.fr .av`).
+    stack: 32,
+    stackGap: 2,
+    stackStep: 22,
     stackShadow: '0px 2px 6px rgba(3, 27, 11, 0.16)',
-    stackMax: 3,
+    stackMax: 2,
   },
 } as const;
 
@@ -133,11 +113,14 @@ export const RISO_PAPER = {
   dark: { paper: '#1B231E', dots: 'rgba(255, 255, 255, 0.07)' },
 } as const;
 
-// The ticket (yeni arayüz tuvali, ProfilBen `.tk`; 16 Kasım, value for value): 128 high, 24 round, an
-// edge 2 wide and a pink (violet in the dark) print 4 right and 5 down under it; a notch 24 across at
-// the top and the bottom of the perforation (2, dashed); the stub 97 with the capsule (80) on its
-// fixed fill (TICKET_TONE.stub, ProfilBen `.tks`) under an orange halftone (6 apart, 1.2, centred in its cell), a purple hale behind it (CAPSULE_HALE), its parts 8 apart; the words 16 inside (18 at their left),
-// 4 apart, the button 8 more under them, 16 in, its star 15, 6 from the words. The paper, edge, print
+// The ticket (yeni arayüz tuvali, ProfilBen `.tk`; 16 Kasım, value for value): 128 high (150 at 320 dp
+// or the largest text, DarProfilim), 24 round, an edge 2 wide and a pink (violet in the dark) print
+// 4 right and 5 down under it; a notch 24 across at the top and the bottom of the perforation (2,
+// dashed); the stub 97 with the capsule (80) on its fixed fill (TICKET_TONE.stub, ProfilBen `.tks`)
+// under an orange halftone (6 apart, 1.2, centred in its cell), a purple hale behind it
+// (CAPSULE_HALE), its parts 4 apart; the words 12 over and under, 14 in at the right (16 at their
+// left; 12 and 14 at 320), the nick 4 under the kicker, the note straight under it, the button 10
+// under it (34 high, 14 in; at 320 it stands under the ticket, full width). The paper, edge, print
 // and inks are the scheme's (TICKET_TONE).
 export const TICKET = {
   edgeWidth: 2,
@@ -145,19 +128,32 @@ export const TICKET = {
   printY: 5,
   radius: 24,
   height: 128,
+  heightNarrow: 150,
   notch: 12,
   stub: 97,
-  stubGap: 8,
+  stubGap: 4,
   stubDots: { cell: 6, dot: 1.2 },
   capsule: 80,
   dash: [4, 4] as const,
   dashWidth: 2,
-  padX: 16,
-  padLeft: 18,
+  padX: 14,
+  padLeft: 16,
+  padXNarrow: 12,
+  padLeftNarrow: 14,
   padY: 12,
-  gap: 4,
-  buttonTop: 8,
-  button: { padX: 16, gap: 6, icon: 15 },
+  nickTop: 4,
+  buttonTop: 10,
+  button: { height: 34, padX: 14, icon: 16 },
+  // At 320 dp: the button under the ticket, 12 below it, 52 high at least.
+  buttonBelow: { top: 12, height: 52, icon: 20 },
+} as const;
+
+// The board's own faces (ProfilBen `.tkl` 700 11/14 at 1.4 px, `.tkm b` 800 20/24 at -0.4, `.tks span`
+// 700 12/16 at 0.2), made of the kit's.
+export const TICKET_TYPE = {
+  kicker: { ...KIT_TYPE.badge, letterSpacing: 1.4 },
+  nick: { ...KIT_TYPE.giftBtn, fontSize: 20, lineHeight: 24, letterSpacing: -0.4 },
+  no: { ...KIT_TYPE.badge, fontSize: 12, lineHeight: 16, letterSpacing: 0.2 },
 } as const;
 
 export const TICKET_TONE = {
@@ -172,6 +168,8 @@ export const TICKET_TONE = {
     link: '#0B783D',
     dash: 'rgba(11, 61, 34, 0.45)',
     stub: { fill: '#FBD9A8', dots: 'rgba(224, 120, 40, 0.22)' },
+    // "Kapsülünü süsle": the ink with a green star (the dark: the near-white with the deep green).
+    button: { bg: '#031B0B', fg: '#FFFFFF', star: '#3DDC84' },
   },
   dark: {
     paper: '#101915',
@@ -184,5 +182,6 @@ export const TICKET_TONE = {
     link: '#93EBB9',
     dash: 'rgba(147, 235, 185, 0.45)',
     stub: { fill: '#2A1F45', dots: 'rgba(201, 184, 255, 0.18)' },
+    button: { bg: 'rgba(255, 255, 255, 0.94)', fg: '#0B0E0D', star: '#0B783D' },
   },
 } as const;
