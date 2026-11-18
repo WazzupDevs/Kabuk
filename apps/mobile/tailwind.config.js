@@ -83,6 +83,9 @@ const SPACING = {
 module.exports = {
   content: ['./app/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
   presets: [require('nativewind/preset')],
+  // The web preview (scripts/visual/web-shot.ts) only: NativeWind on web throws when the theme sets
+  // the scheme under the default 'media'. Android and iOS builds never set SKALL_WEB_ONIZLEME.
+  ...(process.env.SKALL_WEB_ONIZLEME === '1' ? { darkMode: 'class' } : {}),
   theme: {
     colors: {
       transparent: 'transparent',
