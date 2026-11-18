@@ -282,6 +282,22 @@
       }
     },
     {
+      "id": "ekran-kesfet-kaydir",
+      "app": "ekran/kesfet/kaydir",
+      "baz": false,
+      "pano": {
+        "dosya": "KesfetKaydir"
+      },
+      "uygulamaAdimlar": [
+        {
+          "kaydir": 318
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
       "id": "ekran-kesfet-semt-icerde",
       "app": "ekran/kesfet/semt-icerde",
       "baz": false,

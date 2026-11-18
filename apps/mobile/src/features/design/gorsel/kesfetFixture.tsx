@@ -146,7 +146,8 @@ const IN_ROOM: DistrictState = {
   },
 };
 
-export type KesfetVariant = 'list' | 'room' | 'map' | 'empty' | 'search' | 'search-empty';
+export type KesfetVariant =
+  'list' | 'room' | 'map' | 'empty' | 'search' | 'search-empty' | 'scrolled';
 
 // Kesfet (10), KesfetSemtIcerde (10b), KesfetHarita (11), KesfetBos (112), KesfetAra (116),
 // KesfetAraBos (117).
@@ -156,7 +157,11 @@ export function KesfetFixture({ variant = 'list' }: { variant?: KesfetVariant })
     goOffline();
     Date.now = () => SATURDAY_EVENING;
     const rows: readonly Row[] =
-      variant === 'empty' ? [] : variant === 'search' ? EIGHT : [IGU, SAKARYA];
+      variant === 'empty'
+        ? []
+        : variant === 'search' || variant === 'scrolled'
+          ? EIGHT
+          : [IGU, SAKARYA];
     const venues = rows.map((r, i) => venue(i + 1, r));
     const c = new QueryClient({
       defaultOptions: { queries: { staleTime: Infinity, retry: false } },

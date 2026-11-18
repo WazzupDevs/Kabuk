@@ -625,7 +625,6 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
   return (
     <Tap accessibilityLabel={venue.name} onPress={() => openVenue(venue.id)}>
       <Ticket testID="explore-map-card" picture={TICKET_PICTURE[type]}>
-        <VenueThumb kind={type} size={m.picture} radius={m.pictureRadius} shadow="" />
         <View style={{ flex: 1, minWidth: 0, gap: EXPLORE.row.lineGap }}>
           <T v="mapName">{venue.name}</T>
           <T v="kesfetSub" color={c.muted}>

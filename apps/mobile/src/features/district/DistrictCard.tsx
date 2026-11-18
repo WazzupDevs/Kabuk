@@ -94,7 +94,10 @@ export function DistrictCard() {
     );
   }
   return (
-    <Scene title={tr.district.card.title(s.district?.name ?? null)} note={tr.district.card.note}>
+    <Scene
+      title={tr.district.card.title(s.district?.name ?? null).replace("'", '’')}
+      note={tr.district.card.note}
+    >
       <CardButton
         label={tr.district.card.go}
         testID="district-card-go"
@@ -269,52 +272,54 @@ function Scene({
         accessible={false}
         style={PICTURE_FILL}
       />
-      <View style={{ flex: 1, width: k.words, padding: k.pad, alignItems: 'flex-start' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: k.eyebrowGap }}>
-          <PulseDot
-            color={room ? k.roomDot : k.eyebrow}
-            ring={room ? k.roomDotRing : undefined}
-            darkRing
-            size={k.dot}
-          />
-          <T v="kesfetEyebrow" color={eyebrow}>
-            {upperTr(room ? tr.district.card.roomEyebrow : tr.district.card.sceneEyebrow)}
-          </T>
-        </View>
-        <View style={{ marginTop: k.titleTop }}>
-          <T v="semtTitle" color={k.title}>
-            {title}
-          </T>
-        </View>
-        {note ? (
-          <View style={{ marginTop: k.noteTop }}>
-            <T v="semtNote" color={k.note}>
-              {note}
+      <View style={{ flex: 1, padding: k.pad }}>
+        <View style={{ flex: 1, width: k.words, alignItems: 'flex-start' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: k.eyebrowGap }}>
+            <PulseDot
+              color={room ? k.roomDot : k.eyebrow}
+              ring={room ? k.roomDotRing : undefined}
+              darkRing
+              size={k.dot}
+            />
+            <T v="kesfetEyebrow" color={eyebrow}>
+              {upperTr(room ? tr.district.card.roomEyebrow : tr.district.card.sceneEyebrow)}
             </T>
           </View>
-        ) : null}
-        {meta ? (
-          <View
-            style={{
-              marginTop: k.metaTop,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: k.metaGap,
-            }}
-          >
-            <CapIcon name="clock" color={k.eyebrow} size={k.metaIcon} />
-            <T v="semtMeta" strong={metaWord !== undefined} color={metaWord ? k.title : k.meta}>
-              {meta}
+          <View style={{ marginTop: k.titleTop }}>
+            <T v="semtTitle" color={k.title}>
+              {title}
             </T>
-            {metaWord ? (
-              <T v="semtMeta" color={k.meta}>
-                {metaWord}
+          </View>
+          {note ? (
+            <View style={{ marginTop: k.noteTop }}>
+              <T v="semtNote" color={k.note}>
+                {note}
               </T>
-            ) : null}
-          </View>
-        ) : null}
-        <View style={{ flexGrow: 1 }} />
-        {children}
+            </View>
+          ) : null}
+          {meta ? (
+            <View
+              style={{
+                marginTop: k.metaTop,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: k.metaGap,
+              }}
+            >
+              <CapIcon name="clock" color={k.eyebrow} size={k.metaIcon} />
+              <T v="semtMeta" strong={metaWord !== undefined} color={metaWord ? k.title : k.meta}>
+                {meta}
+              </T>
+              {metaWord ? (
+                <T v="semtMeta" color={k.meta}>
+                  {metaWord}
+                </T>
+              ) : null}
+            </View>
+          ) : null}
+          <View style={{ flexGrow: 1 }} />
+          {children}
+        </View>
       </View>
     </View>
   );

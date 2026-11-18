@@ -451,7 +451,7 @@ function KindChips({
       accessibilityRole="radiogroup"
       accessibilityLabel={tr.explore.kindsLabel}
       style={{ marginHorizontal: -side, overflow: 'visible' }}
-      contentContainerStyle={{ flexGrow: 1, gap: EXPLORE.chip.gap, paddingHorizontal: side }}
+      contentContainerStyle={{ minWidth: '100%', gap: EXPLORE.chip.gap, paddingHorizontal: side }}
     >
       {EXPLORE_KINDS.map((k) => (
         <KindChip

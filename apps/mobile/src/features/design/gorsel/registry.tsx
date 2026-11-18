@@ -64,4 +64,5 @@ export const GATE_STATES: Record<string, GateEntry> = {
   'ekran/kesfet/bos': { full: true, render: () => <KesfetFixture variant="empty" /> },
   'ekran/kesfet/ara': { full: true, render: () => <KesfetFixture variant="search" /> },
   'ekran/kesfet/ara-bos': { full: true, render: () => <KesfetFixture variant="search-empty" /> },
+  'ekran/kesfet/kaydir': { full: true, render: () => <KesfetFixture variant="scrolled" /> },
 };

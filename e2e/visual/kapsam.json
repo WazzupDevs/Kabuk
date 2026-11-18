@@ -1624,7 +1624,7 @@
     ],
     "acilis": "Keşfet → listeyi yukarı kaydır",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-kesfet-kaydir",
     "hal": "eski"
   },
   {
@@ -1638,7 +1638,7 @@
     ],
     "acilis": "Keşfet → listeyi yukarı kaydır",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-kesfet-kaydir",
     "hal": "eski"
   },
   {
