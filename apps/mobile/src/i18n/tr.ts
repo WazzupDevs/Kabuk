@@ -973,6 +973,10 @@ export const tr = {
     tableEmptyTitle: 'Masada henüz mesaj yok',
     tableEmptyBody: (people: number) => `İlk mesajı sen yaz. Masadaki ${people} kişi görür.`,
     tableEmptyLabel: 'Masa sohbeti çizimi',
+    // MasaSohbet: the message bar's hint and the first message's suggestions (a tap sends one).
+    tablePlaceholder: 'Masaya yaz…',
+    tableSuggest: ['Selam masa! 👋', 'Hangi oyunu açalım?', 'Ben hazırım'],
+    suggestLabel: 'Önerilen ilk mesajlar',
     sending: 'Gönderiliyor…',
     notSent: 'Gönderilemedi.',
     retry: 'Tekrar dene',
@@ -1074,6 +1078,18 @@ export const tr = {
     repliesFieldLabel: 'Gönderiye yanıt yaz',
   },
   // Mekan sohbeti (docs/SPEC_V3.md §7).
+  // Sohbet kuralları (the semt and the venue chat's ⋮ menu).
+  chatRules: {
+    title: 'Sohbet kuralları',
+    rules: [
+      'Saygılı ol. Hakaret, aşağılama ve nefret söylemi yok.',
+      'Kimseyi rahatsız etme. Israr, taciz ve tehdit yok.',
+      'Telefon numarası, adres ve sosyal medya hesabı paylaşma; başkasınınkini hiç paylaşma.',
+      'Reklam, satış ve toplu mesaj yok.',
+      'Rahatsız eden mesaja basılı tut: “Şikayet et” ile bize bildir, “Sessize al” ile o kişinin mesajlarını gizle.',
+      'Kurallara uymayan hesap uyarılmadan kapatılabilir.',
+    ],
+  },
   venueChat: {
     open: 'Mekan sohbeti',
     empty: 'Henüz mesaj yok. İlk mesajı sen yaz.',
@@ -1087,6 +1103,8 @@ export const tr = {
       `Mesajların ${nick} adıyla, kapsül karakterinle görünür. 24 saat sonra silinir.`,
     mutedTitle: 'Sessize aldıkların',
     mutedNone: 'Sessize aldığın kimse yok.',
+    // The ⋮ menu's "Sessize aldıkların" with no one in it (SemtSecenek `.rv`).
+    mutedNoneShort: 'Kimse yok',
     unmute: 'Sesi aç',
     done: 'Tamam',
     mute: 'Sessize al',
@@ -1216,7 +1234,13 @@ export const tr = {
       anonymous: 'Anonim',
       profiled: 'Profilim',
       emptyTitle: 'Bugün ilk sen geldin',
-      emptyBody: 'Odaya henüz kimse yazmadı. İlk mesajı sen yaz; gelenler görür.',
+      emptyBody: 'Odaya henüz kimse yazmadı. İlk mesajı sen yaz, gelenler görür.',
+      // SemtSohbet `.sug`: the first message's suggestions (a tap sends one).
+      suggest: (name: string) => [
+        `Selam ${name}! 👋`,
+        'Bu akşam ne yapıyorsunuz?',
+        'Önerin var mı?',
+      ],
       emptyLabel: 'Bankta oturan, yazmayı bekleyen kanki',
       friendRequest: 'Arkadaşlık isteği',
       leave: 'Sohbetten çık',
@@ -1253,12 +1277,12 @@ export const tr = {
       emptyBody: 'Biri gelince burada görünür.',
       list: 'Odadakiler listesi',
     },
-    // "Oturumu kapat" in the room's options (§4.V).
+    // "Sohbetten çık" in the room's ⋮ menu (SemtSecenek; §4.V).
     end: {
-      action: 'Oturumu kapat',
-      title: 'Oturumu kapatmak istiyor musun?',
+      action: 'Sohbetten çık',
+      title: 'Sohbetten çıkmak istiyor musun?',
       body: 'Bugün yeniden girersen soru sorulmaz, yeni 2 saat başlar.',
-      yes: 'Oturumu kapat',
+      yes: 'Sohbetten çık',
     },
     cont: {
       title: 'Sohbete devam etmek istiyor musun?',

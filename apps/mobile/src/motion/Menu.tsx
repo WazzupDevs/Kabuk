@@ -60,11 +60,14 @@ export function Menu({
   float,
   anchor,
   hold,
+  tight,
   visible = true,
   onClose,
 }: {
   children: ReactNode;
   float?: boolean;
+  // With `anchor`: the first row is a row, not a heading: 8 over it as at its sides (SemtSecenek).
+  tight?: boolean;
   // The button the menu grows out of (measureMenuAnchor). Unset: the rows stand where they are.
   anchor?: MenuAnchor;
   // With `anchor`: a long press's menu (MesajlarUzunBas) rather than a ⋮ button's.
@@ -84,7 +87,13 @@ export function Menu({
   );
   if (anchor) {
     return (
-      <MenuPop anchor={anchor} visible={visible} hold={!!hold} onClose={onClose ?? noop}>
+      <MenuPop
+        anchor={anchor}
+        visible={visible}
+        hold={!!hold}
+        tight={!!tight}
+        onClose={onClose ?? noop}
+      >
         {rows}
       </MenuPop>
     );
@@ -123,7 +132,15 @@ export function Menu({
 // The ⋮ menu's and the long-press menu's card (KIT.layer): the flat surface, no glass. The ⋮ menu
 // 16 / 8 / 8 inside, its red row last after a hairline (MekanSecenek); the long-press menu 6
 // inside, its red rows apart under a 6 band across it (MesajlarUzunBas `.psep`).
-function MenuCard({ look, children }: { look: 'pop' | 'hold'; children: ReactNode[] }) {
+function MenuCard({
+  look,
+  tight = false,
+  children,
+}: {
+  look: 'pop' | 'hold';
+  tight?: boolean;
+  children: ReactNode[];
+}) {
   const { scheme } = useTheme();
   const layer = KIT.layer[scheme];
   const L = KIT.layer.size;
@@ -143,7 +160,7 @@ function MenuCard({ look, children }: { look: 'pop' | 'hold'; children: ReactNod
         backgroundColor: layer.menu,
         borderRadius: hold ? L.holdRadius : L.menuRadius,
         overflow: 'hidden',
-        paddingTop: hold ? L.holdPad : L.menuPadTop,
+        paddingTop: hold ? L.holdPad : tight ? L.menuPadTight : L.menuPadTop,
         paddingHorizontal: hold ? L.holdPad : L.menuPadX,
         paddingBottom: hold ? L.holdPad : L.menuPadBottom,
       }}
@@ -212,12 +229,14 @@ function MenuPop({
   anchor,
   visible,
   hold,
+  tight,
   onClose,
   children,
 }: {
   anchor: MenuAnchor;
   visible: boolean;
   hold: boolean;
+  tight: boolean;
   onClose: () => void;
   children: ReactNode[];
 }) {
@@ -319,7 +338,9 @@ function MenuPop({
         <View style={{ borderRadius: radius, boxShadow: shadow.boxShadow }}>
           {shadow.node}
           <PopClose.Provider value={onClose}>
-            <MenuCard look={hold ? 'hold' : 'pop'}>{children}</MenuCard>
+            <MenuCard look={hold ? 'hold' : 'pop'} tight={tight}>
+              {children}
+            </MenuCard>
           </PopClose.Provider>
         </View>
       </Animated.View>
@@ -342,6 +363,7 @@ export function MenuItem({
   testID,
   chevron,
   count,
+  value,
 }: {
   label: string;
   icon?: IconName;
@@ -358,6 +380,8 @@ export function MenuItem({
   // A row that opens a page (skall tuvali, Ayarlar): a chevron, with a count before it.
   chevron?: boolean;
   count?: number;
+  // A ⋮ menu row's value at its right (SemtSecenek `.rv`: "Kimse yok").
+  value?: string;
 }) {
   const { colors, scheme } = useTheme();
   const look = useContext(Look);
@@ -415,7 +439,15 @@ export function MenuItem({
       : onPress,
   );
   const sheet = look === 'sheet';
-  const ink = negative ? (sheet ? colors.onDangerSoft : layer.menuDanger) : colors.text;
+  // An off row in the ⋮ menu (`.pi.off`): its words muted, its icon at half.
+  const off = !!disabled && look === 'pop';
+  const ink = negative
+    ? sheet
+      ? colors.onDangerSoft
+      : layer.menuDanger
+    : off
+      ? colors.muted
+      : colors.text;
   // The ⋮ menu's icons --primary; the long-press menu's the ink, their body muted (the red's at
   // 35 %); a sheet's muted.
   const iconInk = negative
@@ -466,13 +498,15 @@ export function MenuItem({
             />
           ) : null}
           {cap ? (
-            <CapIcon
-              name={cap}
-              size={iconSize}
-              color={iconInk}
-              second={iconBody?.second}
-              soft={iconBody?.soft}
-            />
+            <View style={{ opacity: off ? L.menuOffIcon : 1 }}>
+              <CapIcon
+                name={cap}
+                size={iconSize}
+                color={iconInk}
+                second={iconBody?.second}
+                soft={iconBody?.soft}
+              />
+            </View>
           ) : icon ? (
             <AppIcon name={icon} size={iconSize} color={iconInk} />
           ) : null}
@@ -496,6 +530,11 @@ export function MenuItem({
             <Text variant="label" tone="muted" tabular>
               {String(count)}
             </Text>
+          ) : null}
+          {!loading && value !== undefined ? (
+            <T v="popValue" color={colors.muted}>
+              {value}
+            </T>
           ) : null}
           {!loading && chevron ? (
             <AppIcon name="chevron-forward" size={ICON.md} color={colors.muted} />

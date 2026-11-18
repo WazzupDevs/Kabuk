@@ -196,15 +196,9 @@ Kod: apps/mobile/app/(app)/district/room.tsx (FirstHere 593-615, TimeChip), src/
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
 | 1 | üst kapsül alt satırı | kural | "Sadece sen buradasın" 12/16 500 (oda kişi sayısı) | yok: üst çubukta alt satır verilmiyor, "kişi sayısı hiçbir yerde yok" (room.tsx:~75 notu, `ChatTopBar` subtitle verilmez). Sayı yalnız Odadakiler sayfasında (tr.people.sub). KURAL 4 (oda kişi sayısı yalnız Odadakiler yanıtıyla; üst çubuk ayrı yanıt çağırmalı) — karar proje sahibinin |
-| 2 | önerilen ilk mesaj çipleri | özellik yok | `.sug`: "Selam Beylikdüzü! 👋", "Bu akşam ne yapıyorsunuz?", "Önerin var mı?" (36 yük., iç 14, beyaz, alt 110, yatay) | çizilmiyor ("no behaviour is given them", room.tsx:~590) |
-| 3 | ilk mesaj kartı başlığı | yazı | `.et` 700 16/22 | T h3 600 16/22 ls -.1 (ChatEmptyCard.tsx:60) — chatLook.ts:~50 yorumu 700 diyor, uygulanmamış |
-| 4 | ilk mesaj kartı metni | metin | "Odaya henüz kimse yazmadı. İlk mesajı sen yaz, gelenler görür." | "…sen yaz; gelenler görür." noktalı virgül (tr.ts:1205) |
 | 5 | alan metni | metin | "Beylikdüzü'ye yaz…" | `inflectTr(name,'dative')+' yaz…'` (tr.ts:1199): ek biçimi inflectTr'ye bağlı, "Beylikdüzü'ne/'ye" DOĞRULANAMADI |
 | 6 | kimlik anahtarı | ölçü | `.tog` iç 3, slot 36, yüz 32, seçili halka 2.5 --primary kutu gölgesi, seçili olmayan opaklık .55 | slot 36 pad 3 (chatLook.ts:13) UYUYOR; seçili slot beyaz zemin + 2.5 kenarlık (yüz 36-5=31) ve kilit rozeti (IdentityToggle.tsx:~84-108): yüz 31 ≠ 32, beyaz zemin ve kilit rozeti FAZLA |
 | 7 | başlık yazısı | yazı | `.who .nm b` 16/20 600 | dmName 16/20 600 UYUYOR |
-| 8 | kalan süre çipi | yazı | `.tmr` 700 13/18; "kaldı" 500 muted | T fine strong + T fine (parts.tsx:597-600): kalınlık 600/'strong' değeri DOĞRULANAMADI |
-| 9 | düğmeler | ölçü | geri/menü round soft 44; capsule 52; alan 52, gönder 52 | DM.bar (dm.ts) pill 52 UYUYOR; gönder düğmesi ölçüsü DOĞRULANAMADI (Composer.tsx) |
-| 10 | arkaplan duvar kağıdı + üst bant | resim | blob e07afded / 32631775, bant 132 #F5E9D8 → saydam | wall="semt" (ChatScreen), assets/riso/wall-*; birebirlik DOĞRULANAMADI |
 | 11 | yazım alanı emoji düğmesi | ikon | `.ib` 40, emoji ikonu soldaki | Composer.tsx (emoji düğmesi) UYUYOR varsayıldı, DOĞRULANAMADI |
 | 12 | şablon dışı | fazla | yok | yükleme/hata hâlleri, yanıt/alıntı çubuğu (room.tsx:~480-520) — pano çizmiyor |
 
@@ -214,15 +208,7 @@ Kod: room.tsx:468-474, src/features/district/RoomSheets.tsx (OptionsSheet), Peop
 Not: arka plan 14'ün aynısı (bkz. 14 #1-#12; boş durum hâlinde sohbet).
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | menünün biçimi | düzen | sağ üstten (sağ 12, üst 112) 292 genişlikte açılır menü: köşe 28, iç 8, gölge 0 18 48 .22 + 0 0 0 1px .06; perde yok görünüyor (`.scrim` stilli ama kullanılmıyor) | alt sayfa (Sheet) başlık "Semt sohbeti seçenekleri" + kapat + "Bitti" düğmesi + perde (RoomSheets.tsx:60-107; room.tsx:468) |
 | 2 | satır 1 "Odadakiler" | metin | "Odadakiler" + sağda "1 kişi" (14/18 500 muted), ikon iki kişi, 22 | MenuItem "Odadakiler", sağ değer yok (RoomSheets.tsx:88-93, tr.ts:1215); KURAL 4 (sayı; yalnız Odadakiler yanıtıyla, bkz. 14 #1) |
-| 3 | satır 2 "Sessize aldıkların" | düzen | tek satır, sağ "Kimse yok" (devre dışı, ikon .5, yazı muted); sessiz ikon + çarpı | menü içinde ayrı bölüm: başlık "Sessize aldıkların", liste ya da "kimse yok" metni, her biri MenuItem "Sessizden çıkar" (RoomSheets.tsx:67-86) |
-| 4 | satır 3 "Sohbet kuralları" | özellik yok | bilgi (i) ikonlu satır, 16/20 600 | yok (tr.ts'te "Sohbet kuralları" metni yok); satırın ne açtığı da belli değil |
-| 5 | satır 4 "Sohbetten çık" | metin | "Sohbetten çık", danger, çıkış ikonu | "Oturumu kapat" (tr.ts:1244) + 'log-out-outline' ikonu (RoomSheets.tsx:94-100); tr.district.room.leave "Sohbetten çık" tanımlı ama kullanılmıyor (tr.ts:1208). Basınca onay iletişim kutusu (endSessionOptions) — pano açmıyor, DOĞRULANAMADI |
-| 6 | satır ölçüleri | ölçü | `.pi` min 48, iç 6 12, gap 14, ikon 22, ayırıcı sol 48 sağ 12 rgba(3,27,11,.10), danger grubu ayırıcı 6 12 | Menu/MenuItem değerleri DOĞRULANAMADI (components/Menu.tsx okunmadı) |
-| 7 | "Bitti" düğmesi | fazla | yok | glassy "Bitti" (tr.venueChat.done, RoomSheets.tsx:102) |
-| 8 | başlık "Semt sohbeti seçenekleri" | fazla | yok (menüde başlık yok) | Sheet başlığı (RoomSheets.tsx:60) |
-| 9 | açılış yeri | davranış | üst sağdaki ⋮ düğmesinden açılır | alttan kayar (Sheet) |
 | 10 | ⋮ düğmesi | ikon | dikey üç nokta md 24 | Round icon 'moreV' md (room.tsx:~466) UYUYOR |
 
 ## Koyu hâl eklemesi (koyu.css pA + panoların `.dark` kuralları ↔ theme.ts palettes.dark, auraKit.ts dark, aura.ts AURA.dark, semt.ts, explore.ts, mapStyle.ts)
@@ -240,9 +226,7 @@ Not: arka plan 14'ün aynısı (bkz. 14 #1-#12; boş durum hâlinde sohbet).
 | K9 | 10, 10b | Semte kartı düğmesi koyu | koyu | `.dark .btn.primary` beyaz .94, gölge yok (3 sınıf özgüllüğü `.semt .btn` gölgesini bastırır) | Btn primary koyu değeri okunmadı; koyuda 0 4 10 .28 gölge çiziliyor mu DOĞRULANAMADI |
 | K10 | 13 | bilet eyebrow rengi (açık) | renk | `.te` accent #0B783D (açık) | SEMT.eyebrow.light #0A7139 (semt.ts) |
 | K11 | 14 | semt balonu rengi (iki hâl) | koyu | `--bubble-dm` açık #0E8745, koyu #0B783D, gölge koyuda yok | kind 'mekan' ise paint.mekan #17834D / koyu #146B42 (auraKit.ts:~600, ChatBubble.tsx:300); semt odası renk türünü ayrı vermiyor, DOĞRULANAMADI hangisi |
-| K12 | 14 | kimlik anahtarı koyu | koyu | `.dark .tog` zemin #1B211F; seçili halka 2.5 #3DDC84; seçilmeyen opaklık .55 | halka 2 (identityToggle ring), renk KIT.primary #0E8745 her iki şemada, seçili zemin KIT.white, seçilmeyen dim .45 (auraKit.ts:803-812, IdentityToggle.tsx:96-103). Not: 14 #6'da yüz 31 yazmıştım; ring 2 ile yüz 32 UYUYOR, doğrusu halka 2 ≠ 2.5 |
 | K13 | 14 | zaman çipi, kart, alan, öneri koyu | koyu | #121614 + halka rgba(255,255,255,.08) | chatLook dark emptyCard #121614 + .08, composer koyu #121614 UYUYOR |
-| K14 | 15 | menü koyu | koyu | `.dark .pop` #151A18 + halka .08; ayırıcı rgba(255,255,255,.10); danger #FF977E | layer.dark.menu #151A18, menuHair/menuDanger (auraKit.ts:1212-1230) UYUYOR; menü biçimi 15 #1 |
 
 ## Kapsam
 | pano no | öğe sayısı | fark sayısı | okundu |

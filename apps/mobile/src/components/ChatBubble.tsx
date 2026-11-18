@@ -125,7 +125,8 @@ type Props = {
 export type Delivery = 'sending' | 'sent' | 'delivered' | 'read';
 
 // The others' messages sit under the photo's column.
-const INDENT = AVATAR_SIZE.sm + SPACING[2];
+const INDENT_GAP = SPACING[2];
+const INDENT = AVATAR_SIZE.sm + INDENT_GAP;
 // Swipe to reply: past TRIGGER the message is answered; it never moves further than MAX.
 const SWIPE_SLOP = SPACING[3];
 const SWIPE_TRIGGER = SPACING[14];
@@ -248,6 +249,9 @@ export function ChatBubble({
   // words, the same shape and tail as the own (never glass): the DM blue, the venue chat green, the
   // table chat pink. Aura v65's primary own bubble and glass others are left.
   const venue = kind === 'mekan';
+  // The face's column beside another's run: 40 in the venue and the district chat (SemtDolu,
+  // MekanSohbet `.ga`), 32 elsewhere.
+  const faceSlot = venue ? CHAT_LOOK.face : AVATAR_SIZE.sm;
   const paint = KIT.bubble[scheme];
   // The DM's own look (tuval Dm, theme/dm.ts): its padding, words, time, shadows and tail; the own
   // bubble without a line. A set's balloon keeps its own.
@@ -323,7 +327,7 @@ export function ChatBubble({
   const maxText =
     (screenWidth - 2 * (dm ? DM.side : shape.screenPadding)) *
       (mine ? share : avatar ? THEIRS_SHARE : share) -
-    (avatar ? INDENT : 0) -
+    (avatar ? faceSlot + INDENT_GAP : 0) -
     (dm ? DM.bubble.padLeft + DM.bubble.padRight : 2 * KIT.size.bubblePadX) -
     2 * (mineLine ? KIT.size.edge : 0);
   // Android wraps a line that measured as fitting by a fraction of a point (React Native's
@@ -737,7 +741,7 @@ export function ChatBubble({
         {bar}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', columnGap: SPACING[2] }}>
           {/* Kept empty beside the run's later bubbles, so they stay in one column. */}
-          <View style={{ width: AVATAR_SIZE.sm }}>{photo}</View>
+          <View style={{ width: faceSlot }}>{photo}</View>
           <View style={{ flexShrink: 1, alignItems: 'flex-start', gap: NAME_GAP }}>
             {venue && first && name ? (
               // Aura v46 → MekanSohbeti (`.nmc`): the name in the sender's colour over the bubble,

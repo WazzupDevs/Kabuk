@@ -12,7 +12,6 @@ Kod: apps/mobile/app/(app)/district/room.tsx (ChatScreen, ChatTopBar, FirstHere,
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
 | 1 | Üst bar kapsülü altyazısı | kural | "Sadece sen buradasın" 500 12/16 muted, başlığın altında (`.who .nm span`) | yok; ChatTopBar yalnız başlık (room.tsx:501-533). Kişi sayısı bilgisi kural 4 (Odadakiler dışında sayı gitmez) ile çelişir: KURAL 4, sahibin kararı |
-| 2 | Öneri çipleri (3: "Selam Beylikdüzü! 👋", "Bu akşam ne yapıyorsunuz?", "Önerin var mı?") | eksik | 36 yüksek, 13/18 600, yatay kayan, composer üstünde bottom 110 | çizilmiyor (room.tsx:648 "suggestion chips are not drawn"); ÖZELLİK YOK: çipe basınca ne olacağı pano/davranış belgesinde yok |
 | 3 | Mesaj alanında emoji düğmesi | özellik yok | alanın solunda 40 ikon "Emoji" | yok; uygulamada emoji seçici yok (theme/dm.ts:63 yorumu) |
 | 4 | Mesaj alanı yüksekliği | ölçü | `.fld` 52, köşe 26, `.snd` 52 (alan ve gönder aynı boy) | send 52 (dm.ts:65) ama alan boyu DraftComposer'da ayrıca doğrulanmadı: DOĞRULANAMADI |
 | 5 | Gönder düğmesi boş alanda | renk | `--disabled` / `--on-disabled` (soluk) | DOĞRULANAMADI: boş alanda gönder görünümü koddan çözülmedi |
@@ -25,7 +24,6 @@ Kod: apps/mobile/app/(app)/district/room.tsx (ChatScreen, ChatTopBar, FirstHere,
 | 12 | Satır alt satırı | yazı | `.pr p span` 500 13/17, tek satır, taşarsa "…" | `T v="fine"` 500 13/18 (auraKit.ts:263); çok satıra sarabilir |
 | 13 | "Sen" halkası | renk | `0 0 0 2.5px var(--primary)` açık #0E8745, koyu #3DDC84 | `colors.accent` (People.tsx:189) açıkta #0B783D (skall.css --accent): açık temada 0E8745 yerine 0B783D |
 | 14 | Anonim satır avatarı | resim | satır başına farklı kapsül (3 farklı png 192) | hepsi aynı varsayılan işaret (People.tsx:168); davranis-eksikleri.md:68 kararı |
-| 15 | Arka plan duvarı | resim | e07afded (açık) / 32631775 (koyu) png 1290x2796 | semt/wall-semt-light/dark.webp 1290x2796; aynı çizim mi DOĞRULANAMADI (sha farklı) |
 | 16 | Tek kişi boş hâli / yalnız-sen | düzen | bu panoda yok (OdaTek) | People.tsx:82 EmptyState "Odada şimdilik yalnızsın" (FAZLA, bu panoda çizilmeyen; OdaTek'e ait) |
 Fazla: Sheet kapatma düğmesi (sağda 44), Sheet başlığı altında ayrı çizgi yok. Ses/metin eşleşmesi: "Odadakiler", "Beylikdüzü · 6 kişi burada", "Sen / Anonim görünüyorsun", "Profiliyle · 2", "Elif, 23 / Az önce geldi", "Mert, 25 / 12 dk önce geldi · Arkadaşın", "Anonim · 3" birebir (tr.ts:1212-1245).
 

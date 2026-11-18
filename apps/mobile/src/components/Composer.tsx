@@ -352,7 +352,10 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
     KIT.size.edge,
   );
   const followEnd = useChatEnd();
-  const shown = flush || !sendDisabled || !!sending;
+  // The group chats' send (MekanSohbet, MasaSohbet, SemtSohbet `.snd`) always there, the disabled
+  // grey with nothing to send; the DM's only once there is something.
+  const always = kind !== 'dm';
+  const shown = flush || always || !sendDisabled || !!sending;
   const padLeft = dm ? DM.composer.padLeft : card.padLeft;
   const send = flush ? card.send : SEND_IN;
   const sendRight = flush ? card.padRight : SEND_INSET;
@@ -364,6 +367,8 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
       shown={shown}
       sending={!!sending}
       disabled={!!sendDisabled || !!sending}
+      off={always && !flush && !!sendDisabled && !sending}
+      steady={always}
       label={sendLabel}
       testID={sendTestID}
       confirm={editing}
@@ -565,6 +570,8 @@ function SendIn({
   shown,
   sending,
   disabled,
+  off = false,
+  steady = false,
   label,
   testID,
   confirm,
@@ -577,6 +584,10 @@ function SendIn({
   shown: boolean;
   sending: boolean;
   disabled: boolean;
+  // Shown with nothing to send: the disabled grey and its ink (`.snd`: --disabled, --on-disabled).
+  off?: boolean;
+  // Always there (the group chats'): drawn at its size from the first frame, no growing in.
+  steady?: boolean;
   label: string;
   testID?: string;
   // The arrow is a tick (a message being edited).
@@ -586,7 +597,7 @@ function SendIn({
   const reduce = useReduceMotion();
   const from = MOTION.messageIn.sendFromScale;
   // The DM's send is laid out only while shown: it grows in as it comes.
-  const scale = useSharedValue(shown && !dm ? 1 : from);
+  const scale = useSharedValue(shown && (!dm || steady) ? 1 : from);
   const seen = useSharedValue(shown ? 1 : 0);
   useEffect(() => {
     if (!shown) {
@@ -602,7 +613,7 @@ function SendIn({
     transform: [{ scale: scale.get() }],
   }));
   const pressScale = usePressScale();
-  const { scheme } = useKit();
+  const { scheme, c } = useKit();
   const prominent = KIT.button[scheme].green;
   const labOff = useLabOff('golge');
   const sendShadow = dm
@@ -611,7 +622,7 @@ function SendIn({
   const arrow = dm ? DM.composer.arrow : VENUE.chat.field.arrow;
   // Yeni arayüz tuvali (DmKlavye, DmDuzenle `.snd`): the DM's send the ink round, its paper plane
   // (22) and the edit's tick in the ground's colour.
-  const ink = dm ? DM[scheme].sendInk : KIT.onPrimary;
+  const ink = off ? c.onDisabled : dm ? DM[scheme].sendInk : KIT.onPrimary;
   return (
     <Pressable
       testID={testID}
@@ -633,13 +644,17 @@ function SendIn({
                 borderRadius: side / 2,
                 alignItems: 'center',
                 justifyContent: 'center',
-                ...(dm ? { backgroundColor: DM[scheme].send } : gradientStyle(prominent.fill)),
-                boxShadow: sendShadow.boxShadow,
+                ...(off
+                  ? { backgroundColor: c.disabled }
+                  : dm
+                    ? { backgroundColor: DM[scheme].send }
+                    : gradientStyle(prominent.fill)),
+                boxShadow: off ? undefined : sendShadow.boxShadow,
               },
               pressScale(pressed),
             ]}
           >
-            {sendShadow.node}
+            {off ? null : sendShadow.node}
             {sending ? (
               <Loader kind="meet" size={ICON.md} delay={0} label={null} />
             ) : (

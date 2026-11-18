@@ -216,11 +216,7 @@ Kod: `app/(app)/district/room.tsx:228-405, 465-540`, `src/components/ChatBubble.
 | 1 | Üst çubuk alt başlığı "6 kişi burada" | kural | başlık altında 12/16 500 muted | yok (room.tsx:474-497). KURAL 4 (sayı; yeni-tuval.md karar 3 onay bekliyor) |
 | 2 | "yazıyor" göstergesi ("sol-p9x2 yazıyor": nick + 3 noktalı balon) | özellik yok | grubun altında nick etiketi "… yazıyor" ve renkli üç nokta balonu | yok (room.tsx:ChatScreen `latest` semt için verilmiyor); KURAL 4: yazıyor/presence yok, sayı ve "son yazanlar" yok, nick'e bağlı canlı gösterge yasak |
 | 3 | Okunmamış çizgisi metni | metin | "1 yeni mesaj" | "Okunmamış mesajlar" (tr.ts:1009 `chat.newLine`; CLAUDE.md "Okunmamış mesajlar çizgisi" kararı) |
-| 4 | Yazar yüzü | ölçü | 28×28 (`.ga`, yuvarlak 14), sol-alt hizalı, alttan 2 | `AVATAR_SIZE.sm` 32 (room.tsx faceOf, Avatar.tsx:22) |
-| 5 | Nick etiketi (`.nk`) | ölçü | 12/16 700, 1×8 iç boşluk, soldan 12, arka plan rgba(255,255,255,.86), nick rengine göre 4 ton (o1 #B5560A, o2 #C2185B, o3 #0E8745, o4 muted) | `CHAT_LOOK.name` 1/8/12, .86 (chatLook.ts:21-26): uyuyor; ton eşlemesi `inkOf` (DOĞRULANAMADI: dört ton eşlemesi okunmadı) |
 | 6 | Balon maks. genişliği | ölçü | grup içi balon `max-width:84%` | `DM.share` 0,78 (dm.ts:25); grup balonu için ayrı 84 yok |
-| 7 | Yazı çubuğu | ölçü | alan 52 + gönder 52, emoji düğmesi | 44 + 44, emoji yok (bkz. 92 #3, #4) |
-| 8 | Gün hapı "Bugün" | ölçü | 28 yük., 12 yan, 600 12/16, cam | `DM.day` 4/12 iç, 10/8 dış (dm.ts:78): yükseklik 28 = 16+12: uyuyor |
 | 9 | Avatar tonları ("Elif" turuncu #F2A33A baş harf yuvarlağı) | renk | `.ga.av` #F2A33A | profilli yüz kit avatarı (`faceOf`, `avatarGround`): DOĞRULANAMADI: pano sabit #F2A33A, kodda addan türetiliyor |
 
 ## Kapsam
