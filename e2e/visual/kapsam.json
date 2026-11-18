@@ -334,7 +334,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-dm-mesaj-menu",
     "hal": "eski"
   },
   {
@@ -350,7 +350,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-dm-mesaj-menu",
     "hal": "eski"
   },
   {
@@ -1185,7 +1185,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-istekler-bos",
     "hal": "eski"
   },
   {
@@ -1202,7 +1202,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-istekler-bos",
     "hal": "eski"
   },
   {
@@ -5198,7 +5198,7 @@
     ],
     "acilis": "",
     "tema": "acik",
-    "durum": null,
+    "durum": "ekran-dm-menu-sure-doldu",
     "hal": "eski"
   },
   {
@@ -5216,7 +5216,7 @@
     ],
     "acilis": "",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-dm-menu-sure-doldu",
     "hal": "eski"
   },
   {

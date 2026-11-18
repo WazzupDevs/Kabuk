@@ -821,6 +821,7 @@ function ServerBubble({
   const quote = parseQuote(m.reply_to);
   return (
     <ChatBubble
+      testID={`dm-message-${m.id}`}
       text={gone ? tr.dm.deleted : m.body}
       gone={gone}
       mine={m.from_me}

@@ -2,6 +2,7 @@ import type { DmInboxThread, VenueChatIncoming } from '@shared/api/friends.ts';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { activeTableQueryKey } from '@/features/checkin/useActiveTable';
 import { friendKeys } from '@/features/friends/queries';
 import { goOffline } from '@/lib/offline';
 
@@ -131,6 +132,8 @@ function GateClient({
     c.setQueryData(friendKeys.incoming, []);
     c.setQueryData(friendKeys.incomingChat, requests ? REQUESTS : []);
     c.setQueryData(friendKeys.notifications, { notifications: [], unseen: 1 });
+    // No check-in (nothing signed in): İstekler has no table's requests and does not wait for them.
+    c.setQueryData(activeTableQueryKey(undefined), null);
     return c;
   });
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;

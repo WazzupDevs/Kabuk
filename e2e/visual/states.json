@@ -35,6 +35,38 @@
       }
     },
     {
+      "id": "ekran-dm-mesaj-menu",
+      "app": "ekran/dm",
+      "baz": false,
+      "pano": {
+        "dosya": "DmMesajMenu"
+      },
+      "uygulamaAdimlar": [
+        {
+          "uzunBas": "dm-message-m5"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-dm-menu-sure-doldu",
+      "app": "ekran/dm",
+      "baz": false,
+      "pano": {
+        "dosya": "DmMenuSureDoldu"
+      },
+      "uygulamaAdimlar": [
+        {
+          "uzunBas": "dm-message-m4"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
       "id": "ekran-semt-secenekler",
       "app": "ekran/semt/secenekler",
       "baz": false,
@@ -181,6 +213,22 @@
       "pano": {
         "dosya": "MesajlarBos"
       }
+    },
+    {
+      "id": "ekran-istekler-bos",
+      "app": "ekran/mesajlar/bos",
+      "baz": false,
+      "pano": {
+        "dosya": "IsteklerBos"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "messages-tab-requests"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
     },
     {
       "id": "ekran-mesajlar-sabit-dolu",
