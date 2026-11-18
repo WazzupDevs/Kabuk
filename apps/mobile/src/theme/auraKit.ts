@@ -217,6 +217,12 @@ export const KIT_TYPE = {
   sectionHead: t(700, 13, 18),
   dialogText: t(500, 15, 22),
   holdRow: t(600, 15, 20),
+  // Mesajlar's rows (yeni arayüz tuvali Main): the name (`.nm` 600 16/22, no tracking), a face's
+  // initial (`.rw .av` 17), Arşivlenenler (`.arc` 600 15/22) and its count (`.arc .n` 600 13/18).
+  inboxName: t(600, 16, 22),
+  inboxLetter: t(700, 17, 22),
+  inboxArchived: t(600, 15, 22),
+  inboxCount: t(600, 13, 18),
   toastTitle: t(600, 14, 19),
   toastSub: t(500, 12, 16),
   // The toast's button (SusleKaydedilemedi): 13/600.

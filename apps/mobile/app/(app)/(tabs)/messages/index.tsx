@@ -103,6 +103,8 @@ export default function MessagesScreen() {
               onChangeText={setQuery}
               placeholder={tr.messages.search}
               height={KIT.size.field}
+              padX={M.searchPad}
+              iconColor={M[scheme].searchIcon}
               trailing={
                 query ? (
                   <Round
@@ -124,6 +126,8 @@ export default function MessagesScreen() {
                 board={{
                   item: M.tabs.item,
                   radius: M.tabs.radius,
+                  pad: M.tabs.pad,
+                  badgeGap: M.tabs.badgeGap,
                   type: 'btnSm',
                   face: M[scheme].tabsGlass,
                   onShadow: M[scheme].tabOnShadow || undefined,
@@ -212,7 +216,7 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   const inbox = useDmInbox();
   // The motion table's A3: the rows move for Sabitle, Arşivle and Sohbeti sil.
   const moves = useListMoves();
-  const menu = useThreadMenu(inbox.data ?? [], { moves, onCleared });
+  const menu = useThreadMenu(inbox.data ?? [], { moves, onCleared, now });
   const version = inbox.dataUpdatedAt;
   const loading = useLoaderHold(inbox.isPending);
   // The conversations' copies on the phone into memory (useDmMessages): a DM opened from here

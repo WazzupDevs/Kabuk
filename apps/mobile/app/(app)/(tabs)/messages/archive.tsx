@@ -28,11 +28,12 @@ export default function ArchiveScreen() {
   // "Sohbet silindi" once one is cleared (tuval MesajlarSilindi).
   const moves = useListMoves();
   const [notice, setNotice] = useState<ToastMessage | null>(null);
+  const now = new Date(useNow(60_000));
   const menu = useThreadMenu(inbox.data ?? [], {
     moves,
+    now,
     onCleared: () => setNotice({ id: Date.now(), title: tr.messages.cleared }),
   });
-  const now = new Date(useNow(60_000));
   const archived = inbox.data ? splitInbox(inbox.data).archived : [];
   const B = FLAT.bar;
   return (
@@ -79,7 +80,11 @@ export default function ArchiveScreen() {
             }}
           />
         ) : archived.length === 0 ? (
-          <View testID="archive-empty" style={{ flex: 1, justifyContent: 'center' }}>
+          // ArsivBos `.emp`: in the middle of the page less 190 at its foot (the list keeps 90).
+          <View
+            testID="archive-empty"
+            style={{ flex: 1, justifyContent: 'center', paddingBottom: M.archiveEmptyLift }}
+          >
             <EmptyState
               kind="empty"
               compact

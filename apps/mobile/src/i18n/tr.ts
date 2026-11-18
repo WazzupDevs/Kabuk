@@ -363,11 +363,13 @@ export const tr = {
     pinFull: (max: number) => `En fazla ${max} sohbet sabitlenir. Önce birini kaldır.`,
     archive: 'Arşivle',
     unarchive: 'Arşivden çıkar',
+    seeProfile: 'Profilini gör',
+    block: 'Engelle',
     clear: 'Sohbeti sil',
     clearTitle: 'Sohbet silinsin mi?',
     clearNote: (name: string) =>
       `${name} ile tüm mesajlar senin listenden silinir. Bu geri alınamaz.`,
-    // The top notice once a conversation is cleared (tuval MesajlarSilindi).
+    // The notice at the foot once a conversation is cleared (tuval MesajlarSilindi `.snk`).
     cleared: 'Sohbet silindi',
     // The pinned conversations' head (tuval Main; "· 5/5" when full, MesajlarSabitDolu).
     pinned: 'Sabitlenenler',

@@ -63,9 +63,18 @@ export function Menu({
   tight,
   visible = true,
   onClose,
+  lifted,
+  side,
+  label,
 }: {
   children: ReactNode;
   float?: boolean;
+  // With `hold`: the held row raised over the scrim at its place (tuval MesajlarUzunBas `.rw.ub`),
+  // the menu at least `side` from the screen's sides (`.pop{left:20}`), and its name read out
+  // (`aria-label`).
+  lifted?: ReactNode;
+  side?: number;
+  label?: string;
   // With `anchor`: the first row is a row, not a heading: 8 over it as at its sides (SemtSecenek).
   tight?: boolean;
   // The button the menu grows out of (measureMenuAnchor). Unset: the rows stand where they are.
@@ -93,6 +102,9 @@ export function Menu({
         hold={!!hold}
         tight={!!tight}
         onClose={onClose ?? noop}
+        lifted={lifted}
+        side={side}
+        label={label}
       >
         {rows}
       </MenuPop>
@@ -231,6 +243,9 @@ function MenuPop({
   hold,
   tight,
   onClose,
+  lifted,
+  side,
+  label,
   children,
 }: {
   anchor: MenuAnchor;
@@ -238,6 +253,9 @@ function MenuPop({
   hold: boolean;
   tight: boolean;
   onClose: () => void;
+  lifted?: ReactNode;
+  side?: number;
+  label?: string;
   children: ReactNode[];
 }) {
   const { scheme } = useTheme();
@@ -280,13 +298,18 @@ function MenuPop({
 
   // Inside a status-bar-translucent Modal the safe area can come back 0 (MessagePop).
   const topInset = Math.max(insets.top, StatusBar.currentHeight ?? 0);
-  const place = size
-    ? menuPlace(anchor, size, screen, { top: topInset, bottom: insets.bottom }, KIT.size.menuGap)
-    : null;
   const L = KIT.layer.size;
   const radius = hold ? L.holdRadius : L.menuRadius;
+  const edge = side ?? KIT.size.menuGap;
   // At most the screen less its edges (320 dp: 292 still fits).
-  const width = Math.min(hold ? L.holdWidth : L.menuWidth, screen.width - 2 * KIT.size.menuGap);
+  const width = Math.min(hold ? L.holdWidth : L.menuWidth, screen.width - 2 * edge);
+  const placed = size
+    ? menuPlace(anchor, size, screen, { top: topInset, bottom: insets.bottom }, KIT.size.menuGap)
+    : null;
+  // Its own distance from the sides (MesajlarUzunBas: 20 from the left).
+  const left = placed ? Math.min(Math.max(placed.left, edge), screen.width - edge - width) : 0;
+  const place = placed ? { ...placed, left, originX: placed.originX + placed.left - left } : null;
+  const fade = p.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' });
   const shadow = boxShadowParts(shadowOff, KIT.layer[scheme].menuShadow, radius);
   return (
     <Modal
@@ -297,20 +320,32 @@ function MenuPop({
       navigationBarTranslucent
       onRequestClose={onClose}
     >
-      {hold ? (
-        <SheetScrim
-          hold
-          opacity={p.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' })}
-        />
-      ) : null}
+      {hold ? <SheetScrim hold opacity={fade} /> : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={tr.common.close}
         onPress={onClose}
         style={StyleSheet.absoluteFill}
       />
+      {lifted ? (
+        <Animated.View
+          pointerEvents="none"
+          importantForAccessibility="no-hide-descendants"
+          style={{
+            position: 'absolute',
+            left: anchor.x,
+            top: anchor.y,
+            width: anchor.width,
+            height: anchor.height,
+            opacity: fade,
+          }}
+        >
+          {lifted}
+        </Animated.View>
+      ) : null}
       <Animated.View
         accessibilityRole="menu"
+        accessibilityLabel={label}
         onLayout={
           size
             ? undefined

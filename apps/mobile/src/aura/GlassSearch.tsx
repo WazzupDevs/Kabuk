@@ -22,6 +22,8 @@ export function GlassSearch({
   height = X.capsule,
   trailing,
   autoFocus,
+  padX = X.capsulePadX,
+  iconColor,
 }: {
   value: string;
   onChangeText: (text: string) => void;
@@ -31,6 +33,9 @@ export function GlassSearch({
   trailing?: ReactNode;
   // The keyboard opens with it (a search page: Tüm aksesuarlar's).
   autoFocus?: boolean;
+  // A board's own room at the sides and icon colour (tuval Mesajlar `.srch`: 20, --muted).
+  padX?: number;
+  iconColor?: string;
 }) {
   const { c } = useKit();
   const { colors } = useTheme();
@@ -41,14 +46,14 @@ export function GlassSearch({
       style={{
         height,
         borderRadius: height / 2,
-        paddingLeft: X.capsulePadX,
-        paddingRight: trailing ? X.switchPad : X.capsulePadX,
+        paddingLeft: padX,
+        paddingRight: trailing ? X.switchPad : padX,
         flexDirection: 'row',
         alignItems: 'center',
         gap: SPACING[2],
       }}
     >
-      <CapIcon name="search" color={colors.placeholder} size={X.icon} />
+      <CapIcon name="search" color={iconColor ?? colors.placeholder} size={X.icon} />
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <TextInput
           testID={testID}

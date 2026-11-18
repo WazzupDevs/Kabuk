@@ -1575,7 +1575,7 @@ export function DeliveryTicks({
             d={delivery === 'sent' ? SENT_TICK : READ_TICKS}
             fill="none"
             stroke={delivery === 'read' ? read : plain}
-            strokeWidth={2}
+            strokeWidth={TICK_LINE}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -1584,9 +1584,11 @@ export function DeliveryTicks({
     </View>
   );
 }
-// The board's ticks (Dm: 15; Mesajlar: 17), one for sent, two for delivered and read.
+// The board's ticks (Dm: 15; Mesajlar: 17), one for sent, two for delivered and read; the two
+// drawn as yeni arayüz tuvali's `Okundu` (Main `.tick`, DmSohbet `.s svg`: 2.4 wide).
 const TICK = 15;
-const READ_TICKS = 'M2 12.5l4.2 4.2L14 8.4M10.6 16.7 18.6 8.4';
+const TICK_LINE = 2.4;
+const READ_TICKS = 'M2.5 12.8l4.2 4.2L15 8.4M10.4 16.4l.6.6 8.4-8.6';
 const SENT_TICK = 'M5 12.5l4.2 4.2L17 8.4';
 
 const TYPING_MS = 400;
