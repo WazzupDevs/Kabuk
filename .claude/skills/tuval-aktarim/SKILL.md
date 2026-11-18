@@ -19,6 +19,11 @@ Proje sahibinin kararı (1 Kasım): her onaylı tasarım aktarımı bu yordamla 
 - Okunmayan: tuvalin tamamı (`project/` klasörü, canlı tuval) ve ürün belgelerinin tamamı (`docs/SPEC_*.md`, `docs/arsiv/`). Belgeden bir bölüm gerekiyorsa Grep ile o bölüm bulunur.
 - **Sürüm denetimi:** raporun yazdığı tuval sürümü ile repodaki panoların sürümü uyuşmuyorsa (pano raporda adı geçen hâli çizmiyor, rapor daha yeni sürümü anlatıyor) uygulamaya geçilmez; proje sahibine tek soruyla bildirilir.
 
+## 1b. Kapsam satırları (paket başında)
+
+- Paketin dokunacağı panoların satırları `e2e/visual/kapsam.json`'da belirlenir (`kod` alanı; panoda çizilen alt ekran ve menü dahil). Eksik `acilis` ve `durum` yazılır (`.claude/skills/e2e` → Kapsam kaydı ve kanıt).
+- PR'da her satır görüntüyle doğrulanır (`hal: goruntuyle-dogrulandi`, `kanit: <PR no>`) ya da sebepli muafiyet alır; `pnpm visual:kanit` geçmeden PR birleşmez.
+
 ## 2. Gereksinim tablosu (yalnızca oturum içinde)
 
 - Rapordaki her uygulanabilir gereksinime kısa bir kimlik verilir (`R1`, `R2`, …). Her biri ilgili bileşen, dosya ve varsa testle eşleşir.
@@ -61,7 +66,7 @@ Rapor ile ürün mantığı ya da bir değişmez kural çelişirse ürün mantı
 - Tablodaki her kimlik koda karşı tek tek geçilir; her biri **tamamlandı**, **engelli** (sebebiyle) ya da **kapsam dışı** (sebebiyle) diye açıklanabilmelidir. Korunacaklar da geçilir.
 - Uygulanabilir ama eksik madde PR'dan önce tamamlanır.
 - Son düzenlemeden sonra `pnpm check`.
-- Bu denetim kod üzerinden yapılır; görsel birebirliği kanıtlamaz. Her hâl için ekran görüntüsü alınmaz; görsel kontrol proje sahibinin telefonundadır.
+- Bu denetim kod üzerinden yapılır; görsel birebirliği kanıtlamaz. Görsel kanıt kapsam satırlarındadır (adım 1b): aday görüntü panoyla karşılaştırılır, `pnpm visual:kanit` geçer.
 
 ## 8. PR ve sonuç
 

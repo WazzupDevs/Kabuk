@@ -2843,6 +2843,11 @@ export const tr = {
     sendLog: 'Hata kaydını gönder',
     sendLogDone: 'Hata kaydı gönderildi.',
     sendLogFailed: 'Hata kaydı gönderilemedi. Bağlanınca tekrar dene.',
+    // The test section's read-only line: the update's id (its first 8 characters, "yerleşik" for
+    // the binary's own bundle) and the native build number, for the release report.
+    buildId: (id: string, build: string | null) =>
+      build ? `Sürüm kimliği ${id} · derleme ${build}` : `Sürüm kimliği ${id}`,
+    buildIdEmbedded: 'yerleşik',
     phone: {
       title: 'Telefon bildirimleri',
       on: 'Açık. Kapatırsan telefonun ayarlarından yeniden açabilirsin.',

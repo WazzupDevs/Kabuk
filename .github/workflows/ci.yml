@@ -49,7 +49,10 @@ jobs:
           fi
           echo "::error title=Visual gate baselines::This PR changes e2e/visual/baz/ without the gorsel-baz label (CLAUDE.md → Görsel kapı): baselines change only after the CTO has approved the new images."
           exit 1
+      # Full history: the visual evidence step below diffs the PR against its base.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -59,6 +62,16 @@ jobs:
       # The secret gate (scripts/secret-guard.mjs): every tracked file, before anything else. The
       # local hooks can be skipped; this step cannot, because `main`'s ruleset requires `ci`.
       - run: pnpm guard:secrets
+      # The visual evidence step (scripts/visual/kanit.ts; docs/decisions/gorsel-dogrulama.md): a
+      # file the PR changes that a board's row of e2e/visual/kapsam.json names needs that row
+      # checked with this PR as its evidence, never to be drawn, or excused for this PR with a
+      # reason. Pull requests only; no secrets.
+      - name: Visual evidence for the boards the PR touches
+        if: github.event_name == 'pull_request'
+        env:
+          KANIT_PR: ${{ github.event.pull_request.number }}
+          KANIT_BASE: ${{ github.event.pull_request.base.sha }}
+        run: pnpm visual:kanit
       # deno check downloads the Edge Functions' npm: imports; keyed on the lock file.
       - uses: actions/cache@v4
         with:

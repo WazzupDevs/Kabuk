@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import * as Updates from 'expo-updates';
 import { Platform, View } from 'react-native';
 
 import { Seg, useKit } from '@/aura/kit';
@@ -21,6 +22,7 @@ import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
+import { appBuild } from '@/lib/appBuild';
 import { openDrawLab } from '@/lib/drawLab';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { KIT } from '@/theme/auraKit';
@@ -192,6 +194,18 @@ function TestRows() {
           </Note>
         </View>
       ) : null}
+      <BuildIdNote />
+    </View>
+  );
+}
+
+// The test section's version line (docs/decisions/gorsel-dogrulama.md → the release report): the
+// running update's id, short, and the native build number; read only.
+function BuildIdNote() {
+  const id = Updates.updateId?.slice(0, 8) ?? tr.settings.buildIdEmbedded;
+  return (
+    <View style={NOTES}>
+      <Note>{tr.settings.buildId(id, appBuild)}</Note>
     </View>
   );
 }

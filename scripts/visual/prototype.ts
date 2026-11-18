@@ -1,7 +1,7 @@
 // The page script and the in-page callbacks below run in Chromium.
 /// <reference lib="dom" />
 // A design prototype (states.json → `prototip.dosya`, under docs/design/) drawn the way the visual
-// gate's emulator draws the app (CLAUDE.md → Görsel kapı): 360 × 640 dp at 2×, the app's own font
+// gate's emulator draws the app (CLAUDE.md → Görsel kapı): 390 × 844 dp at 2×, the app's own font
 // files (appFonts) instead of Google Fonts, Roboto for system-ui as in the app, no network, motion reduced, the clock stopped at the
 // gate's moment and Math.random seeded as in the app (apps/mobile/src/features/design/gorsel/
 // deterministic.ts). A state opens with `?gorsel=<state id>&tema=light|dark`: the page script below
@@ -15,11 +15,17 @@ import { pathToFileURL } from 'node:url';
 import { chromium, type Page } from 'playwright';
 
 import { GATE_NOW, GATE_SEED } from '../../apps/mobile/src/features/design/gorsel/deterministic.ts';
-import { type PrototypeState, type Theme } from './states.ts';
+import {
+  type PrototypeState,
+  SCALE,
+  type Theme,
+  VIEWPORT_HEIGHT,
+  VIEWPORT_WIDTH,
+} from './states.ts';
 
-// The emulator's screen in the gate's job: 720 × 1280 px at density 320 (run-on-emulator.sh).
-export const VIEWPORT = { width: 360, height: 640 };
-export const SCALE = 2;
+// The emulator's screen in the gate's job: 780 × 1688 px at density 320 (run-on-emulator.sh).
+export const VIEWPORT = { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT };
+export { SCALE };
 const FONT_HOST = 'https://fonts.gstatic.com/gorsel/';
 // The app's font files: the list in apps/mobile/src/theme/fonts.ts, a module per weight of an
 // @expo-google-fonts package (each next to its .ttf) or a file of the app's own
