@@ -88,7 +88,6 @@ export default function AccountScreen() {
             label={tr.settings.birthDate}
             value={birthDate ? tr.settings.birthDateValue(birthDate) : NBSP}
           />
-
         </Group>
         <View style={NOTES}>
           <Note>{tr.settings.fixedNote}</Note>
