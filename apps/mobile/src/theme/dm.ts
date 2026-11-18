@@ -33,8 +33,10 @@ export const DM = {
   mineRing: 2,
   // The quote in another's bubble (`.q`): 10 round, 6 / 10 inside, 8 over the words (`.msg{gap:8}`).
   quote: { radius: 10, padY: 6, padX: 10, gap: 8 },
-  // "yazıyor" (`.typing`): a bubble 34 high, 14 in, its three dots 8, 5 apart, 6 under the last.
-  typing: { height: 34, padX: 14, dot: 8, gap: 5, top: 6 },
+  // "yazıyor" (`.typing`): a bubble 34 high, 14 in, its three dots 8, 5 apart, 6 under the last;
+  // standing still (reduce motion, covered, the visual gate) the board's frame: every dot whole,
+  // the middle one 3 up (`.typing i:nth-child(2)`).
+  typing: { height: 34, padX: 14, dot: 8, gap: 5, top: 6, lift: 3 },
   // The unread line (`.new`): the hairlines and the pill 8 apart, 8 above and under.
   fresh: { gap: 8, margin: 8 },
   // No message yet (DmBos `.demp`): a card 44 from the sides, 28 round, 22 / 20 / 24 inside, 16

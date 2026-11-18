@@ -1652,6 +1652,8 @@ export function TypingBubble({
   // Stopped while another screen or a sheet covers the chat and in the background (A-36).
   const active = useLoopActive();
   const [dots] = useState(() => [0, 1, 2].map(() => new Animated.Value(0)));
+  // Not moving, the dots stand in the board's frame (DM.typing), not faded at the loop's start.
+  const still = reduce || !active;
 
   useEffect(() => {
     if (reduce) {
@@ -1722,10 +1724,14 @@ export function TypingBubble({
               height: T.dot,
               borderRadius: shape.radius.pill,
               backgroundColor: dotsDm[i] ?? dotInk,
-              opacity: d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
+              opacity: still ? 1 : d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
               transform: [
                 {
-                  translateY: d.interpolate({ inputRange: [0, 1], outputRange: [0, -SPACING[1]] }),
+                  translateY: still
+                    ? i === 1
+                      ? -T.lift
+                      : 0
+                    : d.interpolate({ inputRange: [0, 1], outputRange: [0, -SPACING[1]] }),
                 },
               ],
             }}
