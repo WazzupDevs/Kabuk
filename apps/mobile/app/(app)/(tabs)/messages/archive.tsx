@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
@@ -13,6 +14,7 @@ import { tr } from '@/i18n/tr';
 import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
 import { BarBack, ListMoveArea, useListMoves } from '@/motion';
+import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
 import { MESSAGES as M } from '@/theme/messages';
@@ -22,17 +24,19 @@ import { SPACING } from '@/theme/tokens';
 // archived conversations, from the same dm/inbox as Mesajlar, newest first. A new message keeps a
 // conversation here with its unread; a long press takes it out ("Arşivden çıkar") or clears it.
 export default function ArchiveScreen() {
+  const insets = useSafeAreaInsets();
   const inbox = useDmInbox();
   const loading = useLoaderHold(inbox.isPending);
   // The motion table's A3: a row taken out of the archive or cleared leaves, the others close up;
   // "Sohbet silindi" once one is cleared (tuval MesajlarSilindi).
   const moves = useListMoves();
   const [notice, setNotice] = useState<ToastMessage | null>(null);
+  const now = new Date(useNow(60_000));
   const menu = useThreadMenu(inbox.data ?? [], {
     moves,
+    now,
     onCleared: () => setNotice({ id: Date.now(), title: tr.messages.cleared }),
   });
-  const now = new Date(useNow(60_000));
   const archived = inbox.data ? splitInbox(inbox.data).archived : [];
   const B = FLAT.bar;
   return (
@@ -43,21 +47,20 @@ export default function ArchiveScreen() {
         side={M.side}
         barSide={M.side}
         barTop={B.top}
-        padTop={B.fieldTop}
+        padTop={archived.length > 0 ? M.archiveTop.fieldTop : M.archiveTop.emptyTop}
         gap={M.gap}
         top={
-          // `.ptop`: the round back button and the title over "N sohbet", 12 apart (Arkadaşlar's
-          // top row).
-          <View
-            style={{ flexDirection: 'row', alignItems: 'center', gap: B.gap, minHeight: B.row }}
-          >
+          // `.ptop`: the round back button and the title over "N sohbet", 12 apart.
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: B.gap }}>
             <BarBack side={KIT.size.round} />
             <View style={{ flex: 1 }}>
               <T v="pageBarTitle" accessibilityRole="header">
                 {tr.messages.archived}
               </T>
               {archived.length > 0 ? (
-                <T v="fine">{tr.messages.archivedCount(archived.length)}</T>
+                <T v="fine" style={{ marginTop: M.archiveTop.countTop }}>
+                  {tr.messages.archivedCount(archived.length)}
+                </T>
               ) : null}
             </View>
           </View>
@@ -79,10 +82,17 @@ export default function ArchiveScreen() {
             }}
           />
         ) : archived.length === 0 ? (
-          <View testID="archive-empty" style={{ flex: 1, justifyContent: 'center' }}>
+          // ArsivBos `.emp`: in the middle of the page less 190 at its foot (the list keeps 90).
+          <View
+            testID="archive-empty"
+            style={{ flex: 1, justifyContent: 'center', paddingBottom: M.emptyLift }}
+          >
             <EmptyState
               kind="empty"
+              riso="archive"
               compact
+              // `.ed`: at most 240 wide, no room over the picture.
+              settings
               title={tr.messages.archivedEmpty}
               body={tr.messages.archivedEmptyHint}
             />
@@ -105,7 +115,12 @@ export default function ArchiveScreen() {
           </View>
         )}
       </Screen>
-      <Toast message={notice} testID="archive-toast" />
+      <Toast
+        message={notice}
+        pill
+        bottom={insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height + M.noticeAbove}
+        testID="archive-toast"
+      />
     </View>
   );
 }

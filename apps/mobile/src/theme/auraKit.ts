@@ -229,7 +229,14 @@ export const KIT_TYPE = {
   sectionHead: t(700, 13, 18),
   dialogText: t(500, 15, 22),
   holdRow: t(600, 15, 20),
+  // Mesajlar's rows (yeni arayüz tuvali Main): the name (`.nm` 600 16/22, no tracking), a face's
+  // initial (`.rw .av` 17), Arşivlenenler (`.arc` 600 15/22) and its count (`.arc .n` 600 13/18).
+  inboxName: t(600, 16, 22),
+  inboxLetter: t(700, 17, 22),
+  inboxArchived: t(600, 15, 22),
+  inboxCount: t(600, 13, 18),
   toastTitle: t(600, 14, 19),
+  toastPill: t(600, 14, 18),
   toastSub: t(500, 12, 16),
   // The toast's button (SusleKaydedilemedi): 13/600.
   toastBtn: t(600, 13, 16),
@@ -999,6 +1006,8 @@ export const KIT = {
     // picture small and unframed (150 across, a card's or a sheet's 120; no corner, no shadow).
     emptyMark: { width: 28, height: 42 },
     emptyTitleTop: 12,
+    // In a card of its own (DmBos `.demp .et`): 10.
+    emptyTitleTopCard: 10,
     emptyNoteTop: 4,
     emptyNoteMax: 260,
     // Engellenenler and Sessize alınanlar empty (`.emp span`: at most 240 wide).
@@ -1129,10 +1138,11 @@ export const KIT = {
     msgRadius: 22,
     msgTail: 8,
     // Chat bubbles (iskelet.md → 5.5): 20 round, 7 where a run's bubbles face each other, the run's
-    // last one with a tail 7 × 12; a run's bubbles 3 apart, 12 when the writer changes.
+    // last one with a tail 7 × 12; a run's bubbles 2 apart (yeni arayüz tuvali, DmKlavye, MekanSohbet,
+    // SemtSohbet `.flow{gap:2}`), 12 when the writer changes.
     bubbleRadius: 20,
     bubbleInner: 7,
-    runGap: 3,
+    runGap: 2,
     runApart: 12,
     bubblePadX: 12,
     bubblePadY: 7,
@@ -1245,14 +1255,15 @@ export const KIT = {
       holdHair: 'rgba(3, 27, 11, 0.08)',
       holdBand: 'rgba(3, 27, 11, 0.05)',
       // The rows' icons and the red (MekanSecenek `.pi`: --primary; MesajlarUzunBas `.pi`: the
-      // ink with its body muted; `.dg`: --danger, its body at 35 % in the long-press menu).
+      // ink with its body muted; `.dg`: --danger, its body at 35 % in the long-press menu). The
+      // body (`.ci .b`) is drawn at --ci-bo, .5, over that: muted at 50 %, the red at 17.5 %.
       menuIcon: '#0E8745',
       menuDanger: '#A8301A',
       holdIcon: '#031B0B',
       holdIconBody: '#4A6550',
-      holdIconSoft: 1,
+      holdIconSoft: 0.5,
       holdDangerBody: '#C8381F',
-      holdDangerSoft: 0.35,
+      holdDangerSoft: 0.175,
       // The sheet: the surface, its handle (skall.css `.grab`: --control) and its shadow.
       sheet: '#FFFFFF',
       sheetGrab: '#C6E0CC',
@@ -1291,10 +1302,11 @@ export const KIT = {
       menuIcon: '#3DDC84',
       menuDanger: '#FF977E',
       holdIcon: '#EEF3F0',
+      // koyu: the body rgba(238,243,240,.45) and the red's at .35, each at .5 (`.ci .b`).
       holdIconBody: '#EEF3F0',
-      holdIconSoft: 0.45,
+      holdIconSoft: 0.225,
       holdDangerBody: '#FF977E',
-      holdDangerSoft: 0.35,
+      holdDangerSoft: 0.175,
       // SikayetEt's dark sheet: #121614 and a 1 px white ring.
       sheet: '#121614',
       sheetGrab: '#2A332F',
@@ -1367,6 +1379,11 @@ export const KIT = {
       holdIcon: 20,
       holdGap: 14,
       holdHairIn: 46,
+      // An off row (MesajlarSabitDolu `.pi.off`): 8 above and under, its icon at 40 %; its note
+      // (`.pi p .ps`, 12/16 muted) 1 under the words.
+      holdOffPadY: 8,
+      holdOffIcon: 0.4,
+      holdNoteTop: 1,
       holdBand: 6,
       holdBlur: 6,
       // The sheet: 8 from the edges, 28 round, 12 / 20 / 34 inside; its handle 40 × 4, 16 over
@@ -1390,6 +1407,10 @@ export const KIT = {
       toastButton: 36,
       toastButtonPadX: 14,
       toastSubOpacity: 0.7,
+      // The short notice as a capsule in the middle (tuval MesajlarSilindi `.snk`): 44 high, 18
+      // in, its one line 600 14/18.
+      toastPill: 44,
+      toastPillPadX: 18,
       // EngelleOnay's "Şikayet de et" row: 12 over and under its words, 12 from the box to them;
       // the box 24, 7 round, its line 2, its check 18.
       checkRowPad: 12,

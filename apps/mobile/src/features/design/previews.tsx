@@ -594,13 +594,15 @@ function ChatSet() {
         </View>
       </PreviewBlock>
       <PreviewBlock title="Composer · replyTo">
+        {/* The group chats' bar (PillBar: MasaSohbet, MekanSohbet, SemtSohbet `.cmp`, the send
+            always there); the DM's capsule has its own words (DmSohbet `.ph`). */}
         <Composer
           value=""
           onChangeText={() => undefined}
-          placeholder={tr.dm.placeholder}
+          placeholder={tr.chat.placeholder}
           maxLength={200}
           onSend={() => undefined}
-          sendLabel={tr.dm.send}
+          sendLabel={tr.chat.send}
           sendDisabled
           replyTo={replyTo}
           onCancelReply={() => setReplyTo(undefined)}

@@ -179,7 +179,10 @@ export function Dialog({
                 name={options.icon}
                 size={options.settings ? L.dialogDiscIconSm : L.dialogDiscIcon}
                 color={danger ? look.dialogIcon : colors.accent}
-                soft={1}
+                // MesajlarSohbetSil `.ei`: the red's body at 35 % (--ci-b); the settings' disc and
+                // the accent's draw one tone.
+                second={danger && !options.settings ? look.holdDangerBody : undefined}
+                soft={danger && !options.settings ? look.holdDangerSoft : 1}
               />
             </View>
           ) : null}

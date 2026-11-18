@@ -27,9 +27,9 @@ export type PrototypeState = {
 };
 
 // What the app's route is made to do after it has opened the state, before the photo
-// (flow.ts turns them into Maestro commands): a real button pressed (its testID), or time let run
+// (flow.ts turns them into Maestro commands): a real button pressed or held (its testID), or time let run
 // (ms) for what the press opened to settle.
-export type AppStep = { bas: string } | { bekle: number };
+export type AppStep = { bas: string } | { uzunBas: string } | { bekle: number };
 
 // The board of the new canvas the state is drawn after (docs/design/yeni-arayuz/ESLEME.md): its
 // file's stem (`project/<dosya>.dc.html`), whose images are on the `pano-goruntuleri` branch as
@@ -151,6 +151,8 @@ export function parseStates(raw: unknown): GateConfig {
   return { esik: c.esik, durumlar: c.durumlar };
 }
 
+const TEST_ID = /^[\p{L}\p{N}]+(-[\p{L}\p{N}]+)*$/u;
+
 function checkAppSteps(id: string, steps: unknown): void {
   if (!Array.isArray(steps)) throw new Error(`states.json: ${id}: uygulamaAdimlar is a list`);
   for (const step of steps as unknown[]) {
@@ -158,9 +160,8 @@ function checkAppSteps(id: string, steps: unknown): void {
       typeof step === 'object' &&
       step !== null &&
       Object.keys(step).length === 1 &&
-      (('bas' in step &&
-        typeof step.bas === 'string' &&
-        /^[a-z0-9]+(-[a-z0-9]+)*$/.test(step.bas)) ||
+      (('bas' in step && typeof step.bas === 'string' && TEST_ID.test(step.bas)) ||
+        ('uzunBas' in step && typeof step.uzunBas === 'string' && TEST_ID.test(step.uzunBas)) ||
         ('bekle' in step &&
           typeof step.bekle === 'number' &&
           Number.isInteger(step.bekle) &&
@@ -168,7 +169,7 @@ function checkAppSteps(id: string, steps: unknown): void {
           step.bekle <= 10000));
     if (!ok) {
       throw new Error(
-        `states.json: ${id}: an app step is { "bas": "<testID>" } or { "bekle": <ms, 1 to 10000> }`,
+        `states.json: ${id}: an app step is { "bas": "<testID>" }, { "uzunBas": "<testID>" } or { "bekle": <ms, 1 to 10000> }`,
       );
     }
   }

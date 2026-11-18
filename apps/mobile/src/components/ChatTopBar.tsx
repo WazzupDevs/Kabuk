@@ -128,7 +128,9 @@ export function ChatTopBar({
           alignItems: 'center',
           gap: dm ? DM.bar.gap : SPACING[2],
           paddingHorizontal: dm ? DM.bar.side : KIT.size.side,
-          paddingVertical: SPACING[1.5],
+          // DmSohbet `.top`: 52 from the board's top, 5 under its 47 status bar.
+          paddingTop: dm ? DM.bar.top : SPACING[1.5],
+          paddingBottom: SPACING[1.5],
         }}
       >
         {onBack && dm ? (

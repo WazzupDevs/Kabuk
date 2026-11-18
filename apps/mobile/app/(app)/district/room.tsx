@@ -352,7 +352,7 @@ function DistrictRoomBody() {
   const movers = skinMovers(rows, (r) => !!r.m && balloonOf(r.m) !== null);
   const renderRow = ({ key, m, out, first, last, day }: (typeof rows)[number]) =>
     out ? (
-      <ChatRow id={out.localId} first={first} mine>
+      <ChatRow id={out.localId} first={first} day={!!day} mine>
         {() => (
           <>
             {day ? <DayLine label={dayLabel(day)} /> : null}
@@ -383,7 +383,7 @@ function DistrictRoomBody() {
         )}
       </ChatRow>
     ) : m ? (
-      <ChatRow id={m.id} first={first} mine={m.fromMe}>
+      <ChatRow id={m.id} first={first} day={!!day} mine={m.fromMe}>
         {(jumpTo) => (
           <>
             {day ? <DayLine label={dayLabel(day)} /> : null}

@@ -163,6 +163,7 @@ const KEEP_VISIBLE = { minIndexForVisible: 0 } as const;
 export const ChatRow = memo(function ChatRow({
   id,
   first,
+  day,
   mine,
   children,
 }: {
@@ -170,6 +171,9 @@ export const ChatRow = memo(function ChatRow({
   // A run's first message: the room between two writers above it (iskelet.md → 5.5: 12, a run's
   // bubbles 3 apart).
   first?: boolean;
+  // Opened by a day line (DmSohbet `.flow .day`: 10 under the message above, no `.gap`): the day's
+  // own 10 stands for the room between writers.
+  day?: boolean;
   // The reader's own: it grows from its own side when it comes in.
   mine?: boolean;
   children: (jumpTo: (id: string) => void) => ReactNode;
@@ -195,7 +199,7 @@ export const ChatRow = memo(function ChatRow({
       onLayout={jump?.row(id)}
       style={{
         gap: SPACING[2],
-        marginTop: first ? KIT.size.runApart - KIT.size.runGap : 0,
+        marginTop: first && !day ? KIT.size.runApart - KIT.size.runGap : 0,
         // It grows from the side its bubble stands on.
         transformOrigin: mine ? 'right center' : 'left center',
       }}
@@ -1317,8 +1321,9 @@ export function ChatScreen<T extends ChatListItem>({
                           bandUnderBar &&
                           banded &&
                           canvas &&
-                          (wall === 'semt' || wall === 'mekan') ? (
-                            // SemtSohbet, MekanSohbet `.band`: the chat's ground, not the picture.
+                          (wall === 'semt' || wall === 'mekan' || wall === 'dm') ? (
+                            // SemtSohbet, MekanSohbet, DmSohbet `.band`: the chat's ground, not
+                            // the picture.
                             <View
                               pointerEvents="none"
                               style={{
@@ -1358,9 +1363,11 @@ export function ChatScreen<T extends ChatListItem>({
                           flexGrow: 1,
                           // tuval Dm: the bubbles 18 from the sides (12 and each row's 6).
                           paddingHorizontal: wall ? DM.side : shape.screenPadding,
-                          paddingTop: SPACING[3] + under,
+                          // DmSohbet: the last message 16 over the field (`.flow` 114, `.cmp`
+                          // 46 + 52), of which the bar keeps 8 over it.
+                          paddingTop: (wall === 'dm' ? SPACING[2] : SPACING[3]) + under,
                           paddingBottom: SPACING[2] + topHeight,
-                          // iskelet.md → 5.5: a run's bubbles 3 apart, runs 12 (ChatRow).
+                          // iskelet.md → 5.5: a run's bubbles 2 apart, runs 12 (ChatRow).
                           gap: KIT.size.runGap,
                         }}
                       />
@@ -1376,7 +1383,7 @@ export function ChatScreen<T extends ChatListItem>({
                         keyboardOffset={bottomPad}
                         contentContainerStyle={{
                           flexGrow: 1,
-                          // 16 at the sides; iskelet.md → 5.5: a run's bubbles 3 apart, runs 12.
+                          // 16 at the sides; iskelet.md → 5.5: a run's bubbles 2 apart, runs 12.
                           paddingHorizontal: shape.screenPadding,
                           paddingTop: SPACING[2] + topHeight,
                           paddingBottom: SPACING[3] + under,
@@ -1461,7 +1468,7 @@ export function ChatScreen<T extends ChatListItem>({
 
 // The band under the venue and the district chat's top bar (`.band`): the chat's ground to `solid`
 // of it (a share), then fading out.
-function chatBand(wall: 'semt' | 'mekan', scheme: ColorScheme, solidTo: number): string {
+function chatBand(wall: 'semt' | 'mekan' | 'dm', scheme: ColorScheme, solidTo: number): string {
   const ground = CHAT_LOOK.band[wall][scheme];
   const solid = Math.round(solidTo * 100);
   return `linear-gradient(180deg, ${ground} 0%, ${ground} ${solid}%, ${withAlpha(ground, 0)} 100%)`;
@@ -1494,7 +1501,12 @@ export function DayLine({
     return (
       <View
         className="flex-row items-center"
-        style={{ gap: DM.fresh.gap, marginVertical: DM.fresh.margin }}
+        // 8 under it and the stream's 2 (`.flow{gap:2}`) to the bubble: the row's 8 counts.
+        style={{
+          gap: DM.fresh.gap,
+          marginTop: DM.fresh.margin,
+          marginBottom: DM.fresh.margin + KIT.size.runGap - SPACING[2],
+        }}
       >
         <View style={line} />
         <View
@@ -1533,8 +1545,8 @@ export function DayLine({
       className="self-center"
       style={{
         marginTop: floating ? 0 : DM.day.top,
-        // The row's own 8 under it is the board's 8.
-        marginBottom: floating ? 0 : DM.day.bottom - SPACING[2],
+        // The board's 8 and the stream's 2 (`.flow{gap:2}`) under it; the row's 8 counts.
+        marginBottom: floating ? 0 : DM.day.bottom + KIT.size.runGap - SPACING[2],
         ...gradientStyle(g.fill),
         borderWidth: KIT.size.edge,
         borderColor: g.edge,
@@ -1558,6 +1570,10 @@ export function DayLine({
 }
 const DAY_SCALE = 1.3;
 
-export function dayLabel(day: Date, now = new Date()): string {
-  return sameDay(day, now) ? tr.chat.today : tr.chat.day(day.toISOString());
+// "Bugün", "Dün" (yeni arayüz tuvali, DmSohbet `.day`) or the date. `now` from Date.now (the visual
+// gate stops that clock).
+export function dayLabel(day: Date, now = new Date(Date.now())): string {
+  if (sameDay(day, now)) return tr.chat.today;
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  return sameDay(day, yesterday) ? tr.chat.yesterday : tr.chat.day(day.toISOString());
 }

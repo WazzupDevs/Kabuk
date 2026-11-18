@@ -91,6 +91,8 @@ type Props = {
   edited?: string;
   // The message being edited in the message bar: outlined (tuval DmDuzenle).
   editing?: boolean;
+  // The message being answered: ringed at its edge (tuval DmYanit `.msg.sel`).
+  answering?: boolean;
   // The bubble takes a new size on springs.morph (A4 4.4: an edit's new text): set from when its
   // edit starts, so the change finds it ready.
   morph?: boolean;
@@ -140,6 +142,10 @@ const SWIPE_MAX = SPACING[16] + SPACING[4];
 // for the read ticks.
 const TIME_GAP = '\u2003';
 const TICKS_ROOM = '\u2003\u2002';
+// A DM's (DmSohbet `.msg{gap:8}`, `.s svg` 16 with `gap:2`), in the time's 11 px: an en and a thin
+// space (5.5 + 2.3), and the ticks' 18 as an em, an en and a thin space.
+const DM_TIME_GAP = '\u2002\u2009';
+const DM_TICKS_ROOM = '\u2003\u2002\u2009';
 // The room's copy of the time is drawn at alpha 1/255: Android takes a nested text's fully
 // transparent colour (0) as "no colour" and draws it in the bubble's colour, so the copy showed
 // under the time (04:24 over 04:24).
@@ -176,6 +182,7 @@ export function ChatBubble({
   time,
   edited,
   editing = false,
+  answering = false,
   morph = false,
   menuNote,
   delivery,
@@ -321,6 +328,11 @@ export function ChatBubble({
     true,
     mineLine && !big ? KIT.size.edge : 0,
   );
+  // Held over the scrim, the DM's bubble rises on a deeper shadow (DmMesajMenu `.hold .msg`).
+  const heldShadow =
+    kind === 'dm' && !big && D.heldShadow
+      ? shadowParts(shadowOff, D.heldShadow, undefined, radii, true, mineLine ? KIT.size.edge : 0)
+      : bubbleShadow;
   // The widest a bubble's words may run (the stream's width less the screen's padding, at the
   // bubble's share of it), for keeping the time beside a one-line message (below).
   const { width: screenWidth } = useWindowDimensions();
@@ -335,15 +347,31 @@ export function ChatBubble({
   // and the bubble stayed narrow (the owner's report, 30 Ekim). When only the time went down and
   // the two fit side by side, the words get that much room.
   const [widen, setWiden] = useState(0);
+  // A DM's time alone on the last line (DmSohbet `.msg`: a wrapping row, `.s` 4 over its 14 line
+  // and 8 under the words): its line 5 taller than a line of words.
+  const [stampAlone, setStampAlone] = useState(false);
   const onTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
     if (widen) return;
     const lines = e.nativeEvent.lines;
+    const end = lines.at(-1);
+    const alone =
+      lines.length >= 2 &&
+      !!end &&
+      !!time &&
+      end.text.replace(/\s/g, '') === stampRoom(time, edited).replace(/\s/g, '');
     const [a, b] = lines;
-    if (lines.length !== 2 || !a || !b || !time) return;
-    if (b.text.replace(/\s/g, '') !== stampRoom(time, edited).replace(/\s/g, '')) return;
-    const need = Math.ceil(a.width + b.width + WIDEN_SLACK);
-    if (need <= maxText) setWiden(need);
+    if (alone && lines.length === 2 && a && b) {
+      const need = Math.ceil(a.width + b.width + WIDEN_SLACK);
+      if (need <= maxText) {
+        setWiden(need);
+        return;
+      }
+    }
+    if (dm && alone !== stampAlone) setStampAlone(alone);
   };
+  // DmSohbet `.q{width:100%}`: a bubble with a quote runs to its share of the row, the quote across
+  // it.
+  const wide = dm && !!quote && !big;
   // Telegram Android: the reactions inside the bubble, under the words, the time at the right of
   // their row (the owner's call, 30 Ekim); under a big emoji, outside.
   const hasChips = !!reactions && reactions.length > 0;
@@ -392,6 +420,7 @@ export function ChatBubble({
     </Pressable>
   );
   function face(lifted: boolean) {
+    const sh = lifted ? heldShadow : bubbleShadow;
     const skinned = skin !== null && !big && !plain;
     const shaped = last && !big && box !== null && !skinned && !plain && !dm;
     return (
@@ -422,9 +451,9 @@ export function ChatBubble({
                     backgroundColor: shaped ? undefined : fill,
                     borderWidth: KIT.size.edge,
                     borderColor: shaped ? 'transparent' : paint.mineEdge,
-                    boxShadow: bubbleShadow.boxShadow,
+                    boxShadow: sh.boxShadow,
                   }
-                : { backgroundColor: shaped ? undefined : fill, boxShadow: bubbleShadow.boxShadow },
+                : { backgroundColor: shaped ? undefined : fill, boxShadow: sh.boxShadow },
             big
               ? {
                   opacity: state === 'sending' ? 0.6 : 1,
@@ -439,12 +468,12 @@ export function ChatBubble({
                   opacity: state === 'sending' ? 0.6 : 1,
                 },
             skin && skinned ? skinFace(skin, mine, scheme, first, last) : null,
-            editing && !lifted
+            (editing || answering) && !lifted
               ? {
                   outlineWidth: DM.editing.outline,
                   outlineStyle: 'solid',
                   outlineColor: inkLine,
-                  outlineOffset: DM.editing.offset,
+                  outlineOffset: editing ? DM.editing.offset : 0,
                 }
               : null,
           ]}
@@ -452,8 +481,8 @@ export function ChatBubble({
           {skin && skinned ? (
             <SkinFrame skin={skin} mine={mine} first={first} last={last} moves={skinMoves} />
           ) : null}
-          {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
-          {big || skinned ? null : bubbleShadow.node}
+          {/* Held, the bubble keeps its tail, no ring (ui 1.1); the DM's on its held shadow. */}
+          {big || skinned ? null : sh.node}
           {skinned ? null : shaped ? (
             <BubbleShape
               mine={mine}
@@ -553,12 +582,17 @@ export function ChatBubble({
               </View>
             </>
           ) : (
-            <View style={widen ? { minWidth: widen } : undefined}>
+            <View
+              style={[
+                widen ? { minWidth: widen } : null,
+                stampAlone ? { paddingBottom: DM.time.aloneExtra } : null,
+              ]}
+            >
               <RNText style={[msgType, { color: gone ? muted : fg }]} onTextLayout={onTextLayout}>
                 {text}
                 {time && !state ? (
                   <Stamp dm={dm} color={withAlpha(fg, HIDDEN_ALPHA)} hidden>
-                    {`${TIME_GAP}${stampRoom(time, edited)}${mine && delivery ? TICKS_ROOM : ''}`}
+                    {`${dm ? DM_TIME_GAP : TIME_GAP}${stampRoom(time, edited)}${mine && delivery ? (dm ? DM_TICKS_ROOM : TICKS_ROOM) : ''}`}
                   </Stamp>
                 ) : null}
               </RNText>
@@ -653,10 +687,10 @@ export function ChatBubble({
     return (
       <View
         style={{
-          alignItems: 'flex-end',
+          alignItems: wide ? 'stretch' : 'flex-end',
           gap: SPACING[1],
           alignSelf: 'flex-end',
-          maxWidth: `${share * 100}%`,
+          ...(wide ? { width: `${share * 100}%` } : { maxWidth: `${share * 100}%` }),
         }}
       >
         {bar}
@@ -822,13 +856,21 @@ export function ChatBubble({
       style={{
         gap: SPACING[1],
         alignSelf: 'flex-start',
-        maxWidth: `${(avatar ? THEIRS_SHARE : share) * 100}%`,
+        ...(wide
+          ? { width: `${share * 100}%` }
+          : { maxWidth: `${(avatar ? THEIRS_SHARE : share) * 100}%` }),
       }}
     >
       {head}
       {/* Not under the photo's indent: the bar is wider than the column there. */}
       {bar}
-      <View style={{ alignItems: 'flex-start', gap: SPACING[1], paddingLeft: avatar ? INDENT : 0 }}>
+      <View
+        style={{
+          alignItems: wide ? 'stretch' : 'flex-start',
+          gap: SPACING[1],
+          paddingLeft: avatar ? INDENT : 0,
+        }}
+      >
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
       </View>
@@ -1218,7 +1260,7 @@ function QuoteBlock({
         onPress={onPress}
         accessibilityRole={onPress ? 'button' : undefined}
         style={{
-          marginBottom: SPACING[1],
+          marginBottom: DM.quote.gap,
           paddingHorizontal: DM.quote.padX,
           paddingVertical: DM.quote.padY,
           borderRadius: DM.quote.radius,
@@ -1528,7 +1570,8 @@ function Stamp({
 }) {
   if (dm) {
     return (
-      <RNText accessible={hidden ? false : undefined} style={[KIT_TYPE.stamp, TABULAR, { color }]}>
+      // DmSohbet `.s`: the font's own figures (tabular ones ran the time ~10 % wider).
+      <RNText accessible={hidden ? false : undefined} style={[KIT_TYPE.stamp, { color }]}>
         {children}
       </RNText>
     );
@@ -1575,7 +1618,7 @@ export function DeliveryTicks({
             d={delivery === 'sent' ? SENT_TICK : READ_TICKS}
             fill="none"
             stroke={delivery === 'read' ? read : plain}
-            strokeWidth={2}
+            strokeWidth={TICK_LINE}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -1584,20 +1627,33 @@ export function DeliveryTicks({
     </View>
   );
 }
-// The board's ticks (Dm: 15; Mesajlar: 17), one for sent, two for delivered and read.
+// The board's ticks (Dm: 15; Mesajlar: 17), one for sent, two for delivered and read; the two
+// drawn as yeni arayüz tuvali's `Okundu` (Main `.tick`, DmSohbet `.s svg`: 2.4 wide).
 const TICK = 15;
-const READ_TICKS = 'M2 12.5l4.2 4.2L14 8.4M10.6 16.7 18.6 8.4';
+const TICK_LINE = 2.4;
+const READ_TICKS = 'M2.5 12.8l4.2 4.2L15 8.4M10.4 16.4l.6.6 8.4-8.6';
 const SENT_TICK = 'M5 12.5l4.2 4.2L17 8.4';
 
 const TYPING_MS = 400;
 
 // The other side is typing: three dots in a left bubble, rising in turn; still under reduce motion.
-export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: string }) {
+// `label`: what a screen reader hears (DmSohbet `.typing`: "Fevve yazıyor").
+export function TypingBubble({
+  avatar,
+  testID,
+  label = tr.dm.typing,
+}: {
+  avatar?: ReactNode;
+  testID?: string;
+  label?: string;
+}) {
   const { shape } = useTheme();
   const reduce = useReduceMotion();
   // Stopped while another screen or a sheet covers the chat and in the background (A-36).
   const active = useLoopActive();
   const [dots] = useState(() => [0, 1, 2].map(() => new Animated.Value(0)));
+  // Not moving, the dots stand in the board's frame (DM.typing), not faded at the loop's start.
+  const still = reduce || !active;
 
   useEffect(() => {
     if (reduce) {
@@ -1640,7 +1696,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
       }}
       accessible
       accessibilityLiveRegion="polite"
-      accessibilityLabel={tr.dm.typing}
+      accessibilityLabel={label}
       testID={testID}
     >
       {avatar}
@@ -1668,10 +1724,14 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
               height: T.dot,
               borderRadius: shape.radius.pill,
               backgroundColor: dotsDm[i] ?? dotInk,
-              opacity: d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
+              opacity: still ? 1 : d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
               transform: [
                 {
-                  translateY: d.interpolate({ inputRange: [0, 1], outputRange: [0, -SPACING[1]] }),
+                  translateY: still
+                    ? i === 1
+                      ? -T.lift
+                      : 0
+                    : d.interpolate({ inputRange: [0, 1], outputRange: [0, -SPACING[1]] }),
                 },
               ],
             }}

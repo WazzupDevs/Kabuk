@@ -14,7 +14,9 @@ export const DM = {
   // foot 6 on a run's last (`.msg.g`, the others, all 18); no tail.
   bubble: { padTop: 7, padBottom: 7, padLeft: 12, padRight: 12, radius: 18, foot: 6 },
   // The time (`.s`): in the words' last line at the right, 4 over it, the ticks 16, 2 from it.
-  time: { right: 12, bottom: 7, gap: 2, ticks: 16 },
+  // Alone on the last line (`.msg` wraps it: 8 under the words, 4 over its 14 line), its line 5
+  // taller than a line of words (21).
+  time: { right: 12, bottom: 7, gap: 2, ticks: 16, aloneExtra: 5 },
   // The reactions under the bubble (`.rxs`, `.rx`): 4 under it and 6 over the next, 6 apart; a
   // pill 30 high, 4 in at its left and 10 at its right, the face 22 and its count 4 apart; the
   // viewer's own in a 2 ring of the ink.
@@ -29,14 +31,17 @@ export const DM = {
     inner: 4,
   },
   mineRing: 2,
-  // The quote in another's bubble (`.q`): 10 round, 6 / 10 inside.
-  quote: { radius: 10, padY: 6, padX: 10 },
-  // "yazıyor" (`.typing`): a bubble 34 high, 14 in, its three dots 8, 5 apart, 6 under the last.
-  typing: { height: 34, padX: 14, dot: 8, gap: 5, top: 6 },
+  // The quote in another's bubble (`.q`): 10 round, 6 / 10 inside, 8 over the words (`.msg{gap:8}`).
+  quote: { radius: 10, padY: 6, padX: 10, gap: 8 },
+  // "yazıyor" (`.typing`): a bubble 34 high, 14 in, its three dots 8, 5 apart, 6 under the last;
+  // standing still (reduce motion, covered, the visual gate) the board's frame: every dot whole,
+  // the middle one 3 up (`.typing i:nth-child(2)`).
+  typing: { height: 34, padX: 14, dot: 8, gap: 5, top: 6, lift: 3 },
   // The unread line (`.new`): the hairlines and the pill 8 apart, 8 above and under.
   fresh: { gap: 8, margin: 8 },
-  // No message yet (DmBos `.demp`): a card 44 from the sides, 28 round, 22 / 20 / 24 inside.
-  empty: { side: 44, radius: 28, padTop: 22, padX: 20, padBottom: 24 },
+  // No message yet (DmBos `.demp`): a card 44 from the sides, 28 round, 22 / 20 / 24 inside, 16
+  // over the middle (8 % of its height).
+  empty: { side: 44, radius: 28, padTop: 22, padX: 20, padBottom: 24, lift: 16 },
   // tuval DmDuzenlendi (`.s .edt`): "düzenlendi" before the time, 500 and slanted, at 90 %, 4 from
   // it.
   edited: { gap: 4, opacity: 0.9 },
@@ -45,10 +50,11 @@ export const DM = {
   // The day (`.flow .day`): a glass pill, 4 / 12 inside, 10 under the previous message and 8 over
   // the next.
   day: { padY: 4, padX: 12, top: 10, bottom: 8 },
-  // The top bar (`.top`, `.who`): 16 from the sides, the back and the capsule 8 apart; the capsule
-  // 52, the face 40 (in its 2 ring) 6 in and 10 from the name; the menu's 44 round 2 from the
-  // capsule's right, its dots 20.
+  // The top bar (`.top`, `.who`): 5 under the status bar, 16 from the sides, the back and the capsule 8 apart; the capsule
+  // 52, the face 40 (in its 2 ring) 6 in and 10 from the name; the menu's bare button (`.ib`) 40
+  // wide and 44 high, 2 from the capsule's right, its dots 20.
   bar: {
+    top: 5,
     side: 16,
     gap: 8,
     pill: 52,
@@ -57,12 +63,15 @@ export const DM = {
     faceIn: 6,
     nameGap: 10,
     more: 44,
+    moreW: 40,
     moreIn: 2,
   },
-  // The message bar (`.cmp`): 12 from the sides, the field 52 and the send 8 apart; the words 20 in
-  // (the board draws them after its emoji, which the app has not: the app's own); the send 52, its
-  // paper plane 22; the edit's tick 18.
-  composer: { side: 12, gap: 8, padLeft: 20, send: 52, plane: 22, arrow: 18 },
+  // The message bar (`.cmp`): 12 from the sides and 12 over the system's foot (the board's 46 less
+  // its 34), the field 52 and the send 8 apart; the words 20 in (the board draws them after its
+  // emoji, which the app has not: the app's own); the send 52, its paper plane 22; the edit's tick
+  // 18. With nothing to send there is no send (DmSohbet: the field across the bar). The board's
+  // emoji, attachment, camera and voice buttons are not drawn: the DM has none of them.
+  composer: { side: 12, bottom: 12, gap: 8, padLeft: 20, send: 52, plane: 22, arrow: 18 },
   // The strip over it (`.eb`, answering and editing): 20 round, 8 above and under, 14 in at its
   // left and 6 at its right, 10 between its parts, the icon 20; its × 36 (icon 18); 8 over the bar.
   strip: { radius: 20, padY: 8, padLeft: 14, padRight: 6, gap: 10, icon: 20, close: 36, x: 18 },
@@ -79,6 +88,9 @@ export const DM = {
     buttonsTop: 20,
     buttonsGap: 12,
   },
+  // The held message's faces (`.rbar`): 4 inside, 2 apart, each 40 (its face 36); its menu 220
+  // wide (`.hold .pop`).
+  pick: { pad: 4, gap: 2, slot: 40, ring: 2, menu: 220 },
   // The menu: 6 inside above and under, its rows 50 high, 16 in, 12 between the icon (20) and the
   // words; the destructive group 6 under a 6 high band.
   menu: { width: 256, padY: 6, row: 50, padX: 16, gap: 12, icon: 20, bandGap: 6 },
@@ -91,6 +103,17 @@ export const DM = {
     them: '#0E8745',
     themShadow: '0px 4px 12px rgba(14, 135, 69, 0.22)',
     mineShadow: '0px 4px 12px rgba(3, 27, 11, 0.10)',
+    // A held bubble over the scrim (DmMesajMenu `.hold .msg`).
+    heldShadow: '0px 12px 32px rgba(3, 27, 11, 0.18)',
+    // The held message's faces (`.rbar`): the surface, its shadow; the viewer's own face on
+    // --surface2 in a 2 ring of the ink (`.f.sel`).
+    pick: {
+      fill: '#FFFFFF',
+      shadow: '0px 12px 32px rgba(3, 27, 11, 0.18)',
+      edge: '',
+      sel: '#E6F0E8',
+      selRing: '#031B0B',
+    },
     mineTime: '#4A6550',
     themTime: 'rgba(255, 255, 255, 0.80)',
     // The quote in another's bubble (`.q`): a white veil, the name white, the words at 88 %.
@@ -170,6 +193,14 @@ export const DM = {
     them: '#0B783D',
     themShadow: '',
     mineShadow: '0px 4px 12px rgba(0, 0, 0, 0.30)',
+    heldShadow: '',
+    pick: {
+      fill: '#151A18',
+      shadow: '',
+      edge: 'rgba(255, 255, 255, 0.08)',
+      sel: '#262E2B',
+      selRing: '#EEF3F0',
+    },
     mineTime: '#4A6550',
     themTime: 'rgba(255, 255, 255, 0.74)',
     quote: {

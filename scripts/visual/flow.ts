@@ -8,18 +8,20 @@ import { type AppStep, baselinePath, hasBaseline, type Shot, staleBaseline } fro
 export const NEVER_THERE = 'gorsel-bekle';
 
 // The state's app steps as Maestro commands: `bas` taps the element by its testID (Maestro waits
-// for it to be there), `bekle` waits that long.
+// for it to be there), `uzunBas` holds it, `bekle` waits that long.
 export function appSteps(steps: readonly AppStep[]): string[] {
   return steps.flatMap((step) =>
     'bas' in step
       ? ['- tapOn:', `    id: ${step.bas}`]
-      : [
-          '- extendedWaitUntil:',
-          '    visible:',
-          `      id: ${NEVER_THERE}`,
-          `    timeout: ${step.bekle}`,
-          '    optional: true',
-        ],
+      : 'uzunBas' in step
+        ? ['- longPressOn:', `    id: ${step.uzunBas}`]
+        : [
+            '- extendedWaitUntil:',
+            '    visible:',
+            `      id: ${NEVER_THERE}`,
+            `    timeout: ${step.bekle}`,
+            '    optional: true',
+          ],
   );
 }
 

@@ -449,7 +449,7 @@ const RoomMessageRow = memo(function RoomMessageRow({
   const counts = parseReactionCounts(reactionsRaw);
   const quote = replyRaw === undefined ? null : parseQuote(replyRaw);
   return (
-    <ChatRow id={m.id} first={first} mine={mine}>
+    <ChatRow id={m.id} first={first} day={day !== null} mine={mine}>
       {(jumpTo) => (
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}

@@ -54,6 +54,26 @@ const MONTH_SUFFIX = [
   "'ta",
 ];
 
+// A list row's short date (yeni arayüz tuvali Arsiv, MesajlarKaydir `.tm`: "12 Eki", "27 Ağu").
+const MONTHS_SHORT = [
+  'Oca',
+  'Şub',
+  'Mar',
+  'Nis',
+  'May',
+  'Haz',
+  'Tem',
+  'Ağu',
+  'Eyl',
+  'Eki',
+  'Kas',
+  'Ara',
+];
+function dayMonthShort(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()] ?? ''}`;
+}
+
 function dayMonth(iso: string): string {
   const d = new Date(iso);
   return `${d.getDate()} ${MONTHS[d.getMonth()] ?? ''}`;
@@ -332,7 +352,7 @@ export const tr = {
           ? 'Dün'
           : stamp.kind === 'weekday'
             ? (WEEKDAYS_SHORT[stamp.weekday] ?? '')
-            : dayMonth(iso),
+            : dayMonthShort(iso),
     unread: (n: number) => `${n} okunmamış mesaj`,
     row: (name: string, preview: string, unread: number) =>
       unread > 0 ? `${name}, ${preview}, ${unread} okunmamış` : `${name}, ${preview}`,
@@ -366,11 +386,13 @@ export const tr = {
     pinFull: (max: number) => `En fazla ${max} sohbet sabitlenir. Önce birini kaldır.`,
     archive: 'Arşivle',
     unarchive: 'Arşivden çıkar',
+    seeProfile: 'Profilini gör',
+    block: 'Engelle',
     clear: 'Sohbeti sil',
     clearTitle: 'Sohbet silinsin mi?',
     clearNote: (name: string) =>
       `${name} ile tüm mesajlar senin listenden silinir. Bu geri alınamaz.`,
-    // The top notice once a conversation is cleared (tuval MesajlarSilindi).
+    // The notice at the foot once a conversation is cleared (tuval MesajlarSilindi `.snk`).
     cleared: 'Sohbet silindi',
     // The pinned conversations' head (tuval Main; "· 5/5" when full, MesajlarSabitDolu).
     pinned: 'Sabitlenenler',
@@ -703,7 +725,8 @@ export const tr = {
     },
   },
   dm: {
-    placeholder: 'Mesaj yaz…',
+    // Yeni arayüz tuvali (DmSohbet `.ph`).
+    placeholder: 'Mesaj yaz',
     send: 'Gönder',
     report: 'Konuşmayı şikayet et',
     delivery: {
@@ -715,6 +738,10 @@ export const tr = {
     typing: 'yazıyor',
     // Under the name in the DM's top bar (iskelet.md → 5.5).
     typingTitle: 'yazıyor…',
+    // Over the first unread message (yeni arayüz tuvali, DmSohbet `.new`): how many came.
+    unreadLine: (n: number) => `${n} yeni mesaj`,
+    // What a screen reader hears for the "yazıyor" bubble (DmSohbet `.typing`).
+    typingNamed: (name: string) => `${name} yazıyor`,
     // Under the name otherwise (yeni arayüz tuvali, DmSohbet): the capsule opens the profile.
     seeProfile: 'Profili gör',
     // No message yet (yeni arayüz tuvali, DmBos).
@@ -983,6 +1010,7 @@ export const tr = {
     discard: 'Sil',
     // Chat screens: a day line over each day's first message, the time under a run (Aşama 4).
     today: 'Bugün',
+    yesterday: 'Dün',
     day: (iso: string) => dayMonth(iso),
     time: (iso: string) => {
       const d = new Date(iso);

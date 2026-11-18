@@ -63,9 +63,21 @@ export function Menu({
   tight,
   visible = true,
   onClose,
+  lifted,
+  side,
+  label,
+  floatWidth,
 }: {
   children: ReactNode;
   float?: boolean;
+  // With `float`: its own width (DmMesajMenu `.hold .pop`: 220).
+  floatWidth?: number;
+  // With `hold`: the held row raised over the scrim at its place (tuval MesajlarUzunBas `.rw.ub`),
+  // the menu at least `side` from the screen's sides (`.pop{left:20}`), and its name read out
+  // (`aria-label`).
+  lifted?: ReactNode;
+  side?: number;
+  label?: string;
   // With `anchor`: the first row is a row, not a heading: 8 over it as at its sides (SemtSecenek).
   tight?: boolean;
   // The button the menu grows out of (measureMenuAnchor). Unset: the rows stand where they are.
@@ -93,6 +105,9 @@ export function Menu({
         hold={!!hold}
         tight={!!tight}
         onClose={onClose ?? noop}
+        lifted={lifted}
+        side={side}
+        label={label}
       >
         {rows}
       </MenuPop>
@@ -100,7 +115,13 @@ export function Menu({
   }
   if (float) {
     return (
-      <View style={{ width: L.holdWidth, borderRadius: L.holdRadius, boxShadow: shadow.boxShadow }}>
+      <View
+        style={{
+          width: floatWidth ?? L.holdWidth,
+          borderRadius: L.holdRadius,
+          boxShadow: shadow.boxShadow,
+        }}
+      >
         {shadow.node}
         <MenuCard look="hold">{rows}</MenuCard>
       </View>
@@ -145,7 +166,9 @@ function MenuCard({
   const layer = KIT.layer[scheme];
   const L = KIT.layer.size;
   const hold = look === 'hold';
-  const plain = children.filter((row) => !isNegative(row));
+  // DmMenuSureDoldu: the note stands last, under the red rows (`.psep`, Sil, then `.pnote`).
+  const notes = children.filter(isNote);
+  const plain = children.filter((row) => !isNegative(row) && !isNote(row));
   const negative = children.filter(isNegative);
   const banded = hold && negative.length > 0 && plain.length > 0;
   const group = (rows: ReactNode[], from: number) =>
@@ -177,6 +200,7 @@ function MenuCard({
           />
         ) : null}
         {group(negative, plain.length)}
+        {notes}
       </Look.Provider>
     </View>
   );
@@ -211,6 +235,10 @@ export function measureMenuAnchor(view: View | null, done: (anchor: MenuAnchor) 
   view?.measureInWindow((x, y, width, height) => done({ x, y, width, height }));
 }
 
+function isNote(row: ReactNode): boolean {
+  return isValidElement(row) && row.type === MenuNote;
+}
+
 function isNegative(row: ReactNode): boolean {
   return isValidElement<{ negative?: boolean }>(row) && row.props.negative === true;
 }
@@ -231,6 +259,9 @@ function MenuPop({
   hold,
   tight,
   onClose,
+  lifted,
+  side,
+  label,
   children,
 }: {
   anchor: MenuAnchor;
@@ -238,6 +269,9 @@ function MenuPop({
   hold: boolean;
   tight: boolean;
   onClose: () => void;
+  lifted?: ReactNode;
+  side?: number;
+  label?: string;
   children: ReactNode[];
 }) {
   const { scheme } = useTheme();
@@ -280,13 +314,18 @@ function MenuPop({
 
   // Inside a status-bar-translucent Modal the safe area can come back 0 (MessagePop).
   const topInset = Math.max(insets.top, StatusBar.currentHeight ?? 0);
-  const place = size
-    ? menuPlace(anchor, size, screen, { top: topInset, bottom: insets.bottom }, KIT.size.menuGap)
-    : null;
   const L = KIT.layer.size;
   const radius = hold ? L.holdRadius : L.menuRadius;
+  const edge = side ?? KIT.size.menuGap;
   // At most the screen less its edges (320 dp: 292 still fits).
-  const width = Math.min(hold ? L.holdWidth : L.menuWidth, screen.width - 2 * KIT.size.menuGap);
+  const width = Math.min(hold ? L.holdWidth : L.menuWidth, screen.width - 2 * edge);
+  const placed = size
+    ? menuPlace(anchor, size, screen, { top: topInset, bottom: insets.bottom }, KIT.size.menuGap)
+    : null;
+  // Its own distance from the sides (MesajlarUzunBas: 20 from the left).
+  const left = placed ? Math.min(Math.max(placed.left, edge), screen.width - edge - width) : 0;
+  const place = placed ? { ...placed, left, originX: placed.originX + placed.left - left } : null;
+  const fade = p.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' });
   const shadow = boxShadowParts(shadowOff, KIT.layer[scheme].menuShadow, radius);
   return (
     <Modal
@@ -309,8 +348,25 @@ function MenuPop({
         onPress={onClose}
         style={StyleSheet.absoluteFill}
       />
+      {lifted ? (
+        <Animated.View
+          pointerEvents="none"
+          importantForAccessibility="no-hide-descendants"
+          style={{
+            position: 'absolute',
+            left: anchor.x,
+            top: anchor.y,
+            width: anchor.width,
+            height: anchor.height,
+            opacity: fade,
+          }}
+        >
+          {lifted}
+        </Animated.View>
+      ) : null}
       <Animated.View
         accessibilityRole="menu"
+        accessibilityLabel={label}
         onLayout={
           size
             ? undefined
@@ -410,7 +466,7 @@ export function MenuItem({
             gap: L.holdGap,
             min: L.holdRow,
             padX: L.holdRowPadX,
-            padY: 0,
+            padY: disabled ? L.holdOffPadY : 0,
             radius: L.holdRowRadius,
             hairIn: L.holdHairIn,
             hairOut: L.holdRowPadX,
@@ -439,8 +495,10 @@ export function MenuItem({
       : onPress,
   );
   const sheet = look === 'sheet';
-  // An off row in the ⋮ menu (`.pi.off`): its words muted, its icon at half.
-  const off = !!disabled && look === 'pop';
+  // An off row in the ⋮ menu (`.pi.off`): its words muted, its icon at half; in the long-press
+  // menu (MesajlarSabitDolu `.pi.off`) its icon at 40 %.
+  const off = !!disabled && look !== 'sheet';
+  const hold = look === 'hold';
   const ink = negative
     ? sheet
       ? colors.onDangerSoft
@@ -498,7 +556,7 @@ export function MenuItem({
             />
           ) : null}
           {cap ? (
-            <View style={{ opacity: off ? L.menuOffIcon : 1 }}>
+            <View style={{ opacity: off ? (hold ? L.holdOffIcon : L.menuOffIcon) : 1 }}>
               <CapIcon
                 name={cap}
                 size={iconSize}
@@ -512,7 +570,11 @@ export function MenuItem({
           ) : null}
           <View
             className="flex-1"
-            style={{ gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }}
+            style={
+              hold
+                ? { gap: L.holdNoteTop }
+                : { gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }
+            }
           >
             {!sheet ? (
               <T v={look === 'pop' ? 'popRow' : 'holdRow'} color={ink}>
@@ -523,7 +585,13 @@ export function MenuItem({
                 {label}
               </T>
             )}
-            {note ? <Text variant="fine">{note}</Text> : null}
+            {note && hold ? (
+              <T v="menuNote" color={colors.muted}>
+                {note}
+              </T>
+            ) : note ? (
+              <Text variant="fine">{note}</Text>
+            ) : null}
           </View>
           {loading ? <Loader kind="meet" size={ICON.md} delay={0} label={null} /> : null}
           {!loading && count !== undefined ? (

@@ -67,6 +67,7 @@ export function T({
   color,
   center,
   lines,
+  clip,
   fit,
   tabular,
   style,
@@ -81,6 +82,8 @@ export function T({
   color?: string;
   center?: boolean;
   lines?: number;
+  // Its last line cut at the edge, no "…" (a preview that fades out: tuval Mesajlar `.pv`).
+  clip?: boolean;
   // Shrinks to fit its lines rather than ending in "…" (CLAUDE.md → Ekran davranışı).
   fit?: boolean;
   // Digits of one width (a time at a list row's right, iskelet.md → 5.3).
@@ -100,6 +103,7 @@ export function T({
       accessibilityRole={accessibilityRole}
       accessibilityLiveRegion={accessibilityLiveRegion}
       numberOfLines={lines}
+      ellipsizeMode={clip ? 'clip' : undefined}
       adjustsFontSizeToFit={fit}
       minimumFontScale={fit ? MIN_FIT : undefined}
       maxFontSizeMultiplier={MAX_FONT_SCALE}
@@ -1385,7 +1389,10 @@ export function Av({
               accessibilityIgnoresInvertColors
             />
           ) : (
-            <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.av[size], { color: KIT.white }]}>
+            <Text
+              maxFontSizeMultiplier={1}
+              style={[board.letter ?? KIT_TYPE.av[size], { color: KIT.white }]}
+            >
               {initial(name)}
             </Text>
           )}
@@ -1455,7 +1462,14 @@ export function Av({
   );
 }
 
-export type AvBoard = { ring: number; ringColor: string; shadow: string; outside?: boolean };
+export type AvBoard = {
+  ring: number;
+  ringColor: string;
+  shadow: string;
+  outside?: boolean;
+  // The initial's own type (tuval Mesajlar `.rw .av`: 17).
+  letter?: TextStyle;
+};
 
 function initial(name: string): string {
   return upperTr(name.trim().charAt(0)) || '?';
@@ -1539,7 +1553,7 @@ export function Seg<V extends string>({
   const cell = n > 0 ? (width - gap * (n - 1)) / n : 0;
   const frame: ViewStyle = {
     flexDirection: 'row',
-    padding: KIT.size.segPad,
+    padding: board?.pad ?? KIT.size.segPad,
     gap,
     borderRadius: radius,
   };
@@ -1593,7 +1607,7 @@ export function Seg<V extends string>({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: KIT.size.tagGap,
+              gap: board?.badgeGap ?? KIT.size.tagGap,
             }}
           >
             <Text
@@ -1637,6 +1651,10 @@ export type SegBoard = {
   // A sunk track instead of the glass (tuval Ayarlar: a flat fill) and the gap between the parts.
   track?: string;
   gap?: number;
+  // Its padding inside the glass's edge (tuval Mesajlar `.sg`: 44 high in all, the edge counted)
+  // and the room between a tab's words and its badge (`.sg span{gap:6}`).
+  pad?: number;
+  badgeGap?: number;
 };
 // hareket.json gives the swap curve no length: the disk's slide takes this long.
 const SEG_SLIDE_MS = 300;

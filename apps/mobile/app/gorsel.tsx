@@ -1,6 +1,7 @@
 import { Redirect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
 
+import { OverlayHost } from '@/components/OverlayHost';
 import { GateState } from '@/features/design/gorsel/GateState';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
@@ -30,14 +31,19 @@ export default function GorselScreen() {
   }>();
   if (!designPickerEnabled) return <Redirect href="/" />;
   return (
-    <GateState
-      key={p.n ?? '0'}
-      shot={p.n ?? '0'}
-      stateKey={p.durum ?? ''}
-      scheme={p.tema === 'dark' ? 'dark' : 'light'}
-      page={Number(p.sayfa ?? 0)}
-      pages={Math.max(1, Number(p.sayfalar ?? 1))}
-      width={p.genislik ? Number(p.genislik) : undefined}
-    />
+    <>
+      <GateState
+        key={p.n ?? '0'}
+        shot={p.n ?? '0'}
+        stateKey={p.durum ?? ''}
+        scheme={p.tema === 'dark' ? 'dark' : 'light'}
+        page={Number(p.sayfa ?? 0)}
+        pages={Math.max(1, Number(p.sayfalar ?? 1))}
+        width={p.genislik ? Number(p.genislik) : undefined}
+      />
+      {/* The confirmation dialogs a screen opens (`confirm`, overlayStore.ts): the signed-in
+          group's layout draws them, this route is outside it. */}
+      <OverlayHost />
+    </>
   );
 }

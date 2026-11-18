@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSessionStore } from '@/features/auth/session';
 import { supabase } from '@/lib/supabase';
 
-const activeTableQueryKey = (userId: string | undefined) => ['activeTable', userId] as const;
+export const activeTableQueryKey = (userId: string | undefined) => ['activeTable', userId] as const;
 
 // The user's check-in, if any (RLS: own rows only): the person at the venue, with the identity it
 // shows (docs/SPEC_V4.md §4.D, §4.E). A check-in has no table, alias or headcount.

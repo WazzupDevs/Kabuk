@@ -201,7 +201,9 @@ export function PullScroll({
                   {head}
                 </View>
               ) : null}
-              <Animated.View style={[gaps, listStyle]}>{children}</Animated.View>
+              {/* It takes the room left under the head: a part that fills the screen (an empty or
+                  loading state, Screen → fills) centres in it rather than collapsing at the top. */}
+              <Animated.View style={[gaps, { flexGrow: 1 }, listStyle]}>{children}</Animated.View>
             </Animated.ScrollView>
           </GestureDetector>
         </View>

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useState } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GlassSearch } from '@/aura/GlassSearch';
 import { Av, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
@@ -25,6 +26,7 @@ import { tr } from '@/i18n/tr';
 import { splitInbox } from '@/lib/dmManage';
 import { useNow } from '@/lib/useNow';
 import { ListMove, ListMoveArea, StickyField, useListMoves } from '@/motion';
+import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
 import { ICON } from '@/theme/tokens';
@@ -39,6 +41,7 @@ type Tab = 'chats' | 'requests';
 // a friend without messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the
 // open friend requests waiting for the caller (RequestList); their count is on its tab.
 export default function MessagesScreen() {
+  const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<Tab>('chats');
   // "Bak" in Bildirimler opens İstekler (`?tab=requests`).
   const { tab: wantedTab } = useLocalSearchParams<{ tab?: string }>();
@@ -85,7 +88,7 @@ export default function MessagesScreen() {
             <View style={{ flexDirection: 'row', gap: M.actsGap }}>
               <Round
                 side={KIT.size.round}
-                icon="edit"
+                icon="compose"
                 testID="messages-new"
                 label={tr.messages.newMessage}
                 onPress={() => setPicking(true)}
@@ -103,6 +106,8 @@ export default function MessagesScreen() {
               onChangeText={setQuery}
               placeholder={tr.messages.search}
               height={KIT.size.field}
+              padX={M.searchPad}
+              iconColor={M[scheme].searchIcon}
               trailing={
                 query ? (
                   <Round
@@ -124,6 +129,8 @@ export default function MessagesScreen() {
                 board={{
                   item: M.tabs.item,
                   radius: M.tabs.radius,
+                  pad: M.tabs.pad,
+                  badgeGap: M.tabs.badgeGap,
                   type: 'btnSm',
                   face: M[scheme].tabsGlass,
                   onShadow: M[scheme].tabOnShadow || undefined,
@@ -144,14 +151,22 @@ export default function MessagesScreen() {
             )}
           </View>
         </StickyField>
-        {tab === 'chats' || searching ? (
-          <Chats now={new Date(now)} query={asked} onCleared={onCleared} />
-        ) : (
-          <RequestList now={new Date(now)} />
-        )}
+        {/* The room under the tabs: the empty and loading states centre in it (Screen → fills). */}
+        <View style={{ flexGrow: 1 }}>
+          {tab === 'chats' || searching ? (
+            <Chats now={new Date(now)} query={asked} onCleared={onCleared} />
+          ) : (
+            <RequestList now={new Date(now)} />
+          )}
+        </View>
       </Screen>
       <FriendPicker visible={picking} onClose={() => setPicking(false)} />
-      <Toast message={notice} testID="messages-toast" />
+      <Toast
+        message={notice}
+        pill
+        bottom={insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height + M.noticeAbove}
+        testID="messages-toast"
+      />
     </View>
   );
 }
@@ -212,7 +227,7 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   const inbox = useDmInbox();
   // The motion table's A3: the rows move for Sabitle, Arşivle and Sohbeti sil.
   const moves = useListMoves();
-  const menu = useThreadMenu(inbox.data ?? [], { moves, onCleared });
+  const menu = useThreadMenu(inbox.data ?? [], { moves, onCleared, now });
   const version = inbox.dataUpdatedAt;
   const loading = useLoaderHold(inbox.isPending);
   // The conversations' copies on the phone into memory (useDmMessages): a DM opened from here
@@ -260,11 +275,13 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   }
   if (inbox.data.length === 0) {
     return (
-      <View className="flex-1 justify-center">
+      // MesajlarBos `.emp`: in the middle of the page less 190 at its foot, the sentence at most 240.
+      <View className="flex-1 justify-center" style={{ paddingBottom: M.emptyLift }}>
         <EmptyState
           kind="empty"
           riso="messages"
           compact
+          settings
           title={tr.messages.empty}
           body={tr.messages.emptyHint}
         />
@@ -281,11 +298,16 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   if (searching && rest.length === 0) {
     // Yeni arayüz tuvali, MesajlarAraBos: nothing found, the riso and its two lines in the middle.
     return (
-      <View testID="messages-no-match" className="flex-1 justify-center">
+      <View
+        testID="messages-no-match"
+        className="flex-1 justify-center"
+        style={{ paddingBottom: M.emptyLift }}
+      >
         <EmptyState
           kind="empty"
           riso="search"
           compact
+          settings
           title={tr.messages.noMatch}
           body={tr.messages.noMatchHint}
         />

@@ -639,7 +639,7 @@ const VenueMessageRow = memo(function VenueMessageRow({
   const { colors, scheme } = useTheme();
   if (out) {
     return (
-      <ChatRow id={out.localId} first={first} mine>
+      <ChatRow id={out.localId} first={first} day={day !== null} mine>
         {() => (
           <>
             {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
@@ -672,7 +672,7 @@ const VenueMessageRow = memo(function VenueMessageRow({
   if (!m) return <View />;
   const label = senderLabel(m);
   return (
-    <ChatRow id={m.id} first={first} mine={m.fromMe}>
+    <ChatRow id={m.id} first={first} day={day !== null} mine={m.fromMe}>
       {(jumpTo) => (
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}

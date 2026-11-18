@@ -44,6 +44,9 @@ type Props = {
   // Under a page's own heading and switch (Aura v75 AktivitelerHal): the loader at the page's top;
   // the error's icon 28.
   inPage?: boolean;
+  // Inside its own card that keeps the room around it (tuval DmBos `.demp .emp`): no room of its
+  // own, the title 10 under the picture.
+  inCard?: boolean;
   // Ayarlar ailesi (EngellenenlerBos, SessizAlinanlarBos `.emp`): no room over the picture (the page
   // centres it) and the sentence at most 240 wide.
   settings?: boolean;
@@ -157,6 +160,7 @@ export function EmptyState({
   riso,
   compact,
   inPage,
+  inCard,
   settings,
 }: Props) {
   if (kind === 'empty')
@@ -167,6 +171,7 @@ export function EmptyState({
         body={body}
         action={action}
         small={small || compact}
+        inCard={inCard}
         risoId={riso}
         picture={
           riso
@@ -234,21 +239,18 @@ export function EmptyState({
 function StateWords({
   title,
   body,
+  titleTop = KIT.size.emptyTitleTop,
   noteMax = KIT.size.emptyNoteMax,
 }: {
   title?: string;
   body: string;
+  titleTop?: number;
   noteMax?: number;
 }) {
   return (
     <>
       {title ? (
-        <T
-          v="stateTitle"
-          center
-          accessibilityRole="header"
-          style={{ marginTop: KIT.size.emptyTitleTop }}
-        >
+        <T v="stateTitle" center accessibilityRole="header" style={{ marginTop: titleTop }}>
           {title}
         </T>
       ) : null}
@@ -306,8 +308,9 @@ function Empty({
   small,
   picture,
   risoId,
+  inCard,
   settings,
-}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'settings'> & {
+}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'inCard' | 'settings'> & {
   // The riso picture's name: its wrapper's testID (`empty-riso-<ad>`, E2E K14).
   risoId?: EmptyRiso;
   picture?: {
@@ -323,8 +326,8 @@ function Empty({
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: settings ? 0 : small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
-        paddingHorizontal: KIT.size.emptyPad,
+        paddingTop: inCard || settings ? 0 : small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
+        paddingHorizontal: inCard ? 0 : KIT.size.emptyPad,
       }}
     >
       {picture ? (
@@ -337,6 +340,7 @@ function Empty({
       <StateWords
         title={title}
         body={body}
+        titleTop={inCard ? KIT.size.emptyTitleTopCard : undefined}
         noteMax={settings ? KIT.size.emptyNoteMaxSm : undefined}
       />
       {action ? (

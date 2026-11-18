@@ -97,6 +97,18 @@ function backToInbox(): void {
 
 export default function DmScreen() {
   const { threadId, publicId, name } = useLocalSearchParams<Params>();
+  return <DmThread threadId={threadId} publicId={publicId} name={name} />;
+}
+
+// The conversation itself, for the route and for the visual gate's `ekran/dm` (gorsel/dmFixture.tsx:
+// this component over a query cache filled with the board's sample, off the network). `gateTyping`:
+// the gate draws the friend typing (no Realtime there); never set by the app.
+export function DmThread({
+  threadId,
+  publicId,
+  name,
+  gateTyping = false,
+}: Params & { gateTyping?: boolean }) {
   const { scheme } = useTheme();
   useHideTabBar();
   const queryClient = useQueryClient();
@@ -115,7 +127,9 @@ export default function DmScreen() {
   const [confirm, setConfirm] = useState<'remove' | 'block' | null>(null);
   const [reporting, setReporting] = useState(false);
   const [outbox, dispatch] = useReducer(outboxReducer, []);
-  const { typing, notifyTyping, clearTyping } = useDmTyping(threadId);
+  const dmTyping = useDmTyping(threadId);
+  const { notifyTyping, clearTyping } = dmTyping;
+  const typing = dmTyping.typing || gateTyping;
 
   // How many of the friend's messages were unread when the DM opened (the inbox's count, read
   // before opening marks them read): the DM opens at the first of them, under its line.
@@ -446,8 +460,9 @@ export default function DmScreen() {
       first={row.first}
       last={row.last}
       day={row.day}
-      fresh={row.id === freshId}
+      fresh={row.id === freshId ? tr.dm.unreadLine(unreadAtOpen) : null}
       editing={row.id === editing?.id}
+      answering={row.id !== undefined && row.id === reply.target?.id}
       morph={row.id === morphId}
       name={name}
       view={reactions.view}
@@ -476,7 +491,7 @@ export default function DmScreen() {
         openAt: freshId,
         timeOf: (row) => row.at,
         onReachOld: loadOlder,
-        latest: typing ? <TypingBubble testID="dm-typing" /> : null,
+        latest: typing ? <TypingBubble testID="dm-typing" label={tr.dm.typingNamed(name)} /> : null,
         older: messages.isFetchingNextPage ? (
           <View className="items-center" style={{ paddingVertical: SPACING[2] }}>
             <Loader size={SPACING[8]} />
@@ -508,11 +523,12 @@ export default function DmScreen() {
           </View>
         ) : (
           // Yeni arayüz tuvali, DmBos: the riso, its title and sentence on a card of the surface,
-          // 44 from the sides.
+          // 44 from the sides, a little over the middle (`translateY(-58%)`).
           <View className="flex-1 justify-center" style={{ paddingHorizontal: DM.empty.side }}>
             <View
               testID="dm-empty"
               style={{
+                transform: [{ translateY: -DM.empty.lift }],
                 borderRadius: DM.empty.radius,
                 paddingTop: DM.empty.padTop,
                 paddingHorizontal: DM.empty.padX,
@@ -527,6 +543,7 @@ export default function DmScreen() {
                 kind="empty"
                 riso="dm"
                 compact
+                inCard
                 title={tr.dm.emptyTitle}
                 body={tr.dm.emptyHint}
               />
@@ -557,11 +574,20 @@ export default function DmScreen() {
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
           actions={
-            <View ref={moreRef} collapsable={false}>
-              {/* DmSohbet `.ib`: a bare 44 round, the dots 20 in the ink. */}
+            <View
+              ref={moreRef}
+              collapsable={false}
+              style={{
+                width: DM.bar.moreW,
+                height: DM.bar.more,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {/* DmSohbet `.ib`: a bare button 40 × 44, the three dots 20 in the ink. */}
               <Round
                 glassy={false}
-                side={DM.bar.more}
+                side={DM.bar.moreW}
                 icon="moreV"
                 iconSize={ICON.md}
                 label={tr.friends.more}
@@ -676,6 +702,7 @@ const DmRow = memo(function DmRow({
   day,
   fresh,
   editing,
+  answering,
   morph,
   name,
   view,
@@ -693,8 +720,10 @@ const DmRow = memo(function DmRow({
   first: boolean;
   last: boolean;
   day: number | null;
-  fresh: boolean;
+  // DmSohbet `.new`: "2 yeni mesaj" over the first unread message.
+  fresh: string | null;
   editing: boolean;
+  answering: boolean;
   morph: boolean;
   name: string;
   view: ReturnType<typeof useDmReactions>['view'];
@@ -706,11 +735,11 @@ const DmRow = memo(function DmRow({
   onDiscard: (m: OutboxMessage) => void;
 }) {
   return (
-    <ChatRow id={rowKey} first={first} mine={!!out || !!m?.from_me}>
+    <ChatRow id={rowKey} first={first} day={day !== null} mine={!!out || !!m?.from_me}>
       {(jumpTo) => (
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
-          {fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
+          {fresh ? <DayLine fresh label={fresh} /> : null}
           {m ? (
             <ServerBubble
               m={m}
@@ -718,6 +747,7 @@ const DmRow = memo(function DmRow({
               first={first}
               last={last}
               editing={editing}
+              answering={answering}
               morph={morph}
               jumpTo={jumpTo}
               view={view}
@@ -759,6 +789,7 @@ function ServerBubble({
   first,
   last,
   editing,
+  answering,
   morph,
   jumpTo,
   view,
@@ -772,6 +803,7 @@ function ServerBubble({
   first: boolean;
   last: boolean;
   editing: boolean;
+  answering: boolean;
   morph: boolean;
   jumpTo: (id: string) => void;
   view: ReturnType<typeof useDmReactions>['view'];
@@ -789,6 +821,7 @@ function ServerBubble({
   const quote = parseQuote(m.reply_to);
   return (
     <ChatBubble
+      testID={`dm-message-${m.id}`}
       text={gone ? tr.dm.deleted : m.body}
       gone={gone}
       mine={m.from_me}
@@ -803,6 +836,7 @@ function ServerBubble({
       time={clock}
       edited={edited ? tr.dm.edited : undefined}
       editing={editing}
+      answering={answering}
       morph={morph}
       // tuval DmMenuSureDoldu: one's own message past its 15 minutes says why "Düzenle" is gone.
       menuNote={m.from_me && !gone && !canEdit ? tr.dm.editWindowNote : undefined}
@@ -829,7 +863,8 @@ function ServerBubble({
               },
             ]
       }
-      delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
+      // DmSohbet: the ticks only on a run's last message (`.msg.me.g` has none).
+      delivery={m.from_me && last && isDelivery(m.status) ? m.status : undefined}
       // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar says who it is
       // and opens the profile.
     />

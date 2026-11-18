@@ -7,18 +7,15 @@ export const CAP_ICONS = {
     {"t":"rect","l":"w","x":9,"y":13.4,"width":6,"height":2.4,"rx":1.2},
   ],
   back: [
-    {"t":"rect","l":"a","x":5.562,"y":7,"width":12.676,"height":3.2,"rx":1.6,"transform":"rotate(134.145 11.9 8.6)"},
-    {"t":"rect","l":"b","x":5.562,"y":13.8,"width":12.676,"height":3.2,"rx":1.6,"transform":"rotate(45.855 11.9 15.4)"},
+    {"t":"path","l":"sa","d":"M14.5 5.5 8 12l6.5 6.5","sw":3},
   ],
   bell: [
-    {"t":"path","l":"b","d":"M6.2 16.4V11a5.8 5.8 0 0 1 11.6 0v5.4Z"},
-    {"t":"rect","l":"a","x":3,"y":15,"width":18,"height":3.2,"rx":1.6,"transform":"rotate(0 12 16.6)"},
-    {"t":"rect","l":"a","x":9.3,"y":18.9,"width":5.4,"height":2.6,"rx":1.3,"transform":"rotate(0 12 20.2)"},
-    {"t":"rect","l":"a","x":10.2,"y":2.8,"width":3.6,"height":2.6,"rx":1.3,"transform":"rotate(90 12 4.1)"},
+    {"t":"path","l":"b","d":"M9.5 19.2a2.6 2.6 0 0 0 5 0z"},
+    {"t":"path","l":"sa","d":"M12 3.6c-3.4 0-5.6 2.6-5.6 5.9v3.4L4.8 15.6c-.4.7.1 1.6.9 1.6h12.6c.8 0 1.3-.9.9-1.6l-1.6-2.7V9.5c0-3.3-2.2-5.9-5.6-5.9z","sw":2.6},
   ],
   block: [
-    {"t":"circle","l":"b","cx":12,"cy":12,"r":8.8},
-    {"t":"rect","l":"a","x":4.177,"y":10.4,"width":15.645,"height":3.2,"rx":1.6,"transform":"rotate(-45 12 12)"},
+    {"t":"circle","l":"b","cx":12,"cy":12,"r":9.4},
+    {"t":"rect","l":"a","x":3.4,"y":10.6,"width":17.2,"height":2.8,"rx":1.4,"transform":"rotate(45 12 12)"},
   ],
   bomb: [
     {"t":"circle","l":"b","cx":10.6,"cy":14,"r":7.2},
@@ -63,7 +60,7 @@ export const CAP_ICONS = {
     {"t":"path","l":"sa","d":"M7.6 12.2l3 3 5.8-6.2","sw":3},
   ],
   chevron: [
-    {"t":"path","l":"sa","d":"M9 5.5 15.5 12 9 18.5","sw":3.2},
+    {"t":"path","l":"sa","d":"M9 5.5l6.5 6.5L9 18.5","sw":2.6},
   ],
   clock: [
     {"t":"circle","l":"b","cx":12,"cy":12,"r":9},
@@ -71,8 +68,7 @@ export const CAP_ICONS = {
     {"t":"rect","l":"a","x":10.7,"y":10.7,"width":6.4,"height":2.6,"rx":1.3},
   ],
   close: [
-    {"t":"rect","l":"a","x":2.198,"y":10.4,"width":19.605,"height":3.2,"rx":1.6,"transform":"rotate(45 12 12)"},
-    {"t":"rect","l":"b","x":2.198,"y":10.4,"width":19.605,"height":3.2,"rx":1.6,"transform":"rotate(135 12 12)"},
+    {"t":"path","l":"sa","d":"M6.5 6.5l11 11m0-11-11 11","sw":2.6},
   ],
   closeSm: [
     {"t":"rect","l":"a","x":3,"y":10.4,"width":18,"height":3.2,"rx":1.6,"transform":"rotate(45 12 12)"},
@@ -87,9 +83,13 @@ export const CAP_ICONS = {
     {"t":"path","l":"a","d":"M16.6 7.4 13.9 13.9 7.4 16.6 10.1 10.1Z"},
     {"t":"circle","l":"w","cx":12,"cy":12,"r":1.3},
   ],
+  compose: [
+    {"t":"rect","l":"a","x":3,"y":9.4,"width":16.4,"height":5.2,"rx":2.6,"transform":"rotate(-45 11.2 12)"},
+    {"t":"rect","l":"b","x":12.4,"y":18.4,"width":8.6,"height":2.8,"rx":1.4},
+  ],
   copy: [
-    {"t":"rect","l":"b","x":3.2,"y":3.2,"width":12,"height":14,"rx":3.6},
-    {"t":"rect","l":"a","x":8.8,"y":6.8,"width":12,"height":14,"rx":3.6},
+    {"t":"rect","l":"a","x":8.4,"y":8.4,"width":12,"height":12.6,"rx":3.4},
+    {"t":"rect","l":"b","x":3.6,"y":3,"width":12,"height":12.6,"rx":3.4},
   ],
   doc: [
     {"t":"rect","l":"b","x":5,"y":3,"width":14,"height":18,"rx":4},
@@ -102,9 +102,8 @@ export const CAP_ICONS = {
     {"t":"rect","l":"b","x":10,"y":10.9,"width":10.4,"height":3.2,"rx":1.6,"transform":"rotate(-45 15.2 12.5)"},
   ],
   edit: [
-    {"t":"rect","l":"b","x":3.4,"y":9.6,"width":16.8,"height":5,"rx":2.5,"transform":"rotate(-45 11.8 12.1)"},
-    {"t":"rect","l":"a","x":12.2,"y":18.4,"width":8.8,"height":2.6,"rx":1.3},
-    {"t":"circle","l":"a","cx":5.2,"cy":18.8,"r":1.6},
+    {"t":"rect","l":"a","x":2.8,"y":9.6,"width":16.4,"height":5,"rx":2.5,"transform":"rotate(-45 11 12.1)"},
+    {"t":"rect","l":"b","x":3,"y":19,"width":18,"height":2.6,"rx":1.3},
   ],
   eye: [
     {"t":"path","l":"b","d":"M2.8 12s3.4-6 9.2-6 9.2 6 9.2 6-3.4 6-9.2 6-9.2-6-9.2-6Z"},
@@ -184,9 +183,9 @@ export const CAP_ICONS = {
     {"t":"circle","l":"a","cx":18.8,"cy":12,"r":2.1},
   ],
   moreV: [
-    {"t":"rect","l":"a","x":9.6,"y":2.6,"width":4.8,"height":4.8,"rx":2.4},
-    {"t":"rect","l":"b","x":9.6,"y":9.6,"width":4.8,"height":4.8,"rx":2.4},
-    {"t":"rect","l":"a","x":9.6,"y":16.6,"width":4.8,"height":4.8,"rx":2.4},
+    {"t":"circle","l":"a","cx":12,"cy":5,"r":2.2},
+    {"t":"circle","l":"a","cx":12,"cy":12,"r":2.2},
+    {"t":"circle","l":"a","cx":12,"cy":19,"r":2.2},
   ],
   mute: [
     {"t":"path","l":"b","d":"M3.8 9.4h3.1L11.6 5.6v12.8l-4.7-3.8H3.8Z"},
@@ -252,18 +251,16 @@ export const CAP_ICONS = {
     {"t":"path","l":"sa","d":"M19.6 3.8v5.4h-5.4","sw":3.2},
   ],
   reply: [
-    {"t":"path","l":"ob","d":"M6.6 10h7.4a6 6 0 0 1 6 6v2.4"},
-    {"t":"rect","l":"a","x":2.45,"y":6.15,"width":9.6,"height":3.2,"rx":1.6,"transform":"rotate(-45 7.25 7.75)"},
-    {"t":"rect","l":"a","x":2.45,"y":10.65,"width":9.6,"height":3.2,"rx":1.6,"transform":"rotate(45 7.25 12.25)"},
+    {"t":"path","l":"sa","d":"M10 5.4 4 11l6 5.6","sw":2.8},
+    {"t":"path","l":"sb","d":"M5 11h8.4c4 0 6.6 2.6 6.6 6.6v1","sw":2.8},
   ],
   report: [
     {"t":"rect","l":"a","x":-3.2,"y":10.6,"width":19.2,"height":3.2,"rx":1.6,"transform":"rotate(90 6.4 12.2)"},
     {"t":"path","l":"b","d":"M8 4.6h10.2c.7 0 1.1.8.7 1.3l-2.1 3.1 2.1 3.1c.4.5 0 1.3-.7 1.3H8Z"},
   ],
   search: [
-    {"t":"circle","l":"b","cx":10.4,"cy":10.4,"r":5.6},
-    {"t":"circle","l":"o","cx":10.4,"cy":10.4,"r":5.6,"sw":3},
-    {"t":"rect","l":"a","x":12.73,"y":15.7,"width":9.14,"height":3.2,"rx":1.6,"transform":"rotate(45 17.3 17.3)"},
+    {"t":"circle","l":"o","cx":10.4,"cy":10.4,"r":6.4},
+    {"t":"rect","l":"a","x":14.4,"y":15.6,"width":7.6,"height":3.4,"rx":1.7,"transform":"rotate(45 18.2 17.3)"},
   ],
   send: [
     {"t":"path","l":"b","d":"M3.8 4.3c-.5-.2-1 .3-.8.8L6 12l-3 6.9c-.2.5.3 1 .8.8l16.6-7.1c.5-.2.5-1 0-1.2Z"},
@@ -297,14 +294,19 @@ export const CAP_ICONS = {
     {"t":"circle","l":"a","cx":12,"cy":13.2,"r":2.4},
   ],
   trash: [
-    {"t":"rect","l":"b","x":6,"y":8,"width":12,"height":12.6,"rx":3.4},
-    {"t":"rect","l":"a","x":3,"y":4,"width":18,"height":3.2,"rx":1.6,"transform":"rotate(0 12 5.6)"},
-    {"t":"rect","l":"a","x":8.9,"y":2.1,"width":6.2,"height":2.6,"rx":1.3,"transform":"rotate(0 12 3.4)"},
+    {"t":"rect","l":"b","x":5,"y":8,"width":14,"height":13,"rx":3.6},
+    {"t":"rect","l":"a","x":3,"y":4.6,"width":18,"height":2.8,"rx":1.4},
+    {"t":"rect","l":"a","x":9.4,"y":2.4,"width":5.2,"height":2.6,"rx":1.3},
   ],
   unarchive: [
     {"t":"rect","l":"b","x":3,"y":4,"width":18,"height":5.4,"rx":2.7},
     {"t":"rect","l":"b","x":4.4,"y":10.6,"width":15.2,"height":9.6,"rx":3.6},
     {"t":"path","l":"sa","d":"M12 19V12.6m-3 2.8 3-3 3 3","sw":2.6},
+  ],
+  unpin: [
+    {"t":"rect","l":"b","x":6.5,"y":2.6,"width":11,"height":9.6,"rx":4.8},
+    {"t":"rect","l":"b","x":10.7,"y":10,"width":2.6,"height":11.4,"rx":1.3},
+    {"t":"rect","l":"a","x":1.6,"y":10.6,"width":20.8,"height":2.8,"rx":1.4,"transform":"rotate(45 12 12)"},
   ],
   user: [
     {"t":"circle","l":"a","cx":12,"cy":7.6,"r":3.9},
