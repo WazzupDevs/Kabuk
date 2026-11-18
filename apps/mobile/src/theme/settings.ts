@@ -22,8 +22,8 @@ export const SETTINGS = {
   groupTop: 14,
   // Hesap's locked rows (`.sr.inf`): the lock 16 at the right, the muted ink at 70 %.
   lock: { size: 16, opacity: 0.7 },
-  // Hesap's foot (`.foot`): 28 under the rows, its parts 6 apart, the wordmark 26 high.
-  foot: { top: 28, gap: 6, mark: 26 },
+  // Hesap's foot (`.foot`): 28 under the rows, its parts 6 apart, the wordmark 26 high, 3 more under it (`.wm` is an inline box).
+  foot: { top: 28, gap: 6, mark: 26, markGap: 3 },
   // Telefon bildirimleri's state (`.stt`): 26 high, 10 inside, a 7 dot 5 before the words.
   status: { height: 26, padX: 10, dot: 7, gap: 5 },
   // A person's row's small button (`.ur .btn`: 14 inside, 13/16 600; the kit's height).

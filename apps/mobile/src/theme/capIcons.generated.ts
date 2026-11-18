@@ -32,6 +32,11 @@ export const CAP_ICONS = {
     {"t":"rect","l":"a","x":10.6,"y":3,"width":2.4,"height":3.6,"rx":1.2},
     {"t":"rect","l":"a","x":2.6,"y":19.2,"width":15.4,"height":2.6,"rx":1.3},
   ],
+  cake: [
+    {"t":"rect","l":"b","x":3.6,"y":11,"width":16.8,"height":10,"rx":3.6},
+    {"t":"rect","l":"a","x":11,"y":5.6,"width":2,"height":5.4,"rx":1},
+    {"t":"path","l":"a","d":"M12 2.4c1.4 1.4 1.4 2.6 0 3.4-1.4-.8-1.4-2 0-3.4z"},
+  ],
   calendar: [
     {"t":"rect","l":"b","x":3.4,"y":5.6,"width":17.2,"height":15,"rx":4.6},
     {"t":"rect","l":"a","x":4.7,"y":4.1,"width":6.6,"height":2.6,"rx":1.3,"transform":"rotate(90 8 5.4)"},

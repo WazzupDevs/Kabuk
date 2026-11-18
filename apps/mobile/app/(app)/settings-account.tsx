@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { Linking, View } from 'react-native';
 
-import { T } from '@/aura/kit';
+import { T, useKit } from '@/aura/kit';
 import { Wordmark } from '@/components/Wordmark';
 import { useProfile } from '@/features/account/useProfile';
 import { useSessionStore } from '@/features/auth/session';
@@ -44,6 +44,7 @@ const F = SETTINGS.foot;
 const NBSP = ' ';
 
 export default function AccountScreen() {
+  const { c } = useKit();
   const phone = useSessionStore((s) => s.session?.user.phone);
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
@@ -84,7 +85,7 @@ export default function AccountScreen() {
           <InfoRow icon="phone" label={tr.settings.phoneLabel} value={maskPhone(phone)} />
           {/* Always there (the board); its value once the profile is read, the row's height kept. */}
           <InfoRow
-            icon="calendar"
+            icon="cake"
             label={tr.settings.birthDate}
             value={birthDate ? tr.settings.birthDateValue(birthDate) : NBSP}
           />
@@ -119,11 +120,14 @@ export default function AccountScreen() {
           </Group>
         </View>
         <View style={{ alignItems: 'center', gap: F.gap, marginTop: F.top }}>
-          <Wordmark height={F.mark} />
-          <T v="settingsFoot" center>
+          {/* The board's `.wm` is an inline box: the baseline gap under the mark (`markGap`). */}
+          <View style={{ marginBottom: F.markGap }}>
+            <Wordmark height={F.mark} />
+          </View>
+          <T v="settingsFoot" center color={c.muted}>
             {tr.settings.version(Constants.expoConfig?.version ?? '')}
           </T>
-          <T v="settingsFoot" center>
+          <T v="settingsFoot" center color={c.muted}>
             {tr.settings.osm}
           </T>
         </View>
