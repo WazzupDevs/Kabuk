@@ -44,6 +44,9 @@ type Props = {
   // Under a page's own heading and switch (Aura v75 AktivitelerHal): the loader at the page's top;
   // the error's icon 28.
   inPage?: boolean;
+  // Ayarlar ailesi (EngellenenlerBos, SessizAlinanlarBos `.emp`): no room over the picture (the page
+  // centres it) and the sentence at most 240 wide.
+  settings?: boolean;
 };
 
 // Aura v76 BosDurumlar (640x440 exports; the DM's first message and the venue's week reuse the
@@ -90,6 +93,20 @@ const RISO_BOARD: Partial<
   search: { width: 120, height: 80, radius: 0, shadow: 'none' },
   dm: { width: 120, height: 98, radius: 0, shadow: 'none' },
   archive: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  // EngellenenlerBos, SessizAlinanlarBos: 120 across; the app's 640 × 440 pictures (not the boards'
+  // 360 × 294 ones) keep their own shape in it.
+  blocked: {
+    width: 120,
+    height: Math.round(120 * KIT.size.emptyRisoAspect),
+    radius: 0,
+    shadow: 'none',
+  },
+  muted: {
+    width: 120,
+    height: Math.round(120 * KIT.size.emptyRisoAspect),
+    radius: 0,
+    shadow: 'none',
+  },
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,
@@ -151,10 +168,12 @@ export function EmptyState({
   riso,
   compact,
   inPage,
+  settings,
 }: Props) {
   if (kind === 'empty')
     return (
       <Empty
+        settings={settings}
         title={title}
         body={body}
         action={action}
@@ -223,7 +242,15 @@ export function EmptyState({
 
 // `.et` and `.ed`: the title 12 under the picture, the sentence 4 under it, at most 260 wide; a
 // sentence alone stands in the title's place, in the text colour.
-function StateWords({ title, body }: { title?: string; body: string }) {
+function StateWords({
+  title,
+  body,
+  noteMax = KIT.size.emptyNoteMax,
+}: {
+  title?: string;
+  body: string;
+  noteMax?: number;
+}) {
   return (
     <>
       {title ? (
@@ -242,7 +269,7 @@ function StateWords({ title, body }: { title?: string; body: string }) {
         center
         style={{
           marginTop: title ? KIT.size.emptyNoteTop : KIT.size.emptyTitleTop,
-          maxWidth: KIT.size.emptyNoteMax,
+          maxWidth: noteMax,
         }}
       >
         {body}
@@ -290,7 +317,8 @@ function Empty({
   small,
   picture,
   risoId,
-}: Pick<Props, 'title' | 'body' | 'action' | 'small'> & {
+  settings,
+}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'settings'> & {
   // The riso picture's name: its wrapper's testID (`empty-riso-<ad>`, E2E K14).
   risoId?: EmptyRiso;
   picture?: {
@@ -306,7 +334,7 @@ function Empty({
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
+        paddingTop: settings ? 0 : small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
         paddingHorizontal: KIT.size.emptyPad,
       }}
     >
@@ -317,7 +345,11 @@ function Empty({
       ) : (
         <EmptyMark />
       )}
-      <StateWords title={title} body={body} />
+      <StateWords
+        title={title}
+        body={body}
+        noteMax={settings ? KIT.size.emptyNoteMaxSm : undefined}
+      />
       {action ? (
         <View style={{ marginTop: KIT.size.emptyActionTop }}>
           <Btn

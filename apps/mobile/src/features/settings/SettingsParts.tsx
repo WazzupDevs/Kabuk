@@ -2,7 +2,7 @@ import { Children, isValidElement, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { Li, type SegBoard, Switch, T, useKit } from '@/aura/kit';
+import { Btn, Li, type SegBoard, Switch, T, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
@@ -342,9 +342,49 @@ export function PersonRow({
   );
 }
 export const PERSON_HAIR = KIT.size.av.md + SPACING[3];
-// The row's small soft button (`.ur .btn`: 14 inside, 13/16 600; the kit's small height).
-export const PERSON_BTN = {
+// The row's small soft button (`.ur .btn.soft`: 14 inside, 13/16 600; the kit's small height; in
+// the dark the flat #1B211F with the ink's words).
+const PERSON_BTN = {
   type: 'toastBtn',
   padLeft: SETTINGS.personBtn.padX,
   padRight: SETTINGS.personBtn.padX,
 } as const;
+export function PersonButton({
+  label,
+  onPress,
+  loading,
+  disabled,
+}: {
+  label: string;
+  onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+}) {
+  const { c, scheme } = useKit();
+  const dark = scheme === 'dark';
+  return (
+    <Btn
+      sm
+      variant="glassy"
+      look={PERSON_BTN}
+      fill={dark ? SETTINGS.dark.track : undefined}
+      tint={dark ? c.ink : undefined}
+      label={label}
+      onPress={onPress}
+      loading={loading}
+      disabled={disabled}
+    />
+  );
+}
+
+// Under a list page's line, the style of what fills the rest of the page (a Screen's part that
+// grows): the rows 12 under it, or the empty state centred in the room down to the board's 190 from
+// the screen's foot (`.emp`).
+export function listArea(empty: boolean) {
+  return {
+    flexGrow: 1,
+    marginTop: SPACING[3],
+    justifyContent: empty ? 'center' : 'flex-start',
+    paddingBottom: empty ? SETTINGS.empty.bottom : 0,
+  } as const;
+}

@@ -1,13 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Av, Btn } from '@/aura/kit';
+import { View } from 'react-native';
+
+import { Av, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { safetyApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
-import { Group, PERSON_HAIR, PersonRow } from '@/features/settings/SettingsParts';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
+import {
+  Group,
+  listArea,
+  Note,
+  NOTES,
+  PERSON_HAIR,
+  PersonButton,
+  PersonRow,
+} from '@/features/settings/SettingsParts';
 
 const blocksKey = ['blocks'] as const;
 
@@ -27,56 +37,66 @@ function useBlocks() {
   });
 }
 
-// Engellenenler (yeni arayüz tuvali, Engellenenler, EngellenenlerBos): each block with "Engeli kaldır".
-export function BlockedList() {
+// Engellenenler (yeni arayüz tuvali, Engellenenler, EngellenenlerBos): each block with "Engeli
+// kaldır"; without any, the empty state centred in the page. `style`: the screen's part that grows
+// (Screen → fills), so the empty state has the page's room.
+export function BlockedList({ style }: { style: { flexGrow: number } }) {
+  const { c } = useKit();
   const queryClient = useQueryClient();
   const blocks = useBlocks();
   const unblock = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: safetyApi.unblock,
     onSettled: () => void queryClient.invalidateQueries({ queryKey: blocksKey }),
   });
   const now = useNow(60000);
-  if (blocks.isPending) return <Loader />;
-  if (blocks.isError) {
-    return (
-      <EmptyState
-        kind="error"
-        body={errorMessage(blocks.error)}
-        error={blocks.error}
-        action={{ label: tr.common.retry, onPress: () => void blocks.refetch() }}
-      />
-    );
-  }
-  if (blocks.data.length === 0) {
-    return (
-      <EmptyState
-        kind="empty"
-        riso="blocked"
-        title={tr.settings.blockedEmptyTitle}
-        body={tr.settings.blockedEmptyBody}
-      />
-    );
-  }
+  const rows = blocks.data ?? [];
   return (
-    <Group hairIn={PERSON_HAIR}>
-      {blocks.data.map((b) => (
-        <PersonRow
-          key={b.id}
-          face={<Av size="md" name={b.blocked_alias} />}
-          name={b.blocked_alias}
-          line={tr.common.ago(b.created_at, now)}
-          action={
-            <Btn
-              sm
-              variant="glassy"
-              label={tr.safety.unblock}
-              onPress={() => unblock.mutate(b.id)}
-              loading={unblock.isPending && unblock.variables === b.id}
-              disabled={unblock.isPending}
-            />
-          }
+    <View style={[style, listArea(!blocks.isSuccess || rows.length === 0)]}>
+      {blocks.isPending ? (
+        <EmptyState kind="loading" body={tr.common.loading} />
+      ) : blocks.isError ? (
+        <EmptyState
+          kind="error"
+          body={errorMessage(blocks.error)}
+          error={blocks.error}
+          action={{ label: tr.common.retry, onPress: () => void blocks.refetch() }}
         />
-      ))}
-    </Group>
+      ) : rows.length === 0 ? (
+        <EmptyState
+          kind="empty"
+          settings
+          riso="blocked"
+          title={tr.settings.blockedEmptyTitle}
+          body={tr.settings.blockedEmptyBody}
+        />
+      ) : (
+        <Group hairIn={PERSON_HAIR}>
+          {rows.map((b) => (
+            <PersonRow
+              key={b.id}
+              face={<Av size="md" name={b.blocked_alias} />}
+              name={b.blocked_alias}
+              // The board says "Profilli" or "Anonim adı" here; a block does not keep which, so
+              // the day it was made.
+              line={tr.common.ago(b.created_at, now)}
+              action={
+                <PersonButton
+                  label={tr.safety.unblock}
+                  onPress={() => unblock.mutate(b.id)}
+                  loading={unblock.isPending && unblock.variables === b.id}
+                  disabled={unblock.isPending}
+                />
+              }
+            />
+          ))}
+        </Group>
+      )}
+      {unblock.isError ? (
+        <View style={NOTES}>
+          <Note color={c.warn}>{errorMessage(unblock.error)}</Note>
+        </View>
+      ) : null}
+    </View>
   );
 }
