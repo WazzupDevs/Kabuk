@@ -120,7 +120,7 @@ describe('K8: the table card bars', () => {
 });
 
 describe('K9: Profili düzenle', () => {
-  const edit = code('app/(app)/(tabs)/profile/edit.tsx');
+  const edit = code('src/features/profile/EditProfile.tsx');
   it('has no written "Fotoğrafı değiştir" button', () => {
     // The text may only be the camera badge's accessibility label, never a label or a text node.
     const uses = edit.match(/.*photoChange.*/g) ?? [];

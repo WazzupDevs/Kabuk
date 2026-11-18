@@ -177,7 +177,7 @@ describe('the cover (kapak, 5.2)', () => {
 
 describe("another person's profile (kapak, 5.6)", () => {
   const O = PROFILE_PAGE.other;
-  const page = code('app/(app)/people/[publicId].tsx');
+  const page = code('src/features/profile/FriendPage.tsx');
   const shell = code('src/features/profile/OtherProfile.tsx');
   it('the cover at 0.5, the photo to 0.75 over 60–180 and out over 120–190', () => {
     expect(O.speed).toBe(0.5);
@@ -201,7 +201,7 @@ describe("another person's profile (kapak, 5.6)", () => {
 
 describe('the own profile in one flow (ProfilBen, ProfilBenKaydir)', () => {
   const OWN = PROFILE_PAGE.own;
-  const page = code('app/(app)/(tabs)/profile/index.tsx');
+  const page = code('src/features/profile/OwnProfile.tsx');
 
   it('the cover 236 with its foot 28 round, the photo 112 over it by 60', () => {
     expect([OWN.cover, OWN.coverRadius, OWN.photo, OWN.photoOver]).toEqual([236, 28, 112, 60]);

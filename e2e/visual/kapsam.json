@@ -499,10 +499,10 @@
       "apps/mobile/src/theme/person.ts",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Başka birinin profili (arkadaş)",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-baskasi",
+    "hal": "yazildi"
   },
   {
     "pano": "03",
@@ -516,10 +516,10 @@
       "apps/mobile/src/theme/person.ts",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Başka birinin profili (arkadaş)",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-baskasi",
+    "hal": "yazildi"
   },
   {
     "pano": "03b",
@@ -534,10 +534,10 @@
       "apps/mobile/src/theme/ownProfile.ts",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil sekmesi",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ben",
+    "hal": "yazildi"
   },
   {
     "pano": "03b",
@@ -552,10 +552,10 @@
       "apps/mobile/src/theme/ownProfile.ts",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil sekmesi",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ben",
+    "hal": "yazildi"
   },
   {
     "pano": "03c",
@@ -567,10 +567,10 @@
       "apps/mobile/src/motion/TopBar.tsx",
       "apps/mobile/src/theme/aura.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil sekmesi → aşağı kaydır",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ben-kaydir",
+    "hal": "yazildi"
   },
   {
     "pano": "03c",
@@ -582,10 +582,10 @@
       "apps/mobile/src/motion/TopBar.tsx",
       "apps/mobile/src/theme/aura.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil sekmesi → aşağı kaydır",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ben-kaydir",
+    "hal": "yazildi"
   },
   {
     "pano": "03d",
@@ -598,10 +598,10 @@
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil → Profili düzenle",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-duzenle",
+    "hal": "yazildi"
   },
   {
     "pano": "03d",
@@ -614,10 +614,10 @@
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil → Profili düzenle",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-duzenle",
+    "hal": "yazildi"
   },
   {
     "pano": "03e",
@@ -630,10 +630,10 @@
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil → Profili düzenle → ad alanına yaz",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-duzenle-yaz",
+    "hal": "yazildi"
   },
   {
     "pano": "03e",
@@ -646,10 +646,10 @@
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil → Profili düzenle → ad alanına yaz",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-duzenle-yaz",
+    "hal": "yazildi"
   },
   {
     "pano": "03f",
@@ -3399,10 +3399,10 @@
       "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profilli mesajın göndereni",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan",
+    "hal": "yazildi"
   },
   {
     "pano": "57",
@@ -3416,10 +3416,10 @@
       "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profilli mesajın göndereni",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan",
+    "hal": "yazildi"
   },
   {
     "pano": "58",
@@ -3431,10 +3431,10 @@
       "apps/mobile/src/i18n/tr.ts",
       "apps/mobile/src/motion/Dialog.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → Arkadaşlık isteği gönder",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan-istek",
+    "hal": "yazildi"
   },
   {
     "pano": "58",
@@ -3446,10 +3446,10 @@
       "apps/mobile/src/i18n/tr.ts",
       "apps/mobile/src/motion/Dialog.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → Arkadaşlık isteği gönder",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan-istek",
+    "hal": "yazildi"
   },
   {
     "pano": "59",
@@ -3461,10 +3461,10 @@
       "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
       "apps/mobile/src/motion/Menu.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → ⋮",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski",
+    "durum": "ekran-profil-mekan-menu",
+    "hal": "yazildi",
     "muaf": [
       {
         "pr": 737,
@@ -3482,10 +3482,10 @@
       "apps/mobile/src/features/profile/SenderProfileScreen.tsx",
       "apps/mobile/src/motion/Menu.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → ⋮",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski",
+    "durum": "ekran-profil-mekan-menu",
+    "hal": "yazildi",
     "muaf": [
       {
         "pr": 737,
@@ -3504,10 +3504,10 @@
       "apps/mobile/src/i18n/tr.ts",
       "apps/mobile/src/motion/Sheet.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → ⋮ → Şikayet et",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan-sikayet",
+    "hal": "yazildi"
   },
   {
     "pano": "60",
@@ -3520,10 +3520,10 @@
       "apps/mobile/src/i18n/tr.ts",
       "apps/mobile/src/motion/Sheet.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → ⋮ → Şikayet et",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan-sikayet",
+    "hal": "yazildi"
   },
   {
     "pano": "61",
@@ -3536,10 +3536,10 @@
       "apps/mobile/src/i18n/tr.ts",
       "apps/mobile/src/motion/Dialog.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → ⋮ → Engelle",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan-engelle",
+    "hal": "yazildi"
   },
   {
     "pano": "61",
@@ -3552,10 +3552,10 @@
       "apps/mobile/src/i18n/tr.ts",
       "apps/mobile/src/motion/Dialog.tsx"
     ],
-    "acilis": "",
+    "acilis": "Mekan sohbeti → profil → ⋮ → Engelle",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-mekan-engelle",
+    "hal": "yazildi"
   },
   {
     "pano": "62",
@@ -4614,10 +4614,10 @@
       "apps/mobile/app/(app)/people/[publicId].tsx",
       "apps/mobile/src/features/profile/ProfileCard.tsx"
     ],
-    "acilis": "",
+    "acilis": "Başka birinin profili açılırken",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-yukleniyor",
+    "hal": "yazildi"
   },
   {
     "pano": "87",
@@ -4628,10 +4628,10 @@
       "apps/mobile/app/(app)/people/[publicId].tsx",
       "apps/mobile/src/features/profile/ProfileCard.tsx"
     ],
-    "acilis": "",
+    "acilis": "Başka birinin profili açılırken",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-yukleniyor",
+    "hal": "yazildi"
   },
   {
     "pano": "88",
@@ -4732,10 +4732,10 @@
       "apps/mobile/src/theme/ownProfile.ts",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil sekmesi (320 dp, en büyük yazı)",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ben-dar",
+    "hal": "yazildi"
   },
   {
     "pano": "90",
@@ -4750,10 +4750,10 @@
       "apps/mobile/src/theme/ownProfile.ts",
       "apps/mobile/src/theme/profileCover.ts"
     ],
-    "acilis": "",
+    "acilis": "Profil sekmesi (320 dp, en büyük yazı)",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ben-dar",
+    "hal": "yazildi"
   },
   {
     "pano": "91",
@@ -5264,10 +5264,10 @@
       "apps/mobile/app/(app)/people/[publicId].tsx",
       "supabase/functions/_shared/pure/api/friends.ts"
     ],
-    "acilis": "",
+    "acilis": "Başkasının profili → Ortak arkadaşlar",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ortak",
+    "hal": "yazildi"
   },
   {
     "pano": "103",
@@ -5278,10 +5278,10 @@
       "apps/mobile/app/(app)/people/[publicId].tsx",
       "supabase/functions/_shared/pure/api/friends.ts"
     ],
-    "acilis": "",
+    "acilis": "Başkasının profili → Ortak arkadaşlar",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-profil-ortak",
+    "hal": "yazildi"
   },
   {
     "pano": "104",
