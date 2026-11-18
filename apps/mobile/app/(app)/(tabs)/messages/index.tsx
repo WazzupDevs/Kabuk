@@ -85,7 +85,7 @@ export default function MessagesScreen() {
             <View style={{ flexDirection: 'row', gap: M.actsGap }}>
               <Round
                 side={KIT.size.round}
-                icon="edit"
+                icon="compose"
                 testID="messages-new"
                 label={tr.messages.newMessage}
                 onPress={() => setPicking(true)}

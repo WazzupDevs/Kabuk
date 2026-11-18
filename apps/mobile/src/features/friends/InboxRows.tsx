@@ -109,7 +109,7 @@ export function useThreadMenu(
         ) : t.pinned ? (
           <MenuItem
             testID="inbox-menu-unpin"
-            cap="pushpin"
+            cap="unpin"
             label={tr.messages.unpin}
             onPress={() => run('unpin', t)}
           />
