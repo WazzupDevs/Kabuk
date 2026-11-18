@@ -866,6 +866,9 @@ export const tr = {
     addName: 'Ad ekle',
     edit: 'Profili düzenle',
     birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
+    // ProfilDuzenle's note under the birth date: the link writes to the address in İletişim.
+    birthDateHelp: 'Doğum tarihin değiştirilemez, profilinde yalnızca yaşın görünür. Yanlışsa ',
+    birthDateHelpLink: 'bizimle iletişime geç',
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
     friendsSub: (n: number) => `${n} arkadaş`,
@@ -873,8 +876,7 @@ export const tr = {
     moreFaces: (n: number) => `+${n}`,
     editTitle: 'Profili düzenle',
     nameLabel: 'Görünen ad',
-    nameHint:
-      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
+    nameHint: 'Arkadaşların ve profilinle olduğun yerdekiler görür.',
     bioLabel: 'Tanıtım',
     bioHint: (n: number, max: number) => `${n}/${max}`,
     bioTooLong: (max: number) =>

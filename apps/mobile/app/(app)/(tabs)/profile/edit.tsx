@@ -1,22 +1,22 @@
+import { LEGAL_ENTITY } from '@shared/legalEntity.ts';
 import { containsContact } from '@shared/profanity.ts';
 import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { BackHandler, Linking, View } from 'react-native';
+import { BackHandler, Linking, Text as RNText, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, T, useKit } from '@/aura/kit';
-import { Input } from '@/components/Input';
+import { Btn, T, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
 import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
-import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoSheet, photoErrorMessage } from '@/features/profile/PhotoSheet';
 import { chooseCover, PhotoError } from '@/features/profile/photo';
 import { ProfileCover } from '@/features/profile/ProfileCover';
+import { LockMark, ProfileField } from '@/features/profile/ProfileField';
 import { RingedFace } from '@/features/profile/ProfileFace';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -27,17 +27,21 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { confirm } from '@/lib/overlayStore';
 import { maxLengthFor } from '@/lib/textLimit';
-import { type MenuAnchor, Tap } from '@/motion';
-import { KIT } from '@/theme/auraKit';
-import { PROFILE_EDIT } from '@/theme/profileEdit';
-import { ICON, SPACING } from '@/theme/tokens';
+import { BarBack, type MenuAnchor, Tap } from '@/motion';
+import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { EDIT_TYPE, PROFILE_EDIT } from '@/theme/profileEdit';
+import { SPACING } from '@/theme/tokens';
 
-// The photo, the cover, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; docs/design/
-// iskelet.md → 5.8): the `sayfa` bar with the back button and Kaydet (clear, its words quiet with
-// nothing to save, green and 800 with something, "Kaydedildi" once saved, its width kept), the cover
-// and the photo in one preview, the fields' card with their counts, the birth date's row. Length is
-// checked here; the profile function checks length and profanity again. The birth date cannot
-// change (rule 11).
+// The address in the legal texts unless the build names another (as Hesap's İletişim).
+const CONTACT_EMAIL = process.env.EXPO_PUBLIC_CONTACT_EMAIL?.trim() || LEGAL_ENTITY.contactEmail;
+
+// The photo, the cover, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; the yeni arayüz
+// tuvali's ProfilDuzenle and ProfilDuzenleYaz): the bar with the round back button, the title and
+// Kaydet (grey with nothing to save, the ink with something, "Kaydedildi" once saved, its width
+// kept), the cover and the photo in one preview, each field on its own with its count, the birth
+// date's still box. Length is checked here; the profile function checks length and profanity
+// again. The birth date cannot change (rule 11).
 export default function EditProfileScreen() {
   // Editing, the tab bar is out of sight (the owner's call, 2 Kasım, 11.5, 12.2).
   useHideTabBar();
@@ -60,9 +64,9 @@ export default function EditProfileScreen() {
   );
 }
 
-// The cover and the photo in one preview, as on the profile (iskelet.md → 5.8): the cover with the
-// clear "Kapak" button over it, opening Değiştir and Kaldır (the kit's menu, 3.5); the photo in its
-// white ring over the cover's foot with a clear camera round at its corner (the written "Fotoğrafı
+// The cover and the photo in one preview (ProfilDuzenle): the cover 150 high and 22 round with
+// "Kapağı değiştir" at its top right, opening Değiştir and Kaldır (the kit's menu, 3.5); the photo
+// 104 in its ring over the cover's foot by 52, a camera round at its corner (the written "Fotoğrafı
 // değiştir" went, the owner's call, 2 Kasım, 12.5). Both need a saved name first (the server
 // refuses them otherwise).
 function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
@@ -94,104 +98,100 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
       setAnchor(at);
       setCoverMenu(true);
     });
-  const camera = KIT.button[scheme].clear;
   const E = PROFILE_EDIT;
   const look = E[scheme];
+  const ground = AURA[scheme].ground;
+  const C = E.camera;
 
-  // tuval Duzenle: the cover 172 high and 28 round on its shadow, "Kapak" at its top right; the
-  // photo 116 in its white ring 112 down, centred, the camera round at its corner.
   return (
-    <View style={{ gap: E.gap }}>
-      <View style={{ height: E.preview }}>
-        <View
-          style={{
-            height: E.cover,
-            borderRadius: E.coverRadius,
-            boxShadow: look.coverShadow || undefined,
-          }}
-        >
-          <ProfileCover
-            url={coverUrl}
-            height={E.cover}
-            radius={E.coverRadius}
-            accessibilityLabel={tr.profile.cover}
-          />
-        </View>
+    <View>
+      <View style={{ height: E.cover }}>
+        <ProfileCover
+          url={coverUrl}
+          height={E.cover}
+          radius={E.coverRadius}
+          accessibilityLabel={tr.profile.cover}
+        />
         <View
           ref={coverRef}
           collapsable={false}
           style={{ position: 'absolute', top: E.coverBtn.inset, right: E.coverBtn.inset }}
         >
           <Btn
-            sm
-            variant="glassy"
-            icon="camera"
+            bar={E.coverBtn.height}
+            lead={<CapIcon name="camera" color={KIT.white} soft={1} size={E.coverBtn.icon} />}
             testID="cover-menu"
-            label={tr.profile.cover}
+            label={tr.profile.coverChange}
+            fill={look.coverBtnFill}
+            tint={KIT.white}
             look={{
-              type: 'coverBtn',
+              type: 'setupShuffle',
               padLeft: E.coverBtn.padLeft,
               padRight: E.coverBtn.padRight,
               gap: E.coverBtn.gap,
-              icon: E.coverBtn.icon,
             }}
             disabled={!hasName}
             loading={busy}
             onPress={openCoverMenu}
           />
         </View>
-        <View
-          style={{ position: 'absolute', left: 0, right: 0, top: E.faceTop, alignItems: 'center' }}
+      </View>
+      <View style={{ alignItems: 'center', marginTop: -E.faceOver }}>
+        <Tap
+          accessibilityLabel={label}
+          accessibilityState={{ disabled: !hasName }}
+          disabled={!hasName}
+          onPress={() => setPhotoMenu(true)}
         >
-          <Tap
-            accessibilityLabel={label}
-            accessibilityState={{ disabled: !hasName }}
-            disabled={!hasName}
-            onPress={() => setPhotoMenu(true)}
+          <RingedFace
+            name={view.data?.displayName ?? ''}
+            photoUrl={view.data?.photoUrl ?? null}
+            side={E.face}
+            ringColor={ground}
+            ground={look.faceGround}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              right: C.right,
+              bottom: C.bottom,
+              width: C.side,
+              height: C.side,
+              borderRadius: C.side / 2,
+              borderWidth: C.ring,
+              borderColor: ground,
+              backgroundColor: look.cameraFill,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            <RingedFace
-              name={view.data?.displayName ?? ''}
-              photoUrl={view.data?.photoUrl ?? null}
-              side={E.face}
-            />
-            <View
-              style={{
-                position: 'absolute',
-                right: E.camera.right,
-                bottom: E.camera.bottom,
-                width: CAMERA,
-                height: CAMERA,
-                borderRadius: CAMERA / 2,
-                borderWidth: KIT.size.edge,
-                borderColor: camera.edge,
-                backgroundColor: look.cameraFill,
-                boxShadow: camera.shadow || undefined,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <CapIcon name="camera" color={camera.ink} soft={1} size={E.camera.icon} />
-            </View>
-          </Tap>
-        </View>
+            <CapIcon name="camera" color={look.cameraInk} soft={1} size={C.icon} />
+          </View>
+        </Tap>
       </View>
       {!hasName ? (
-        <T v="fine" center>
-          {tr.profile.photoNeedsName}
-        </T>
+        <View style={{ marginTop: SPACING[2] }}>
+          <T v="fine" center>
+            {tr.profile.photoNeedsName}
+          </T>
+        </View>
       ) : null}
       {!coverUrl && view.data && hasName ? (
-        <T v="fine" center>
-          {tr.profile.coverDefault}
-        </T>
+        <View style={{ marginTop: SPACING[2] }}>
+          <T v="fine" center>
+            {tr.profile.coverDefault}
+          </T>
+        </View>
       ) : null}
       {view.isError ? (
-        <T v="fine" color={KIT.danger}>
-          {errorMessage(view.error)}
-        </T>
+        <View style={{ marginTop: SPACING[2] }}>
+          <T v="fine" color={KIT.danger}>
+            {errorMessage(view.error)}
+          </T>
+        </View>
       ) : null}
       {failed ? (
-        <View style={{ gap: SPACING[2] }}>
+        <View style={{ gap: SPACING[2], marginTop: SPACING[2] }}>
           <T v="fine" color={KIT.danger}>
             {photoErrorMessage(failed)}
           </T>
@@ -207,7 +207,7 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
       ) : null}
 
       {anchor ? (
-        // iskelet.md → 3.5: grown out of "Kapak", no "Vazgeç", Kaldır red at the foot apart.
+        // iskelet.md → 3.5: grown out of "Kapağı değiştir", no "Vazgeç", Kaldır red at the foot apart.
         <Menu anchor={anchor} visible={coverMenu} onClose={() => setCoverMenu(false)}>
           <MenuItem
             cap="photo"
@@ -236,8 +236,6 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
     </View>
   );
 }
-// The camera round at the photo's corner (36, iskelet.md → 2.1: a small one in a line).
-const CAMERA = KIT.size.btnSm;
 
 function EditForm({
   publicId,
@@ -248,7 +246,7 @@ function EditForm({
   initialName: string;
   initialBio: string;
 }) {
-  const { c, scheme } = useKit();
+  const { c } = useKit();
   const queryClient = useQueryClient();
   const [name, setName] = useState(initialName);
   const [bio, setBio] = useState(initialBio);
@@ -332,7 +330,7 @@ function EditForm({
       return () => sub.remove();
     }, [dirty, askToLeave]),
   );
-  // Nothing to save: Kaydet stays quiet and does nothing; a field that does not pass says so.
+  // Nothing to save: Kaydet is grey and does nothing; a field that does not pass says so.
   const onSave = () => {
     if (!changed || save.isPending) return;
     if (!nameValid || !bioValid) {
@@ -343,132 +341,100 @@ function EditForm({
   };
 
   const E = PROFILE_EDIT;
-  const look = E[scheme];
   return (
     <Screen
-      gap={E.gap}
+      gap={0}
       side={E.side}
       barSide={E.side}
-      // iskelet.md → 3.1 (`sayfa`) and 2.1: the back button and Kaydet on the bar, both clear
-      // glass; the bar stays while the page scrolls (the owner's report, 2 Kasım, 12.1).
+      padTop={E.coverTop}
+      // ProfilDuzenle `.ptb`: the round back button, the title 19/24 and Kaydet 40 on the bar, which
+      // stays while the page scrolls (the owner's report, 2 Kasım, 12.1).
       top={
-        <PageTop
-          title={tr.profile.editTitle}
-          look={{ titleIn: E.titleIn }}
-          onBack={leave}
-          trailing={
-            <Btn
-              variant="glassy"
-              bar={KIT.size.topBtn}
-              testID="profile-save"
-              label={save.isSuccess ? tr.profile.savedShort : tr.profile.save}
-              tint={changed || save.isSuccess ? KIT.primary : KIT.saveIdle}
-              strong={changed || save.isSuccess}
-              loading={save.isPending}
-              onPress={onSave}
-              style={{ minWidth: KIT.saveMinWidth }}
-            />
-          }
-        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: E.barGap,
+            minHeight: KIT.size.btnRow,
+          }}
+        >
+          <BarBack onBack={leave} side={KIT.size.round} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T v="pageBarTitle" ink style={EDIT_TYPE.title} accessibilityRole="header">
+              {tr.profile.editTitle}
+            </T>
+          </View>
+          <Btn
+            bar={KIT.size.btnBar}
+            testID="profile-save"
+            label={save.isSuccess ? tr.profile.savedShort : tr.profile.save}
+            disabled={!changed && !save.isSuccess}
+            loading={save.isPending}
+            look={{ type: 'holdRow', padLeft: E.barPad, padRight: E.barPad }}
+            onPress={onSave}
+            style={{ minWidth: KIT.saveMinWidth }}
+          />
+        </View>
       }
     >
       {save.isError ? (
-        <T v="fine" color={c.warn}>
-          {errorMessage(save.error)}
-        </T>
+        <View style={{ marginBottom: SPACING[3] }}>
+          <T v="fine" color={c.warn}>
+            {errorMessage(save.error)}
+          </T>
+        </View>
       ) : null}
       <PreviewEditor publicId={publicId} hasName={initialName !== ''} />
-      {/* tuval Duzenle: the fields on one card, 26 round, 16 inside, 8 apart, a hairline between
-          them; each its label with its count over it and its note under it. Focused, the green
-          ring (iskelet.md → 5.8). */}
-      <Glass
-        face={look.card}
-        radius={E.card.radius}
-        style={{ padding: E.card.pad, gap: E.card.gap }}
-      >
-        <Input
-          large
-          boxed
-          halo
-          testID="name-input"
-          label={tr.profile.nameLabel}
-          hint={tr.profile.nameHint}
-          counter={tr.profile.fieldCount(nameLength, DISPLAY_NAME_MAX)}
-          value={name}
-          onChangeText={setName}
-          error={
-            nameContact
-              ? tr.errors.contact_not_allowed
-              : tried && !nameValid
-                ? tr.errors.display_name_invalid
-                : null
-          }
-          maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
-          autoCapitalize="words"
-          autoCorrect={false}
-        />
-        <View
-          style={{
-            height: KIT.size.hair,
-            marginVertical: E.card.hairGap,
-            backgroundColor: look.hair,
-          }}
-        />
-        <Input
-          large
-          boxed
-          halo
-          label={tr.profile.bioLabel}
-          counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
-          value={bio}
-          onChangeText={setBio}
-          error={bioError}
-          maxLength={maxLengthFor(bio, bioLimit)}
-          multiline
-          tall
-        />
-      </Glass>
-      {/* The birth date as a settings row (iskelet.md → 5.8, 2.4) on its own card: the calendar on
-          its square, the note under the title, the lock and "Değiştirilemez" at the right (rule
-          11: it cannot change in the app). */}
-      <Glass
-        face={look.card}
-        radius={E.row.radius}
-        style={{
-          paddingVertical: E.row.padY,
-          paddingHorizontal: E.row.padX,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: E.row.gap,
-        }}
-      >
-        <View
-          style={{
-            width: KIT.rowIcon.side,
-            height: KIT.rowIcon.side,
-            borderRadius: KIT.rowIcon.radius,
-            backgroundColor: KIT.primary,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <CapIcon name="calendar" color={KIT.white} soft={1} size={ICON.sm} />
-        </View>
-        <View style={{ flex: 1, minWidth: 0, gap: E.row.lineGap }}>
-          <T v="rowTitle" ink>
-            {tr.profile.birthDate}
-          </T>
-          <T v="rowNote" color={look.note}>
-            {tr.profile.birthDateNote}
-          </T>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: E.row.lockGap }}>
-          <CapIcon name="lock" color={look.note} soft={1} size={E.row.lock} />
-          <T v="rowLock" color={look.note}>
-            {tr.profile.unchangeable}
-          </T>
-        </View>
-      </Glass>
+      {/* ProfilDuzenle: each field stands alone, its label with its count over it and its note
+          under it. Focused, the box's line is 2 and the text's colour. */}
+      <ProfileField
+        testID="name-input"
+        label={tr.profile.nameLabel}
+        hint={tr.profile.nameHint}
+        counter={tr.profile.fieldCount(nameLength, DISPLAY_NAME_MAX)}
+        value={name}
+        onChangeText={setName}
+        error={
+          nameContact
+            ? tr.errors.contact_not_allowed
+            : tried && !nameValid
+              ? tr.errors.display_name_invalid
+              : null
+        }
+        maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
+        autoCapitalize="words"
+        autoCorrect={false}
+      />
+      <ProfileField
+        label={tr.profile.bioLabel}
+        counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
+        value={bio}
+        onChangeText={setBio}
+        error={bioError}
+        maxLength={maxLengthFor(bio, bioLimit)}
+        multiline
+      />
+      {/* The birth date as a still box (rule 11: it cannot change in the app, and the phone never
+          holds it: the box says so instead of showing it) and the note with the way to write to us. */}
+      <ProfileField
+        label={tr.profile.birthDate}
+        readOnly
+        readOnlyValue={tr.profile.unchangeable}
+        trail={<LockMark color={c.muted} />}
+        hint={
+          <>
+            {tr.profile.birthDateHelp}
+            <RNText
+              accessibilityRole="link"
+              onPress={() => void Linking.openURL(`mailto:${CONTACT_EMAIL}`)}
+              style={[KIT_TYPE.fieldLabel, { color: c.ink, textDecorationLine: 'underline' }]}
+            >
+              {tr.profile.birthDateHelpLink}
+            </RNText>
+            .
+          </>
+        }
+      />
     </Screen>
   );
 }

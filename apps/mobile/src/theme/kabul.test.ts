@@ -132,17 +132,14 @@ describe('K9: Profili düzenle', () => {
   it('hides the tab bar', () => {
     expect(edit).toMatch(/useHideTabBar\(\);/);
   });
-  it('Kaydet is on the bar, clear, at least 96 wide (iskelet.md → 2.1, 5.8)', () => {
+  it('Kaydet is on the bar, 40 high, grey with nothing to save, at least 96 wide (ProfilDuzenle)', () => {
     expect(edit).not.toMatch(/footer=\{/);
-    expect(edit).toMatch(/<PageTop\b/);
-    expect(edit).toMatch(/variant="glassy"\s+bar=\{KIT\.size\.topBtn\}\s+testID="profile-save"/);
-    expect(edit).toMatch(/tint=\{changed \|\| save\.isSuccess \? KIT\.primary : KIT\.saveIdle\}/);
+    expect(edit).toMatch(/bar=\{KIT\.size\.btnBar\}\s+testID="profile-save"/);
+    expect(edit).toMatch(/disabled=\{!changed && !save\.isSuccess\}/);
     expect(edit).toMatch(/style=\{\{ minWidth: KIT\.saveMinWidth \}\}/);
     const kit = code('src/theme/auraKit.ts');
-    expect(kit).toMatch(/saveIdle: '#9AAEA1',/);
     expect(kit).toMatch(/saveMinWidth: 96,/);
-    expect(kit).toMatch(/primaryHalo: 'rgba\(14, 135, 69, 0\.18\)',/);
-    expect(kit).toMatch(/focusHalo: 3,/);
+    expect(kit).toMatch(/btnBar: 40,/);
   });
 });
 

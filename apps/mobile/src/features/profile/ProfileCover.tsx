@@ -32,6 +32,7 @@ export function ProfileCover({
           // Kept under the file's own path, not its signed address: a new signature never blinks it.
           source={{ uri: url, cacheKey: photoCacheKey(url) }}
           contentFit="cover"
+          contentPosition={{ top: '60%', left: '50%' }}
           cachePolicy="memory-disk"
           transition={0}
           style={{ width: '100%', height: '100%' }}
