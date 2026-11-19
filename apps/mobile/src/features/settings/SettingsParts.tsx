@@ -46,7 +46,8 @@ export function Group({
     <View>
       {rows.map((row, i) => (
         <View key={isValidElement(row) && row.key !== null ? row.key : i}>
-          {i > 0 ? (
+          {/* No hairline between people (the owner's call, 19 Kasım): only between icon rows. */}
+          {i > 0 && hairIn !== PERSON_HAIR ? (
             <View
               pointerEvents="none"
               style={{

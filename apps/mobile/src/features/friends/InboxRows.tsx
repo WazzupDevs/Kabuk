@@ -265,11 +265,11 @@ export function PinnedHead({ count }: { count: number }) {
         flexDirection: 'row',
         alignItems: 'center',
         gap: SPACING[1.5],
-        paddingHorizontal: SPACING[1],
       }}
     >
       <CapIcon name="pushpin" size={ICON.sm} color={c.muted} />
-      <T v="eyebrow" color={c.muted}>
+      {/* The one section head (13/700, from the rows' own line; the owner's call, 19 Kasım). */}
+      <T v="sectionHead" color={c.muted}>
         {count >= DM_PIN_MAX ? tr.messages.pinnedFull(count, DM_PIN_MAX) : tr.messages.pinned}
       </T>
     </View>
@@ -417,7 +417,9 @@ function RowBody({
   return (
     <>
       <Av
-        size="row"
+        // The one person row (the owner's call, 19 Kasım): the face 44, the name 15/600 over a
+        // 13/500 line.
+        size="md"
         name={name}
         photoUrl={t.photoUrl}
         board={{
@@ -489,7 +491,7 @@ function Preview({
       ) : null}
       <View style={{ flex: 1, minWidth: 0 }}>
         <T
-          v="body"
+          v="fine"
           color={unread ? c.ink : c.muted}
           lines={1}
           clip
