@@ -35,7 +35,7 @@ Yerel oturumun (emülatör + Metro, `docs/decisions/calisma-duzeni.md`) ilk işi
 
 Yapılanlar (20 Kasım):
 
-- Yazı: `theme/auraKit.ts`'teki otomatik yuvarlama kalktı; her stilin boyu ve satırı dosyada açık yazıyor (görünüş aynı), ölçek `TYPE_SCALE`, `auraKit.test.ts` ölçek dışı boyu düşürür. Stil adları (226 ad, 67 ayrı boy/satır/kalınlık) henüz az sayıda adlandırılmış stile inmedi: aşağıda.
+- Yazı: `theme/auraKit.ts`'teki otomatik yuvarlama kalktı; ölçek `TYPE_SCALE`, `auraKit.test.ts` ölçek dışı boyu düşürür. Hiçbir yerde kullanılmayan 36 yazı adı silindi; kalan 174 ad 21 temel stile (`BASE`) bağlandı: her boyda tek satır yüksekliği (10/14, 11/15, 13/18, 15/20, 17/22, 20/26, 24/30, 30/38; akan metin 15/22), üç kalınlık (500, 600, 700). Bununla görünüş değişti: 800 yazılan başlık ve etiketler 700 oldu (hediye ve profil düğmeleri 600), 20 ve üstündeki 600 başlıklar 700 oldu, harf aralığı boya bağlandı (30'da -0,025, 24'te -0,02, 20'de -0,015, küçüklerde 0; üst başlık 0,02, büyük harfli etiket 0,1), satır yükseklikleri 1 ile 3 dp oynadı. Ayrı duranlar: yüz harfi, yazılan telefon ve kod, emoji, yüzlerin içindeki harfler; 800 yalnız okunmamış konuşma adında (`bold`) ve üst bardaki Kaydet'te (`BTN_STRONG`) kaldı. Emülatörde Keşfet, Aktiviteler, Mesajlar ve Profil'e açık temada bakıldı.
 - İkonlar: `docs/design/aura/ikonlar`'daki sekiz çizim (geri, ileri oku, kapat, düzenle, zil, yenile, yanıtla, arşivden çıkar) üretilen dosyayla eşitlendi; `capIcons.test.ts` geçiyor.
 - Testler yeni değerlerde: `kabul.test.ts` (boylar), `skeleton.test.ts`, `contrast.test.ts` (koyu temada kapalı düğme her türde 3,5:1), `kinshiDeck.test.ts` (yuvarlaklar 40 olunca 320 dp'de skor hapına 8 dp daha yer kaldı).
 - Windows'ta birim testleri: yol ayracı (`styleGuard`, `reveal-removed`, `v4-cleanup`) ve zaman aşımı (Windows'ta 30 sn) düzeldi.
@@ -44,7 +44,7 @@ Yapılanlar (20 Kasım):
 
 Kalanlar:
 
-1. Yazı adlarının az sayıda adlandırılmış stile bağlanması: aynı boyda birden çok satır yüksekliği (13'te 16, 17, 18, 19) ve 800 kalınlıkta 26 stil duruyor ("büyük başlıklar 700" henüz hepsine uygulanmadı). Satır yüksekliği ve kalınlık görünüşü değiştirir; emülatörde bakılarak yapılır. Eski yazı sistemi (`theme/tokens.ts`, `theme/theme.ts`; karşılama ve oyunlar) hiç değişmedi.
+1. Eski yazı sistemi (`theme/tokens.ts`, `theme/theme.ts`; karşılama ve oyunlar) ve oyunların kendi yazı dosyaları (`signum.ts`, `kinshiPlay.ts`, `vampirTable.ts`) hiç değişmedi.
 2. Tek bileşene inecekler: `Seg` ve `Segmented`; `Btn`'in yedi boy seçeneği; `Input`'un `box`/`large`/`boxed`; boş hâlin ekrandaki yeri (her ekran kendi boşluğunu veriyor).
 3. Kapsam kaydında dokunulan satırların kanıtı ya da muafiyeti (PR açılınca, `pnpm visual:kanit`).
 4. Görülmeyenler: mekân, masa ve oyun ekranları, kayıt ekranları, uzun basma menüsü, onay penceresinin ikonlu ve tehlikeli hâli, koyu temanın büyük kısmı, 320 dp ve en büyük yazı.

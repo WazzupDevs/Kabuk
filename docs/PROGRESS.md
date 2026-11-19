@@ -2,9 +2,10 @@
 
 ## Devir notu (20 Kasım 2026, gece): ortak temelin kalıcılaştırması, ilk yarı
 
-- Yapıldı (`docs/decisions/temel.md` → Kalıcılaştırma): yazıda otomatik yuvarlama kalktı (değerler açık, `TYPE_SCALE`, `auraKit.test.ts`), sekiz ikonun kaynak çizimi eşitlendi, boy ve yazı testleri yeni değerlerde, deneme önizleme sayfaları kaldırıldı, CLAUDE.md ve `iskelet.md` güncellendi. Görünüş değişmedi; emülatörde yeniden bakılmadı.
+- Yapıldı (`docs/decisions/temel.md` → Kalıcılaştırma): yazıda otomatik yuvarlama kalktı (`TYPE_SCALE`, `auraKit.test.ts`), sekiz ikonun kaynak çizimi eşitlendi, boy ve yazı testleri yeni değerlerde, deneme önizleme sayfaları kaldırıldı, CLAUDE.md ve `iskelet.md` güncellendi.
 - `pnpm check` Windows'ta artık geçiyor (yol ayracı ve zaman aşımı düzeldi; 4326 test). Koşu `deno.lock`'u değiştiriyor: commit'ten önce `git checkout -- deno.lock`.
-- Sıradaki: yazı adlarını az sayıda stile indirmek (67 ayrı stil; satır yüksekliği ve 800 kalınlık görünüşü değiştirir, emülatörde bakılarak), `Seg`/`Segmented`, `Btn` boyları, `Input` türleri, boş hâlin yeri; sonra görülmeyen ekranlar ve aileler.
+- Yazı adları 21 temel stile bağlandı (`auraKit.ts` → `BASE`; 36 kullanılmayan ad silindi). Bu görünüşü değiştirdi (800 → 700, satır yükseklikleri, harf aralığı); emülatörde yalnız dört sekmeye açık temada bakıldı, proje sahibi henüz görmedi.
+- Sıradaki: `Seg`/`Segmented`, `Btn` boyları, `Input` türleri, boş hâlin yeri; sonra görülmeyen ekranlar ve aileler.
 - `temel` dalı hâlâ yerel: GitHub girişi bu bilgisayarda yok, ilk push'u proje sahibi yapacak; PR açılınca kapsam kaydı kanıtı ya da muafiyeti gerekir.
 
 ## Devir notu (20 Kasım 2026): yerel düzen çalışıyor, ortak temel deneme hâlinde

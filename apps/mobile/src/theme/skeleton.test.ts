@@ -335,7 +335,7 @@ describe('page transitions (4.4)', () => {
     expect(settings).toMatch(/testID="settings"/);
     // An inline PageTop is drawn as a still top over the content, never inside its scroll.
     expect(code('src/components/Screen.tsx')).toMatch(/top\.type === PageTop && !inlineTop\(top\)/);
-    expect(code('src/theme/auraKit.ts')).toMatch(/pageBarTitle: t\(700, 20, 25, -0\.3 \/ 21\)/);
+    expect(code('src/theme/auraKit.ts')).toMatch(/pageBarTitle: BASE\.heading,/);
   });
 });
 

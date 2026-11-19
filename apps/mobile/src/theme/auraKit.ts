@@ -37,273 +37,270 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 
 // The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
+// The base's text styles (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md): one line
+// for each size, three weights (500, 600, 700; 800 stays only in `bold` and BTN_STRONG), the large titles at 700 and drawn a little
+// tight. Every name in KIT_TYPE is one of these; a name says where a style is used, not a new
+// value. Apart stand only a face's letter, the phone number and the code as typed, and the emoji.
+const BASE = {
+  display: t(700, 30, 38, -0.025),
+  // The first screen's line.
+  displayLight: t(500, 30, 38, -0.025),
+  title: t(700, 24, 30, -0.02),
+  heading: t(700, 20, 26, -0.015),
+  lead500: t(500, 17, 22),
+  lead600: t(600, 17, 22),
+  lead700: t(700, 17, 22),
+  // Running text: a message, a dialog's sentence, a legal page.
+  body: t(500, 15, 22),
+  line500: t(500, 15, 20),
+  line600: t(600, 15, 20),
+  line700: t(700, 15, 20),
+  small500: t(500, 13, 18),
+  small600: t(600, 13, 18),
+  small700: t(700, 13, 18),
+  mini500: t(500, 11, 15),
+  mini600: t(600, 11, 15),
+  mini700: t(700, 11, 15),
+  micro500: t(500, 10, 14),
+  micro700: t(700, 10, 14),
+  // The small line over a title, and the same in capitals with wide spacing.
+  eyebrow: t(600, 11, 15, 0.02),
+  kicker: t(700, 11, 15, 0.1),
+} as const;
+
 export const KIT_TYPE = {
-  display: t(700, 30, 39, -0.025),
+  display: BASE.display,
   // A profile's name and age (Profil: .display at 34).
-  displaySm: t(700, 30, 38, -0.025),
+  displaySm: BASE.display,
   // Keşfet's question (.display at 34).
-  displayLg: t(700, 30, 36, -0.025),
   // Mesajlar's title (.display at 36).
-  displayXl: t(700, 30, 38, -0.025),
   // Keşfet's question (iskelet.md → 5.1: 36, 800; the board's -0.035em). The line stays the face's
   // own height (the board's 1.06 cut the tails off on Android, above).
-  exploreTitle: t(800, 30, 38, -0.035),
   // Keşfet (tuval Kesfet, Harita): the line of the day (13, 700, 0.06em), the chips (14; 700 when
   // chosen), the place line (21, 800) and its count (13, 600), a venue's name (16, 700) and line
   // (13, 500), the bucket (12, 700), a map pin's name (11.5, 700).
-  exploreEyebrow: t(700, 13, 17, 0.06),
-  exploreChip: t(600, 13, 17),
-  exploreChipOn: t(700, 13, 17),
-  exploreSection: t(800, 20, 26, -0.02),
-  exploreCount: t(600, 13, 17),
-  exploreSort: t(600, 13, 17),
-  placeName: t(700, 15, 19, -0.01),
-  placeSub: t(500, 13, 17),
+  exploreCount: BASE.small600,
+  placeSub: BASE.small500,
   // Keşfet as the new board draws it (yeni arayüz tuvali, Kesfet, KesfetHarita): the line of the day
   // (`.eyebrow`, 12, 600), the question (`.kh`, 32, 700, -1 px; its line the face's own height, as
   // exploreTitle, for the board's 38 cut the tails off), what is typed and the hint (`.field`, 15,
   // 500), the chips (14, 600), the place (`.cty`, 15, 700), the count (13, 500), the order (13,
   // 600), a row's name (16, 600) and line (13, 500), how lively (12, 600), the map's legend (11,
   // 600), its sources (10, 500) and its card's name (16, 600, 21).
-  kesfetEyebrow: t(600, 11, 15, 0.02),
-  kesfetTitle: t(700, 30, 38, -0.03125),
-  kesfetField: t(500, 15, 22),
-  kesfetChip: t(600, 13, 17),
-  kesfetPlace: t(700, 15, 20),
-  kesfetCount: t(500, 13, 18),
-  kesfetSort: t(600, 13, 18),
-  kesfetName: t(600, 15, 21),
-  kesfetSub: t(500, 13, 18),
-  kesfetStatus: t(600, 11, 15),
+  kesfetEyebrow: BASE.eyebrow,
+  kesfetTitle: BASE.display,
+  kesfetField: BASE.body,
+  kesfetChip: BASE.small600,
+  kesfetPlace: BASE.line700,
+  kesfetCount: BASE.small500,
+  kesfetSort: BASE.small600,
+  kesfetName: BASE.line600,
+  kesfetSub: BASE.small500,
+  kesfetStatus: BASE.mini600,
   // The empty list's title (`.et`, 15, 600) and Semte Git's title on its scene (`.semt .tt`, 18,
   // 700, -0.3 px), its note (13, 500) and time (14, 500).
-  kesfetEmptyTitle: t(600, 15, 20),
-  semtTitle: t(700, 17, 22, -0.3 / 18),
-  semtNote: t(500, 13, 18),
-  semtMeta: t(500, 13, 17),
-  mapLegend: t(600, 11, 14),
-  mapAttr: t(500, 10, 14),
-  mapName: t(600, 15, 20),
-  bucket: t(700, 11, 15),
+  kesfetEmptyTitle: BASE.line600,
+  semtTitle: BASE.lead700,
+  semtNote: BASE.small500,
+  semtMeta: BASE.small500,
+  mapLegend: BASE.mini600,
+  mapAttr: BASE.micro500,
+  mapName: BASE.line600,
+  bucket: BASE.mini700,
   // Semte Git on Keşfet: its eyebrow (11, 800, 0.1em), title (20, 800, 1.18) and note (13.5, 500,
   // 1.42).
-  districtEyebrow: t(800, 11, 14, 0.1),
-  districtTitle: t(800, 20, 24, -0.02),
-  districtNote: t(500, 13, 18),
+  districtEyebrow: BASE.kicker,
+  districtTitle: BASE.heading,
+  districtNote: BASE.small500,
   // The small empty card (tuval Detay, Aktivite: 15.5/700, its sentence 13/500 at 1.4).
-  emptyTitle: t(700, 15, 19),
-  emptyNote: t(500, 13, 18),
+  emptyTitle: BASE.line700,
+  emptyNote: BASE.small500,
   // The empty, error and offline state's title (yeni arayüz tuvali AktivitelerBos, AktivitelerHata
   // `.et`: 15/20 600); its sentence is `.fine` (`.ed`: 13/18 500).
-  stateTitle: t(600, 15, 20),
+  stateTitle: BASE.line600,
   // A venue's page (tuval Detay): the name (31, 800, -0.03em; the line the face's own height, as
   // exploreTitle), the info line's pills (12.5, 700) and place (13.5, 600), the main button's words
   // (17, 800, -0.01em), the bar's name (15.5, 800, -0.015em).
-  detailTitle: t(800, 30, 38, -0.03),
-  detailPill: t(700, 13, 17),
-  detailPlace: t(600, 13, 16),
-  detailBtn: t(800, 17, 22, -0.01),
+  detailPill: BASE.small700,
   // The same page as the new board draws it (yeni arayüz tuvali, MekanDetay): the name (26, 700,
   // -0.6 px), the info line's pills (13, 600) and place (14, 500), a section (16, 700), "Bu hafta"
   // (13, 600), the line under the button (13, 500), the location sheet's title (21, 700, -0.3 px)
   // and its notice's title (15, 700) and words (14, 500).
-  venueNameTitle: t(700, 24, 30, -0.023),
-  venueEmptyTitle: t(600, 15, 20),
-  venuePill: t(600, 13, 18),
-  venuePlace: t(500, 13, 17),
-  venueSection: t(700, 15, 21),
-  venueWeek: t(600, 13, 18),
-  venueHint: t(500, 13, 18),
-  locateTitle: t(700, 20, 25, -0.014),
-  locateNoticeTitle: t(700, 15, 20),
-  locateNotice: t(500, 13, 19),
-  barName: t(800, 15, 19, -0.015),
+  venueNameTitle: BASE.title,
+  venueEmptyTitle: BASE.line600,
+  venuePill: BASE.small600,
+  venuePlace: BASE.small500,
+  venueSection: BASE.line700,
+  venueWeek: BASE.small600,
+  venueHint: BASE.small500,
+  locateTitle: BASE.heading,
+  locateNoticeTitle: BASE.line700,
+  locateNotice: BASE.small500,
+  barName: BASE.line700,
   // Aktiviteler (tuval Aktivite, Sohbet): the gift card's eyebrow (11, 800, 0.12em), title (21,
   // 800, 1.16 raised to the face's height) and button (14.5, 800); the tabs (15, 700); the game
   // sheet's title (22, 800, -0.025em), its note (13.5, 600, 1.42), its eyebrow (12, 800, 0.1em),
   // a person's line (12.5, 600), the small actions (13.5, 800; once pressed 700).
-  giftEyebrow: t(800, 11, 14, 0.12),
-  giftTitle: t(800, 20, 25, -0.02),
-  giftBtn: t(800, 15, 19),
-  tabsBoard: t(700, 15, 19),
-  sheetGame: t(800, 20, 25, -0.025),
-  sheetNote: t(600, 13, 18),
-  sheetEyebrow: t(800, 11, 15, 0.1),
-  personLine: t(600, 13, 17),
-  actionSm: t(800, 13, 16),
-  actionSmDone: t(700, 13, 16),
+  giftEyebrow: BASE.kicker,
+  giftTitle: BASE.heading,
+  giftBtn: BASE.line600,
+  sheetGame: BASE.heading,
+  sheetEyebrow: BASE.kicker,
+  actionSmDone: BASE.small700,
   // Mesajlar (tuval Mesajlar): a conversation's last line (14, 500); Bildirimler's line (15.5, 700;
   // what happened in it 500, `light`).
-  inboxPreview: t(500, 13, 17),
-  notice: t(700, 15, 19),
+  notice: BASE.line700,
   // The DM (yeni arayüz tuvali, DmSohbet): what is typed in its bar (`.fld`, 15/22), the bar's name
   // (`.who b`, 16/20, 600) and the line under it (`.who span`, 12/16); the strip over the message
   // bar (`.eb`: its title 13/17 at 700, its words 13/17). Its bubbles are `msg`, their time `stamp`,
   // the day `day`. The old board's: the menu's rows (15.5, 600), the block's sheet: its title (21,
   // 800, -0.02em), its sentence (14, 500, 1.45) and its buttons (16.5, 800).
-  msgDm: t(500, 15, 22),
-  dmName: t(600, 15, 19),
-  dmSub: t(500, 11, 15),
-  stripTitle: t(700, 13, 17),
-  stripText: t(500, 13, 17),
+  msgDm: BASE.body,
+  dmName: BASE.line600,
+  dmSub: BASE.mini500,
+  stripTitle: BASE.small700,
+  stripText: BASE.small500,
   // "düzenlendi" by the time (DmDuzenlendi `.s .edt`: the time's 11/14 at 500) and the held
   // message's menu's note (DmMenuSureDoldu: 12/16, 500).
-  msgEdited: t(500, 11, 14),
-  menuNote: t(500, 11, 15),
-  menuRow: t(600, 15, 19),
+  msgEdited: BASE.mini500,
+  menuNote: BASE.mini500,
   // The ⋮ menu's row (MekanSecenek `.pi p`: 600 16/20).
-  popRow: t(600, 15, 19),
+  popRow: BASE.line600,
   // Its value at the right (SemtSecenek `.pi .rv`: 500 14/18, muted).
-  popValue: t(500, 13, 17),
+  popValue: BASE.small500,
   // The group chats' first-message card's title (SemtSohbet, MasaSohbet `.et`: 700 16/22), their
   // suggestion chips (`.sug span`: 600 13/18) and the district's time chip (`.tmr`: 700 13/18).
-  chatEmptyTitle: t(700, 15, 21),
-  chatSuggest: t(600, 13, 18),
-  chatTime: t(700, 13, 18),
-  confirmTitle: t(800, 20, 26, -0.02),
-  confirmNote: t(500, 13, 19),
-  confirmBtn: t(800, 17, 22),
+  chatEmptyTitle: BASE.line700,
+  chatSuggest: BASE.small600,
+  chatTime: BASE.small700,
   // The profile pages (tuval Profil, Benim): the name (31, 800, -0.03em; the line the face's own
   // height, as detailTitle), "Arkadaşsınız" (13, 700), a badge (13.5, 700), Mesaj (17, 800), the
   // bar's name (16, 800, -0.015em); the own buttons' "+N" (10.5, 800); the ticket's number (13,
   // 700), its eyebrow (11.5, 800, 0.1em), the nick (20, 800, -0.02em) and its renewal (13, 600);
   // Set balonu's title (17, 800, -0.015em), its count (12.5, 800), its note (13.5, 500, 1.42) and a
   // slot's name (13, 700).
-  profileName: t(800, 30, 38, -0.03),
-  friendTag: t(700, 13, 17),
-  badgeChip: t(700, 13, 16),
-  profileBtn: t(800, 17, 22),
-  personBar: t(800, 15, 19, -0.015),
-  stackMore: t(800, 10, 12),
-  ticketNo: t(700, 13, 17),
-  ticketKicker: t(800, 11, 14, 0.1),
-  ticketNick: t(800, 20, 25, -0.02),
-  ticketNote: t(600, 13, 17),
-  setTitle: t(800, 17, 22, -0.015),
-  setCount: t(800, 13, 17),
-  setNote: t(500, 13, 18),
-  setSlot: t(700, 13, 17),
+  profileName: BASE.display,
+  friendTag: BASE.small700,
+  badgeChip: BASE.small700,
+  profileBtn: BASE.lead600,
+  personBar: BASE.line700,
+  stackMore: BASE.micro700,
+  ticketNo: BASE.small700,
+  ticketKicker: BASE.kicker,
+  ticketNick: BASE.heading,
+  ticketNote: BASE.small600,
+  setTitle: BASE.lead700,
+  setCount: BASE.small700,
+  setNote: BASE.small500,
+  setSlot: BASE.small700,
   // The `sayfa` pages on the boards (tuval Arkadaslar, Duzenle): the large title (34, 800,
   // -0.035em; the line the face's own height) and the line under it (14, 600); a friend's "since"
   // (13, 600); Profili düzenle's Kapak (13.5, 700), the birth date's row (15, 700), its note (12.5,
   // 500) and "Değiştirilemez" (13, 700); the fields' labels (13, 700), what is typed (16, 600; the
   // bio 16, 500, 1.4) and their note (12.5, 500, 1.45).
-  pageTitle: t(800, 30, 37, -0.035),
-  pageSub: t(600, 13, 17),
-  friendSince: t(600, 13, 17),
-  coverBtn: t(700, 13, 16),
+  pageTitle: BASE.display,
+  pageSub: BASE.small600,
+  friendSince: BASE.small600,
+  coverBtn: BASE.small700,
   // Kapsülün (tuval Kapsul2): a slot's chip (14, 700) and the chosen option's name (19, 800).
-  capsuleChip: t(700, 13, 17),
-  capsuleName: t(800, 20, 25, -0.02),
-  rowTitle: t(700, 15, 19),
-  rowNote: t(500, 13, 18),
-  rowLock: t(700, 13, 17),
-  boxLabel: t(700, 13, 17),
-  boxField: t(600, 15, 20),
-  boxFieldMulti: t(500, 15, 21),
-  boxNote: t(500, 13, 19),
+  capsuleChip: BASE.small700,
+  rowTitle: BASE.line700,
+  rowNote: BASE.small500,
+  rowLock: BASE.small700,
+  boxField: BASE.line600,
+  boxFieldMulti: BASE.body,
+  boxNote: BASE.small500,
   // Ayarlar (tuval Ayarlar): a row's words (16, 600).
-  settingsRow: t(600, 15, 19),
+  settingsRow: BASE.line600,
   // Ayarlar ailesi (yeni arayüz tuvali): Hesap's locked value (`.inf .tt p`: 16/22, 600, .2 px),
   // its foot (`.foot p`: 12/17, 500); the Ayarlar dialogs' title (`.dt`: 20/26, 700, -.3 px);
   // YasalMetin's heading (`.doc h2`: 18/24, 700, -.2 px), its text (`.doc p.b`: 15/23; the board's
   // 400 is not among the app's faces, so 500) and its draft pill (`.drf`: 11/14, 700, .2 px on the board; drawn at 13/16, the board's face runs wider: the pill is about 70 across there).
-  settingsValue: t(600, 15, 21, 0.2 / 16),
-  settingsFoot: t(500, 11, 16),
-  dialogTitle: t(700, 20, 26, -0.3 / 20),
-  legalHead: t(700, 17, 23, -0.2 / 18),
-  legalText: t(500, 15, 23),
+  settingsValue: BASE.line600,
+  settingsFoot: BASE.mini500,
+  dialogTitle: BASE.heading,
+  legalHead: BASE.lead700,
+  legalText: BASE.body,
   // YasalMetin `.drf` as the board draws it: `.meta span` (500 13/18, muted) wins over `.drf`'s own
   // font and colour; only its 0.2 px spacing stays.
-  draftPill: t(500, 13, 18, 0.2 / 13),
+  draftPill: BASE.small500,
   // Yeni arayüz (Ayarlar, 16 Kasım): a page's title beside its back button (21, 700, -0.3 px), a
   // section's head in small letters (13, 700). The dialog's title is the page's; its words 15/500;
   // the long-press menu's row 15/600; the toast's title 14/600 and its line 12/500.
-  pageBarTitle: t(700, 20, 25, -0.3 / 21),
+  pageBarTitle: BASE.heading,
   // A sheet's title (yeni arayüz tuvali `.sh-t`: 21/26, 700, -0.3 px).
-  sheetTitle: t(700, 20, 25, -0.3 / 21),
+  sheetTitle: BASE.heading,
   // Masa kur (yeni arayüz tuvali 32a–32c, theme/tableSetup.ts): the picture's name pill 14/700,
   // "Rastgele" 13/600, "ÖNERİ" 10/700, the pictures' head 15/700, "Başka masada" 11/700. Masa
   // bitti (64, 132): the title 32/700 at -0.6 px, its line 15/500.
-  setupPill: t(700, 13, 17),
-  setupShuffle: t(600, 13, 16),
-  setupBadge: t(700, 10, 14, 0.4 / 10),
-  setupHead: t(700, 15, 20),
-  setupTaken: t(700, 11, 14),
-  endTitle: t(700, 30, 36, -0.6 / 32),
-  endLine: t(500, 15, 20),
-  sectionHead: t(700, 13, 18),
-  dialogText: t(500, 15, 22),
-  holdRow: t(600, 15, 20),
+  setupPill: BASE.small700,
+  setupShuffle: BASE.small600,
+  setupBadge: BASE.micro700,
+  setupHead: BASE.line700,
+  setupTaken: BASE.mini700,
+  endTitle: BASE.display,
+  endLine: BASE.line500,
+  sectionHead: BASE.small700,
+  dialogText: BASE.body,
+  holdRow: BASE.line600,
   // Mesajlar's rows (yeni arayüz tuvali Main): the name (`.nm` 600 16/22, no tracking), a face's
   // initial (`.rw .av` 17), Arşivlenenler (`.arc` 600 15/22) and its count (`.arc .n` 600 13/18).
-  inboxName: t(600, 15, 21),
-  inboxLetter: t(700, 17, 22),
-  inboxArchived: t(600, 15, 22),
-  inboxCount: t(600, 13, 18),
-  toastTitle: t(600, 13, 18),
-  toastPill: t(600, 13, 17),
-  toastSub: t(500, 11, 15),
+  inboxName: BASE.line600,
+  inboxLetter: BASE.lead700,
+  inboxArchived: BASE.line600,
+  inboxCount: BASE.small600,
+  toastTitle: BASE.small600,
+  toastPill: BASE.small600,
+  toastSub: BASE.mini500,
   // The toast's button (SusleKaydedilemedi): 13/600.
-  toastBtn: t(600, 13, 16),
+  toastBtn: BASE.small600,
   // EngelleOnay's "Şikayet de et" row: the words 15/600, the line under them 13/500.
-  checkRow: t(600, 15, 20),
-  checkRowNote: t(500, 13, 18),
+  checkRow: BASE.line600,
+  checkRowNote: BASE.small500,
   // Mekan: "Mekandasın" (yeni arayüz tuvali `.here`: 13, 600); (tuval Mekan) the card's title (26, 800, -0.03em, 1.1) and its
   // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
   // field (14, 600); the invite's name (16, 700) and its button (14, 700).
-  hereTag: t(600, 13, 18),
-  cardHero: t(800, 24, 27, -0.03),
-  cardHeroNote: t(500, 15, 22),
-  tableBtn: t(800, 15, 19),
-  stripBtn: t(800, 13, 17),
-  chatField: t(600, 13, 17),
-  inviteName: t(700, 15, 19),
-  inviteBtn: t(700, 13, 17),
-  title: t(600, 20, 26, -0.015),
+  hereTag: BASE.small600,
+  chatField: BASE.small600,
+  title: BASE.heading,
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
-  welcome: t(500, 30, 38, -0.03),
-  wordmarkSm: t(800, 24, 28, -0.04),
+  welcome: BASE.displayLight,
   // GuncellemeGerekli `.up h1` (24 / 30, 700, -.3px) and the version line under the button.
-  updateTitle: t(700, 24, 30, -0.3 / 24),
-  updateBuild: t(500, 11, 15),
+  updateTitle: BASE.title,
+  updateBuild: BASE.mini500,
   // A scene's title (Mekan: .title at 22).
-  hero: t(600, 20, 25, -0.015),
+  hero: BASE.heading,
   // Masa kur's title (.title at 24).
-  sheetTitleLg: t(600, 24, 30, -0.015),
+  sheetTitleLg: BASE.title,
   // A digit of the code (Kod: 26, 600).
   code: t(600, 24, 30),
   // The phone number as it is typed (Telefon: 21, 600, 0.04em).
   phone: t(600, 20, 25, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
-  requestTitle: t(600, 17, 23, -0.005),
   // A game's name on its card (Masa: 24, 700, -0.02em).
-  gameName: t(700, 24, 31, -0.02),
+  gameName: BASE.title,
   // A venue's name on its page (KesfetMekan: .display at 31).
-  venueTitle: t(500, 30, 37, -0.025),
-  h3: t(600, 15, 21, -0.005),
+  h3: BASE.line600,
   // The masked phone number on Hesap (`.h3.mono`: 0.04em).
-  h3Mono: t(600, 15, 21, 0.04),
   // A section's heading (.sec .h3 at 18).
-  sec: t(600, 17, 23, -0.005),
+  sec: BASE.lead600,
   // Keşfet's place line and Masa's lone note (.h3 at 19).
-  secLg: t(600, 20, 25, -0.005),
+  secLg: BASE.heading,
   // Mekan's lobby headings (.sec .h3 at 21).
-  secXl: t(600, 20, 26, -0.005),
-  body: t(500, 15, 22),
+  secXl: BASE.heading,
+  body: BASE.body,
   // Aura v71 YasalMetin (`.legal`): the long legal text.
-  legal: t(500, 15, 24),
+  legal: BASE.body,
   // A venue's district under its name on its page (KesfetMekan: .body at 17).
-  bodyLg: t(500, 17, 22),
-  fine: t(500, 13, 18),
+  fine: BASE.small500,
   // What is typed in Profili düzenle's fields (17/24).
-  field: t(500, 17, 24),
+  field: BASE.lead500,
   // A venue row's second line and its bucket (Keşfet: .fine at 14).
-  fineLg: t(500, 13, 17),
+  fineLg: BASE.small500,
   // A longer note at 14 (Mekan's scene, Masa kur's switch, Masa: .fine 14/20).
-  note: t(500, 13, 19),
-  eyebrow: t(600, 11, 15, 0.02),
-  stamp: t(600, 11, 14),
+  note: BASE.small500,
+  eyebrow: BASE.eyebrow,
+  stamp: BASE.mini600,
   strong: { fontFamily: F[600] } as TextStyle,
   // A conversation's name and last line while unread (iskelet.md → 5.4).
   bold: { fontFamily: F[800] } as TextStyle,
@@ -313,75 +310,73 @@ export const KIT_TYPE = {
   italic: { fontStyle: 'italic' } as TextStyle,
   // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
   light: { fontFamily: F[500] } as TextStyle,
-  btn: t(600, 15, 19),
+  btn: BASE.line600,
   // `.btn.big`: 700 17/22.
-  btnBig: t(600, 15, 19),
-  btnSm: t(600, 13, 17),
+  btnBig: BASE.line600,
+  btnSm: BASE.small600,
   // Mekan's "Masa kur" (44 high, 15).
-  btnMid: t(600, 13, 17),
-  chip: t(600, 13, 17),
+  btnMid: BASE.small600,
+  chip: BASE.small600,
   // Süsle's filter chip (`.flt span`): 600 12/16.
-  chipFilter: t(600, 11, 15),
+  chipFilter: BASE.mini600,
   // U34: a field's label on a card (ProfilDuzenle `.lb`).
-  fieldLabel: t(600, 13, 17),
   // Keşfet's kind chips (15).
-  chipLg: t(600, 15, 19),
+  chipLg: BASE.line600,
   // U19: Mekan's spot chip, 14.
-  chipMd: t(600, 13, 17),
-  tag: t(600, 11, 15),
+  chipMd: BASE.small600,
+  tag: BASE.mini600,
   // A venue page's tags (14).
   // A venue page's tags over its scene (U17: 13).
-  tagLg: t(600, 13, 17),
-  badge: t(700, 11, 14),
+  tagLg: BASE.small600,
+  badge: BASE.mini700,
   // The request row's letter face (`.rqa`: 20/700, line 1).
   faceLetter: t(700, 20, 20),
   // The venue chat card's count (24 round, 12).
-  badgeLg: t(700, 11, 14),
-  live: t(600, 13, 17),
+  badgeLg: BASE.mini700,
+  live: BASE.small600,
   // "şu an aktif" (500) and "Mekandasın" (15) on Mekan.
-  liveSoft: t(500, 13, 17),
+  liveSoft: BASE.small500,
   // U19: Mekan's "Mekandasın", 14.
-  liveLg: t(600, 13, 17),
-  msg: t(500, 15, 21),
+  liveLg: BASE.small600,
+  msg: BASE.body,
   // A message of emoji only, without a bubble (Telegram Android): one, and two or three. The
   // system's face (the emoji come from its colour font, not from ours) and a line 1.35 of the size:
   // with ours and 1.2, Android cut the emoji's top and right off (the owner's report, 6 Kasım).
   emojiOne: { fontSize: 40, lineHeight: 54 },
   emojiFew: { fontSize: 32, lineHeight: 44 },
-  day: t(600, 11, 15),
+  day: BASE.mini600,
   // A person's name under their face at Masa (`.mem`: 11/14 600).
-  member: t(600, 11, 14),
-  wordmark: t(800, 24, 28, -0.04),
+  member: BASE.mini600,
   // Mekan (yeni arayüz tuvali, MekanMasa, MekanKaydir): the venue's name alone (`.vn`, 24, 700,
   // -0.5 px), small on the scrolled bar (`.sv p`, 17, 700, -0.2 px) and "Mekandasın" under it (12,
   // 600); a card's title (`.t1`, 18, 700, -0.3 px), its count (`.cn`, 13, 700) and "Açık masalar"
   // (`.oh p`, 18, 700).
-  venueName: t(700, 24, 30, -0.5 / 24),
-  venueBarName: t(700, 17, 22, -0.2 / 17),
-  venueBarHere: t(600, 11, 15),
-  venueCardTitle: t(700, 17, 23, -0.3 / 18),
-  venueCount: t(700, 13, 18),
-  venueLobbyTitle: t(700, 17, 23),
+  venueName: BASE.title,
+  venueBarName: BASE.lead700,
+  venueBarHere: BASE.mini600,
+  venueCardTitle: BASE.lead700,
+  venueCount: BASE.small700,
+  venueLobbyTitle: BASE.lead700,
   // Masa (yeni arayüz tuvali, Masa, Masadakiler): the bar's table name (`.mti b`, 16/20 700) and its
   // line (`.mti span`, 12/16 500); "Oyunlar" (`.gh p`, 18/24 700) and its count (13/18 500); a person
   // in Masadakiler (`.mg .mr p`, 13/17 600), "Masa sahibi" under them (11/14 600) and the note
   // under the list (12/16 500).
-  roomBarName: t(700, 15, 19),
-  roomBarLine: t(500, 11, 15),
-  roomSection: t(700, 17, 23),
-  roomCount: t(500, 13, 18),
-  roomPerson: t(600, 13, 17),
-  roomOwner: t(600, 11, 14),
-  roomNote: t(500, 11, 15),
+  roomBarName: BASE.line700,
+  roomBarLine: BASE.mini500,
+  roomSection: BASE.lead700,
+  roomCount: BASE.small500,
+  roomPerson: BASE.small600,
+  roomOwner: BASE.mini600,
+  roomNote: BASE.mini500,
   // A game's pre-game page (yeni arayüz tuvali, OyunLobi, TakimLobi): the game's name (`.ln b`,
   // 21/26 700, -0.3 px), a person (`.pr p`, 14/18 600), a row's title (`.lr p`, 16/20 600) and a
   // team's name (`.th3 p`, 15/20 700) and count (13/18 700).
-  lobbyName: t(700, 20, 25, -0.3 / 21),
-  lobbyPerson: t(600, 13, 17),
-  lobbyQuiet: t(500, 13, 17),
-  lobbyRow: t(600, 15, 19),
-  lobbyTeam: t(700, 15, 20),
-  lobbyTeamCount: t(700, 13, 18),
+  lobbyName: BASE.heading,
+  lobbyPerson: BASE.small600,
+  lobbyQuiet: BASE.small500,
+  lobbyRow: BASE.line600,
+  lobbyTeam: BASE.line700,
+  lobbyTeamCount: BASE.small700,
   av: {
     // A face in Masa's row of faces (`.fcs .av`, 10 700).
     roomFace: t(700, 10, 12),
