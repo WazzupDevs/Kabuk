@@ -64,7 +64,8 @@ const EMPTY_RISO = {
   muted: require('../../assets/riso/empty-muted.webp'),
   venues: require('../../assets/riso/empty-venues.webp'),
   chat: require('../../assets/riso/history-sohbet.webp'),
-  events: require('../../assets/riso/empty-events.webp'),
+  // AktivitelerBos .emp img: the board's own cut-out (150 × 100), taken from the canvas 19 Kasım.
+  events: require('../../assets/riso/empty-events-board.webp'),
   // Yeni arayüz tuvali (ArsivBos): the buddy looking out of the archive box, 360 × 294.
   archive: require('../../assets/riso/empty-archive.webp'),
   // Yeni arayüz tuvali (MesajlarBos, MesajlarAraBos, DmBos): cut out, no frame.
@@ -99,8 +100,7 @@ const RISO_BOARD: Partial<
   // EngellenenlerBos, SessizAlinanlarBos: the boards' own 360 × 294 cut-outs.
   blocked: { width: 120, height: 98, radius: 0, shadow: 'none' },
   muted: { width: 120, height: 98, radius: 0, shadow: 'none' },
-  // Aktiviteler's picture has a ground of its own: softened until a cut-out is drawn.
-  events: { ...RISO_SMALL, radius: 16 },
+  events: { width: 150, height: 100, radius: 0, shadow: 'none' },
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,
