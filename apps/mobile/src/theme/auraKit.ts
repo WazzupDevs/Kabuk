@@ -15,6 +15,7 @@ const F = {
 // the theme files stay pure, and the root type check (Node's types) reads them through the tests.
 type TextStyle = {
   fontFamily?: string;
+  fontWeight?: '400' | '500' | '600' | '700';
   fontSize?: number;
   lineHeight?: number;
   letterSpacing?: number;
@@ -35,6 +36,18 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
   letterSpacing: em * size,
 });
 
+// DENEME (20 Kasım, the owner's ask: "başlıklar dışında kalan tüm metinler telefonun stili"): a
+// text style in the phone's own face (Android: Roboto), the weights one step lighter as that face
+// is read (500 → regular, 600 → medium, 700 → bold). Only the titles keep the brand's face.
+const SYSTEM_WEIGHT = { 500: '400', 600: '500', 700: '700', 800: '700' } as const;
+const s = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
+  fontFamily: 'sans-serif',
+  fontWeight: SYSTEM_WEIGHT[w],
+  fontSize: size,
+  lineHeight: line,
+  letterSpacing: em * size,
+});
+
 // The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 // The base's text styles (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md): one line
@@ -47,25 +60,25 @@ const BASE = {
   displayLight: t(500, 30, 38, -0.025),
   title: t(700, 24, 30, -0.02),
   heading: t(700, 20, 26, -0.015),
-  lead500: t(500, 17, 22),
-  lead600: t(600, 17, 22),
+  lead500: s(500, 17, 22),
+  lead600: s(600, 17, 22),
   lead700: t(700, 17, 22),
   // Running text: a message, a dialog's sentence, a legal page.
-  body: t(500, 15, 22),
-  line500: t(500, 15, 20),
-  line600: t(600, 15, 20),
-  line700: t(700, 15, 20),
-  small500: t(500, 13, 18),
-  small600: t(600, 13, 18),
-  small700: t(700, 13, 18),
-  mini500: t(500, 11, 15),
-  mini600: t(600, 11, 15),
-  mini700: t(700, 11, 15),
-  micro500: t(500, 10, 14),
-  micro700: t(700, 10, 14),
+  body: s(500, 15, 22),
+  line500: s(500, 15, 20),
+  line600: s(600, 15, 20),
+  line700: s(700, 15, 20),
+  small500: s(500, 13, 18),
+  small600: s(600, 13, 18),
+  small700: s(700, 13, 18),
+  mini500: s(500, 11, 15),
+  mini600: s(600, 11, 15),
+  mini700: s(700, 11, 15),
+  micro500: s(500, 10, 14),
+  micro700: s(700, 10, 14),
   // The small line over a title, and the same in capitals with wide spacing.
-  eyebrow: t(600, 11, 15, 0.02),
-  kicker: t(700, 11, 15, 0.1),
+  eyebrow: s(600, 11, 15, 0.02),
+  kicker: s(700, 11, 15, 0.1),
 } as const;
 
 export const KIT_TYPE = {
@@ -301,15 +314,15 @@ export const KIT_TYPE = {
   note: BASE.small500,
   eyebrow: BASE.eyebrow,
   stamp: BASE.mini600,
-  strong: { fontFamily: F[600] } as TextStyle,
+  strong: { fontFamily: 'sans-serif', fontWeight: '500' } as TextStyle,
   // A conversation's name and last line while unread (iskelet.md → 5.4).
-  bold: { fontFamily: F[800] } as TextStyle,
+  bold: { fontFamily: 'sans-serif', fontWeight: '700' } as TextStyle,
   // An unread conversation's time (yeni arayüz tuvali, Main `.tm.new`: 700).
-  heavy: { fontFamily: F[700] } as TextStyle,
+  heavy: { fontFamily: 'sans-serif', fontWeight: '700' } as TextStyle,
   // "Henüz mesaj yok" (5.4): slanted (the face has no italic file; Android slants it).
   italic: { fontStyle: 'italic' } as TextStyle,
   // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
-  light: { fontFamily: F[500] } as TextStyle,
+  light: { fontFamily: 'sans-serif', fontWeight: '400' } as TextStyle,
   btn: BASE.line600,
   btnSm: BASE.small600,
   chip: BASE.small600,
@@ -435,7 +448,7 @@ export type { ButtonGlassKind } from './buttonGlass';
 
 // A clear button's words at 800 where asked (the bar's Kaydet with something to save, iskelet.md
 // → 2.1); every other button's 600 (KIT_TYPE.btn).
-export const BTN_STRONG: TextStyle = { fontFamily: F[800] };
+export const BTN_STRONG: TextStyle = { fontFamily: 'sans-serif', fontWeight: '700' };
 
 export const KIT = {
   // The buttons are glass (theme/buttonGlass.ts; iskelet.md → 2.1).
