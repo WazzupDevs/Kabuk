@@ -1147,7 +1147,7 @@ export const tr = {
     requestConfirmBody: 'İstek gönderirsen profilin ona görünür: adın, yaşın ve fotoğrafın.',
     requestConfirm: 'İsteği gönder',
     requestSent: 'İstek gönderildi.',
-    blockConfirmTitle: 'Bu kişiyi engellemek istiyor musun?',
+    blockConfirmTitle: 'Bu kişi engellensin mi?',
     blockConfirmBody:
       'Birbirinizin mesajlarını artık görmezsiniz. Karşı tarafa bildirilmez. Engeli ayarlardan kaldırabilirsin.',
     noTable: 'Mekan sohbeti yalnızca mekanda masan varken açılır.',
@@ -1308,12 +1308,12 @@ export const tr = {
     // "Sohbetten çık" in the room's ⋮ menu (SemtSecenek; §4.V).
     end: {
       action: 'Sohbetten çık',
-      title: 'Sohbetten çıkmak istiyor musun?',
+      title: 'Sohbetten çıkılsın mı?',
       body: 'Bugün yeniden girersen soru sorulmaz, yeni 2 saat başlar.',
       yes: 'Sohbetten çık',
     },
     cont: {
-      title: 'Sohbete devam etmek istiyor musun?',
+      title: 'Sohbete devam edelim mi?',
       body: 'İki saatin doldu. Evet dersen iki saat daha bu odadasın.',
       closesIn: (clock: string) => `Cevap vermezsen ${clock} sonra oturum kapanır.`,
       yes: 'Evet, 2 saat daha',
@@ -1339,7 +1339,7 @@ export const tr = {
     },
     reportSent: 'Şikayetin alındı. Teşekkürler.',
     block: 'Engelle',
-    blockConfirmTitle: 'Bu kişiyi engellemek istiyor musun?',
+    blockConfirmTitle: 'Bu kişi engellensin mi?',
     blockConfirm: 'Engelle',
     blockedEmpty: 'Engellediğin kimse yok.',
     unblock: 'Engeli kaldır',
