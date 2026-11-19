@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -71,7 +71,8 @@ const NAMES = [
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(resolve(root, dir), { withFileTypes: true }).flatMap((entry) => {
-    const path = join(dir, entry.name);
+    // Forward slashes on every system: the lists above are written with them.
+    const path = `${dir}/${entry.name}`;
     if (entry.isDirectory()) return SKIP_DIRS.has(entry.name) ? [] : sourceFiles(path);
     return /\.(ts|tsx|js|sql|ya?ml)$/.test(entry.name) && !SKIP_FILES.has(path) ? [path] : [];
   });

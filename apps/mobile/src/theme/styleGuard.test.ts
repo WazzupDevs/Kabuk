@@ -46,9 +46,13 @@ function files(dir: string): string[] {
   });
 }
 
+// A source's path from the app's folder, with forward slashes on every system (Windows gives `\`,
+// and the theme's exemption below never matched).
+const rel = (p: string): string => relative(mobile, p).replaceAll('\\', '/');
+
 describe('no hard-coded styles outside the theme', () => {
   const paths = SOURCES.flatMap((d) => files(join(mobile, d)))
-    .map((p) => relative(mobile, p))
+    .map(rel)
     .filter((p) => !EXEMPT.some((e) => p.startsWith(e)));
 
   it('finds the sources', () => {
@@ -77,7 +81,7 @@ describe('no hard-coded styles outside the theme', () => {
 // Capitals by textTransform follow the device's rules, not Turkish: Android writes KATEGORI and
 // BITTI. Text writes capitals itself (upperTr in @shared/trText.ts). This covers the theme folder too.
 describe('no textTransform capitals', () => {
-  const paths = SOURCES.flatMap((d) => files(join(mobile, d))).map((p) => relative(mobile, p));
+  const paths = SOURCES.flatMap((d) => files(join(mobile, d))).map(rel);
 
   it.each(paths)('%s', (path) => {
     const lines = readFileSync(join(mobile, path), 'utf8').split('\n');
@@ -102,7 +106,7 @@ describe('no textTransform capitals', () => {
 // of absoluteFill do not override them, so the picture drew at its pixels from the top left (the
 // owner's report, 2 Kasım, K1). A picture fills its box with PICTURE_FILL (src/aura/RisoPicture.tsx).
 describe('no react-native Image on absoluteFill', () => {
-  const paths = SOURCES.flatMap((d) => files(join(mobile, d))).map((p) => relative(mobile, p));
+  const paths = SOURCES.flatMap((d) => files(join(mobile, d))).map(rel);
 
   it.each(paths)('%s', (path) => {
     const text = readFileSync(join(mobile, path), 'utf8');
