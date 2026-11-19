@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (20 Kasım 2026): yerel düzen çalışıyor, ortak temel deneme hâlinde
+
+- Yerel düzen kuruldu (bu bilgisayar: Windows, emülatör `skall-1`, geliştirme sürümü + Metro; araçlar `C:\dev\tools\env.ps1`); emülatörde DEV test hesabıyla oturum açık. `pnpm check` Windows'ta kendiliğinden düşüyor; GitHub girişi bu bilgisayarda yok (ilk push'ta proje sahibi yapacak).
+- Proje sahibi sırayı değiştirdi: ekran aktarımından önce ortak temel (`docs/decisions/temel.md`). On bir parça emülatörde gösterilip onaylandı; hepsi yerel `temel` dalında deneme (19 commit, gönderilmedi, `ci`'dan geçmez).
+- Sıradaki: kalıcılaştırma (`temel.md` → Kalıcılaştırma, 7 madde), sonra aileler bu temelle. "Pano geçerlidir" kuralı ve 18 Kasım'ın boy kararı değişti; CLAUDE.md henüz güncellenmedi.
+- Keşfet (#745) ve profil (#747) PR'ları olduğu gibi bekliyor; temelden sonra yeniden temellenecekler. Halkasız geri düğmesi denemesi iptal.
+
 ## Devir notu (18 Kasım 2026, gece): gören oturum kararı, iki aile doğrulamada
 
 - Proje sahibi yeni çalışma düzenini onayladı (`docs/decisions/calisma-duzeni.md`): ekran işleri emülatörlü yerel oturumda (geliştirme sürümü + Metro; yönerge sohbette verildi, kurulup kurulmadığı bilinmiyor), bulut oturumu sunucu ve takip; sonra bir kerelik tuval–kit eşlemesi, pano parmak izi, durum tablosu. Tarayıcı ön izleme denemesi `claude/web-onizleme` dalında (ajan çalışıyordu; sonucu görülmedi).
