@@ -456,7 +456,15 @@ export function Btn({
       >
         {shadow?.node}
         {loading ? (
-          <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
+          <Loader
+            kind="meet"
+            size={sm ? KIT.size.iconSm : KIT.size.icon}
+            // One colour, the words' own (the owner's call, 19 Kasım); the chip-like `dark` keeps its
+            // colours.
+            mono={glass ? { color: fg, ground: fill ?? g.fill } : undefined}
+            delay={0}
+            label={null}
+          />
         ) : lead ? (
           lead
         ) : icon && !off ? (

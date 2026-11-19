@@ -109,6 +109,12 @@ function DugmeBlock() {
 
       <Head>Düğme · hâller</Head>
       <View style={{ gap: 10 }}>
+        <Label>Bekliyor · ikinci basış yok sayılır</Label>
+        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+          <Btn loading label="Devam et" onPress={nothing} />
+          <Btn loading variant="glassy" label="Kaydet" onPress={nothing} />
+          <Btn loading variant="danger" label="Sil" onPress={nothing} />
+        </View>
         <Label>Kapalı · basılamaz</Label>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <Btn disabled label="Devam et" onPress={nothing} />
