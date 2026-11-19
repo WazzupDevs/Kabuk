@@ -742,13 +742,14 @@ function VenueList({
         )}
       </View>
       <CampusSheet
-        key={uniKey}
+        // The two sheets are siblings: their counters both start at 0, so each key names its sheet.
+        key={`campus-${uniKey}`}
         university={uni}
         campuses={uni ? venues.filter((v) => v.university?.id === uni.id) : []}
         onClose={() => setUni(null)}
       />
       <PlaceSheet
-        key={sheetKey}
+        key={`place-${sheetKey}`}
         visible={placeSheet}
         onClose={() => setPlaceSheet(false)}
         cities={cityList}
