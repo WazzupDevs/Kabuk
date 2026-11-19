@@ -7,7 +7,6 @@ import {
   wornSetPieces,
 } from '@shared/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
-import { upperTr } from '@shared/trText.ts';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
@@ -28,13 +27,13 @@ import { useState } from 'react';
 import { TierGems } from './parts';
 import { useEquip, useGiftState } from './queries';
 
-// Set balonu (docs/SPEC_V4.md §4.U; the owner's call, 8 Kasım; the preview he approved): on the
-// profile under Arkadaşlar, three slots for the capsule's three regions (Baş; Yüz: the eyes, the
-// face, the mouth; Gövde: the neck, the colour). A piece of one skin set in each gives that set's
+// Set balonu (docs/SPEC_V4.md Â§4.U; the owner's call, 8 KasÄ±m; the preview he approved): on the
+// profile under ArkadaÅŸlar, three slots for the capsule's three regions (BaÅŸ; YÃ¼z: the eyes, the
+// face, the mouth; GÃ¶vde: the neck, the colour). A piece of one skin set in each gives that set's
 // balloon wherever the person writes anonymously. A slot shows the set piece worn there; a tap
 // opens the region's set pieces, by set, the ones not owned faded under a lock; choosing one wears
 // it (gifts/equip). A new set's pieces join the sheet by themselves (content/gift-packs.json).
-// yeni arayüz tuvali, ProfilBen `.prt`: the three parts' pictures 84, plain (no ring); in the narrow
+// yeni arayÃ¼z tuvali, ProfilBen `.prt`: the three parts' pictures 84, plain (no ring); in the narrow
 // state two to a row (DarProfilim).
 const DISC = 84;
 const EMPTY = 62;
@@ -76,8 +75,8 @@ export function SetCard() {
     <View style={{ marginTop: OWN_PROFILE.gap, gap: SET_CARD.gap }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <T v="eyebrow" accessibilityRole="header">
-            {upperTr(tr.gifts.setTitle)}
+          <T v="sectionHead" accessibilityRole="header">
+            {tr.gifts.setTitle}
           </T>
         </View>
         <View
@@ -130,7 +129,7 @@ export function SetCard() {
                 onPress={() => setOpen(region)}
                 style={{ alignItems: 'center', gap: SET_CARD.slotGap }}
               >
-                {/* An empty slot 62 in the worn one's place (iskelet.md → 5.7). */}
+                {/* An empty slot 62 in the worn one's place (iskelet.md â†’ 5.7). */}
                 <View
                   style={{
                     width: DISC,

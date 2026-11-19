@@ -1029,13 +1029,13 @@ function PlaceSheet({
               onClose();
             }}
           />
-          <Btn block tall variant="glassy" label={tr.common.cancel} onPress={onClose} />
+          <Btn block tall variant="ghost" label={tr.common.cancel} onPress={onClose} />
         </View>
       }
     >
       <T v="note">{tr.explore.placeNote}</T>
       <View style={{ gap: KIT.size.chipsGap }}>
-        <T v="eyebrow">{tr.explore.city}</T>
+        <T v="sectionHead">{tr.explore.city}</T>
         <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.city} style={CHIPS}>
           <Chip
             testID="place-city-all"
@@ -1057,7 +1057,7 @@ function PlaceSheet({
       {/* Districts once a city is chosen. */}
       {pick ? (
         <View style={{ gap: KIT.size.chipsGap }}>
-          <T v="eyebrow">{tr.explore.district}</T>
+          <T v="sectionHead">{tr.explore.district}</T>
           <View
             accessibilityRole="radiogroup"
             accessibilityLabel={tr.explore.district}

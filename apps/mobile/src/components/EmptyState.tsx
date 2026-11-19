@@ -57,7 +57,8 @@ type Props = {
 const EMPTY_RISO = {
   chats: require('../../assets/riso/empty-chats.webp'),
   requests: require('../../assets/riso/empty-requests.webp'),
-  notifications: require('../../assets/riso/empty-notifications.webp'),
+  // BildirimlerBos .emp img: the board's own cut-out, taken from the canvas 20 Kasım.
+  notifications: require('../../assets/riso/empty-notifications-board.webp'),
   friends: require('../../assets/riso/empty-friends.webp'),
   history: require('../../assets/riso/empty-history.webp'),
   blocked: require('../../assets/riso/empty-blocked.webp'),
@@ -101,6 +102,7 @@ const RISO_BOARD: Partial<
   blocked: { width: 120, height: 98, radius: 0, shadow: 'none' },
   muted: { width: 120, height: 98, radius: 0, shadow: 'none' },
   events: { width: 150, height: 100, radius: 0, shadow: 'none' },
+  notifications: { width: 120, height: 98, radius: 0, shadow: 'none' },
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,

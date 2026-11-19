@@ -92,7 +92,8 @@ export default function NotificationsScreen() {
   const sheet = {
     title: tr.notifications.title,
     // Bildirimler `.nh .title`: 21/27, 600.
-    titleType: 'title' as const,
+    // One sheet title weight (700; the owner's call, 20 Kasım; the board's 600).
+    titleType: 'pageBarTitle' as const,
     testID: 'notifications',
     peek: 'notifications' as const,
     look: {
