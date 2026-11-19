@@ -22,12 +22,24 @@ type TextStyle = {
 };
 
 // A text style: the canvas's size and line, its weight's file, letter spacing in em.
-const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
-  fontFamily: F[w],
-  fontSize: size,
-  lineHeight: line,
-  letterSpacing: em * size,
-});
+// DENEME (19 Kasım, temel önerisi): every size snaps to the proposed scale (about 1.15 apart, a tie
+// goes down), its line keeps its own proportion. Sizes under 10 and over 36 stay as they are.
+const TEMEL_SCALE = [10, 11, 13, 15, 17, 20, 24, 30] as const;
+const snap = (size: number): number => {
+  if (size < 10 || size > 36) return size;
+  let best: number = TEMEL_SCALE[0];
+  for (const s of TEMEL_SCALE) if (Math.abs(s - size) < Math.abs(best - size)) best = s;
+  return best;
+};
+const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => {
+  const to = snap(size);
+  return {
+    fontFamily: F[w],
+    fontSize: to,
+    lineHeight: Math.round((line * to) / size),
+    letterSpacing: em * to,
+  };
+};
 
 // The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
@@ -309,7 +321,7 @@ export const KIT_TYPE = {
   light: { fontFamily: F[500] } as TextStyle,
   btn: t(600, 16, 20),
   // `.btn.big`: 700 17/22.
-  btnBig: t(700, 17, 22),
+  btnBig: t(600, 16, 20),
   btnSm: t(600, 14, 18),
   // Mekan's "Masa kur" (44 high, 15).
   btnMid: t(600, 14, 18),
@@ -906,28 +918,28 @@ export const KIT = {
     // round icon button 44, a form field 48, a chip 40 (`.chip`), Süsle's filter chip 28 (`.flt
     // span`), a bar's button 40 (`.tb2 .btn`); a row's buttons 32, 34 or 40 by its screen (`rowBtn*`;
     // the many-line field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4).
-    btn: 48,
-    btnTall: 56,
-    btnBig: 56,
-    btnSm: 36,
-    btnBar: 40,
-    rowBtnSm: 32,
-    rowBtnMd: 34,
-    rowBtnLg: 40,
+    btn: 44,
+    btnTall: 44,
+    btnBig: 44,
+    btnSm: 32,
+    btnBar: 36,
+    rowBtnSm: 28,
+    rowBtnMd: 32,
+    rowBtnLg: 36,
     // Mekan's "Masa kur" and Masa's "Bitir": the small height, 18 inside.
-    btnMid: 36,
+    btnMid: 32,
     btnPadXMid: 18,
     btnPadXSnug: 16,
-    btnPadX: 24,
+    btnPadX: 20,
     btnPadXSm: 16,
     btnGap: 8,
     // A chip 36 (skall.css `.chip`); 40 where its board draws 40 (`chipLg`: Keşfet's kind chips,
     // MekanLobiAc's intent chips; 600 14/18, 16 inside). Süsle's filter chip 28, 11 inside
     // (`.flt span`).
-    chip: 36,
-    chipTall: 36,
+    chip: 32,
+    chipTall: 32,
     chipTallPadX: 16,
-    chipLg: 40,
+    chipLg: 34,
     chipFilter: 28,
     chipFilterPadX: 11,
     // Aura v75 E4 (narrow): a chip 46, a field 56, a segment 52.
@@ -946,12 +958,12 @@ export const KIT = {
     tagLgPadX: 12,
     tagPadX: 8,
     tagGap: 4,
-    round: 44,
+    round: 40,
     // iskelet.md → 2.1 and 3.1: every top bar button 44 (the glass back button; the yeni arayüz
     // tuvali's `.round`, 17 Kasım, was 46); a sticky field
     // pins `stickyTop` under the top of its screen's scrolling body (top 52 to 54 on the canvas's 47
     // status bar) and the band reaches `stickyBandPad` under it.
-    topBtn: 44,
+    topBtn: 40,
     stickyTop: 6,
     stickyBandPad: 8,
     // iskelet.md → 5.1 (Keşfet): the search and list/map capsule 54, 48 once pinned, its switch's
@@ -970,7 +982,7 @@ export const KIT = {
       empty: { width: 104, height: 72, radius: 14 },
     },
     // The venue page's back button (48).
-    roundLg: 44,
+    roundLg: 40,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).
     // `seat`: Masa's card when its people fit one row (58).
     // member: Masa's people (U22); list: Masadakiler's rows (U24).
@@ -999,7 +1011,7 @@ export const KIT = {
     },
     stackOverlap: 10,
     // Profil's two buttons and Kapsülün's: the main height (B1).
-    btnRow: 48,
+    btnRow: 44,
     // The empty state: its sign 28 × 42; 26 above (the lobby's 18). Yeni arayüz tuvali
     // (AktivitelerBos, AktivitelerHata `.emp`): 24 in from the sides, the title 12 under the
     // picture, the sentence 4 under it and at most 260 wide, the button 16 under it; the riso
@@ -1096,10 +1108,10 @@ export const KIT = {
     disk: 4,
     seg: 26,
     // A segmented control 44 high, its chosen part 36 (skall.css `.seg`).
-    segItem: 36,
+    segItem: 32,
     // Mesajlar's tabs: 48 high in a 30 round.
     // U27: Mesajlar's tabs 48 in all (40 tabs 4 in), a pill.
-    segLg: 40,
+    segLg: 36,
     segLgRadius: 24,
     // Mesajlar's bell (52) and its new message button (70, 26 from the right).
     // U27: the bell 44 (round soft).
@@ -1148,7 +1160,7 @@ export const KIT = {
     bubblePadY: 7,
     tailW: 7,
     tailH: 12,
-    field: 48,
+    field: 44,
     // Aura v71 (GaleriEklenen): a boxed field 60 (the birth date), the name's 72 with 22 inside.
     fieldBox: 60,
     fieldBig: 72,
@@ -1181,7 +1193,7 @@ export const KIT = {
     titleIcon: 24,
     titleIconGap: 10,
     // Profili düzenle's fields: 48 high (B1; the bio 104, 22 round), 22 inside.
-    fieldLg: 48,
+    fieldLg: 44,
     fieldLgTall: 104,
     fieldLgTallRadius: 22,
     fieldLgPadX: 22,

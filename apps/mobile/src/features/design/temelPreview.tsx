@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Text as RNText, View } from 'react-native';
 
-import { useKit } from '@/aura/kit';
+import { Btn, useKit } from '@/aura/kit';
 
 // Temel (öneri, 19 Kasım): the one page of values every screen is to be built from, drawn for the
 // owner to approve on the emulator before anything is moved to it. Nothing reads these yet; once
@@ -81,10 +81,60 @@ function Head({ children }: { children: ReactNode }) {
   );
 }
 
+const nothing = () => undefined;
+
+// Düğme: four kinds, three sizes, and the two states every kind has.
+function DugmeBlock() {
+  return (
+    <View>
+      <Head>Düğme · 4 tür</Head>
+      <View style={{ gap: 10 }}>
+        <Label>Ana · ekranın tek ana eylemi</Label>
+        <Btn block label="Masaya katıl" onPress={nothing} />
+        <Label>Yumuşak · ikincil eylem</Label>
+        <Btn block variant="glassy" label="Profili düzenle" onPress={nothing} />
+        <Label>Tehlikeli · silme, çıkma, engelleme</Label>
+        <Btn block variant="danger" label="Hesabımı sil" onPress={nothing} />
+        <Label>Dolgusuz · vazgeçme</Label>
+        <Btn block variant="ghost" label="Vazgeç" onPress={nothing} />
+      </View>
+
+      <Head>Düğme · 2 boy</Head>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <Btn label="Ana · 44" onPress={nothing} />
+        <Btn sm label="Küçük · 32" onPress={nothing} />
+        <Btn variant="glassy" label="Ana" onPress={nothing} />
+        <Btn sm variant="glassy" label="Küçük" onPress={nothing} />
+      </View>
+
+      <Head>Düğme · hâller</Head>
+      <View style={{ gap: 10 }}>
+        <Label>Kapalı · basılamaz</Label>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Btn disabled label="Devam et" onPress={nothing} />
+          <Btn disabled variant="glassy" label="Kaydet" onPress={nothing} />
+          <Btn disabled variant="danger" label="Sil" onPress={nothing} />
+        </View>
+        <Label>İkonlu</Label>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Btn icon="bell" label="Bildirimleri aç" onPress={nothing} />
+          <Btn variant="glassy" icon="bell" label="Sessize al" onPress={nothing} />
+        </View>
+        <Label>Bekliyor · ikinci basış yok sayılır</Label>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Btn loading label="Devam et" onPress={nothing} />
+          <Btn loading variant="glassy" label="Kaydet" onPress={nothing} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export function TemelSet() {
   const { c } = useKit();
   return (
     <View testID="preview-temel">
+      <DugmeBlock />
       <Head>Yazı · 14 stil</Head>
       <View style={{ gap: 14 }}>
         {TEMEL_YAZI.map((s) => (
