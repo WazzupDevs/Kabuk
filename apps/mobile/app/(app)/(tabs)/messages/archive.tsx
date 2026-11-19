@@ -101,9 +101,7 @@ export default function ArchiveScreen() {
         ) : (
           <View testID="archive-list" style={{ gap: M.gap }}>
             {/* `.ahint`: 4 in. */}
-            <T v="fine">
-              {tr.messages.archivedHint}
-            </T>
+            <T v="fine">{tr.messages.archivedHint}</T>
             <ListMoveArea moves={moves}>
               <InboxList
                 threads={archived}

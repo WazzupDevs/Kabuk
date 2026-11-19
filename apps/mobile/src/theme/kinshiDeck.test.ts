@@ -215,7 +215,7 @@ it('cannot keep Hayvanat bahçesi and Emniyet kemeri off the outline at 22 on 32
   expect(least('EMNİYET', 'KEMERİ') - b.pink.height).toBeCloseTo(0.22, 2);
 });
 
-// The score pill between the close and the chat rounds (44 each, 20 in from the screen's sides).
+// The score pill between the close and the chat rounds (40 each, 20 in from the screen's sides).
 // The scores run from −120 to 120: Yasak! takes 1 (TABU_POINTS), a turn closes at most the 40 cards
 // dealt, a team plays 3 of the 6 turns.
 describe('the score pill', () => {
@@ -251,9 +251,10 @@ describe('the score pill', () => {
     expect(pairs.filter(([a, b]) => !kinshiScorePill(a, b, screen, kit).fits)).toEqual([]);
   });
 
-  // On 320 dp (184 of room) it stays between the rounds, its spaces closing, while the two numbers
-  // together are no wider than "-99" and "99" or "100" and "100"; wider pairs (both teams far below
-  // zero, or one at −100 or under beside a two- or three-digit score) send it under them.
+  // On 320 dp (192 of room since the rounds are 40, temel.md) it stays between the rounds, its
+  // spaces closing, while the two numbers together are no wider than "-99" and "-99" or "-120" and
+  // "99"; wider pairs (one at −100 or under beside a three-digit score or another below −99) send
+  // it under them.
   it('goes under the rounds on 320 dp only for the widest pairs', () => {
     const at = (a: number, b: number) => kinshiScorePill(a, b, 320, kit).fits;
     for (const [a, b] of [
@@ -265,14 +266,15 @@ describe('the score pill', () => {
       [-99, 99],
       [-99, 120],
       [-120, 9],
+      [-99, -99],
+      [-120, -9],
     ] as const)
       expect(at(a, b), `${a} ${b}`).toBe(true);
     for (const [a, b] of [
-      [-99, -99],
+      [-99, -100],
       [-100, -100],
       [-120, -120],
       [-100, 100],
-      [-120, -9],
     ] as const)
       expect(at(a, b), `${a} ${b}`).toBe(false);
     const inline = pairs.filter(([a, b]) => a >= -9 && b >= -9 && a <= 99 && b <= 99);

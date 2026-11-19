@@ -21,49 +21,43 @@ type TextStyle = {
   fontStyle?: 'normal' | 'italic';
 };
 
-// A text style: the canvas's size and line, its weight's file, letter spacing in em.
-// DENEME (19 Kasım, temel önerisi): every size snaps to the proposed scale (about 1.15 apart, a tie
-// goes down), its line keeps its own proportion. Sizes under 10 and over 36 stay as they are.
-const TEMEL_SCALE = [10, 11, 13, 15, 17, 20, 24, 30] as const;
-const snap = (size: number): number => {
-  if (size < 10 || size > 36) return size;
-  let best: number = TEMEL_SCALE[0];
-  for (const s of TEMEL_SCALE) if (Math.abs(s - size) < Math.abs(best - size)) best = s;
-  return best;
-};
-const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => {
-  const to = snap(size);
-  return {
-    fontFamily: F[w],
-    fontSize: to,
-    lineHeight: Math.round((line * to) / size),
-    letterSpacing: em * to,
-  };
-};
+// The type scale (docs/decisions/temel.md, 19 Kasım): eight sizes about 1.15 apart. Every text
+// style between 10 and 36 is one of these; under 10 and over 36 a size stays its own (a small
+// face's letter, a large face's). The sizes the comments below quote are the boards' own, before
+// the scale: the values are the code's (temel.md → Çalışma kuralı), `auraKit.test.ts` holds them.
+export const TYPE_SCALE = [10, 11, 13, 15, 17, 20, 24, 30] as const;
+
+// A text style: its size and line, its weight's file, letter spacing in em.
+const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
+  fontFamily: F[w],
+  fontSize: size,
+  lineHeight: line,
+  letterSpacing: em * size,
+});
 
 // The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 export const KIT_TYPE = {
-  display: t(700, 32, 42, -0.025),
+  display: t(700, 30, 39, -0.025),
   // A profile's name and age (Profil: .display at 34).
-  displaySm: t(700, 34, 43, -0.025),
+  displaySm: t(700, 30, 38, -0.025),
   // Keşfet's question (.display at 34).
-  displayLg: t(700, 34, 41, -0.025),
+  displayLg: t(700, 30, 36, -0.025),
   // Mesajlar's title (.display at 36).
-  displayXl: t(700, 36, 46, -0.025),
+  displayXl: t(700, 30, 38, -0.025),
   // Keşfet's question (iskelet.md → 5.1: 36, 800; the board's -0.035em). The line stays the face's
   // own height (the board's 1.06 cut the tails off on Android, above).
-  exploreTitle: t(800, 36, 46, -0.035),
+  exploreTitle: t(800, 30, 38, -0.035),
   // Keşfet (tuval Kesfet, Harita): the line of the day (13, 700, 0.06em), the chips (14; 700 when
   // chosen), the place line (21, 800) and its count (13, 600), a venue's name (16, 700) and line
   // (13, 500), the bucket (12, 700), a map pin's name (11.5, 700).
   exploreEyebrow: t(700, 13, 17, 0.06),
-  exploreChip: t(600, 14, 18),
-  exploreChipOn: t(700, 14, 18),
-  exploreSection: t(800, 21, 27, -0.02),
+  exploreChip: t(600, 13, 17),
+  exploreChipOn: t(700, 13, 17),
+  exploreSection: t(800, 20, 26, -0.02),
   exploreCount: t(600, 13, 17),
   exploreSort: t(600, 13, 17),
-  placeName: t(700, 16, 20, -0.01),
+  placeName: t(700, 15, 19, -0.01),
   placeSub: t(500, 13, 17),
   // Keşfet as the new board draws it (yeni arayüz tuvali, Kesfet, KesfetHarita): the line of the day
   // (`.eyebrow`, 12, 600), the question (`.kh`, 32, 700, -1 px; its line the face's own height, as
@@ -71,33 +65,33 @@ export const KIT_TYPE = {
   // 500), the chips (14, 600), the place (`.cty`, 15, 700), the count (13, 500), the order (13,
   // 600), a row's name (16, 600) and line (13, 500), how lively (12, 600), the map's legend (11,
   // 600), its sources (10, 500) and its card's name (16, 600, 21).
-  kesfetEyebrow: t(600, 12, 16, 0.02),
-  kesfetTitle: t(700, 32, 41, -0.03125),
+  kesfetEyebrow: t(600, 11, 15, 0.02),
+  kesfetTitle: t(700, 30, 38, -0.03125),
   kesfetField: t(500, 15, 22),
-  kesfetChip: t(600, 14, 18),
+  kesfetChip: t(600, 13, 17),
   kesfetPlace: t(700, 15, 20),
   kesfetCount: t(500, 13, 18),
   kesfetSort: t(600, 13, 18),
-  kesfetName: t(600, 16, 22),
+  kesfetName: t(600, 15, 21),
   kesfetSub: t(500, 13, 18),
-  kesfetStatus: t(600, 12, 16),
+  kesfetStatus: t(600, 11, 15),
   // The empty list's title (`.et`, 15, 600) and Semte Git's title on its scene (`.semt .tt`, 18,
   // 700, -0.3 px), its note (13, 500) and time (14, 500).
   kesfetEmptyTitle: t(600, 15, 20),
-  semtTitle: t(700, 18, 23, -0.3 / 18),
+  semtTitle: t(700, 17, 22, -0.3 / 18),
   semtNote: t(500, 13, 18),
-  semtMeta: t(500, 14, 18),
+  semtMeta: t(500, 13, 17),
   mapLegend: t(600, 11, 14),
   mapAttr: t(500, 10, 14),
-  mapName: t(600, 16, 21),
-  bucket: t(700, 12, 16),
+  mapName: t(600, 15, 20),
+  bucket: t(700, 11, 15),
   // Semte Git on Keşfet: its eyebrow (11, 800, 0.1em), title (20, 800, 1.18) and note (13.5, 500,
   // 1.42).
   districtEyebrow: t(800, 11, 14, 0.1),
   districtTitle: t(800, 20, 24, -0.02),
-  districtNote: t(500, 13.5, 19),
+  districtNote: t(500, 13, 18),
   // The small empty card (tuval Detay, Aktivite: 15.5/700, its sentence 13/500 at 1.4).
-  emptyTitle: t(700, 15.5, 20),
+  emptyTitle: t(700, 15, 19),
   emptyNote: t(500, 13, 18),
   // The empty, error and offline state's title (yeni arayüz tuvali AktivitelerBos, AktivitelerHata
   // `.et`: 15/20 600); its sentence is `.fine` (`.ed`: 13/18 500).
@@ -105,119 +99,119 @@ export const KIT_TYPE = {
   // A venue's page (tuval Detay): the name (31, 800, -0.03em; the line the face's own height, as
   // exploreTitle), the info line's pills (12.5, 700) and place (13.5, 600), the main button's words
   // (17, 800, -0.01em), the bar's name (15.5, 800, -0.015em).
-  detailTitle: t(800, 31, 39, -0.03),
-  detailPill: t(700, 12.5, 16),
-  detailPlace: t(600, 13.5, 17),
+  detailTitle: t(800, 30, 38, -0.03),
+  detailPill: t(700, 13, 17),
+  detailPlace: t(600, 13, 16),
   detailBtn: t(800, 17, 22, -0.01),
   // The same page as the new board draws it (yeni arayüz tuvali, MekanDetay): the name (26, 700,
   // -0.6 px), the info line's pills (13, 600) and place (14, 500), a section (16, 700), "Bu hafta"
   // (13, 600), the line under the button (13, 500), the location sheet's title (21, 700, -0.3 px)
   // and its notice's title (15, 700) and words (14, 500).
-  venueNameTitle: t(700, 26, 32, -0.023),
+  venueNameTitle: t(700, 24, 30, -0.023),
   venueEmptyTitle: t(600, 15, 20),
   venuePill: t(600, 13, 18),
-  venuePlace: t(500, 14, 18),
-  venueSection: t(700, 16, 22),
+  venuePlace: t(500, 13, 17),
+  venueSection: t(700, 15, 21),
   venueWeek: t(600, 13, 18),
   venueHint: t(500, 13, 18),
-  locateTitle: t(700, 21, 26, -0.014),
+  locateTitle: t(700, 20, 25, -0.014),
   locateNoticeTitle: t(700, 15, 20),
-  locateNotice: t(500, 14, 20),
-  barName: t(800, 15.5, 20, -0.015),
+  locateNotice: t(500, 13, 19),
+  barName: t(800, 15, 19, -0.015),
   // Aktiviteler (tuval Aktivite, Sohbet): the gift card's eyebrow (11, 800, 0.12em), title (21,
   // 800, 1.16 raised to the face's height) and button (14.5, 800); the tabs (15, 700); the game
   // sheet's title (22, 800, -0.025em), its note (13.5, 600, 1.42), its eyebrow (12, 800, 0.1em),
   // a person's line (12.5, 600), the small actions (13.5, 800; once pressed 700).
   giftEyebrow: t(800, 11, 14, 0.12),
-  giftTitle: t(800, 21, 26, -0.02),
-  giftBtn: t(800, 14.5, 18),
+  giftTitle: t(800, 20, 25, -0.02),
+  giftBtn: t(800, 15, 19),
   tabsBoard: t(700, 15, 19),
-  sheetGame: t(800, 22, 28, -0.025),
-  sheetNote: t(600, 13.5, 19),
-  sheetEyebrow: t(800, 12, 16, 0.1),
-  personLine: t(600, 12.5, 16),
-  actionSm: t(800, 13.5, 17),
-  actionSmDone: t(700, 13.5, 17),
+  sheetGame: t(800, 20, 25, -0.025),
+  sheetNote: t(600, 13, 18),
+  sheetEyebrow: t(800, 11, 15, 0.1),
+  personLine: t(600, 13, 17),
+  actionSm: t(800, 13, 16),
+  actionSmDone: t(700, 13, 16),
   // Mesajlar (tuval Mesajlar): a conversation's last line (14, 500); Bildirimler's line (15.5, 700;
   // what happened in it 500, `light`).
-  inboxPreview: t(500, 14, 18),
-  notice: t(700, 15.5, 20),
+  inboxPreview: t(500, 13, 17),
+  notice: t(700, 15, 19),
   // The DM (yeni arayüz tuvali, DmSohbet): what is typed in its bar (`.fld`, 15/22), the bar's name
   // (`.who b`, 16/20, 600) and the line under it (`.who span`, 12/16); the strip over the message
   // bar (`.eb`: its title 13/17 at 700, its words 13/17). Its bubbles are `msg`, their time `stamp`,
   // the day `day`. The old board's: the menu's rows (15.5, 600), the block's sheet: its title (21,
   // 800, -0.02em), its sentence (14, 500, 1.45) and its buttons (16.5, 800).
   msgDm: t(500, 15, 22),
-  dmName: t(600, 16, 20),
-  dmSub: t(500, 12, 16),
+  dmName: t(600, 15, 19),
+  dmSub: t(500, 11, 15),
   stripTitle: t(700, 13, 17),
   stripText: t(500, 13, 17),
   // "düzenlendi" by the time (DmDuzenlendi `.s .edt`: the time's 11/14 at 500) and the held
   // message's menu's note (DmMenuSureDoldu: 12/16, 500).
   msgEdited: t(500, 11, 14),
-  menuNote: t(500, 12, 16),
-  menuRow: t(600, 15.5, 20),
+  menuNote: t(500, 11, 15),
+  menuRow: t(600, 15, 19),
   // The ⋮ menu's row (MekanSecenek `.pi p`: 600 16/20).
-  popRow: t(600, 16, 20),
+  popRow: t(600, 15, 19),
   // Its value at the right (SemtSecenek `.pi .rv`: 500 14/18, muted).
-  popValue: t(500, 14, 18),
+  popValue: t(500, 13, 17),
   // The group chats' first-message card's title (SemtSohbet, MasaSohbet `.et`: 700 16/22), their
   // suggestion chips (`.sug span`: 600 13/18) and the district's time chip (`.tmr`: 700 13/18).
-  chatEmptyTitle: t(700, 16, 22),
+  chatEmptyTitle: t(700, 15, 21),
   chatSuggest: t(600, 13, 18),
   chatTime: t(700, 13, 18),
-  confirmTitle: t(800, 21, 27, -0.02),
-  confirmNote: t(500, 14, 20),
-  confirmBtn: t(800, 16.5, 21),
+  confirmTitle: t(800, 20, 26, -0.02),
+  confirmNote: t(500, 13, 19),
+  confirmBtn: t(800, 17, 22),
   // The profile pages (tuval Profil, Benim): the name (31, 800, -0.03em; the line the face's own
   // height, as detailTitle), "Arkadaşsınız" (13, 700), a badge (13.5, 700), Mesaj (17, 800), the
   // bar's name (16, 800, -0.015em); the own buttons' "+N" (10.5, 800); the ticket's number (13,
   // 700), its eyebrow (11.5, 800, 0.1em), the nick (20, 800, -0.02em) and its renewal (13, 600);
   // Set balonu's title (17, 800, -0.015em), its count (12.5, 800), its note (13.5, 500, 1.42) and a
   // slot's name (13, 700).
-  profileName: t(800, 31, 39, -0.03),
+  profileName: t(800, 30, 38, -0.03),
   friendTag: t(700, 13, 17),
-  badgeChip: t(700, 13.5, 17),
+  badgeChip: t(700, 13, 16),
   profileBtn: t(800, 17, 22),
-  personBar: t(800, 16, 20, -0.015),
-  stackMore: t(800, 10.5, 13),
+  personBar: t(800, 15, 19, -0.015),
+  stackMore: t(800, 10, 12),
   ticketNo: t(700, 13, 17),
-  ticketKicker: t(800, 11.5, 15, 0.1),
+  ticketKicker: t(800, 11, 14, 0.1),
   ticketNick: t(800, 20, 25, -0.02),
   ticketNote: t(600, 13, 17),
   setTitle: t(800, 17, 22, -0.015),
-  setCount: t(800, 12.5, 16),
-  setNote: t(500, 13.5, 19),
+  setCount: t(800, 13, 17),
+  setNote: t(500, 13, 18),
   setSlot: t(700, 13, 17),
   // The `sayfa` pages on the boards (tuval Arkadaslar, Duzenle): the large title (34, 800,
   // -0.035em; the line the face's own height) and the line under it (14, 600); a friend's "since"
   // (13, 600); Profili düzenle's Kapak (13.5, 700), the birth date's row (15, 700), its note (12.5,
   // 500) and "Değiştirilemez" (13, 700); the fields' labels (13, 700), what is typed (16, 600; the
   // bio 16, 500, 1.4) and their note (12.5, 500, 1.45).
-  pageTitle: t(800, 34, 42, -0.035),
-  pageSub: t(600, 14, 18),
+  pageTitle: t(800, 30, 37, -0.035),
+  pageSub: t(600, 13, 17),
   friendSince: t(600, 13, 17),
-  coverBtn: t(700, 13.5, 17),
+  coverBtn: t(700, 13, 16),
   // Kapsülün (tuval Kapsul2): a slot's chip (14, 700) and the chosen option's name (19, 800).
-  capsuleChip: t(700, 14, 18),
-  capsuleName: t(800, 19, 24, -0.02),
+  capsuleChip: t(700, 13, 17),
+  capsuleName: t(800, 20, 25, -0.02),
   rowTitle: t(700, 15, 19),
-  rowNote: t(500, 12.5, 17),
+  rowNote: t(500, 13, 18),
   rowLock: t(700, 13, 17),
   boxLabel: t(700, 13, 17),
-  boxField: t(600, 16, 21),
-  boxFieldMulti: t(500, 16, 22),
-  boxNote: t(500, 12.5, 18),
+  boxField: t(600, 15, 20),
+  boxFieldMulti: t(500, 15, 21),
+  boxNote: t(500, 13, 19),
   // Ayarlar (tuval Ayarlar): a row's words (16, 600).
-  settingsRow: t(600, 16, 20),
+  settingsRow: t(600, 15, 19),
   // Ayarlar ailesi (yeni arayüz tuvali): Hesap's locked value (`.inf .tt p`: 16/22, 600, .2 px),
   // its foot (`.foot p`: 12/17, 500); the Ayarlar dialogs' title (`.dt`: 20/26, 700, -.3 px);
   // YasalMetin's heading (`.doc h2`: 18/24, 700, -.2 px), its text (`.doc p.b`: 15/23; the board's
   // 400 is not among the app's faces, so 500) and its draft pill (`.drf`: 11/14, 700, .2 px on the board; drawn at 13/16, the board's face runs wider: the pill is about 70 across there).
-  settingsValue: t(600, 16, 22, 0.2 / 16),
-  settingsFoot: t(500, 12, 17),
+  settingsValue: t(600, 15, 21, 0.2 / 16),
+  settingsFoot: t(500, 11, 16),
   dialogTitle: t(700, 20, 26, -0.3 / 20),
-  legalHead: t(700, 18, 24, -0.2 / 18),
+  legalHead: t(700, 17, 23, -0.2 / 18),
   legalText: t(500, 15, 23),
   // YasalMetin `.drf` as the board draws it: `.meta span` (500 13/18, muted) wins over `.drf`'s own
   // font and colour; only its 0.2 px spacing stays.
@@ -225,31 +219,31 @@ export const KIT_TYPE = {
   // Yeni arayüz (Ayarlar, 16 Kasım): a page's title beside its back button (21, 700, -0.3 px), a
   // section's head in small letters (13, 700). The dialog's title is the page's; its words 15/500;
   // the long-press menu's row 15/600; the toast's title 14/600 and its line 12/500.
-  pageBarTitle: t(700, 21, 26, -0.3 / 21),
+  pageBarTitle: t(700, 20, 25, -0.3 / 21),
   // A sheet's title (yeni arayüz tuvali `.sh-t`: 21/26, 700, -0.3 px).
-  sheetTitle: t(700, 21, 26, -0.3 / 21),
+  sheetTitle: t(700, 20, 25, -0.3 / 21),
   // Masa kur (yeni arayüz tuvali 32a–32c, theme/tableSetup.ts): the picture's name pill 14/700,
   // "Rastgele" 13/600, "ÖNERİ" 10/700, the pictures' head 15/700, "Başka masada" 11/700. Masa
   // bitti (64, 132): the title 32/700 at -0.6 px, its line 15/500.
-  setupPill: t(700, 14, 18),
+  setupPill: t(700, 13, 17),
   setupShuffle: t(600, 13, 16),
   setupBadge: t(700, 10, 14, 0.4 / 10),
   setupHead: t(700, 15, 20),
   setupTaken: t(700, 11, 14),
-  endTitle: t(700, 32, 38, -0.6 / 32),
+  endTitle: t(700, 30, 36, -0.6 / 32),
   endLine: t(500, 15, 20),
   sectionHead: t(700, 13, 18),
   dialogText: t(500, 15, 22),
   holdRow: t(600, 15, 20),
   // Mesajlar's rows (yeni arayüz tuvali Main): the name (`.nm` 600 16/22, no tracking), a face's
   // initial (`.rw .av` 17), Arşivlenenler (`.arc` 600 15/22) and its count (`.arc .n` 600 13/18).
-  inboxName: t(600, 16, 22),
+  inboxName: t(600, 15, 21),
   inboxLetter: t(700, 17, 22),
   inboxArchived: t(600, 15, 22),
   inboxCount: t(600, 13, 18),
-  toastTitle: t(600, 14, 19),
-  toastPill: t(600, 14, 18),
-  toastSub: t(500, 12, 16),
+  toastTitle: t(600, 13, 18),
+  toastPill: t(600, 13, 17),
+  toastSub: t(500, 11, 15),
   // The toast's button (SusleKaydedilemedi): 13/600.
   toastBtn: t(600, 13, 16),
   // EngelleOnay's "Şikayet de et" row: the words 15/600, the line under them 13/500.
@@ -259,43 +253,43 @@ export const KIT_TYPE = {
   // sentence (14.5, 500, 1.45); its buttons (15.5, 800), the strip's (14, 800); the venue chat's
   // field (14, 600); the invite's name (16, 700) and its button (14, 700).
   hereTag: t(600, 13, 18),
-  cardHero: t(800, 26, 29, -0.03),
-  cardHeroNote: t(500, 14.5, 21),
-  tableBtn: t(800, 15.5, 20),
-  stripBtn: t(800, 14, 18),
-  chatField: t(600, 14, 18),
-  inviteName: t(700, 16, 20),
-  inviteBtn: t(700, 14, 18),
-  title: t(600, 21, 27, -0.015),
+  cardHero: t(800, 24, 27, -0.03),
+  cardHeroNote: t(500, 15, 22),
+  tableBtn: t(800, 15, 19),
+  stripBtn: t(800, 13, 17),
+  chatField: t(600, 13, 17),
+  inviteName: t(700, 15, 19),
+  inviteBtn: t(700, 13, 17),
+  title: t(600, 20, 26, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
-  welcome: t(500, 36, 46, -0.03),
+  welcome: t(500, 30, 38, -0.03),
   wordmarkSm: t(800, 24, 28, -0.04),
   // GuncellemeGerekli `.up h1` (24 / 30, 700, -.3px) and the version line under the button.
   updateTitle: t(700, 24, 30, -0.3 / 24),
-  updateBuild: t(500, 12, 16),
+  updateBuild: t(500, 11, 15),
   // A scene's title (Mekan: .title at 22).
-  hero: t(600, 22, 28, -0.015),
+  hero: t(600, 20, 25, -0.015),
   // Masa kur's title (.title at 24).
   sheetTitleLg: t(600, 24, 30, -0.015),
   // A digit of the code (Kod: 26, 600).
-  code: t(600, 26, 33),
+  code: t(600, 24, 30),
   // The phone number as it is typed (Telefon: 21, 600, 0.04em).
-  phone: t(600, 21, 26, 0.04),
+  phone: t(600, 20, 25, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
   requestTitle: t(600, 17, 23, -0.005),
   // A game's name on its card (Masa: 24, 700, -0.02em).
   gameName: t(700, 24, 31, -0.02),
   // A venue's name on its page (KesfetMekan: .display at 31).
-  venueTitle: t(500, 31, 38, -0.025),
-  h3: t(600, 16, 22, -0.005),
+  venueTitle: t(500, 30, 37, -0.025),
+  h3: t(600, 15, 21, -0.005),
   // The masked phone number on Hesap (`.h3.mono`: 0.04em).
-  h3Mono: t(600, 16, 22, 0.04),
+  h3Mono: t(600, 15, 21, 0.04),
   // A section's heading (.sec .h3 at 18).
-  sec: t(600, 18, 24, -0.005),
+  sec: t(600, 17, 23, -0.005),
   // Keşfet's place line and Masa's lone note (.h3 at 19).
-  secLg: t(600, 19, 24, -0.005),
+  secLg: t(600, 20, 25, -0.005),
   // Mekan's lobby headings (.sec .h3 at 21).
-  secXl: t(600, 21, 27, -0.005),
+  secXl: t(600, 20, 26, -0.005),
   body: t(500, 15, 22),
   // Aura v71 YasalMetin (`.legal`): the long legal text.
   legal: t(500, 15, 24),
@@ -305,10 +299,10 @@ export const KIT_TYPE = {
   // What is typed in Profili düzenle's fields (17/24).
   field: t(500, 17, 24),
   // A venue row's second line and its bucket (Keşfet: .fine at 14).
-  fineLg: t(500, 14, 18),
+  fineLg: t(500, 13, 17),
   // A longer note at 14 (Mekan's scene, Masa kur's switch, Masa: .fine 14/20).
-  note: t(500, 14, 20),
-  eyebrow: t(600, 12, 16, 0.02),
+  note: t(500, 13, 19),
+  eyebrow: t(600, 11, 15, 0.02),
   stamp: t(600, 11, 14),
   strong: { fontFamily: F[600] } as TextStyle,
   // A conversation's name and last line while unread (iskelet.md → 5.4).
@@ -319,22 +313,22 @@ export const KIT_TYPE = {
   italic: { fontStyle: 'italic' } as TextStyle,
   // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
   light: { fontFamily: F[500] } as TextStyle,
-  btn: t(600, 16, 20),
+  btn: t(600, 15, 19),
   // `.btn.big`: 700 17/22.
-  btnBig: t(600, 16, 20),
-  btnSm: t(600, 14, 18),
+  btnBig: t(600, 15, 19),
+  btnSm: t(600, 13, 17),
   // Mekan's "Masa kur" (44 high, 15).
-  btnMid: t(600, 14, 18),
+  btnMid: t(600, 13, 17),
   chip: t(600, 13, 17),
   // Süsle's filter chip (`.flt span`): 600 12/16.
-  chipFilter: t(600, 12, 16),
+  chipFilter: t(600, 11, 15),
   // U34: a field's label on a card (ProfilDuzenle `.lb`).
   fieldLabel: t(600, 13, 17),
   // Keşfet's kind chips (15).
   chipLg: t(600, 15, 19),
   // U19: Mekan's spot chip, 14.
-  chipMd: t(600, 14, 18),
-  tag: t(600, 12, 16),
+  chipMd: t(600, 13, 17),
+  tag: t(600, 11, 15),
   // A venue page's tags (14).
   // A venue page's tags over its scene (U17: 13).
   tagLg: t(600, 13, 17),
@@ -342,50 +336,50 @@ export const KIT_TYPE = {
   // The request row's letter face (`.rqa`: 20/700, line 1).
   faceLetter: t(700, 20, 20),
   // The venue chat card's count (24 round, 12).
-  badgeLg: t(700, 12, 15),
+  badgeLg: t(700, 11, 14),
   live: t(600, 13, 17),
   // "şu an aktif" (500) and "Mekandasın" (15) on Mekan.
   liveSoft: t(500, 13, 17),
   // U19: Mekan's "Mekandasın", 14.
-  liveLg: t(600, 14, 18),
+  liveLg: t(600, 13, 17),
   msg: t(500, 15, 21),
   // A message of emoji only, without a bubble (Telegram Android): one, and two or three. The
   // system's face (the emoji come from its colour font, not from ours) and a line 1.35 of the size:
   // with ours and 1.2, Android cut the emoji's top and right off (the owner's report, 6 Kasım).
   emojiOne: { fontSize: 40, lineHeight: 54 },
   emojiFew: { fontSize: 32, lineHeight: 44 },
-  day: t(600, 12, 16),
+  day: t(600, 11, 15),
   // A person's name under their face at Masa (`.mem`: 11/14 600).
   member: t(600, 11, 14),
-  wordmark: t(800, 26, 30, -0.04),
+  wordmark: t(800, 24, 28, -0.04),
   // Mekan (yeni arayüz tuvali, MekanMasa, MekanKaydir): the venue's name alone (`.vn`, 24, 700,
   // -0.5 px), small on the scrolled bar (`.sv p`, 17, 700, -0.2 px) and "Mekandasın" under it (12,
   // 600); a card's title (`.t1`, 18, 700, -0.3 px), its count (`.cn`, 13, 700) and "Açık masalar"
   // (`.oh p`, 18, 700).
   venueName: t(700, 24, 30, -0.5 / 24),
   venueBarName: t(700, 17, 22, -0.2 / 17),
-  venueBarHere: t(600, 12, 16),
-  venueCardTitle: t(700, 18, 24, -0.3 / 18),
+  venueBarHere: t(600, 11, 15),
+  venueCardTitle: t(700, 17, 23, -0.3 / 18),
   venueCount: t(700, 13, 18),
-  venueLobbyTitle: t(700, 18, 24),
+  venueLobbyTitle: t(700, 17, 23),
   // Masa (yeni arayüz tuvali, Masa, Masadakiler): the bar's table name (`.mti b`, 16/20 700) and its
   // line (`.mti span`, 12/16 500); "Oyunlar" (`.gh p`, 18/24 700) and its count (13/18 500); a person
   // in Masadakiler (`.mg .mr p`, 13/17 600), "Masa sahibi" under them (11/14 600) and the note
   // under the list (12/16 500).
-  roomBarName: t(700, 16, 20),
-  roomBarLine: t(500, 12, 16),
-  roomSection: t(700, 18, 24),
+  roomBarName: t(700, 15, 19),
+  roomBarLine: t(500, 11, 15),
+  roomSection: t(700, 17, 23),
   roomCount: t(500, 13, 18),
   roomPerson: t(600, 13, 17),
   roomOwner: t(600, 11, 14),
-  roomNote: t(500, 12, 16),
+  roomNote: t(500, 11, 15),
   // A game's pre-game page (yeni arayüz tuvali, OyunLobi, TakimLobi): the game's name (`.ln b`,
   // 21/26 700, -0.3 px), a person (`.pr p`, 14/18 600), a row's title (`.lr p`, 16/20 600) and a
   // team's name (`.th3 p`, 15/20 700) and count (13/18 700).
-  lobbyName: t(700, 21, 26, -0.3 / 21),
-  lobbyPerson: t(600, 14, 18),
-  lobbyQuiet: t(500, 14, 18),
-  lobbyRow: t(600, 16, 20),
+  lobbyName: t(700, 20, 25, -0.3 / 21),
+  lobbyPerson: t(600, 13, 17),
+  lobbyQuiet: t(500, 13, 17),
+  lobbyRow: t(600, 15, 19),
   lobbyTeam: t(700, 15, 20),
   lobbyTeamCount: t(700, 13, 18),
   av: {
@@ -393,17 +387,17 @@ export const KIT_TYPE = {
     roomFace: t(700, 10, 12),
     xs: t(700, 9, 11),
     md: t(700, 15, 19),
-    sm: t(700, 12, 16),
-    member: t(700, 12, 16),
+    sm: t(700, 11, 15),
+    member: t(700, 11, 15),
     list: t(700, 15, 19),
     seat: t(700, 20, 24),
     // A conversation's face in Mesajlar (52).
-    row: t(700, 18, 22),
+    row: t(700, 17, 21),
     // A conversation's face (tuval Mesajlar: 54) and the DM bar's (38).
-    inbox: t(700, 19, 24),
-    bar: t(700, 14, 18),
-    lg: t(700, 22, 26),
-    xl: t(700, 32, 38),
+    inbox: t(700, 20, 25),
+    bar: t(700, 13, 17),
+    lg: t(700, 20, 24),
+    xl: t(700, 30, 36),
     // Profil's two faces (112).
     big: t(700, 40, 48),
     hero: t(700, 40, 48),
@@ -912,12 +906,11 @@ export const KIT = {
     glassRadiusSm: 22,
     pad: 18,
     padLg: 22,
-    // The sizes as the boards draw them (the owner's call, 18 Kasım; yeni arayüz tuvali skall.css,
-    // ekran.css and the boards' own): the main button 48 (`.btn`), the small 36 (`.btn.sm`), the
-    // big 56 at 700 17/22 (`.btn.big`; the long one `btnTall` 56 at the main's type, `.fx .btn`), a
-    // round icon button 44, a form field 48, a chip 40 (`.chip`), Süsle's filter chip 28 (`.flt
-    // span`), a bar's button 40 (`.tb2 .btn`); a row's buttons 32, 34 or 40 by its screen (`rowBtn*`;
-    // the many-line field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4).
+    // The base's sizes (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md; in place of 18
+    // Kasım's boards' sizes): the main button and a form field 44 (no big 56: `btnBig` and `btnTall`
+    // are the main), the small 32, a round icon button and a top bar's button 40, a chip 32, Süsle's
+    // filter chip 28, a bar's button 36; a row's buttons 28, 32 or 36 (`rowBtn*`; the many-line
+    // field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4).
     btn: 44,
     btnTall: 44,
     btnBig: 44,
@@ -933,9 +926,8 @@ export const KIT = {
     btnPadX: 20,
     btnPadXSm: 16,
     btnGap: 8,
-    // A chip 36 (skall.css `.chip`); 40 where its board draws 40 (`chipLg`: Keşfet's kind chips,
-    // MekanLobiAc's intent chips; 600 14/18, 16 inside). Süsle's filter chip 28, 11 inside
-    // (`.flt span`).
+    // A chip 32 at every place (`chipLg`, `chipTall`: Keşfet's kind chips, MekanLobiAc's intent
+    // chips; 16 inside). Süsle's filter chip 28, 11 inside (`.flt span`).
     chip: 32,
     chipTall: 32,
     chipTallPadX: 16,
@@ -959,8 +951,8 @@ export const KIT = {
     tagPadX: 8,
     tagGap: 4,
     round: 40,
-    // iskelet.md → 2.1 and 3.1: every top bar button 44 (the glass back button; the yeni arayüz
-    // tuvali's `.round`, 17 Kasım, was 46); a sticky field
+    // iskelet.md → 2.1 and 3.1: every top bar button 40 (the glass back button; temel.md); a sticky
+    // field
     // pins `stickyTop` under the top of its screen's scrolling body (top 52 to 54 on the canvas's 47
     // status bar) and the band reaches `stickyBandPad` under it.
     topBtn: 40,
@@ -981,7 +973,7 @@ export const KIT = {
       cardsGap: 10,
       empty: { width: 104, height: 72, radius: 14 },
     },
-    // The venue page's back button (48).
+    // The venue page's back button.
     roundLg: 40,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).
     // `seat`: Masa's card when its people fit one row (58).

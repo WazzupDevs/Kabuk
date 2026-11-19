@@ -96,24 +96,24 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   const dark = theme.scheme === 'dark';
   const raised = (!dark && k.c.segShadow) || undefined;
   // The type of the raised fields and the big one: 21 / 600; on Profili düzenle's card 16.
-  const fieldType =
-    big
-      ? KIT_TYPE.title
-      : boxed
-        ? multiline
-          ? KIT_TYPE.boxFieldMulti
-          : KIT_TYPE.boxField
-        : null;
+  const fieldType = big
+    ? KIT_TYPE.title
+    : boxed
+      ? multiline
+        ? KIT_TYPE.boxFieldMulti
+        : KIT_TYPE.boxField
+      : null;
   // On Profili düzenle's card the bio is 13 over and under.
   // One line: no room over and under, so the field is exactly its height (44), as the search
   // capsule's (the owner's report, 19 Kasım: the two search fields stood at two heights).
-  const padY = !multiline && !tall
-    ? 0
-    : boxed && tall
-      ? E.field.padY
-      : large && tall
-        ? KIT.size.fieldLgPadY
-        : SPACING[3];
+  const padY =
+    !multiline && !tall
+      ? 0
+      : boxed && tall
+        ? E.field.padY
+        : large && tall
+          ? KIT.size.fieldLgPadY
+          : SPACING[3];
   // Focused, a hard ring (no blur, cheap) as boxShadow; otherwise the soft glass shadow natively
   // (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
@@ -255,11 +255,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             textAlignVertical={multiline ? 'top' : 'center'}
             style={[
               fieldType ??
-                (prefix
-                  ? KIT_TYPE.phone
-                  : code
-                    ? typeStyle(theme, 'title')
-                    : KIT_TYPE.body),
+                (prefix ? KIT_TYPE.phone : code ? typeStyle(theme, 'title') : KIT_TYPE.body),
               {
                 color: k.c.ink,
                 paddingVertical: padY,

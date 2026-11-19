@@ -85,12 +85,12 @@ describe('the top bar (3.1)', () => {
     expect(barBandCss('dark', 200)).toContain('rgba(0, 0, 0, 0.84) 83.5%');
   });
 
-  it('PageTop is the `sayfa` bar: the 44 glass back button, the large title 34/800', () => {
+  it('PageTop is the `sayfa` bar: the 40 glass back button, the large title 34/800', () => {
     const page = code('src/components/PageTop.tsx');
     expect(page).toMatch(/<TopBarRow kind="sayfa"/);
     expect(page).toMatch(/<LargeTitle kind="sayfa"/);
     expect(code('src/motion/TopBar.tsx')).toMatch(/side=\{side \?\? KIT\.size\.topBtn\}/);
-    expect(code('src/theme/auraKit.ts')).toMatch(/\n {4}topBtn: 44,/);
+    expect(code('src/theme/auraKit.ts')).toMatch(/\n {4}topBtn: 40,/);
     expect(code('src/theme/tokens.ts')).toMatch(
       /largeTitle: \{ font: 'display', size: 34, lineHeight: 42/,
     );
@@ -335,7 +335,7 @@ describe('page transitions (4.4)', () => {
     expect(settings).toMatch(/testID="settings"/);
     // An inline PageTop is drawn as a still top over the content, never inside its scroll.
     expect(code('src/components/Screen.tsx')).toMatch(/top\.type === PageTop && !inlineTop\(top\)/);
-    expect(code('src/theme/auraKit.ts')).toMatch(/pageBarTitle: t\(700, 21, 26, -0\.3 \/ 21\)/);
+    expect(code('src/theme/auraKit.ts')).toMatch(/pageBarTitle: t\(700, 20, 25, -0\.3 \/ 21\)/);
   });
 });
 
