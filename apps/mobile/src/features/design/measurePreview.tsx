@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
+import { Seg } from '@/aura/kit';
 import { AVATAR_SIZE } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { CapsuleAvatar } from '@/components/CapsuleAvatar';
-import { Segmented } from '@/components/Segmented';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { type FrameStats, frameStats } from '@/lib/frameStats';
@@ -38,7 +38,7 @@ export function MeasureSet() {
 
   return (
     <View className="gap-4">
-      <Segmented
+      <Seg
         accessibilityLabel={t.set}
         options={[
           { value: 'cached', label: t.cached, testID: 'measure-cached' },

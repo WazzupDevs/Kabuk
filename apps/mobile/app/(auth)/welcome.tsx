@@ -228,7 +228,7 @@ function Welcome() {
           >
             <Btn
               block
-              tall
+
               testID="welcome-start"
               label={tr.signup.start}
               onPress={() => {

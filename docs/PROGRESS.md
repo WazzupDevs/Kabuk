@@ -5,7 +5,8 @@
 - Yapıldı (`docs/decisions/temel.md` → Kalıcılaştırma): yazıda otomatik yuvarlama kalktı (`TYPE_SCALE`, `auraKit.test.ts`), sekiz ikonun kaynak çizimi eşitlendi, boy ve yazı testleri yeni değerlerde, deneme önizleme sayfaları kaldırıldı, CLAUDE.md ve `iskelet.md` güncellendi.
 - `pnpm check` Windows'ta artık geçiyor (yol ayracı ve zaman aşımı düzeldi; 4326 test). Koşu `deno.lock`'u değiştiriyor: commit'ten önce `git checkout -- deno.lock`.
 - Yazı adları 21 temel stile bağlandı (`auraKit.ts` → `BASE`; 36 kullanılmayan ad silindi). Bu görünüşü değiştirdi (800 → 700, satır yükseklikleri, harf aralığı); emülatörde yalnız dört sekmeye açık temada bakıldı, proje sahibi henüz görmedi.
-- Sıradaki: `Seg`/`Segmented`, `Btn` boyları, `Input` türleri, boş hâlin yeri; sonra görülmeyen ekranlar ve aileler.
+- Tek bileşene indi: `Segmented` silindi (`Seg` tek boy), `Btn` iki boy artı `bar`, `Input` tek görünüş, tam sayfa boş hâl `EmptyState` → `page` ile ortada (Mesajlar'ın boş hâli 41 dp aşağı indi). Proje sahibi yazı görünüşünü dört sekmede onayladı; bu parçaları henüz görmedi.
+- Sıradaki: görülmeyen ekranlara bakmak (koyu tema, sohbetler, kayıt, masa ve oyunlar, 320 dp ve en büyük yazı), çipin seçenekleri, açık küçükler; sonra aileler bu temelle.
 - `temel` dalı hâlâ yerel: GitHub girişi bu bilgisayarda yok, ilk push'u proje sahibi yapacak; PR açılınca kapsam kaydı kanıtı ya da muafiyeti gerekir.
 
 ## Devir notu (20 Kasım 2026): yerel düzen çalışıyor, ortak temel deneme hâlinde

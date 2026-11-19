@@ -75,9 +75,7 @@ export function TableEnd({
     <View testID="table-end" style={{ flex: 1 }}>
       <Screen
         padTop={E.bar}
-        footer={
-          <Btn block tall testID="table-end-close" label={tr.tableEnd.back} onPress={onClose} />
-        }
+        footer={<Btn block testID="table-end-close" label={tr.tableEnd.back} onPress={onClose} />}
       >
         <View>
           <View

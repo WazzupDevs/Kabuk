@@ -208,7 +208,7 @@ function LobbyFoot({ owner, warning, canStart, error, start }: LobbyFootProps) {
       {owner ? (
         <Btn
           block
-          tall
+
           testID={start.testID}
           label={start.label}
           disabled={!ready || !!start.busy}

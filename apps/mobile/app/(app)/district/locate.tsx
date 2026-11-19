@@ -144,7 +144,6 @@ export default function DistrictLocateScreen() {
     status === 'denied' ? (
       <Foot>
         <Btn
-          big
           block
           label={tr.district.locate.openSettings}
           testID="district-settings"
@@ -154,7 +153,6 @@ export default function DistrictLocateScreen() {
     ) : status === 'failed' ? (
       <Foot>
         <Btn
-          big
           block
           label={tr.district.locate.retry}
           testID="district-locate-retry"
@@ -166,7 +164,6 @@ export default function DistrictLocateScreen() {
         {status === 'finding' ? <FindRow text={tr.district.locate.finding} /> : null}
         {enter.isError ? <WarnRow tone="danger" text={errorMessage(enter.error)} /> : null}
         <Btn
-          big
           block
           label={tr.district.locate.next}
           testID="district-locate-next"

@@ -483,7 +483,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               // SusleKaydetPasif, SusleKaydediliyor: the solid Kaydet, flat and quiet with nothing
               // to save, the ring turning in place of its words while it saves.
               <Btn
-                bar={KIT.size.round}
+                bar
                 testID="capsule-save"
                 label={save.isSuccess ? tr.capsule.savedShort : tr.capsule.save}
                 disabled={!dirty && !save.isPending}

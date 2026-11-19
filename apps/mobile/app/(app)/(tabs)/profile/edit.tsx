@@ -359,7 +359,7 @@ function EditForm({
           trailing={
             <Btn
               variant="glassy"
-              bar={KIT.size.topBtn}
+              bar
               testID="profile-save"
               label={save.isSuccess ? tr.profile.savedShort : tr.profile.save}
               tint={changed || save.isSuccess ? KIT.primary : KIT.saveIdle}
@@ -387,9 +387,6 @@ function EditForm({
         style={{ padding: E.card.pad, gap: E.card.gap }}
       >
         <Input
-          large
-          boxed
-          halo
           testID="name-input"
           label={tr.profile.nameLabel}
           hint={tr.profile.nameHint}
@@ -415,9 +412,6 @@ function EditForm({
           }}
         />
         <Input
-          large
-          boxed
-          halo
           label={tr.profile.bioLabel}
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}

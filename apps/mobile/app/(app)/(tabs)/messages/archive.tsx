@@ -83,21 +83,18 @@ export default function ArchiveScreen() {
             }}
           />
         ) : archived.length === 0 ? (
-          // ArsivBos `.emp`: in the middle of the page less 190 at its foot (the list keeps 90).
-          <View
+          // ArsivBos `.emp`: in the middle of the page (EmptyState → page).
+          <EmptyState
+            page
             testID="archive-empty"
-            style={{ flex: 1, justifyContent: 'center', paddingBottom: M.emptyLift }}
-          >
-            <EmptyState
-              kind="empty"
-              riso="archive"
-              compact
-              // `.ed`: at most 240 wide, no room over the picture.
-              settings
-              title={tr.messages.archivedEmpty}
-              body={tr.messages.archivedEmptyHint}
-            />
-          </View>
+            kind="empty"
+            riso="archive"
+            compact
+            // `.ed`: at most 240 wide, no room over the picture.
+            settings
+            title={tr.messages.archivedEmpty}
+            body={tr.messages.archivedEmptyHint}
+          />
         ) : (
           <View testID="archive-list" style={{ gap: M.gap }}>
             {/* `.ahint`: 4 in. */}

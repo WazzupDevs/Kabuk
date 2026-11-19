@@ -83,7 +83,7 @@ export default function PersonScreen() {
       top={<ProfileTopBar onBack={() => router.back()} />}
       footer={
         !view.isPending && !failed ? (
-          <Btn block bar={KIT.size.btnRow} label={tr.profile.back} onPress={() => router.back()} />
+          <Btn block label={tr.profile.back} onPress={() => router.back()} />
         ) : undefined
       }
     >

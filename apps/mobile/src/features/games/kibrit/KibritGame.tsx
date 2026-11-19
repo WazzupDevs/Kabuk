@@ -1167,7 +1167,7 @@ function VoteScreen(shared: Shared) {
             {playing ? (
               <Btn
                 block
-                tall
+
                 testID="kibrit-vote-submit"
                 label={tr.kibrit.give}
                 disabled={!chosen || !view.ready || (chosen === mine && !lost)}
@@ -1682,7 +1682,6 @@ function End({
               ) : null}
               <View style={{ flexDirection: 'row', gap: BB.end.footGap }}>
                 <Btn
-                  tall
                   variant="glassy"
                   testID="kibrit-back"
                   label={tr.kibrit.backToTable}
@@ -1691,7 +1690,6 @@ function End({
                 />
                 {owner ? (
                   <Btn
-                    tall
                     testID="kibrit-again"
                     label={tr.kibrit.again}
                     loading={again.isPending}

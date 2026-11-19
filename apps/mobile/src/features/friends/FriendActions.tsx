@@ -26,7 +26,6 @@ export function FriendActions({ friend, onRemove }: { friend: Friend; onRemove?:
         // As wide as its words; "Mesaj" takes the rest (Aura v76 ProfilBaskasi, F1: at an equal half
         // the words did not fit at 390 dp).
         <Btn
-          bar={KIT.size.btnRow}
           snug={!stacked}
           block={stacked}
           variant="glassy"
@@ -58,7 +57,6 @@ export function FriendActions({ friend, onRemove }: { friend: Friend; onRemove?:
       )}
       {threadId ? (
         <Btn
-          bar={KIT.size.btnRow}
           block
           icon="chat"
           label={tr.friends.messageShort}

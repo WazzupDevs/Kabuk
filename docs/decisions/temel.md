@@ -40,12 +40,13 @@ Yapılanlar (20 Kasım):
 - Testler yeni değerlerde: `kabul.test.ts` (boylar), `skeleton.test.ts`, `contrast.test.ts` (koyu temada kapalı düğme her türde 3,5:1), `kinshiDeck.test.ts` (yuvarlaklar 40 olunca 320 dp'de skor hapına 8 dp daha yer kaldı).
 - Windows'ta birim testleri: yol ayracı (`styleGuard`, `reveal-removed`, `v4-cleanup`) ve zaman aşımı (Windows'ta 30 sn) düzeldi.
 - Deneme önizleme sayfaları (Bileşen önizleme → Temel, dört dosya) kaldırıldı: son karardan önceki öneri değerlerini gösteriyorlardı.
+- Tek bileşen: eski `Segmented` silindi, bölmeli seçici her yerde `Seg` ve tek boy (32'lik parça, 40'lık hap; Ayarlar'ınki 36'dan 32'ye indi). `Btn` iki boy (`sm` ve ana) artı üst barda yuvarlakların boyunda duran `bar`; `mid`, `tall`, `big` ve ilgili boy değerleri kalktı (51 kullanım yeri). `Input` tek görünüş (karttaki alan; uygulamada yalnız Profili düzenle kullanıyordu, `box`/`large`/`boxed`/`big`/`code`/`prefix`/`search` görünüşlerinin ekranı kalmamıştı). Tam sayfa boş hâl kalan alanın ortasında durur ve yerini bileşen verir (`EmptyState` → `page`, 11 yer); Mesajlar ve Arşiv'in kendi 82'lik yukarı kaydırması kalktı (boş hâl yaklaşık 41 dp aşağı indi). Emülatörde Mesajlar, Profili düzenle ve Ayarlar'a açık temada bakıldı.
 - Belgeler: CLAUDE.md (boy satırı, "pano geçerlidir" kuralı, "Nerede ne var"), `docs/design/iskelet.md` → 2.1, 3.1, 5.9.
 
 Kalanlar:
 
 1. Eski yazı sistemi (`theme/tokens.ts`, `theme/theme.ts`; karşılama ve oyunlar) ve oyunların kendi yazı dosyaları (`signum.ts`, `kinshiPlay.ts`, `vampirTable.ts`) hiç değişmedi.
-2. Tek bileşene inecekler: `Seg` ve `Segmented`; `Btn`'in yedi boy seçeneği; `Input`'un `box`/`large`/`boxed`; boş hâlin ekrandaki yeri (her ekran kendi boşluğunu veriyor).
+2. Çipin `lg`, `md`, `tall` seçenekleri (hepsi 32 yüksek; yalnız iç boşluk ve bir yazı boyu ayrışıyor) ve Aktiviteler'in boş hâli (kaydırılan içerikte kendi en az yüksekliğiyle ortalanıyor) henüz tek hâle inmedi.
 3. Kapsam kaydında dokunulan satırların kanıtı ya da muafiyeti (PR açılınca, `pnpm visual:kanit`).
 4. Görülmeyenler: mekân, masa ve oyun ekranları, kayıt ekranları, uzun basma menüsü, onay penceresinin ikonlu ve tehlikeli hâli, koyu temanın büyük kısmı, 320 dp ve en büyük yazı.
 5. Açık küçükler: "Şehir" ve "Set balonu" başlıkları mürekkep renginde (ötekiler gri); yazma alanının kenar boşluğu DM'de dar; "kartta" alan çerçeveli; DM'de gönder düğmesinin hep görünmesi proje sahibine soruldu, yanıt gelmedi (öneriyle gidildi); DM'nin ad hapı 44, yanındaki yuvarlaklar 40.

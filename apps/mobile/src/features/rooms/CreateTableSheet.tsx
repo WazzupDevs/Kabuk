@@ -142,7 +142,7 @@ export function CreateTableSheet({ onClose, venueId, venueName, usedIcons, anony
         footer={
           <Btn
             block
-            tall
+
             testID="table-icon-confirm"
             label={tr.createTable.pick}
             disabled={!draft}
@@ -195,7 +195,7 @@ export function CreateTableSheet({ onClose, venueId, venueName, usedIcons, anony
           ) : null}
           <Btn
             block
-            tall
+
             icon="plus"
             testID="table-create"
             label={tr.createTable.confirm}

@@ -141,14 +141,13 @@ export default function VenueScreen() {
   if (checkIn.isError && !checkIn.data) {
     return (
       <Screen edges={['top']}>
-        <View className="flex-1 justify-center">
-          <EmptyState
-            kind="error"
-            body={errorMessage(checkIn.error)}
-            error={checkIn.error}
-            action={{ label: tr.common.retry, onPress: () => void checkIn.refetch() }}
-          />
-        </View>
+        <EmptyState
+          page
+          kind="error"
+          body={errorMessage(checkIn.error)}
+          error={checkIn.error}
+          action={{ label: tr.common.retry, onPress: () => void checkIn.refetch() }}
+        />
       </Screen>
     );
   }

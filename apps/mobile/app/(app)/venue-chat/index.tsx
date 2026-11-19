@@ -384,14 +384,13 @@ function VenueChatScreenBody() {
             <Loader />
           </View>
         ) : page.isError ? (
-          <View className="flex-1 justify-center">
-            <EmptyState
-              kind="error"
-              body={errorMessage(page.error)}
-              error={page.error}
-              action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
-            />
-          </View>
+          <EmptyState
+            page
+            kind="error"
+            body={errorMessage(page.error)}
+            error={page.error}
+            action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
+          />
         ) : (
           <View className="flex-1 justify-end gap-2">
             {/* U26 (MekanSohbetiBos): a glass card, the chat's disc, h3 and fine. */}

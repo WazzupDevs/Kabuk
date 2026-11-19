@@ -50,6 +50,11 @@ type Props = {
   // Ayarlar ailesi (EngellenenlerBos, SessizAlinanlarBos `.emp`): no room over the picture (the page
   // centres it) and the sentence at most 240 wide.
   settings?: boolean;
+  // A whole screen's state: in the middle of the room it is given, one rule for every screen (the
+  // owner's call, 19 Kasım, docs/decisions/temel.md: "ortada"); the screen gives no room of its
+  // own. `testID` names that room.
+  page?: boolean;
+  testID?: string;
 };
 
 // Aura v76 BosDurumlar (640x440 exports; the DM's first message and the venue's week reuse the
@@ -152,7 +157,16 @@ function StateDisc({ icon, iconSize }: { icon: IconName; iconSize: number }) {
 // title 15/20 600 12 under the disc, the sentence 13/18 500 4 under it (at most 260 wide), the
 // soft button 16 under it. The error and offline states draw the boards' riso picture (210 × 172);
 // an icon state (no kind) keeps the soft disc.
-export function EmptyState({
+export function EmptyState({ page, testID, ...rest }: Props) {
+  if (!page) return <State {...rest} />;
+  return (
+    <View testID={testID} style={{ flex: 1, justifyContent: 'center' }}>
+      <State {...rest} />
+    </View>
+  );
+}
+
+function State({
   kind,
   icon,
   title,
@@ -166,7 +180,7 @@ export function EmptyState({
   inPage,
   inCard,
   settings,
-}: Props) {
+}: Omit<Props, 'page' | 'testID'>) {
   if (kind === 'empty')
     return (
       <Empty

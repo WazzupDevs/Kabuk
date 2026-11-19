@@ -21,7 +21,6 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { confirm } from '@/lib/overlayStore';
-import { KIT } from '@/theme/auraKit';
 
 // The sender of a profiled message or post, opened through it (venue chat, district chat, venue
 // feed: docs/SPEC_V4.md §4.V, §4.Y), no public_id. The three routes differ only in the source's
@@ -146,7 +145,6 @@ export function SenderProfileScreen({
                 ) : null}
                 <Btn
                   block
-                  bar={KIT.size.btnRow}
                   testID={ids.request}
                   icon="invite"
                   label={tr.venueChat.sendRequest}

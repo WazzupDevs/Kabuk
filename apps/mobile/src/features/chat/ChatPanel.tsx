@@ -316,14 +316,13 @@ export function useRoomChatList(
         <Loader />
       </View>
     ) : chat.messages.isError && !chat.messages.data ? (
-      <View className="flex-1 justify-center">
-        <EmptyState
-          kind="error"
-          body={errorMessage(chat.messages.error)}
-          error={chat.messages.error}
-          action={{ label: tr.common.retry, onPress: () => void chat.messages.refetch() }}
-        />
-      </View>
+      <EmptyState
+        page
+        kind="error"
+        body={errorMessage(chat.messages.error)}
+        error={chat.messages.error}
+        action={{ label: tr.common.retry, onPress: () => void chat.messages.refetch() }}
+      />
     ) : (
       // MasaSohbet `.emp`, `.sug` (yeni arayüz tuvali): a card of the surface with the riso over
       // its top edge, 40 from the screen's sides, 24 over the board's three suggestions, which

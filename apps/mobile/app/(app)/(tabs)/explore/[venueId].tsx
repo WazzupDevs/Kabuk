@@ -70,27 +70,25 @@ export default function VenueDetailScreen() {
   if (!venue && isError) {
     return (
       <Screen>
-        <View className="flex-1 justify-center">
-          <EmptyState
-            kind="error"
-            body={errorMessage(error)}
-            error={error}
-            action={{ label: tr.common.retry, onPress: () => void refetch() }}
-          />
-        </View>
+        <EmptyState
+          page
+          kind="error"
+          body={errorMessage(error)}
+          error={error}
+          action={{ label: tr.common.retry, onPress: () => void refetch() }}
+        />
       </Screen>
     );
   }
   if (!venue) {
     return (
       <Screen>
-        <View className="flex-1 justify-center">
-          <EmptyState
-            icon="cafe-outline"
-            body={tr.explore.notFound}
-            action={{ label: tr.explore.back, onPress: () => router.back() }}
-          />
-        </View>
+        <EmptyState
+          page
+          icon="cafe-outline"
+          body={tr.explore.notFound}
+          action={{ label: tr.explore.back, onPress: () => router.back() }}
+        />
       </Screen>
     );
   }

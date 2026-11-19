@@ -275,17 +275,16 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   }
   if (inbox.data.length === 0) {
     return (
-      // MesajlarBos `.emp`: in the middle of the page less 190 at its foot, the sentence at most 240.
-      <View className="flex-1 justify-center" style={{ paddingBottom: M.emptyLift }}>
-        <EmptyState
-          kind="empty"
-          riso="messages"
-          compact
-          settings
-          title={tr.messages.empty}
-          body={tr.messages.emptyHint}
-        />
-      </View>
+      // MesajlarBos `.emp`: in the middle of the page (EmptyState → page), the sentence at most 240.
+      <EmptyState
+        page
+        kind="empty"
+        riso="messages"
+        compact
+        settings
+        title={tr.messages.empty}
+        body={tr.messages.emptyHint}
+      />
     );
   }
   // Searching: every conversation by name, the archived too. Otherwise the pinned on their own card
@@ -298,20 +297,16 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   if (searching && rest.length === 0) {
     // Yeni arayüz tuvali, MesajlarAraBos: nothing found, the riso and its two lines in the middle.
     return (
-      <View
+      <EmptyState
+        page
         testID="messages-no-match"
-        className="flex-1 justify-center"
-        style={{ paddingBottom: M.emptyLift }}
-      >
-        <EmptyState
-          kind="empty"
-          riso="search"
-          compact
-          settings
-          title={tr.messages.noMatch}
-          body={tr.messages.noMatchHint}
-        />
-      </View>
+        kind="empty"
+        riso="search"
+        compact
+        settings
+        title={tr.messages.noMatch}
+        body={tr.messages.noMatchHint}
+      />
     );
   }
   return (

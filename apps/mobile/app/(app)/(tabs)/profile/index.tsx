@@ -202,7 +202,6 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                     <Btn
                       block={narrow}
                       variant="glassy"
-                      bar={KIT.size.btnRow}
                       icon="edit"
                       label={hasName ? tr.profile.edit : tr.profile.addName}
                       look={{
@@ -217,7 +216,6 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                     <Btn
                       block={narrow}
                       variant="glassy"
-                      bar={KIT.size.btnRow}
                       testID="profile-friends"
                       accessibilityLabel={tr.profile.friendsCount(friendList.length)}
                       lead={friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined}

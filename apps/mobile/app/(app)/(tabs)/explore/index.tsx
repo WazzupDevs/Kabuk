@@ -959,7 +959,7 @@ function CampusSheet({
       visible={university !== null}
       onClose={onClose}
       title={university?.name ?? ''}
-      footer={<Btn block tall variant="glassy" label={tr.common.cancel} onPress={onClose} />}
+      footer={<Btn block variant="glassy" label={tr.common.cancel} onPress={onClose} />}
     >
       <T v="note">{tr.explore.campusNote}</T>
       <View accessibilityRole="list" testID="explore-campus-sheet">
@@ -1021,7 +1021,7 @@ function PlaceSheet({
         <View style={{ gap: KIT.size.chipGap + 2 }}>
           <Btn
             block
-            tall
+
             label={tr.explore.showPlace}
             testID="place-show"
             onPress={() => {
@@ -1029,7 +1029,7 @@ function PlaceSheet({
               onClose();
             }}
           />
-          <Btn block tall variant="ghost" label={tr.common.cancel} onPress={onClose} />
+          <Btn block variant="ghost" label={tr.common.cancel} onPress={onClose} />
         </View>
       }
     >

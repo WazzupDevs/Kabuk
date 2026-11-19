@@ -588,7 +588,7 @@ function LitScreen({ roomId, state, faces, top, exit, onChat, offline, cover, on
               <BoardHint>{tr.sprengja.throws(state.passes)}</BoardHint>
               <Btn
                 block
-                tall
+
                 testID="sprengja-pass"
                 label={tr.sprengja.throwTo(nameOf(faces, next))}
                 icon="bomb"
@@ -1028,7 +1028,6 @@ function End({
           <FootError error={again.error} />
           <View style={{ flexDirection: 'row', gap: SPRENGJA_BOARD.end.footGap }}>
             <Btn
-              tall
               variant={finished ? 'glassy' : 'primary'}
               testID="sprengja-back"
               label={tr.sprengja.backToTable}
@@ -1037,7 +1036,6 @@ function End({
             />
             {owner && finished ? (
               <Btn
-                tall
                 testID="sprengja-again"
                 label={tr.sprengja.again}
                 loading={again.isPending}

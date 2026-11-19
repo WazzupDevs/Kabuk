@@ -14,7 +14,7 @@ import { SPACING } from '@/theme/tokens';
 // Ayarlar's parts as the new board draws them (yeni arayüz tuvali, Ayarlar.dc.html;
 // theme/settings.ts): its seg, its rows on the ground, its section heads and its notes; Görünüm
 // takes them too.
-// The board's seg (`.seg`): a sunk track, its parts 36 high and 4 apart, the chosen one the kit's
+// The board's seg (`.seg`): a sunk track, its parts 32 high and 4 apart, the chosen one the kit's
 // (the ink with white words; in the dark the 94 % white).
 export function segBoard(scheme: 'light' | 'dark'): SegBoard {
   const S = SETTINGS.seg;
@@ -371,7 +371,7 @@ export function PersonButton({
   const dark = scheme === 'dark';
   return (
     <Btn
-      bar={KIT.size.rowBtnMd}
+      sm
       variant="glassy"
       look={PERSON_BTN}
       fill={dark ? SETTINGS.dark.track : undefined}

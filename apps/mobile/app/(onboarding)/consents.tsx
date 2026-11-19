@@ -59,18 +59,17 @@ export default function ConsentsAfterCode() {
   if (profile.isError) {
     return (
       <Screen>
-        <View className="flex-1 justify-center">
-          <EmptyState
-            kind="error"
-            body={errorMessage(profile.error)}
-            error={profile.error}
-            action={{
-              label: tr.common.retry,
-              onPress: () => void profile.refetch(),
-              loading: profile.isRefetching,
-            }}
-          />
-        </View>
+        <EmptyState
+          page
+          kind="error"
+          body={errorMessage(profile.error)}
+          error={profile.error}
+          action={{
+            label: tr.common.retry,
+            onPress: () => void profile.refetch(),
+            loading: profile.isRefetching,
+          }}
+        />
       </Screen>
     );
   }

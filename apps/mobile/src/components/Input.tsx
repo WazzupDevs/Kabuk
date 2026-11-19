@@ -4,226 +4,79 @@ import { Text as RNText, TextInput, type TextInputProps, View } from 'react-nati
 import { noteTyping } from '@/lib/haptics';
 import { useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 import { PROFILE_EDIT } from '@/theme/profileEdit';
-import { typeStyle, useTheme } from '@/theme/ThemeProvider';
-import { SPACING, TOUCH } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING } from '@/theme/tokens';
 
-import { Icon } from './Icon';
 import { Text } from './Text';
-import { useLabOff } from '@/lib/drawLab';
-import { shadowParts } from './NativeShadow';
 
 type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   label?: string;
   hint?: string;
   error?: string | null;
-  // Fixed text before the field ("+90").
-  prefix?: string;
-  // Right-aligned under the field ("12/160").
+  // At the label's right, over the field ("12/160").
   counter?: string;
-  // The one-time code: large, centered, spaced digits.
-  code?: boolean;
   // A multi-line field that starts several lines high (the bio).
   tall?: boolean;
-  // skall.css → `.field.box`: 16 px corners instead of the capsule. Aura v71: 60 high, the
-  // surface (dark: surface2) on the raised shadow, no line, the type 21 / 600.
-  box?: boolean;
-  // Aura v71 (KayitAd `.glass.fl`): the phone's frosted field without its prefix: 72 high, 22
-  // inside, the type 21 / 600, the caret in the primary (dark: accent).
-  big?: boolean;
-  // Short fields centred in their box (the birth date's day, month and year).
-  centered?: boolean;
-  // A search field (v44: .dsearch): a capsule with the magnifier before the text.
-  search?: boolean;
-  // docs/design/aura → Profili düzenle: 56 high (tall: 108, 24 round), 22 inside, 17 type, the
-  // label in .body and the hint at 14.
-  large?: boolean;
-  // tuval Duzenle (Profili düzenle): a large field on a card: white, its edge 1.5, 16 round and 16
-  // inside, no shadow; its label (13, 700) with the count at its right over it, its note (12.5, 500)
-  // under it, both 4 in (theme/profileEdit.ts).
-  boxed?: boolean;
-  // docs/design/iskelet.md → 5.8 (Profili düzenle): focused, the green ring 3 px at 18 %.
-  halo?: boolean;
 };
 
-// A text field. Its outline is the theme's border where that reads 3:1 against the surface, the
-// secondary text colour otherwise; focus draws it in the accent.
+// A text field on a card, one look (the owner's call, 19 Kasım, docs/decisions/temel.md: the old
+// `box`, `large`, `boxed`, `big`, `code`, `prefix` and `search` looks had no screen left; the search
+// capsule is aura/GlassSearch, the code CodeInput). Tuval Duzenle (Profili düzenle): the surface
+// with a 1.5 edge, 16 round and 16 inside, no shadow; one line exactly the field's height (44). Its
+// label (13/700, muted) with the count at its right over it, its note under it, both 4 in
+// (theme/profileEdit.ts). Focused, the primary edge and the green ring 3 px at 18 % (iskelet.md →
+// 5.8); an error in red.
 export const Input = forwardRef<TextInput, Props>(function Input(
-  {
-    label,
-    hint,
-    error,
-    prefix,
-    counter,
-    code,
-    tall,
-    box,
-    big,
-    centered,
-    search,
-    large,
-    boxed,
-    halo,
-    multiline,
-    placeholder,
-    ...rest
-  },
+  { label, hint, error, counter, tall, multiline, placeholder, ...rest },
   ref,
 ) {
-  const theme = useTheme();
-  // The phone number's divider.
-  const PREFIX_LINE = 26;
-  const { colors, shape } = theme;
+  const { colors } = useTheme();
   const [focused, setFocused] = useState(false);
   const k = useKit();
   const E = PROFILE_EDIT;
-  const boxLook = E[k.scheme];
-  const flat = !!box && !large && !prefix && !tall && !search;
-  const radius = boxed
-    ? E.field.radius
-    : large
-      ? tall
-        ? KIT.size.fieldLgTallRadius
-        : KIT.size.field / 2
-      : prefix || big
-        ? KIT.size.glassRadius
-        : tall
-          ? shape.radius.lg
-          : KIT.size.field / 2;
-  // The raised fields (v71) have no line; only focus and an error draw one.
-  const edge = focused || error ? 2 : flat ? 0 : boxed ? E.field.edge : KIT.size.edge;
-  const dark = theme.scheme === 'dark';
-  const raised = (!dark && k.c.segShadow) || undefined;
-  // The type of the raised fields and the big one: 21 / 600; on Profili düzenle's card 16.
-  const fieldType = big
-    ? KIT_TYPE.title
-    : boxed
-      ? multiline
-        ? KIT_TYPE.boxFieldMulti
-        : KIT_TYPE.boxField
-      : null;
-  // On Profili düzenle's card the bio is 13 over and under.
-  // One line: no room over and under, so the field is exactly its height (44), as the search
-  // capsule's (the owner's report, 19 Kasım: the two search fields stood at two heights).
-  const padY =
-    !multiline && !tall
-      ? 0
-      : boxed && tall
-        ? E.field.padY
-        : large && tall
-          ? KIT.size.fieldLgPadY
-          : SPACING[3];
-  // Focused, a hard ring (no blur, cheap) as boxShadow; otherwise the soft glass shadow natively
-  // (NativeShadow.tsx).
-  const shadowOff = useLabOff('golge');
+  const look = E[k.scheme];
+  const edge = focused || error ? 2 : E.field.edge;
+  const type = multiline ? KIT_TYPE.boxFieldMulti : KIT_TYPE.boxField;
+  // One line: no room over and under, so the field is exactly its height.
+  const padY = !multiline && !tall ? 0 : tall ? E.field.padY : SPACING[3];
   const ring = focused && !error;
-  const shadow = shadowParts(
-    shadowOff,
-    ring || boxed ? undefined : flat ? raised : k.c.glassShadow,
-    undefined,
-    radius,
-    true,
-    edge,
-  );
 
   return (
     <View className="gap-2">
       {label ? (
-        boxed ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              gap: SPACING[3],
-              paddingHorizontal: E.field.labelIn,
-            }}
-          >
-            <RNText style={[KIT_TYPE.sectionHead, { color: k.c.muted, flexShrink: 1 }]}>
-              {label}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            gap: SPACING[3],
+            paddingHorizontal: E.field.labelIn,
+          }}
+        >
+          <RNText style={[KIT_TYPE.sectionHead, { color: k.c.muted, flexShrink: 1 }]}>
+            {label}
+          </RNText>
+          {counter ? (
+            <RNText
+              style={[KIT_TYPE.sectionHead, { color: k.c.muted, fontVariant: ['tabular-nums'] }]}
+            >
+              {counter}
             </RNText>
-            {counter ? (
-              <RNText
-                style={[KIT_TYPE.sectionHead, { color: k.c.muted, fontVariant: ['tabular-nums'] }]}
-              >
-                {counter}
-              </RNText>
-            ) : null}
-          </View>
-        ) : (
-          // One label everywhere (13/700, muted; the owner's call, 19 Kasım).
-          <RNText style={[KIT_TYPE.sectionHead, { color: k.c.muted }]}>{label}</RNText>
-        )
+          ) : null}
+        </View>
       ) : null}
       <View
         className="flex-row items-center"
-        // docs/design/aura (Telefon, `.glass`): a frosted field, its edge white; focused the
-        // primary with its soft ring, an error in red. The phone's field 72 high, 28 round.
         style={{
-          ...(boxed
-            ? { backgroundColor: boxLook.fieldFill }
-            : flat
-              ? { backgroundColor: dark ? colors.surface2 : colors.surface }
-              : large
-                ? { backgroundColor: k.c.fieldLg }
-                : gradientStyle(k.c.glass)),
-          minHeight: large
-            ? tall
-              ? boxed
-                ? E.field.tall
-                : KIT.size.fieldLgTall
-              : KIT.size.field
-            : prefix
-              ? KIT.size.phoneField
-              : big
-                ? KIT.size.fieldBig
-                : KIT.size.field,
-          borderRadius: radius,
+          backgroundColor: look.fieldFill,
+          minHeight: tall ? E.field.tall : KIT.size.field,
+          borderRadius: E.field.radius,
           borderWidth: edge,
-          borderColor: error
-            ? KIT.danger
-            : focused
-              ? KIT.primary
-              : boxed
-                ? boxLook.fieldEdge
-                : flat
-                  ? 'transparent'
-                  : k.c.glassEdge,
-          paddingHorizontal: boxed
-            ? E.field.padX
-            : large
-              ? KIT.size.fieldLgPadX
-              : big
-                ? KIT.size.fieldBigPad
-                : prefix
-                  ? KIT.size.padLg
-                  : KIT.size.fieldPadX,
-          boxShadow: ring
-            ? halo
-              ? `0px 0px 0px ${KIT.size.focusHalo}px ${KIT.primaryHalo}`
-              : `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
-            : shadow.boxShadow,
+          borderColor: error ? KIT.danger : focused ? KIT.primary : look.fieldEdge,
+          paddingHorizontal: E.field.padX,
+          boxShadow: ring ? `0px 0px 0px ${KIT.size.focusHalo}px ${KIT.primaryHalo}` : undefined,
         }}
       >
-        {shadow.node}
-        {search ? (
-          <View style={{ marginRight: SPACING[2] }}>
-            <Icon name="search" tone="muted" />
-          </View>
-        ) : null}
-        {prefix ? (
-          <>
-            <RNText style={[KIT_TYPE.h3, { color: k.c.muted }]}>{prefix}</RNText>
-            <View
-              style={{
-                width: KIT.size.hair,
-                height: PREFIX_LINE,
-                marginHorizontal: KIT.size.pad - SPACING[1],
-                backgroundColor: k.c.hair,
-              }}
-            />
-          </>
-        ) : null}
         {/* Many lines start at the top left, not in the middle of the box (12.4). */}
         <View
           style={
@@ -251,19 +104,11 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             }}
             accessibilityHint={rest.accessibilityHint ?? placeholder}
             selectionColor={colors.accent}
-            cursorColor={big ? (dark ? colors.accent : colors.primary) : colors.accent}
+            cursorColor={colors.accent}
             textAlignVertical={multiline ? 'top' : 'center'}
             style={[
-              fieldType ??
-                (prefix ? KIT_TYPE.phone : code ? typeStyle(theme, 'title') : KIT_TYPE.body),
-              {
-                color: k.c.ink,
-                paddingVertical: padY,
-                paddingHorizontal: 0,
-                minHeight: large ? undefined : tall ? TOUCH.large + SPACING[8] : undefined,
-              },
-              code ? { textAlign: 'center', letterSpacing: SPACING[2] } : null,
-              centered ? { textAlign: 'center' } : null,
+              type,
+              { color: k.c.ink, paddingVertical: padY, paddingHorizontal: 0 },
               multiline ? { flexGrow: 1 } : null,
             ]}
           />
@@ -282,20 +127,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
                 justifyContent: multiline ? 'flex-start' : 'center',
               }}
             >
-              <RNText
-                style={[
-                  fieldType ??
-                    (large
-                      ? KIT_TYPE.field
-                      : prefix
-                        ? KIT_TYPE.phone
-                        : typeStyle(theme, code ? 'title' : 'body')),
-                  { color: colors.placeholder },
-                  code || centered ? { textAlign: 'center' } : null,
-                ]}
-              >
-                {placeholder}
-              </RNText>
+              <RNText style={[type, { color: colors.placeholder }]}>{placeholder}</RNText>
             </View>
           ) : null}
         </View>
@@ -305,32 +137,12 @@ export const Input = forwardRef<TextInput, Props>(function Input(
           {error}
         </Text>
       ) : null}
-      {boxed ? (
-        hint ? (
-          <RNText
-            style={[KIT_TYPE.boxNote, { color: boxLook.note, paddingHorizontal: E.field.labelIn }]}
-          >
-            {hint}
-          </RNText>
-        ) : null
-      ) : hint || counter ? (
-        <View className="flex-row justify-between gap-3">
-          {large ? (
-            <>
-              <RNText style={[KIT_TYPE.note, { color: k.c.muted, flex: 1 }]}>{hint ?? ''}</RNText>
-              {counter ? (
-                <RNText style={[KIT_TYPE.note, { color: k.c.muted }]}>{counter}</RNText>
-              ) : null}
-            </>
-          ) : (
-            <>
-              <Text variant="fine" className="flex-1">
-                {hint ?? ''}
-              </Text>
-              {counter ? <Text variant="fine">{counter}</Text> : null}
-            </>
-          )}
-        </View>
+      {hint ? (
+        <RNText
+          style={[KIT_TYPE.boxNote, { color: look.note, paddingHorizontal: E.field.labelIn }]}
+        >
+          {hint}
+        </RNText>
       ) : null}
     </View>
   );

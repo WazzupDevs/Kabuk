@@ -513,14 +513,13 @@ export function DmThread({
             <Loader />
           </View>
         ) : messages.isError ? (
-          <View className="flex-1 justify-center">
-            <EmptyState
-              kind="error"
-              body={errorMessage(messages.error)}
-              error={messages.error}
-              action={{ label: tr.common.retry, onPress: () => void messages.refetch() }}
-            />
-          </View>
+          <EmptyState
+            page
+            kind="error"
+            body={errorMessage(messages.error)}
+            error={messages.error}
+            action={{ label: tr.common.retry, onPress: () => void messages.refetch() }}
+          />
         ) : (
           // Yeni arayüz tuvali, DmBos: the riso, its title and sentence on a card of the surface,
           // 44 from the sides, a little over the middle (`translateY(-58%)`).

@@ -265,9 +265,6 @@ export function Btn({
   onPress,
   variant = 'primary',
   sm,
-  mid,
-  tall,
-  big,
   bar,
   block,
   snug,
@@ -289,17 +286,11 @@ export function Btn({
   onPress?: () => void;
   // `ghost`: no fill, the text's colour ("Vazgeç" under a dialog's action).
   variant?: 'primary' | 'glassy' | 'dark' | 'danger' | 'ghost';
+  // Two heights (the owner's call, 19 Kasım, docs/decisions/temel.md): the main 44 and `sm` 32.
   sm?: boolean;
-  // Mekan's "Masa kur": 44 high, 15.
-  mid?: boolean;
-  // The venue page's and the check-in sheet's button: 56 high.
-  tall?: boolean;
-  // `.btn.big` (the semt pages): 56 high, 700 17/22.
-  big?: boolean;
-  // In a bar of round buttons: a button as tall as they are, `bar` high (the owner's report, 29
-  // Ekim: Masa's "Bitir" stood shorter than the rounds beside it). Beside 48 rounds 18 inside and
-  // 16 (Masa); beside 44 the small one's.
-  bar?: number;
+  // In a top bar of round buttons: as tall as they are (the owner's report, 29 Ekim: Masa's
+  // "Bitir" stood shorter than the rounds beside it), the small one's words and room.
+  bar?: boolean;
   block?: boolean;
   // As wide as its words beside a wider button: 16 inside, its icon 20 (Aura v76 ProfilBaskasi,
   // "Arkadaşlıktan çıkar"; F1).
@@ -356,35 +347,10 @@ export function Btn({
         ? g.off.ink
         : (tint ?? g.ink);
   const pressedFill = down && !off && !fill && g.pressed ? g.pressed : null;
-  const height = bar
-    ? bar
-    : sm
-      ? KIT.size.btnSm
-      : mid
-        ? KIT.size.btnMid
-        : big
-          ? KIT.size.btnBig
-          : tall
-            ? KIT.size.btnTall
-            : KIT.size.btn;
-  const wide = bar ? bar >= KIT.size.roundLg : false;
-  const small = sm || (!!bar && !wide);
-  const padX = snug
-    ? KIT.size.btnPadXSnug
-    : wide || mid
-      ? KIT.size.btnPadXMid
-      : small
-        ? KIT.size.btnPadXSm
-        : KIT.size.btnPadX;
-  const labelType = look?.type
-    ? KIT_TYPE[look.type]
-    : mid
-      ? KIT_TYPE.btnMid
-      : small
-        ? KIT_TYPE.btnSm
-        : big
-          ? KIT_TYPE.btnBig
-          : KIT_TYPE.btn;
+  const height = bar ? KIT.size.topBtn : sm ? KIT.size.btnSm : KIT.size.btn;
+  const small = sm || !!bar;
+  const padX = snug ? KIT.size.btnPadXSnug : small ? KIT.size.btnPadXSm : KIT.size.btnPadX;
+  const labelType = look?.type ? KIT_TYPE[look.type] : small ? KIT_TYPE.btnSm : KIT_TYPE.btn;
   // The soft outer shadow drawn natively (NativeShadow.tsx); the top light, the bottom line and the
   // white edge inside are inset shadows. A flat `fill` has none.
   const shadow =
@@ -1528,7 +1494,6 @@ export function Seg<V extends string>({
   onChange,
   options,
   accessibilityLabel,
-  large,
   narrow,
   board,
 }: {
@@ -1536,8 +1501,7 @@ export function Seg<V extends string>({
   onChange: (v: V) => void;
   options: readonly { value: V; label: string; badge?: number; testID?: string }[];
   accessibilityLabel?: string;
-  // Mesajlar's (U27): 48 in all, 40 tabs in a pill.
-  large?: boolean;
+  // One height (the owner's call, 19 Kasım, docs/decisions/temel.md): 32 parts in a 40 pill.
   // Aura v75 AktivitelerDar: 320 dp or the largest text (src/lib/narrow.ts), tabs 52 high.
   narrow?: boolean;
   // A board's own tabs (tuval Aktivite: 40 parts in a 24 round, 15/700 words, its glass and the
@@ -1547,14 +1511,8 @@ export function Seg<V extends string>({
   const { c } = useKit();
   const flat = useContext(FlatGlass);
   const reduce = useReduceMotion();
-  const item = narrow
-    ? KIT.size.segItemNarrow
-    : board
-      ? board.item
-      : large
-        ? KIT.size.segLg
-        : KIT.size.segItem;
-  const radius = board ? board.radius : large ? KIT.size.segLgRadius : KIT.size.seg;
+  const item = narrow ? KIT.size.segItemNarrow : board ? board.item : KIT.size.segItem;
+  const radius = board ? board.radius : KIT.size.seg;
   // The chosen tab's soft shadow natively (NativeShadow.tsx).
   const onShadow = boxShadowParts(
     useLabOff('golge'),

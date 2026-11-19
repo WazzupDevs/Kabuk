@@ -42,7 +42,7 @@ export function UpdateRequired() {
         <View style={{ alignItems: 'center', gap: KIT.size.updateFootGap }}>
           <Btn
             block
-            tall
+
             label={tr.update.action}
             onPress={() => void Linking.openURL(updateUrl())}
           />

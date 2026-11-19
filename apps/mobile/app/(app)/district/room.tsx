@@ -493,14 +493,13 @@ function DistrictRoomBody() {
               <Loader />
             </View>
           ) : page.isError ? (
-            <View className="flex-1 justify-center">
-              <EmptyState
-                kind="error"
-                body={errorMessage(page.error)}
-                error={page.error}
-                action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
-              />
-            </View>
+            <EmptyState
+              page
+              kind="error"
+              body={errorMessage(page.error)}
+              error={page.error}
+              action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
+            />
           ) : (
             <FirstHere
               suggestions={session ? tr.district.room.suggest(name) : []}

@@ -311,11 +311,7 @@ export const KIT_TYPE = {
   // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
   light: { fontFamily: F[500] } as TextStyle,
   btn: BASE.line600,
-  // `.btn.big`: 700 17/22.
-  btnBig: BASE.line600,
   btnSm: BASE.small600,
-  // Mekan's "Masa kur" (44 high, 15).
-  btnMid: BASE.small600,
   chip: BASE.small600,
   // Süsle's filter chip (`.flt span`): 600 12/16.
   chipFilter: BASE.mini600,
@@ -902,21 +898,15 @@ export const KIT = {
     pad: 18,
     padLg: 22,
     // The base's sizes (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md; in place of 18
-    // Kasım's boards' sizes): the main button and a form field 44 (no big 56: `btnBig` and `btnTall`
-    // are the main), the small 32, a round icon button and a top bar's button 40, a chip 32, Süsle's
-    // filter chip 28, a bar's button 36; a row's buttons 28, 32 or 36 (`rowBtn*`; the many-line
+    // Kasım's boards' sizes): the main button and a form field 44 (no big 56: two heights, the main and
+    // the small), the small 32, a round icon button and a top bar's button 40, a chip 32, Süsle's
+    // filter chip 28; a row's buttons 28, 32 or 36 (`rowBtn*`; the many-line
     // field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4).
     btn: 44,
-    btnTall: 44,
-    btnBig: 44,
     btnSm: 32,
-    btnBar: 36,
     rowBtnSm: 28,
     rowBtnMd: 32,
     rowBtnLg: 36,
-    // Mekan's "Masa kur" and Masa's "Bitir": the small height, 18 inside.
-    btnMid: 32,
-    btnPadXMid: 18,
     btnPadXSnug: 16,
     btnPadX: 20,
     btnPadXSm: 16,
@@ -1094,12 +1084,8 @@ export const KIT = {
     iconSnug: 20,
     disk: 4,
     seg: 26,
-    // A segmented control 44 high, its chosen part 36 (skall.css `.seg`).
+    // A segmented control 40 high, its chosen part 32, at every place (temel.md).
     segItem: 32,
-    // Mesajlar's tabs: 48 high in a 30 round.
-    // U27: Mesajlar's tabs 48 in all (40 tabs 4 in), a pill.
-    segLg: 32,
-    segLgRadius: 24,
     // Mesajlar's bell (52) and its new message button (70, 26 from the right).
     // U27: the bell 44 (round soft).
     bell: 44,

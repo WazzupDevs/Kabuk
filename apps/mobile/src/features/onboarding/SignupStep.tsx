@@ -116,7 +116,7 @@ export function SignupStep({
       ) : null}
       <Btn
         block
-        tall
+
         testID={action.testID}
         label={action.label}
         onPress={action.onPress}
@@ -126,7 +126,7 @@ export function SignupStep({
       {secondary ? (
         <Btn
           block
-          tall
+
           variant="ghost"
           testID={secondary.testID}
           label={secondary.label}

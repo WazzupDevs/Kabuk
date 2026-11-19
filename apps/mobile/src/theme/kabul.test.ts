@@ -27,14 +27,11 @@ function code(path: string): string {
 
 describe('K1: the size scale', () => {
   // The base's sizes (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md; in place of 18
-  // Kasım's): main 44 (no big 56: the big and the long are the main), small 32, a bar's 36, a row's
+  // Kasım's): main 44 (no big 56: two heights, the main and the small), small 32, a row's
   // 28 / 32 / 36, round and a top bar's button 40, chip 32 (one height), Süsle's filter chip 28.
-  it('main 44, small 32, bar 36, round 40, chip 32, filter chip 28, field 44', () => {
+  it('main 44, small 32, round 40, chip 32, filter chip 28, field 44', () => {
     expect(KIT.size.btn).toBe(44);
-    expect(KIT.size.btnTall).toBe(44);
-    expect(KIT.size.btnBig).toBe(44);
     expect(KIT.size.btnSm).toBe(32);
-    expect(KIT.size.btnBar).toBe(36);
     expect([KIT.size.rowBtnSm, KIT.size.rowBtnMd, KIT.size.rowBtnLg]).toEqual([28, 32, 36]);
     expect(KIT.size.round).toBe(40);
     expect(KIT.size.topBtn).toBe(40);
@@ -137,7 +134,9 @@ describe('K9: Profili düzenle', () => {
   it('Kaydet is on the bar, clear, at least 96 wide (iskelet.md → 2.1, 5.8)', () => {
     expect(edit).not.toMatch(/footer=\{/);
     expect(edit).toMatch(/<PageTop\b/);
-    expect(edit).toMatch(/variant="glassy"\s+bar=\{KIT\.size\.topBtn\}\s+testID="profile-save"/);
+    expect(edit).toMatch(/variant="glassy"\s+bar\s+testID="profile-save"/);
+    // `bar`: as tall as the bar's round buttons.
+    expect(code('src/aura/kit.tsx')).toMatch(/const height = bar \? KIT\.size\.topBtn :/);
     expect(edit).toMatch(/tint=\{changed \|\| save\.isSuccess \? KIT\.primary : KIT\.saveIdle\}/);
     expect(edit).toMatch(/style=\{\{ minWidth: KIT\.saveMinWidth \}\}/);
     const kit = code('src/theme/auraKit.ts');

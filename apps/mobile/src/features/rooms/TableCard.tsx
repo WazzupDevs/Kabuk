@@ -284,7 +284,7 @@ export function TableCard({
           {state === 'private' ? (
             <Btn
               variant="glassy"
-              bar={KIT.size.btnSm}
+              sm
               icon="list"
               testID="lobby-open"
               label={tr.venue.openLobby}
@@ -296,7 +296,7 @@ export function TableCard({
           ) : (
             <Btn
               variant="glassy"
-              bar={KIT.size.btnSm}
+              sm
               icon="close"
               testID="withdraw-table"
               label={tr.venue.withdraw}
@@ -308,7 +308,7 @@ export function TableCard({
           )}
           <Btn
             variant="glassy"
-            bar={KIT.size.btnSm}
+            sm
             icon="invite"
             testID="invite-open"
             label={tr.venue.invite}
