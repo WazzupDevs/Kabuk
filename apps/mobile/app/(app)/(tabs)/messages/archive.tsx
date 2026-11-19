@@ -45,7 +45,8 @@ export default function ArchiveScreen() {
         list
         refreshable
         side={M.side}
-        barSide={M.side}
+        // The back button where every page bar has it (16 in; the owner's call, 19 Kasım).
+        barSide={SPACING[4]}
         barTop={B.top}
         padTop={archived.length > 0 ? M.archiveTop.fieldTop : M.archiveTop.emptyTop}
         gap={M.gap}

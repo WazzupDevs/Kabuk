@@ -47,6 +47,8 @@ export function ChatOptionsMenu({
     <>
       <View ref={ref} collapsable={false}>
         <Round
+          // Bare, inside the bar's capsule in every chat (the owner's call, 19 Kasım).
+          glassy={false}
           side={KIT.size.round}
           icon="moreV"
           iconSize={ICON.md}

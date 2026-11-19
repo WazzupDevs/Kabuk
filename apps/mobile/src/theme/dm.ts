@@ -54,7 +54,8 @@ export const DM = {
   // 52, the face 40 (in its 2 ring) 6 in and 10 from the name; the menu's bare button (`.ib`) 40
   // wide and 44 high, 2 from the capsule's right, its dots 20.
   bar: {
-    top: 5,
+    // 2: the capsule's middle on the page bars' back button's (the owner's call, 19 Kasım; was 5).
+    top: 2,
     side: 16,
     gap: 8,
     pill: 52,

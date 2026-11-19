@@ -44,13 +44,13 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 // The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 export const KIT_TYPE = {
-  display: t(500, 32, 42, -0.025),
+  display: t(700, 32, 42, -0.025),
   // A profile's name and age (Profil: .display at 34).
-  displaySm: t(500, 34, 43, -0.025),
+  displaySm: t(700, 34, 43, -0.025),
   // Keşfet's question (.display at 34).
-  displayLg: t(500, 34, 41, -0.025),
+  displayLg: t(700, 34, 41, -0.025),
   // Mesajlar's title (.display at 36).
-  displayXl: t(500, 36, 46, -0.025),
+  displayXl: t(700, 36, 46, -0.025),
   // Keşfet's question (iskelet.md → 5.1: 36, 800; the board's -0.035em). The line stays the face's
   // own height (the board's 1.06 cut the tails off on Android, above).
   exploreTitle: t(800, 36, 46, -0.035),

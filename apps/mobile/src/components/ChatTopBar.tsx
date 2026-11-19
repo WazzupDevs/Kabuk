@@ -119,7 +119,7 @@ export function ChatTopBar({
     paddingVertical: dm ? 0 : PILL_INSET,
     gap: dm ? DM.bar.nameGap : SPACING[2.5],
   };
-  const right = faces !== null || !!toggle || !!actions;
+  const right = faces !== null || !!toggle || !!actions || !!more;
   return (
     <FxMoves on={false}>
       <View
@@ -190,7 +190,7 @@ export function ChatTopBar({
             // The DM's menu (its 44 round) 2 from the capsule's right; the toggle 4.
             paddingRight: right
               ? dm
-                ? toggle
+                ? toggle && !more
                   ? CHAT_LOOK.bar.toggleIn
                   : DM.bar.moreIn
                 : 0
@@ -216,8 +216,9 @@ export function ChatTopBar({
           {faces}
           {toggle}
           {actions}
+          {/* The menu inside the capsule in every chat (the owner's call, 19 Kasım). */}
+          {more}
         </Glass>
-        {more}
       </View>
     </FxMoves>
   );
