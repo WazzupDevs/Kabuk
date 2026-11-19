@@ -104,7 +104,7 @@ export const BUTTON_GLASS = {
       off: { fill: '#1B211F', ink: 'rgba(238, 243, 240, 0.4)' },
     },
     danger: {
-      fill: 'rgba(255, 151, 126, 0.22)',
+      fill: '#3A221D',
       // The 12 % red over the dialog's surface (#151A18).
       solid: '#312924',
       pressed: '',
