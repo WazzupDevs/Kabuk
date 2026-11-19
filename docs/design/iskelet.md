@@ -4,7 +4,7 @@ Proje sahibinin onayladığı kararlar (12 Kasım 2026; `docs/decisions/iskelet.
 
 Bölüm numaraları iş paketinin numaralarıdır (2 ile 6); atıflar bu numaralarladır.
 
-Değişmeyenler: veri, sunucu, mantık ve navigasyon yapısı; renk paleti, Plus Jakarta Sans, riso çizimler, kapsül kankiler, masa kartları ve skall logosu; mesaj balonu renkleri (DM'de karşı taraf #2670E0, mekan sohbeti #17834D, masa sohbeti #C2185B, kendi balonun beyaz; okundu tiki #2C63D6); package id, slug, `masa` şeması ve repo adı.
+Değişmeyenler: veri, sunucu, mantık ve navigasyon yapısı; renk paleti, yazı (20 Kasım'dan beri başlıklarda Bricolage Grotesque, kalan metinde telefonun yazısı; `docs/decisions/temel.md`), riso çizimler, kapsül kankiler, masa kartları ve skall logosu; mesaj balonu renkleri (DM'de karşı taraf #2670E0, mekan sohbeti #17834D, masa sohbeti #C2185B, kendi balonun beyaz; okundu tiki #2C63D6); package id, slug, `masa` şeması ve repo adı.
 
 ## 2. Bileşen kuralları
 

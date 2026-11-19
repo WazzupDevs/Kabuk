@@ -124,6 +124,7 @@ export const THEME: ThemeDefinition = {
     semibold: 'PlusJakartaSans_600SemiBold',
     bold: 'PlusJakartaSans_700Bold',
     system: 'Roboto_700Bold',
+    title: 'BricolageGrotesque_700Bold',
   },
   shape: {
     // deck: Kapsül Anlat's cards; roleCard: Sahtekar's role card; letterTile: Harf Kapmaca's tile.
@@ -163,9 +164,9 @@ export const THEME: ThemeDefinition = {
   // The airy look's type (docs/design/aura/project/aura.css; the owner's call, 28 Ekim): the
   // canvas's sizes and weights for every screen, games' own styles as they were.
   typography: baseTypography({
-    display: { font: 'regular', size: 32, lineHeight: 42, letterSpacing: -0.8 },
-    title: { font: 'semibold', size: 21, lineHeight: 27, letterSpacing: -0.3 },
-    heading: { font: 'semibold', size: 16, lineHeight: 22, letterSpacing: -0.1 },
+    display: { font: 'title', size: 32, lineHeight: 42, letterSpacing: -0.8 },
+    title: { font: 'title', size: 21, lineHeight: 27, letterSpacing: -0.3 },
+    heading: { font: 'title', size: 16, lineHeight: 22, letterSpacing: -0.1 },
     body: { font: 'regular', size: 15, lineHeight: 22 },
     bodyStrong: { font: 'semibold', size: 15, lineHeight: 22 },
     subtitle: { font: 'regular', size: 15, lineHeight: 22 },

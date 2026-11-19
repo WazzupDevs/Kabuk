@@ -4,13 +4,6 @@
 // src/aura/kit/ read only these.
 import { BUTTON_GLASS } from './buttonGlass';
 
-const F = {
-  500: 'PlusJakartaSans_500Medium',
-  600: 'PlusJakartaSans_600SemiBold',
-  700: 'PlusJakartaSans_700Bold',
-  800: 'PlusJakartaSans_800ExtraBold',
-} as const;
-
 // The text style's parts the kit sets, as React Native's TextStyle has them. Kept here, not imported:
 // the theme files stay pure, and the root type check (Node's types) reads them through the tests.
 type TextStyle = {
@@ -28,27 +21,21 @@ type TextStyle = {
 // the scale: the values are the code's (temel.md → Çalışma kuralı), `auraKit.test.ts` holds them.
 export const TYPE_SCALE = [10, 11, 13, 15, 17, 20, 24, 30] as const;
 
-// A text style: its size and line, its weight's file, letter spacing in em.
-const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
-  fontFamily: F[w],
-  fontSize: size,
-  lineHeight: line,
-  letterSpacing: em * size,
-});
-
-// DENEME (20 Kasım, the owner's ask: "başlıklar dışında kalan tüm metinler telefonun stili"): a
-// text style in the phone's own face (Android: Roboto), the weights one step lighter as that face
-// is read (500 → regular, 600 → medium, 700 → bold). Only the titles keep the brand's face.
-// DENEME: the titles' face, one of the candidates (fonts.ts loads all four).
-const TITLE_FACE: string = 'Gabarito_700Bold';
+// Two faces (the owner's call, 20 Kasım, docs/decisions/temel.md → Yazı tipi): the titles in
+// Bricolage Grotesque 700 (20 and over, the 17 section title, a face's letter), everything else in
+// the phone's own face (Android: Roboto), as the most used social apps set their running text.
+const TITLE_FACE = 'BricolageGrotesque_700Bold';
+// A title: its size and line, letter spacing in em. The face's file carries its weight.
 const h = (size: number, line: number, em = 0): TextStyle => ({
   fontFamily: TITLE_FACE,
   fontSize: size,
   lineHeight: line,
   letterSpacing: em * size,
 });
-const SYSTEM_WEIGHT = { 500: '400', 600: '500', 700: '700', 800: '700' } as const;
-const s = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
+// A text style in the phone's face: the scale's weight a step lighter, as that face is read (500 →
+// regular, 600 → medium, 700 → bold).
+const SYSTEM_WEIGHT = { 500: '400', 600: '500', 700: '700' } as const;
+const s = (w: keyof typeof SYSTEM_WEIGHT, size: number, line: number, em = 0): TextStyle => ({
   fontFamily: 'sans-serif',
   fontWeight: SYSTEM_WEIGHT[w],
   fontSize: size,
@@ -59,7 +46,7 @@ const s = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 // The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 // The base's text styles (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md): one line
-// for each size, three weights (500, 600, 700; 800 stays only in `bold` and BTN_STRONG), the large titles at 700 and drawn a little
+// for each size, three weights, the titles in their own face and drawn a little
 // tight. Every name in KIT_TYPE is one of these; a name says where a style is used, not a new
 // value. Apart stand only a face's letter, the phone number and the code as typed, and the emoji.
 const BASE = {
@@ -294,9 +281,9 @@ export const KIT_TYPE = {
   // Masa kur's title (.title at 24).
   sheetTitleLg: BASE.title,
   // A digit of the code (Kod: 26, 600).
-  code: t(600, 24, 30),
+  code: s(600, 24, 30),
   // The phone number as it is typed (Telefon: 21, 600, 0.04em).
-  phone: t(600, 20, 25, 0.04),
+  phone: s(600, 20, 25, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
   // A game's name on its card (Masa: 24, 700, -0.02em).
   gameName: BASE.title,
@@ -347,7 +334,7 @@ export const KIT_TYPE = {
   tagLg: BASE.small600,
   badge: BASE.mini700,
   // The request row's letter face (`.rqa`: 20/700, line 1).
-  faceLetter: t(700, 20, 20),
+  faceLetter: h(20, 20),
   // The venue chat card's count (24 round, 12).
   badgeLg: BASE.mini700,
   live: BASE.small600,
@@ -396,24 +383,24 @@ export const KIT_TYPE = {
   lobbyTeamCount: BASE.small700,
   av: {
     // A face in Masa's row of faces (`.fcs .av`, 10 700).
-    roomFace: t(700, 10, 12),
-    xs: t(700, 9, 11),
-    md: t(700, 15, 19),
-    sm: t(700, 11, 15),
-    member: t(700, 11, 15),
-    list: t(700, 15, 19),
-    seat: t(700, 20, 24),
+    roomFace: h(10, 12),
+    xs: h(9, 11),
+    md: h(15, 19),
+    sm: h(11, 15),
+    member: h(11, 15),
+    list: h(15, 19),
+    seat: h(20, 24),
     // A conversation's face in Mesajlar (52).
-    row: t(700, 17, 21),
+    row: h(17, 21),
     // A conversation's face (tuval Mesajlar: 54) and the DM bar's (38).
-    inbox: t(700, 20, 25),
-    bar: t(700, 13, 17),
-    lg: t(700, 20, 24),
-    xl: t(700, 30, 36),
+    inbox: h(20, 25),
+    bar: h(13, 17),
+    lg: h(20, 24),
+    xl: h(30, 36),
     // Profil's two faces (112).
-    big: t(700, 40, 48),
-    hero: t(700, 40, 48),
-    edit: t(700, 30, 36),
+    big: h(40, 48),
+    hero: h(40, 48),
+    edit: h(30, 36),
   },
 } as const;
 
@@ -424,7 +411,7 @@ export type KitTextVariant = Exclude<
 
 // Aura v75 E4: in the narrow state (320 dp or the largest text, `lib/narrow.ts`) the eyebrow is 13,
 // so it is the canvas's 17/22 at the largest text (1.3x).
-export const EYEBROW_NARROW = t(600, 13, 17, 0.02);
+export const EYEBROW_NARROW = s(600, 13, 17, 0.02);
 
 // Aura v65 skall.css and ekran.css: green-tinted soft shadows (rgba(4, 73, 35) and the ink
 // rgba(3, 27, 11)), the primary's glow in its own green in the light scheme. The dark scheme draws

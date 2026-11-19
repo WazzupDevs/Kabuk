@@ -295,7 +295,7 @@ describe('the tab bar (3.3)', () => {
   it('labelled: bar 60, tab 50, icon 20, label 10, the chosen one white in its ink pill, on springs.tabLead', () => {
     expect([AURA.tabBar.height, AURA.tabBar.pillHeight, AURA.tabBar.padding]).toEqual([60, 50, 5]);
     expect(AURA.tabBar.iconLabelled).toBe(20);
-    expect(code('src/theme/tokens.ts')).toMatch(/tabLabel: \{ font: 'display', size: 10,/);
+    expect(code('src/theme/tokens.ts')).toMatch(/tabLabel: \{ font: 'bold', size: 10,/);
     expect(AURA.light.tab.pill).toBe('#031B0B');
     expect(AURA.light.tab.onInk).toBe('#FFFFFF');
     expect([AURA.light.tab.iconOn, AURA.light.tab.iconOnBody]).toEqual(['#3DDC84', '#FF6FA0']);
