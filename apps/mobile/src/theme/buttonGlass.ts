@@ -30,7 +30,7 @@ export const BUTTON_GLASS = {
       off: OFF_LIGHT,
     },
     clear: {
-      fill: 'rgba(255, 255, 255, 0.74)',
+      fill: '#FBFDFB',
       solid: '#EFF7F1',
       pressed: '',
       edge: '#FFFFFF',
