@@ -23,7 +23,7 @@ export function GlassSearch({
   height = KIT.size.field,
   trailing,
   autoFocus,
-  padX = X.capsulePadX,
+  padX = KIT.size.fieldPadX,
   iconColor,
 }: {
   value: string;

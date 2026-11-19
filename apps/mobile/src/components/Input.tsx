@@ -105,7 +105,15 @@ export const Input = forwardRef<TextInput, Props>(function Input(
           : KIT_TYPE.boxField
         : null;
   // On Profili düzenle's card the bio is 13 over and under.
-  const padY = boxed && tall ? E.field.padY : large && tall ? KIT.size.fieldLgPadY : SPACING[3];
+  // One line: no room over and under, so the field is exactly its height (44), as the search
+  // capsule's (the owner's report, 19 Kasım: the two search fields stood at two heights).
+  const padY = !multiline && !tall
+    ? 0
+    : boxed && tall
+      ? E.field.padY
+      : large && tall
+        ? KIT.size.fieldLgPadY
+        : SPACING[3];
   // Focused, a hard ring (no blur, cheap) as boxShadow; otherwise the soft glass shadow natively
   // (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
@@ -199,7 +207,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
       >
         {shadow.node}
         {search ? (
-          <View className="mr-2.5">
+          <View style={{ marginRight: SPACING[2] }}>
             <Icon name="search" tone="muted" />
           </View>
         ) : null}
