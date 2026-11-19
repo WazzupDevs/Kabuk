@@ -64,14 +64,27 @@ export function TemelIkonSet() {
         <Cell ad="Ana">
           <Round primary icon="check" label="Ana" onPress={nothing} />
         </Cell>
-        <Cell ad="Cam, koyu">
-          <Round glass="prominent" icon="compose" label="Cam koyu" onPress={nothing} />
-        </Cell>
-        <Cell ad="Cam, açık">
-          <Round glass="clear" icon="bell" label="Cam açık" onPress={nothing} />
-        </Cell>
         <Cell ad="Halkasız">
           <Round glassy={false} icon="moreV" label="Halkasız" onPress={nothing} />
+        </Cell>
+      </View>
+
+      <Head>Oklar · tek aile</Head>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 14 }}>
+        <Cell ad="Geri">
+          <Round icon="back" label="Geri" onPress={nothing} />
+        </Cell>
+        <Cell ad="İleri">
+          <Round icon="forward" label="İleri" onPress={nothing} />
+        </Cell>
+        <Cell ad="Aşağı">
+          <Round icon="down" label="Aşağı" onPress={nothing} />
+        </Cell>
+        <Cell ad="Kapat">
+          <Round icon="close" label="Kapat" onPress={nothing} />
+        </Cell>
+        <Cell ad="Düzenle">
+          <Round icon="edit" label="Düzenle" onPress={nothing} />
         </Cell>
       </View>
 

@@ -567,8 +567,11 @@ export function Round({
   const solid = useReduceTransparency();
   const frost = useFrost();
   const off = disabled && !loading;
-  const g = glass ? KIT.button[scheme][glass] : null;
-  const frosted = frost && glassy && !primary && !off && !light && !g;
+  // DENEME (19 Kasım, temel): three looks. `primary` is the main button's ink (not the green), and
+  // the `clear` glass is the raised round itself.
+  const g =
+    primary || glass === 'prominent' ? KIT.button[scheme].prominent : null;
+  const frosted = frost && glassy && !off && !light && !g;
   const fg = off
     ? c.onDisabled
     : g
