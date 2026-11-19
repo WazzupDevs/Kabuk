@@ -19,7 +19,8 @@ export function GlassSearch({
   onChangeText,
   placeholder,
   testID,
-  height = X.capsule,
+  // The one field height (the owner's call, 19 Kasım; the capsule was 54).
+  height = KIT.size.field,
   trailing,
   autoFocus,
   padX = X.capsulePadX,

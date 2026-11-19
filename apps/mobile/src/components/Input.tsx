@@ -85,21 +85,19 @@ export const Input = forwardRef<TextInput, Props>(function Input(
     : large
       ? tall
         ? KIT.size.fieldLgTallRadius
-        : KIT.size.fieldLg / 2
+        : KIT.size.field / 2
       : prefix || big
         ? KIT.size.glassRadius
         : tall
           ? shape.radius.lg
-          : box
-            ? shape.radius.md
-            : KIT.size.field / 2;
+          : KIT.size.field / 2;
   // The raised fields (v71) have no line; only focus and an error draw one.
   const edge = focused || error ? 2 : flat ? 0 : boxed ? E.field.edge : KIT.size.edge;
   const dark = theme.scheme === 'dark';
   const raised = (!dark && k.c.segShadow) || undefined;
   // The type of the raised fields and the big one: 21 / 600; on Profili düzenle's card 16.
   const fieldType =
-    flat || big
+    big
       ? KIT_TYPE.title
       : boxed
         ? multiline
@@ -133,21 +131,20 @@ export const Input = forwardRef<TextInput, Props>(function Input(
               paddingHorizontal: E.field.labelIn,
             }}
           >
-            <RNText style={[KIT_TYPE.boxLabel, { color: boxLook.label, flexShrink: 1 }]}>
+            <RNText style={[KIT_TYPE.sectionHead, { color: k.c.muted, flexShrink: 1 }]}>
               {label}
             </RNText>
             {counter ? (
               <RNText
-                style={[KIT_TYPE.boxLabel, { color: boxLook.label, fontVariant: ['tabular-nums'] }]}
+                style={[KIT_TYPE.sectionHead, { color: k.c.muted, fontVariant: ['tabular-nums'] }]}
               >
                 {counter}
               </RNText>
             ) : null}
           </View>
-        ) : large ? (
-          <RNText style={[KIT_TYPE.body, { color: k.c.muted }]}>{label}</RNText>
         ) : (
-          <Text variant="label">{label}</Text>
+          // One label everywhere (13/700, muted; the owner's call, 19 Kasım).
+          <RNText style={[KIT_TYPE.sectionHead, { color: k.c.muted }]}>{label}</RNText>
         )
       ) : null}
       <View
@@ -167,14 +164,12 @@ export const Input = forwardRef<TextInput, Props>(function Input(
               ? boxed
                 ? E.field.tall
                 : KIT.size.fieldLgTall
-              : KIT.size.fieldLg
+              : KIT.size.field
             : prefix
               ? KIT.size.phoneField
               : big
                 ? KIT.size.fieldBig
-                : box
-                  ? KIT.size.fieldBox
-                  : KIT.size.field,
+                : KIT.size.field,
           borderRadius: radius,
           borderWidth: edge,
           borderColor: error
@@ -252,11 +247,11 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             textAlignVertical={multiline ? 'top' : 'center'}
             style={[
               fieldType ??
-                (large
-                  ? KIT_TYPE.field
-                  : prefix
-                    ? KIT_TYPE.phone
-                    : typeStyle(theme, code ? 'title' : 'body')),
+                (prefix
+                  ? KIT_TYPE.phone
+                  : code
+                    ? typeStyle(theme, 'title')
+                    : KIT_TYPE.body),
               {
                 color: k.c.ink,
                 paddingVertical: padY,

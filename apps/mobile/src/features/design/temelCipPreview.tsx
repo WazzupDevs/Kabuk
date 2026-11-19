@@ -79,6 +79,7 @@ export function TemelCipSet() {
       <Label>Üç bölme</Label>
       <Segmented
         fill
+        accessibilityLabel="Görünüm"
         value={tema}
         onChange={setTema}
         options={[

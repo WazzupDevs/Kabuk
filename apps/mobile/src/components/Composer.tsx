@@ -338,7 +338,8 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   // The group chats' field (yeni arayüz tuvali, MekanSohbet, MasaSohbet, SemtSohbet `.fld`): a plain
   // white (dark: the surface) instead of the glass.
   const kind = useChatKind();
-  const look = kind === 'dm' ? DM[k.scheme].composer : CHAT_LOOK.composer[k.scheme];
+  // One composer in every chat (the owner's call, 19 Kasım): the plain fill, the send always there.
+  const look = CHAT_LOOK.composer[k.scheme];
   // In Mekan's card (`flush`, tuval Mekan, theme/venue.ts): a sunk green field 44 high, no edge and
   // no shadow, the words 14/600 16 in, the send round 36 always there, 6 from the right.
   const card = VENUE.chat.field;
@@ -358,10 +359,10 @@ const CapsuleBar = forwardRef<TextInput, BarProps & { flush?: boolean }>(functio
   // disabled grey with nothing to send. The DM's (DmSohbet, DmKlavye `.cmp`): none with nothing to
   // send, the field across the bar; 52 in the ink once there is something, grown in. An edit keeps
   // its tick (DmDuzenle), grey while the words are unchanged.
-  const always = kind !== 'dm';
+  const always = true;
   const dmBar = kind === 'dm' && !flush;
   const dmOff = dmBar && !!editing && !!sendDisabled && !sending;
-  const dmHidden = dmBar && !editing && !!sendDisabled && !sending;
+  const dmHidden = false;
   const shown = true;
   const padLeft = dm ? DM.composer.padLeft : card.padLeft;
   const send = flush ? card.send : SEND_IN;
