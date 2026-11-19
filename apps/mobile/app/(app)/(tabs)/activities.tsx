@@ -147,7 +147,11 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
   if (events.length === 0) {
     // AktivitelerBos: the riso and its two lines, no card.
     return (
-      <View style={{ marginTop: A.listTop }} testID="activities-no-events">
+      <View
+        // In the middle of the room under the tabs, as every empty state (19 Kasım).
+        style={{ flexGrow: 1, justifyContent: 'center', minHeight: 420 }}
+        testID="activities-no-events"
+      >
         <EmptyState
           kind="empty"
           riso="events"

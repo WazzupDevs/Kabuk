@@ -99,6 +99,8 @@ const RISO_BOARD: Partial<
   // EngellenenlerBos, SessizAlinanlarBos: the boards' own 360 × 294 cut-outs.
   blocked: { width: 120, height: 98, radius: 0, shadow: 'none' },
   muted: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  // Aktiviteler's picture has a ground of its own: softened until a cut-out is drawn.
+  events: { ...RISO_SMALL, radius: 16 },
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,

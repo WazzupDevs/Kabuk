@@ -511,7 +511,8 @@ export function MenuItem({
   const iconInk = negative
     ? ink
     : look === 'pop'
-      ? layer.menuIcon
+      ? // The ink, two-toned as a settings row's icon (the owner's call, 19 Kasım; was --primary).
+        colors.text
       : look === 'hold'
         ? layer.holdIcon
         : colors.muted;
@@ -520,9 +521,7 @@ export function MenuItem({
       ? negative
         ? { second: layer.holdDangerBody, soft: layer.holdDangerSoft }
         : { second: layer.holdIconBody, soft: layer.holdIconSoft }
-      : look === 'pop'
-        ? { second: iconInk, soft: 1 }
-        : null;
+      : null;
   return (
     <Pressable
       testID={testID}

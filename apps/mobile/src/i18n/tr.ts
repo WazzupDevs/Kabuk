@@ -331,7 +331,7 @@ export const tr = {
   },
   // Mesajlar (docs/SPEC_V3.md §18.3).
   messages: {
-    empty: 'Henüz mesajın yok.',
+    empty: 'Henüz mesajın yok',
     emptyHint: 'Arkadaş olduğun kişilerle burada yazışırsın.',
     // The "+" and its list of friends (the owner's call, 30 Ekim).
     newMessage: 'Yeni mesaj',
