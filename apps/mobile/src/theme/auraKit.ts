@@ -39,6 +39,14 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 // DENEME (20 Kasım, the owner's ask: "başlıklar dışında kalan tüm metinler telefonun stili"): a
 // text style in the phone's own face (Android: Roboto), the weights one step lighter as that face
 // is read (500 → regular, 600 → medium, 700 → bold). Only the titles keep the brand's face.
+// DENEME: the titles' face, one of the candidates (fonts.ts loads all four).
+const TITLE_FACE: string = 'Gabarito_700Bold';
+const h = (size: number, line: number, em = 0): TextStyle => ({
+  fontFamily: TITLE_FACE,
+  fontSize: size,
+  lineHeight: line,
+  letterSpacing: em * size,
+});
 const SYSTEM_WEIGHT = { 500: '400', 600: '500', 700: '700', 800: '700' } as const;
 const s = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
   fontFamily: 'sans-serif',
@@ -55,14 +63,14 @@ const s = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 // tight. Every name in KIT_TYPE is one of these; a name says where a style is used, not a new
 // value. Apart stand only a face's letter, the phone number and the code as typed, and the emoji.
 const BASE = {
-  display: t(700, 30, 38, -0.025),
+  display: h(30, 38, -0.025),
   // The first screen's line.
-  displayLight: t(500, 30, 38, -0.025),
-  title: t(700, 24, 30, -0.02),
-  heading: t(700, 20, 26, -0.015),
+  displayLight: h(30, 38, -0.025),
+  title: h(24, 30, -0.02),
+  heading: h(20, 26, -0.015),
   lead500: s(500, 17, 22),
   lead600: s(600, 17, 22),
-  lead700: t(700, 17, 22),
+  lead700: h(17, 22),
   // Running text: a message, a dialog's sentence, a legal page.
   body: s(500, 15, 22),
   line500: s(500, 15, 20),

@@ -61,6 +61,18 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@expo-google-fonts/bricolage-grotesque':
+        specifier: 0.4.1
+        version: 0.4.1
+      '@expo-google-fonts/fraunces':
+        specifier: 0.4.1
+        version: 0.4.1
+      '@expo-google-fonts/gabarito':
+        specifier: 0.4.1
+        version: 0.4.1
+      '@expo-google-fonts/outfit':
+        specifier: 0.4.3
+        version: 0.4.3
       '@expo-google-fonts/plus-jakarta-sans':
         specifier: 0.4.2
         version: 0.4.2
@@ -721,8 +733,20 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@expo-google-fonts/bricolage-grotesque@0.4.1':
+    resolution: {integrity: sha512-uijLLg+thOrFgw+gXtYA3dQJTBqqqleabcNFpamaYXqUUcbFe0J18C+4nfL0CyGzSJUicxUBLY4Zv7jdHmTGMA==}
+
+  '@expo-google-fonts/fraunces@0.4.1':
+    resolution: {integrity: sha512-gYc9P92ObyWvz1rWPOeWSvVKyBFIuA8hgOdhvo4DSiPBaWLbFA6v8uLIEIBwW+0oWTlXbBzjeBReHQI2H7UNjQ==}
+
+  '@expo-google-fonts/gabarito@0.4.1':
+    resolution: {integrity: sha512-9z+vmuJLgf0r3k+cuApIO1FZPqCmCpNZR7KHU8G81N2rnm+w9xib3LYqaX+VfRbdUh3LCgmbhsN/AD4lj0vbTQ==}
+
   '@expo-google-fonts/material-symbols@0.4.48':
     resolution: {integrity: sha512-aZztj44PyA/sj3TXSwwpLJwqMlTUJ49okbZJYURzEcuERxMQB0KbX7RrLBi8WJnuWz5HFOLlTRxORrJfNnUPNQ==}
+
+  '@expo-google-fonts/outfit@0.4.3':
+    resolution: {integrity: sha512-2uQmDVJencWLllxds6SG92E+SjxyZfvg7eZKZ5XLHggmm5AuUyQK7lzMAFOUzT6kheq2kJ7BAiubMdjKT32fJg==}
 
   '@expo-google-fonts/plus-jakarta-sans@0.4.2':
     resolution: {integrity: sha512-6LYVmVGwjQvH+uzzWlVc9+oMj4lkNQ41aymVDjO+x8aFk8kCye20wOyLomYMZaMezA++Uf1mZRCw3W3Fy/hxEA==}
@@ -5940,7 +5964,15 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@expo-google-fonts/bricolage-grotesque@0.4.1': {}
+
+  '@expo-google-fonts/fraunces@0.4.1': {}
+
+  '@expo-google-fonts/gabarito@0.4.1': {}
+
   '@expo-google-fonts/material-symbols@0.4.48': {}
+
+  '@expo-google-fonts/outfit@0.4.3': {}
 
   '@expo-google-fonts/plus-jakarta-sans@0.4.2': {}
 

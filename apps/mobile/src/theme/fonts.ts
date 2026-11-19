@@ -7,6 +7,10 @@ import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/
 import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
 import { PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans/800ExtraBold';
+import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque/700Bold';
+import { Fraunces_700Bold } from '@expo-google-fonts/fraunces/700Bold';
+import { Gabarito_700Bold } from '@expo-google-fonts/gabarito/700Bold';
+import { Outfit_700Bold } from '@expo-google-fonts/outfit/700Bold';
 import type { FontSource } from 'expo-font';
 
 import type { FontName, FontSet } from './tokens';
@@ -23,5 +27,7 @@ const FONT_ASSETS: Record<FontName, FontSource> = {
 export function fontsOf(set: FontSet): Record<string, FontSource> {
   const map: Record<string, FontSource> = {};
   for (const name of Object.values(set)) map[name] = FONT_ASSETS[name];
+  // DENEME (20 Kasım): the candidate title faces, loaded beside the set.
+  Object.assign(map, { BricolageGrotesque_700Bold, Fraunces_700Bold, Gabarito_700Bold, Outfit_700Bold });
   return map;
 }
