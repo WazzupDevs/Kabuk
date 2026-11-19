@@ -897,7 +897,15 @@ export function Chip({
       >
         {shadow.node}
         {on || filter ? null : <FrostOf height={h} fill={c.raisedChip} />}
-        {icon ? <CapIcon name={icon} color={c.muted} size={KIT.size.iconSm} /> : null}
+        {icon ? (
+          // A chosen chip's icon as clear as its words (the owner's call, 19 Kasım).
+          <CapIcon
+            name={icon}
+            color={on ? c.onChipOn : c.muted}
+            soft={on ? 1 : undefined}
+            size={KIT.size.iconSm}
+          />
+        ) : null}
         <Text
           numberOfLines={1}
           maxFontSizeMultiplier={fixed ? 1 : MAX_FONT_SCALE}

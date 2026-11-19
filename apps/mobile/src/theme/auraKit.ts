@@ -633,7 +633,7 @@ export const KIT = {
     stepDot: 'rgba(255, 255, 255, 0.18)',
     faceRing: '#151A18',
     faceShadow: '',
-    switchKnob: '#151A18',
+    switchKnob: '#EEF3F0',
     switchKnobShadow: '',
     markLine: 'rgba(255, 255, 255, 0.30)',
     markOn: 'rgba(255, 255, 255, 0.94)',
@@ -939,7 +939,7 @@ export const KIT = {
     chip: 32,
     chipTall: 32,
     chipTallPadX: 16,
-    chipLg: 34,
+    chipLg: 32,
     chipFilter: 28,
     chipFilterPadX: 11,
     // Aura v75 E4 (narrow): a chip 46, a field 56, a segment 52.
@@ -1111,7 +1111,7 @@ export const KIT = {
     segItem: 32,
     // Mesajlar's tabs: 48 high in a 30 round.
     // U27: Mesajlar's tabs 48 in all (40 tabs 4 in), a pill.
-    segLg: 36,
+    segLg: 32,
     segLgRadius: 24,
     // Mesajlar's bell (52) and its new message button (70, 26 from the right).
     // U27: the bell 44 (round soft).

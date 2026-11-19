@@ -47,20 +47,14 @@ export function TemelCipSet() {
   const [tema, setTema] = useState<'s' | 'a' | 'k'>('a');
   return (
     <View testID="preview-temel-cip" style={{ gap: 6 }}>
-      <Head>Çip · boylar</Head>
-      <Label>Ana (kitin `chip`i)</Label>
+      <Head>Çip · 2 boy</Head>
+      <Label>Çip · 32</Label>
       <View style={row}>
         <Chip label="Tümü" on={kind === 'all'} onPress={() => setKind('all')} />
         <Chip label="Kampüs" on={kind === 'c'} onPress={() => setKind('c')} />
         <Chip label="Kafe ve mekan" on={kind === 'k'} onPress={() => setKind('k')} />
       </View>
-      <Label>Büyük (`lg`: Keşfet, lobi)</Label>
-      <View style={row}>
-        <Chip lg label="Tümü" on />
-        <Chip lg label="Kampüs" />
-        <Chip lg label="Kafe ve mekan" />
-      </View>
-      <Label>Süzgeç (`filter`: Süsle)</Label>
+      <Label>Süzgeç çipi · 28</Label>
       <View style={row}>
         <Chip filter label="Hepsi" on />
         <Chip filter label="Şapka" />
@@ -73,7 +67,7 @@ export function TemelCipSet() {
       </View>
 
       <Head>Bölmeli seçici</Head>
-      <Label>Kit (`Seg`)</Label>
+      <Label>İki bölme, sayılı</Label>
       <Seg
         value={tab}
         onChange={setTab}
@@ -82,17 +76,7 @@ export function TemelCipSet() {
           { value: 'b', label: 'İstekler', badge: 2 },
         ]}
       />
-      <Label>Kit, büyük (`Seg large`)</Label>
-      <Seg
-        large
-        value={tab}
-        onChange={setTab}
-        options={[
-          { value: 'a', label: 'Sohbetler' },
-          { value: 'b', label: 'İstekler' },
-        ]}
-      />
-      <Label>Eski bileşen (`Segmented`)</Label>
+      <Label>Üç bölme</Label>
       <Segmented
         fill
         value={tema}
