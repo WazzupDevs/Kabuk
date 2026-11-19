@@ -662,7 +662,23 @@ export function Round({
           <FrostOf height={s} fill={c.raisedRound} />
         ) : null}
         {loading ? (
-          <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
+          <Loader
+            kind="meet"
+            size={KIT.size.iconSm}
+            // One colour, the icon's own (as Btn's).
+            mono={{
+              color: fg,
+              ground: g
+                ? g.fill
+                : primary
+                  ? KIT.primary
+                  : light
+                    ? KIT.sceneRound.bg
+                    : c.raisedRound,
+            }}
+            delay={0}
+            label={null}
+          />
         ) : (
           (children ??
           (icon ? (
