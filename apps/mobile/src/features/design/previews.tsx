@@ -61,6 +61,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { IdentitySet } from './identityPreview';
+import { TemelAlanSet } from './temelAlanPreview';
 import { TemelCipSet } from './temelCipPreview';
 import { TemelIkonSet } from './temelIkonPreview';
 import { TemelSet } from './temelPreview';
@@ -801,6 +802,7 @@ export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'temel', label: 'Temel', render: () => <TemelSet /> },
   { key: 'temelIkon', label: 'Temel · ikon', render: () => <TemelIkonSet /> },
   { key: 'temelCip', label: 'Temel · çip', render: () => <TemelCipSet /> },
+  { key: 'temelAlan', label: 'Temel · alan', render: () => <TemelAlanSet /> },
   { key: 'games', label: 'Oyun', render: () => <GamesSet /> },
   { key: 'sahtekar', label: 'Sahtekar', render: () => <SahtekarSet /> },
   { key: 'say', label: 'Harf · Şarkı', render: () => <SaySet /> },
