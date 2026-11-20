@@ -7,7 +7,7 @@ Toplam 176 varlık; 127 tanesine en az bir pano başvuruyor, 49 tanesine hiçbir
 | blob | dosya | panolar | depodaki karşılık | tür |
 | --- | --- | --- | --- | --- |
 | 001eba8ec1d165e5cc5846be23e4007d | assets/001eba8ec1d165e5cc5846be23e4007d.png | yok | yok | png 320x420 |
-| 00874320d970fbadce73a87d3b072f02 | assets/00874320d970fbadce73a87d3b072f02.png | 112 | yok | png 640x520; alt: "Haritaya bakan kapsül kanki" |
+| 00874320d970fbadce73a87d3b072f02 | assets/00874320d970fbadce73a87d3b072f02.png | 112 | apps/mobile/assets/riso/empty-explore.webp (aynı resim, yeniden kodlanmış; bayt eşi değil) | png 640x520; alt: "Haritaya bakan kapsül kanki" |
 | 00896f74d4ecb0f452070fa3a38849e6 | assets/00896f74d4ecb0f452070fa3a38849e6.webp | yok | yok | webp 1170x1080 |
 | 01c0e7abc65c773d9d4526d2100a1f34 | assets/01c0e7abc65c773d9d4526d2100a1f34.webp | 32c | yok | webp 480x288 |
 | 02674155f583092091ce475d46ebf66b | assets/02674155f583092091ce475d46ebf66b.png | 31, 32 | yok | png 1290x2796 |
@@ -41,7 +41,7 @@ Toplam 176 varlık; 127 tanesine en az bir pano başvuruyor, 49 tanesine hiçbir
 | 4661361ef261f146bb9333f0e5251032 | assets/4661361ef261f146bb9333f0e5251032.png | 03s | yok | png 360x294; alt: "Megafonla seslenen kapsül kanki" |
 | 47c6500ff57c41e9c861a69102b864f7 | assets/47c6500ff57c41e9c861a69102b864f7.png | 110 | yok | png 640x520; alt: "Zilin yanında uyuyan kapsül kanki" |
 | 4a000793033b86277853f55cbbad7c5b | assets/4a000793033b86277853f55cbbad7c5b.png | yok | yok | png 320x420 |
-| 4ba27f14918de0bdd6d3e5fd47fd263a | assets/4ba27f14918de0bdd6d3e5fd47fd263a.png | 07, 84, 97, 115, 117 | yok | png 900x600; alt: "Dürbünle bakan kapsül kanki" / "Boş ilan panosunun yanında dürbünlü kapsül kanki" |
+| 4ba27f14918de0bdd6d3e5fd47fd263a | assets/4ba27f14918de0bdd6d3e5fd47fd263a.png | 07, 84, 97, 115, 117 | apps/mobile/assets/riso/empty-search.webp (aynı resim, yeniden kodlanmış; bayt eşi değil) | png 900x600; alt: "Dürbünle bakan kapsül kanki" / "Boş ilan panosunun yanında dürbünlü kapsül kanki" |
 | 4cac59292422262c8fbe1ed9ed45e884 | assets/4cac59292422262c8fbe1ed9ed45e884.webp | 137, 138, 153, 154 | yok | webp 462x334 (sınıf gl) |
 | 4dd29a0712db481dfb22579231699519 | assets/4dd29a0712db481dfb22579231699519.png | 47 | yok | png 72x72 (sınıf st) |
 | 4fe4f643af38a4fda8ee97262e7ab855 | assets/4fe4f643af38a4fda8ee97262e7ab855.jpg | yok | yok | jpg 700x280 |
@@ -93,7 +93,7 @@ Toplam 176 varlık; 127 tanesine en az bir pano başvuruyor, 49 tanesine hiçbir
 | 892023f03268591e4318e7635eceae43 | assets/892023f03268591e4318e7635eceae43.jpg | yok | yok | jpg 700x400 |
 | 8965f6ff3ff1c3e9a38dcb58726a10ba | assets/8965f6ff3ff1c3e9a38dcb58726a10ba.png | 04, 110, 130, 131 | yok | png 160x200 (sınıf pk pk1) |
 | 89846870c1f1bafececaa7a6884acd62 | assets/89846870c1f1bafececaa7a6884acd62.png | 03p, 09, 16, 22, 23, 24, 25, 25b, 26, 33, 34, 35, 38, 39, 40, 41, 42, 43, 44, 45, 46, 92, 93, 94, 95, 96, 125, 126, 127, 128, 129, 139, 140, 142, 145, 146, 147, 148, 150, 151, 158 | yok | png 192x192 (sınıf uav) (sınıf pav) |
-| 8bc2eb74b20b11ffef979d6017aed99b | assets/8bc2eb74b20b11ffef979d6017aed99b.webp | 10b | yok | webp 1050x600 |
+| 8bc2eb74b20b11ffef979d6017aed99b | assets/8bc2eb74b20b11ffef979d6017aed99b.webp | 10b | apps/mobile/assets/riso/semt/kesfet-semt-oda.webp (aynı resim, yeniden kodlanmış; bayt eşi değil) | webp 1050x600 |
 | 8cbefbc39f444d673007bc0ed3a13c1f | assets/8cbefbc39f444d673007bc0ed3a13c1f.webp | 32a, 32b, 32c | yok | webp 480x288 |
 | 8cfcf418dfaeffac149146cde4743d15 | assets/8cfcf418dfaeffac149146cde4743d15.webp | yok | yok | webp 420x280 |
 | 8e86f32f290f9e85f5738fbe7a0ee61a | assets/8e86f32f290f9e85f5738fbe7a0ee61a.png | 45, 46, 143, 144 | yok | png 230x148; alt: "Kinshi" (sınıf lc) (sınıf gl) |
@@ -148,9 +148,9 @@ Toplam 176 varlık; 127 tanesine en az bir pano başvuruyor, 49 tanesine hiçbir
 | c7b0a908882db3a12a515a9726634cc5 | assets/c7b0a908882db3a12a515a9726634cc5.jpg | yok | yok | jpg 700x400 |
 | c869137a83179312824b6299d898f3f6 | assets/c869137a83179312824b6299d898f3f6.webp | 23, 125, 126, 127, 128, 129 | yok | webp 240x240 (sınıf oth) |
 | c86d64379de24c41f4660d44fabf107e | assets/c86d64379de24c41f4660d44fabf107e.png | 03q | yok | png 360x294; alt: "Açık bahçe kapısından geçen kapsül kanki" |
-| cbda3ee975fe0e90e6feb972f79b7601 | assets/cbda3ee975fe0e90e6feb972f79b7601.png | 10, 10b, 10c, 112 | yok | png 600x340 (sınıf kk) |
+| cbda3ee975fe0e90e6feb972f79b7601 | assets/cbda3ee975fe0e90e6feb972f79b7601.png | 10, 10b, 10c, 112 | apps/mobile/assets/riso/peek-explore.webp (aynı resim, yeniden kodlanmış; bayt eşi değil) | png 600x340 (sınıf kk) |
 | cc89211e04394fe5debe41481577d6c7 | assets/cc89211e04394fe5debe41481577d6c7.webp | 32b, 33, 34, 35, 38, 137, 138 | yok | webp 462x334 |
-| d265dd1ce487a8382e0c43b65623945d | assets/d265dd1ce487a8382e0c43b65623945d.webp | 10, 10c, 100, 112 | yok | webp 1050x600 |
+| d265dd1ce487a8382e0c43b65623945d | assets/d265dd1ce487a8382e0c43b65623945d.webp | 10, 10c, 100, 112 | apps/mobile/assets/riso/semt/kesfet-semt.webp (aynı resim, yeniden kodlanmış; bayt eşi değil) | webp 1050x600 |
 | d4921959efe520be6e7fe29ad31f7b81 | assets/d4921959efe520be6e7fe29ad31f7b81.png | 113 | yok | png 640x520; alt: "Birbirine kâğıt uçak gönderen iki kapsül kanki" |
 | d8891436b9d74b9683df07951381287c | assets/d8891436b9d74b9683df07951381287c.png | 10, 10b, 10c | yok | png 128x128 (sınıf th) |
 | d959326b523f0457b16c1d5da612e64d | assets/d959326b523f0457b16c1d5da612e64d.png | 03f, 03g, 03h, 77, 78, 79, 80, 81, 91 | yok | png 240x240 |

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PREVIEW_SETS } from '../previews';
 
 import { DmFixture } from './dmFixture';
+import { KesfetFixture } from './kesfetFixture';
 import { ArchiveFixture, MesajlarFixture } from './mesajlarFixture';
 import { SemtEmptyFixture } from './semtEmptyFixture';
 import { SemtSheetFixture } from './semtFixture';
@@ -56,4 +57,12 @@ export const GATE_STATES: Record<string, GateEntry> = {
   'ekran/ayarlar/bildirimler': { full: true, render: () => <NotificationsFixture /> },
   'ekran/ayarlar/gizlilik': { full: true, render: () => <PrivacyFixture /> },
   'ekran/ayarlar/yasal': { full: true, render: () => <LegalFixture /> },
+  // The Keşfet family: the route's screen over the boards' sample (kesfetFixture.tsx).
+  'ekran/kesfet': { full: true, render: () => <KesfetFixture /> },
+  'ekran/kesfet/semt-icerde': { full: true, render: () => <KesfetFixture variant="room" /> },
+  'ekran/kesfet/harita': { full: true, render: () => <KesfetFixture variant="map" /> },
+  'ekran/kesfet/bos': { full: true, render: () => <KesfetFixture variant="empty" /> },
+  'ekran/kesfet/ara': { full: true, render: () => <KesfetFixture variant="search" /> },
+  'ekran/kesfet/ara-bos': { full: true, render: () => <KesfetFixture variant="search-empty" /> },
+  'ekran/kesfet/kaydir': { full: true, render: () => <KesfetFixture variant="scrolled" /> },
 };

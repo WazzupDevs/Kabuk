@@ -272,6 +272,64 @@
       "pano": {
         "dosya": "ArsivBos"
       }
+    },
+    {
+      "id": "ekran-kesfet",
+      "app": "ekran/kesfet",
+      "pano": {
+        "dosya": "Kesfet"
+      }
+    },
+    {
+      "id": "ekran-kesfet-kaydir",
+      "app": "ekran/kesfet/kaydir",
+      "pano": {
+        "dosya": "KesfetKaydir"
+      },
+      "uygulamaAdimlar": [
+        {
+          "kaydir": 460
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-kesfet-semt-icerde",
+      "app": "ekran/kesfet/semt-icerde",
+      "pano": {
+        "dosya": "KesfetSemtIcerde"
+      }
+    },
+    {
+      "id": "ekran-kesfet-harita",
+      "app": "ekran/kesfet/harita",
+      "baz": false,
+      "pano": {
+        "dosya": "KesfetHarita"
+      }
+    },
+    {
+      "id": "ekran-kesfet-bos",
+      "app": "ekran/kesfet/bos",
+      "pano": {
+        "dosya": "KesfetBos"
+      }
+    },
+    {
+      "id": "ekran-kesfet-ara",
+      "app": "ekran/kesfet/ara",
+      "pano": {
+        "dosya": "KesfetAra"
+      }
+    },
+    {
+      "id": "ekran-kesfet-ara-bos",
+      "app": "ekran/kesfet/ara-bos",
+      "pano": {
+        "dosya": "KesfetAraBos"
+      }
     }
   ]
 }
