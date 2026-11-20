@@ -603,9 +603,9 @@ export const tr = {
     // Keşfet's question (docs/design/aura → Keşfet), by the part of the day (lib/dayPart.ts; the
     // owner's call, 30 Ekim); its last word in green (iskelet.md → 5.1).
     question: {
-      morning: 'Bu sabah\nnerede ',
-      day: 'Bugün\nnerede ',
-      evening: 'Bu akşam\nnerede ',
+      morning: 'Bu sabah nerede\n',
+      day: 'Bugün nerede\n',
+      evening: 'Bu akşam nerede\n',
     },
     questionEnd: 'oturuyorsun?',
     // The line of the day over it, from the phone's clock (lib/dayPart.ts → dayLine; 5.1:
@@ -1183,7 +1183,10 @@ export const tr = {
       title: (name: string | null) =>
         name ? `Evdesin ama sohbet ${inflectTr(name, 'locative')}` : 'Evdesin ama sohbet semtinde',
       note: 'Günün sorusunu bil, semtinin sohbetine gir.',
-      go: 'Semte Git',
+      go: 'Semte git',
+      // The small strip over the scrolled list (KesfetKaydir `.ssm`).
+      stripTitle: (name: string) => `${name} sohbeti`,
+      stripTitleNone: 'Semtinin sohbeti',
       closedTitle: 'Geçit bugün kapalı',
       closedNote: 'Yarın yeni soru gelir.',
       opensIn: (h: number, m: number) => `Açılmasına ${h} sa ${m} dk`,

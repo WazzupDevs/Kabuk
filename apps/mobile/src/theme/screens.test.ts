@@ -54,7 +54,7 @@ describe("the app's Keşfet", () => {
     for (const part of ['<SearchRow', '<ClearButton', '<Chip', '<PlaceRow', '<ListEmpty']) {
       expect(screen, part).toContain(part);
     }
-    expect(screen).toMatch(/<StickyField band side=\{L\.side\}>/);
+    expect(screen).toMatch(/<StickyGroup\s+side=\{L\.side\}/);
     for (const riso of ['peek-explore', 'empty-explore', 'empty-search']) {
       expect(screen, riso).toContain(`assets/riso/${riso}.webp`);
     }
@@ -91,7 +91,7 @@ describe("the app's Keşfet", () => {
     expect(screen).toMatch(/kind=\{type\}/);
     expect(app('src/theme/explore.ts')).toMatch(/picture: 56,\n\s+pictureRadius: 16,/);
     expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
-    expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
+    expect(screen).toMatch(/kindLabel\(v\.kind\)/);
     const page = app('app/(app)/(tabs)/explore/[venueId].tsx');
     expect(page).toMatch(/const type = venueType\(venue\);/);
     expect(page).toMatch(/tr\.explore\.typeLabel\[type\]/);
@@ -101,7 +101,7 @@ describe("the app's Keşfet", () => {
   });
 
   it("keeps the board's spacing (tuval Kesfet, theme/explore.ts), and is always the list (no single venue)", () => {
-    expect(screen).toMatch(/marginTop: L\.districtTop/);
+    expect(screen).toMatch(/marginTop: searching \? 0 : L\.districtTop/);
     expect(screen).toMatch(/marginTop: L\.sectionTop/);
     expect(screen).toMatch(/marginTop: L\.rowsTop, marginHorizontal: -L\.side/);
     expect(screen).not.toMatch(/SingleVenue|exploreLayout/);
