@@ -90,7 +90,7 @@ describe("the app's Keşfet", () => {
     );
     expect(screen).toMatch(/kind=\{type\}/);
     expect(app('src/theme/explore.ts')).toMatch(/picture: 56,\n\s+pictureRadius: 16,/);
-    expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
+    expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 20,/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
     const page = app('app/(app)/(tabs)/explore/[venueId].tsx');
     expect(page).toMatch(/const type = venueType\(venue\);/);
