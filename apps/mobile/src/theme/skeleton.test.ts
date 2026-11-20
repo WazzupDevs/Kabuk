@@ -177,7 +177,8 @@ describe('the cover (kapak, 5.2)', () => {
 
 describe("another person's profile (kapak, 5.6)", () => {
   const O = PROFILE_PAGE.other;
-  const page = code('app/(app)/people/[publicId].tsx');
+  const page = code('src/features/profile/FriendPage.tsx');
+  const shell = code('src/features/profile/OtherProfile.tsx');
   it('the cover at 0.5, the photo to 0.75 over 60–180 and out over 120–190', () => {
     expect(O.speed).toBe(0.5);
     expect(O.faceShrink).toEqual([60, 180]);
@@ -185,82 +186,82 @@ describe("another person's profile (kapak, 5.6)", () => {
     expect(O.faceFade).toEqual([120, 190]);
     expect(PROFILE_PAGE.face).toBe(124);
     expect(PROFILE_PAGE.ring).toBe(4);
-    expect(page).toMatch(/<Cover height=\{coverHeight\} speed=\{O\.speed\}>/);
-    expect(page).toMatch(/<ScrollFade\s+fade=\{O\.faceFade\}\s+shrink=\{O\.faceShrink\}/);
-    expect(page).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}[ >]/);
+    expect(shell).toMatch(/<Cover height=\{coverHeight\} speed=\{O\.speed\}>/);
+    expect(shell).toMatch(/<ScrollFade\s+fade=\{O\.faceFade\}\s+shrink=\{O\.faceShrink\}/);
+    expect(shell).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}[ >]/);
   });
   it('"Arkadaşlıktan çıkar" in the menu only, the DM menu grown from the three dots', () => {
-    expect(page).not.toMatch(/FriendActions/);
-    expect(page).toMatch(/<Menu anchor=\{anchor\}/);
+    expect(page).not.toMatch(/features\/friends\/FriendActions/);
+    expect(shell).toMatch(/<Menu anchor=\{anchor\}/);
     expect(page).toMatch(/label=\{tr\.friends\.removeFriend\}/);
     // No capsule and no nick on another person's profile (rule 4).
-    expect(page).not.toMatch(/capsuleNick|capsuleLook|LivingLook/);
+    expect(page + shell).not.toMatch(/capsuleNick|capsuleLook|LivingLook/);
   });
 });
 
-describe('the own profile in two parts (5.7)', () => {
+describe('the own profile in one flow (ProfilBen, ProfilBenKaydir)', () => {
   const OWN = PROFILE_PAGE.own;
-  const page = code('app/(app)/(tabs)/profile/index.tsx');
+  const page = code('src/features/profile/OwnProfile.tsx');
+
+  it('the cover 236 with its foot 28 round, the photo 112 over it by 60', () => {
+    expect([OWN.cover, OWN.coverRadius, OWN.photo, OWN.photoOver]).toEqual([236, 28, 112, 60]);
+    expect(page).toMatch(/marginTop: -OWN\.photoOver/);
+  });
+
+  it('the band comes in over 225–275 and the small photo with the name over 255–285', () => {
+    expect(OWN.band).toEqual([225, 275]);
+    expect(OWN.bar).toEqual([255, 285]);
+    expect(OWN.barFace).toBe(36);
+    expect(page).toMatch(/<BarArrive from=\{OWN\.band\[0\]\} to=\{OWN\.band\[1\]\}/);
+    expect(page).toMatch(/<BarArrive from=\{OWN\.bar\[0\]\} to=\{OWN\.bar\[1\]\}/);
+  });
+
+  it('no panel, no handle and no flying photo: one photo, one name on the page', () => {
+    expect(page).not.toMatch(/RiseLayer|FlyingFace|FlyingName|snapToOffsets/);
+    expect(page).not.toMatch(/react-native-reanimated/);
+  });
+});
+
+// The flight maths (motion/scrollMath), kept with the numbers of the flight that used them (the old
+// own profile: arriving at 316, the photo 112 to 30 across): the maths stays exported for a screen
+// that flies a face into its bar.
+describe('a face flying into the bar (scrollMath)', () => {
   const flyAt = (y: number) => {
-    const t = flightAt(y, OWN.arrive);
+    const t = flightAt(y, 316);
     return {
       t,
       face: {
-        x: flyX(t, OWN.photoAt.x, OWN.faceTo.x),
-        y: flyY(y, t, OWN.photoAt.y, OWN.faceTo.y, OWN.rise),
-        side: OWN.photo * flyFace(t, OWN.photo, 30, 4, 1.5).disc,
-      },
-      name: {
-        x: flyX(t, OWN.nameAt.x, OWN.nameTo.x),
-        y: flyY(y, t, OWN.nameAt.y, OWN.nameTo.y, OWN.rise),
+        x: flyX(t, 195, 152),
+        y: flyY(y, t, 232, 73, 0.35),
+        side: 112 * flyFace(t, 112, 30, 4, 1.5).disc,
       },
     };
   };
 
-  it('the upper part moves at -0.35, fades over 120–300 and shrinks to 0.92', () => {
-    expect(OWN.rise).toBe(0.35);
-    expect(OWN.riseFade).toEqual([120, 300]);
-    expect(OWN.riseScale).toBe(0.92);
-    // In the content: carried up by y, moved back by y less its own 0.35·y.
-    expect(riseInContent(100, 0.35) - 100).toBeCloseTo(-35);
-    expect(riseInContent(-30, 0.35)).toBe(-30);
-    expect(page).toMatch(
-      /<RiseLayer\s+speed=\{OWN\.rise\}\s+fade=\{OWN\.riseFade\}\s+scaleTo=\{OWN\.riseScale\}/,
-    );
-  });
-
-  it('the photo and the name fly into the bar by t = clamp(y / 316), linearly', () => {
-    expect(OWN.arrive).toBe(316);
+  it('by t = clamp(y / 316), linearly', () => {
     const start = flyAt(0);
     expect(start.face).toEqual({ x: 195, y: 232, side: 112 });
-    expect(start.name).toEqual({ x: 195, y: 317 });
     const end = flyAt(316);
     expect(end.face.x).toBeCloseTo(152);
     expect(end.face.y).toBeCloseTo(73);
     expect(end.face.side).toBeCloseTo(30);
-    expect(end.name.x).toBeCloseTo(214);
-    expect(end.name.y).toBeCloseTo(73);
     expect(flyAt(500)).toEqual(end);
-    // Half way: (232 − 0.35·158·0.5)·0.5 + 73·0.5.
     const mid = flyAt(158);
     expect(mid.t).toBe(0.5);
     expect(mid.face.y).toBeCloseTo((232 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
-    // The ring 4 → 1.5: the face in it is the disc less twice the ring.
     const k = flyFace(1, 112, 30, 4, 1.5);
     expect(104 * k.face).toBeCloseTo(27);
-    expect(OWN.nameScale).toBe(0.516);
+  });
+
+  it('rises in its content by y less its own 0.35·y', () => {
+    expect(riseInContent(100, 0.35) - 100).toBeCloseTo(-35);
+    expect(riseInContent(-30, 0.35)).toBe(-30);
   });
 
   it('in the bar the name keeps clear of the photo and of the button', () => {
     expect(barNameX(214, 30, 175, 316)).toBe(214);
     expect(barNameX(214, 60, 175, 316)).toBe(235);
     expect(barNameX(214, 100, 175, 316)).toBeCloseTo(245.5);
-  });
-
-  it('one photo and one name: no copy in the bar', () => {
-    expect(page.match(/<ProfileFace\b/g)?.length).toBe(2);
-    expect(page.match(/<FlyingName\b/g)?.length).toBe(1);
-    expect(page).not.toMatch(/react-native-reanimated/);
   });
 });
 

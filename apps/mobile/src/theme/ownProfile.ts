@@ -1,70 +1,66 @@
-// The own profile, value for value from the approved board (tuval: Benim.dc.html and
-// BenimToplanmis.dc.html, folded at 330; 390 × 844, a 42 status bar) where docs/design/iskelet.md →
-// 5.7 gives no value of its own. The cover (236), the photo (112, its 4 ring) are ProfilBen's (17 Kasım, PROFILE_PAGE.own); once iskelet's 230 and 124, the -0.35 rise, the
-// fade over 120–300, the 0.92, the 316 and the linear flight into the bar are iskelet's
-// (PROFILE_PAGE.own); the two buttons' 48 too. The board's flight eases in and out: iskelet's is
-// linear and one to one with the finger (4.1), and stays.
+// The own profile, value for value from the yeni arayüz tuvali's boards (ProfilBen, ProfilBenKaydir,
+// DarProfilim; 390 × 844, the bar's buttons at 52 under a 44 status bar). One flow: the cover
+// (PROFILE_PAGE.own), the photo over its foot, the name, the bio, two buttons, the ticket, the Set
+// balonu; no panel, no handle, no light on the ground (yeni-tuval.md → "Tuvale sadık kalınır").
+import { KIT_TYPE } from './auraKit';
 import { EXPLORE } from './explore';
 
 export const OWN_PROFILE = {
-  // The name's line on the board (31 at 1.1), the bio 6 under it, the buttons 18 under the bio and
-  // 10 apart: "Profili düzenle" 14 in at its left and 16 at its right, its pencil 17; "N arkadaş"
-  // 6 and 12, the faces, the words and the arrow (15) 8 apart.
-  nameLine: 34,
-  bioTop: 6,
-  buttonsTop: 18,
+  // The body 20 from the sides; the name 12 under the photo, the bio 4 under it, the buttons 20
+  // under the bio and 10 apart (each as wide as the other; stacked at 320 dp or the largest text,
+  // 8 apart and 52 high at least).
+  side: 20,
+  nameTop: 12,
+  bioTop: 4,
+  buttonsTop: 20,
   buttonsGap: 10,
-  edit: { padLeft: 14, padRight: 16, gap: 8, icon: 17 },
-  friends: { padLeft: 6, padLeftBare: 14, padRight: 12, gap: 8, chevron: 15 },
-  // The faces 20 apart (28 over each other, 8 under the next).
-  stackStep: 20,
-  // The upper part shrinks from 30 % down its height, over the whole flight.
-  riseOrigin: '50% 30%',
-  // The band comes in over the panel's last 40 before the bar.
-  band: [276, 316] as const,
-  // The panel: 12 inside at its top, 16 at its sides; its handle 40 × 5, 3 round, 4 over the
-  // ticket; its parts 14 apart.
-  panelTop: 12,
-  panelSide: 16,
-  grabRadius: 3,
-  grabBottom: 4,
-  gap: 14,
-  // The settings' icon 20.
-  settingsIcon: 20,
+  buttonsGapNarrow: 8,
+  buttonNarrow: 52,
+  // "Profili düzenle": 12 in at either side, its pencil 18.
+  edit: { pad: 12, icon: 18 },
+  // "N arkadaş" (`.fr`, a glass card): the faces, the words and the arrow (16) 6 apart, 6 in at its
+  // left (12 without faces) and 12 at its right.
+  friends: { padLeft: 6, padLeftBare: 12, padRight: 12, gap: 6, chevron: 16 },
+  // The ticket and the Set balonu 28 under what is over them.
+  sectionTop: 28,
+  // The settings' icon 24, the board's `.ci`.
+  settingsIcon: 24,
+  cover: { narrow: 200 },
   light: {
-    // The panel's ground: a pink light at its top right and a green one at its left, on the ground;
-    // its shadow up and a white line at its top.
-    panel:
-      'radial-gradient(90% 30% at 100% 0%, #F6DCE6 0%, rgba(246, 220, 230, 0) 70%), radial-gradient(90% 30% at 0% 0%, #D3EEDD 0%, rgba(211, 238, 221, 0) 70%)',
-    panelShadow: '0px -12px 34px rgba(3, 27, 11, 0.12), inset 0px 1px 0px rgba(255, 255, 255, 0.9)',
-    grab: 'rgba(3, 27, 11, 0.12)',
-    chevron: '#4A6550',
-    more: { bg: '#E3F4E9', fg: '#0B5E30' },
+    // `.fr .av` ring: the ground's colour; the letter's ground (`.pic`) the primary; the friends'
+    // card the kit's glass.
+    stackRing: '#EFF7F1',
+    faceGround: '#0E8745',
+    card: EXPLORE.light.card,
   },
-  // The dark scheme is not drawn on the board: the plain ground, no shadow.
   dark: {
-    panel: '',
-    panelShadow: '',
-    grab: '#2A332F',
-    chevron: '#A3AEA8',
-    more: { bg: 'rgba(61, 220, 132, 0.14)', fg: '#93EBB9' },
+    stackRing: '#121614',
+    faceGround: '#0B783D',
+    card: EXPLORE.dark.card,
   },
 } as const;
 
-// Set balonu's card on the panel (Benim): `.card`, 26 round, 16 / 18 / 18 inside, its lines 6
-// apart; the count's pill 26 high, 10 in; the slots 12 under the note, a slot's parts 6 apart, the
-// empty one 62 in a dashed 2 ring, its plus 20.
+// The board's own faces on the own profile (`.nm` 600 28/34 at -0.6 px, `.sbt` 700 17/22 at -0.2 px,
+// `.btn` 600 15/20, the friends card's 600 14/18), made of the kit's.
+export const OWN_TYPE = {
+  name: { ...KIT_TYPE.h3, fontSize: 28, lineHeight: 34, letterSpacing: -0.6 },
+  bar: { ...KIT_TYPE.venueBarName, fontSize: 17, lineHeight: 22 },
+} as const;
+
+// Set balonu on the page (ProfilBen `.sh`, `.stag`, `.sd`, `.parts`, `.prt`): the small title and
+// the balloon's tag (24 high, 10 in) on one line, the note 6 under it, the three parts 14 under
+// that, 8 apart (two to a row at 320 dp); a part's picture 84, its name 8 under it. The empty slot
+// stays 62 in a dashed 2 ring, its plus 20.
 export const SET_CARD = {
-  radius: 26,
-  padTop: 16,
-  padX: 18,
-  padBottom: 18,
-  gap: 6,
-  count: { height: 26, padX: 10 },
-  slotsTop: 12,
-  slotGap: 6,
+  tag: { height: 24, padX: 10 },
+  noteTop: 6,
+  slotsTop: 14,
+  slotsGap: 8,
+  nameTop: 8,
   plus: 20,
   light: {
+    // `.stag`: --success-soft and --on-success-soft.
+    tagOn: { bg: '#CDEFD9', fg: '#0F5C31' },
     card: EXPLORE.light.card,
     count: 'rgba(3, 27, 11, 0.06)',
     note: '#4A6550',
@@ -73,6 +69,7 @@ export const SET_CARD = {
     plus: '#0B5A2D',
   },
   dark: {
+    tagOn: { bg: 'rgba(61, 220, 132, 0.14)', fg: '#93EBB9' },
     card: EXPLORE.dark.card,
     count: 'rgba(255, 255, 255, 0.08)',
     note: '#A3AEA8',

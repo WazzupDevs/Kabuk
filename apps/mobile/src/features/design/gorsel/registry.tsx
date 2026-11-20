@@ -5,6 +5,14 @@ import { PREVIEW_SETS } from '../previews';
 import { DmFixture } from './dmFixture';
 import { KesfetFixture } from './kesfetFixture';
 import { ArchiveFixture, MesajlarFixture } from './mesajlarFixture';
+import {
+  EditProfileFixture,
+  FriendProfileFixture,
+  MutualFixture,
+  OwnProfileFixture,
+  ProfileLoadingFixture,
+  SenderProfileFixture,
+} from './profilFixture';
 import { SemtEmptyFixture } from './semtEmptyFixture';
 import { SemtSheetFixture } from './semtFixture';
 import {
@@ -57,6 +65,15 @@ export const GATE_STATES: Record<string, GateEntry> = {
   'ekran/ayarlar/bildirimler': { full: true, render: () => <NotificationsFixture /> },
   'ekran/ayarlar/gizlilik': { full: true, render: () => <PrivacyFixture /> },
   'ekran/ayarlar/yasal': { full: true, render: () => <LegalFixture /> },
+  // The Profil family: the screens themselves over the boards' sample (profilFixture.tsx).
+  'ekran/profil/baskasi': { full: true, render: () => <FriendProfileFixture /> },
+  'ekran/profil/mekan': { full: true, render: () => <SenderProfileFixture /> },
+  'ekran/profil/yukleniyor': { full: true, render: () => <ProfileLoadingFixture /> },
+  'ekran/profil/ortak': { full: true, render: () => <MutualFixture /> },
+  'ekran/profil/ben': { full: true, render: () => <OwnProfileFixture /> },
+  'ekran/profil/ben-kaydir': { full: true, render: () => <OwnProfileFixture scrolled /> },
+  'ekran/profil/duzenle': { full: true, render: () => <EditProfileFixture /> },
+  'ekran/profil/duzenle-yaz': { full: true, render: () => <EditProfileFixture typed /> },
   // The Keşfet family: the route's screen over the boards' sample (kesfetFixture.tsx).
   'ekran/kesfet': { full: true, render: () => <KesfetFixture /> },
   'ekran/kesfet/semt-icerde': { full: true, render: () => <KesfetFixture variant="room" /> },

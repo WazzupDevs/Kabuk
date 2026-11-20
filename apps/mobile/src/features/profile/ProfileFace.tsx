@@ -15,10 +15,13 @@ export function ProfileFace({
   side,
   name,
   photoUrl,
+  ground,
 }: {
   side: number;
   name: string;
   photoUrl: string | null;
+  // The letter's ground where a board fixes one (ProfilBen: the primary); else from the name.
+  ground?: string;
 }) {
   const { scheme } = useTheme();
   return (
@@ -32,7 +35,7 @@ export function ProfileFace({
           alignItems: 'center',
           justifyContent: 'center',
         },
-        photoUrl ? null : gradientStyle(avatarGround(name, scheme)),
+        photoUrl ? null : gradientStyle(ground ?? avatarGround(name, scheme)),
       ]}
     >
       {photoUrl ? (
@@ -69,10 +72,16 @@ export function RingedFace({
   name,
   photoUrl,
   side = PROFILE_PAGE.face,
+  ringColor,
+  ground,
 }: {
   name: string;
   photoUrl: string | null;
   side?: number;
+  // The ring's colour: the screen's ground on the boards (ProfilBaskasi, ProfilBen), white where
+  // none is given.
+  ringColor?: string;
+  ground?: string;
 }) {
   const P = PROFILE_PAGE;
   return (
@@ -81,12 +90,12 @@ export function RingedFace({
         width: side,
         height: side,
         borderRadius: side / 2,
-        backgroundColor: P.ringColor,
+        backgroundColor: ringColor ?? P.ringColor,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <ProfileFace side={side - 2 * P.ring} name={name} photoUrl={photoUrl} />
+      <ProfileFace side={side - 2 * P.ring} name={name} photoUrl={photoUrl} ground={ground} />
     </View>
   );
 }

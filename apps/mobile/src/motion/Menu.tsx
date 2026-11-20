@@ -416,6 +416,7 @@ export function MenuItem({
   loading,
   disabled,
   note,
+  iconSoft,
   testID,
   chevron,
   count,
@@ -432,6 +433,8 @@ export function MenuItem({
   disabled?: boolean;
   // A line under the label (skall tuvali, MasaKisiSecenekler: what "Engelle" does).
   note?: string;
+  // The ⋮ menu's icon body at this opacity (the profile menu's red ban: the disc light, the bar dark).
+  iconSoft?: number;
   testID?: string;
   // A row that opens a page (skall tuvali, Ayarlar): a chevron, with a count before it.
   chevron?: boolean;
@@ -521,7 +524,7 @@ export function MenuItem({
         ? { second: layer.holdDangerBody, soft: layer.holdDangerSoft }
         : { second: layer.holdIconBody, soft: layer.holdIconSoft }
       : look === 'pop'
-        ? { second: iconInk, soft: 1 }
+        ? { second: iconInk, soft: iconSoft ?? 1 }
         : null;
   return (
     <Pressable
@@ -573,7 +576,10 @@ export function MenuItem({
             style={
               hold
                 ? { gap: L.holdNoteTop }
-                : { gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }
+                : look === 'pop'
+                  ? // MekanProfilMenu `.pi p`: the note straight under the words, no room of its own.
+                    { gap: 0, paddingVertical: 0 }
+                  : { gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }
             }
           >
             {!sheet ? (
@@ -587,6 +593,10 @@ export function MenuItem({
             )}
             {note && hold ? (
               <T v="menuNote" color={colors.muted}>
+                {note}
+              </T>
+            ) : note && look === 'pop' ? (
+              <T v="liveSoft" color={colors.muted}>
                 {note}
               </T>
             ) : note ? (

@@ -18,6 +18,7 @@ import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
 import { DM_EDIT_MAX, DM_EDIT_WINDOW_MS } from '@shared/dmManage.ts';
 import { inflectTr } from '@shared/trText.ts';
+
 import type { VenueKind } from '@shared/venueKind.ts';
 
 // Address (hitap): a person is "sen", a table "siz"; a sentence never mixes the two. What a phone
@@ -838,6 +839,17 @@ export const tr = {
     friendsStatus: 'Arkadaşsınız',
     mutualTitle: (count: number) => `Ortak arkadaşlar · ${count}`,
     mutualOpen: (name: string) => `${name}, profilini aç`,
+    // ProfilBaskasi's card (03) and the list it opens (OrtakArkadaslar, 103).
+    mutualCount: (count: number) => `${count} ortak arkadaş`,
+    mutualNames: (names: readonly string[], more: number) =>
+      more > 0
+        ? `${names.join(', ')} ve ${more} kişi daha`
+        : names.length > 1
+          ? `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`
+          : (names[0] ?? ''),
+    mutualListTitle: 'Ortak arkadaşlar',
+    mutualListSub: (name: string, count: number) => `${name} ile ${count} ortak arkadaşınız var`,
+    mutualListEmpty: 'Ortak arkadaşınız yok.',
     noName: 'Henüz bir adın yok',
     nameWithAge: (name: string, age: number) => `${name}, ${age}`,
     // After the name on a profile's head, in the quiet colour (v45: .page-age).
@@ -845,6 +857,9 @@ export const tr = {
     addName: 'Ad ekle',
     edit: 'Profili düzenle',
     birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
+    // ProfilDuzenle's note under the birth date: the link writes to the address in İletişim.
+    birthDateHelp: 'Doğum tarihin değiştirilemez, profilinde yalnızca yaşın görünür. Yanlışsa ',
+    birthDateHelpLink: 'bizimle iletişime geç',
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
     friendsSub: (n: number) => `${n} arkadaş`,
@@ -852,8 +867,7 @@ export const tr = {
     moreFaces: (n: number) => `+${n}`,
     editTitle: 'Profili düzenle',
     nameLabel: 'Görünen ad',
-    nameHint:
-      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
+    nameHint: 'Arkadaşların ve profilinle olduğun yerdekiler görür.',
     bioLabel: 'Tanıtım',
     bioHint: (n: number, max: number) => `${n}/${max}`,
     bioTooLong: (max: number) =>
@@ -878,7 +892,7 @@ export const tr = {
     coverDefault: 'Kapağın yok; profilinde varsayılan sahne görünür.',
     ticketKicker: 'Anonim kimliğin',
     ticketNo: (tail: string) => `No. ${tail}`,
-    nickRenewIn: (days: number) => `Yenile · ${days} gün sonra`,
+    nickRenewIn: (days: number) => `Yeni ad · ${days} gün sonra`,
     badges: {
       first_game: 'İlk oyun',
       ten_games: '10 oyun',
@@ -1144,12 +1158,18 @@ export const tr = {
     deleted: 'Mesaj silindi.',
     sendRequest: 'Arkadaşlık isteği gönder',
     requestConfirmTitle: 'İstek gönderilsin mi?',
+    // MekanProfilIstek (58): "Ece'ye istek gönderilsin mi?", the three things it shows as chips.
+    requestConfirmNamed: (name: string) => `${inflectTr(name, 'dative')} istek gönderilsin mi?`,
     requestConfirmBody: 'İstek gönderirsen profilin ona görünür: adın, yaşın ve fotoğrafın.',
+    requestShows: 'İstek gönderirsen profilin ona görünür:',
+    requestShown: ['Adın', 'Yaşın', 'Fotoğrafın'] as const,
+    // MekanProfilMenu (59): what "Sessize al" does in the venue chat.
+    muteNote: 'Mekan sohbetinde mesajlarını gizler',
     requestConfirm: 'İsteği gönder',
     requestSent: 'İstek gönderildi.',
     blockConfirmTitle: 'Bu kişiyi engellemek istiyor musun?',
     blockConfirmBody:
-      'Birbirinizin mesajlarını artık görmezsiniz. Karşı tarafa bildirilmez. Engeli ayarlardan kaldırabilirsin.',
+      "Birbirinizin mesajlarını artık görmezsiniz. Karşı tarafa bildirilmez. Engeli Ayarlar'dan kaldırabilirsin.",
     noTable: 'Mekan sohbeti yalnızca mekanda masan varken açılır.',
     // A request from the venue chat (§7.5): the sender's name and age.
     incoming: (venue: string, name: string, age: number | null) =>
@@ -1332,6 +1352,9 @@ export const tr = {
     blockNamedTitle: (name: string) => `${name} engellensin mi?`,
     report: 'Şikayet et',
     reportTitle: 'Neden şikayet ediyorsun?',
+    // SikayetEt (60): "Ece'yi neden şikayet ediyorsun?" and the red button.
+    reportNamedTitle: (name: string) => `${inflectTr(name, 'accusative')} neden şikayet ediyorsun?`,
+    reportSend: 'Şikayeti gönder',
     reasons: {
       harassment: 'Taciz',
       inappropriate: 'Uygunsuz içerik',

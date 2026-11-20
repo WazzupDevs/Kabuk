@@ -5,28 +5,32 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
-import { Btn, T } from '@/aura/kit';
+import { T, useKit } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
-import { Menu, MenuItem } from '@/components/Menu';
+import { MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
-import { Sheet } from '@/components/Sheet';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { FriendActions } from '@/features/friends/FriendActions';
 import { useFriends } from '@/features/friends/queries';
-import { ProfileHead, ProfileTopBar } from '@/features/profile/ProfileCard';
+import { FriendActions, RequestAction } from '@/features/profile/OtherActions';
+import { OtherProfile, OtherProfileLoading } from '@/features/profile/OtherProfile';
+import { ProfileFace } from '@/features/profile/ProfileFace';
+import { ProfileTopBar } from '@/features/profile/ProfileCard';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { confirm } from '@/lib/overlayStore';
-import { KIT } from '@/theme/auraKit';
+import { KIT_TYPE } from '@/theme/auraKit';
+import { REQUEST_SHOWN } from '@/theme/person';
+import { SPACING } from '@/theme/tokens';
 
 // The sender of a profiled message or post, opened through it (venue chat, district chat, venue
 // feed: docs/SPEC_V4.md §4.V, §4.Y), no public_id. The three routes differ only in the source's
-// calls; the screen is this one. "İstek gönder" asks first, because the request shows the other
-// side this account's name, age and photo.
+// calls; the screen is this one, drawn as the boards MekanProfil, MekanProfilIstek,
+// MekanProfilMenu, SikayetEt and EngelleOnay draw it (the cover page of another person's profile).
+// "Arkadaşlık isteği gönder" asks first, because the request shows the other side this account's
+// name, age and photo.
 export type SenderProfileProps = {
   view: UseQueryResult<ChatProfileView>;
   // Without it there is no request (Odadakiler's row: a request goes through a message).
@@ -36,7 +40,7 @@ export type SenderProfileProps = {
   report?: { send: (reason: ReportReason) => Promise<unknown>; onSent?: () => void };
   // Where the source offers it (the venue chat); the feed and the district chat have no block.
   block?: { send: (reason: ReportReason | undefined) => Promise<unknown>; onDone: () => void };
-  // The feed's "Sessize al": the post goes from the reader's view, so the screen closes.
+  // "Sessize al": the messages or posts go from the reader's view, so the screen closes.
   mute?: { send: () => Promise<unknown>; onDone: () => void };
   ids: {
     screen: string;
@@ -47,6 +51,40 @@ export type SenderProfileProps = {
     block?: string;
   };
 };
+
+// MekanProfilIstek `.pvl`: what the request shows, as small chips under the sentence.
+function ShownChips() {
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: REQUEST_SHOWN.gap,
+        marginTop: REQUEST_SHOWN.up,
+        marginBottom: REQUEST_SHOWN.bottom,
+      }}
+    >
+      {tr.venueChat.requestShown.map((label) => (
+        <View
+          key={label}
+          style={{
+            height: REQUEST_SHOWN.height,
+            paddingHorizontal: REQUEST_SHOWN.padX,
+            borderRadius: REQUEST_SHOWN.height / 2,
+            backgroundColor: c.infoRow,
+            justifyContent: 'center',
+          }}
+        >
+          <T v="tag" ink style={KIT_TYPE.tag}>
+            {label}
+          </T>
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export function SenderProfileScreen({
   view,
@@ -61,10 +99,10 @@ export function SenderProfileScreen({
   const friends = useFriends();
   const friendId = view.data?.friendPublicId;
   const friend = friendId ? friends.data?.find((f) => f.publicId === friendId) : undefined;
-  const [menu, setMenu] = useState(false);
   const [sent, setSent] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [blocking, setBlocking] = useState(false);
+  const name = view.data?.displayName ?? null;
 
   const request = useMutation({
     meta: FEEL_ERROR,
@@ -74,15 +112,21 @@ export function SenderProfileScreen({
       setSent(true);
     },
   });
-  // A thrown error leaves the dialog open; the Banner under the button keeps the message.
+  // MekanProfilIstek: the person's face, "Ece'ye istek gönderilsin mi?", what it shows, the action
+  // and "Vazgeç". A thrown error leaves the dialog open; the Banner under the button keeps the
+  // message.
   const ask = () =>
     confirm({
-      title: tr.venueChat.requestConfirmTitle,
-      note: tr.venueChat.requestConfirmBody,
-      icon: 'invite',
+      title: name ? tr.venueChat.requestConfirmNamed(name) : tr.venueChat.requestConfirmTitle,
+      note: tr.venueChat.requestShows,
+      face: view.data ? (
+        <ProfileFace side={REQUEST_SHOWN.face} name={name ?? ''} photoUrl={view.data.photoUrl} />
+      ) : undefined,
       tone: 'plain',
       confirmLabel: tr.venueChat.requestConfirm,
+      confirmIcon: 'invite',
       cancelLabel: tr.common.cancel,
+      children: <ShownChips />,
       testID: ids.confirm,
       onConfirm: async () => {
         await request.mutateAsync();
@@ -112,97 +156,91 @@ export function SenderProfileScreen({
     onSuccess: () => mute?.onDone(),
   });
 
-  return (
-    <Screen
-      footer={<Btn block variant="glassy" label={tr.profile.back} onPress={() => router.back()} />}
-      top={
-        // Like a friend's profile: the round back and "Seçenekler" on top, the profile's head,
-        // the request under it.
-        <ProfileTopBar
-          onBack={() => router.back()}
-          onMore={view.data && (report || mute || block) ? () => setMenu(true) : undefined}
-        />
-      }
-    >
-      {view.isPending ? (
-        <View className="mt-16 items-center">
-          <Loader />
-        </View>
-      ) : !view.data ? (
+  // YukleniyorProfil (87) while it loads; "not visible" with its back button once it is not there.
+  if (view.isPending) return <OtherProfileLoading />;
+  if (!view.data) {
+    return (
+      <Screen top={<ProfileTopBar onBack={() => router.back()} />}>
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
-      ) : (
-        <View testID={ids.screen}>
-          <ProfileHead profile={view.data}>
-            {friend ? (
-              <FriendActions friend={friend} />
-            ) : sent ? (
+      </Screen>
+    );
+  }
+
+  const hasMenu = !!(report || mute || block);
+  return (
+    <View style={{ flex: 1 }} testID={ids.screen}>
+      <OtherProfile
+        profile={view.data}
+        actions={
+          friend ? (
+            <FriendActions friend={friend} />
+          ) : sent || !sendRequest ? undefined : (
+            <RequestAction testID={ids.request} onPress={ask} />
+          )
+        }
+        extras={
+          !friend && sent ? (
+            <View style={{ marginTop: SPACING[3] }}>
               <T v="fine" center testID={ids.sent}>
                 {tr.venueChat.requestSent}
               </T>
-            ) : !sendRequest ? null : (
-              <>
-                {request.isError ? (
-                  <Banner tone="danger" body={errorMessage(request.error)} />
-                ) : null}
-                <Btn
-                  block
-                  bar={KIT.size.btnRow}
-                  testID={ids.request}
-                  icon="invite"
-                  label={tr.venueChat.sendRequest}
-                  onPress={ask}
-                />
-              </>
-            )}
-          </ProfileHead>
-        </View>
-      )}
-      <Sheet
-        visible={menu}
-        onClose={() => setMenu(false)}
-        title={view.data?.displayName ?? tr.profile.moreTitle}
-      >
-        <Menu>
-          {mute ? (
-            <MenuItem
-              cap="mute"
-              label={tr.venueFeed.mute}
-              onPress={() => {
-                setMenu(false);
-                if (!muteMutation.isPending) muteMutation.mutate();
-              }}
-            />
-          ) : null}
-          {report ? (
-            <MenuItem
-              negative
-              cap="report"
-              label={tr.chat.report}
-              testID={ids.report}
-              onPress={() => {
-                setMenu(false);
-                setReporting(true);
-              }}
-            />
-          ) : null}
-          {block ? (
-            <MenuItem
-              negative
-              cap="block"
-              label={tr.safety.block}
-              testID={ids.block}
-              onPress={() => {
-                setMenu(false);
-                setBlocking(true);
-              }}
-            />
-          ) : null}
-        </Menu>
-        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
-      </Sheet>
+            </View>
+          ) : !friend && request.isError ? (
+            <View style={{ alignSelf: 'stretch', marginTop: SPACING[3] }}>
+              <Banner tone="danger" body={errorMessage(request.error)} />
+            </View>
+          ) : undefined
+        }
+        // MekanProfilMenu (59): "Sessize al" with what it does, "Şikayet et", "Engelle" red.
+        menu={
+          hasMenu
+            ? (close) => (
+                <>
+                  {mute ? (
+                    <MenuItem
+                      cap="mute"
+                      label={tr.venueFeed.mute}
+                      note={tr.venueChat.muteNote}
+                      testID="profile-mute"
+                      onPress={() => {
+                        close();
+                        if (!muteMutation.isPending) muteMutation.mutate();
+                      }}
+                    />
+                  ) : null}
+                  {report ? (
+                    <MenuItem
+                      cap="report"
+                      label={tr.safety.report}
+                      testID={ids.report}
+                      onPress={() => {
+                        close();
+                        setReporting(true);
+                      }}
+                    />
+                  ) : null}
+                  {block ? (
+                    <MenuItem
+                      negative
+                      iconSoft={0.5}
+                      cap="block"
+                      label={tr.safety.block}
+                      testID={ids.block}
+                      onPress={() => {
+                        close();
+                        setBlocking(true);
+                      }}
+                    />
+                  ) : null}
+                </>
+              )
+            : undefined
+        }
+      />
       <ReportModal
         reasons={REPORT_REASONS}
         visible={reporting}
+        name={name ?? undefined}
         pending={reportMutation.isPending}
         error={reportMutation.error}
         onReport={(reason) => reportMutation.mutate(reason)}
@@ -212,11 +250,7 @@ export function SenderProfileScreen({
         <ConfirmWithReport
           reasons={REPORT_REASONS}
           visible={blocking}
-          title={
-            view.data?.displayName
-              ? tr.safety.blockNamedTitle(view.data.displayName)
-              : tr.venueChat.blockConfirmTitle
-          }
+          title={name ? tr.safety.blockNamedTitle(name) : tr.venueChat.blockConfirmTitle}
           hint={tr.venueChat.blockConfirmBody}
           confirmLabel={tr.safety.blockConfirm}
           confirmIcon="block"
@@ -226,6 +260,6 @@ export function SenderProfileScreen({
           onClose={() => setBlocking(false)}
         />
       ) : null}
-    </Screen>
+    </View>
   );
 }

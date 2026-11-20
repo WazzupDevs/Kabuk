@@ -15,11 +15,12 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
 import { Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { OWN_PROFILE } from '@/theme/ownProfile';
-import { RISO_PAPER, TICKET, TICKET_TONE } from '@/theme/profileCover';
+import { RISO_PAPER, TICKET, TICKET_TONE, TICKET_TYPE } from '@/theme/profileCover';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -66,6 +67,7 @@ export function IdentityTicket({
 }) {
   const { scheme } = useTheme();
   const tone = TICKET_TONE[scheme];
+  const narrow = useNarrow();
   const [box, setBox] = useState({ w: 0, h: 0 });
   // The capsule's layers each on one Skia canvas (docs/perf/akicilik-denetimi.md → 4.13 D: some
   // 6300 native views of its SVG shapes and pictures in turn were the first opening's long frame).
@@ -75,147 +77,193 @@ export function IdentityTicket({
   const oy = TICKET.printY;
   const cell = RISO_PAPER.cell;
   const dots = TICKET.stubDots;
-  return (
-    <View
-      testID="profile-capsule"
-      onLayout={(ev) => setBox({ w: ev.nativeEvent.layout.width, h: ev.nativeEvent.layout.height })}
-      // yeni tuval ProfilBen: 128 high (more at the largest text), 4 clear of the panel's right for its print.
-      style={{
-        flexDirection: 'row',
-        minHeight: TICKET.height,
-        marginTop: OWN_PROFILE.gap,
-        marginRight: ox,
+  const star = (
+    <Btn
+      bar={TICKET.button.height}
+      lead={
+        <CapIcon
+          name="star"
+          color={tone.button.star}
+          second={tone.button.star}
+          soft={1}
+          size={TICKET.button.icon}
+        />
+      }
+      label={tr.capsule.edit}
+      fill={tone.button.bg}
+      tint={tone.button.fg}
+      testID="profile-capsule-edit"
+      look={{
+        type: 'setupShuffle',
+        padLeft: TICKET.button.padX,
+        padRight: TICKET.button.padX,
       }}
-    >
-      {box.w > 0 ? (
-        <Svg
-          width={box.w + ox}
-          height={box.h + oy}
-          style={{ position: 'absolute', left: 0, top: 0 }}
-          importantForAccessibility="no-hide-descendants"
-        >
-          <Defs>
-            <ClipPath id="ticket">
-              <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} />
-            </ClipPath>
-            {/* The riso halftone on the paper (iskelet.md → 2.5). */}
-            <Pattern id="ticket-tram" width={cell} height={cell} patternUnits="userSpaceOnUse">
-              <Circle cx={cell / 4} cy={cell / 4} r={RISO_PAPER.dot} fill={tone.dots} />
-              <Circle cx={(3 * cell) / 4} cy={(3 * cell) / 4} r={RISO_PAPER.dot} fill={tone.dots} />
-            </Pattern>
-            {/* The stub's orange halftone over its fixed fill. */}
-            <Pattern
-              id="ticket-stub-tram"
-              width={dots.cell}
-              height={dots.cell}
-              patternUnits="userSpaceOnUse"
-            >
-              <Circle cx={dots.cell / 2} cy={dots.cell / 2} r={dots.dot} fill={tone.stub.dots} />
-            </Pattern>
-          </Defs>
-          <Path d={ticketPath(ox + e, oy + e, box.w - 2 * e, box.h - 2 * e)} fill={tone.print} />
-          <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill={tone.paper} />
-          <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill="url(#ticket-tram)" />
-          {look ? (
+      onPress={() => router.push('/profile/capsule')}
+    />
+  );
+  const padLeft = narrow ? TICKET.padLeftNarrow : TICKET.padLeft;
+  const padRight = narrow ? TICKET.padXNarrow : TICKET.padX;
+  return (
+    <View style={{ marginTop: OWN_PROFILE.sectionTop }}>
+      <View
+        testID="profile-capsule"
+        onLayout={(ev) =>
+          setBox({ w: ev.nativeEvent.layout.width, h: ev.nativeEvent.layout.height })
+        }
+        // ProfilBen `.tk`: 128 high (150 at 320 dp, more at the largest text); its print runs 4 into
+        // the page's side.
+        style={{
+          flexDirection: 'row',
+          minHeight: narrow ? TICKET.heightNarrow : TICKET.height,
+        }}
+      >
+        {box.w > 0 ? (
+          <Svg
+            width={box.w + ox}
+            height={box.h + oy}
+            style={{ position: 'absolute', left: 0, top: 0 }}
+            importantForAccessibility="no-hide-descendants"
+          >
+            <Defs>
+              <ClipPath id="ticket">
+                <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} />
+              </ClipPath>
+              {/* The riso halftone on the paper (iskelet.md → 2.5). */}
+              <Pattern id="ticket-tram" width={cell} height={cell} patternUnits="userSpaceOnUse">
+                <Circle cx={cell / 4} cy={cell / 4} r={RISO_PAPER.dot} fill={tone.dots} />
+                <Circle
+                  cx={(3 * cell) / 4}
+                  cy={(3 * cell) / 4}
+                  r={RISO_PAPER.dot}
+                  fill={tone.dots}
+                />
+              </Pattern>
+              {/* The stub's orange halftone over its fixed fill. */}
+              <Pattern
+                id="ticket-stub-tram"
+                width={dots.cell}
+                height={dots.cell}
+                patternUnits="userSpaceOnUse"
+              >
+                <Circle cx={dots.cell / 2} cy={dots.cell / 2} r={dots.dot} fill={tone.stub.dots} />
+              </Pattern>
+            </Defs>
+            <Path d={ticketPath(ox + e, oy + e, box.w - 2 * e, box.h - 2 * e)} fill={tone.print} />
+            <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill={tone.paper} />
+            <Path d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)} fill="url(#ticket-tram)" />
+            {look ? (
+              <Rect
+                x={0}
+                y={0}
+                width={TICKET.stub}
+                height={box.h}
+                fill={tone.stub.fill}
+                clipPath="url(#ticket)"
+              />
+            ) : null}
             <Rect
               x={0}
               y={0}
               width={TICKET.stub}
               height={box.h}
-              fill={tone.stub.fill}
+              fill="url(#ticket-stub-tram)"
               clipPath="url(#ticket)"
             />
-          ) : null}
-          <Rect
-            x={0}
-            y={0}
-            width={TICKET.stub}
-            height={box.h}
-            fill="url(#ticket-stub-tram)"
-            clipPath="url(#ticket)"
-          />
-          <Path
-            d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)}
-            fill="none"
-            stroke={tone.edge}
-            strokeWidth={TICKET.edgeWidth}
-          />
-          <Line
-            x1={TICKET.stub}
-            y1={TICKET.notch + SPACING[1]}
-            x2={TICKET.stub}
-            y2={box.h - TICKET.notch - SPACING[1]}
-            stroke={tone.dash}
-            strokeWidth={TICKET.dashWidth}
-            strokeDasharray={[...TICKET.dash]}
-          />
-        </Svg>
-      ) : null}
-      <View
-        style={{
-          width: TICKET.stub,
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: TICKET.stubGap,
-          paddingVertical: TICKET.padY,
-        }}
-      >
-        {look ? (
-          <View style={{ width: TICKET.capsule, height: TICKET.capsule }}>
-            <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0 }}>
-              <CapsuleHale side={TICKET.capsule} />
-            </View>
-            {/* While Skia is being read (read ahead after the launch: features/profile/ahead.ts)
-                the place stays blank: the picture way would make the views the canvas is for. */}
-            {ticket.waiting ? null : (
-              <FxMoves>
-                <LivingLook
-                  look={look}
-                  size={TICKET.capsule}
-                  ground={false}
-                  accessibilityLabel={tr.profile.ownCapsule}
-                  whole={ticket.whole}
-                />
-              </FxMoves>
-            )}
-          </View>
+            <Path
+              d={ticketPath(e, e, box.w - 2 * e, box.h - 2 * e)}
+              fill="none"
+              stroke={tone.edge}
+              strokeWidth={TICKET.edgeWidth}
+            />
+            <Line
+              x1={TICKET.stub}
+              y1={TICKET.notch + SPACING[1]}
+              x2={TICKET.stub}
+              y2={box.h - TICKET.notch - SPACING[1]}
+              stroke={tone.dash}
+              strokeWidth={TICKET.dashWidth}
+              strokeDasharray={[...TICKET.dash]}
+            />
+          </Svg>
         ) : null}
-        <T v="ticketNo" color={tone.ink} center>
-          {tr.profile.ticketNo(nick.slice(-4))}
-        </T>
+        <View
+          style={{
+            width: TICKET.stub,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: TICKET.stubGap,
+            paddingVertical: TICKET.padY,
+          }}
+        >
+          {look ? (
+            <View style={{ width: TICKET.capsule, height: TICKET.capsule }}>
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0 }}>
+                <CapsuleHale side={TICKET.capsule} />
+              </View>
+              {/* While Skia is being read (read ahead after the launch: features/profile/ahead.ts)
+                the place stays blank: the picture way would make the views the canvas is for. */}
+              {ticket.waiting ? null : (
+                <FxMoves>
+                  <LivingLook
+                    look={look}
+                    size={TICKET.capsule}
+                    ground={false}
+                    accessibilityLabel={tr.profile.ownCapsule}
+                    whole={ticket.whole}
+                  />
+                </FxMoves>
+              )}
+            </View>
+          ) : null}
+          <T v="ticketNo" color={tone.ink} center style={TICKET_TYPE.no}>
+            {tr.profile.ticketNo(nick.slice(-4))}
+          </T>
+        </View>
+        <View
+          style={{
+            flex: 1,
+            minWidth: 0,
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            paddingVertical: TICKET.padY,
+            paddingLeft: padLeft,
+            paddingRight: padRight,
+          }}
+        >
+          <T v="ticketKicker" color={tone.kicker} style={TICKET_TYPE.kicker}>
+            {upperTr(tr.profile.ticketKicker)}
+          </T>
+          <View style={{ marginTop: TICKET.nickTop }}>
+            <T v="ticketNick" color={tone.ink} testID="nick" style={TICKET_TYPE.nick}>
+              {nick}
+            </T>
+          </View>
+          <NickRefresh refreshAt={refreshAt} tone={tone} />
+          {narrow ? null : <View style={{ marginTop: TICKET.buttonTop }}>{star}</View>}
+        </View>
       </View>
-      <View
-        style={{
-          flex: 1,
-          gap: TICKET.gap,
-          paddingVertical: TICKET.padY,
-          paddingLeft: TICKET.padLeft,
-          paddingRight: TICKET.padX,
-        }}
-      >
-        <T v="ticketKicker" color={tone.kicker}>
-          {upperTr(tr.profile.ticketKicker)}
-        </T>
-        <T v="ticketNick" color={tone.ink} testID="nick">
-          {nick}
-        </T>
-        <NickRefresh refreshAt={refreshAt} tone={tone} />
-        <View style={{ marginTop: TICKET.buttonTop, alignSelf: 'flex-start' }}>
+      {narrow ? (
+        // DarProfilim `.tbtn`: a main button under the ticket, full width, 52 high at least.
+        <View style={{ marginTop: TICKET.buttonBelow.top, alignSelf: 'stretch' }}>
           <Btn
-            sm
-            icon="star"
+            block
+            bar={TICKET.buttonBelow.height}
+            lead={
+              <CapIcon
+                name="star"
+                color={TICKET.buttonBelow[scheme]}
+                second={TICKET.buttonBelow[scheme]}
+                soft={1}
+                size={TICKET.buttonBelow.icon}
+              />
+            }
             label={tr.capsule.edit}
-            look={{
-              type: 'giftBtn',
-              padLeft: TICKET.button.padX,
-              padRight: TICKET.button.padX,
-              gap: TICKET.button.gap,
-              icon: TICKET.button.icon,
-            }}
+            testID="profile-capsule-edit"
+            look={{ icon: TICKET.buttonBelow.icon }}
             onPress={() => router.push('/profile/capsule')}
           />
         </View>
-      </View>
+      ) : null}
     </View>
   );
 }
@@ -239,7 +287,7 @@ function NickRefresh({
   });
   if (waiting) {
     return (
-      <T v="ticketNote" color={tone.muted}>
+      <T v="fine" color={tone.muted}>
         {tr.profile.nickRenewIn(Math.ceil(waitMs / DAY_MS))}
       </T>
     );

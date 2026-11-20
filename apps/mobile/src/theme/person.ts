@@ -1,44 +1,60 @@
-// Another person's profile, value for value from the approved board (tuval: Profil.dc.html and
-// ProfilMenu.dc.html; 390 × 844, the bar's row 8 under a 42 status bar) where docs/design/
-// iskelet.md → 5.6 gives no value of its own. The cover's 0.5, the photo's 0.75 over 60–180 and its
-// fade over 120–190 are iskelet's (PROFILE_PAGE.other); the main button's height is the kit's (2.1).
-// The board's capsule beside the photo is not drawn: no capsule and no nick on another person's
-// profile, a friend's included (CLAUDE.md, rule 4).
+// Another person's profile, value for value from the yeni arayüz tuvali's boards (ProfilBaskasi,
+// MekanProfil, MekanProfilIstek, YukleniyorProfil, OrtakArkadaslar; 390 × 844, the bar's buttons
+// at 52 under a 44 status bar). The cover's 0.5 speed, the photo's 0.75 over 60–180 and its fade
+// over 120–190 are iskelet's (PROFILE_PAGE.other); the buttons' 48 is the kit's. The board's
+// capsule is not drawn: no capsule and no nick on another person's profile, a friend's included
+// (CLAUDE.md, rule 4). The badge card went with the board (yeni-tuval.md → 4).
+import { KIT_TYPE } from './auraKit';
 import { EXPLORE } from './explore';
 
 export const PERSON = {
-  // The page 16 from the sides; the photo 132 across in its 4 white ring, its top 144 from the
-  // screen's top (86 over the cover's 230 foot), shrinking from its top centre.
-  side: 16,
-  face: 132,
+  // The body 20 from the sides; the photo 112 across in its 4 ring, its top 178 from the screen's
+  // top (the cover 250), shrinking from its top centre.
+  side: 20,
+  face: 112,
   ring: 4,
-  faceTop: 144,
+  faceTop: 178,
   faceOrigin: '50% 0%',
-  // The name 18 under the photo, fading over 200–240; the bio 6 under it; "Arkadaşsınız" 12 under
-  // that: 28 high, 9 in at its left and 12 at its right, 5 between the tick (14) and the words.
-  nameTop: 18,
+  // The name 12 under the photo, fading over 200–240; the bio 4 under it; the buttons 20 under the
+  // bio, 12 apart, each as wide as the other.
+  nameTop: 12,
   nameFade: [200, 240] as const,
-  bioTop: 6,
-  friendTop: 12,
-  friend: { height: 28, padLeft: 9, padRight: 12, gap: 5, icon: 14 },
-  // Mesaj 22 under them, at most 300 wide, its icon 20, 9 from the words.
-  messageTop: 22,
-  message: { maxWidth: 300, gap: 9, icon: 20 },
-  // ROZETLER 30 under Mesaj, 10 in and 10 over its card; the card 26 round, 14 inside, the badges 8
-  // apart: each 34 high, 6 in at its left and 12 at its right, its white disc 24 with the icon 14,
-  // 7 from the words.
-  badgesTop: 30,
-  eyebrow: { in: 10, bottom: 10 },
-  badgeCard: { radius: 26, pad: 14, gap: 8 },
-  // Ortak arkadaşlar: the badges' card with rows, a face and a name each.
-  mutual: { rowGap: 12, faceGap: 12 },
-  badge: { height: 34, padLeft: 6, padRight: 12, gap: 7, disc: 24, icon: 14 },
-  // The bar: 16 from the sides, 10 between its parts; the back's arrow 20, the dots 18; the small
-  // face 30, 8 from the name, rising 8 into place.
-  bar: { side: 16, gap: 10, back: 20, more: 18, face: 30, faceGap: 8, rise: 8 },
+  bioTop: 4,
+  actsTop: 20,
+  actsGap: 12,
+  actPad: 12,
+  actIcon: 20,
+  // The mutual friends' card 24 under the buttons: one glass card, 22 round, 12 / 16 inside, the
+  // faces 36 (10 over each other, a 2 ring), the words and the arrow (18), 12 apart.
+  mutual: {
+    top: 24,
+    radius: 22,
+    padY: 12,
+    padX: 16,
+    gap: 12,
+    face: 36,
+    overlap: 10,
+    ring: 2,
+    chevron: 18,
+    facesMax: 2,
+  },
+  // YukleniyorProfil: the loader's centre 470 from the screen's top.
+  loaderAt: 470,
+  // The ⋮ menu's right edge 4 past the button's (12 from the screen's edge on the boards, the button 16).
+  menuReach: 4,
   // Without a cover: the paper's foot fading into the ground over its last 90.
   paperFoot: 90,
   dot: 1.3,
+  // The bar: 16 from the sides, 10 between its parts; the back's arrow 24, the dots 20; the small
+  // face 30, 8 from the name, rising 8 into place.
+  bar: { side: 16, gap: 10, back: 24, more: 20, face: 30, faceGap: 8, rise: 8 },
+  // The cover's two fades in one: the top 28 % (35 in the dark) black to 34 %, the foot from 55 %
+  // into the ground.
+  coverShade: {
+    light:
+      'linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0) 34%, rgba(239, 247, 241, 0) 55%, #EFF7F1 100%)',
+    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, 0) 55%, #000000 100%)',
+  },
   light: {
     // The paper: green and pink dots on a 7 grid, half a cell apart (each solid to 1.1 and gone
     // by 1.5: drawn 1.3), over a green-to-peach-to-pink wash.
@@ -46,40 +62,53 @@ export const PERSON = {
     dotGreen: 'rgba(14, 135, 69, 0.16)',
     dotPink: 'rgba(255, 52, 120, 0.14)',
     paperFootCss: 'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, #EFF7F1 100%)',
-    bio: '#4A6550',
-    friend: { bg: 'rgba(14, 135, 69, 0.10)', fg: '#0B5E30' },
-    eyebrow: '#4A6550',
+    // `.btn.friend`: --success-soft and --on-success-soft.
+    friend: { bg: '#CDEFD9', fg: '#0F5C31' },
     card: EXPLORE.light.card,
-    badge: {
-      green: { bg: '#E3F4E9', icon: '#0E8745' },
-      pink: { bg: '#FBE7EF', icon: '#FF3478' },
-    },
-    badgeDisc: '#FFFFFF',
     barFaceShadow: '0px 2px 6px rgba(3, 27, 11, 0.15)',
   },
-  // The dark scheme is not drawn on the board: the riso paper's dark ground, the kit's dark card.
   dark: {
     paper: '#1B231E',
     dotGreen: 'rgba(61, 220, 132, 0.10)',
     dotPink: 'rgba(255, 126, 168, 0.10)',
     paperFootCss: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 100%)',
-    bio: '#A3AEA8',
     friend: { bg: 'rgba(61, 220, 132, 0.14)', fg: '#93EBB9' },
-    eyebrow: '#A3AEA8',
     card: EXPLORE.dark.card,
-    badge: {
-      green: { bg: 'rgba(61, 220, 132, 0.14)', icon: '#3DDC84' },
-      pink: { bg: 'rgba(255, 126, 168, 0.16)', icon: '#FF7EA8' },
-    },
-    badgeDisc: '#121614',
     barFaceShadow: '',
   },
 } as const;
 
-// Which tone and icon a badge wears (the board: "İlk oyun" a green star, "5 farklı masa" pink).
-export const BADGE_LOOK = {
-  first_game: { tone: 'green', icon: 'star' },
-  ten_games: { tone: 'green', icon: 'sparkles' },
-  voice_tabu_five_wins: { tone: 'pink', icon: 'chat' },
-  five_tables: { tone: 'pink', icon: 'people' },
+// The board's own text where the kit's variants are a few points off (`.nm` 600 28/34 -0.6 px, the
+// mutual card's two lines 500 15/20), made of the kit's own faces.
+export const PERSON_TYPE = {
+  name: { ...KIT_TYPE.h3, fontSize: 28, lineHeight: 34, letterSpacing: -0.6 },
+  mutual: { ...KIT_TYPE.body, lineHeight: 20 },
 } as const;
+
+// MekanProfilIstek `.pvl`: the chips of what a request shows, 28 high, 10 in, 6 apart, 18 over the
+// buttons.
+// The dialog puts 20 over the chips and 20 under them where the board has 12 and 18: pulled in by the
+// difference. The face 64 (`.dav`), no ring.
+export const REQUEST_SHOWN = {
+  height: 28,
+  padX: 10,
+  gap: 6,
+  up: -8,
+  bottom: -2,
+  face: 64,
+} as const;
+
+// OrtakArkadaslar `.mbt`: "Mesaj gönder" 32 high (the kit's row button), 112 wide at least, 14 in.
+// The face in its 2 ring of the card's ground (`.av`: the 48 includes the ring).
+export const MUTUAL_BTN = {
+  pad: 14,
+  minWidth: 112,
+  faceRing: 2,
+  light: { ring: '#FFFFFF' },
+  dark: { ring: '#121614' },
+} as const;
+
+// SikayetEt `.rr`: a reason's row 52 high, the radio and the words 12 apart.
+// The block dialog's "Şikayet de et" note lets its line run 8 into the row's side: the board's sentence
+// fills the 258 beside the box almost to the dp, and a hair wider on the phone wrapped it.
+export const REPORT_PICK = { row: 52, gap: 12, bleed: 8 } as const;

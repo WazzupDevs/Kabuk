@@ -65,7 +65,7 @@ export function capitalizeTr(s: string): string {
 // suffix still follows the whole name; a name without a vowel takes the e-forms. Common names read
 // with a soft l take a front vowel (Hilal'in, Kemal'e). The locative takes t after a voiceless
 // consonant (Muş'ta, 5'te).
-export type GrammaticalCase = 'genitive' | 'dative' | 'locative';
+export type GrammaticalCase = 'genitive' | 'dative' | 'locative' | 'accusative';
 
 const VOWELS = new Set([...'aıoueiöü']);
 const BACK = new Set([...'aıou']);
@@ -125,12 +125,15 @@ export function inflectTr(name: string, grammaticalCase: GrammaticalCase): strin
   const endsInVowel = VOWELS.has(letters.at(-1) ?? '');
   const back = BACK.has(lastVowel);
   const rounded = ROUNDED.has(lastVowel);
+  const high = back ? (rounded ? 'u' : 'ı') : rounded ? 'ü' : 'i';
   const suffix =
     grammaticalCase === 'genitive'
-      ? `${endsInVowel ? 'n' : ''}${back ? (rounded ? 'u' : 'ı') : rounded ? 'ü' : 'i'}n`
-      : grammaticalCase === 'dative'
-        ? `${endsInVowel ? 'y' : ''}${back ? 'a' : 'e'}`
-        : `${VOICELESS.has(letters.at(-1) ?? '') ? 't' : 'd'}${back ? 'a' : 'e'}`;
+      ? `${endsInVowel ? 'n' : ''}${high}n`
+      : grammaticalCase === 'accusative'
+        ? `${endsInVowel ? 'y' : ''}${high}`
+        : grammaticalCase === 'dative'
+          ? `${endsInVowel ? 'y' : ''}${back ? 'a' : 'e'}`
+          : `${VOICELESS.has(letters.at(-1) ?? '') ? 't' : 'd'}${back ? 'a' : 'e'}`;
   return `${name}'${suffix}`;
 }
 
