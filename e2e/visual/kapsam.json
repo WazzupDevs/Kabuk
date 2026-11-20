@@ -1659,8 +1659,13 @@
     "acilis": "Keşfet → arama satırındaki harita düğmesi",
     "tema": "acik",
     "durum": "ekran-kesfet-harita",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 745,
+        "sebep": "harita çekimi kararsız: çevrimdışı MapLibre zemini ve pinleri koşudan koşuya farklı çiziyor (iki koşuda açık tema bazla tutmadı); denetçi kartı, göstergeyi, çipleri ve üst bölümü panoyla karşılaştırıp temiz buldu (tur 6), baz alınmadı"
+      }
+    ]
   },
   {
     "pano": "11",
@@ -1674,8 +1679,13 @@
     "acilis": "Keşfet → arama satırındaki harita düğmesi",
     "tema": "koyu",
     "durum": "ekran-kesfet-harita",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 745,
+        "sebep": "harita çekimi kararsız: çevrimdışı MapLibre zemini ve pinleri koşudan koşuya farklı çiziyor (iki koşuda açık tema bazla tutmadı); denetçi kartı, göstergeyi, çipleri ve üst bölümü panoyla karşılaştırıp temiz buldu (tur 6), baz alınmadı"
+      }
+    ]
   },
   {
     "pano": "11b",

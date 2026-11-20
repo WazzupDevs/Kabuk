@@ -305,6 +305,7 @@
     {
       "id": "ekran-kesfet-harita",
       "app": "ekran/kesfet/harita",
+      "baz": false,
       "pano": {
         "dosya": "KesfetHarita"
       }
