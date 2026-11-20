@@ -222,6 +222,7 @@ export function SenderProfileScreen({
                   {block ? (
                     <MenuItem
                       negative
+                      iconSoft={0.5}
                       cap="block"
                       label={tr.safety.block}
                       testID={ids.block}

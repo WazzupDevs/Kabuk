@@ -108,6 +108,7 @@ export function FriendPage({
             {friend ? (
               <MenuItem
                 negative
+                iconSoft={0.5}
                 cap="block"
                 label={tr.friends.block}
                 testID="profile-block"

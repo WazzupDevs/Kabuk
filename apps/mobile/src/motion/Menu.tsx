@@ -416,6 +416,7 @@ export function MenuItem({
   loading,
   disabled,
   note,
+  iconSoft,
   testID,
   chevron,
   count,
@@ -432,6 +433,8 @@ export function MenuItem({
   disabled?: boolean;
   // A line under the label (skall tuvali, MasaKisiSecenekler: what "Engelle" does).
   note?: string;
+  // The ⋮ menu's icon body at this opacity (the profile menu's red ban: the disc light, the bar dark).
+  iconSoft?: number;
   testID?: string;
   // A row that opens a page (skall tuvali, Ayarlar): a chevron, with a count before it.
   chevron?: boolean;
@@ -521,8 +524,7 @@ export function MenuItem({
         ? { second: layer.holdDangerBody, soft: layer.holdDangerSoft }
         : { second: layer.holdIconBody, soft: layer.holdIconSoft }
       : look === 'pop'
-        ? // The red row's body at half (EngelleOnay's ban: the disc light, the bar dark).
-          { second: iconInk, soft: negative ? 0.5 : 1 }
+        ? { second: iconInk, soft: iconSoft ?? 1 }
         : null;
   return (
     <Pressable
