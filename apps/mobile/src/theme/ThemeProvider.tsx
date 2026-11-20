@@ -110,7 +110,7 @@ export function ThemeScope({ theme, children }: { theme: AppTheme; children: Rea
 
 // The running text's roles are the phone's own face (the owner's call, 20 Kasım,
 // docs/decisions/temel.md → Yazı tipi), a step lighter as that face is read; the titles and the
-// games' display roles keep their files.
+// large display roles are the title face.
 const SYSTEM_WEIGHT = { regular: '400', semibold: '500', bold: '700', system: '700' } as const;
 
 // Text style of a type variant in the active theme. A custom font carries its weight, so no
@@ -118,10 +118,14 @@ const SYSTEM_WEIGHT = { regular: '400', semibold: '500', bold: '700', system: '7
 // a style: Text writes them the Turkish way (upperTr in @shared/trText.ts).
 export function typeStyle(theme: AppTheme, variant: TypeVariant): TextStyle {
   const t = theme.typography[variant];
-  const system = t.font in SYSTEM_WEIGHT;
+  // A display role is a title from 17 up; smaller (a tag, a toast, a game's small button) it is the
+  // phone's bold.
+  const display = t.font === 'display' || t.font === 'displayBold';
+  const system = t.font in SYSTEM_WEIGHT || (display && t.size < 17);
+  const weight = display ? '700' : SYSTEM_WEIGHT[t.font as keyof typeof SYSTEM_WEIGHT];
   return {
-    fontFamily: system ? 'sans-serif' : theme.fonts[t.font],
-    fontWeight: system ? SYSTEM_WEIGHT[t.font as keyof typeof SYSTEM_WEIGHT] : undefined,
+    fontFamily: system ? 'sans-serif' : theme.fonts[display ? 'title' : t.font],
+    fontWeight: system ? weight : undefined,
     fontSize: t.size,
     lineHeight: t.lineHeight,
     letterSpacing: t.letterSpacing,

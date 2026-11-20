@@ -1,6 +1,7 @@
 import type { TextStyle } from 'react-native';
 
 import { risoType } from './riso';
+import { NUMBERS } from './typeFace';
 
 // Kibrit's screens (Aura v90, the "Kibrit (gizli soru, gizli oy)" row: KibritOyuncular …
 // KibritOyAcik). The panels are 390 × 844; every number here is theirs. The bar, the strip, the
@@ -16,11 +17,11 @@ export const KIBRIT_TYPE = {
   // (800/21/28), the count (`.cnt2`, 600/12, tabular).
   eyebrow: risoType(F700, 11, 14, 0.1),
   field: risoType(F800, 21, 28),
-  count: { ...risoType(F600, 12, 15), fontVariant: ['tabular-nums'] } as TextStyle,
+  count: { ...risoType(F600, 12, 15), ...NUMBERS } as TextStyle,
   // The question on the drawn paper (`.card.kagit .q`, 800/23/29) and its "Yazan: gizli" (700/13).
   paperTag: risoType(F700, 13, 16),
   // The jar's "3/5 kâğıt" (`.cntb`, 800/13, tabular).
-  jarCount: { ...risoType(F800, 13, 16), fontVariant: ['tabular-nums'] } as TextStyle,
+  jarCount: { ...risoType(F800, 13, 16), ...NUMBERS } as TextStyle,
   // The question strip (`.qc .qt`, 800/19/24).
   stripQuestion: risoType(F800, 19, 24),
   // A vote tile's name (`.vt`, 700/13/17) and "Senin oyun"'s name (`.my .nm`, 800/21/26).
@@ -28,7 +29,7 @@ export const KIBRIT_TYPE = {
   myName: risoType(F800, 21, 26),
   // A result row (`.tr`, 600/15/20) and its count (`.pt`, 800/16, tabular).
   row: risoType(F600, 15, 20),
-  rowCount: { ...risoType(F800, 16, 20), fontVariant: ['tabular-nums'] } as TextStyle,
+  rowCount: { ...risoType(F800, 16, 20), ...NUMBERS } as TextStyle,
   // The night's papers (`.ql .qq`, 600/14/19; `.ww`, 700/13).
   pastQuestion: risoType(F600, 14, 19),
   pastWho: risoType(F700, 13, 16),
@@ -182,7 +183,7 @@ export function kibritPaperType(scale: number): TextStyle {
 export const KIBRIT_BOARD_TYPE = {
   headTitle: risoType(F700, 17, 22),
   headSub: risoType(F500, 13, 18),
-  timer: { ...risoType(F700, 15, 20), fontVariant: ['tabular-nums'] } as TextStyle,
+  timer: { ...risoType(F700, 15, 20), ...NUMBERS } as TextStyle,
   kick: risoType(F700, 12, 16, 0.4 / 12),
   question: risoType(F700, 24, 30, -0.4 / 24),
   questionNote: risoType(F500, 14, 20),

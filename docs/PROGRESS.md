@@ -8,7 +8,8 @@
 - Tek bileşene indi: `Segmented` silindi (`Seg` tek boy), `Btn` iki boy artı `bar`, `Input` tek görünüş, tam sayfa boş hâl `EmptyState` → `page` ile ortada (Mesajlar'ın boş hâli 41 dp aşağı indi). Proje sahibi yazı görünüşünü dört sekmede onayladı; bu parçaları henüz görmedi.
 - Yazı tipi kararı (proje sahibi, 20 Kasım): başlıklar Bricolage Grotesque 700, kalan metin telefonun yazısı (`temel.md` → Yazı tipi kararı). Kit, eski yazı sistemi ve sekme çubuğu çevrildi; oyunların ve kaydın kendi yazı dosyaları Plus Jakarta Sans'ta kaldı. Yeni paket eklendi: kod sunucusu yeniden başlatılmadan görmez.
 - Köşe beş değere çekildi (ortak tema dosyaları; `RADIUS_SCALE`), boşluk ölçeği kural olarak yazıldı ve ekran revizesinde uygulanacak (proje sahibi ikisini de onayladı). Renkler ortak listeye inmedi: ekran revizesinde ekran ekran.
-- Sıradaki: oyun ve kayıt yazı dosyalarını aynı kurala çevirmek; görülmeyen ekranlara bakmak (koyu tema, sohbetler, kayıt, masa ve oyunlar, 320 dp ve en büyük yazı), çipin seçenekleri, açık küçükler; sonra aileler bu temelle.
+- Oyun ve kayıt yazı dosyaları da aynı kurala bağlandı (`theme/typeFace.ts`); Kinshi kelimesi ve skoru, Signum karosu ve Kaupholl tahmin alanı ölçü yüzünden Plus Jakarta Sans'ta. Oyun ve kayıt ekranları emülatörde görülmedi.
+- Ortak temel bitti sayılır; sıradaki ekran ekran revize (boşluklar ve renkler orada). Önce görülmeyen ekranlara bakmak (koyu tema, sohbetler, kayıt, masa ve oyunlar, 320 dp ve en büyük yazı), çipin seçenekleri, açık küçükler; sonra aileler bu temelle.
 - `temel` dalı hâlâ yerel: GitHub girişi bu bilgisayarda yok, ilk push'u proje sahibi yapacak; PR açılınca kapsam kaydı kanıtı ya da muafiyeti gerekir.
 
 ## Devir notu (20 Kasım 2026): yerel düzen çalışıyor, ortak temel deneme hâlinde

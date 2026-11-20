@@ -1,5 +1,6 @@
 import { KIT } from './auraKit';
 import type { ColorScheme } from './tokens';
+import { faceOf, NUMBERS } from './typeFace';
 
 // Kinshi's describer turn and its end, as the new interface boards draw them (yeni arayüz tuvali,
 // 17 Kasım: KinshiAnlatici 143, KinshiSonuc 144; 390 × 844, the status bar 47 high). The
@@ -12,7 +13,7 @@ const F = {
 } as const;
 
 const t = (w: keyof typeof F, size: number, line: number, em = 0) => ({
-  fontFamily: F[w],
+  ...faceOf(F[w], size),
   fontSize: size,
   lineHeight: line,
   letterSpacing: em * size,
@@ -46,7 +47,7 @@ export const KINSHI_PLAY = {
     title: t(700, 17, 22),
     line: t(500, 13, 18),
     // `.tmr`.
-    clock: { ...t(700, 15, 20), fontVariant: ['tabular-nums'] as 'tabular-nums'[] },
+    clock: { ...t(700, 15, 20), ...NUMBERS },
     // `.sc span`.
     score: t(700, 14, 18),
     // `.kick`.

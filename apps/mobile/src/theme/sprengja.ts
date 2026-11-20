@@ -1,6 +1,7 @@
 import type { TextStyle } from 'react-native';
 
 import { risoType } from './riso';
+import { NUMBERS } from './typeFace';
 
 // Sprengja's screens (Aura v99, the "Sprengja (elden ele bomba)" row: SprengjaOyuncular …
 // SprengjaYarida; the acceptance report of 5 Kasım). The panels are 390 × 844, SprengjaDar8 320 ×
@@ -18,7 +19,7 @@ export const SPRENGJA_TYPE = {
   // The letter-group panel (`.hp`): the group (`.sy`, 800/44/48, 2 % apart), "Atışlar · n" (`.at`,
   // 800/21/27, tabular, one line).
   group: risoType(F800, 44, 48, 0.02),
-  throws: { ...risoType(F800, 21, 27), fontVariant: ['tabular-nums'] } as TextStyle,
+  throws: { ...risoType(F800, 21, 27), ...NUMBERS } as TextStyle,
   // The card's "HARF GRUBU" (`.kick.long`, 800/10, 6 % apart) and its group (`.syl`, 800/60, 2 %).
   kick: risoType(F800, 10, 14, 0.06),
   syllable: risoType(F800, 60, 64, 0.02),
@@ -28,7 +29,7 @@ export const SPRENGJA_TYPE = {
   ruleNo: risoType(F800, 12, 15),
   // A score row (`.tr`, 600/15/20) and its points (`.pt`, 800/16, tabular).
   row: risoType(F600, 15, 20),
-  points: { ...risoType(F800, 16, 20), fontVariant: ['tabular-nums'] } as TextStyle,
+  points: { ...risoType(F800, 16, 20), ...NUMBERS } as TextStyle,
   // The halted note (`.nx span`, 500/13/18).
   note: risoType(F500, 13, 18),
   // The connection error card (`.err .et`, 700/15, 1.35).
@@ -194,7 +195,7 @@ export const SPRENGJA_BOARD_TYPE = {
   headingNote: risoType(F500, 14, 20),
   rowName: risoType(F600, 15, 20),
   rowSub: risoType(F500, 13, 17),
-  rowPoints: { ...risoType(F700, 15, 20), fontVariant: ['tabular-nums'] } as TextStyle,
+  rowPoints: { ...risoType(F700, 15, 20), ...NUMBERS } as TextStyle,
 } as const;
 
 export const SPRENGJA_BOARD = {

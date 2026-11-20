@@ -1,6 +1,7 @@
 import type { TextStyle } from 'react-native';
 
 import type { ColorScheme } from './tokens';
+import { faceOf, NUMBERS } from './typeFace';
 
 // The riso game layout the card games share (Aura v85 Kinshi, v86 Krot): the top bar, the time
 // strip with its capsule, the 3D deck with the two buddies peeking over it, the foot. The panels
@@ -8,7 +9,18 @@ import type { ColorScheme } from './tokens';
 // theme/krot.ts).
 
 const F800 = 'PlusJakartaSans_800ExtraBold';
+// A text style under the app's two faces (theme/typeFace.ts): `family` says the weight it was
+// drawn in.
 export const risoType = (family: string, size: number, line: number, em = 0): TextStyle => ({
+  ...faceOf(family, size),
+  fontSize: size,
+  lineHeight: line,
+  letterSpacing: em * size,
+});
+
+// The same in its own file's face: text whose layout is measured from that face's glyphs (Kinshi's
+// word and score, Signum's tile) keeps it until it is measured anew.
+export const risoOwnType = (family: string, size: number, line: number, em = 0): TextStyle => ({
   fontFamily: family,
   fontSize: size,
   lineHeight: line,
@@ -17,7 +29,7 @@ export const risoType = (family: string, size: number, line: number, em = 0): Te
 
 export const RISO_TYPE = {
   // The time beside the capsule (`.strip .num`), tabular.
-  clock: { ...risoType(F800, 30, 34), fontVariant: ['tabular-nums'] } as TextStyle,
+  clock: { ...risoType(F800, 30, 34), ...NUMBERS } as TextStyle,
 } as const;
 
 export const RISO = {

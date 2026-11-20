@@ -5,6 +5,8 @@
 // code's boxes are the surface with a 1 px inset line, the rows lie on the ground with a hairline
 // between them. Pure data: no React Native import.
 
+import { faceOf } from './typeFace';
+
 const F = {
   500: 'PlusJakartaSans_500Medium',
   600: 'PlusJakartaSans_600SemiBold',
@@ -14,13 +16,14 @@ const F = {
 
 type Type = {
   fontFamily: string;
+  fontWeight?: '400' | '500' | '700';
   fontSize: number;
   lineHeight: number;
   letterSpacing?: number;
 };
 
 const type = (w: keyof typeof F, size: number, line: number, spacing = 0): Type => ({
-  fontFamily: F[w],
+  ...faceOf(F[w], size),
   fontSize: size,
   lineHeight: line,
   letterSpacing: spacing,
