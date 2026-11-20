@@ -1,6 +1,9 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { EYEBROW_NARROW, KIT_TYPE, TYPE_SCALE } from './auraKit';
+import { EYEBROW_NARROW, KIT_TYPE, RADIUS_SCALE, SPACE_SCALE, TYPE_SCALE } from './auraKit';
 
 type Style = { fontSize?: number; lineHeight?: number };
 
@@ -44,6 +47,55 @@ describe('the type scale', () => {
         return !Number.isInteger(line) || line < (s.fontSize as number);
       })
       .map(([name, s]) => `${name}: ${s.fontSize}/${s.lineHeight}`);
+    expect(off).toEqual([]);
+  });
+});
+
+// The corner scale (the owner's call, 20 Kasım, docs/decisions/temel.md): the shared theme files
+// name no corner between 8 and 31 outside it. The games', the sign-up's and the capsule's files and
+// the old tokens draw their own.
+describe('the corner scale', () => {
+  const OWN = new Set([
+    'sprengja.ts',
+    'signum.ts',
+    'kaupholl.ts',
+    'kibrit.ts',
+    'krot.ts',
+    'vampirTable.ts',
+    'vampirTableSize.ts',
+    'vampirScene.ts',
+    'vampir.ts',
+    'kinshi.ts',
+    'kinshiPlay.ts',
+    'kinshiWord.ts',
+    'riso.ts',
+    'gameMotion.ts',
+    'signup.ts',
+    'capsules.ts',
+    'capsuleFx.ts',
+    'capsuleSkia.ts',
+    'tokens.ts',
+    'theme.ts',
+  ]);
+  const dir = import.meta.dirname;
+
+  it('is the five corners, and the spacing its seven steps', () => {
+    expect([...RADIUS_SCALE]).toEqual([12, 16, 20, 24, 28]);
+    expect([...SPACE_SCALE]).toEqual([4, 8, 12, 16, 20, 24, 32]);
+  });
+
+  it('holds every corner of the shared theme files', () => {
+    const off: string[] = [];
+    for (const file of readdirSync(dir)) {
+      if (!file.endsWith('.ts') || file.endsWith('.test.ts') || OWN.has(file)) continue;
+      const text = readFileSync(join(dir, file), 'utf8');
+      for (const m of text.matchAll(/\b(\w*[rR]adius\w*): *(\d+(?:\.\d+)?)\b(?!\s*[*/+-])/g)) {
+        const value = Number(m[2]);
+        if (value < 8 || value > 31) continue;
+        if (!(RADIUS_SCALE as readonly number[]).includes(value))
+          off.push(`${file}: ${m[1]} ${value}`);
+      }
+    }
     expect(off).toEqual([]);
   });
 });

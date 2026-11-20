@@ -43,7 +43,8 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 
 ### 2.4 Köşeler, kontür, ikonlar
 
-- İç içe köşe: içteki yarıçap, dıştaki eksi iç boşluk. Örnek: kart 26, boşluk 12, içteki görsel 14.
+- Köşe beş değerdir (20 Kasım, `docs/decisions/temel.md`): 12, 16, 20, 24, 28; kapsül kendi yüksekliğinin yarısı. İç içe köşe: içteki yarıçap, dıştaki eksi iç boşluk, ölçeğin en yakın değerine yuvarlanır. Örnek: kart 28, boşluk 12, içteki görsel 16.
+- Boşluk ölçeği 4, 8, 12, 16, 20, 24, 32, sayfa kenarı 20: revize edilen ekranın boşlukları buradan seçilir; var olan ekranlar revizeye kadar kendi değerlerinde kalır.
 - Fotoğraf kontürü: sadece renkli ya da görsel zemin üstünde 2 ile 4 px beyaz kontür (profil kapağı, mekan kapağı). Gölge yok, ikinci halka yok. Beyaz kart içindeki üst üste avatarlarda kontür yok; onun yerine kartın zemin renginde 2.5 px boşluk ve hafif gölge (0 2 6 yüzde 16).
 - İkonlar: hepsi aynı çizgi stilinde, 2 ile 2.2 kalınlık, yuvarlak uç. Dolu ve iki tonlu ikonlar kaldırılır. Ayar satırlarında ikon, renkli kare zemin üstünde beyaz (32 kare, 10 yarıçap).
 

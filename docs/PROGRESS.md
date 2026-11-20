@@ -7,6 +7,7 @@
 - Yazı adları 21 temel stile bağlandı (`auraKit.ts` → `BASE`; 36 kullanılmayan ad silindi). Bu görünüşü değiştirdi (800 → 700, satır yükseklikleri, harf aralığı); emülatörde yalnız dört sekmeye açık temada bakıldı, proje sahibi henüz görmedi.
 - Tek bileşene indi: `Segmented` silindi (`Seg` tek boy), `Btn` iki boy artı `bar`, `Input` tek görünüş, tam sayfa boş hâl `EmptyState` → `page` ile ortada (Mesajlar'ın boş hâli 41 dp aşağı indi). Proje sahibi yazı görünüşünü dört sekmede onayladı; bu parçaları henüz görmedi.
 - Yazı tipi kararı (proje sahibi, 20 Kasım): başlıklar Bricolage Grotesque 700, kalan metin telefonun yazısı (`temel.md` → Yazı tipi kararı). Kit, eski yazı sistemi ve sekme çubuğu çevrildi; oyunların ve kaydın kendi yazı dosyaları Plus Jakarta Sans'ta kaldı. Yeni paket eklendi: kod sunucusu yeniden başlatılmadan görmez.
+- Köşe beş değere çekildi (ortak tema dosyaları; `RADIUS_SCALE`), boşluk ölçeği kural olarak yazıldı ve ekran revizesinde uygulanacak (proje sahibi ikisini de onayladı). Renkler ortak listeye inmedi: ekran revizesinde ekran ekran.
 - Sıradaki: oyun ve kayıt yazı dosyalarını aynı kurala çevirmek; görülmeyen ekranlara bakmak (koyu tema, sohbetler, kayıt, masa ve oyunlar, 320 dp ve en büyük yazı), çipin seçenekleri, açık küçükler; sonra aileler bu temelle.
 - `temel` dalı hâlâ yerel: GitHub girişi bu bilgisayarda yok, ilk push'u proje sahibi yapacak; PR açılınca kapsam kaydı kanıtı ya da muafiyeti gerekir.
 

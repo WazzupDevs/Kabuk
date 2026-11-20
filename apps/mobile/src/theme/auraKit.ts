@@ -21,6 +21,16 @@ type TextStyle = {
 // the scale: the values are the code's (temel.md → Çalışma kuralı), `auraKit.test.ts` holds them.
 export const TYPE_SCALE = [10, 11, 13, 15, 17, 20, 24, 30] as const;
 
+// The corner scale (the owner's call, 20 Kasım, temel.md): small 12, a field and a picture 16, a
+// bubble and a small card 20, a card 24, a dialog, a sheet and a menu 28; a capsule is half its
+// height. A corner between 8 and 31 in the shared theme files is one of these (the games' and the
+// sign-up's own files draw their own); `auraKit.test.ts` holds it.
+export const RADIUS_SCALE = [12, 16, 20, 24, 28] as const;
+
+// The spacing scale (the same call): 4, 8, 12, 16, 20, 24, 32, the page's side 20. A rule for a
+// screen as it is revised; the screens standing today keep their own until then.
+export const SPACE_SCALE = [4, 8, 12, 16, 20, 24, 32] as const;
+
 // Two faces (the owner's call, 20 Kasım, docs/decisions/temel.md → Yazı tipi): the titles in
 // Bricolage Grotesque 700 (20 and over, the 17 section title, a face's letter), everything else in
 // the phone's own face (Android: Roboto), as the most used social apps set their running text.
