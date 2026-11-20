@@ -80,7 +80,15 @@ export function IdentityTicket({
   const star = (
     <Btn
       bar={TICKET.button.height}
-      lead={<CapIcon name="star" color={tone.button.star} soft={1} size={TICKET.button.icon} />}
+      lead={
+        <CapIcon
+          name="star"
+          color={tone.button.star}
+          second={tone.button.star}
+          soft={1}
+          size={TICKET.button.icon}
+        />
+      }
       label={tr.capsule.edit}
       fill={tone.button.bg}
       tint={tone.button.fg}
@@ -244,6 +252,7 @@ export function IdentityTicket({
               <CapIcon
                 name="star"
                 color={TICKET.buttonBelow[scheme]}
+                second={TICKET.buttonBelow[scheme]}
                 soft={1}
                 size={TICKET.buttonBelow.icon}
               />

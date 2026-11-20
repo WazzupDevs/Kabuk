@@ -87,7 +87,7 @@ function ProfilePage({
     : tr.profile.noName;
   const photoUrl = data && !data.photoHidden ? data.photoUrl : null;
   const ground = AURA[scheme].ground;
-  const bandHeight = insets.top + SPACING[2] + OWN.bandRow + OWN.bandFade;
+  const bandHeight = insets.top + SPACING[2] + OWN.bandRow + OWN.bandOver + OWN.bandFade;
   const solidTo = Math.round(((bandHeight - OWN.bandFade) / bandHeight) * 1000) / 10;
   const bandCss = `linear-gradient(180deg, ${ground} 0%, ${ground} ${solidTo}%, ${AURA[scheme].bar.clear} 100%)`;
   const faceGround = scheme === 'dark' ? B.dark.faceGround : B.light.faceGround;

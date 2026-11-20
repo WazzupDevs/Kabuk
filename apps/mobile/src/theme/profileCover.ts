@@ -94,6 +94,9 @@ export const PROFILE_PAGE = {
     // The band (ProfilBenKaydir `.sbar2`): opaque, the bar's row 48 under the status bar and the
     // button's 8, its foot fading over 22.
     bandRow: 48,
+    // Solid 14 past the row, so the buttons the page has scrolled under never read through it
+    // (the sheet the board shows is as high as the content under it happens to stand).
+    bandOver: 14,
     bandFade: 22,
     barSide: 20,
     barFace: 36,
