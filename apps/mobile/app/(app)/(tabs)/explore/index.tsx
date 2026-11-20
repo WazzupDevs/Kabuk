@@ -24,6 +24,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -41,10 +42,11 @@ import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { DistrictCard } from '@/features/district/DistrictCard';
+import { DistrictCard, DistrictStrip } from '@/features/district/DistrictCard';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { Bucket } from '@/features/explore/Bucket';
+import { kindLabel } from '@/features/explore/kindLabel';
 import { EventTag } from '@/features/explore/EventTag';
 import { type CityVenue, useCityVenues } from '@/features/explore/useExploreVenues';
 import { errorMessage } from '@/i18n/errors';
@@ -55,8 +57,8 @@ import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, ScrollScreen, SlideFrom, StickyField, Tap } from '@/motion';
-import { StickyStatusBand } from '@/motion/StickyField';
+import { LargeTitle, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
+import { StickyGroupStatusBand } from '@/motion/StickyGroup';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
@@ -84,17 +86,27 @@ const FIELD = KIT.size.field;
 // the whole screen, the search and the chips floating over it, no title. The scroll is the
 // screen's (ScrollScreen): the tab bar folds with it, everything that follows it on the UI thread.
 export default function ExploreScreen() {
+  return <ExploreView />;
+}
+
+// What the visual gate opens the screen on (features/design/gorsel/kesfetFixture.tsx): something
+// typed, the map, a venue chosen on it. The route itself starts on none of these.
+export type ExploreStart = { query?: string; view?: View_; selected?: string };
+
+export function ExploreView({ start }: { start?: ExploreStart }) {
   const { scheme } = useTheme();
   const table = useActiveTable();
   const now = useNow(30_000);
   const { venues, cities, listed } = useCityVenues();
   const openings = useTabOpenings();
-  const [view, setView] = useState<View_>('list');
+  const [view, setView] = useState<View_>(start?.view ?? 'list');
   // Where the list's search stood under the map's when the map was opened: the map's head comes
   // from there (PF-08).
   const capsuleBox = useRef<View>(null);
   const [mapFrom, setMapFrom] = useState(0);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(start?.query ?? '');
+  // Something typed: the line, the question, the buddies and Semte Git give way (KesfetAra).
+  const searching = query.length > 0;
   const [kind, setKind] = useState<ExploreKind>('all');
   // A kind chosen plays the list's arrival again (hareket.json → dissolve).
   const [kindRuns, setKindRuns] = useState(0);
@@ -202,6 +214,7 @@ export default function ExploreScreen() {
                   empty={emptyCopy(empty, kind)}
                   headerHeight={mapHead}
                   tabBarHeight={barSpace}
+                  initialSelected={start?.selected}
                 />
               </View>
             ) : null}
@@ -237,6 +250,7 @@ export default function ExploreScreen() {
               openings={openings}
               search={search}
               chips={chips}
+              searching={searching}
               bottomSpace={barSpace}
               onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
             >
@@ -265,6 +279,7 @@ export default function ExploreScreen() {
                   kind={kind}
                   place={place}
                   here={hereCard}
+                  searching={searching}
                   replay={kindRuns}
                   openings={openings}
                   nameOrder={nameOrder}
@@ -278,7 +293,7 @@ export default function ExploreScreen() {
             </ListBody>
           </ScrollViewport>
         )}
-        {showMap ? null : <StickyStatusBand />}
+        {showMap ? null : <StickyGroupStatusBand />}
       </SafeAreaView>
     </ScrollScreen>
   );
@@ -295,6 +310,7 @@ function ListBody({
   openings,
   search,
   chips,
+  searching,
   bottomSpace,
   onRefresh,
   children,
@@ -306,6 +322,7 @@ function ListBody({
   openings: TabOpenings | null;
   search: ReactNode;
   chips: ReactNode;
+  searching: boolean;
   bottomSpace: number;
   onRefresh: () => Promise<unknown>;
   children: ReactNode;
@@ -328,50 +345,60 @@ function ListBody({
       // The question, the search and the chips stay while the list is pulled (PF-40).
       head={
         <>
-          <View testID="explore-head">
-            <Reveal index={0} openings={openings}>
-              <Question now={now} />
-            </Reveal>
-            {/* Kesfet `.sr .kk`: the buddies look over the search's top edge, under the field,
-                64 from the right, their foot 22 over the field's; they scroll with the content. */}
-            {ready ? (
-              <Image
-                source={PEEK}
-                fadeDuration={0}
-                resizeMode="contain"
-                accessible={false}
-                style={{
-                  position: 'absolute',
-                  right: EXPLORE.peek.right,
-                  bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
-                  width: EXPLORE.peek.width,
-                  height: EXPLORE.peek.height,
-                }}
-              />
-            ) : null}
-          </View>
+          {searching ? null : (
+            <View testID="explore-head">
+              <Reveal index={0} openings={openings}>
+                <Question now={now} />
+              </Reveal>
+              {/* Kesfet `.sr .kk`: the buddies look over the search's top edge, under the field,
+                  64 from the right, their foot 22 over the field's; they scroll with the content. */}
+              {ready ? (
+                <Image
+                  source={PEEK}
+                  fadeDuration={0}
+                  resizeMode="contain"
+                  accessible={false}
+                  style={{
+                    position: 'absolute',
+                    right: EXPLORE.peek.right,
+                    bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
+                    width: EXPLORE.peek.width,
+                    height: EXPLORE.peek.height,
+                  }}
+                />
+              ) : null}
+            </View>
+          )}
           {ready ? (
-            <>
-              {/* Over what scrolls under it once pinned. */}
-              <View style={{ zIndex: 1, marginTop: L.fieldTop }}>
+            // Over what scrolls under it once pinned: the search and the chips pin together, and
+            // Semte Git's strip comes in under them (KesfetKaydir).
+            <View style={{ zIndex: 1, marginTop: searching ? L.searchTop : L.fieldTop }}>
+              <StickyGroup
+                side={L.side}
+                hang={{
+                  node: <DistrictStrip />,
+                  height: EXPLORE.sticky.stripHeight,
+                  gap: EXPLORE.sticky.stripGap,
+                  from: EXPLORE.sticky.from,
+                  to: EXPLORE.sticky.to,
+                }}
+              >
                 <Reveal index={1} openings={openings}>
-                  <StickyField band side={L.side}>
-                    {search}
-                  </StickyField>
+                  {search}
                 </Reveal>
-              </View>
-              <View style={{ marginTop: L.chipsTop }}>
-                <Reveal index={2} openings={openings}>
-                  {chips}
-                </Reveal>
-              </View>
-            </>
+                <View style={{ marginTop: L.chipsTop }}>
+                  <Reveal index={2} openings={openings}>
+                    {chips}
+                  </Reveal>
+                </View>
+              </StickyGroup>
+            </View>
           ) : null}
         </>
       }
     >
       {/* Semte Git 20 under the chips; the body's own spacing in VenueList (Kesfet). */}
-      <View style={{ marginTop: L.districtTop }}>{children}</View>
+      <View style={{ marginTop: searching ? 0 : L.districtTop }}>{children}</View>
     </PullScroll>
   );
 }
@@ -416,6 +443,30 @@ function KindChips({
 }) {
   const narrow = useNarrow();
   const side = map ? EXPLORE.map.side : L.side;
+  const chips = EXPLORE_KINDS.map((k) => (
+    <KindChip
+      key={k}
+      testID={`explore-kind-${k}`}
+      label={tr.explore.kinds[k]}
+      narrow={narrow}
+      map={map}
+      on={kind === k}
+      onPress={() => {
+        if (k !== kind) onChoose(k);
+      }}
+    />
+  ));
+  const row = { flexDirection: 'row', alignSelf: 'stretch', gap: EXPLORE.chip.gap } as const;
+  // The chips share the line (`.ch`: a plain row, each `flex: 1 1 auto`). Only where they do not fit
+  // (320 dp, the largest text) the row scrolls sideways to the screen's edge, at least as wide as
+  // the screen.
+  if (!narrow) {
+    return (
+      <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.kindsLabel} style={row}>
+        {chips}
+      </View>
+    );
+  }
   return (
     <ScrollView
       horizontal
@@ -424,21 +475,9 @@ function KindChips({
       accessibilityRole="radiogroup"
       accessibilityLabel={tr.explore.kindsLabel}
       style={{ marginHorizontal: -side, overflow: 'visible' }}
-      contentContainerStyle={{ flexGrow: 1, gap: EXPLORE.chip.gap, paddingHorizontal: side }}
+      contentContainerStyle={{ ...row, flexGrow: 1, paddingHorizontal: side }}
     >
-      {EXPLORE_KINDS.map((k) => (
-        <KindChip
-          key={k}
-          testID={`explore-kind-${k}`}
-          label={tr.explore.kinds[k]}
-          narrow={narrow}
-          map={map}
-          on={kind === k}
-          onPress={() => {
-            if (k !== kind) onChoose(k);
-          }}
-        />
-      ))}
+      {chips}
     </ScrollView>
   );
 }
@@ -477,20 +516,17 @@ function KindChip({
     </T>
   );
   return (
-    <Tap
-      testID={testID}
-      accessibilityState={{ selected: on }}
-      onPress={onPress}
-      style={{ flexGrow: 1 }}
-    >
-      {on ? (
-        <View style={[shape, { backgroundColor: c.chipOn }]}>{words}</View>
-      ) : (
-        <Glass face={map ? EXPLORE[scheme].solid : undefined} radius={h / 2} style={shape}>
-          {words}
-        </Glass>
-      )}
-    </Tap>
+    <View style={{ flexGrow: 1, flexBasis: 'auto' }}>
+      <Tap testID={testID} accessibilityState={{ selected: on }} onPress={onPress}>
+        {on ? (
+          <View style={[shape, { backgroundColor: c.chipOn }]}>{words}</View>
+        ) : (
+          <Glass face={map ? EXPLORE[scheme].solid : undefined} radius={h / 2} style={shape}>
+            {words}
+          </Glass>
+        )}
+      </Tap>
+    </View>
   );
 }
 
@@ -558,6 +594,7 @@ function VenueList({
   kind,
   place,
   here,
+  searching,
   replay,
   openings,
   nameOrder,
@@ -570,6 +607,8 @@ function VenueList({
   kind: ExploreKind;
   place: ExplorePlace | null;
   here: Here | null;
+  // Something typed in the search: Semte Git and "Şu an buradasın" are not drawn (KesfetAra).
+  searching: boolean;
   replay: number;
   openings: TabOpenings | null;
   nameOrder: boolean;
@@ -591,8 +630,8 @@ function VenueList({
   return (
     <>
       {/* Semte Git (docs/SPEC_V4.md §4.V): the screen's one featured card, under the chips. */}
-      <DistrictCard />
-      {here ? (
+      {searching ? null : <DistrictCard />}
+      {here && !searching ? (
         <View style={{ marginTop: L.hereTop }}>
           <HereNow here={here} />
         </View>
@@ -666,9 +705,12 @@ function VenueList({
                 ) : null}
               </Glass>
             </Tap>
-            <T v="kesfetCount" color={c.muted} testID="explore-count">
-              {tr.explore.count(venues.length)}
-            </T>
+            {/* KesfetBos, KesfetAraBos: nothing to count, no count. */}
+            {venues.length > 0 ? (
+              <T v="kesfetCount" color={c.muted} testID="explore-count">
+                {tr.explore.count(venues.length)}
+              </T>
+            ) : null}
           </View>
           {/* `.srt`: the order as plain words, its arrow after them. */}
           <Tap
@@ -781,10 +823,28 @@ function ListEmpty({
   const { c } = useKit();
   const e = EXPLORE.empty;
   const picture = search ? e.search : e.list;
+  // KesfetAraBos `.emp{flex:1 0 auto; justify-content:center; padding:0 24px 150px}`: the search that
+  // finds nothing stands in the middle of what is left under the place line, above the bottom's
+  // 150; the empty list (KesfetBos) stays at the top.
+  const box = useRef<View>(null);
+  const { height: screen } = useWindowDimensions();
+  const [room, setRoom] = useState(0);
   return (
     <View
+      ref={box}
       testID={testID}
-      style={{ alignItems: 'center', paddingTop: e.top, paddingHorizontal: e.side }}
+      collapsable={false}
+      onLayout={() => {
+        if (!search) return;
+        box.current?.measureInWindow((_x, top) => setRoom(Math.max(0, screen - top - e.bottom)));
+      }}
+      style={{
+        alignItems: 'center',
+        paddingTop: search ? 0 : e.top,
+        paddingHorizontal: e.side,
+        minHeight: search ? room : undefined,
+        justifyContent: search ? 'center' : undefined,
+      }}
     >
       <Image
         source={search ? EMPTY_SEARCH : EMPTY_LIST}
@@ -890,11 +950,11 @@ function VenueRow({ venue: v, onPress }: { venue: CityVenue; onPress: () => void
   return (
     <PlaceRow
       testID={`explore-venue-${v.name}`}
-      accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
+      accessibilityLabel={`${v.name}, ${kindLabel(v.kind)}, ${tr.explore.buckets[v.bucket]}`}
       onPress={onPress}
       kind={type}
       name={v.name}
-      sub={tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}
+      sub={tr.explore.venueSub(kindLabel(v.kind), v.district)}
       bucket={v.bucket}
     />
   );

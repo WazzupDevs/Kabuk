@@ -1565,10 +1565,10 @@
       "apps/mobile/src/theme/explore.ts",
       "apps/mobile/src/theme/semt.ts"
     ],
-    "acilis": "",
+    "acilis": "Alt sekme çubuğu → Keşfet",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet",
+    "hal": "yazildi"
   },
   {
     "pano": "10",
@@ -1582,10 +1582,10 @@
       "apps/mobile/src/theme/explore.ts",
       "apps/mobile/src/theme/semt.ts"
     ],
-    "acilis": "",
+    "acilis": "Alt sekme çubuğu → Keşfet",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet",
+    "hal": "yazildi"
   },
   {
     "pano": "10b",
@@ -1595,10 +1595,10 @@
     "kod": [
       "apps/mobile/src/features/district/DistrictCard.tsx"
     ],
-    "acilis": "",
+    "acilis": "Alt sekme çubuğu → Keşfet, semt sohbetindeyken",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-semt-icerde",
+    "hal": "yazildi"
   },
   {
     "pano": "10b",
@@ -1608,9 +1608,23 @@
     "kod": [
       "apps/mobile/src/features/district/DistrictCard.tsx"
     ],
-    "acilis": "",
+    "acilis": "Alt sekme çubuğu → Keşfet, semt sohbetindeyken",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-kesfet-semt-icerde",
+    "hal": "yazildi"
+  },
+  {
+    "pano": "10c",
+    "baslik": "Keşfet · kaydırılmış (örnek 8 mekan)",
+    "dosya": "project/KesfetKaydir.dc.html",
+    "aile": "Panolar 08–15",
+    "kod": [
+      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
+      "apps/mobile/src/motion/StickyField.tsx"
+    ],
+    "acilis": "Keşfet → listeyi yukarı kaydır",
+    "tema": "acik",
+    "durum": "ekran-kesfet-kaydir",
     "hal": "eski"
   },
   {
@@ -1622,23 +1636,9 @@
       "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
       "apps/mobile/src/motion/StickyField.tsx"
     ],
-    "acilis": "",
-    "tema": "acik",
-    "durum": null,
-    "hal": "eski"
-  },
-  {
-    "pano": "10c",
-    "baslik": "Keşfet · kaydırılmış (örnek 8 mekan)",
-    "dosya": "project/KesfetKaydir.dc.html",
-    "aile": "Panolar 08–15",
-    "kod": [
-      "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
-      "apps/mobile/src/motion/StickyField.tsx"
-    ],
-    "acilis": "",
+    "acilis": "Keşfet → listeyi yukarı kaydır",
     "tema": "koyu",
-    "durum": null,
+    "durum": "ekran-kesfet-kaydir",
     "hal": "eski"
   },
   {
@@ -1650,10 +1650,10 @@
       "apps/mobile/src/features/explore/ExploreMap.tsx",
       "apps/mobile/src/theme/tokens.ts"
     ],
-    "acilis": "",
+    "acilis": "Keşfet → arama satırındaki harita düğmesi",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-harita",
+    "hal": "yazildi"
   },
   {
     "pano": "11",
@@ -1664,10 +1664,10 @@
       "apps/mobile/src/features/explore/ExploreMap.tsx",
       "apps/mobile/src/theme/tokens.ts"
     ],
-    "acilis": "",
+    "acilis": "Keşfet → arama satırındaki harita düğmesi",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-harita",
+    "hal": "yazildi"
   },
   {
     "pano": "11b",
@@ -5591,10 +5591,10 @@
       "apps/mobile/src/theme/auraKit.ts",
       "apps/mobile/src/theme/explore.ts"
     ],
-    "acilis": "",
+    "acilis": "Alt sekme çubuğu → Keşfet, listede mekan yokken",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-bos",
+    "hal": "yazildi"
   },
   {
     "pano": "112",
@@ -5608,10 +5608,10 @@
       "apps/mobile/src/theme/auraKit.ts",
       "apps/mobile/src/theme/explore.ts"
     ],
-    "acilis": "",
+    "acilis": "Alt sekme çubuğu → Keşfet, listede mekan yokken",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-bos",
+    "hal": "yazildi"
   },
   {
     "pano": "113",
@@ -5752,10 +5752,10 @@
       "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
       "apps/mobile/src/theme/explore.ts"
     ],
-    "acilis": "",
+    "acilis": "Keşfet → Mekan ara alanına yaz",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-ara",
+    "hal": "yazildi"
   },
   {
     "pano": "116",
@@ -5766,10 +5766,10 @@
       "apps/mobile/app/(app)/(tabs)/explore/index.tsx",
       "apps/mobile/src/theme/explore.ts"
     ],
-    "acilis": "",
+    "acilis": "Keşfet → Mekan ara alanına yaz",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-ara",
+    "hal": "yazildi"
   },
   {
     "pano": "117",
@@ -5779,10 +5779,10 @@
     "kod": [
       "apps/mobile/app/(app)/(tabs)/explore/index.tsx"
     ],
-    "acilis": "",
+    "acilis": "Keşfet → Mekan ara alanına yaz, sonuç çıkmayınca",
     "tema": "acik",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-ara-bos",
+    "hal": "yazildi"
   },
   {
     "pano": "117",
@@ -5792,10 +5792,10 @@
     "kod": [
       "apps/mobile/app/(app)/(tabs)/explore/index.tsx"
     ],
-    "acilis": "",
+    "acilis": "Keşfet → Mekan ara alanına yaz, sonuç çıkmayınca",
     "tema": "koyu",
-    "durum": null,
-    "hal": "eski"
+    "durum": "ekran-kesfet-ara-bos",
+    "hal": "yazildi"
   },
   {
     "pano": "118",

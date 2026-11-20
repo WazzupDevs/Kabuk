@@ -33,6 +33,7 @@ export {
   useScrollPast,
 } from './ScrollScreen';
 export { StickyFade, StickyField } from './StickyField';
+export { StickyGroup } from './StickyGroup';
 export { Cover } from './Cover';
 export { CollapsingCard, PinLayer } from './CollapsingCard';
 export { type Flight, FlyingFace, FlyingName, RiseLayer, ScrollFade } from './ProfileMotion';
