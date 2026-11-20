@@ -45,6 +45,8 @@ import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DistrictCard, DistrictStrip } from '@/features/district/DistrictCard';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
+import { shortVenueName } from '@/features/explore/shortName';
+import { TICKET_PICTURE, VenueTicket } from '@/features/explore/VenueTicket';
 import { Bucket } from '@/features/explore/Bucket';
 import { kindLabel } from '@/features/explore/kindLabel';
 import { EventTag } from '@/features/explore/EventTag';
@@ -889,14 +891,16 @@ function Liveliness({ bucket }: { bucket: CityVenue['bucket'] }) {
         />
       ) : null}
       <T v="kesfetStatus" color={on ? colors.accent : c.muted}>
-        {tr.explore.buckets[bucket]}
+        {tr.explore.legend[bucket]}
       </T>
     </View>
   );
 }
 
-// A venue's row (Kesfet `.rw.vr`): its 56 picture, the name (wrapping, never cut) over the type and
-// district, how lively and the arrow; on the ground, no card and no hairline.
+// A venue's row as a cinema ticket (the owner's ask, 20 Kasım: the map card's shape, VenueTicket):
+// the type's picture on the stub, the perforation, then the name (wrapping, never cut) over the
+// type and district and how lively, and the arrow. The tickets lie on the ground `ticketGap` apart,
+// the page's side from the edges.
 function PlaceRow({
   testID,
   accessibilityLabel,
@@ -921,26 +925,28 @@ function PlaceRow({
       testID={testID}
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: r.gap,
-        minHeight: r.minHeight,
-        paddingVertical: r.padY,
-        paddingHorizontal: r.padX,
-      }}
+      style={{ marginHorizontal: r.padX, marginVertical: r.ticketGap / 2 }}
     >
-      <VenueThumb kind={kind} size={r.picture} radius={r.pictureRadius} shadow="" />
-      <View style={{ flex: 1, minWidth: 0, gap: r.lineGap }}>
-        <T v="kesfetName">{name}</T>
-        <T v="kesfetSub" color={c.muted}>
-          {sub}
-        </T>
-      </View>
-      <Liveliness bucket={bucket} />
-      <View style={{ marginLeft: r.chevronIn }}>
-        <CapIcon name="chevron" color={c.muted} size={r.chevron} />
-      </View>
+      <VenueTicket compact picture={TICKET_PICTURE[kind]}>
+        {/* Every ticket alike: the name on one line (shortVenueName, shrinking as a last resort),
+            under it the type and district on one line at the left and how lively at the right. */}
+        <View style={{ flex: 1, minWidth: 0, gap: r.lineGap }}>
+          <T v="kesfetName" lines={1} fit>
+            {shortVenueName(name)}
+          </T>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: r.ticket.gap }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <T v="kesfetSub" color={c.muted} lines={1} fit>
+                {sub}
+              </T>
+            </View>
+            <Liveliness bucket={bucket} />
+          </View>
+        </View>
+        <View style={{ marginLeft: r.chevronIn }}>
+          <CapIcon name="chevron" color={c.muted} size={r.chevron} />
+        </View>
+      </VenueTicket>
     </Tap>
   );
 }

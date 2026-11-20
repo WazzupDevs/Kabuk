@@ -129,6 +129,21 @@ export const EXPLORE = {
     dot: 7,
     chevron: 18,
     chevronIn: -4,
+    // The list's tickets (the owner's ask, 20 Kasım: the map card's ticket, lower): 72 high at
+    // least, 12 inside and between its parts, 20 round; the picture's block 72 wide, the
+    // perforation 80 from the left with a notch of 8 and its dashed line 12 in; 12 apart.
+    ticketGap: 12,
+    ticket: {
+      minHeight: 72,
+      pad: 12,
+      gap: 12,
+      radius: 20,
+      block: 72,
+      blockGap: 8,
+      cut: 80,
+      notch: 8,
+      lineIn: 12,
+    },
   },
   // The bucket's pill (the campus sheet): 24 high, 8 in at its left and 10 at its right, its dot 6,
   // 6 from the words.
