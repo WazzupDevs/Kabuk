@@ -166,7 +166,7 @@ export const AURA = {
       shadow: 'rgba(0, 0, 0, 0.45)',
       edge: 'rgba(255, 255, 255, 0.12)',
     },
-    radius: 26,
+    radius: 28,
     floorHeight: 96,
   },
   // The hero card's crew (aura.css, Mekan): three buddies at the right, the far one smaller and

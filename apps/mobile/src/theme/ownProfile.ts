@@ -55,7 +55,7 @@ export const OWN_PROFILE = {
 // apart; the count's pill 26 high, 10 in; the slots 12 under the note, a slot's parts 6 apart, the
 // empty one 62 in a dashed 2 ring, its plus 20.
 export const SET_CARD = {
-  radius: 26,
+  radius: 28,
   padTop: 16,
   padX: 18,
   padBottom: 18,

@@ -30,7 +30,7 @@ export const VENUE = {
   // chat and "Açık masalar" 20.
   gaps: { card: 24, chat: 12, lobby: 20 },
   // The table card: 24 round (22 once folded), the glass.
-  card: { radius: 24, stripRadius: 22 },
+  card: { radius: 24, stripRadius: 24 },
   // No table (`.yk`): the picture on the whole width, 152 high, the words under it 14 / 16 / 16
   // inside, the note 4 under the title; the two buttons 14 under them, 8 apart, 10 in.
   none: {
@@ -75,7 +75,7 @@ export const VENUE = {
     padLeft: 8,
     padRight: 10,
     gap: 12,
-    radius: 14,
+    radius: 16,
     edge: 2,
     lineGap: 2,
     face: 20,
@@ -87,7 +87,7 @@ export const VENUE = {
   // words; the field 44 high, 16 in at its left and 6 at its right, its send 36. Folded (54): 18 in
   // at its left and 7 at its right, 10 apart, its send 38.
   chat: {
-    radius: 27,
+    radius: 28,
     pad: 16,
     gap: 12,
     chevron: 18,

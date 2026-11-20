@@ -83,7 +83,7 @@ export const GIFT_STAGE = {
 // shadow and a faint top light.
 export const GIFT_CARD = {
   height: 170,
-  radius: 30,
+  radius: 28,
   pad: 20,
   textWidth: 170,
   titleTop: 8,

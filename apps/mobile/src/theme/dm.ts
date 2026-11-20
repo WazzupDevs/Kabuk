@@ -12,7 +12,7 @@ export const DM = {
   share: 0.78,
   // A bubble (`.msg`): 7 above and under its words, 12 in; 18 round, the corner at the author's
   // foot 6 on a run's last (`.msg.g`, the others, all 18); no tail.
-  bubble: { padTop: 7, padBottom: 7, padLeft: 12, padRight: 12, radius: 18, foot: 6 },
+  bubble: { padTop: 7, padBottom: 7, padLeft: 12, padRight: 12, radius: 20, foot: 6 },
   // The time (`.s`): in the words' last line at the right, 4 over it, the ticks 16, 2 from it.
   // Alone on the last line (`.msg` wraps it: 8 under the words, 4 over its 14 line), its line 5
   // taller than a line of words (21).
@@ -32,7 +32,7 @@ export const DM = {
   },
   mineRing: 2,
   // The quote in another's bubble (`.q`): 10 round, 6 / 10 inside, 8 over the words (`.msg{gap:8}`).
-  quote: { radius: 10, padY: 6, padX: 10, gap: 8 },
+  quote: { radius: 12, padY: 6, padX: 10, gap: 8 },
   // "yazıyor" (`.typing`): a bubble 34 high, 14 in, its three dots 8, 5 apart, 6 under the last;
   // standing still (reduce motion, covered, the visual gate) the board's frame: every dot whole,
   // the middle one 3 up (`.typing i:nth-child(2)`).

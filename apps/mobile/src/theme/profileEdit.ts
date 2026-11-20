@@ -22,13 +22,13 @@ export const PROFILE_EDIT = {
   faceTop: 112,
   camera: { right: -4, bottom: 2, icon: 16 },
   // The fields' card: 26 round, 16 inside, its parts 8 apart, the hairline 8 more over and under.
-  card: { radius: 26, pad: 16, gap: 8, hairGap: 8 },
+  card: { radius: 28, pad: 16, gap: 8, hairGap: 8 },
   // A field: 16 round, its edge 1.5, 16 inside (the bio 13 over and under); its label and note 4
   // in. The bio three lines high.
   field: { radius: 16, edge: 1.5, padX: 16, padY: 13, labelIn: 4, tall: 96 },
   // The birth date's card: 26 round, 14 / 16 inside, 12 between its parts, its lines 2 apart; the
   // lock 14, 5 from "Değiştirilemez".
-  row: { radius: 26, padY: 14, padX: 16, gap: 12, lineGap: 2, lock: 14, lockGap: 5 },
+  row: { radius: 28, padY: 14, padX: 16, gap: 12, lineGap: 2, lock: 14, lockGap: 5 },
   light: {
     coverShadow: '0px 14px 34px rgba(3, 27, 11, 0.14)',
     cameraFill: 'rgba(255, 255, 255, 0.90)',

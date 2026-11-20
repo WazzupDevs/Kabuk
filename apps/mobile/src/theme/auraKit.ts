@@ -435,7 +435,7 @@ const SHADOW = {
 // U13: the venue's picture 56, 18 round, on its soft green shadow (Kesfet `.vbox`).
 export const VENUE_THUMB = {
   size: 56,
-  radius: 18,
+  radius: 20,
   shadow: '0px 6px 14px rgba(4, 73, 35, 0.16)',
 } as const;
 
@@ -702,14 +702,14 @@ export const KIT = {
   // bar, so its light icons read on a light picture.
   statusScrim: 'linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0))',
   statusScrimBelow: 40,
-  photoCard: { side: 22, radius: 30, shadow: '0px 24px 60px rgba(0, 0, 0, 0.35)' },
+  photoCard: { side: 22, radius: 28, shadow: '0px 24px 60px rgba(0, 0, 0, 0.35)' },
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(14, 135, 69, 0.14)',
   // docs/design/iskelet.md → 5.8: Profili düzenle's focused field (3 px, the primary at 18 %), the
   // bar's Kaydet with nothing to save (its words), and a settings row's icon square (32, 10 round).
   primaryHalo: 'rgba(14, 135, 69, 0.18)',
   saveIdle: '#9AAEA1',
-  rowIcon: { side: 32, radius: 10 },
+  rowIcon: { side: 32, radius: 12 },
   // Ayarlar's rows (iskelet.md → 5.9, 2.4): each row's square in its own colour, the icon white.
   rowIconTone: {
     notifications: '#FF4F8B',
@@ -801,13 +801,13 @@ export const KIT = {
     meter: { height: 4, free: '#1C8C4E', full: '#FF4F8B' },
     // The strip it folds into: its picture 52, 14 round, 10 in.
     stripPad: 10,
-    stripRadius: 14,
+    stripRadius: 16,
     // No table: the riso picture against the card's right, the words on the paper's fade.
     paper: '#ECE4CE',
     paperFade:
       'linear-gradient(90deg, rgba(236, 228, 206, 1) 0%, rgba(236, 228, 206, 1) 44%, rgba(236, 228, 206, 0) 74%)',
     paperPicture: 0.68,
-    imageRadius: 22,
+    imageRadius: 24,
     inset: 12,
     name: {
       padX: 14,
@@ -894,7 +894,7 @@ export const KIT = {
     band: [240, 280],
     barTitle: [300, 330],
     barThumb: 32,
-    barThumbRadius: 10,
+    barThumbRadius: 12,
   },
   gameCardShadow: '0px 12px 26px rgba(4, 73, 35, 0.18)',
   // A nick's colour in a line of the venue chat (Mekan: kapsul-sn19 in amber's ink).
@@ -902,7 +902,7 @@ export const KIT = {
   nameInk: '#B0124F',
   size: {
     glassRadius: 28,
-    glassRadiusSm: 22,
+    glassRadiusSm: 24,
     pad: 18,
     padLg: 22,
     // The base's sizes (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md; in place of 18
@@ -962,9 +962,9 @@ export const KIT = {
       switchPad: 3,
       switchGap: 2,
       icon: 20,
-      card: { radius: 26, pad: 12, picture: 76, pictureRadius: 14, gap: 14, lineGap: 5 },
+      card: { radius: 28, pad: 12, picture: 76, pictureRadius: 16, gap: 14, lineGap: 5 },
       cardsGap: 10,
-      empty: { width: 104, height: 72, radius: 14 },
+      empty: { width: 104, height: 72, radius: 16 },
     },
     // The venue page's back button.
     roundLg: 40,
@@ -1069,7 +1069,7 @@ export const KIT = {
     avRingXl: 3,
     avRingHero: 4,
     thumb: 60,
-    thumbRadius: 18,
+    thumbRadius: 20,
     badge: 20,
     badgeLg: 24,
     badgePadX: 6,
@@ -1128,7 +1128,7 @@ export const KIT = {
     grabW: 40,
     // The handle 40 × 4 (yeni arayüz tuvali skall.css `.grab`: every sheet and Profil's panel).
     grabH: 4,
-    msgRadius: 22,
+    msgRadius: 24,
     msgTail: 8,
     // Chat bubbles (iskelet.md → 5.5): 20 round, 7 where a run's bubbles face each other, the run's
     // last one with a tail 7 × 12; a run's bubbles 2 apart (yeni arayüz tuvali, DmKlavye, MekanSohbet,
@@ -1176,7 +1176,7 @@ export const KIT = {
     // Profili düzenle's fields: 48 high (B1; the bio 104, 22 round), 22 inside.
     fieldLg: 44,
     fieldLgTall: 104,
-    fieldLgTallRadius: 22,
+    fieldLgTallRadius: 24,
     fieldLgPadX: 22,
     fieldLgPadY: 16,
     // A chat's message field and its send button 52 (yeni arayüz tuvali `.fld`, `.snd`).
@@ -1192,7 +1192,7 @@ export const KIT = {
     dayPadX: 12,
     dayPadY: 4,
     barPad: 8,
-    barRadius: 30,
+    barRadius: 28,
     barGap: 10,
     // The DM's top as Telegram Android draws it (the owner's call, 29 Ekim): the avatar this far
     // inside its pill, the pills all as tall as it.
@@ -1211,7 +1211,7 @@ export const KIT = {
     iconTileGap: 12,
     iconTileRadius: 16,
     // Masa's game cards: 24 round, the tag 8 in and 7 down.
-    gameCardRadius: 22,
+    gameCardRadius: 24,
     gameTagX: 8,
     gameTagY: 8,
     // Mekan's and Masa's blocks: 14 apart.
@@ -1339,7 +1339,7 @@ export const KIT = {
       // middle, this share of the room it leaves above it and the rest under it.
       dialogAbove: 0.44,
       // A soft pill of words between the sentence and the buttons (SemtSureBitti `.dw`).
-      dialogPill: { radius: 14, padY: 6, padX: 12 },
+      dialogPill: { radius: 16, padY: 6, padX: 12 },
       // The ⋮ menu: 292 wide, 28 round, 16 / 8 / 8 inside, 12 from the screen's edge; a row 48 at
       // least, 6 / 12 in, 18 round, its icon 22 and 14 to the words, the hairline from 48.
       menuWidth: 292,
@@ -1356,7 +1356,7 @@ export const KIT = {
       menuRow: 48,
       menuRowPadX: 12,
       menuRowPadY: 6,
-      menuRowRadius: 18,
+      menuRowRadius: 20,
       menuIcon: 22,
       menuRowGap: 14,
       menuHairIn: 48,

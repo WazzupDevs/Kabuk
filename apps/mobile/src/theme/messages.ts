@@ -30,7 +30,7 @@ export const MESSAGES = {
   row: { padY: 10, padX: 20, gap: 12, minHeight: 72, ring: 2, lineGap: 2, metaGap: 8, fade: 44 },
   // The held row over the scrim (MesajlarUzunBas `.rw.ub`): 12 in from the sides, 8 inside (its
   // words 20 in as the row's), 22 round.
-  lifted: { side: 12, padX: 8, radius: 22 },
+  lifted: { side: 12, padX: 8, radius: 24 },
   ticks: { width: 18 },
   // Arşivlenenler's top (Arsiv, ArsivBos `.ptop`, `.pt2`): the row as high as its parts (the 44
   // round, the title 26 over the count), not Arkadaşlar's 56; the count's line stands in the page's

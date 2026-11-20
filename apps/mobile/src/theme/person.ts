@@ -29,7 +29,7 @@ export const PERSON = {
   // 7 from the words.
   badgesTop: 30,
   eyebrow: { in: 10, bottom: 10 },
-  badgeCard: { radius: 26, pad: 14, gap: 8 },
+  badgeCard: { radius: 28, pad: 14, gap: 8 },
   // Ortak arkadaşlar: the badges' card with rows, a face and a name each.
   mutual: { rowGap: 12, faceGap: 12 },
   badge: { height: 34, padLeft: 6, padRight: 12, gap: 7, disc: 24, icon: 14 },

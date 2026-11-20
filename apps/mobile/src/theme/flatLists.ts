@@ -15,7 +15,7 @@ export const FLAT = {
   // apart; its first row 6 under it (the list's -6 margin), a game's picture 52, 14 round, drawn
   // 1.04 times (the board's `scale(1.04)`).
   day: { gap: 8, listTop: -6, headTop: 8 },
-  thumb: { side: 52, radius: 14, scale: 1.04 },
+  thumb: { side: 52, radius: 16, scale: 1.04 },
   // Bildirimler's sheet (`.nsh`): 12 under the handle, 20 from the sides, 28 under the last row;
   // the section label (`.sl`) 18 over and 4 under it; a row (`.nr`) 10 above and under, 12 between
   // its parts, its lines 2 apart; a new one's dot 6, 12 left of the row.
@@ -31,7 +31,7 @@ export const FLAT = {
   // sets them inline). Never from an account or a profile id (rule 4).
   requestFace: {
     side: 52,
-    radius: 26,
+    radius: 28,
     inks: ['#7B5CFF', '#2C63D6', '#E2456F', '#0B783D', '#C77700'],
   },
   // Aktiviteler's game sheet (`.msh`): the picture 56, 14 round, 14 from the title, 14 under the
@@ -39,7 +39,7 @@ export const FLAT = {
   // between its parts, the face 44.
   game: {
     art: 56,
-    artRadius: 14,
+    artRadius: 16,
     artGap: 14,
     headTop: 14,
     noteTop: 14,

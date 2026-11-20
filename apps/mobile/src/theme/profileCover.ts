@@ -15,7 +15,7 @@ export const PROFILE_COVER = {
   // The bar's ground shows over the glide's last 30%.
   barFadeFrom: 0.7,
   // Another person's profile: the band 22 round within the page's sides.
-  bandRadius: 22,
+  bandRadius: 24,
   // The face 112 overlapping the cover's foot by half; the name 12 under it.
   faceOverlap: 56,
   nameTop: 12,
@@ -24,7 +24,7 @@ export const PROFILE_COVER = {
   barGap: 10,
   // Profili düzenle's preview: 1.9:1 at 120 across, 14 round.
   previewWidth: 120,
-  previewRadius: 14,
+  previewRadius: 16,
   // The scene's own units (it is drawn on a 390 × 190 box and cut to the cover's width).
   scene: { width: 390, height: 190 },
   // The pink print's offset from the sun.

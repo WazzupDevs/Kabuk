@@ -61,7 +61,7 @@ export const EXPLORE = {
   scene: {
     minHeight: 200,
     pad: 18,
-    radius: 22,
+    radius: 24,
     words: '58%',
     dot: 8,
     dotRing: 4,
@@ -111,7 +111,7 @@ export const EXPLORE = {
   // of its left and 6 under its foot.
   district: {
     pad: 20,
-    radius: 30,
+    radius: 28,
     gap: 12,
     lineGap: 7,
     dot: 7,
@@ -134,7 +134,7 @@ export const EXPLORE = {
     headGap: 10,
     side: 20,
     cardBottom: 26,
-    cardRadius: 22,
+    cardRadius: 24,
     cardPad: 14,
     cardGap: 18,
     cardMinHeight: 96,
@@ -146,7 +146,7 @@ export const EXPLORE = {
     controlOver: 12,
     attrSide: 22,
     legendOver: 20,
-    legend: { padX: 12, padY: 6, gap: 10, itemGap: 5, dot: 9, radius: 13 },
+    legend: { padX: 12, padY: 6, gap: 10, itemGap: 5, dot: 9, radius: 12 },
   },
   light: {
     // `.glass` (the venue page's empty card, Mesajlar's tabs).

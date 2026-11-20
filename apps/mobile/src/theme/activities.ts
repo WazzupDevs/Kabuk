@@ -11,14 +11,14 @@ export const ACTIVITIES = {
   listTop: 12,
   // The tabs (`.sg`): a glass capsule 44 high, 4 inside, its two parts 36 and 22 round, the chosen
   // one white (the ink in the dark), the words 14/600.
-  tabs: { item: 36, radius: 22 },
+  tabs: { item: 36, radius: 24 },
   // The game's sheet (`.msh`): the picture 56, 14 round, 14 from the title, its lines 3 apart; a
   // person's row 12 between its parts, the face 44 with its buddy 31 × 41 at 6, 4 in it; the name
   // and its line 2 apart; the small action 14 in at either side, its icon 16 and 4 from the
   // words; once pressed the soft pill 12 in, its check 15.
   sheet: {
     art: 56,
-    artRadius: 14,
+    artRadius: 16,
     artGap: 14,
     titleGap: 3,
     row: { gap: 12, nameGap: 2 },
