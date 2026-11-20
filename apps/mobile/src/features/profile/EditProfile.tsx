@@ -377,6 +377,7 @@ function EditForm({
             loading={save.isPending}
             look={{ type: 'holdRow', padLeft: E.barPad, padRight: E.barPad }}
             onPress={onSave}
+            style={{ alignSelf: 'center' }}
           />
         </View>
       }

@@ -212,7 +212,7 @@ describe('the own profile in one flow (ProfilBen, ProfilBenKaydir)', () => {
     expect(OWN.band).toEqual([225, 275]);
     expect(OWN.bar).toEqual([255, 285]);
     expect(OWN.barFace).toBe(36);
-    expect(page).toMatch(/<BarBand from=\{OWN\.band\[0\]\} to=\{OWN\.band\[1\]\}/);
+    expect(page).toMatch(/<BarArrive from=\{OWN\.band\[0\]\} to=\{OWN\.band\[1\]\}/);
     expect(page).toMatch(/<BarArrive from=\{OWN\.bar\[0\]\} to=\{OWN\.bar\[1\]\}/);
   });
 

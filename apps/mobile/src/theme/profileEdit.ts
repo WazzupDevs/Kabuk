@@ -14,7 +14,7 @@ export const PROFILE_EDIT = {
   // and 12 at its right, its camera 16, 6 from the words, 10 from the cover's top right.
   cover: 150,
   coverRadius: 22,
-  coverTop: 16,
+  coverTop: 12,
   coverBtn: { height: 34, inset: 10, padLeft: 10, padRight: 12, gap: 6, icon: 16 },
   // The photo 104 in its 4 ring, 52 over the cover's foot, centred; the camera round 38 in a 3 ring,
   // 2 out of its right and at its foot, its icon 18.

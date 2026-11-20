@@ -23,16 +23,9 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useNarrow } from '@/lib/useNarrow';
-import {
-  BarArrive,
-  BarBand,
-  ScrollBody,
-  ScrollScreen,
-  Tap,
-  useScrollOffset,
-  useScrollPast,
-} from '@/motion';
+import { BarArrive, ScrollBody, ScrollScreen, Tap, useScrollOffset, useScrollPast } from '@/motion';
 import { AURA } from '@/theme/aura';
+import { gradientStyle } from '@/theme/gradient';
 import { KIT } from '@/theme/auraKit';
 import { OWN_PROFILE, OWN_TYPE } from '@/theme/ownProfile';
 import { PROFILE_PAGE, TICKET } from '@/theme/profileCover';
@@ -94,6 +87,9 @@ function ProfilePage({
     : tr.profile.noName;
   const photoUrl = data && !data.photoHidden ? data.photoUrl : null;
   const ground = AURA[scheme].ground;
+  const bandHeight = insets.top + SPACING[2] + OWN.bandRow + OWN.bandFade;
+  const solidTo = Math.round(((bandHeight - OWN.bandFade) / bandHeight) * 1000) / 10;
+  const bandCss = `linear-gradient(180deg, ${ground} 0%, ${ground} ${solidTo}%, ${AURA[scheme].bar.clear} 100%)`;
   const faceGround = scheme === 'dark' ? B.dark.faceGround : B.light.faceGround;
 
   // The canvas's heights moved by this phone's status bar (PROFILE_PAGE).
@@ -222,7 +218,16 @@ function ProfilePage({
         </View>
       </ScrollBody>
 
-      <BarBand from={OWN.band[0]} to={OWN.band[1]} />
+      {/* ProfilBenKaydir `.sbar2`: the band opaque (the glass is off: nothing shows through it), its
+          foot fading out; it comes in with the scroll. */}
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: bandHeight }}
+      >
+        <BarArrive from={OWN.band[0]} to={OWN.band[1]}>
+          <View style={[{ height: bandHeight }, gradientStyle(bandCss)]} />
+        </BarArrive>
+      </View>
       {data ? (
         <>
           <PhotoPreview url={photoUrl} visible={preview} onClose={() => setPreview(false)} />

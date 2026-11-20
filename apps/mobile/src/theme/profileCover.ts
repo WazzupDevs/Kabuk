@@ -91,6 +91,10 @@ export const PROFILE_PAGE = {
     ring: 4,
     band: [225, 275] as const,
     bar: [255, 285] as const,
+    // The band (ProfilBenKaydir `.sbar2`): opaque, the bar's row 48 under the status bar and the
+    // button's 8, its foot fading over 22.
+    bandRow: 48,
+    bandFade: 22,
     barSide: 20,
     barFace: 36,
     barGap: 12,
@@ -145,7 +149,7 @@ export const TICKET = {
   buttonTop: 10,
   button: { height: 34, padX: 14, icon: 16 },
   // At 320 dp: the button under the ticket, 12 below it, 52 high at least.
-  buttonBelow: { top: 12, height: 52, icon: 20 },
+  buttonBelow: { top: 12, height: 52, icon: 20, light: '#FFFFFF', dark: '#0B783D' },
 } as const;
 
 // The board's own faces (ProfilBen `.tkl` 700 11/14 at 1.4 px, `.tkm b` 800 20/24 at -0.4, `.tks span`

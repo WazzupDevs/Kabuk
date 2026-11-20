@@ -240,7 +240,14 @@ export function IdentityTicket({
           <Btn
             block
             bar={TICKET.buttonBelow.height}
-            icon="star"
+            lead={
+              <CapIcon
+                name="star"
+                color={TICKET.buttonBelow[scheme]}
+                soft={1}
+                size={TICKET.buttonBelow.icon}
+              />
+            }
             label={tr.capsule.edit}
             testID="profile-capsule-edit"
             look={{ icon: TICKET.buttonBelow.icon }}
