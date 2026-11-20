@@ -30,7 +30,7 @@ export const EXPLORE = {
     // KesfetAra, KesfetAraBos `.sr{margin-top:56}`: with something typed the line, the question and
     // the buddies are gone and the search stands 56 under the content's top.
     searchTop: 56,
-    chipsTop: 10,
+    chipsTop: 12,
     districtTop: 20,
     sectionTop: 24,
     rowsTop: 4,
@@ -67,7 +67,7 @@ export const EXPLORE = {
   // and its dot are pink, the dot in a 4 ring.
   scene: {
     minHeight: 200,
-    pad: 18,
+    pad: 20,
     radius: 24,
     words: '58%',
     dot: 8,
@@ -79,7 +79,7 @@ export const EXPLORE = {
     metaGap: 6,
     metaIcon: 18,
     // The button's 18 at either side (`.semt .btn`: padding 0 18).
-    buttonPadX: 18,
+    buttonPadX: 20,
     eyebrow: '#7CF0B0',
     roomEyebrow: '#FF8FB8',
     roomDot: '#FF4F8B',
@@ -94,31 +94,31 @@ export const EXPLORE = {
   // `from` to `to` px past the pin: the card (20 under the chips, 200 high) is under the band by
   // `to`.
   sticky: {
-    stripGap: 10,
+    stripGap: 12,
     stripHeight: 60,
     stripRadius: 20,
     stripPadLeft: 16,
-    stripPadRight: 10,
-    stripGapIn: 10,
+    stripPadRight: 12,
+    stripGapIn: 12,
     stripDot: 7,
-    stripButtonPadX: 14,
+    stripButtonPadX: 16,
     // `.ssm img{object-position:0% 12%}`.
     stripPicturePos: 0.12,
     from: 140,
     to: 200,
   },
   // The kind chips (`.ch .chip`): 14 in, 8 apart, each growing to share the row.
-  chip: { padX: 14, gap: 8 },
+  chip: { padX: 16, gap: 8 },
   // The place button (`.cty`): 10 in at its left, 8 at its right, 6 between its parts, the pin 18,
   // its arrow 18 pulled 2 closer; the count 10 after it; the order (`.srt`) 32 high, 10 in at its
   // left, 4 at its right, its arrow 18, 2 from the words.
-  place: { padLeft: 10, padRight: 8, gap: 6, icon: 18, chevron: 18, chevronIn: -2, countGap: 10 },
-  sort: { height: 32, padLeft: 10, padRight: 4, gap: 2, chevron: 18 },
+  place: { padLeft: 12, padRight: 8, gap: 6, icon: 18, chevron: 18, chevronIn: -2, countGap: 12 },
+  sort: { height: 32, padLeft: 12, padRight: 4, gap: 2, chevron: 18 },
   // A venue row (`.rw.vr`): on the ground with no card and no hairline, 10 above and under, 20 from
   // the sides, 12 between its parts, 76 at least; the picture 56, 16 round; the lines 2 apart; how
   // lively 6 from its dot (7); the arrow 18, 4 closer.
   row: {
-    padY: 10,
+    padY: 12,
     padX: 20,
     gap: 12,
     minHeight: 76,
@@ -132,7 +132,7 @@ export const EXPLORE = {
   },
   // The bucket's pill (the campus sheet): 24 high, 8 in at its left and 10 at its right, its dot 6,
   // 6 from the words.
-  bucket: { height: 24, padLeft: 8, padRight: 10, gap: 6, dot: 6 },
+  bucket: { height: 24, padLeft: 8, padRight: 12, gap: 6, dot: 6 },
   // Semte Git: 20 inside, 30 round, the words and the gate 12 apart, the lines 7 apart, the dot 7
   // and 6 from the eyebrow, the button 8 more under the note with its arrow 16. The gate a 106 ×
   // 128 sticker 16 round in a 3 white edge, turned 4°, in a 112 × 136 place; a 32 × 42 buddy 14 out
@@ -159,12 +159,12 @@ export const EXPLORE = {
   // 22 from the left at the round's foot; the legend (`.lg`) 20 over it, 20 from the left, 12 in
   // and 6 above and under, 10 between its parts, each dot 9 and 5 from its word.
   map: {
-    headGap: 10,
+    headGap: 12,
     side: 20,
-    cardBottom: 26,
+    cardBottom: 24,
     cardRadius: 24,
-    cardPad: 14,
-    cardGap: 18,
+    cardPad: 16,
+    cardGap: 20,
     cardMinHeight: 96,
     picture: 56,
     pictureRadius: 16,
@@ -185,9 +185,9 @@ export const EXPLORE = {
     goIcon: 18,
     control: 48,
     controlOver: 12,
-    attrSide: 22,
+    attrSide: 24,
     legendOver: 20,
-    legend: { padX: 12, padY: 6, gap: 10, itemGap: 5, dot: 9, radius: 12 },
+    legend: { padX: 12, padY: 6, gap: 12, itemGap: 5, dot: 9, radius: 12 },
   },
   light: {
     // `.glass` (the venue page's empty card, Mesajlar's tabs).

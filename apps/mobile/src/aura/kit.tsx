@@ -59,7 +59,16 @@ export function useKit() {
 // Text: .display, .title, .h3, .body, .fine, .eyebrow, .stamp; `strong` is .strong (ink, 600).
 // .body, .fine, .eyebrow and .stamp are muted unless `ink` or `strong`; `color` wins over both.
 // `note` too: a description under a title is quieter than it (the owner's report, 2 Kasım, 3.4).
-const MUTED: readonly KitTextVariant[] = ['body', 'fine', 'eyebrow', 'stamp', 'member', 'note'];
+// A section's label is muted everywhere (the owner's call, 19 Kasım: one section head, grey).
+const MUTED: readonly KitTextVariant[] = [
+  'body',
+  'fine',
+  'eyebrow',
+  'stamp',
+  'member',
+  'note',
+  'sectionHead',
+];
 export function T({
   v = 'body',
   ink,

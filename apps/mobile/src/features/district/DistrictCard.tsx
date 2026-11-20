@@ -217,7 +217,8 @@ function StripFace({
             {upperTr(room ? tr.district.card.roomEyebrow : tr.district.card.sceneEyebrow)}
           </T>
         </View>
-        <T v="kesfetEmptyTitle" strong color={k.title}>
+        {/* KesfetKaydir `.ssm b`: the strip's title bold. */}
+        <T v="rowTitle" color={k.title}>
           {title}
         </T>
       </View>

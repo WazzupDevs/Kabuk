@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (20 Kasım 2026, gece yarısı): ekran revizesi başladı, Keşfet
+
+- Ortak temel bitti (`temel` dalı; aşağıdaki not). Ekran revizesi ekran ekran yürüyor: her ekran kendi dalında (`temel`'in üstünde), önce varsa bekleyen işi alınır, emülatörde panoyla yan yana bakılır (`node C:\dev\tools\karsilastir.mjs <Pano> acik <durum>`), boşluklar ölçeğe çekilir.
+- Keşfet (`kesfet` dalı): #745'in işi (kaydırılmış hâl, çip satırı, harita, semt kartı) temelin üstüne alındı; şerit başlığı kalın, bölüm etiketi her yerde gri (`T` → `sectionHead`), `theme/explore.ts`'te 19 boşluk ölçekte. Liste ve kaydırılmış hâl panoyla örtüşüyor.
+- Keşfet'te açık: haritada pinlerin içi (mekân resmi) ve pin altındaki adlar emülatörde çizilmiyor (harita ve pin halkaları geliyor; #745 bu katmanlara dokunmadı, telefonda bakılmadı). Koyu tema, arama, boş hâl ve mekân sayfası görülmedi.
+- Tuzaklar: görsel kapı durumları (`masa:///gorsel?...`) uygulamayı çevrimdışı moda alır, normal kullanıma dönmek için uygulamayı yeniden başlat; Metro dal değiştirirken dosya anlık kaybolunca çöküyor (yeniden başlat); geliştirici listesinde sunucu satırı artık üstte (y ≈ 525).
+
 ## Devir notu (20 Kasım 2026, gece): ortak temelin kalıcılaştırması, ilk yarı
 
 - Yapıldı (`docs/decisions/temel.md` → Kalıcılaştırma): yazıda otomatik yuvarlama kalktı (`TYPE_SCALE`, `auraKit.test.ts`), sekiz ikonun kaynak çizimi eşitlendi, boy ve yazı testleri yeni değerlerde, deneme önizleme sayfaları kaldırıldı, CLAUDE.md ve `iskelet.md` güncellendi.
