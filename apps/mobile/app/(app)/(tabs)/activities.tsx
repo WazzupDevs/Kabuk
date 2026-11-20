@@ -28,7 +28,7 @@ import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, Rise, Sheet, StickyFade, StickyField } from '@/motion';
+import { LargeTitle, Rise, Sheet, StickyField } from '@/motion';
 import { ACTIVITIES as A } from '@/theme/activities';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
@@ -63,13 +63,6 @@ export default function ActivitiesScreen() {
           </T>
         </View>
       </LargeTitle>
-      {/* Hediye paketleri (§4.U): the gift card over the tabs; its packs stand out over its top
-          (the room for them is the card's own). */}
-      <StickyFade>
-        <View style={{ paddingBottom: A.tabsTop }}>
-          <GiftCard />
-        </View>
-      </StickyFade>
       <StickyField band side={A.side}>
         <Seg<Tab>
           narrow={narrow}
@@ -89,9 +82,47 @@ export default function ActivitiesScreen() {
           ]}
         />
       </StickyField>
-      {tab === 'events' ? <Events now={now} city={city} /> : <History now={now} />}
+      {tab === 'events' ? (
+        <>
+          {/* Hediye paketleri (§4.U): the gift card under the tabs, the first card of Etkinlikler
+              and as tall as an event's card (the owner's ask, 20 Kasım); its packs stand out over
+              its top (the room for them is the card's own). */}
+          <View style={{ marginTop: A.listTop }}>
+            <GiftCard />
+          </View>
+          <Events now={now} city={city} />
+        </>
+      ) : (
+        <History now={now} />
+      )}
     </Screen>
   );
+}
+
+// The board's three events (AktivitelerDolu), for a development build's empty day: tonight, each
+// two hours long.
+function sampleEvents(now: number) {
+  const at = (hour: number, minute: number) => {
+    const d = new Date(now);
+    d.setHours(hour, minute, 0, 0);
+    return d.toISOString();
+  };
+  const one = (
+    id: string,
+    name: string,
+    kind: 'campus' | 'cafe',
+    title: string,
+    h: number,
+    m: number,
+  ) => ({
+    venue: { id, name, kind },
+    event: { title, startsAt: at(h, m), endsAt: at(h + 2, m) },
+  });
+  return [
+    one('ornek-1', 'Kampüs bahçesi', 'campus', 'Tanışma ateşi: kamp gecesi', 20, 0),
+    one('ornek-2', 'Hush Coffee', 'cafe', 'Tüm kahveler 1+1', 10, 0),
+    one('ornek-3', 'Gölge Kafe', 'cafe', 'Vampir Köylü turnuvası', 21, 30),
+  ];
 }
 
 // Keşfet's city (K-38): the venues and the place chosen there.
@@ -106,12 +137,16 @@ function useCity() {
 
 function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }) {
   const { venues, cities, listed, place } = city;
-  const events = useMemo(
+  const real = useMemo(
     () =>
       // Every city unless one is chosen in Keşfet (5 Kasım).
       todayEvents(place ? listed.filter((v) => v.city === place.city) : listed, now),
     [listed, place, now],
   );
+  // A development build with no event today shows the board's three (AktivitelerDolu), so the list
+  // can be looked at (the owner's ask, 20 Kasım). Never in a release build.
+  const sample = __DEV__ && real.length === 0;
+  const events = sample ? sampleEvents(now) : real;
   const pending = venues.isPending || cities.isPending;
   const loading = useLoaderHold(pending);
 
@@ -149,7 +184,7 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
     return (
       <View
         // In the middle of the room under the tabs, as every empty state (19 Kasım).
-        style={{ flexGrow: 1, justifyContent: 'center', minHeight: 420 }}
+        style={{ flexGrow: 1, justifyContent: 'center', minHeight: A.emptyMin }}
         testID="activities-no-events"
       >
         <EmptyState
@@ -170,9 +205,10 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
             venue={venue}
             event={event}
             now={now}
-            onPress={() =>
-              router.navigate({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
-            }
+            onPress={() => {
+              if (sample) return;
+              router.navigate({ pathname: '/explore/[venueId]', params: { venueId: venue.id } });
+            }}
           />
         </Rise>
       ))}

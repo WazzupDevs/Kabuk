@@ -82,12 +82,16 @@ export const GIFT_STAGE = {
 // 44 under the page's title. Its ground a deep green with a lighter light at its top right, its
 // shadow and a faint top light.
 export const GIFT_CARD = {
-  height: 170,
+  // As tall as an event's card on the board (AktivitelerDolu `.ev`: 148; the owner's ask, 20
+  // Kasım; it was 170 over the tabs).
+  height: 148,
   radius: 28,
   pad: 20,
   textWidth: 170,
   titleTop: 8,
-  overhang: 44,
+  // The packs stand only a little over the card's top (the owner's ask, 20 Kasım; they were 112
+  // and 84 wide, 44 over it).
+  overhang: 12,
   // "Paketlere bak": 16 in at its left, 14 at its right, its arrow 15. A pack ready to open: the
   // accent ring 2 round the card.
   button: { padLeft: 16, padRight: 14 },
@@ -98,28 +102,38 @@ export const GIFT_CARD = {
   shadow: '0px 18px 40px rgba(3, 27, 11, 0.28), inset 0px 1px 0px rgba(255, 255, 255, 0.12)',
   eyebrow: '#3DDC84',
   buttonInk: '#0B5A2D',
+  // Small stars on the ground, so it is not bare (the owner's ask, 20 Kasım): where each stands
+  // from the card's left and top, how large and how clear; the last two in the eyebrow's green.
+  stars: [
+    { left: 150, top: 14, size: 10, opacity: 0.5, green: false },
+    { left: 196, top: 96, size: 8, opacity: 0.35, green: false },
+    { left: 128, top: 118, size: 12, opacity: 0.3, green: false },
+    { left: 318, top: 118, size: 9, opacity: 0.45, green: false },
+    { left: 176, top: 46, size: 7, opacity: 0.6, green: true },
+    { left: 226, top: 126, size: 10, opacity: 0.5, green: true },
+  ],
   packs: [
     {
       pack: 'gumus',
-      right: 112,
-      top: -6,
-      width: 84,
+      right: 104,
+      top: 16,
+      width: 68,
       turn: '-12deg',
       shadow: { y: 10, deviation: 7, color: 'rgba(0, 0, 0, 0.35)' },
     },
     {
       pack: 'altin',
-      right: 6,
-      top: -4,
-      width: 84,
+      right: 8,
+      top: 18,
+      width: 68,
       turn: '12deg',
       shadow: { y: 10, deviation: 7, color: 'rgba(0, 0, 0, 0.35)' },
     },
     {
       pack: 'bronz',
-      right: 46,
-      top: -40,
-      width: 112,
+      right: 42,
+      top: -10,
+      width: 90,
       turn: '0deg',
       shadow: { y: 16, deviation: 10, color: 'rgba(0, 0, 0, 0.45)' },
     },

@@ -9,6 +9,17 @@ export const ACTIVITIES = {
   side: 20,
   tabsTop: 12,
   listTop: 12,
+  // The empty state keeps this much under the gift card on a short screen.
+  emptyMin: 240,
+  // An event's card: the gift card's height and corner (theme/gifts.ts → GIFT_CARD), 16 inside,
+  // its two lines 4 apart on a dark fade over the scene's lower half, in both schemes.
+  eventCard: {
+    pad: 16,
+    lineGap: 4,
+    shade: 'linear-gradient(180deg, rgba(3, 27, 11, 0) 30%, rgba(3, 27, 11, 0.78) 100%)',
+    title: '#FFFFFF',
+    venue: 'rgba(255, 255, 255, 0.86)',
+  },
   // The tabs (`.sg`): a glass capsule 44 high, 4 inside, its two parts 36 and 22 round, the chosen
   // one white (the ink in the dark), the words 14/600.
   tabs: { item: 36, radius: 24 },

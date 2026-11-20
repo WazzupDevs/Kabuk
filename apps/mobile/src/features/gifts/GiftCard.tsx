@@ -109,6 +109,17 @@ export function GiftCard() {
         ]}
       >
         {shadow.node}
+        {/* Stars on the ground, under the words and the packs. */}
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0 }}>
+          {C.stars.map((s) => (
+            <View
+              key={`${s.left}-${s.top}`}
+              style={{ position: 'absolute', left: s.left, top: s.top, opacity: s.opacity }}
+            >
+              <CapIcon name="sparkles" color={s.green ? C.eyebrow : GIFT_STAGE.ink} size={s.size} />
+            </View>
+          ))}
+        </View>
         {/* The words at its left, the button at its foot (tuval Aktivite). */}
         <View style={{ flexGrow: 1, padding: C.pad }}>
           <T v="giftEyebrow" color={C.eyebrow}>

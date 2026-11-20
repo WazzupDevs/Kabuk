@@ -151,6 +151,8 @@ export function ExploreMap({
       },
     };
   }, [venues, now]);
+  // The shown card's height (a venue's ticket, a stack's list), 96 until it is laid out.
+  const [cardHeight, setCardHeight] = useState<number>(EXPLORE.map.cardMinHeight);
   // A tapped stack: its venues listed at the bottom.
   const [stack, setStack] = useState<string | null>(null);
   const stackVenues = stack
@@ -455,22 +457,32 @@ export function ExploreMap({
           />
         </GeoJSONSource>
       </Map>
-      {/* KesfetHarita: no fades; the legend, the sources and the round over the card's room. */}
+      {/* KesfetHarita: no fades; the legend, the sources and the round stand over the card while
+          one is shown (its own height) and come down over the tab bar when none is (the owner's
+          report, 20 Kasım: with no card they were left in the middle). */}
       <MapControls
-        bottom={cardBottom(tabBarHeight) + EXPLORE.map.cardMinHeight + EXPLORE.map.controlOver}
+        bottom={
+          cardBottom(tabBarHeight) +
+          (card || stackVenues.length > 1 ? cardHeight + EXPLORE.map.controlOver : 0)
+        }
         onRecentre={() => camera.current?.fitBounds(opening, { padding, duration: CAMERA_MS })}
         onInfo={() => void map.current?.showAttribution()}
+        onZoom={(by) => {
+          void map.current?.getZoom().then((zoom) => {
+            camera.current?.zoomTo(zoom + by, { duration: ZOOM_MS });
+          });
+        }}
       />
       {/* 5.1: the selected venue's card comes up on a spring, again for each venue. */}
       {card ? (
-        <MapCard bottom={cardBottom(tabBarHeight)}>
+        <MapCard bottom={cardBottom(tabBarHeight)} onHeight={setCardHeight}>
           <PopIn key={card.id}>
             <VenueCard venue={card} />
           </PopIn>
         </MapCard>
       ) : null}
       {stackVenues.length > 1 ? (
-        <MapCard bottom={cardBottom(tabBarHeight)}>
+        <MapCard bottom={cardBottom(tabBarHeight)} onHeight={setCardHeight}>
           <PopIn key={stack ?? ''}>
             <StackCard venues={stackVenues} />
           </PopIn>
@@ -486,6 +498,8 @@ const PIN_EDGE = MAP_PIN.selectedRadius + MAP_PIN.selectedRing + SPACING[3];
 
 // The map's camera moves (a cluster opened, the venues shown again).
 const CAMERA_MS = 400;
+// A step of the zoom buttons.
+const ZOOM_MS = 200;
 
 // Where the map's card stands: 26 over the tab bar's top (KesfetHarita `.vc`; the bar's room already
 // holds the 16 over it).
@@ -501,10 +515,13 @@ function MapControls({
   bottom,
   onRecentre,
   onInfo,
+  onZoom,
 }: {
   bottom: number;
   onRecentre: () => void;
   onInfo: () => void;
+  // A step nearer (1) or farther (-1).
+  onZoom: (by: number) => void;
 }) {
   const { c, scheme } = useKit();
   const { colors } = useTheme();
@@ -513,10 +530,7 @@ function MapControls({
   const g = m.legend;
   return (
     <>
-      <View
-        pointerEvents="none"
-        style={{ position: 'absolute', left: m.side, bottom: bottom + m.legendOver }}
-      >
+      <View pointerEvents="none" style={{ position: 'absolute', left: m.side, bottom }}>
         <Glass
           face={e.solid}
           radius={g.radius}
@@ -546,14 +560,29 @@ function MapControls({
           ))}
         </Glass>
       </View>
-      <View style={{ position: 'absolute', left: m.attrSide, bottom }}>
-        <Tap accessibilityLabel={tr.explore.mapInfo} onPress={onInfo} hitSlop={SPACING[3]}>
-          <T v="mapAttr" color={e.mapLabel}>
-            {tr.explore.mapSources}
-          </T>
-        </Tap>
-      </View>
-      <View style={{ position: 'absolute', right: m.side, bottom }}>
+      {/* The map's sources as a round of their own over the recentre round (the owner's ask, 20
+          Kasım; the written "© OpenStreetMap" line went): it opens the map's own sources notice. */}
+      <View style={{ position: 'absolute', right: m.side, bottom, gap: m.controlGap }}>
+        {/* Nearer and farther by a step (the owner's ask, 20 Kasım), for a thumb that cannot pinch. */}
+        <Round
+          side={m.control}
+          label={tr.explore.zoomIn}
+          testID="explore-map-zoom-in"
+          onPress={() => onZoom(1)}
+        >
+          <CapIcon name="plus" color={c.ink} />
+        </Round>
+        <Round
+          side={m.control}
+          label={tr.explore.zoomOut}
+          testID="explore-map-zoom-out"
+          onPress={() => onZoom(-1)}
+        >
+          <CapIcon name="minus" color={c.ink} />
+        </Round>
+        <Round side={m.control} label={tr.explore.mapInfo} onPress={onInfo}>
+          <CapIcon name="info" color={c.muted} />
+        </Round>
         <Round side={m.control} label={tr.explore.recentre} onPress={onRecentre}>
           <CapIcon name="compass" color={colors.accent} />
         </Round>
@@ -562,10 +591,20 @@ function MapControls({
   );
 }
 
-function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) {
+function MapCard({
+  bottom,
+  onHeight,
+  children,
+}: {
+  bottom: number;
+  // The card's height as laid out: what stands over it keeps clear of it.
+  onHeight: (height: number) => void;
+  children: ReactNode;
+}) {
   return (
     <View
       pointerEvents="box-none"
+      onLayout={(e) => onHeight(e.nativeEvent.layout.height)}
       style={{
         position: 'absolute',
         left: 0,

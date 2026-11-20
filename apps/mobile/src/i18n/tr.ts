@@ -623,6 +623,8 @@ export const tr = {
     // The map's glass column (5.1): the camera back over the venues (never the phone's position,
     // rule 6) and the map's sources.
     recentre: 'Bütün mekanları göster',
+    zoomIn: 'Yakınlaştır',
+    zoomOut: 'Uzaklaştır',
     mapInfo: 'Harita bilgisi',
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',

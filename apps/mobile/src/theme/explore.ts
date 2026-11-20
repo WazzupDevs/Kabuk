@@ -200,6 +200,8 @@ export const EXPLORE = {
     goIcon: 18,
     control: 48,
     controlOver: 12,
+    // The two rounds at the right 12 apart (the spacing scale).
+    controlGap: 12,
     attrSide: 24,
     legendOver: 20,
     legend: { padX: 12, padY: 6, gap: 12, itemGap: 5, dot: 9, radius: 12 },

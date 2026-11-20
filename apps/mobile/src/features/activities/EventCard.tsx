@@ -2,13 +2,15 @@ import { describeEventTime } from '@shared/explore.ts';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Glass, T, Tag } from '@/aura/kit';
+import { T, Tag } from '@/aura/kit';
 import { usePressScale } from '@/components/motion';
 import type { ExploreEvent } from '@/features/explore/useExploreVenues';
 import { tr } from '@/i18n/tr';
 import { useNarrow } from '@/lib/useNarrow';
+import { ACTIVITIES } from '@/theme/activities';
 import { KIT } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
+import { GIFT_CARD } from '@/theme/gifts';
+import { gradientStyle } from '@/theme/gradient';
 import type { CoverKind } from '@/theme/eventCovers';
 import { SPACING } from '@/theme/tokens';
 
@@ -28,7 +30,6 @@ export function EventCard({
   onPress: () => void;
 }) {
   const pressScale = usePressScale();
-  const { colors, scheme } = useTheme();
   // Aura v75 AktivitelerDar: the tags 30 when narrow.
   const tagHeight = useNarrow() ? KIT.size.tagNarrow : undefined;
   const when = tr.explore.eventTime(describeEventTime(event.startsAt, event.endsAt, now));
@@ -40,47 +41,47 @@ export function EventCard({
       onPress={onPress}
     >
       {({ pressed }) => (
-        <View style={pressScale(pressed)}>
-          <Glass style={{ padding: CARD_PAD }}>
-            <View
-              style={{
-                aspectRatio: SCENE_RATIO,
-                borderRadius: SCENE_RADIUS,
-                overflow: 'hidden',
-              }}
-            >
-              <Image source={EVENT_SCENE} style={StyleSheet.absoluteFill} contentFit="cover" />
-              <View
-                className="absolute flex-row items-start"
-                style={{ top: SPACING[3], left: SPACING[3], right: SPACING[3], gap: SPACING[1.5] }}
-              >
-                <Tag tone="event" fit height={tagHeight} label={tr.activities.eventKind} />
-                <View style={{ marginLeft: 'auto', flexShrink: 1 }}>
-                  <Tag tone="eventTime" fit height={tagHeight} label={when} />
-                </View>
-              </View>
+        // As tall and as round as the gift card over it (the owner's ask, 20 Kasım): the riso
+        // scene fills the card, the tags at its top, the title and the venue at its foot on a
+        // dark fade.
+        <View
+          style={[
+            pressScale(pressed),
+            { height: GIFT_CARD.height, borderRadius: GIFT_CARD.radius, overflow: 'hidden' },
+          ]}
+        >
+          <Image source={EVENT_SCENE} style={StyleSheet.absoluteFill} contentFit="cover" />
+          <View style={[StyleSheet.absoluteFill, gradientStyle(E.shade)]} />
+          <View
+            className="absolute flex-row items-start"
+            style={{ top: E.pad, left: E.pad, right: E.pad, gap: SPACING[1.5] }}
+          >
+            <Tag tone="event" fit height={tagHeight} label={tr.activities.eventKind} />
+            <View style={{ marginLeft: 'auto', flexShrink: 1 }}>
+              <Tag tone="eventTime" fit height={tagHeight} label={when} />
             </View>
-            <View
-              style={{
-                gap: SPACING[0.5],
-                paddingTop: KIT.size.rowGap,
-                paddingHorizontal: SPACING[2.5],
-                paddingBottom: SPACING[2],
-              }}
-            >
-              <T v="h3">{event.title}</T>
-              <T v="fine" strong color={scheme === 'dark' ? colors.accent : KIT.primary}>
-                {venue.name}
-              </T>
-            </View>
-          </Glass>
+          </View>
+          <View
+            style={{
+              position: 'absolute',
+              left: E.pad,
+              right: E.pad,
+              bottom: E.pad,
+              gap: E.lineGap,
+            }}
+          >
+            <T v="venueBarName" color={E.title} lines={1} fit>
+              {event.title}
+            </T>
+            <T v="fine" color={E.venue} lines={1} fit>
+              {venue.name}
+            </T>
+          </View>
         </View>
       )}
     </Pressable>
   );
 }
 
-const CARD_PAD = 8;
-const SCENE_RADIUS = 22;
-const SCENE_RATIO = 334 / 168;
+const E = ACTIVITIES.eventCard;
 const EVENT_SCENE = require('../../../assets/riso/event.webp');

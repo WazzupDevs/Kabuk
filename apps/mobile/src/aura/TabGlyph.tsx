@@ -1,22 +1,14 @@
 import type { TabKey } from '@shared/navigation.ts';
 import { useId } from 'react';
-import Svg, { Defs, G, Mask, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, G, Mask, Path, Rect } from 'react-native-svg';
 
 import { AURA } from '@/theme/aura';
 
-import { CapIcon, type CapIconName } from './CapIcon';
-
-// The tab icons (Aura v65 GaleriAltMenu → Simgeler, U7): the capsule icon family (Keşfet compass,
-// Aktiviteler calendar, Mesajlar chat, Profil user) and Mekân's two outlined capsules (the mark).
-// One line style in one colour (docs/design/iskelet.md → 3.3: the chosen tab's green, the others
-// quiet); the tab bar (motion/TabBar.tsx) gives the colour.
-
-const CAP: Record<Exclude<TabKey, 'venue'>, CapIconName> = {
-  explore: 'compass',
-  activities: 'calendar',
-  messages: 'chat',
-  profile: 'user',
-};
+// The tab icons (the owner's call, 20 Kasım): every tab in the manner of Mekân's mark, one line
+// 1.9 wide with round ends and no fill, in one colour: quiet at rest, the chosen tab's green. Keşfet
+// a compass, Aktiviteler a ticket, Mesajlar two bubbles (the back one behind the front, as the
+// mark's capsules), Profil a person; Mekân the two outlined capsules. The tab bar
+// (motion/TabBar.tsx) gives the colour.
 
 const SW = 1.9;
 type Box = { x: number; y: number; w: number; h: number; r: number };
@@ -29,8 +21,14 @@ const box = (b: Box, paint: { fill?: string; stroke?: string; strokeWidth?: numb
   <Rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.r} {...paint} />
 );
 
-function Mark({ color, uid }: { color: string; uid: string }) {
-  const [back, front] = MARK;
+const BUBBLES: [Box, Box] = [
+  { x: 2.6, y: 3.8, w: 13.4, h: 10.4, r: 5.2 },
+  { x: 8, y: 9.8, w: 13.4, h: 10.4, r: 5.2 },
+];
+
+// Two outlined shapes, the back one hidden where the front one lies over it.
+function Pair({ shapes, color, uid }: { shapes: [Box, Box]; color: string; uid: string }) {
+  const [back, front] = shapes;
   const line = { fill: 'none', stroke: color, strokeWidth: SW };
   return (
     <>
@@ -46,33 +44,40 @@ function Mark({ color, uid }: { color: string; uid: string }) {
   );
 }
 
-// `second`: the chosen tab's body in its own colour, whole (`.ti.on .ci`: --ci-b, --ci-bo 1).
-export function TabIcon({
-  tab,
-  color,
-  second,
-  size,
-}: {
-  tab: TabKey;
-  color: string;
-  second?: string;
-  size: number;
-}) {
+const TICKET =
+  'M5.6 5.2h12.8a2 2 0 0 1 2 2v2.2a2.6 2.6 0 0 0 0 5.2v2.2a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2v-2.2a2.6 2.6 0 0 0 0-5.2V7.2a2 2 0 0 1 2-2z';
+
+export function TabIcon({ tab, color, size }: { tab: TabKey; color: string; size: number }) {
   const uid = `m${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  if (tab === 'venue') {
-    return (
-      <Svg width={size} height={size} viewBox="0 0 24 24">
-        <Mark color={color} uid={uid} />
-      </Svg>
-    );
-  }
+  const line = {
+    fill: 'none',
+    stroke: color,
+    strokeWidth: SW,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
   return (
-    <CapIcon
-      name={CAP[tab]}
-      color={color}
-      second={second}
-      soft={second ? 1 : undefined}
-      size={size}
-    />
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      {tab === 'venue' ? (
+        <Pair shapes={MARK} color={color} uid={uid} />
+      ) : tab === 'messages' ? (
+        <Pair shapes={BUBBLES} color={color} uid={uid} />
+      ) : tab === 'explore' ? (
+        <>
+          <Circle cx={12} cy={12} r={8.6} {...line} />
+          <Path d="M15.4 8.6l-1.9 4.9-4.9 1.9 1.9-4.9z" {...line} />
+        </>
+      ) : tab === 'activities' ? (
+        <>
+          <Path d={TICKET} {...line} />
+          <Path d="M14 8.4v7.2" {...line} strokeDasharray="1.4 2.6" />
+        </>
+      ) : (
+        <>
+          <Circle cx={12} cy={8.2} r={3.8} {...line} />
+          <Path d="M4.8 20.2c.9-3.8 3.7-5.8 7.2-5.8s6.3 2 7.2 5.8" {...line} />
+        </>
+      )}
+    </Svg>
   );
 }
