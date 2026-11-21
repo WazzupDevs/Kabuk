@@ -17,9 +17,8 @@ import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/com
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
+import { MenuItem, openMenu } from '@/components/Menu';
 import { Loader } from '@/components/Loader';
-import type { MenuAnchor } from '@/motion';
 import { useHideTabBar } from '@/components/TabBar';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -115,15 +114,28 @@ export function DmThread({
   const friend = useFriends().data?.find((f) => f.publicId === publicId);
   const photoUrl = friend?.photoUrl ?? null;
   const messages = useDmMessages(threadId);
-  const [menu, setMenu] = useState(false);
   // iskelet.md → 3.5 and 5.5: the menu grows out of the three dots, measured as they are pressed.
+  // Opened in the app's layer, never kept in this screen's state: opening it redraws no message
+  // (CLAUDE.md → Çizim bütçesi). No "Vazgeç"; a tap outside closes it, Engelle red at the foot.
   const moreRef = useRef<View>(null);
-  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
-  const openMenu = () =>
-    measureMenuAnchor(moreRef.current, (at) => {
-      setAnchor(at);
-      setMenu(true);
-    });
+  const openOptions = () =>
+    openMenu(
+      moreRef.current,
+      <>
+        <MenuItem icon="report" label={tr.dm.report} onPress={() => setReporting(true)} />
+        <MenuItem
+          icon="person-remove-outline"
+          label={tr.friends.removeFriend}
+          onPress={() => setConfirm('remove')}
+        />
+        <MenuItem
+          negative
+          icon="ban-outline"
+          label={tr.friends.block}
+          onPress={() => setConfirm('block')}
+        />
+      </>,
+    );
   const [confirm, setConfirm] = useState<'remove' | 'block' | null>(null);
   const [reporting, setReporting] = useState(false);
   const [outbox, dispatch] = useReducer(outboxReducer, []);
@@ -590,7 +602,7 @@ export function DmThread({
                 icon="moreV"
                 iconSize={ICON.md}
                 label={tr.friends.more}
-                onPress={openMenu}
+                onPress={openOptions}
               />
             </View>
           }
@@ -618,37 +630,6 @@ export function DmThread({
         />
       }
     >
-      {anchor ? (
-        // iskelet.md → 3.5: no "Vazgeç"; a tap outside closes it, Engelle red at the foot apart.
-        <Menu anchor={anchor} visible={menu} onClose={() => setMenu(false)}>
-          <MenuItem
-            icon="report"
-            label={tr.dm.report}
-            onPress={() => {
-              setMenu(false);
-              setReporting(true);
-            }}
-          />
-          <MenuItem
-            icon="person-remove-outline"
-            label={tr.friends.removeFriend}
-            onPress={() => {
-              setMenu(false);
-              setConfirm('remove');
-            }}
-          />
-          <MenuItem
-            negative
-            icon="ban-outline"
-            label={tr.friends.block}
-            onPress={() => {
-              setMenu(false);
-              setConfirm('block');
-            }}
-          />
-        </Menu>
-      ) : null}
-
       <ReportModal
         reasons={REPORT_REASONS}
         visible={reporting}

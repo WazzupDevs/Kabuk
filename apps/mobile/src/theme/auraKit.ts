@@ -1341,11 +1341,13 @@ export const KIT = {
       dialogAbove: 0.44,
       // A soft pill of words between the sentence and the buttons (SemtSureBitti `.dw`).
       dialogPill: { radius: 16, padY: 6, padX: 12 },
-      // The ⋮ menu: 292 wide, 28 round, 16 / 8 / 8 inside, 12 from the screen's edge; a row 48 at
-      // least, 6 / 12 in, 18 round, its icon 22 and 14 to the words, the hairline from 48.
+      // The ⋮ menu: 292 wide, 28 round, 8 inside all round (21 Kasım: the boards' 16 over the first
+      // row was for a heading no menu has; a menu of one row stood lopsided, the owner's report), 12
+      // from the screen's edge; a row 48 at least, 6 / 12 in, 18 round, its icon 22 and 14 to the
+      // words, the hairline from 48.
       menuWidth: 292,
       menuRadius: 28,
-      menuPadTop: 16,
+      menuPadTop: 8,
       menuPadX: 8,
       menuPadBottom: 8,
       // A ⋮ menu whose first row is a row, not a heading (SemtSecenek, MekanSohbetSecenek: 8 all

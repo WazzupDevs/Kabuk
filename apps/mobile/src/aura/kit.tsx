@@ -46,7 +46,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { CapIcon, type CapIconName } from './CapIcon';
 import { springConfig, SWAP_RN } from './motion';
 import { photoCacheKey } from '@/lib/usePhoto';
-import { PRESS_DELAY, usePress } from '@/motion/Tap';
+import { holdAfter, PRESS_DELAY, usePress } from '@/motion/Tap';
 
 // The canvas's component kit (docs/design/aura/project/aura.css), class for class. Values from
 // theme/auraKit.ts; nothing is measured here.
@@ -1223,6 +1223,7 @@ export function Li({
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       onLongPress={onLongPress}
+      delayLongPress={holdAfter(PRESS_DELAY)}
       accessibilityActions={onLongPress ? LONG_PRESS_ACTION : undefined}
       onAccessibilityAction={
         onLongPress

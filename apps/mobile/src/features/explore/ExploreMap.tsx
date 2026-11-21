@@ -16,7 +16,6 @@ import {
   venueBounds,
   venueCollection,
 } from '@shared/exploreMap.ts';
-import { router } from 'expo-router';
 import { describeEventTime } from '@shared/explore.ts';
 import { type ReactNode, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
@@ -35,6 +34,7 @@ import { EXPLORE } from '@/theme/explore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
+import { openVenue } from '@/features/explore/openVenue';
 
 import { kindLabel } from './kindLabel';
 import { useMapStyle } from './mapStyle';
@@ -647,10 +647,6 @@ function MapFace({
       {children}
     </Glass>
   );
-}
-
-function openVenue(id: string) {
-  router.push({ pathname: '/explore/[venueId]', params: { venueId: id } });
 }
 
 // The selected venue, over the floating tab bar (KesfetHarita `.vc`): its 56 picture with a buddy

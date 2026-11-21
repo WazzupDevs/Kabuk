@@ -191,7 +191,8 @@ describe("another person's profile (kapak, 5.6)", () => {
   });
   it('"Arkadaşlıktan çıkar" in the menu only, the DM menu grown from the three dots', () => {
     expect(page).not.toMatch(/FriendActions/);
-    expect(page).toMatch(/<Menu anchor=\{anchor\}/);
+    // Opened in the app's layer from the three dots (CLAUDE.md → Çizim bütçesi).
+    expect(page).toMatch(/openMenu\(\s*moreRef\.current/);
     expect(page).toMatch(/label=\{tr\.friends\.removeFriend\}/);
     // No capsule and no nick on another person's profile (rule 4).
     expect(page).not.toMatch(/capsuleNick|capsuleLook|LivingLook/);

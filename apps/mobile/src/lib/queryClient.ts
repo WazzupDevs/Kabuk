@@ -13,6 +13,7 @@ declare module '@tanstack/react-query' {
 }
 
 export const QUERY_STALE_MS = 20_000;
+const KEEP_MS = 24 * 60 * 60_000;
 
 const mutationCache = feelingMutationCache(haptic, stoppedTyping);
 // Every answer and every request that could not go tell the connection banner (lib/connection.ts).
@@ -28,7 +29,10 @@ export const queryClient = new QueryClient({
   // A read stays fresh for a while: coming back to the foreground or online, mounting a screen
   // again, re-reads only what is older than this. Realtime and presses invalidate (which ignores
   // staleTime); the table, the check-in and the inbox ask for 'always' on focus themselves.
-  defaultOptions: { queries: { staleTime: QUERY_STALE_MS } },
+  // A read no screen shows stays in memory for a day (it was 5 minutes): coming back to a screen it
+  // is there at once, brought up to date behind it (docs/decisions/onbellek.md). A query that must
+  // not stay keeps its own gcTime (another person's profile: 0).
+  defaultOptions: { queries: { staleTime: QUERY_STALE_MS, gcTime: KEEP_MS } },
 });
 
 // React Native has no window focus: without this, queries never refetch when the app comes back to

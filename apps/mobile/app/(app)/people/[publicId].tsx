@@ -12,7 +12,7 @@ import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Btn, Glass, Round, T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
+import { MenuItem, openMenu } from '@/components/Menu';
 import { PhotoPreview } from '@/components/PhotoPreview';
 import { Screen } from '@/components/Screen';
 import { ScreenStatusBar } from '@/components/StatusScrim';
@@ -33,7 +33,6 @@ import {
   BarArrive,
   BarBand,
   Cover,
-  type MenuAnchor,
   ScrollBody,
   ScrollFade,
   ScrollScreen,
@@ -131,15 +130,45 @@ function CoverPage({
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [preview, setPreview] = useState(false);
-  const [menu, setMenu] = useState(false);
   const moreRef = useRef<View>(null);
-  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
-  const openMenu = () =>
-    measureMenuAnchor(moreRef.current, (at) => {
-      setAnchor(at);
-      setMenu(true);
-    });
   const [reporting, setReporting] = useState(false);
+  // The DM's menu (iskelet.md → 3.5, 5.5): no "Vazgeç", Engelle red at the foot apart; in the app's
+  // layer, not this screen's state (CLAUDE.md → Çizim bütçesi).
+  const openOptions = () =>
+    openMenu(
+      moreRef.current,
+      <>
+        <MenuItem
+          icon="report"
+          label={tr.chat.report}
+          testID="profile-report"
+          onPress={() => {
+            setReporting(true);
+          }}
+        />
+        {friend ? (
+          <MenuItem
+            icon="person-remove-outline"
+            label={tr.friends.removeFriend}
+            testID="profile-remove"
+            onPress={() => {
+              setEnding('remove');
+            }}
+          />
+        ) : null}
+        {friend ? (
+          <MenuItem
+            negative
+            icon="ban-outline"
+            label={tr.friends.block}
+            testID="profile-block"
+            onPress={() => {
+              setEnding('block');
+            }}
+          />
+        ) : null}
+      </>,
+    );
   const [ending, setEnding] = useState<'remove' | 'block' | null>(null);
   // The status bar's icons: light over the cover, the scheme's once the band is in (5.2).
   const onBar = useScrollPast((O.band[0] + O.band[1]) / 2);
@@ -443,47 +472,10 @@ function CoverPage({
             iconSize={B.bar.more}
             label={tr.profile.more}
             testID="profile-more"
-            onPress={openMenu}
+            onPress={openOptions}
           />
         </View>
       </View>
-      {anchor ? (
-        // The DM's menu (iskelet.md → 3.5, 5.5): no "Vazgeç", Engelle red at the foot apart.
-        <Menu anchor={anchor} visible={menu} onClose={() => setMenu(false)}>
-          <MenuItem
-            icon="report"
-            label={tr.chat.report}
-            testID="profile-report"
-            onPress={() => {
-              setMenu(false);
-              setReporting(true);
-            }}
-          />
-          {friend ? (
-            <MenuItem
-              icon="person-remove-outline"
-              label={tr.friends.removeFriend}
-              testID="profile-remove"
-              onPress={() => {
-                setMenu(false);
-                setEnding('remove');
-              }}
-            />
-          ) : null}
-          {friend ? (
-            <MenuItem
-              negative
-              icon="ban-outline"
-              label={tr.friends.block}
-              testID="profile-block"
-              onPress={() => {
-                setMenu(false);
-                setEnding('block');
-              }}
-            />
-          ) : null}
-        </Menu>
-      ) : null}
       <ConfirmWithReport
         reasons={REPORT_REASONS}
         visible={ending !== null}

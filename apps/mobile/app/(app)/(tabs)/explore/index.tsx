@@ -66,6 +66,7 @@ import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { openVenue } from '@/features/explore/openVenue';
 
 type View_ = 'list' | 'map';
 
@@ -760,15 +761,7 @@ function VenueList({
               openings={openings}
             >
               {row.type === 'venue' ? (
-                <VenueRow
-                  venue={row.venue}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/explore/[venueId]',
-                      params: { venueId: row.venue.id },
-                    })
-                  }
-                />
+                <VenueRow venue={row.venue} onPress={() => openVenue(row.venue.id)} />
               ) : (
                 <UniversityRow
                   university={row.university}
@@ -1037,7 +1030,7 @@ function CampusSheet({
               accessibilityLabel={`${v.name}, ${v.district}, ${tr.explore.buckets[v.bucket]}`}
               onPress={() => {
                 onClose();
-                router.push({ pathname: '/explore/[venueId]', params: { venueId: v.id } });
+                openVenue(v.id);
               }}
             >
               <VenueThumb kind="kampus" size={VENUE_THUMB_SIZE} />

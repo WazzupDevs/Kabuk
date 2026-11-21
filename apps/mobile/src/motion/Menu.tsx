@@ -1,6 +1,7 @@
 import {
   Children,
   createContext,
+  Fragment,
   isValidElement,
   type ReactNode,
   useContext,
@@ -9,7 +10,6 @@ import {
 } from 'react';
 import {
   Animated,
-  Modal,
   Pressable,
   StatusBar,
   StyleSheet,
@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { create } from 'zustand';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { T } from '@/aura/kit';
@@ -41,6 +42,7 @@ import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
+import { Layer } from './menuLayer';
 import { MENU_FADE_UNTIL, MENU_SCALE, type MenuAnchor, menuPlace } from './menuPlace';
 
 // skall tuvali (skall.css → "Menü"): a sheet's actions as rows of one soft card, a hairline
@@ -89,7 +91,7 @@ export function Menu({
   onClose?: () => void;
 }) {
   const { scheme } = useTheme();
-  const rows = Children.toArray(children).filter(Boolean);
+  const rows = menuRows(children);
   const shadowOff = useLabOff('golge');
   const L = KIT.layer.size;
   const shadow = boxShadowParts(
@@ -235,6 +237,71 @@ export function measureMenuAnchor(view: View | null, done: (anchor: MenuAnchor) 
   view?.measureInWindow((x, y, width, height) => done({ x, y, width, height }));
 }
 
+// A menu opened by a screen without keeping it in the screen's state (CLAUDE.md → Çizim bütçesi):
+// the screen says which button and which rows, the app's layer (MenuHost, in MenuLayer) draws and
+// closes it. Opening and closing redraw only the menu, never the screen under it. The rows are the
+// screen's own MenuItems, built as it opens; a row's press closes the menu first (PopClose).
+type MenuOptions = {
+  hold?: boolean;
+  tight?: boolean;
+  label?: string;
+  lifted?: ReactNode;
+  side?: number;
+  // Called once it is closed (a tap outside, back, a row).
+  onClose?: () => void;
+};
+type OpenMenu = MenuOptions & { id: number; anchor: MenuAnchor; rows: ReactNode; visible: boolean };
+const useOpenMenu = create<{ menu: OpenMenu | null }>(() => ({ menu: null }));
+let menuIds = 0;
+
+export function openMenuAt(anchor: MenuAnchor, rows: ReactNode, options: MenuOptions = {}): void {
+  menuIds += 1;
+  useOpenMenu.setState({ menu: { ...options, id: menuIds, anchor, rows, visible: true } });
+}
+
+// Grows out of `view` (the ⋮ button), measured as it is pressed.
+export function openMenu(view: View | null, rows: ReactNode, options: MenuOptions = {}): void {
+  measureMenuAnchor(view, (anchor) => openMenuAt(anchor, rows, options));
+}
+
+export function closeMenu(): void {
+  const open = useOpenMenu.getState().menu;
+  if (!open || !open.visible) return;
+  useOpenMenu.setState({ menu: { ...open, visible: false } });
+  open.onClose?.();
+}
+
+// The menu `openMenu` opened, drawn once in the app's layer (motion/menuLayer.tsx → MenuLayer).
+export function MenuHost() {
+  const menu = useOpenMenu((s) => s.menu);
+  if (!menu) return null;
+  return (
+    <Menu
+      key={menu.id}
+      anchor={menu.anchor}
+      visible={menu.visible}
+      onClose={closeMenu}
+      hold={menu.hold}
+      tight={menu.tight}
+      label={menu.label}
+      lifted={menu.lifted}
+      side={menu.side}
+    >
+      {menu.rows}
+    </Menu>
+  );
+}
+
+// The rows as one flat list: a screen may hand them in a fragment (openMenu), and the card reads
+// each row itself (the red row at the foot, the hairline over a following row).
+function menuRows(children: ReactNode): ReactNode[] {
+  return Children.toArray(children).flatMap((row) =>
+    isValidElement<{ children?: ReactNode }>(row) && row.type === Fragment
+      ? menuRows(row.props.children)
+      : [row],
+  );
+}
+
 function isNote(row: ReactNode): boolean {
   return isValidElement(row) && row.type === MenuNote;
 }
@@ -280,8 +347,17 @@ function MenuPop({
   const insets = useSafeAreaInsets();
   const shadowOff = useLabOff('golge');
   const [mounted, setMounted] = useState(visible);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [measured, setSize] = useState<{ width: number; height: number } | null>(null);
   const [p] = useState(() => new Animated.Value(0));
+  const L = KIT.layer.size;
+  const edge = side ?? KIT.size.menuGap;
+  // At most the screen less its edges (320 dp: 292 still fits).
+  const width = Math.min(hold ? L.holdWidth : L.menuWidth, screen.width - 2 * edge);
+  // Its height reckoned from its rows, so it is placed and grows from its first frame (no frame
+  // spent measuring it unseen); its measured height corrects it if a row is taller.
+  const guess = menuHeight(children, hold);
+  const size = measured ?? (guess === null ? null : { width, height: guess });
+  const ready = size !== null;
   useLeaveKeyboard(visible);
   useOverlaySlot(hold ? 'hold' : 'menu', visible, onClose);
   if (visible && !mounted) setMounted(true);
@@ -289,7 +365,7 @@ function MenuPop({
   if (!visible && mounted && size === null) setMounted(false);
 
   useEffect(() => {
-    if (!mounted || size === null) return undefined;
+    if (!mounted || !ready) return undefined;
     const leaveMs = reduce ? 0 : MOTION.dissolve.outMs;
     const anim = visible
       ? reduce
@@ -310,15 +386,11 @@ function MenuPop({
       },
       leaveMs + LEAVE_FALLBACK_MS,
     );
-  }, [visible, mounted, size, reduce, p]);
+  }, [visible, mounted, ready, reduce, p]);
 
   // Inside a status-bar-translucent Modal the safe area can come back 0 (MessagePop).
   const topInset = Math.max(insets.top, StatusBar.currentHeight ?? 0);
-  const L = KIT.layer.size;
   const radius = hold ? L.holdRadius : L.menuRadius;
-  const edge = side ?? KIT.size.menuGap;
-  // At most the screen less its edges (320 dp: 292 still fits).
-  const width = Math.min(hold ? L.holdWidth : L.menuWidth, screen.width - 2 * edge);
   const placed = size
     ? menuPlace(anchor, size, screen, { top: topInset, bottom: insets.bottom }, KIT.size.menuGap)
     : null;
@@ -327,15 +399,8 @@ function MenuPop({
   const place = placed ? { ...placed, left, originX: placed.originX + placed.left - left } : null;
   const fade = p.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' });
   const shadow = boxShadowParts(shadowOff, KIT.layer[scheme].menuShadow, radius);
-  return (
-    <Modal
-      transparent
-      visible={mounted}
-      animationType="none"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={onClose}
-    >
+  const layer = (
+    <>
       {hold ? (
         <SheetScrim
           hold
@@ -367,12 +432,12 @@ function MenuPop({
       <Animated.View
         accessibilityRole="menu"
         accessibilityLabel={label}
-        onLayout={
-          size
-            ? undefined
-            : (e) =>
-                setSize({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })
-        }
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          if (size === null || Math.abs(size.height - h) > 1) {
+            setSize({ width: e.nativeEvent.layout.width, height: h });
+          }
+        }}
         style={{
           position: 'absolute',
           left: place?.left ?? 0,
@@ -400,8 +465,28 @@ function MenuPop({
           </PopClose.Provider>
         </View>
       </Animated.View>
-    </Modal>
+    </>
   );
+  // In the app's layer (menuLayer.tsx → Layer); back closes it while it is open.
+  return (
+    <Layer visible={mounted} onBack={visible ? onClose : undefined}>
+      {layer}
+    </Layer>
+  );
+}
+
+// The menu card's height from its rows (MenuCard, MenuItem: a row its least height, the long-press
+// menu's red group apart on its band); null with a note, whose words set its height.
+function menuHeight(rows: ReactNode[], hold: boolean): number | null {
+  if (rows.some(isNote)) return null;
+  const L = KIT.layer.size;
+  const negative = rows.filter(isNegative).length;
+  const plain = rows.length - negative;
+  if (hold) {
+    const band = negative > 0 && plain > 0 ? L.holdBand : 0;
+    return 2 * L.holdPad + rows.length * L.holdRow + band;
+  }
+  return L.menuPadTop + L.menuPadBottom + rows.length * L.menuRow;
 }
 
 const ROW_HEIGHT = 56;

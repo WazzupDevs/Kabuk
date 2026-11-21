@@ -9,6 +9,7 @@ import { resetOnboarding } from '@/features/onboarding/store';
 import { identify, resetAnalytics } from '@/lib/analytics';
 import { setReportingUser } from '@/lib/errorReporting';
 import { queryClient } from '@/lib/queryClient';
+import { clearKeptQueries, startKeptQueries } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
 
 type SessionState = {
@@ -26,10 +27,20 @@ let lastUser: string | null | undefined;
 // session that dropped by itself kept the friends, the inbox, the table and the blocks in the
 // cache for the next account, and the profile photos on disk).
 function noteUser(user: string | null): void {
+  const previous = lastUser;
   const change = accountChange(lastUser, user);
   lastUser = user;
   // The conversations kept on the phone (dmCache.ts) go with the account, and with no account.
   if (change.conversations) void clearDmCache();
+  // The reads kept on the phone (lib/queryPersist.ts): another account's or none go; the signed-in
+  // account's come into memory as it signs in or the app starts, and are kept from then on.
+  if (change.conversations) {
+    void clearKeptQueries().then(() => {
+      if (user) void startKeptQueries(queryClient, user);
+    });
+  } else if (user && previous !== user) {
+    void startKeptQueries(queryClient, user);
+  }
   if (!change.memory) return;
   queryClient.clear();
   forgetAccountMemory();

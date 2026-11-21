@@ -1,7 +1,6 @@
 import { groupHistory, historyDay, historyResult, historySessions } from '@shared/activities.ts';
 import { explorePlace, todayEvents } from '@shared/explore.ts';
 import { upperTr } from '@shared/trText.ts';
-import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 
@@ -32,6 +31,7 @@ import { ACTIVITIES as A } from '@/theme/activities';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
+import { openVenue } from '@/features/explore/openVenue';
 
 // A game's result on its row: won green, lost amber, done the plain glass (the kit's Tag).
 const RESULT_TONE = { won: 'green', lost: 'amber', done: 'glassy' } as const;
@@ -209,7 +209,7 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
             now={now}
             onPress={() => {
               if (sample) return;
-              router.navigate({ pathname: '/explore/[venueId]', params: { venueId: venue.id } });
+              openVenue(venue.id, 'navigate');
             }}
           />
         </Rise>

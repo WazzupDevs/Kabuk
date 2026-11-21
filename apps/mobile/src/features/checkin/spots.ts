@@ -8,8 +8,9 @@ const venueSpotsQueryKey = (venueId: string | undefined) => ['venueSpots', venue
 
 // The venue's active spots in their order; empty for a venue without spots (docs/SPEC_V3.md §4.3).
 // Public like the venue itself; no count of tables per spot exists anywhere.
-export function useVenueSpots(venueId: string | undefined) {
-  return useQuery({
+// The venue's spots as a query, for the screen and for reading it ahead (openVenue).
+export function venueSpotsQuery(venueId: string | undefined) {
+  return {
     queryKey: venueSpotsQueryKey(venueId),
     enabled: venueId !== undefined,
     staleTime: 5 * 60_000,
@@ -24,5 +25,9 @@ export function useVenueSpots(venueId: string | undefined) {
       if (error) throw error;
       return data;
     },
-  });
+  };
+}
+
+export function useVenueSpots(venueId: string | undefined) {
+  return useQuery(venueSpotsQuery(venueId));
 }

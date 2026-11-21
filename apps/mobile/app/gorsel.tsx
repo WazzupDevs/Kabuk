@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 
 import { OverlayHost } from '@/components/OverlayHost';
 import { GateState } from '@/features/design/gorsel/GateState';
+import { MenuHost } from '@/motion/Menu';
+import { MenuLayer } from '@/motion/menuLayer';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
 // The visual gate's route (CLAUDE.md → Görsel kapı): masa:///gorsel?durum=<key>&tema=light|dark
@@ -32,15 +34,20 @@ export default function GorselScreen() {
   if (!designPickerEnabled) return <Redirect href="/" />;
   return (
     <>
-      <GateState
-        key={p.n ?? '0'}
-        shot={p.n ?? '0'}
-        stateKey={p.durum ?? ''}
-        scheme={p.tema === 'dark' ? 'dark' : 'light'}
-        page={Number(p.sayfa ?? 0)}
-        pages={Math.max(1, Number(p.sayfalar ?? 1))}
-        width={p.genislik ? Number(p.genislik) : undefined}
-      />
+      {/* The menus a screen opens (menuLayer.tsx), as in the signed-in group's layout. */}
+      <MenuLayer>
+        <GateState
+          key={p.n ?? '0'}
+          shot={p.n ?? '0'}
+          stateKey={p.durum ?? ''}
+          scheme={p.tema === 'dark' ? 'dark' : 'light'}
+          page={Number(p.sayfa ?? 0)}
+          pages={Math.max(1, Number(p.sayfalar ?? 1))}
+          width={p.genislik ? Number(p.genislik) : undefined}
+        />
+        {/* The menus a screen opens with openMenu (motion/Menu.tsx): drawn here, never in it. */}
+        <MenuHost />
+      </MenuLayer>
       {/* The confirmation dialogs a screen opens (`confirm`, overlayStore.ts): the signed-in
           group's layout draws them, this route is outside it. */}
       <OverlayHost />

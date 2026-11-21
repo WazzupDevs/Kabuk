@@ -9,6 +9,8 @@ import { useGiftLogin } from '@/features/gifts/queries';
 import { usePushNavigation, useSilentPushRegistration } from '@/features/push/push';
 import { IncomingRequestHost } from '@/features/rooms/IncomingRequest';
 import { useStackOptions } from '@/lib/stackOptions';
+import { MenuHost } from '@/motion/Menu';
+import { MenuLayer } from '@/motion/menuLayer';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
 
@@ -30,23 +32,28 @@ export default function GroupLayout() {
   useDistrictLaunchLocate();
   return (
     <View style={{ flex: 1 }}>
-      {/* "Bağlantı yok" over the screens, in the flow: the screens below it get their own safe
+      {/* The menus grown from a button draw over everything here, in this window (menuLayer.tsx). */}
+      <MenuLayer>
+        {/* "Bağlantı yok" over the screens, in the flow: the screens below it get their own safe
           area (a nested provider measures it), so their top buttons move down under the band. */}
-      <ConnectionBanner />
-      <SafeAreaProvider style={{ flex: 1 }}>
-        <Stack screenOptions={stackOptions}>
-          {/* Listed first: a group opened by its guard (after sign-up or sign-in, with no address)
+        <ConnectionBanner />
+        <SafeAreaProvider style={{ flex: 1 }}>
+          <Stack screenOptions={stackOptions}>
+            {/* Listed first: a group opened by its guard (after sign-up or sign-in, with no address)
             opens on its first listed screen, which was the Ayarlar sheet. Ayarlar is a page now
             (16 Kasım): pushed from the right as every page, its pages on the same stack. */}
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="notifications" options={SHEET} />
-          <Stack.Screen name="checkin/index" options={SHEET} />
-          <Stack.Screen name="checkin/spot" options={SHEET} />
-          <Stack.Screen name="spot" options={SHEET} />
-        </Stack>
-      </SafeAreaProvider>
-      {/* A request to the table opens over any screen (docs/SPEC_V3.md §23.C). */}
-      <IncomingRequestHost />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="notifications" options={SHEET} />
+            <Stack.Screen name="checkin/index" options={SHEET} />
+            <Stack.Screen name="checkin/spot" options={SHEET} />
+            <Stack.Screen name="spot" options={SHEET} />
+          </Stack>
+        </SafeAreaProvider>
+        {/* A request to the table opens over any screen (docs/SPEC_V3.md §23.C). */}
+        <IncomingRequestHost />
+        {/* The menus a screen opens with openMenu (motion/Menu.tsx): drawn here, never in it. */}
+        <MenuHost />
+      </MenuLayer>
       <OverlayHost />
     </View>
   );

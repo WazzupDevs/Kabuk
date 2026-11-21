@@ -8,7 +8,7 @@ import { BackHandler, Linking, View } from 'react-native';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, T, useKit } from '@/aura/kit';
 import { Field } from '@/components/Field';
-import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
+import { MenuItem, openMenu } from '@/components/Menu';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { useHideTabBar } from '@/components/TabBar';
@@ -26,7 +26,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { confirm } from '@/lib/overlayStore';
 import { maxLengthFor } from '@/lib/textLimit';
-import { type MenuAnchor, Tap } from '@/motion';
+import { Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { PROFILE_EDIT } from '@/theme/profileEdit';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -70,9 +70,7 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
   const queryClient = useQueryClient();
   const view = useProfileView(publicId);
   const [photoMenu, setPhotoMenu] = useState(false);
-  const [coverMenu, setCoverMenu] = useState(false);
   const coverRef = useRef<View>(null);
-  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
   const hasPhoto = !!view.data?.photoUrl || view.data?.photoHidden === true;
   const label = hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd;
   const coverUrl = view.data?.coverUrl ?? null;
@@ -89,11 +87,33 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
   });
   const busy = setCover.isPending || removeCover.isPending;
   const failed = setCover.isError ? setCover.error : removeCover.isError ? removeCover.error : null;
+  // iskelet.md → 3.5: grown out of "Kapak", no "Vazgeç", Kaldır red at the foot apart; in the
+  // app's layer, not this screen's state (CLAUDE.md → Çizim bütçesi).
   const openCoverMenu = () =>
-    measureMenuAnchor(coverRef.current, (at) => {
-      setAnchor(at);
-      setCoverMenu(true);
-    });
+    openMenu(
+      coverRef.current,
+      <>
+        <MenuItem
+          cap="photo"
+          label={tr.profile.coverChange}
+          testID="cover-change"
+          onPress={() => {
+            if (!busy) setCover.mutate();
+          }}
+        />
+        {coverUrl ? (
+          <MenuItem
+            negative
+            cap="trash"
+            label={tr.profile.coverRemove}
+            testID="cover-remove"
+            onPress={() => {
+              if (!busy) removeCover.mutate();
+            }}
+          />
+        ) : null}
+      </>,
+    );
   const camera = KIT.button[scheme].clear;
   const E = PROFILE_EDIT;
   const look = E[scheme];
@@ -206,32 +226,6 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
         </View>
       ) : null}
 
-      {anchor ? (
-        // iskelet.md → 3.5: grown out of "Kapak", no "Vazgeç", Kaldır red at the foot apart.
-        <Menu anchor={anchor} visible={coverMenu} onClose={() => setCoverMenu(false)}>
-          <MenuItem
-            cap="photo"
-            label={tr.profile.coverChange}
-            testID="cover-change"
-            onPress={() => {
-              setCoverMenu(false);
-              if (!busy) setCover.mutate();
-            }}
-          />
-          {coverUrl ? (
-            <MenuItem
-              negative
-              cap="trash"
-              label={tr.profile.coverRemove}
-              testID="cover-remove"
-              onPress={() => {
-                setCoverMenu(false);
-                if (!busy) removeCover.mutate();
-              }}
-            />
-          ) : null}
-        </Menu>
-      ) : null}
       <PhotoSheet visible={photoMenu} onClose={() => setPhotoMenu(false)} canRemove={hasPhoto} />
     </View>
   );

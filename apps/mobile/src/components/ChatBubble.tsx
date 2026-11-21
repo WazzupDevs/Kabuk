@@ -46,9 +46,9 @@ import { AppIcon } from './AppIcon';
 import { useChatKind } from './chatKind';
 import { useChatMetaRef } from './chatMeta';
 import { useChatScrolling } from './chatScrolling';
-import { usePopHost } from './popHost';
 import { CachedSvg } from './CachedSvg';
 import { FxSvg } from './FxSvg';
+import { HOLD_MS } from '@/motion/Tap';
 import { gradientStyle } from '@/theme/gradient';
 import { CHAT_LOOK } from '@/theme/chatLook';
 import { DM } from '@/theme/dm';
@@ -204,11 +204,14 @@ export function ChatBubble({
   // where it sits on the screen.
   const faceRef = useRef<View>(null);
   const [pop, setPop] = useState<PopAnchor | null>(null);
+  // While its layer is open the held message stands only in the layer (lifted there, moved up when
+  // the menu needs the room): left in the stream too, it showed twice through the scrim (the
+  // owner's report, 21 Kasım; Telegram Android draws the held cell itself over its scrim).
+  const [held, setHeld] = useState(false);
   // The bubble's measured size: a run's last bubble draws itself and its tail as one outline
   // (BubbleShape); until it is measured, its box and the tail laid beside it.
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const holdable = !gone && (!!onReact || actions.length > 0 || text.length > 0);
-  const host = usePopHost();
   const lift = () => {
     // Measured where the bubble stands once the keyboard is away (the layer puts it away, and the
     // stream moves as it goes: measured before, the faces opened far from the message, at the
@@ -239,9 +242,10 @@ export function ChatBubble({
     Keyboard.dismiss();
   };
   const open = (at: PopAnchor) => {
-    // On the chat screen's root (popHost.tsx): the stream's cells stay as they are.
-    if (host) host.show((close) => popLayer(at, close));
-    else setPop(at);
+    // The layer draws itself in the app's layer (MessagePop → motion/menuLayer.tsx): this cell
+    // stays as it is and nothing else redraws (CLAUDE.md → Çizim bütçesi).
+    setHeld(true);
+    setPop(at);
   };
   // Telegram Android's bubble (the owner's call, 30 Ekim; iskelet.md → 5.5: 20 round, 7 tight): on
   // the author's side (left for others, right for the viewer's own) the corners inside a run are
@@ -414,7 +418,8 @@ export function ChatBubble({
       }}
       onPress={onTap}
       onLongPress={holdable ? lift : undefined}
-      style={{ maxWidth: '100%' }}
+      delayLongPress={HOLD_MS}
+      style={{ maxWidth: '100%', opacity: held ? 0 : 1 }}
     >
       {face(false)}
     </Pressable>
@@ -681,7 +686,12 @@ export function ChatBubble({
       </MessagePop>
     );
   }
-  const bar = pop ? popLayer(pop, () => setPop(null)) : null;
+  const bar = pop
+    ? popLayer(pop, () => {
+        setHeld(false);
+        setPop(null);
+      })
+    : null;
 
   if (mine) {
     return (

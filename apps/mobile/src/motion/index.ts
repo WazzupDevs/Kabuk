@@ -18,7 +18,7 @@ export {
   useListMoves,
 } from './ListMove';
 export { Sheet } from './Sheet';
-export { Menu, MenuItem, measureMenuAnchor } from './Menu';
+export { closeMenu, Menu, MenuItem, measureMenuAnchor, openMenu, openMenuAt } from './Menu';
 export type { MenuAnchor } from './menuPlace';
 export { PRESS_DELAY, Tap, usePress } from './Tap';
 // The screen's skeleton (iskelet.md → 3.1 to 3.3): Screen holds the scroll (ScrollScreen) and

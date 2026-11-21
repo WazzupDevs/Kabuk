@@ -10,7 +10,7 @@ import { Alert, View } from 'react-native';
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Badge, Li, T, useKit } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
-import { type MenuAnchor, measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
+import { type MenuAnchor, measureMenuAnchor, MenuItem, openMenuAt } from '@/components/Menu';
 import { TypingDots } from '@/components/TypingDots';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { openDm } from '@/features/friends/openDm';
@@ -23,6 +23,7 @@ import { track } from '@/lib/analytics';
 import { safetyApi } from '@/lib/api';
 import { type DmManageKind, pinsFull } from '@/lib/dmManage';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { haptic } from '@/lib/haptics';
 import { confirm } from '@/lib/overlayStore';
 import { CountSwap, ListMove, type ListMoves, Tap } from '@/motion';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
@@ -38,8 +39,6 @@ import { ICON, SPACING } from '@/theme/tokens';
 // Rows past this many don't listen for "yazıyor": a Realtime connection carries a limited number
 // of channels, and the rows further down are off screen.
 const TYPING_ROWS = 30;
-
-type Held = { thread: DmInboxThread; at: MenuAnchor };
 
 // A press's change and how the list moves for it (the motion table's A3): Sabitle and its undo move
 // the row; the others take it out of the list.
@@ -62,7 +61,6 @@ export function useThreadMenu(
     now: new Date(),
   },
 ) {
-  const [held, setHeld] = useState<Held | null>(null);
   const [lastKind, setLastKind] = useState<DmManageKind | null>(null);
   const manage = useDmManage();
   const full = pinsFull(all);
@@ -121,8 +119,6 @@ export function useThreadMenu(
       void refreshFriends(queryClient, 'friendship');
     },
   });
-  const open = (thread: DmInboxThread, at: MenuAnchor) => setHeld({ thread, at });
-  const t = held?.thread;
   const blockName = blocking?.displayName ?? tr.profile.noName;
   const confirmBlock = (
     <ConfirmWithReport
@@ -138,17 +134,12 @@ export function useThreadMenu(
       onClose={() => setBlocking(null)}
     />
   );
-  const menu =
-    held && t ? (
-      <Menu
-        anchor={held.at}
-        hold
-        visible
-        onClose={() => setHeld(null)}
-        side={M.side}
-        label={tr.messages.menu(t.displayName ?? tr.profile.noName)}
-        lifted={<LiftedRow thread={t} now={now} />}
-      >
+  // The long-press menu over its scrim, the held row raised at its place: in the app's layer, never
+  // in the inbox's state, so holding a row redraws no other row (CLAUDE.md → Çizim bütçesi).
+  const open = (t: DmInboxThread, at: MenuAnchor) =>
+    openMenuAt(
+      at,
+      <>
         {t.archived ? (
           <MenuItem
             testID="inbox-menu-unarchive"
@@ -206,16 +197,17 @@ export function useThreadMenu(
           label={tr.messages.clear}
           onPress={() => askClear(t)}
         />
-      </Menu>
-    ) : null;
+      </>,
+      {
+        hold: true,
+        side: M.side,
+        label: tr.messages.menu(t.displayName ?? tr.profile.noName),
+        lifted: <LiftedRow thread={t} now={now} />,
+      },
+    );
   return {
     open,
-    menu: (
-      <>
-        {menu}
-        {confirmBlock}
-      </>
-    ),
+    menu: confirmBlock,
     lastKind,
   };
 }
@@ -359,7 +351,13 @@ function InboxRow({
             : undefined
         }
         onLongPress={
-          threadId ? () => measureMenuAnchor(box.current, (at) => onHold(t, at)) : undefined
+          threadId
+            ? () => {
+                // Held long enough: felt as the menu opens (as a held message is, ChatBubble).
+                haptic('grabbed');
+                measureMenuAnchor(box.current, (at) => onHold(t, at));
+              }
+            : undefined
         }
       >
         <RowBody thread={t} now={now} listen={listen} ground={colors.canvas} />
