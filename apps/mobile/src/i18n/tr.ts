@@ -850,7 +850,7 @@ export const tr = {
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
     friendsSub: (n: number) => `${n} arkadaş`,
-    friendsButton: 'Arkadaşlar',
+    friendsButton: (n: number) => `Arkadaşlar · ${n}`,
     // "N arkadaş"'s faces past three: the rest as a count in the fourth place (tuval Benim).
     moreFaces: (n: number) => `+${n}`,
     editTitle: 'Profili düzenle',

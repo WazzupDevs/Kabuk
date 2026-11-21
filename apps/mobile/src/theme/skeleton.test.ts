@@ -258,7 +258,8 @@ describe('the own profile in two parts (5.7)', () => {
   });
 
   it('one photo and one name: no copy in the bar', () => {
-    expect(page.match(/<ProfileFace\b/g)?.length).toBe(2);
+    // The flying photo only (the friends button carries no faces since 21 Nov).
+    expect(page.match(/<ProfileFace\b/g)?.length).toBe(1);
     expect(page.match(/<FlyingName\b/g)?.length).toBe(1);
     expect(page).not.toMatch(/react-native-reanimated/);
   });

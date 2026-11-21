@@ -1,12 +1,11 @@
-import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, Round, T } from '@/aura/kit';
+import { ButtonRow } from '@/components/ButtonRow';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { PhotoPreview } from '@/components/PhotoPreview';
@@ -194,18 +193,13 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                     {data.bio}
                   </T>
                 ) : null}
-                {/* The two clear buttons, their words always whole (owner, 21 Nov): side by side
-                    the same width where that fits, else each its own width, else one under the
-                    other. */}
+                {/* The two clear buttons the same width, centred (owner, 21 Nov); the friends
+                    button only its words and the count. */}
                 <View style={{ alignSelf: 'stretch' }}>
-                  <FitPair
-                    key={`${hasName}:${friendList.length}:${fontScale}:${narrow}`}
-                    gap={B.buttonsGap}
-                    stacked={narrow}
-                  >
-                    {(block) => (
+                  <ButtonRow hug gap={B.buttonsGap}>
+                    <View style={narrow ? undefined : { width: B.buttonWidth }}>
                       <Btn
-                        block={block}
+                        block
                         variant="glassy"
                         icon="edit"
                         label={hasName ? tr.profile.edit : tr.profile.addName}
@@ -218,37 +212,23 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                         }}
                         onPress={() => router.push('/profile/edit')}
                       />
-                    )}
-                    {(block) => (
+                    </View>
+                    <View style={narrow ? undefined : { width: B.buttonWidth }}>
                       <Btn
-                        block={block}
+                        block
                         variant="glassy"
                         testID="profile-friends"
                         accessibilityLabel={tr.profile.friendsCount(friendList.length)}
-                        lead={
-                          friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined
-                        }
-                        // What it opens, beside the faces and "+N" (owner, 21 Nov).
-                        label={tr.profile.friendsButton}
+                        label={tr.profile.friendsButton(friendList.length)}
                         look={{
                           type: 'giftBtn',
-                          padLeft:
-                            friendList.length > 0 ? B.friends.padLeft : B.friends.padLeftBare,
-                          padRight: B.friends.padRight,
-                          gap: B.friends.gap,
+                          padLeft: B.friends.padLeftBare,
+                          padRight: B.friends.padLeftBare,
                         }}
-                        trail={
-                          <CapIcon
-                            name="chevron"
-                            color={look.chevron}
-                            soft={1}
-                            size={B.friends.chevron}
-                          />
-                        }
                         onPress={() => router.push('/profile/friends')}
                       />
-                    )}
-                  </FitPair>
+                    </View>
+                  </ButtonRow>
                 </View>
               </View>
             </>
@@ -387,121 +367,6 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
           onPress={() => router.push('/settings')}
         />
       </View>
-    </View>
-  );
-}
-
-// "N arkadaş"'s faces (iskelet.md → 2.4): 28 over each other, no ring but 2.5 of the button's
-// ground round each and a light shadow; 20 apart and, past three, the rest as "+N" in the fourth
-// place (tuval Benim).
-function FaceStack({ friends }: { friends: readonly Friend[] }) {
-  const { scheme } = useTheme();
-  const gap = KIT.button[scheme].clear.solid;
-  const side = OWN.stack + 2 * OWN.stackGap;
-  const more = friends.length - OWN.stackMax;
-  const disc = (i: number) => ({
-    width: side,
-    height: side,
-    borderRadius: side / 2,
-    padding: OWN.stackGap,
-    backgroundColor: gap,
-    boxShadow: OWN.stackShadow,
-    marginLeft: i === 0 ? -OWN.stackGap : B.stackStep - side,
-  });
-  const tone = B[scheme].more;
-  return (
-    <View style={{ flexDirection: 'row' }} importantForAccessibility="no-hide-descendants">
-      {friends.slice(0, OWN.stackMax).map((f, i) => (
-        <View key={f.publicId} style={disc(i)}>
-          <ProfileFace
-            side={OWN.stack}
-            name={f.displayName ?? tr.profile.noName}
-            photoUrl={f.photoUrl}
-          />
-        </View>
-      ))}
-      {more > 0 ? (
-        <View style={disc(OWN.stackMax)}>
-          <View
-            style={{
-              width: OWN.stack,
-              height: OWN.stack,
-              borderRadius: OWN.stack / 2,
-              backgroundColor: tone.bg,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <T v="stackMore" color={tone.fg}>
-              {tr.profile.moreFaces(more)}
-            </T>
-          </View>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-// Two buttons whose words never shrink (owner, 21 Nov): measured once at their own widths, then
-// side by side the same width (the wider one's) where two of those fit, else each its own width
-// where both fit, else one under the other at the row's whole width. Hidden until measured.
-function FitPair({
-  gap,
-  stacked,
-  children,
-}: {
-  gap: number;
-  // One under the other whatever fits (a narrow screen, ButtonRow's rule).
-  stacked: boolean;
-  children: [(block: boolean) => ReactNode, (block: boolean) => ReactNode];
-}) {
-  const [row, setRow] = useState(0);
-  const [widths, setWidths] = useState<[number, number]>([0, 0]);
-  const measured = widths[0] > 0 && widths[1] > 0 && row > 0;
-  const wide = Math.max(widths[0], widths[1]);
-  const mode = stacked
-    ? 'stack'
-    : !measured
-      ? 'measure'
-      : 2 * wide + gap <= row
-        ? 'equal'
-        : widths[0] + widths[1] + gap <= row
-          ? 'own'
-          : 'stack';
-  const measure = (i: 0 | 1) => (w: number) =>
-    setWidths((prev) => {
-      if (prev[i] > 0) return prev;
-      const next: [number, number] = [prev[0], prev[1]];
-      next[i] = Math.ceil(w);
-      return next;
-    });
-  return (
-    <View
-      onLayout={(e) => setRow(e.nativeEvent.layout.width)}
-      style={{
-        flexDirection: mode === 'stack' ? 'column' : 'row',
-        justifyContent: 'center',
-        gap,
-        opacity: mode === 'measure' ? 0 : 1,
-      }}
-    >
-      {children.map((child, i) => (
-        <View
-          key={i}
-          onLayout={
-            mode === 'measure' ? (e) => measure(i as 0 | 1)(e.nativeEvent.layout.width) : undefined
-          }
-          style={
-            mode === 'equal'
-              ? { width: wide }
-              : mode === 'stack'
-                ? { alignSelf: 'stretch' }
-                : { flexShrink: 0 }
-          }
-        >
-          {child(mode === 'equal' || mode === 'stack')}
-        </View>
-      ))}
     </View>
   );
 }
