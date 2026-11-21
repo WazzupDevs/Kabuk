@@ -462,7 +462,7 @@ export const tr = {
     next: 'Devam',
     cardAlt: (name: string, tier: string) => `${name}, ${tier} aksesuar kartı`,
     // Set balonu (Profil; §4.U, 8 Kasım).
-    setTitle: 'Set balonu',
+    setTitle: 'Anonim mesaj balonun',
     setHint: 'Aynı setten 3 Efsanevi parça tak, anonim mesajların setin balonuyla görünsün.',
     setMore: (set: string) => `Üç bölgeye de ${set} parçası tak, ${set} balonu açılsın.`,
     setOn: (set: string) => `Anonim yazınca mesajların ${set} balonuyla görünür.`,
@@ -850,6 +850,7 @@ export const tr = {
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
     friendsSub: (n: number) => `${n} arkadaş`,
+    friendsButton: 'Arkadaşlar',
     // "N arkadaş"'s faces past three: the rest as a count in the fourth place (tuval Benim).
     moreFaces: (n: number) => `+${n}`,
     editTitle: 'Profili düzenle',
@@ -880,7 +881,7 @@ export const tr = {
     coverDefault: 'Kapağın yok; profilinde varsayılan sahne görünür.',
     ticketKicker: 'Anonim kimliğin',
     ticketNo: (tail: string) => `No. ${tail}`,
-    nickRenewIn: (days: number) => `Yenile · ${days} gün sonra`,
+    nickRenewIn: (days: number) => `${days} gün sonra yenileyebilirsin`,
     badges: {
       first_game: 'İlk oyun',
       ten_games: '10 oyun',

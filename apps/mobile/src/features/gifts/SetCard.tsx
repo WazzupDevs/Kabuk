@@ -11,6 +11,7 @@ import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { T, useKit } from '@/aura/kit';
+import { AppIcon } from '@/components/AppIcon';
 import { CachedSvg } from '@/components/CachedSvg';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
@@ -20,6 +21,7 @@ import { useNarrow } from '@/lib/useNarrow';
 import { Tap } from '@/motion';
 import { SET_BALLOONS } from '@/theme/setBalloons';
 import { OWN_PROFILE, SET_CARD } from '@/theme/ownProfile';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useState } from 'react';
@@ -45,6 +47,7 @@ const pieceLook = (id: string) => `${CAPSULE} x:${id}`;
 
 export function SetCard() {
   const { c, scheme } = useKit();
+  const { colors } = useTheme();
   const narrow = useNarrow();
   const gifts = useGiftState();
   const [open, setOpen] = useState<SetRegion | null>(null);
@@ -119,9 +122,13 @@ export function SetCard() {
       >
         {SET_REGION_ORDER.map((region) => {
           const piece = pieces[region];
+          // The piece giving the balloon the person has on (owner, 21 Nov): a ring and a tick,
+          // following the worn set as it changes.
+          const active = !!balloon && piece?.set === balloon;
           return (
             <View key={region} style={{ width: narrow ? '50%' : '33.33%' }}>
               <Tap
+                accessibilityState={{ selected: active }}
                 accessibilityLabel={tr.gifts.setSlotLabel(
                   tr.gifts.setRegion[region],
                   piece?.name ?? tr.gifts.setEmpty,
@@ -145,6 +152,7 @@ export function SetCard() {
                       borderRadius: (piece ? DISC : EMPTY) / 2,
                       alignItems: 'center',
                       justifyContent: 'center',
+                      ...(active ? { boxShadow: `0 0 0 ${RING}px ${colors.accent}` } : null),
                       ...(piece
                         ? null
                         : {
@@ -161,6 +169,7 @@ export function SetCard() {
                       <CapIcon name="plus" color={k.plus} soft={1} size={SET_CARD.plus} />
                     )}
                   </View>
+                  {active ? <ChosenTick /> : null}
                 </View>
                 <T v="setSlot" ink center>
                   {tr.gifts.setRegion[region]}
@@ -255,6 +264,7 @@ function RegionSheet({
                       <View style={{ opacity: mine ? 1 : LOCKED_FADE }}>
                         <LookAvatar look={pieceLook(a.id)} size={OPTION} />
                       </View>
+                      {on ? <ChosenTick /> : null}
                       {!mine ? (
                         <View
                           style={{
@@ -294,3 +304,29 @@ function RegionSheet({
   );
 }
 const LOCKED_FADE = 0.4;
+
+// The chosen one's small tick at the picture's top right, on the ring's colour (the checkbox's
+// tick: KIT.size.checkTick in a KIT.size.checkBox disc).
+function ChosenTick() {
+  const { c } = useKit();
+  const { colors } = useTheme();
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        width: KIT.size.checkBox,
+        height: KIT.size.checkBox,
+        borderRadius: KIT.size.checkBox / 2,
+        backgroundColor: colors.accent,
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: `0 0 0 2px ${c.sheetBase}`,
+      }}
+    >
+      <AppIcon name="checkmark" size={KIT.size.checkTick} color={c.onMarkOn} />
+    </View>
+  );
+}

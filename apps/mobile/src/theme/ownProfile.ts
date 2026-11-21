@@ -14,8 +14,6 @@ export const OWN_PROFILE = {
   bioTop: 6,
   buttonsTop: 18,
   buttonsGap: 10,
-  // Profili düzenle and the friends button are the same width (owner, 21 Nov), whatever the count.
-  buttonWidth: 150,
   edit: { padLeft: 14, padRight: 16, gap: 8, icon: 17 },
   friends: { padLeft: 6, padLeftBare: 14, padRight: 12, gap: 8, chevron: 15 },
   // The faces 20 apart (28 over each other, 8 under the next).

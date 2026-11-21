@@ -67,13 +67,13 @@ export const PROFILE_PAGE = {
   cover: 230,
   shade: 110,
   shadeCss: 'linear-gradient(180deg, rgba(3, 27, 11, 0.42) 0%, rgba(3, 27, 11, 0) 100%)',
-  // The blurred, fading foot is the cover's last quarter (owner, 21 Nov: half was too long).
-  footFrom: 0.75,
+  // The blurred foot fades into the page's ground over the cover's last 40 %, quickly at first
+  // (owner, 21 Nov: a slow start left a dark grey band of the picture over the light ground).
+  footFrom: 0.6,
   footCss: {
-    // Eased (owner, 21 Nov: the straight fade showed bands): slow at its top, solid before its foot.
     light:
-      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.12) 25%, rgba(239, 247, 241, 0.4) 50%, rgba(239, 247, 241, 0.8) 75%, #EFF7F1 92%, #EFF7F1 100%)',
-    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.12) 25%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.8) 75%, #000000 92%, #000000 100%)',
+      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.45) 25%, rgba(239, 247, 241, 0.8) 50%, rgba(239, 247, 241, 0.95) 70%, #EFF7F1 85%, #EFF7F1 100%)',
+    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.45) 25%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0.95) 70%, #000000 85%, #000000 100%)',
   },
   // The blurred copy shows over the foot in these steps, each more opaque (no mask: a seam at its
   // top would show), under the fade; eight small steps so no step's edge shows (21 Nov).
