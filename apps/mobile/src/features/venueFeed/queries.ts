@@ -19,6 +19,7 @@ import { mapPost, nextBefore, throttleCalls, withLike } from './feedLogic';
 
 export const venueFeedKeys = {
   all: ['venueFeed'] as const,
+  mine: ['venueFeed', 'mine'] as const,
   page: (venueId: string) => ['venueFeed', venueId] as const,
   replies: (postId: string) => ['venueFeedReplies', postId] as const,
   repliesAll: ['venueFeedReplies'] as const,
@@ -34,6 +35,20 @@ export function useVenueFeedProfile(postId: string | undefined) {
     retry: false,
     queryFn: () => profileApi.getFromVenuePost(postId ?? ''),
   });
+}
+
+// The caller's own posts younger than a day (the own profile's Gönderiler, §4.Y), newest first, a
+// page at a time; under `all`, so whatever refreshes the feed refreshes them too.
+export function useOwnVenuePosts(enabled: boolean) {
+  const query = useInfiniteQuery({
+    queryKey: venueFeedKeys.mine,
+    enabled,
+    initialPageParam: undefined as string | undefined,
+    queryFn: async ({ pageParam }) => (await venueFeedApi.mine(pageParam)).posts,
+    getNextPageParam: (last) => nextBefore(last),
+  });
+  const posts = useMemo(() => query.data?.pages.flat() ?? [], [query.data]);
+  return { query, posts };
 }
 
 type FeedPages = InfiniteData<VenuePost[], string | undefined>;

@@ -93,6 +93,9 @@ export const IDEMPOTENT_CALLS = [
   'venue-chat/page',
   // venueFeed.test "venue feed: replies": "pages posts, the same when sent twice"
   'venue-feed/page',
+  // venueFeed.test "venue feed: the own posts": "gives the author their own posts with the venue,
+  // nobody else’s, the same when sent twice"
+  'venue-feed/mine',
   // venueFeed.test "venue feed: replies": "answers a post, never a reply; the page counts them"
   'venue-feed/replies',
   // venueFeed.test "venue feed: likes": "counts a like once per person, never names it, the same

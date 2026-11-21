@@ -5868,6 +5868,18 @@ export type Database = {
           post_venue_id: string;
         }[];
       };
+      venue_feed_mine_for: {
+        Args: { before?: string; page_size?: number; target_user_id: string };
+        Returns: {
+          body: string;
+          created_at: string;
+          id: string;
+          likes: number;
+          replies: number;
+          venue_id: string;
+          venue_name: string;
+        }[];
+      };
       venue_feed_mute: {
         Args: { target_post_id: string; target_user_id: string };
         Returns: string;

@@ -1090,6 +1090,14 @@ export const tr = {
     empty: 'Akışta henüz bir şey yok.',
     emptyNote: 'İlk gönderiyi sen yaz. Mekandakiler görür; gönderiler 24 saat sonra silinir.',
     older: 'Daha eskiler',
+    // Profil → Gönderiler (yalnız kendi profilinde; §4.Y).
+    mineTab: 'Gönderiler',
+    capsuleTab: 'Kapsülün',
+    profileViewLabel: 'Profil görünümü',
+    mineEmpty: 'Son 24 saatte gönderin yok',
+    mineEmptyNote: 'Mekan akışına yazdıkların burada görünür; gönderiler 24 saat sonra silinir.',
+    mineError: 'Gönderilerin yüklenemedi.',
+    mineReplies: (n: number) => (n > 0 ? `${n} yanıt` : 'Yanıt yok'),
     // Yazma sayfası.
     composeTitle: 'Akışa yaz',
     composeReplyTitle: 'Yanıtla',

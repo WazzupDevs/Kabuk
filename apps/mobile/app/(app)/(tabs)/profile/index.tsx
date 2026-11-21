@@ -4,7 +4,7 @@ import { useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { Btn, Glass, Round, T } from '@/aura/kit';
+import { Btn, Glass, Round, Seg, T } from '@/aura/kit';
 import { ButtonRow } from '@/components/ButtonRow';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
@@ -15,6 +15,7 @@ import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { SetCard } from '@/features/gifts/SetCard';
 import { IdentityTicket } from '@/features/profile/IdentityTicket';
+import { OwnPosts } from '@/features/venueFeed/OwnPosts';
 import { ProfileCoverArt } from '@/features/profile/ProfileCover';
 import { ProfileFace } from '@/features/profile/ProfileFace';
 import { useProfileView } from '@/features/profile/queries';
@@ -78,6 +79,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
   const [preview, setPreview] = useState(false);
+  const [tab, setTab] = useState<'capsule' | 'posts'>('capsule');
   const coverOff = useLabOff('kapak');
   const ticketOff = useLabOff('bilet');
   // The upper part's words and buttons: their foot, once laid out (not on a frame).
@@ -294,8 +296,31 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
             </View>
           ) : (
             <>
+              {/* Kapsülün | Gönderiler (owner, 21 Kasım; §4.Y): the own feed posts on the own
+                  profile only. */}
+              <View style={{ marginTop: B.gap }}>
+                <Seg
+                  value={tab}
+                  onChange={setTab}
+                  narrow={narrow}
+                  accessibilityLabel={tr.venueFeed.profileViewLabel}
+                  options={[
+                    {
+                      value: 'capsule',
+                      label: tr.venueFeed.capsuleTab,
+                      testID: 'profile-tab-capsule',
+                    },
+                    { value: 'posts', label: tr.venueFeed.mineTab, testID: 'profile-tab-posts' },
+                  ]}
+                />
+              </View>
+              {tab === 'posts' ? (
+                <View style={{ marginTop: B.gap }}>
+                  <OwnPosts />
+                </View>
+              ) : null}
               {/* The list's head once the panel is under the bar: the ticket. */}
-              {data.capsuleNick ? (
+              {tab === 'capsule' && data.capsuleNick ? (
                 ticketOff ? (
                   <View style={{ minHeight: TICKET.height, marginTop: OWN_PROFILE.gap }} />
                 ) : (
@@ -306,14 +331,14 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                   />
                 )
               ) : null}
-              {data.photoHidden ? (
+              {tab === 'capsule' && data.photoHidden ? (
                 <Glass pad="pad" style={{ marginTop: B.gap }}>
                   <T v="fine" ink>
                     {tr.profile.photoHidden}
                   </T>
                 </Glass>
               ) : null}
-              <SetCard />
+              {tab === 'capsule' ? <SetCard /> : null}
             </>
           )}
         </View>

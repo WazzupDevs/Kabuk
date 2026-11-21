@@ -11,7 +11,7 @@ import { VENUE_FEED_LOOK } from '@/theme/venueFeed';
 
 import { feedAge } from './feedLogic';
 
-function ageLabel(createdAt: string, now: number): string {
+export function ageLabel(createdAt: string, now: number): string {
   const age = feedAge(createdAt, now);
   switch (age.unit) {
     case 'now':

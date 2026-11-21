@@ -1,6 +1,6 @@
 // `venue-feed` Edge Function, shared with the mobile app (docs/SPEC_V4.md §4.Y).
 import type { ReportReason } from '../chat.ts';
-import type { VenuePost } from '../venueFeed.ts';
+import type { OwnVenuePost, VenuePost } from '../venueFeed.ts';
 
 export type VenueFeedRequest =
   // A post, or with replyTo a reply to a visible post of the same feed (never to a reply). The
@@ -10,6 +10,9 @@ export type VenueFeedRequest =
   | { action: 'post'; venueId: string; body: string; replyTo?: string; clientId?: string }
   // One page of posts, newest first; empty without a live check-in in the feed.
   | { action: 'page'; venueId: string; before?: string }
+  // One page of the caller's own posts younger than a day, newest first, each with its venue
+  // (the own profile only; no check-in needed).
+  | { action: 'mine'; before?: string }
   // One page of a post's replies, newest first; empty when the caller cannot see the post.
   | { action: 'replies'; postId: string; before?: string }
   // The caller's like on a visible post or reply; the same call again changes nothing.
@@ -26,3 +29,4 @@ export type VenueFeedRequest =
 export type VenueFeedPostResponse = { postId: string };
 export type VenueFeedPageResponse = { posts: VenuePost[] };
 export type VenueFeedMuteResponse = { muteId: string };
+export type VenueFeedMineResponse = { posts: OwnVenuePost[] };
