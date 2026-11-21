@@ -1,0 +1,103 @@
+{
+ "sha": "cbb93f2cbdb8538cdbf662819254a5de7796950f",
+ "run": "https://github.com/WazzupDevs/Kabuk/actions/runs/44884523119",
+ "date": "2026-11-21T09:02:54.447Z",
+ "images": [
+  {
+   "name": "01-welcome",
+   "theme": "dark",
+   "file": "dark/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "dark",
+   "file": "dark/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "dark",
+   "file": "dark/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "dark",
+   "file": "dark/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01-welcome",
+   "theme": "large",
+   "file": "large/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "large",
+   "file": "large/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "large",
+   "file": "large/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "large",
+   "file": "large/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01-welcome",
+   "theme": "light",
+   "file": "light/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "light",
+   "file": "light/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "light",
+   "file": "light/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "light",
+   "file": "light/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  }
+ ]
+}
