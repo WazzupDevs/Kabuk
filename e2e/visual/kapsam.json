@@ -6003,7 +6003,6 @@
     "kod": [
       "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
       "apps/mobile/app/(app)/checkin/index.tsx",
-      "apps/mobile/src/components/Choice.tsx",
       "apps/mobile/src/components/RouteSheet.tsx",
       "apps/mobile/src/components/SheetCard.tsx",
       "apps/mobile/src/features/checkin/SpotPicker.tsx",
@@ -6023,7 +6022,6 @@
     "kod": [
       "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
       "apps/mobile/app/(app)/checkin/index.tsx",
-      "apps/mobile/src/components/Choice.tsx",
       "apps/mobile/src/components/RouteSheet.tsx",
       "apps/mobile/src/components/SheetCard.tsx",
       "apps/mobile/src/features/checkin/SpotPicker.tsx",

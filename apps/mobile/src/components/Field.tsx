@@ -18,8 +18,6 @@ import { PROFILE_EDIT } from '@/theme/profileEdit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { Text } from './Text';
-
 // The one text field (the owner's call, 19 Kasım, docs/decisions/temel.md → Alan; one component,
 // 21 Kasım). Every field a screen draws is one of three:
 // - `Field`: a form field on its card (Profili düzenle), one line or many, with its label, count,
@@ -177,9 +175,12 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field(
         />
       </View>
       {error ? (
-        <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">
+        <RNText
+          accessibilityLiveRegion="polite"
+          style={[KIT_TYPE.boxNote, { color: KIT.danger, paddingHorizontal: E.field.labelIn }]}
+        >
           {error}
-        </Text>
+        </RNText>
       ) : null}
       {hint ? (
         <RNText
