@@ -67,9 +67,10 @@ export const PROFILE_PAGE = {
   cover: 230,
   shade: 110,
   shadeCss: 'linear-gradient(180deg, rgba(3, 27, 11, 0.42) 0%, rgba(3, 27, 11, 0) 100%)',
-  // The blurred foot fades into the page's ground over the cover's last 40 %, quickly at first
-  // (owner, 21 Nov: a slow start left a dark grey band of the picture over the light ground).
-  footFrom: 0.6,
+  // The blurred foot fades into the page's ground over the cover's last 28 %, quickly at first
+  // (owner, 21 Nov: a slow start left a dark grey band of the picture over the light ground; then
+  // the blur started too high, so it starts lower).
+  footFrom: 0.72,
   footCss: {
     light:
       'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.45) 25%, rgba(239, 247, 241, 0.8) 50%, rgba(239, 247, 241, 0.95) 70%, #EFF7F1 85%, #EFF7F1 100%)',

@@ -2,7 +2,6 @@ import { capitalizeTr } from '@shared/trText.ts';
 import { Pressable, View } from 'react-native';
 
 import { Btn, T } from '@/aura/kit';
-import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
@@ -288,22 +287,17 @@ export function ObjectButton({
   onPress,
   disabled,
   loading,
-  size = 'lg',
 }: {
   left: number;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  // md under Harf Kapmaca's board, so the board, the window and the button fit together.
-  size?: 'md' | 'lg';
 }) {
   return (
-    <Button
+    <Btn
       variant="danger"
-      size={size}
       testID="say-object"
-      label={tr.say.object}
-      detail={tr.say.objectionsShort(left)}
+      label={`${tr.say.object} ${tr.say.objectionsShort(left)}`}
       accessibilityLabel={`${tr.say.object}, ${tr.say.objectionsLeft(left)}`}
       onPress={onPress}
       disabled={disabled || left <= 0}

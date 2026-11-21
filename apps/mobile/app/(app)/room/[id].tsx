@@ -8,7 +8,6 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { type MenuAnchor, measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
@@ -251,8 +250,8 @@ function TableScreenBody() {
   if (view === 'loading' || (view === 'end' && !!seen && !seen.left && removed.isPending)) {
     return (
       <Screen>
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       </Screen>
     );

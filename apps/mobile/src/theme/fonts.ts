@@ -7,7 +7,6 @@ import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/
 import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
 import { PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans/800ExtraBold';
-import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque/700Bold';
 import type { FontSource } from 'expo-font';
 
 import type { FontName, FontSet } from './tokens';
@@ -17,7 +16,6 @@ const FONT_ASSETS: Record<FontName, FontSource> = {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
   PlusJakartaSans_800ExtraBold,
-  BricolageGrotesque_700Bold,
   Roboto_700Bold: require('../../assets/fonts/Roboto_700Bold.ttf'),
 };
 
@@ -25,8 +23,5 @@ const FONT_ASSETS: Record<FontName, FontSource> = {
 export function fontsOf(set: FontSet): Record<string, FontSource> {
   const map: Record<string, FontSource> = {};
   for (const name of Object.values(set)) map[name] = FONT_ASSETS[name];
-  // Every file, not only the set's: the kit's titles (theme/auraKit.ts) and the games' own type
-  // files name their faces themselves.
-  Object.assign(map, FONT_ASSETS);
   return map;
 }

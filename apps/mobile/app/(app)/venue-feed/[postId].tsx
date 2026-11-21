@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Btn, T } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader, useLoaderHold } from '@/components/Loader';
+import { useLoaderHold } from '@/components/Loader';
 import { SettingsPage } from '@/features/settings/SettingsParts';
 import { PostRow } from '@/features/venueFeed/PostRow';
 import { useVenueFeed, useVenueFeedLive, useVenueFeedReplies } from '@/features/venueFeed/queries';
@@ -13,7 +13,6 @@ import { WriteField } from '@/features/venueFeed/WriteField';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
-import { SPACING } from '@/theme/tokens';
 import { VENUE_FEED_LOOK } from '@/theme/venueFeed';
 
 // A post and its replies (docs/SPEC_V4.md §4.Y; the boards do not draw it: the feed's own row and
@@ -41,9 +40,7 @@ export default function VenueFeedRepliesScreen() {
   return (
     <SettingsPage list title={tr.venueFeed.repliesTitle}>
       {loading ? (
-        <View className="items-center" style={{ paddingVertical: SPACING[8] }}>
-          <Loader />
-        </View>
+        <EmptyState kind="loading" body={tr.common.loading} />
       ) : gone ? (
         <EmptyState inPage body={tr.venueFeed.repliesGone} />
       ) : !parent ? (

@@ -12,7 +12,6 @@ import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Btn, Glass, Round, T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { PhotoPreview } from '@/components/PhotoPreview';
 import { Screen } from '@/components/Screen';
@@ -88,8 +87,8 @@ export default function PersonScreen() {
       }
     >
       {view.isPending ? (
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       ) : failed ? (
         <EmptyState

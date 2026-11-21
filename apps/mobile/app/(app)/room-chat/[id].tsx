@@ -5,7 +5,6 @@ import { View } from 'react-native';
 
 import { ChatScreen } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
-import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { RoomComposer, useRoomChat, useRoomChatList } from '@/features/chat/ChatPanel';
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -16,6 +15,7 @@ import { useRoom, useTablePeople } from '@/features/rooms/queries';
 import { TABLE_CARD_TALL } from '@/features/rooms/tableIconImages';
 import { tr } from '@/i18n/tr';
 import { FxMoves } from '@/components/FxSvg';
+import { EmptyState } from '@/components/EmptyState';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
 
@@ -65,8 +65,8 @@ function RoomChatScreenBody() {
   if (!sessionId || !room.data || gone) {
     return (
       <Screen>
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       </Screen>
     );

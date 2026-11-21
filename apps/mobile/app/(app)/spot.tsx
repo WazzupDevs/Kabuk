@@ -6,7 +6,6 @@ import { View } from 'react-native';
 import { Btn, T } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
-import { Loader } from '@/components/Loader';
 import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -16,6 +15,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callChangeSpot } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { EmptyState } from '@/components/EmptyState';
 
 // Changing the table's spot without a new position (docs/SPEC_V3.md §4.3). The server refuses it
 // while the table is in a room or has a request out.
@@ -44,9 +44,7 @@ export default function ChangeSpotScreen() {
   if (table.isPending) {
     return (
       <RouteSheet>
-        <View className="items-center py-6">
-          <Loader />
-        </View>
+        <EmptyState kind="loading" body={tr.common.loading} />
       </RouteSheet>
     );
   }

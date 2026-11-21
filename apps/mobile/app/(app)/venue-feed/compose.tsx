@@ -3,10 +3,11 @@ import { prepareVenuePost, VENUE_FEED } from '@shared/venueFeed.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Av, Btn, T, useKit } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
+import { BareField } from '@/components/Field';
 import { Screen } from '@/components/Screen';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
@@ -20,7 +21,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { requestKey } from '@/lib/requestKey';
 import { Tap } from '@/motion';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 import { VENUE_FEED_LOOK } from '@/theme/venueFeed';
 
 // Where a post is written (yeni arayüz tuvali, AkisYaz, AkisYazBos; docs/SPEC_V4.md §4.Y), and a
@@ -147,26 +148,19 @@ export default function VenueFeedComposeScreen() {
           {sub ? <T v="fine">{sub}</T> : null}
         </View>
       </View>
-      <TextInput
-        testID="venue-feed-input"
-        autoFocus
-        multiline
-        value={body}
-        onChangeText={setBody}
-        placeholder={
-          replyTo ? tr.venueFeed.composeReplyPlaceholder : tr.venueFeed.composePlaceholder
-        }
-        placeholderTextColor={c.muted}
-        accessibilityLabel={
-          replyTo ? tr.venueFeed.composeReplyPlaceholder : tr.venueFeed.composePlaceholder
-        }
-        selectionColor={KIT.pink}
-        textAlignVertical="top"
-        style={[
-          KIT_TYPE.body,
-          { color: c.ink, marginTop: L.textTop, minHeight: L.textMin, padding: 0 },
-        ]}
-      />
+      <View style={{ marginTop: L.textTop }}>
+        <BareField
+          testID="venue-feed-input"
+          autoFocus
+          value={body}
+          onChangeText={setBody}
+          placeholder={
+            replyTo ? tr.venueFeed.composeReplyPlaceholder : tr.venueFeed.composePlaceholder
+          }
+          selectionColor={KIT.pink}
+          minHeight={L.textMin}
+        />
+      </View>
       {photoMissing ? (
         <View style={{ gap: L.whoGap }}>
           <Banner tone="warn" body={tr.errors.photo_required} />

@@ -6,7 +6,6 @@ import { create } from 'zustand';
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Btn, Li, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { SettingsPage } from '@/features/settings/SettingsParts';
 import { useFriends } from '@/features/friends/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -17,7 +16,7 @@ import { useNowUntil } from '@/lib/useNow';
 import { PopIn } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { ROOM } from '@/theme/room';
-import { ICON, SPACING } from '@/theme/tokens';
+import { ICON } from '@/theme/tokens';
 import { VENUE } from '@/theme/venue';
 
 import { useRoom } from './queries';
@@ -101,9 +100,7 @@ export function InvitePage({ roomId }: { roomId: string }) {
             </View>
           ) : null}
           {friends.isPending ? (
-            <View style={{ alignItems: 'center', paddingVertical: SPACING[4] }}>
-              <Loader />
-            </View>
+            <EmptyState kind="loading" body={tr.common.loading} />
           ) : friends.isError ? (
             <EmptyState
               kind="error"

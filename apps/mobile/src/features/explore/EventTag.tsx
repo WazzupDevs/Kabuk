@@ -1,8 +1,10 @@
 import { describeEventTime } from '@shared/explore.ts';
 
-import { Tag } from '@/components/Tag';
+import { Tag, useKit } from '@/aura/kit';
+import { AppIcon } from '@/components/AppIcon';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { ICON } from '@/theme/tokens';
 
 import type { ExploreVenue } from './useExploreVenues';
 
@@ -10,10 +12,11 @@ import type { ExploreVenue } from './useExploreVenues';
 export function EventTag({ event }: { event: NonNullable<ExploreVenue['event']> }) {
   const now = useNow(60_000);
   const when = describeEventTime(event.startsAt, event.endsAt, now);
+  const { tags } = useKit();
   return (
     <Tag
-      variant="event"
-      icon="sparkles-outline"
+      tone="amber"
+      lead={<AppIcon name="sparkles-outline" size={ICON.xs} color={tags.amber.fg} />}
       label={tr.explore.eventTag(tr.explore.eventTime(when), event.title)}
     />
   );

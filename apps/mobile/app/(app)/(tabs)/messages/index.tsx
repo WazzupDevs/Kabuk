@@ -6,7 +6,7 @@ import { useDeferredValue, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { GlassSearch } from '@/aura/GlassSearch';
+import { SearchField } from '@/components/Field';
 import { Av, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
@@ -29,7 +29,6 @@ import { ListMove, ListMoveArea, StickyField, useListMoves } from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
-import { ICON } from '@/theme/tokens';
 
 type Tab = 'chats' | 'requests';
 
@@ -57,7 +56,7 @@ export default function MessagesScreen() {
   const requests = useRequestCount();
   const now = useNow(60_000);
   const masaRequests = useMasaRequestCount(now);
-  const { c, scheme } = useKit();
+  const { scheme } = useKit();
   // "Sohbet silindi" once a conversation is cleared (tuval MesajlarSilindi).
   const [notice, setNotice] = useState<ToastMessage | null>(null);
   const onCleared = () => setNotice({ id: Date.now(), title: tr.messages.cleared });
@@ -100,28 +99,11 @@ export default function MessagesScreen() {
       >
         <StickyField band side={M.side}>
           <View style={{ gap: M.gap }}>
-            <GlassSearch
+            <SearchField
               testID="messages-search"
               value={query}
               onChangeText={setQuery}
               placeholder={tr.messages.search}
-              height={KIT.size.field}
-              padX={M.searchPad}
-              iconColor={M[scheme].searchIcon}
-              trailing={
-                query ? (
-                  <Round
-                    glassy={false}
-                    side={KIT.size.btnSm}
-                    icon="close"
-                    iconSize={ICON.md}
-                    color={c.muted}
-                    label={tr.messages.clearSearch}
-                    testID="messages-search-clear"
-                    onPress={() => setQuery('')}
-                  />
-                ) : undefined
-              }
             />
             {searching ? null : (
               // `.sg`: Aktiviteler's tabs, a glass capsule 44, the chosen part white, 14/600.

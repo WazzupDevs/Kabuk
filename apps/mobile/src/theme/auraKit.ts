@@ -4,11 +4,17 @@
 // src/aura/kit/ read only these.
 import { BUTTON_GLASS } from './buttonGlass';
 
+const F = {
+  500: 'PlusJakartaSans_500Medium',
+  600: 'PlusJakartaSans_600SemiBold',
+  700: 'PlusJakartaSans_700Bold',
+  800: 'PlusJakartaSans_800ExtraBold',
+} as const;
+
 // The text style's parts the kit sets, as React Native's TextStyle has them. Kept here, not imported:
 // the theme files stay pure, and the root type check (Node's types) reads them through the tests.
 type TextStyle = {
   fontFamily?: string;
-  fontWeight?: '400' | '500' | '600' | '700';
   fontSize?: number;
   lineHeight?: number;
   letterSpacing?: number;
@@ -31,23 +37,9 @@ export const RADIUS_SCALE = [12, 16, 20, 24, 28] as const;
 // screen as it is revised; the screens standing today keep their own until then.
 export const SPACE_SCALE = [4, 8, 12, 16, 20, 24, 32] as const;
 
-// Two faces (the owner's call, 20 Kasım, docs/decisions/temel.md → Yazı tipi): the titles in
-// Bricolage Grotesque 700 (20 and over, the 17 section title, a face's letter), everything else in
-// the phone's own face (Android: Roboto), as the most used social apps set their running text.
-const TITLE_FACE = 'BricolageGrotesque_700Bold';
-// A title: its size and line, letter spacing in em. The face's file carries its weight.
-const h = (size: number, line: number, em = 0): TextStyle => ({
-  fontFamily: TITLE_FACE,
-  fontSize: size,
-  lineHeight: line,
-  letterSpacing: em * size,
-});
-// A text style in the phone's face: the scale's weight a step lighter, as that face is read (500 →
-// regular, 600 → medium, 700 → bold).
-const SYSTEM_WEIGHT = { 500: '400', 600: '500', 700: '700' } as const;
-const s = (w: keyof typeof SYSTEM_WEIGHT, size: number, line: number, em = 0): TextStyle => ({
-  fontFamily: 'sans-serif',
-  fontWeight: SYSTEM_WEIGHT[w],
+// A text style: its size and line, its weight's file, letter spacing in em.
+const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
+  fontFamily: F[w],
   fontSize: size,
   lineHeight: line,
   letterSpacing: em * size,
@@ -56,34 +48,34 @@ const s = (w: keyof typeof SYSTEM_WEIGHT, size: number, line: number, em = 0): T
 // The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 // The base's text styles (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md): one line
-// for each size, three weights, the titles in their own face and drawn a little
+// for each size, three weights (500, 600, 700; 800 stays only in `bold` and BTN_STRONG), the large titles at 700 and drawn a little
 // tight. Every name in KIT_TYPE is one of these; a name says where a style is used, not a new
 // value. Apart stand only a face's letter, the phone number and the code as typed, and the emoji.
 const BASE = {
-  display: h(30, 38, -0.025),
+  display: t(700, 30, 38, -0.025),
   // The first screen's line.
-  displayLight: h(30, 38, -0.025),
-  title: h(24, 30, -0.02),
-  heading: h(20, 26, -0.015),
-  lead500: s(500, 17, 22),
-  lead600: s(600, 17, 22),
-  lead700: h(17, 22),
+  displayLight: t(500, 30, 38, -0.025),
+  title: t(700, 24, 30, -0.02),
+  heading: t(700, 20, 26, -0.015),
+  lead500: t(500, 17, 22),
+  lead600: t(600, 17, 22),
+  lead700: t(700, 17, 22),
   // Running text: a message, a dialog's sentence, a legal page.
-  body: s(500, 15, 22),
-  line500: s(500, 15, 20),
-  line600: s(600, 15, 20),
-  line700: s(700, 15, 20),
-  small500: s(500, 13, 18),
-  small600: s(600, 13, 18),
-  small700: s(700, 13, 18),
-  mini500: s(500, 11, 15),
-  mini600: s(600, 11, 15),
-  mini700: s(700, 11, 15),
-  micro500: s(500, 10, 14),
-  micro700: s(700, 10, 14),
+  body: t(500, 15, 22),
+  line500: t(500, 15, 20),
+  line600: t(600, 15, 20),
+  line700: t(700, 15, 20),
+  small500: t(500, 13, 18),
+  small600: t(600, 13, 18),
+  small700: t(700, 13, 18),
+  mini500: t(500, 11, 15),
+  mini600: t(600, 11, 15),
+  mini700: t(700, 11, 15),
+  micro500: t(500, 10, 14),
+  micro700: t(700, 10, 14),
   // The small line over a title, and the same in capitals with wide spacing.
-  eyebrow: s(600, 11, 15, 0.02),
-  kicker: s(700, 11, 15, 0.1),
+  eyebrow: t(600, 11, 15, 0.02),
+  kicker: t(700, 11, 15, 0.1),
 } as const;
 
 export const KIT_TYPE = {
@@ -107,7 +99,6 @@ export const KIT_TYPE = {
   // 600), its sources (10, 500) and its card's name (16, 600, 21).
   kesfetEyebrow: BASE.eyebrow,
   kesfetTitle: BASE.display,
-  kesfetField: BASE.body,
   kesfetChip: BASE.small600,
   kesfetPlace: BASE.line700,
   kesfetCount: BASE.small500,
@@ -291,9 +282,9 @@ export const KIT_TYPE = {
   // Masa kur's title (.title at 24).
   sheetTitleLg: BASE.title,
   // A digit of the code (Kod: 26, 600).
-  code: s(600, 24, 30),
+  code: t(600, 24, 30),
   // The phone number as it is typed (Telefon: 21, 600, 0.04em).
-  phone: s(600, 20, 25, 0.04),
+  phone: t(600, 20, 25, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
   // A game's name on its card (Masa: 24, 700, -0.02em).
   gameName: BASE.title,
@@ -319,15 +310,15 @@ export const KIT_TYPE = {
   note: BASE.small500,
   eyebrow: BASE.eyebrow,
   stamp: BASE.mini600,
-  strong: { fontFamily: 'sans-serif', fontWeight: '500' } as TextStyle,
+  strong: { fontFamily: F[600] } as TextStyle,
   // A conversation's name and last line while unread (iskelet.md → 5.4).
-  bold: { fontFamily: 'sans-serif', fontWeight: '700' } as TextStyle,
+  bold: { fontFamily: F[800] } as TextStyle,
   // An unread conversation's time (yeni arayüz tuvali, Main `.tm.new`: 700).
-  heavy: { fontFamily: 'sans-serif', fontWeight: '700' } as TextStyle,
+  heavy: { fontFamily: F[700] } as TextStyle,
   // "Henüz mesaj yok" (5.4): slanted (the face has no italic file; Android slants it).
   italic: { fontStyle: 'italic' } as TextStyle,
   // The plain part of a bold line (Bildirimler: "isteğini kabul etti" after the name).
-  light: { fontFamily: 'sans-serif', fontWeight: '400' } as TextStyle,
+  light: { fontFamily: F[500] } as TextStyle,
   btn: BASE.line600,
   btnSm: BASE.small600,
   chip: BASE.small600,
@@ -344,7 +335,7 @@ export const KIT_TYPE = {
   tagLg: BASE.small600,
   badge: BASE.mini700,
   // The request row's letter face (`.rqa`: 20/700, line 1).
-  faceLetter: h(20, 20),
+  faceLetter: t(700, 20, 20),
   // The venue chat card's count (24 round, 12).
   badgeLg: BASE.mini700,
   live: BASE.small600,
@@ -393,24 +384,24 @@ export const KIT_TYPE = {
   lobbyTeamCount: BASE.small700,
   av: {
     // A face in Masa's row of faces (`.fcs .av`, 10 700).
-    roomFace: h(10, 12),
-    xs: h(9, 11),
-    md: h(15, 19),
-    sm: h(11, 15),
-    member: h(11, 15),
-    list: h(15, 19),
-    seat: h(20, 24),
+    roomFace: t(700, 10, 12),
+    xs: t(700, 9, 11),
+    md: t(700, 15, 19),
+    sm: t(700, 11, 15),
+    member: t(700, 11, 15),
+    list: t(700, 15, 19),
+    seat: t(700, 20, 24),
     // A conversation's face in Mesajlar (52).
-    row: h(17, 21),
+    row: t(700, 17, 21),
     // A conversation's face (tuval Mesajlar: 54) and the DM bar's (38).
-    inbox: h(20, 25),
-    bar: h(13, 17),
-    lg: h(20, 24),
-    xl: h(30, 36),
+    inbox: t(700, 20, 25),
+    bar: t(700, 13, 17),
+    lg: t(700, 20, 24),
+    xl: t(700, 30, 36),
     // Profil's two faces (112).
-    big: h(40, 48),
-    hero: h(40, 48),
-    edit: h(30, 36),
+    big: t(700, 40, 48),
+    hero: t(700, 40, 48),
+    edit: t(700, 30, 36),
   },
 } as const;
 
@@ -421,7 +412,7 @@ export type KitTextVariant = Exclude<
 
 // Aura v75 E4: in the narrow state (320 dp or the largest text, `lib/narrow.ts`) the eyebrow is 13,
 // so it is the canvas's 17/22 at the largest text (1.3x).
-export const EYEBROW_NARROW = s(600, 13, 17, 0.02);
+export const EYEBROW_NARROW = t(600, 13, 17, 0.02);
 
 // Aura v65 skall.css and ekran.css: green-tinted soft shadows (rgba(4, 73, 35) and the ink
 // rgba(3, 27, 11)), the primary's glow in its own green in the light scheme. The dark scheme draws
@@ -453,7 +444,7 @@ export type { ButtonGlassKind } from './buttonGlass';
 
 // A clear button's words at 800 where asked (the bar's Kaydet with something to save, iskelet.md
 // → 2.1); every other button's 600 (KIT_TYPE.btn).
-export const BTN_STRONG: TextStyle = { fontFamily: 'sans-serif', fontWeight: '700' };
+export const BTN_STRONG: TextStyle = { fontFamily: F[800] };
 
 export const KIT = {
   // The buttons are glass (theme/buttonGlass.ts; iskelet.md → 2.1).

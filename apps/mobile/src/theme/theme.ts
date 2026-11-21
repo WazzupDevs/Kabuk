@@ -124,7 +124,6 @@ export const THEME: ThemeDefinition = {
     semibold: 'PlusJakartaSans_600SemiBold',
     bold: 'PlusJakartaSans_700Bold',
     system: 'Roboto_700Bold',
-    title: 'BricolageGrotesque_700Bold',
   },
   shape: {
     // deck: Kapsül Anlat's cards; roleCard: Sahtekar's role card; letterTile: Harf Kapmaca's tile.
@@ -161,23 +160,28 @@ export const THEME: ThemeDefinition = {
       focus: '0px 0px 0px 4px rgba(31, 220, 117, 0.22)',
     },
   },
-  // The airy look's type (docs/design/aura/project/aura.css; the owner's call, 28 Ekim): the
-  // canvas's sizes and weights for every screen, games' own styles as they were.
+  // The shared roles on the base's scale (docs/decisions/temel.md → Yazı, 19 Kasım; 21 Kasım for
+  // the old Text): every size one of TYPE_SCALE, each role the base text style of its size
+  // (theme/auraKit.ts → BASE). The games' own roles (word, score, clock, …) stay as they were.
   typography: baseTypography({
-    display: { font: 'title', size: 32, lineHeight: 42, letterSpacing: -0.8 },
-    title: { font: 'title', size: 21, lineHeight: 27, letterSpacing: -0.3 },
-    heading: { font: 'title', size: 16, lineHeight: 22, letterSpacing: -0.1 },
+    display: { font: 'bold', size: 30, lineHeight: 38, letterSpacing: -0.75 },
+    largeTitle: { font: 'bold', size: 30, lineHeight: 38, letterSpacing: -0.75 },
+    alias: { font: 'bold', size: 24, lineHeight: 30, letterSpacing: -0.48 },
+    title: { font: 'bold', size: 24, lineHeight: 30, letterSpacing: -0.48 },
+    heading: { font: 'bold', size: 17, lineHeight: 22 },
+    mark: { font: 'bold', size: 20, lineHeight: 24 },
     body: { font: 'regular', size: 15, lineHeight: 22 },
-    bodyStrong: { font: 'semibold', size: 15, lineHeight: 22 },
+    bodyStrong: { font: 'semibold', size: 15, lineHeight: 20 },
     subtitle: { font: 'regular', size: 15, lineHeight: 22 },
-    eyebrow: { font: 'semibold', size: 12, lineHeight: 16, letterSpacing: 0.24 },
-    label: { font: 'semibold', size: 13, lineHeight: 17 },
+    eyebrow: { font: 'semibold', size: 11, lineHeight: 15, letterSpacing: 0.22 },
+    label: { font: 'semibold', size: 13, lineHeight: 18 },
     fine: { font: 'regular', size: 13, lineHeight: 18 },
-    button: { font: 'semibold', size: 16, lineHeight: 20 },
-    buttonLarge: { font: 'semibold', size: 16, lineHeight: 20 },
+    button: { font: 'semibold', size: 15, lineHeight: 20 },
+    buttonLarge: { font: 'semibold', size: 15, lineHeight: 20 },
     buttonDetail: { font: 'semibold', size: 15, lineHeight: 20 },
-    buttonSmall: { font: 'semibold', size: 14, lineHeight: 18 },
-    tag: { font: 'semibold', size: 12, lineHeight: 16 },
-    caption: { font: 'semibold', size: 11, lineHeight: 14 },
+    buttonSmall: { font: 'semibold', size: 13, lineHeight: 18 },
+    tag: { font: 'semibold', size: 11, lineHeight: 15 },
+    caption: { font: 'semibold', size: 11, lineHeight: 15 },
+    overline: { font: 'bold', size: 11, lineHeight: 15, letterSpacing: 1.1, uppercase: true },
   }),
 };

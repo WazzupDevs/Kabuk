@@ -1,7 +1,6 @@
 import type { TextStyle } from 'react-native';
 
 import { KINSHI, PEEK_PAIRS } from './kinshi';
-import { faceOf, NUMBERS } from './typeFace';
 
 // Signum's word board and captain (Aura v87, the "Signum (kelime ızgarası ve kaptan)" row; the
 // acceptance report of 4 Kasım, revize 1). The panels are 390 × 844 and share Kinshi's frame (the
@@ -12,7 +11,7 @@ const F800 = 'PlusJakartaSans_800ExtraBold';
 const F700 = 'PlusJakartaSans_700Bold';
 const F600 = 'PlusJakartaSans_600SemiBold';
 const t = (family: string, size: number, line: number, em = 0): TextStyle => ({
-  ...faceOf(family, size),
+  fontFamily: family,
   fontSize: size,
   lineHeight: line,
   letterSpacing: em * size,
@@ -21,19 +20,18 @@ const t = (family: string, size: number, line: number, em = 0): TextStyle => ({
 export const SIGNUM_TYPE = {
   // A closed tile's word (`.tl .w`): 800 12/14, 2 %, one line (the word list fits 320 dp:
   // SIGNUM.tileTextPx).
-  // Measured from this face's glyphs (scripts/seed/signum.ts): it keeps it.
-  tile: { fontFamily: F800, fontSize: 12, lineHeight: 14, letterSpacing: 0.02 * 12 } as TextStyle,
+  tile: t(F800, 12, 14, 0.02),
   // An opened tile's label (`.tl .lb`).
   label: t(F700, 11, 11),
   // The eyebrow over the clue and "Kalan tahmin" (`.eb`): 700 11/14, 10 %, capitals.
   eyebrow: t(F700, 11, 14, 0.1),
   // The clue's word (`.cw`) and its number (`.cn`).
   clue: t(F800, 21, 27, 0.04),
-  clueNumber: { ...t(F800, 15, 15), ...NUMBERS } as TextStyle,
+  clueNumber: { ...t(F800, 15, 15), fontVariant: ['tabular-nums'] } as TextStyle,
   // The clue field (`.field`): 800 21, 6 %.
   field: t(F800, 21, 26, 0.06),
   // The number picker (`.seg button`).
-  seg: { ...t(F800, 16, 16), ...NUMBERS } as TextStyle,
+  seg: { ...t(F800, 16, 16), fontVariant: ['tabular-nums'] } as TextStyle,
   // The colour legend (`.leg`).
   legend: t(F600, 12, 16),
   // The top bar's phase pill (`.phase`).

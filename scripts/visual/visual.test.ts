@@ -555,7 +555,6 @@ describe("visual gate: the prototype in the app's fonts", () => {
       ['Plus Jakarta Sans', 600, 'PlusJakartaSans_600SemiBold'],
       ['Plus Jakarta Sans', 700, 'PlusJakartaSans_700Bold'],
       ['Plus Jakarta Sans', 800, 'PlusJakartaSans_800ExtraBold'],
-      ['Bricolage Grotesque', 700, 'BricolageGrotesque_700Bold'],
       ['Roboto', 700, 'Roboto_700Bold'],
     ]);
     for (const f of fonts) {
@@ -577,7 +576,7 @@ describe("visual gate: the prototype in the app's fonts", () => {
 
   it("answers Google Fonts' stylesheet with one face per app file and no other family", () => {
     const css = fontFaces(appFonts(ROOT));
-    expect(css.match(/@font-face/g)).toHaveLength(6);
+    expect(css.match(/@font-face/g)).toHaveLength(5);
     expect(css).toContain("font-family:'Roboto';font-style:normal;font-weight:700;");
     expect(css).not.toMatch(/Manrope|Poppins|font-weight:400/);
     expect(css).toContain("font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;");

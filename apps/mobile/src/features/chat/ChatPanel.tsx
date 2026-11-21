@@ -30,7 +30,6 @@ import {
 import { ChatEmptyCard, ChatSuggestions } from '@/components/ChatEmptyCard';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi, safetyApi } from '@/lib/api';
@@ -312,8 +311,8 @@ export function useRoomChatList(
     ),
     // Loading and its error (audit CHAT-8), and the empty room.
     empty: chat.messages.isPending ? (
-      <View className="flex-1 items-center justify-center">
-        <Loader />
+      <View className="flex-1">
+        <EmptyState kind="loading" body={tr.common.loading} />
       </View>
     ) : chat.messages.isError && !chat.messages.data ? (
       <EmptyState

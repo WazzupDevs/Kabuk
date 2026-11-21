@@ -50,8 +50,9 @@ describe("the app's Keşfet", () => {
   it("is built from the canvas's kit", () => {
     expect(screen).toMatch(/from '@\/aura\/kit'/);
     // Yeni arayüz tuvali Kesfet: the white search field with the round to the map, pinned; each
-    // venue a row on the ground; the riso empty state; the motion from the kit.
-    for (const part of ['<SearchRow', '<ClearButton', '<Chip', '<PlaceRow', '<ListEmpty']) {
+    // venue a row on the ground; the riso empty state; the motion from the kit. The field is the
+    // one search field (components/Field.tsx), its clear button with it.
+    for (const part of ['<SearchRow', '<SearchField', '<Chip', '<PlaceRow', '<ListEmpty']) {
       expect(screen, part).toContain(part);
     }
     expect(screen).toMatch(/<StickyGroup\s+side=\{L\.side\}/);

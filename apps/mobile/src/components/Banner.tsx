@@ -43,8 +43,8 @@ export function Banner({
         : tone === 'info'
           ? [colors.surface2, colors.text, colors.muted]
           : [k.stripWarn, k.onStripWarn, k.onStripWarn];
-  // Aura v71 (GaleriEklenen, Uyarı): the warning has no icon, 14 / 16 in, its title 15 / 600 and 4
-  // above its words; the other tones as before.
+  // Aura v71 (GaleriEklenen, Uyarı): the warning has no icon. Every tone 14 / 16 in, its title
+  // 15 / 600 and 4 above its words (one strip, 21 Kasım).
   const warn = tone === 'warn';
   return (
     <View
@@ -56,8 +56,8 @@ export function Banner({
         tone === 'info' ? gradientStyle(KIT[scheme].glass) : { backgroundColor: bg },
         {
           gap: SPACING[3],
-          paddingVertical: warn ? KIT.size.warnPadY : SPACING[3],
-          paddingHorizontal: warn ? KIT.size.warnPadX : SPACING[3] + SPACING[0.5],
+          paddingVertical: KIT.size.warnPadY,
+          paddingHorizontal: KIT.size.warnPadX,
           borderRadius: KIT.size.glassRadiusSm,
           borderWidth: tone === 'info' ? KIT.size.edge : 0,
           borderColor: KIT[scheme].glassEdge,
@@ -65,9 +65,9 @@ export function Banner({
       ]}
     >
       {warn ? null : <AppIcon name={ICONS[tone]} size={ICON.md} color={fg} />}
-      <View className="flex-1" style={{ gap: warn ? KIT.size.warnGap : SPACING[0.5] }}>
+      <View className="flex-1" style={{ gap: KIT.size.warnGap }}>
         {title ? (
-          <Text variant={warn ? 'bodyStrong' : 'label'} color={fg}>
+          <Text variant="bodyStrong" color={fg}>
             {title}
           </Text>
         ) : null}

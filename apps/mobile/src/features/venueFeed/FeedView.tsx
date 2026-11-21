@@ -5,11 +5,10 @@ import { View } from 'react-native';
 import { Btn, T } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader, useLoaderHold } from '@/components/Loader';
+import { useLoaderHold } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
-import { SPACING } from '@/theme/tokens';
 import { VENUE_FEED_LOOK } from '@/theme/venueFeed';
 
 import { PostRow } from './PostRow';
@@ -52,9 +51,7 @@ export function FeedView({ venueId }: { venueId: string }) {
       ) : null}
       <View style={{ marginTop: L.listTop }}>
         {loading ? (
-          <View className="items-center" style={{ paddingVertical: SPACING[8] }}>
-            <Loader />
-          </View>
+          <EmptyState kind="loading" body={tr.common.loading} />
         ) : query.isError && posts.length === 0 ? (
           <EmptyState
             kind="error"

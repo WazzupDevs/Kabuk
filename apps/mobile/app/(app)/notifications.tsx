@@ -8,7 +8,6 @@ import { View } from 'react-native';
 
 import { Av, Btn, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { openDm } from '@/features/friends/openDm';
@@ -105,9 +104,7 @@ export default function NotificationsScreen() {
   if (list.isPending) {
     return (
       <RouteSheet {...sheet}>
-        <View className="items-center py-6">
-          <Loader />
-        </View>
+        <EmptyState kind="loading" body={tr.common.loading} />
       </RouteSheet>
     );
   }

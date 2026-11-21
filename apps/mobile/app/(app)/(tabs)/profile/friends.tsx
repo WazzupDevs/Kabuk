@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useDeferredValue, useState } from 'react';
 import { View } from 'react-native';
 
-import { GlassSearch } from '@/aura/GlassSearch';
+import { SearchField } from '@/components/Field';
 import { Btn, Glass, Li, T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
@@ -70,12 +70,11 @@ export default function FriendsScreen() {
     >
       {hasFriends ? (
         <StickyField band side={FLAT.page.side}>
-          <GlassSearch
+          <SearchField
             testID="friends-search"
             value={query}
             onChangeText={setQuery}
             placeholder={tr.friends.search}
-            height={KIT.size.field}
           />
         </StickyField>
       ) : null}

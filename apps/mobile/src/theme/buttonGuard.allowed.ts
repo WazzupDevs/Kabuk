@@ -3,7 +3,6 @@
 // leaves it.
 export const BUTTON_ALLOWED: readonly string[] = [
   'app/(app)/design-preview.tsx',
-  'src/components/RouteError.tsx',
   'src/features/design/capsuleMeasurePreview.tsx',
   'src/features/design/measurePreview.tsx',
   'src/features/design/motionPreview.tsx',
@@ -11,7 +10,4 @@ export const BUTTON_ALLOWED: readonly string[] = [
   'src/features/design/previews.tsx',
   'src/features/design/workshop/WorkshopSet.tsx',
   'src/features/design/workshop/registry.tsx',
-  'src/features/games/say/Say.tsx',
-  'src/features/games/vampir/VampirGame.tsx',
-  'src/features/games/vampir/VampirPlay.tsx',
 ];

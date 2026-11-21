@@ -184,6 +184,8 @@ export const tr = {
     continue: 'Devam',
     cancel: 'Vazgeç',
     retry: 'Tekrar dene',
+    // The search field's clear button (components/Field.tsx → SearchField).
+    clearSearch: 'Temizle',
     loading: 'Yükleniyor…',
     genericError: 'Bir şeyler ters gitti. Tekrar dener misin?',
     close: 'Kapat',
@@ -342,7 +344,6 @@ export const tr = {
     noMatchHint: 'Başka bir ad dene.',
     // Over the search's rows (tuval MesajlarAra: "2 SOHBET", upperTr) and its × (MesajlarAra).
     found: (n: number) => `${n} sohbet`,
-    clearSearch: 'Temizle',
     // With the dots beside it (v45).
     typing: 'yazıyor',
     stamp: (iso: string, stamp: InboxStamp) =>
@@ -534,7 +535,6 @@ export const tr = {
     backToVenue: 'Mekana dön',
     views: { list: 'Liste', map: 'Haritada gör' },
     // The search's clear button (KesfetAra).
-    clearSearch: 'Temizle',
     // The map's legend (KesfetHarita `.lg`): the pins' colours by how lively.
     legend: { calm: 'Sessiz', lively: 'Masa var', buzzing: 'Kalabalık' },
     // The map's sources (KesfetHarita `.attr`); a touch opens the map's own attribution.
@@ -810,7 +810,6 @@ export const tr = {
     setName: (name: string) => `${name} takımı`,
     catalogSearch: 'Ara',
     catalogSearchHint: 'Parça adı ara',
-    catalogSearchClear: 'Temizle',
     catalogResults: 'Sonuçlar',
     catalogNoResult: 'Sonuç yok',
     catalogNoResultBody: (query: string) => `“${query}” adında bir parça yok. Başka bir ad dene.`,

@@ -1,7 +1,6 @@
 import type { TextStyle } from 'react-native';
 
 import { risoType } from './riso';
-import { NUMBERS } from './typeFace';
 
 // Kaupholl's screens (Aura v89 "Kaupholl (en yakına yatır)" and the §6 panels of
 // docs/decisions/kaupholl.md: KaupholOyuncular … KaupholYukleniyor). The panels are 390 × 844,
@@ -12,7 +11,7 @@ const F800 = 'PlusJakartaSans_800ExtraBold';
 const F700 = 'PlusJakartaSans_700Bold';
 const F600 = 'PlusJakartaSans_600SemiBold';
 const F500 = 'PlusJakartaSans_500Medium';
-const tabular = (t: TextStyle): TextStyle => ({ ...t, ...NUMBERS });
+const tabular = (t: TextStyle): TextStyle => ({ ...t, fontVariant: ['tabular-nums'] });
 
 // The guess field's base size and a smaller one that keeps its line in proportion (a number too
 // wide for the field shrinks, KaupholTahminYaz320).

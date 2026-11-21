@@ -40,7 +40,7 @@ export const EXPLORE = {
   // The search (`.sr .field`): 20 in, 8 between the icon and the words, the icon 20; the clear
   // button (`.clr`) 36 round, its icon 20, 10 into the field's right padding; the map button 8 to
   // its right.
-  field: { padX: 20, gap: 8, icon: 20, clear: 36, clearIcon: 20, clearOut: -10, rowGap: 8 },
+  field: { rowGap: 8 },
   // The buddies over the search (`.sr .kk`): 178 wide (the picture's 600 × 340), 64 from the right,
   // their foot 22 over the field's foot, under the field.
   peek: { width: 178, height: 101, right: 64, bottom: 22 },

@@ -10,7 +10,6 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
@@ -51,8 +50,8 @@ export default function ConsentsAfterCode() {
 
   if (profile.isPending) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <Loader />
+      <View className="flex-1 bg-canvas">
+        <EmptyState kind="loading" body={tr.common.loading} />
       </View>
     );
   }

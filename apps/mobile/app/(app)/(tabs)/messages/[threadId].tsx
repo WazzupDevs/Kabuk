@@ -509,8 +509,8 @@ export function DmThread({
         // Loading and its error (audit CHAT-8): the DM is never shown empty while it loads or
         // when it could not be read.
         empty: messages.isPending ? (
-          <View className="flex-1 items-center justify-center">
-            <Loader />
+          <View className="flex-1">
+            <EmptyState kind="loading" body={tr.common.loading} />
           </View>
         ) : messages.isError ? (
           <EmptyState

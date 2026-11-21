@@ -7,8 +7,7 @@ import { BackHandler, Linking, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, T, useKit } from '@/aura/kit';
-import { Input } from '@/components/Input';
-import { Loader } from '@/components/Loader';
+import { Field } from '@/components/Field';
 import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
@@ -31,6 +30,7 @@ import { type MenuAnchor, Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { PROFILE_EDIT } from '@/theme/profileEdit';
 import { ICON, SPACING } from '@/theme/tokens';
+import { EmptyState } from '@/components/EmptyState';
 
 // The photo, the cover, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; docs/design/
 // iskelet.md → 5.8): the `sayfa` bar with the back button and Kaydet (clear, its words quiet with
@@ -45,8 +45,8 @@ export default function EditProfileScreen() {
   if (own.isPending || !own.data) {
     return (
       <Screen>
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       </Screen>
     );
@@ -386,7 +386,7 @@ function EditForm({
         radius={E.card.radius}
         style={{ padding: E.card.pad, gap: E.card.gap }}
       >
-        <Input
+        <Field
           testID="name-input"
           label={tr.profile.nameLabel}
           hint={tr.profile.nameHint}
@@ -411,7 +411,7 @@ function EditForm({
             backgroundColor: look.hair,
           }}
         />
-        <Input
+        <Field
           label={tr.profile.bioLabel}
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}

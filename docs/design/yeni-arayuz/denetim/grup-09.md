@@ -166,15 +166,15 @@ Panoda Takımlar çipi aktif ("Takımlar 10"), liste "Takımlar / 10 parça", 10
 | 6 | Takım sayısı | doğrulanamadı | 10 takım (Kış, Büyücü, Yıldız, Korsan, Dalgıç, Şef, Doktor, Rock, Astronot, Hawaii…) | depoda 2 takım var (Elf, Ninja: giftCatalog.ts:39-42); içerik farkı, arayüz değil |
 
 ## 83 Tüm aksesuarlar · arama açık — project/TumAra.dc.html
-Kod: ACC:229-252 (GlassSearch), src/aura/GlassSearch.tsx, kit.tsx Round
+Kod: ACC:229-252 (GlassSearch), src/components/Field.tsx, kit.tsx Round
 Öğe sayısı: 12 · uyuyor: 6 · fark: 8 · fazla: 1 · doğrulanamadı: 1
 Uyuyanlar: kategori çipleri aramada gizli, "Sonuçlar / 1 parça" başlığı, alan yüksekliği 48 (KIT.size.field), geri düğmesi, sonuç kartı ad "Kedi bıyıkları" ve 4 sütun ızgara, temizle düğmesi 36 (KIT.size.btnSm), "Temizle" erişilebilirlik adı.
 | # | öğe | tür | pano | kod |
 |---|---|---|---|---|
-| 1 | Alan iç boşluğu | boşluk | sol 14, sağ 6 | sol 18 (X.capsulePadX), sağ 3 (X.switchPad) (GlassSearch.tsx:49-50; AK:898-906) |
-| 2 | Alan içi aralık | boşluk | 6 | 8 (SPACING[2]) (GlassSearch.tsx:52) |
-| 3 | Alan yazısı | yazı | 500 16/22 | body 500 15/22 (AK:258; GlassSearch.tsx:66) |
-| 4 | Arama ikonu rengi ve geometri | renk | muted (#4A6550) daire r6.4 sw2.6 | placeholder (#56785E) (GlassSearch.tsx:56), r5.6 |
+| 1 | Alan iç boşluğu | boşluk | sol 14, sağ 6 | sol 18 (X.capsulePadX), sağ 3 (X.switchPad) (components/Field.tsx:49-50; AK:898-906) |
+| 2 | Alan içi aralık | boşluk | 6 | 8 (SPACING[2]) (components/Field.tsx:52) |
+| 3 | Alan yazısı | yazı | 500 16/22 | body 500 15/22 (AK:258; components/Field.tsx:66) |
+| 4 | Arama ikonu rengi ve geometri | renk | muted (#4A6550) daire r6.4 sw2.6 | placeholder (#56785E) (components/Field.tsx:56), r5.6 |
 | 5 | Temizle ikonu | ikon | dolu %22 daire r9.4 + X | `close` yalnız X, daire yok (ACC:243) |
 | 6 | Alan koyu | koyu | #121614, kenar rgba(255,255,255,.08), yazı #EEF3F0 | Glass koyu (kit): kenar .09/.10, bkz 73 #11 |
 | 7 | Karo resmi | resim | "Kedi bıyıkları" kapsül üstünde, viewBox 20 28 60 60 | figür tek başına, bkz 81 #13 |

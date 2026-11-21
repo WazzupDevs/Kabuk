@@ -23,12 +23,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
@@ -38,6 +36,7 @@ import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
+import { SearchField } from '@/components/Field';
 import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
@@ -1176,8 +1175,7 @@ function SearchRow({
   map: boolean;
   onChange: (v: View_) => void;
 }) {
-  const { c, scheme } = useKit();
-  const { colors } = useTheme();
+  const { scheme } = useKit();
   const f = EXPLORE.field;
   const to: View_ = map ? 'list' : 'map';
   return (
@@ -1185,50 +1183,15 @@ function SearchRow({
       accessibilityLabel={tr.explore.viewSwitch}
       style={{ flexDirection: 'row', alignItems: 'center', gap: f.rowGap }}
     >
-      <Glass
-        face={EXPLORE[scheme].solid}
-        radius={FIELD / 2}
-        style={{
-          flex: 1,
-          height: FIELD,
-          borderRadius: FIELD / 2,
-          paddingHorizontal: f.padX,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: f.gap,
-        }}
-      >
-        <CapIcon name="search" color={c.muted} size={f.icon} />
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <TextInput
-            testID="explore-search"
-            value={value}
-            onChangeText={onChangeText}
-            accessibilityLabel={tr.explore.search}
-            returnKeyType="search"
-            selectionColor={colors.accent}
-            cursorColor={colors.accent}
-            style={[
-              KIT_TYPE.kesfetField,
-              { color: c.ink, paddingVertical: 0, paddingHorizontal: 0, includeFontPadding: false },
-            ]}
-          />
-          {/* The hint is drawn by the app, in the app's type: Android draws a field's own hint in
-              the phone's system face (the owner's report, 27 and 28 Ekim). */}
-          {value.length === 0 ? (
-            <View
-              pointerEvents="none"
-              style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}
-            >
-              {/* No `fit`: in the absolute layer it shrank the hint to nothing (ui 3.1). */}
-              <T v="kesfetField" lines={1} color={colors.placeholder}>
-                {tr.explore.search}
-              </T>
-            </View>
-          ) : null}
-        </View>
-        {value.length > 0 ? <ClearButton onPress={() => onChangeText('')} /> : null}
-      </Glass>
+      <View style={{ flex: 1 }}>
+        <SearchField
+          testID="explore-search"
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={tr.explore.search}
+          face={EXPLORE[scheme].solid}
+        />
+      </View>
       <Round
         side={FIELD}
         icon={to}
@@ -1237,31 +1200,5 @@ function SearchRow({
         onPress={() => onChange(to)}
       />
     </View>
-  );
-}
-
-// KesfetAra `.clr`: a 36 round at the field's right, its 20 icon a soft disc with a cross.
-function ClearButton({ onPress }: { onPress: () => void }) {
-  const { c } = useKit();
-  const f = EXPLORE.field;
-  return (
-    <Tap
-      testID="explore-search-clear"
-      accessibilityLabel={tr.explore.clearSearch}
-      onPress={onPress}
-      style={{
-        width: f.clear,
-        height: f.clear,
-        borderRadius: f.clear / 2,
-        marginRight: f.clearOut,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Svg width={f.clearIcon} height={f.clearIcon} viewBox="0 0 24 24">
-        <Circle cx={12} cy={12} r={9.4} fill={c.muted} opacity={0.22} />
-        <Path d="M9 9l6 6M15 9l-6 6" stroke={c.muted} strokeWidth={2.2} strokeLinecap="round" />
-      </Svg>
-    </Tap>
   );
 }

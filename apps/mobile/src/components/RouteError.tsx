@@ -2,7 +2,7 @@ import { type ErrorBoundaryProps, router } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { launchGuard, markLaunchReady } from '@/features/launch/launchStore';
@@ -29,7 +29,7 @@ export function RouteError({ error, retry }: ErrorBoundaryProps) {
           body={tr.errorScreen.body}
           action={{ label: tr.errorScreen.retry, onPress: () => void retry() }}
         />
-        <Button
+        <Btn
           variant="ghost"
           label={tr.errorScreen.home}
           onPress={() => {

@@ -1,7 +1,6 @@
 import type { TextStyle } from 'react-native';
 
 import { RISO, RISO_PANEL_WIDTH, risoType } from './riso';
-import { NUMBERS } from './typeFace';
 
 // Krot's hidden card and suspect line-up (Aura v86, the "Krot (gizli kart ve şüpheli sırası)" row
 // and the `Krot` panel; the acceptance report of 4 Kasım). The panels are 390 × 844; every number
@@ -24,7 +23,7 @@ export const KROT_TYPE = {
   note: risoType(F700, 16, 22),
   hold: risoType(F700, 14, 18),
   // The line-up: the plate's number (`.no`, 800/13, tabular), the name (`.nm`, 700/12/14).
-  plate: { ...risoType(F800, 13, 16), ...NUMBERS } as TextStyle,
+  plate: { ...risoType(F800, 13, 16), fontVariant: ['tabular-nums'] } as TextStyle,
   name: risoType(F700, 12, 14),
   // The eyebrows over the glass rows (`.eb`: 700/11/14, 10 % apart, upper case).
   eyebrow: risoType(F700, 11, 14, 0.1),
@@ -249,7 +248,7 @@ export const KROT_BOARD_TYPE = {
   // tabular).
   barTitle: risoType(FJ700, 17, 22),
   barLine: risoType('PlusJakartaSans_500Medium', 13, 18),
-  timer: { ...risoType(FJ700, 15, 20), ...NUMBERS } as TextStyle,
+  timer: { ...risoType(FJ700, 15, 20), fontVariant: ['tabular-nums'] } as TextStyle,
   // The card: the eyebrow (`.kick`, 700/12, 0.4 px), the title (`.q1`, 700/24, -0.4 px), the line
   // (`.q2`, 500/14).
   kick: risoType(FJ700, 12, 16, 0.4 / 12),

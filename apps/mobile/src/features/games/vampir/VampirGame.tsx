@@ -11,7 +11,7 @@ import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn } from '@/aura/kit';
 import { confirmGameExit } from '@/features/games/gameExit';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -329,9 +329,8 @@ function End({
                   onPress={onBack}
                 />
                 <View style={{ flex: 1 }}>
-                  <Button
+                  <Btn
                     testID="vampir-again"
-                    size="lg"
                     label={tr.vampir.again}
                     loading={again.isPending}
                     onPress={() => again.mutate()}
@@ -340,12 +339,7 @@ function End({
               </>
             ) : (
               <View style={{ flex: 1 }}>
-                <Button
-                  testID="vampir-back"
-                  size="lg"
-                  label={tr.vampir.backToTable}
-                  onPress={onBack}
-                />
+                <Btn testID="vampir-back" label={tr.vampir.backToTable} onPress={onBack} />
               </View>
             )}
           </View>

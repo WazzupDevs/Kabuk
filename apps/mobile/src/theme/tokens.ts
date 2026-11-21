@@ -147,7 +147,6 @@ export type FontName =
   | 'PlusJakartaSans_600SemiBold'
   | 'PlusJakartaSans_700Bold'
   | 'PlusJakartaSans_800ExtraBold'
-  | 'BricolageGrotesque_700Bold'
   | 'Roboto_700Bold';
 
 export type FontSet = {
@@ -157,7 +156,6 @@ export type FontSet = {
   semibold: FontName; // bodyStrong only
   bold: FontName; // eyebrow, label, buttons, tag, caption, overline
   system: FontName; // what v46 sets in system-ui: notice (v46: .toast)
-  title: FontName; // the screens' titles: display, title, heading (temel.md → Yazı tipi)
 };
 
 // Where a shadow is drawn. Values are CSS `box-shadow` strings (React Native `boxShadow`); `null`
@@ -358,7 +356,7 @@ export function baseTypography(overrides: Partial<Typography> = {}): Typography 
     buttonSmall: { font: 'bold', size: 13, lineHeight: 18 },
     tag: { font: 'display', size: 11, lineHeight: 14 },
     caption: { font: 'display', size: 11, lineHeight: 14 },
-    tabLabel: { font: 'bold', size: 10, lineHeight: 13 },
+    tabLabel: { font: 'display', size: 10, lineHeight: 13 },
     overline: { font: 'bold', size: 12, lineHeight: 16, letterSpacing: 1, uppercase: true },
     signalMark: { font: 'regular', size: 104, lineHeight: 126 },
     gameButton: { font: 'display', size: 16, lineHeight: 20 },

@@ -5,12 +5,11 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 
-import { Btn, Li, Seg, T, useKit } from '@/aura/kit';
+import { Btn, Li, Seg, T, Tag, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
-import { Tag } from '@/components/Tag';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
 import { GiftCard } from '@/features/gifts/GiftCard';
@@ -33,6 +32,9 @@ import { ACTIVITIES as A } from '@/theme/activities';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
+
+// A game's result on its row: won green, lost amber, done the plain glass (the kit's Tag).
+const RESULT_TONE = { won: 'green', lost: 'amber', done: 'glassy' } as const;
 
 type Tab = 'events' | 'history';
 
@@ -449,7 +451,7 @@ function HistoryRow({
           <View style={{ flex: 1, minWidth: 0 }}>
             <T v="body">{with_}</T>
           </View>
-          {result && variant ? <Tag variant={variant} label={result} /> : null}
+          {result && variant ? <Tag tone={RESULT_TONE[variant]} label={result} /> : null}
         </View>
       </View>
     </Li>

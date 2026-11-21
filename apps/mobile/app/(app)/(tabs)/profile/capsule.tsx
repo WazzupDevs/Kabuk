@@ -12,7 +12,6 @@ import { CapsuleHale } from '@/components/CapsuleHale';
 import { CachedSvg, readAhead } from '@/components/CachedSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
-import { Loader } from '@/components/Loader';
 import { shadowParts } from '@/components/NativeShadow';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
@@ -128,8 +127,8 @@ export default function CapsuleScreen() {
   const saved = view.data?.capsuleLook ?? null;
   if (view.isPending || own.isPending) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-canvas">
-        <Loader />
+      <SafeAreaView className="flex-1 bg-canvas">
+        <EmptyState kind="loading" body={tr.common.loading} />
       </SafeAreaView>
     );
   }

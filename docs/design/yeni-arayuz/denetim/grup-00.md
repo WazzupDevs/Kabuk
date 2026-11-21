@@ -12,15 +12,15 @@ Ortak parça kimlikleri (sonraki panolarda "bkz." ile anılır):
 ---
 
 ## 01 Mesajlar — project/Main.dc.html
-Kod: app/(app)/(tabs)/messages/index.tsx; features/friends/InboxRows.tsx; aura/kit.tsx (Seg, Round, Av, Badge); aura/GlassSearch.tsx; features/notifications/Bell.tsx; theme/messages.ts; components/TabBar.tsx + motion/TabBar.tsx
+Kod: app/(app)/(tabs)/messages/index.tsx; features/friends/InboxRows.tsx; aura/kit.tsx (Seg, Round, Av, Badge); components/Field.tsx; features/notifications/Bell.tsx; theme/messages.ts; components/TabBar.tsx + motion/TabBar.tsx
 Öğe sayısı: 47 · uyuyor: 26 · fark: 20 (biri özellik yok) · fazla: 1 · doğrulanamadı: 0
 | # | öğe | tür | pano | kod (dosya:satır) |
 |---|---|---|---|---|
 | 1 | "Yeni mesaj" yuvarlağı ikonu | ikon/ölçü | 24 px; çizim: a=rect(3,9.4,16.4×5.2,rx2.6,rot-45), b=rect(12.4,18.4,8.6×2.8) | `edit` 22 (iconSize verilmedi, messages/index.tsx:86-92; KIT.size.icon=22 auraKit.ts:1009); çizim b=rect(3.4,9.6,16.8×5), a=rect(12.2,18.4,8.8×2.6)+a daire(5.2,18.8,r1.6) (capIcons.generated.ts:99): katman rolleri ters, ek daire |
 | 2 | Zil ikonu | ikon/ölçü | 24 px; dış hat yolu `M12 3.6c-3.4 0-5.6 2.6-5.6 5.9…` stroke 2.6 + b dil `M9.5 19.2a2.6 2.6 0 0 0 5 0z` | `bell` 22 (Bell.tsx:19-31); çizim b=`M6.2 16.4V11a5.8…` + a=rect 18×3.2 (capIcons.generated.ts:13) |
 | 3 | Zil noktası | ölçü | 9×9 DIŞ (kenarlık 2 içeride → pembe 5), top 9 right 10, halka `--canvas` | pembe 9 + halka 2 dışarıda = 13 dış, top 7 right 8 (kit.tsx:645-656; messages.ts:22 `dot:9, ring:2`) |
-| 4 | Arama kapsülü: yan boşluk | boşluk | `padding:0 20px` (`.field`) | 18 (`X.capsulePadX` auraKit.ts:899; GlassSearch.tsx:44-45) |
-| 5 | Arama ikonu | renk/ikon | `--ci-a: var(--muted)` #4A6550; çizim o daire r6.4 + a rect 7.6×3.4 rot45 | `colors.placeholder` #56785E (GlassSearch.tsx:51); çizim b daire r5.6 + o r5.6 + rect 9.14×3.2 (capIcons.generated.ts:258) |
+| 4 | Arama kapsülü: yan boşluk | boşluk | `padding:0 20px` (`.field`) | 18 (`X.capsulePadX` auraKit.ts:899; components/Field.tsx:44-45) |
+| 5 | Arama ikonu | renk/ikon | `--ci-a: var(--muted)` #4A6550; çizim o daire r6.4 + a rect 7.6×3.4 rot45 | `colors.placeholder` #56785E (components/Field.tsx:51); çizim b daire r5.6 + o r5.6 + rect 9.14×3.2 (capIcons.generated.ts:258) |
 | 6 | Bölmeli seçici dış yüksekliği | ölçü | `height:44` border-box (kenarlık 1 + iç boşluk 4 dahil) | Glass kenarlığı 1 + `segPad` 4 + 36 + 4 + 1 = 46 (kit.tsx:1469-1475, auraKit.ts:1143) |
 | 7 | Seçici: etiket–rozet aralığı | boşluk | `.sg span{gap:6}` | `KIT.size.tagGap` 4 (auraKit.ts:884; kit.tsx:1546) |
 | 8 | Seçici: seçili parçanın gölgesi (açık) | renk | `0 2px 6px rgba(3,27,11,.18)` (`.seg span.on`) | `0px 3px 10px rgba(3,27,11,.10)` (activities.ts:37 → messages.ts:36) |

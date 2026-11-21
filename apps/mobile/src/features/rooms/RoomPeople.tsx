@@ -2,7 +2,7 @@ import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Av, Btn, T, useKit } from '@/aura/kit';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
@@ -21,6 +21,7 @@ import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { ROOM } from '@/theme/room';
 import { VENUE } from '@/theme/venue';
+import { Tap } from '@/motion';
 
 import { roomKeys, type TablePerson } from './queries';
 
@@ -130,7 +131,7 @@ export function PeopleSheet({
                         }}
                       />
                     ) : null}
-                    <Pressable
+                    <Tap
                       testID={`person-${p.alias}`}
                       accessibilityRole="button"
                       accessibilityLabel={mine ? tr.table.you(p.alias) : p.alias}
@@ -170,7 +171,7 @@ export function PeopleSheet({
                           onPress={() => kick(p)}
                         />
                       ) : null}
-                    </Pressable>
+                    </Tap>
                   </View>
                 );
               })}

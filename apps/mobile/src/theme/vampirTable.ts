@@ -1,7 +1,5 @@
 import type { TextStyle } from 'react-native';
 
-import { faceOf, NUMBERS } from './typeFace.ts';
-
 // Vampir Köylü's capsule table (Aura v83 and v93: VampirRolKarti, VampirRolun, VampirGece,
 // VampirSabah, VampirGunduz, VampirOylama, VampirEleme, VampirSonuc, VampirOylama12,
 // VampirOylamaDar, VampirYukleniyor, VampirHata): the room and the table seen from above, everyone
@@ -18,7 +16,7 @@ const F = {
 
 // A text style: size and line (the face's own height, 1.26 of the size, where the file has none).
 const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => ({
-  ...faceOf(F[w], size),
+  fontFamily: F[w],
   fontSize: size,
   lineHeight: line,
   letterSpacing: em * size,
@@ -122,13 +120,13 @@ export const TABLE_TYPE = {
   // The dial's number (the panels' .num, .num.sm).
   dial: {
     ...t(800, 17, 22),
-    ...NUMBERS,
+    fontVariant: ['tabular-nums'],
     ...shade,
     textShadowRadius: 3,
   } as TextStyle,
   dialSmall: {
     ...t(800, 13, 18),
-    ...NUMBERS,
+    fontVariant: ['tabular-nums'],
     ...shade,
     textShadowRadius: 3,
   } as TextStyle,
@@ -155,7 +153,7 @@ export const TABLE_TYPE = {
   bigCount: t(800, 13.2, 18),
   bigDial: {
     ...t(800, 19, 26),
-    ...NUMBERS,
+    fontVariant: ['tabular-nums'],
     ...shade,
     textShadowRadius: 3,
   } as TextStyle,

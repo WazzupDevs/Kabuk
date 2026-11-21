@@ -8,10 +8,8 @@ import {
   RISO_TYPE,
   risoDeck,
   risoDeckHeight,
-  risoOwnType,
   risoType,
 } from './riso';
-import { NUMBERS } from './typeFace';
 
 // Kinshi's tabu layout (Aura v85, the "Kinshi (tabu düzeni)" row and the `Kinshi` panel; the
 // acceptance report of 4 Kasım). The panels are 390 × 844; every number here is theirs. What the
@@ -24,24 +22,23 @@ const t = risoType;
 export const KINSHI_TYPE = {
   ...RISO_TYPE,
   // The card's word in its pink band (`.card .w`) and its five forbidden words (`.card li`).
-  // Measured from this face's glyphs (theme/kinshiWord.ts, KINSHI_SCORE_FONT): they keep it.
-  word: risoOwnType(F800, 30, 34, 0.01),
+  word: t(F800, 30, 34, 0.01),
   forbidden: t(F800, 20, 24, 0.02),
   // The score pill's numbers (`.score b`).
-  score: { ...risoOwnType(F800, 18, 18), fontVariant: ['tabular-nums' as const] } as TextStyle,
+  score: { ...t(F800, 18, 18), fontVariant: ['tabular-nums'] } as TextStyle,
   // The 3-2-1 (`.big`).
-  big: { ...t(F800, 120, 120), ...NUMBERS } as TextStyle,
+  big: { ...t(F800, 120, 120), fontVariant: ['tabular-nums'] } as TextStyle,
   // The guesser's count of Doğru (`.hero`).
-  hero: { ...t(F800, 52, 56, -1 / 52), ...NUMBERS } as TextStyle,
+  hero: { ...t(F800, 52, 56, -1 / 52), fontVariant: ['tabular-nums'] } as TextStyle,
   // The bell's word (`.buzzer`).
   buzz: t(F800, 16, 20),
   // A played card's row (`.res`).
   row: t(F600, 15, 22, 0.02),
   // The count in Sonraki tura geç (`.cnt`) and the scores at the end (800 30/34).
-  count: { ...t(F800, 13, 13), ...NUMBERS } as TextStyle,
+  count: { ...t(F800, 13, 13), fontVariant: ['tabular-nums'] } as TextStyle,
   // The others' Tur sonu count (`.rocnt`): 800/20, tabular.
-  readOnlyCount: { ...t(F800, 20, 20), ...NUMBERS } as TextStyle,
-  endScore: { ...t(F800, 30, 34), ...NUMBERS } as TextStyle,
+  readOnlyCount: { ...t(F800, 20, 20), fontVariant: ['tabular-nums'] } as TextStyle,
+  endScore: { ...t(F800, 30, 34), fontVariant: ['tabular-nums'] } as TextStyle,
 } as const;
 
 export const KINSHI = {

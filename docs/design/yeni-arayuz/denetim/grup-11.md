@@ -114,7 +114,7 @@ Kod: `app/(app)/(tabs)/messages/index.tsx`, `src/features/friends/InboxRows.tsx`
 
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| s1 | Arama alanı (ORTAK-SEARCH) | boşluk | `.field.srch` 48, iç 0 20, zemin cam gradyanı | `GlassSearch.tsx:49` `paddingLeft: capsulePadX` 18 (auraKit.ts:900); yükseklik 48 ✓, zemin `Glass frost` ✓ |
+| s1 | Arama alanı (ORTAK-SEARCH) | boşluk | `.field.srch` 48, iç 0 20, zemin cam gradyanı | `components/Field.tsx:49` `paddingLeft: capsulePadX` 18 (auraKit.ts:900); yükseklik 48 ✓, zemin `Glass frost` ✓ |
 | s2 | Sekme kapsülü (ORTAK-SEG) | renk | `.sg` zemin `--glass-bg` (beyaz .80→.54 gradyan) + `--glass-shadow` 0 18 44 | `activities.ts:tabsGlass` düz rgba(255,255,255,.60), gölge 0 10 30 .08, `messages.ts:34`; ölçüler 44/4/36 ✓ |
 | s3 | Sohbet satırı: yüz harfi | yazı | `.rw .av` 48, yazı 17 | `KIT_TYPE.av.row` 18/22 (auraKit.ts, `Av size="row"`) |
 | s4 | Sohbet satırı: son mesaj ucu | davranış | `.pv` uç 44 dp maske ile solar, "…" yok | `InboxRows.tsx:372` `T lines={1}` sonuna "…" koyar (CLAUDE.md önizlemede izin veriyor ama pano maskeli) |

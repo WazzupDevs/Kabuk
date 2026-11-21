@@ -18,8 +18,6 @@ export const MESSAGES = {
   // The tabs (`.sg`): a glass capsule 44 high in all (its 1 edge and 3 inside, 4 from its outside),
   // its two parts 36 and 22 round; a tab's words and its badge 6 apart (`.sg span{gap:6}`).
   tabs: { ...ACTIVITIES.tabs, pad: 3, badgeGap: 6 },
-  // The search capsule (`.field.srch`): 20 in at either side, its icon 20 (`.ci.md`).
-  searchPad: 20,
   // The bell (`.round .nd`): its dot 9, 9 from its top and 10 from its right, in a 2 ring of the
   // ground.
   bell: { dot: 9, dotTop: 9, dotRight: 10, dotRing: 2 },
@@ -56,8 +54,6 @@ export const MESSAGES = {
       shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
     },
     tabOnShadow: '0px 2px 6px rgba(3, 27, 11, 0.18)',
-    // The search's icon (`.srch`: --ci-a --muted).
-    searchIcon: '#4A6550',
     // The held row (`.rw.ub`): --surface, its shadow.
     lifted: { fill: '#FFFFFF', edge: '', shadow: '0px 12px 32px rgba(3, 27, 11, 0.16)' },
     // A face's ring (`.av`: 2 of --surface) and its shadow (--shadow-raised).
@@ -73,7 +69,6 @@ export const MESSAGES = {
   dark: {
     tabsGlass: ACTIVITIES.dark.tabsGlass,
     tabOnShadow: ACTIVITIES.dark.tabOnShadow,
-    searchIcon: '#A3AEA8',
     lifted: { fill: '#151A18', edge: 'rgba(255, 255, 255, 0.08)', shadow: '' },
     faceRing: '#151A18',
     faceShadow: '',

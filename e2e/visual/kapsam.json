@@ -6,8 +6,8 @@
     "aile": "Mesajlar, Arşiv, DM sohbeti",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/TabBar.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/features/notifications/Bell.tsx",
@@ -27,8 +27,8 @@
     "aile": "Mesajlar, Arşiv, DM sohbeti",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/TabBar.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/features/notifications/Bell.tsx",
@@ -594,7 +594,6 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
@@ -610,7 +609,6 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
@@ -626,7 +624,7 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
@@ -642,7 +640,7 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
@@ -1220,8 +1218,8 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/RequestList.tsx",
       "apps/mobile/src/motion/TabBar.tsx"
     ],
@@ -1243,8 +1241,8 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/RequestList.tsx",
       "apps/mobile/src/motion/TabBar.tsx"
     ],
@@ -1320,7 +1318,7 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/theme/flatLists.ts"
     ],
     "acilis": "",
@@ -1341,7 +1339,7 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/theme/flatLists.ts"
     ],
     "acilis": "",
@@ -4449,8 +4447,8 @@
     "dosya": "project/TumAra.dc.html",
     "aile": "Panolar 73–85",
     "kod": [
-      "apps/mobile/src/aura/GlassSearch.tsx",
-      "apps/mobile/src/aura/kit.tsx"
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx"
     ],
     "acilis": "",
     "tema": "acik",
@@ -4473,8 +4471,8 @@
     "dosya": "project/TumAra.dc.html",
     "aile": "Panolar 73–85",
     "kod": [
-      "apps/mobile/src/aura/GlassSearch.tsx",
-      "apps/mobile/src/aura/kit.tsx"
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx"
     ],
     "acilis": "",
     "tema": "koyu",
@@ -5666,7 +5664,7 @@
     "aile": "Panolar 112–124",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
@@ -5688,7 +5686,7 @@
     "aile": "Panolar 112–124",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
