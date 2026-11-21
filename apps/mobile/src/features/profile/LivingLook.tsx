@@ -18,8 +18,13 @@ import { useLoopActive } from '@/components/Loader';
 import { JUMP, sample } from '@/features/capsule/motion';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { lookCard, lookGround } from '@/theme/capsuleLook';
+import { lookCard, lookGround, lookSvg } from '@/theme/capsuleLook';
 import { ICON } from '@/theme/tokens';
+
+// The standing figure (`figure`): the drawing's body is 48 × 66, drawn in a box with room for hats
+// and antennas above it and beside it (as Buddy draws it).
+const FIG = { x: -8, y: -16, width: 64, height: 84, body: 66 } as const;
+const FIG_BOX = `viewBox="${FIG.x} ${FIG.y} ${FIG.width} ${FIG.height}"`;
 
 // The profile's capsule alive (the owner's call, 27 and 28 Ekim): now and then it blinks
 // (sometimes twice), every while it turns its eyes to the photo beside it on the left, looks there
@@ -56,10 +61,14 @@ export function LivingLook({
   inset = 0,
   ground = true,
   whole,
+  figure,
 }: {
   look: string;
   size: number;
   accessibilityLabel?: string;
+  // The whole capsule standing, no ring (the ticket's, tuval ProfilBen; owner, 21 Nov): its body
+  // `figure` high, centred on the `size` box, its head and accessories free round it.
+  figure?: number;
   // The capsule's layers each on one canvas (LayeredLook → whole; the profile ticket's).
   whole?: WholePainter;
   // The capsule stands in its ring with its head and accessories free above it (components/
@@ -76,8 +85,9 @@ export function LivingLook({
   const [blink] = useState(() => new RNAnimated.Value(0));
   const [eyeX] = useState(() => new RNAnimated.Value(0));
   const [eyeY] = useState(() => new RNAnimated.Value(0));
-  // The drawing's units in pixels (its disc is 48 across, inside the ring).
-  const unit = (size - inset * 2) / 48;
+  // The drawing's units in pixels (its disc is 48 across, inside the ring; the figure's body 66
+  // high).
+  const unit = figure ? figure / FIG.body : (size - inset * 2) / 48;
 
   useEffect(() => {
     const setPose = (pose: { look: number; up: number }) => {
@@ -121,7 +131,10 @@ export function LivingLook({
     };
   }, [reduce, active, blink, eyeX, eyeY, unit]);
 
-  const base = useMemo(() => lookCard(look), [look]);
+  const base = useMemo(
+    () => (figure ? lookSvg(look, 'fig').replace(/viewBox="[^"]*"/, FIG_BOX) : lookCard(look)),
+    [look, figure],
+  );
 
   // A tap: the jump of the editor (features/capsule/motion.ts → JUMP) and a wink.
   const t = useSharedValue(1);
@@ -159,21 +172,46 @@ export function LivingLook({
           }}
         />
       ) : null}
-      <RingStage xml={base} unit={unit} inset={inset}>
-        {(width, height) => (
+      {figure ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: size / 2 - (FIG.width / 2) * unit,
+            top: (size - figure) / 2 + FIG.y * unit,
+            width: FIG.width * unit,
+            height: FIG.height * unit,
+          }}
+        >
           <Animated.View style={style}>
             <LayeredLook
               xml={base}
-              width={width}
-              height={height}
+              width={FIG.width * unit}
+              height={FIG.height * unit}
               blink={blink}
               lookX={eyeX}
               lookY={eyeY}
               whole={whole}
             />
           </Animated.View>
-        )}
-      </RingStage>
+        </View>
+      ) : (
+        <RingStage xml={base} unit={unit} inset={inset}>
+          {(width, height) => (
+            <Animated.View style={style}>
+              <LayeredLook
+                xml={base}
+                width={width}
+                height={height}
+                blink={blink}
+                lookX={eyeX}
+                lookY={eyeY}
+                whole={whole}
+              />
+            </Animated.View>
+          )}
+        </RingStage>
+      )}
     </Pressable>
   );
 }

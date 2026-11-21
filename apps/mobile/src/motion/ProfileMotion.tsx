@@ -75,8 +75,14 @@ export function RiseLayer({
       transform: [{ translateY: riseInContent(y, speed) }, { scale: s.scale }],
     };
   });
+  // Faded as one picture: drawn child by child, the cover's stacked blurred copies showed as bands
+  // (owner, 21 Nov).
   return (
-    <Animated.View style={[{ height }, origin ? { transformOrigin: origin } : null, style]}>
+    <Animated.View
+      needsOffscreenAlphaCompositing
+      renderToHardwareTextureAndroid
+      style={[{ height }, origin ? { transformOrigin: origin } : null, style]}
+    >
       {children}
     </Animated.View>
   );
@@ -183,6 +189,7 @@ export function FlyingName({
   left,
   right,
   maxWidth,
+  face,
   children,
 }: {
   flight: Flight;
@@ -190,6 +197,10 @@ export function FlyingName({
   left: number;
   right: number;
   maxWidth: number;
+  // The flying photo (FlyingFace's flight and sizes): given, the name rides beside it and never
+  // crosses it (owner, 21 Nov): under it over the first half, moving aside; beside it, rising,
+  // over the second.
+  face?: { flight: Flight; side: number; sideTo: number };
   children: ReactNode;
 }) {
   const scroll = useScreenScroll();
@@ -201,14 +212,24 @@ export function FlyingName({
     const t = flightAt(y, arrive);
     const width = w.get();
     const height = h.get();
-    const x = flyX(t, from.x, barNameX(to.x, (width * scaleTo) / 2, left, right));
+    const s = 1 + (scaleTo - 1) * t;
+    let x = flyX(t, from.x, barNameX(to.x, (width * scaleTo) / 2, left, right));
+    let cy = flyY(y, t, from.y, to.y, speed);
+    if (face) {
+      const f = face.flight;
+      const tf = flightAt(y, f.arrive);
+      const px = flyX(tf, f.from.x, f.to.x);
+      const py = flyY(y, tf, f.from.y, f.to.y, f.speed);
+      const r = (face.side + (face.sideTo - face.side) * tf) / 2;
+      const gapY = from.y - f.from.y - face.side / 2 - height / 2;
+      const gapX = left - f.to.x - face.sideTo / 2;
+      const half = (width * s) / 2;
+      x = Math.min(right - half, px + ramp(t, 0, 0.5) * (r + gapX + half));
+      cy = py + (1 - ramp(t, 0.5, 1)) * (r + gapY + (height * s) / 2);
+    }
     return {
       opacity: width > 0 ? 1 : 0,
-      transform: [
-        { translateX: x - width / 2 },
-        { translateY: flyY(y, t, from.y, to.y, speed) - height / 2 },
-        { scale: 1 + (scaleTo - 1) * t },
-      ],
+      transform: [{ translateX: x - width / 2 }, { translateY: cy - height / 2 }, { scale: s }],
     };
   });
   return (

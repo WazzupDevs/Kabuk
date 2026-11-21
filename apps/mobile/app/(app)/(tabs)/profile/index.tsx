@@ -195,47 +195,65 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                     {data.bio}
                   </T>
                 ) : null}
-                {/* tuval Benim: the two clear buttons as wide as their words, centred, 10 apart;
-                    narrower than both, their words shrink (never "…"). */}
+                {/* The two clear buttons are the same width, centred (owner, 21 Nov): the friends
+                    button does not grow with its count; short of room their words shrink. */}
                 <View style={{ alignSelf: 'stretch' }}>
                   <ButtonRow hug gap={B.buttonsGap}>
-                    <Btn
-                      block={narrow}
-                      variant="glassy"
-                      icon="edit"
-                      label={hasName ? tr.profile.edit : tr.profile.addName}
-                      look={{
-                        type: 'giftBtn',
-                        padLeft: B.edit.padLeft,
-                        padRight: B.edit.padRight,
-                        gap: B.edit.gap,
-                        icon: B.edit.icon,
-                      }}
-                      onPress={() => router.push('/profile/edit')}
-                    />
-                    <Btn
-                      block={narrow}
-                      variant="glassy"
-                      testID="profile-friends"
-                      accessibilityLabel={tr.profile.friendsCount(friendList.length)}
-                      lead={friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined}
-                      label={tr.profile.friendsSub(friendList.length)}
-                      look={{
-                        type: 'giftBtn',
-                        padLeft: friendList.length > 0 ? B.friends.padLeft : B.friends.padLeftBare,
-                        padRight: B.friends.padRight,
-                        gap: B.friends.gap,
-                      }}
-                      trail={
-                        <CapIcon
-                          name="chevron"
-                          color={look.chevron}
-                          soft={1}
-                          size={B.friends.chevron}
-                        />
-                      }
-                      onPress={() => router.push('/profile/friends')}
-                    />
+                    <View style={narrow ? undefined : { width: B.buttonWidth }}>
+                      <Btn
+                        block
+                        variant="glassy"
+                        icon="edit"
+                        label={hasName ? tr.profile.edit : tr.profile.addName}
+                        look={{
+                          type: 'giftBtn',
+                          padLeft: B.edit.padLeft,
+                          padRight: B.edit.padRight,
+                          gap: B.edit.gap,
+                          icon: B.edit.icon,
+                        }}
+                        onPress={() => router.push('/profile/edit')}
+                      />
+                    </View>
+                    <View style={narrow ? undefined : { width: B.buttonWidth }}>
+                      <Btn
+                        block
+                        variant="glassy"
+                        testID="profile-friends"
+                        accessibilityLabel={tr.profile.friendsCount(friendList.length)}
+                        lead={
+                          friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined
+                        }
+                        // With friends only their faces and "+N" (owner, 21 Nov); the count in words
+                        // only with none.
+                        label={friendList.length > 0 ? '' : tr.profile.friendsSub(0)}
+                        // With faces they sit in the button's middle and the arrow at its right
+                        // (owner, 21 Nov).
+                        look={{
+                          type: 'giftBtn',
+                          padLeft: B.friends.padLeftBare,
+                          padRight: B.friends.padRight,
+                          gap: friendList.length > 0 ? 0 : B.friends.gap,
+                        }}
+                        trail={
+                          <View
+                            style={
+                              friendList.length > 0
+                                ? { position: 'absolute', right: B.friends.padRight }
+                                : undefined
+                            }
+                          >
+                            <CapIcon
+                              name="chevron"
+                              color={look.chevron}
+                              soft={1}
+                              size={B.friends.chevron}
+                            />
+                          </View>
+                        }
+                        onPress={() => router.push('/profile/friends')}
+                      />
+                    </View>
                   </ButtonRow>
                 </View>
               </View>
@@ -347,6 +365,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
             left={nameLeft}
             right={nameRight}
             maxWidth={nameMax}
+            face={{ flight: faceFlight, side: OWN.photo, sideTo: OWN.face }}
           >
             <T v="profileName" lines={1} fit accessibilityRole="header">
               {name}

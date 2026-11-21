@@ -67,15 +67,18 @@ export const PROFILE_PAGE = {
   cover: 230,
   shade: 110,
   shadeCss: 'linear-gradient(180deg, rgba(3, 27, 11, 0.42) 0%, rgba(3, 27, 11, 0) 100%)',
-  footFrom: 0.5,
+  // The blurred, fading foot is the cover's last quarter (owner, 21 Nov: half was too long).
+  footFrom: 0.75,
   footCss: {
-    light: 'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, #EFF7F1 100%)',
-    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 100%)',
+    // Eased (owner, 21 Nov: the straight fade showed bands): slow at its top, solid before its foot.
+    light:
+      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.12) 25%, rgba(239, 247, 241, 0.4) 50%, rgba(239, 247, 241, 0.8) 75%, #EFF7F1 92%, #EFF7F1 100%)',
+    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.12) 25%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.8) 75%, #000000 92%, #000000 100%)',
   },
   // The blurred copy shows over the foot in these steps, each more opaque (no mask: a seam at its
-  // top would show), under the fade.
+  // top would show), under the fade; eight small steps so no step's edge shows (21 Nov).
   blur: 14,
-  blurSteps: [0.35, 0.7, 1] as const,
+  blurSteps: [0.08, 0.16, 0.28, 0.42, 0.58, 0.74, 0.88, 1] as const,
   face: 124,
   ring: 4,
   ringColor: '#FFFFFF',
@@ -101,14 +104,17 @@ export const PROFILE_PAGE = {
   // screen's top, the photo 112 (its 4 ring inside) overlapping it by 60: centred at (195, 232), the
   // name 12 under it, centred at (195, 317).
   own: {
-    cover: 236,
+    // Shorter than the board's 236 (owner, 21 Nov).
+    cover: 206,
     photo: 112,
-    photoAt: { x: 195, y: 232 },
-    nameAt: { x: 195, y: 317 },
+    // The photo's centre on the cover's foot (owner, 21 Nov); the name still 12 under it.
+    photoAt: { x: 195, y: 206 },
+    nameAt: { x: 195, y: 291 },
     arrive: 316,
     rise: 0.35,
     riseFade: [120, 300] as const,
-    riseScale: 0.92,
+    // No shrink (owner, 21 Nov): the shrinking cover left its sides open.
+    riseScale: 1,
     face: 30,
     ring: 1.5,
     faceTo: { x: 152, y: 73 },
@@ -150,6 +156,8 @@ export const TICKET = {
   stubGap: 8,
   stubDots: { cell: 6, dot: 1.2 },
   capsule: 80,
+  // The capsule standing over its halo, no ring, its body 84 high (tuval ProfilBen `.hw img`).
+  figure: 84,
   dash: [4, 4] as const,
   dashWidth: 2,
   padX: 16,

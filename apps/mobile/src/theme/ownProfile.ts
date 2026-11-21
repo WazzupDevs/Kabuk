@@ -14,6 +14,8 @@ export const OWN_PROFILE = {
   bioTop: 6,
   buttonsTop: 18,
   buttonsGap: 10,
+  // Profili düzenle and the friends button are the same width (owner, 21 Nov), whatever the count.
+  buttonWidth: 150,
   edit: { padLeft: 14, padRight: 16, gap: 8, icon: 17 },
   friends: { padLeft: 6, padLeftBare: 14, padRight: 12, gap: 8, chevron: 15 },
   // The faces 20 apart (28 over each other, 8 under the next).
@@ -34,8 +36,8 @@ export const OWN_PROFILE = {
   light: {
     // The panel's ground: a pink light at its top right and a green one at its left, on the ground;
     // its shadow up and a white line at its top.
-    panel:
-      'radial-gradient(90% 30% at 100% 0%, #F6DCE6 0%, rgba(246, 220, 230, 0) 70%), radial-gradient(90% 30% at 0% 0%, #D3EEDD 0%, rgba(211, 238, 221, 0) 70%)',
+    // No pink and green lights (owner, 21 Nov): the panel is the page's own ground.
+    panel: '',
     panelShadow: '0px -12px 34px rgba(3, 27, 11, 0.12), inset 0px 1px 0px rgba(255, 255, 255, 0.9)',
     grab: 'rgba(3, 27, 11, 0.12)',
     chevron: '#4A6550',

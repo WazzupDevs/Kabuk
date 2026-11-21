@@ -217,10 +217,10 @@ describe('the own profile in two parts (5.7)', () => {
     };
   };
 
-  it('the upper part moves at -0.35, fades over 120–300 and shrinks to 0.92', () => {
+  it('the upper part moves at -0.35, fades over 120–300 and does not shrink (owner, 21 Nov)', () => {
     expect(OWN.rise).toBe(0.35);
     expect(OWN.riseFade).toEqual([120, 300]);
-    expect(OWN.riseScale).toBe(0.92);
+    expect(OWN.riseScale).toBe(1);
     // In the content: carried up by y, moved back by y less its own 0.35·y.
     expect(riseInContent(100, 0.35) - 100).toBeCloseTo(-35);
     expect(riseInContent(-30, 0.35)).toBe(-30);
@@ -232,8 +232,8 @@ describe('the own profile in two parts (5.7)', () => {
   it('the photo and the name fly into the bar by t = clamp(y / 316), linearly', () => {
     expect(OWN.arrive).toBe(316);
     const start = flyAt(0);
-    expect(start.face).toEqual({ x: 195, y: 232, side: 112 });
-    expect(start.name).toEqual({ x: 195, y: 317 });
+    expect(start.face).toEqual({ x: 195, y: 206, side: 112 });
+    expect(start.name).toEqual({ x: 195, y: 291 });
     const end = flyAt(316);
     expect(end.face.x).toBeCloseTo(152);
     expect(end.face.y).toBeCloseTo(73);
@@ -241,10 +241,10 @@ describe('the own profile in two parts (5.7)', () => {
     expect(end.name.x).toBeCloseTo(214);
     expect(end.name.y).toBeCloseTo(73);
     expect(flyAt(500)).toEqual(end);
-    // Half way: (232 − 0.35·158·0.5)·0.5 + 73·0.5.
+    // Half way: (206 − 0.35·158·0.5)·0.5 + 73·0.5.
     const mid = flyAt(158);
     expect(mid.t).toBe(0.5);
-    expect(mid.face.y).toBeCloseTo((232 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
+    expect(mid.face.y).toBeCloseTo((206 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
     // The ring 4 → 1.5: the face in it is the disc less twice the ring.
     const k = flyFace(1, 112, 30, 4, 1.5);
     expect(104 * k.face).toBeCloseTo(27);
