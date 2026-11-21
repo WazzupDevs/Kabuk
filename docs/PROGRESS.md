@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (21 Kasım 2026, sabah): kapsül aksesuarları yenileniyor, yeni oturumda başlanacak
+
+- Proje sahibinin kararı (21 Kasım): eski 67 aksesuar **tamamen silinir** (katalog, çizimler `theme/capsuleAccessories.ts`, `gift_accessories`, `user_accessories`, kapsüllere takılı `x:` parçaları; yeni migration, üretime uygulaması proje sahibinin). Yerine aksesuar tuvalinin (https://claude.ai/artifact/4eZ83Hemwr3m9qtU2HBubw, "skall aksesuarlar"; kurallar `project/Main.dc.html`) **bütün setleri**, sohbet balonları dahil, tuvale sadık: 45 set (Sıradan, Nadir, Destansı, Efsanevi; Elf ve Ninja yeniden çizilmiş), 3 Özel beta seti (Luna, Terra, Sol; "ilk kullanıcılara özel"), Efsanevi setlerin balonları, dış giyim (7. katman, `DisGiyim`, `DisGiyimEfsanevi`). Silme ve yeni katalog aynı pakette (boş katalogda paket açılmaz).
+- Tuvalin parçaları uygulamanın kapsülüyle aynı 100 birimlik kutuda (gövde x 24–76, üst 22; vizör 35–55,4): her parçanın SVG'sinden kapsülün kendi öğeleri ayıklanıp `art` / `skin` / `back` otomatik çıkarılabilir; yuvalar Baş h, Göz e, Yüz f, Ağız m, Gövde n, Renk c. Önce `mimar` planı (beta setlerinin dağıtımı ve dış giyim katmanı ürün belgesinde yok: proje sahibine tek soru), sonra paket paket.
+- Çalışma ağacında onay bekleyen iş (commit'lenmedi): Profil → "Kapsülün | Gönderiler" sekmesi ve `venue-feed { action: 'mine' }` (migration `20261225090000_venue_feed_mine.sql`, `OwnPosts.tsx`, §4.Y "Gönderilerim"); dev projesinde yayında olmadığı için sekme hata hâli gösteriyor; entegrasyon testi Docker yokluğundan koşulmadı. Profil revizeleri `1f94b3eb0`, `cfa1b40b4` (GERİAL bunu geri alır), `c1dab9bb4`.
+- Bilgisayar ağı değişti: telefon kod sunucusuna `http://10.23.158.220:8081` ile bağlanır; emülatör `adb reverse tcp:8081 tcp:8081` ve `exp+masa://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081`.
+
 ## Devir notu (21 Kasım 2026): ekran ekran revize sürüyor, sıra Profil'de
 
 - Dal `kesfet` (`temel`'in üstünde, yerel; GitHub'a gönderilmedi, giriş bu bilgisayarda yok). Kayıtlı ve onaylı: Keşfet (bilet satırları `VenueTicket`, kısa ad `shortName.ts`, rota ikonu), harita (lejant ve düğmeler kart yokken sekme çubuğunun üstünde, bilgi düğmesi, + ve −), Aktiviteler (hediye kartı Etkinlikler'in ilk kartı 148, etkinlik kartı aynı boy, geliştirme sürümünde örnek etkinlikler), sekme çubuğu (çizgi ikonlar, yazısız, yuvarlak hap). `pnpm check` temiz (4344 test).
