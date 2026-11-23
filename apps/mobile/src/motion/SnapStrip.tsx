@@ -55,6 +55,9 @@ export function SnapStrip({
   reduce,
   ground,
   ringColor,
+  markOf,
+  markHeight = 0,
+  stampOf,
   testID,
 }: {
   count: number;
@@ -71,10 +74,18 @@ export function SnapStrip({
   ground: string;
   // The centred option's ring (the theme's accent when not given; Süsle's is the kit's pink).
   ringColor?: string;
+  // What stands between an option's round and its name (Süsle: an accessory's rarity gems), in a
+  // row `markHeight` high (its gap over it included) under every option, so the names line up.
+  markOf?: (index: number) => ReactNode;
+  markHeight?: number;
+  // What an option's drawing reads besides its key (Süsle: on the screen or not, the colour): an
+  // option is drawn again only when its stamp, its name or its being chosen changes (the owner's
+  // report, 22 Kasım: every option drawn again on each choice flickered).
+  stampOf?: (index: number) => string;
   testID?: string;
 }) {
   const { width, fontScale } = useWindowDimensions();
-  const nameHeight = snapStripNameHeight(fontScale);
+  const nameHeight = snapStripNameHeight(fontScale) + markHeight;
   const pad = (width - STEP) / 2;
   const ref = useAnimatedRef<Reanimated.ScrollView>();
   const start = Math.max(chosen, 0);
@@ -165,6 +176,9 @@ export function SnapStrip({
             ground={ground}
             nameHeight={nameHeight}
             ringColor={ringColor}
+            mark={markOf ? markOf(index) : null}
+            markHeight={markHeight}
+            stamp={stampOf ? stampOf(index) : ''}
             onPress={tap}
           >
             {renderItem(index)}
@@ -176,106 +190,137 @@ export function SnapStrip({
   );
 }
 
-const Item = memo(function Item({
-  index,
-  label,
-  on,
-  x,
-  reduce,
-  ground,
-  ringColor,
-  nameHeight,
-  onPress,
-  children,
-}: {
-  index: number;
-  label: string;
-  on: boolean;
-  x: SharedValue<number>;
-  reduce: boolean;
-  ground: string;
-  ringColor?: string;
-  nameHeight: number;
-  onPress: (index: number) => void;
-  children: ReactNode;
-}) {
-  const { colors } = useTheme();
-  const scale = useAnimatedStyle(() => {
-    if (reduce) return { transform: [{ scale: on ? ON : OFF }] };
-    const d = Math.abs(x.get() / STEP - index);
-    return { transform: [{ scale: interpolate(d, [0, 1], [ON, OFF], Extrapolation.CLAMP) }] };
-  });
-  const ring = useAnimatedStyle(() => {
-    if (reduce) return { opacity: on ? 1 : 0 };
-    const d = Math.abs(x.get() / STEP - index);
-    return { opacity: interpolate(d, [0, 1], [1, 0], Extrapolation.CLAMP) };
-  });
-  return (
-    <Tap
-      sink={false}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: on }}
-      accessibilityLabel={label}
-      onPress={() => onPress(index)}
-      style={{
-        width: STEP,
-        height: SNAP_STRIP_HEIGHT + nameHeight,
-        alignItems: 'center',
-      }}
-    >
-      <View
+const Item = memo(
+  function Item({
+    index,
+    label,
+    on,
+    x,
+    reduce,
+    ground,
+    ringColor,
+    nameHeight,
+    mark,
+    markHeight,
+    onPress,
+    children,
+  }: {
+    stamp: string;
+    index: number;
+    label: string;
+    on: boolean;
+    x: SharedValue<number>;
+    reduce: boolean;
+    ground: string;
+    ringColor?: string;
+    nameHeight: number;
+    mark: ReactNode;
+    markHeight: number;
+    onPress: (index: number) => void;
+    children: ReactNode;
+  }) {
+    const { colors } = useTheme();
+    const scale = useAnimatedStyle(() => {
+      if (reduce) return { transform: [{ scale: on ? ON : OFF }] };
+      const d = Math.abs(x.get() / STEP - index);
+      return { transform: [{ scale: interpolate(d, [0, 1], [ON, OFF], Extrapolation.CLAMP) }] };
+    });
+    const ring = useAnimatedStyle(() => {
+      if (reduce) return { opacity: on ? 1 : 0 };
+      const d = Math.abs(x.get() / STEP - index);
+      return { opacity: interpolate(d, [0, 1], [1, 0], Extrapolation.CLAMP) };
+    });
+    return (
+      <Tap
+        sink={false}
+        accessibilityRole="radio"
+        accessibilityState={{ checked: on }}
+        accessibilityLabel={label}
+        onPress={() => onPress(index)}
         style={{
           width: STEP,
-          height: SNAP_STRIP_HEIGHT,
+          height: SNAP_STRIP_HEIGHT + nameHeight,
           alignItems: 'center',
-          justifyContent: 'center',
         }}
       >
-        <Reanimated.View style={[{ width: BOX, height: BOX, padding: RING_OUT }, scale]}>
+        <View
+          style={{
+            width: STEP,
+            height: SNAP_STRIP_HEIGHT,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Reanimated.View style={[{ width: BOX, height: BOX, padding: RING_OUT }, scale]}>
+            <View
+              style={{
+                width: ITEM,
+                height: ITEM,
+                borderRadius: ITEM / 2,
+                backgroundColor: ground,
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              {children}
+            </View>
+            <Reanimated.View
+              pointerEvents="none"
+              style={[
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: BOX / 2,
+                  borderWidth: KIT.size.boxRing,
+                  borderColor: ringColor ?? colors.accent,
+                },
+                ring,
+              ]}
+            />
+          </Reanimated.View>
+        </View>
+        {/* The name under the option, one line that shrinks; the centred one in bold. */}
+        {markHeight > 0 ? (
           <View
             style={{
-              width: ITEM,
-              height: ITEM,
-              borderRadius: ITEM / 2,
-              backgroundColor: ground,
-              alignItems: 'center',
+              height: markHeight - CAPSULE_EDIT.strip.nameGap,
+              marginTop: CAPSULE_EDIT.strip.nameGap,
               justifyContent: 'center',
-              overflow: 'hidden',
             }}
           >
-            {children}
+            {mark}
           </View>
-          <Reanimated.View
-            pointerEvents="none"
-            style={[
-              {
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                borderRadius: BOX / 2,
-                borderWidth: KIT.size.boxRing,
-                borderColor: ringColor ?? colors.accent,
-              },
-              ring,
-            ]}
-          />
-        </Reanimated.View>
-      </View>
-      {/* The name under the option, one line that shrinks; the centred one in bold. */}
-      <View
-        style={{
-          width: STEP - 2 * CAPSULE_EDIT.strip.nameSide,
-          height: nameHeight - CAPSULE_EDIT.strip.nameGap,
-          marginTop: CAPSULE_EDIT.strip.nameGap,
-          justifyContent: 'flex-start',
-        }}
-      >
-        <T v="eyebrow" ink strong={on} lines={1} fit center>
-          {label}
-        </T>
-      </View>
-    </Tap>
-  );
-});
+        ) : null}
+        <View
+          style={{
+            width: STEP - 2 * CAPSULE_EDIT.strip.nameSide,
+            height: nameHeight - markHeight - CAPSULE_EDIT.strip.nameGap,
+            marginTop: CAPSULE_EDIT.strip.nameGap,
+            justifyContent: 'flex-start',
+          }}
+        >
+          <T v="eyebrow" ink strong={on} lines={1} fit center>
+            {label}
+          </T>
+        </View>
+      </Tap>
+    );
+  },
+  // Its drawing is new each time the strip draws (`children`, `mark`): the stamp stands for it.
+  (a, b) =>
+    a.index === b.index &&
+    a.label === b.label &&
+    a.on === b.on &&
+    a.x === b.x &&
+    a.reduce === b.reduce &&
+    a.ground === b.ground &&
+    a.ringColor === b.ringColor &&
+    a.nameHeight === b.nameHeight &&
+    a.markHeight === b.markHeight &&
+    a.onPress === b.onPress &&
+    a.stamp === b.stamp,
+);

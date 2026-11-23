@@ -3,12 +3,11 @@ import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Image, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { BackHandler, Image, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CapIcon, type CapIconName } from '@/aura/CapIcon';
+import { CapIcon } from '@/aura/CapIcon';
 import { Btn, useKit } from '@/aura/kit';
-import { CapsuleHale } from '@/components/CapsuleHale';
 import { CachedSvg, readAhead } from '@/components/CachedSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
@@ -34,7 +33,6 @@ import { tileShown } from '@/capsule/stageGate';
 import { useSkiaKit, useWholeKit } from '@/components/skiaInside';
 import {
   CapsuleStage,
-  stageHeadroom,
   type Play,
   readStageAhead,
   neededBy,
@@ -55,11 +53,12 @@ import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/moti
 import { findChosen, type Option, shownIn, slotOptions } from '@/features/capsule/options';
 import { stageAhead, tileOrder } from '@/features/capsule/readAhead';
 import { saveNoticeShown } from '@/features/capsule/saveNotice';
+import { SceneNight } from '@/features/capsule/SceneNight';
 import { SusleFilter } from '@/features/capsule/SusleFilter';
 import { SusleTabs } from '@/features/capsule/SusleTabs';
 import { packNames, packOptions } from '@/features/capsule/strip';
 import { optionArt } from '@/features/capsule/tileArt';
-import { tierName } from '@/features/gifts/model';
+import { TIER_GEMS_HEIGHT, TierGems } from '@/features/gifts/parts';
 import { giftKeys, useGiftState } from '@/features/gifts/queries';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -76,13 +75,14 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { FloatStage, SNAP_STRIP_HEIGHT, SnapStrip, snapStripNameHeight } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { CAPSULE_EDIT } from '@/theme/capsuleEdit';
-import { TIER_COLOR } from '@/theme/gifts';
 import { FEELINGS } from '@/theme/capsuleLook';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
+// The gems' row between an option's round and its name, with its gap over it.
+const STRIP_MARK = TIER_GEMS_HEIGHT + CAPSULE_EDIT.strip.nameGap;
 // The least of the scene's height a short screen leaves it (300 on the board).
 const SCENE_MIN = 0.7;
 // The tabs' names are the board's (the catalog calls Gövde "Boyun").
@@ -90,15 +90,6 @@ const SLOTS = CAPSULE_CATALOG.slots.map((s) => ({
   id: s.id as LookSlot,
   name: tr.capsule.slotNames[s.id as LookSlot] ?? s.name,
 }));
-// The slots' chips' icons (the app's one icon family has no hat or mouth of its own).
-const SLOT_ICON: Readonly<Record<LookSlot, CapIconName>> = {
-  c: 'palette',
-  e: 'eye',
-  h: 'user',
-  f: 'personCircle',
-  m: 'chat',
-  n: 'gift',
-};
 
 // A look read ahead: its list of plans and pictures (made here, in its job), then each of them its
 // own job in the same generation.
@@ -259,14 +250,16 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     const timer = setTimeout(() => setFeeling(null), FEELING_MS);
     return () => clearTimeout(timer);
   }, [feeling]);
-  const put = (next: Look, move: Move | null = JUMP) => {
+  // `move`: the capsule's move; null drops it in; false none (a choice in the strip: the owner's
+  // report, 22 Kasım, the drop looked odd each time a piece came on).
+  const put = (next: Look, move: Move | null | false = JUMP) => {
     haptic('selection');
     save.reset();
     setFeeling(null);
     seen.current = code(next);
     setLook(next);
     if (move) setPlay({ move, key: Date.now() });
-    else setDrop(Date.now());
+    else if (move === null) setDrop(Date.now());
   };
   // A piece put on in Tüm aksesuarlar plays the drop on the way back (hareket 6.2).
   useFocusEffect(
@@ -310,7 +303,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const openPack = pack !== null && packs.includes(pack) ? pack : null;
   const shown = useMemo(() => packOptions(groups, openPack), [groups, openPack]);
   const chosen = findChosen(slot, look, shown);
-  const stageSize = KIT.size.capsuleStage - KIT.size.capsuleRing * 2;
+  // The capsule's circle as large as the hale was, and no hale round it (the owner's call, 22
+  // Kasım: one ring, not three).
+  const stageSize = CAPSULE_EDIT.scene.circle;
   // Skia's own reading ahead while it draws the big capsule (components/skiaInside.ts: the same
   // one load as the stage's).
   const prepare = useSkiaKit()?.prepare;
@@ -425,21 +420,19 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
 
   const E = CAPSULE_EDIT;
   const k = E[scheme];
-  // The capsule as the board stands it: its shadow's top `shadowTop` down the scene, the capsule
-  // its drawing's gap over it.
-  const stageGap = SPACING[2];
-  // The stage keeps room over its circle (the hats'): the circle, not that room, stands over the
-  // shadow, or the capsule comes down over the two buttons (the owner's report, 17 Kasım).
-  const stageTop = E.scene.shadowTop - stageGap - stageSize - stageHeadroom(stageSize);
+  // The stage at the scene's top, `headTop` in: its room over the circle (the hats', the feeling's
+  // bubble) inside the scene.
+  const stageTop = E.scene.headTop;
   // A screen shorter than the board's (844): the scene gives its height to the tray, so that the
   // tray's last button stands over the screen's foot; never under SCENE_MIN of its height.
   const frame = useSafeAreaFrame();
   const sceneRef = useRef<View>(null);
   const [sceneY, setSceneY] = useState<number | null>(null);
   const [trayHeight, setTrayHeight] = useState<number | null>(null);
+  const sceneHeight = E.scene.height + E.scene.actionsRoom;
   const room =
     sceneY === null || trayHeight === null
-      ? E.scene.height
+      ? sceneHeight
       : frame.height -
         sceneY -
         E.panel.top -
@@ -447,7 +440,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         trayHeight -
         E.padBottom -
         insets.bottom;
-  const sceneScale = Math.min(1, Math.max(SCENE_MIN, room / E.scene.height));
+  const sceneScale = Math.min(1, Math.max(SCENE_MIN, room / sceneHeight));
   const panelShadow = shadowParts(
     useLabOff('golge'),
     k.panel.shadow || undefined,
@@ -459,7 +452,6 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const tabs = options.map((s) => ({
     id: s.id,
     name: s.name,
-    icon: SLOT_ICON[s.id],
     label: shownIn(s.id, look) !== shownIn(s.id, kept) ? tr.capsule.slotChanged(s.name) : s.name,
   }));
 
@@ -508,14 +500,19 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               if (Number.isFinite(y)) setSceneY(Math.round(y));
             })
           }
-          style={{ height: E.scene.height * sceneScale }}
+          style={{ height: sceneHeight * sceneScale }}
         >
-          <View
-            pointerEvents="none"
-            style={{ ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <CapsuleHale side={Math.round(E.scene.hale * sceneScale)} />
-          </View>
+          {/* The night card behind the capsule (Atölye susleStage B, 22 Kasım), down to 12 over
+              the two buttons. */}
+          <SceneNight
+            style={{
+              position: 'absolute',
+              left: E.scene.side,
+              right: E.scene.side,
+              top: 0,
+              height: sceneHeight * sceneScale - KIT.size.btnSm - SPACING[3],
+            }}
+          />
           <View
             style={{
               position: 'absolute',
@@ -527,16 +524,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               transform: [{ scale: sceneScale }],
             }}
           >
-            <FloatStage
-              drop={drop}
-              dropPx={KIT.size.capsuleDrop}
-              shadow={{
-                width: E.shadow.width,
-                height: E.shadow.height,
-                color: k.shadow,
-                gap: stageGap,
-              }}
-            >
+            <FloatStage drop={drop} dropPx={KIT.size.capsuleDrop}>
               <FxMoves>
                 <CapsuleStage
                   testID="capsule-preview"
@@ -567,35 +555,41 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               gap: E.actions.gap,
             }}
           >
-            <Btn
-              sm
-              variant="glassy"
-              icon="reply"
-              look={{
-                type: 'coverBtn',
-                padLeft: E.clear.padLeft,
-                padRight: E.clear.padRight,
-                gap: E.clear.gap,
-                icon: E.clear.icon,
-              }}
-              label={tr.capsule.clearAll}
-              onPress={() => put(bare(look))}
-            />
-            <Btn
-              sm
-              variant="glassy"
-              icon="shuffle"
-              testID="capsule-shuffle"
-              look={{
-                type: 'coverBtn',
-                padLeft: E.clear.padLeft,
-                padRight: E.clear.padRight,
-                gap: E.clear.gap,
-                icon: E.clear.icon,
-              }}
-              label={tr.capsule.shuffleShort}
-              onPress={() => put(dice(Math.floor(Math.random() * 2 ** 32), owned, kept), SHUFFLE)}
-            />
+            <View style={{ width: E.actions.each }}>
+              <Btn
+                sm
+                block
+                variant="glassy"
+                icon="reply"
+                look={{
+                  type: 'coverBtn',
+                  padLeft: E.clear.padLeft,
+                  padRight: E.clear.padRight,
+                  gap: E.clear.gap,
+                  icon: E.clear.icon,
+                }}
+                label={tr.capsule.clearAll}
+                onPress={() => put(bare(look))}
+              />
+            </View>
+            <View style={{ width: E.actions.each }}>
+              <Btn
+                sm
+                block
+                variant="glassy"
+                icon="shuffle"
+                testID="capsule-shuffle"
+                look={{
+                  type: 'coverBtn',
+                  padLeft: E.clear.padLeft,
+                  padRight: E.clear.padRight,
+                  gap: E.clear.gap,
+                  icon: E.clear.icon,
+                }}
+                label={tr.capsule.shuffleShort}
+                onPress={() => put(dice(Math.floor(Math.random() * 2 ** 32), owned, kept), SHUFFLE)}
+              />
+            </View>
           </View>
         </View>
         {/* The tray to the screen's foot: the six tabs, the packs and "Tümüne bak", the trying
@@ -619,7 +613,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
             <SusleTabs
               tabs={tabs}
               open={slot}
-              onPick={(id) => setSlot(id as LookSlot)}
+              onPick={setSlot}
               accessibilityLabel={tr.capsule.slots}
             />
             <SusleFilter
@@ -632,7 +626,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           the chosen option without motion. The options' middle where the board has it. */}
             <View
               style={{
-                height: SNAP_STRIP_HEIGHT + snapStripNameHeight(fontScale),
+                height: SNAP_STRIP_HEIGHT + snapStripNameHeight(fontScale) + STRIP_MARK,
                 marginTop: E.strip.top + KIT.size.stripItem / 2 - SNAP_STRIP_HEIGHT / 2,
                 marginBottom: E.strip.bottom,
               }}
@@ -656,12 +650,20 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                   )}
                   onPick={(i) => {
                     const o = shown[i];
-                    if (o) put(o.apply(look), null);
+                    if (o) put(o.apply(look), false);
                   }}
                   label={current?.name ?? ''}
                   reduce={reduce}
                   ground={k.tile}
                   ringColor={KIT.pink}
+                  markHeight={STRIP_MARK}
+                  stampOf={(i) =>
+                    `${slot}|${color ?? ''}|${tileNeed ? 1 : 0}|${i >= w.from && i <= w.to ? 1 : 0}`
+                  }
+                  markOf={(i) => {
+                    const tier = shown[i]?.tier;
+                    return tier ? <TierGems tier={tier} /> : null;
+                  }}
                 />
               ) : null}
             </View>
@@ -676,12 +678,14 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               }}
             >
               {wornHere ? (
-                <Btn
-                  icon="block"
-                  testID="capsule-remove-accessory"
-                  label={tr.capsule.removeAccessory}
-                  onPress={() => put(takeAccessoryOff(look, wornHere))}
-                />
+                <View style={{ alignSelf: 'center' }}>
+                  <Btn
+                    icon="block"
+                    testID="capsule-remove-accessory"
+                    label={tr.capsule.removeAccessory}
+                    onPress={() => put(takeAccessoryOff(look, wornHere))}
+                  />
+                </View>
               ) : null}
             </View>
           </View>
@@ -702,37 +706,10 @@ type OptionArtProps = {
   visible: boolean;
 };
 
-// An option in the strip: its art alone (tileArt.ts), "boş" a crossed circle.
+// An option in the strip: its art alone (tileArt.ts), "boş" a crossed circle; an accessory is the
+// standard avatar wearing it, its rarity's gems under the round (SnapStrip → markOf).
 function OptionArt(props: OptionArtProps) {
-  const { option, ground } = props;
-  const { scheme } = useTheme();
-  const D = CAPSULE_EDIT.tierDot;
-  const tier = option?.tier ?? null;
-  const dot = tier !== null && D.tiers.some((t) => t === tier) ? TIER_COLOR[scheme][tier] : null;
-  return (
-    <>
-      <OptionPicture {...props} />
-      {dot ? (
-        <View
-          pointerEvents="none"
-          accessibilityLabel={tier ? tierName(tier) : undefined}
-          style={{
-            position: 'absolute',
-            top: D.inset - D.ring,
-            right: D.inset - D.ring,
-            padding: D.ring,
-            borderRadius: D.radius + D.ring,
-            backgroundColor: ground,
-            transform: [{ rotate: '45deg' }],
-          }}
-        >
-          <View
-            style={{ width: D.size, height: D.size, borderRadius: D.radius, backgroundColor: dot }}
-          />
-        </View>
-      ) : null}
-    </>
-  );
+  return <OptionPicture {...props} />;
 }
 
 function OptionPicture({
@@ -756,10 +733,8 @@ function OptionPicture({
   const xml = option ? optionArt(slot, option, color) : null;
   // The tile's picture once it is made (asked for first while it is on the screen); the SVG only
   // when no picture can be made, and off the screen before it ever had one.
-  const need = useMemo(
-    () => (xml && tileNeed ? tileNeed(xml, KIT.size.stripArt) : null),
-    [xml, tileNeed],
-  );
+  const side = KIT.size.stripArt;
+  const need = useMemo(() => (xml && tileNeed ? tileNeed(xml, side) : null), [xml, tileNeed, side]);
   const art = useArt(need);
   // Until the new picture is made (another colour) the last one this option showed stays, also in
   // a strip opened again (another slot): no SVG, nothing empty (capsule/useArt.ts → lastTile).
@@ -781,20 +756,19 @@ function OptionPicture({
   }, [waiting, need]);
   if (!xml) return <CapIcon name="block" color={c.muted} />;
   const uri = tileShown(made, last);
-  if (waiting && !uri)
-    return <View style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }} />;
+  if (waiting && !uri) return <View style={{ width: side, height: side }} />;
   if (uri) {
     return (
       <Image
         source={{ uri }}
         fadeDuration={0}
         accessible={false}
-        style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }}
+        style={{ width: side, height: side }}
       />
     );
   }
   return (
-    <View style={{ width: KIT.size.stripArt, height: KIT.size.stripArt }}>
+    <View style={{ width: side, height: side }}>
       <CachedSvg xml={xml} width="100%" height="100%" />
     </View>
   );

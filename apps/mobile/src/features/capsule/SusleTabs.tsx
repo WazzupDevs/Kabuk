@@ -1,16 +1,18 @@
+import type { LookSlot } from '@shared/capsule.ts';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { T, useKit } from '@/aura/kit';
 import { SlideLine, Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { CAPSULE_EDIT } from '@/theme/capsuleEdit';
 
+import { SlotIcon } from './SlotIcon';
+
 export type SusleTab = {
-  id: string;
+  // The slot: its icon is the capsule buddy wearing that part (SlotIcon).
+  id: LookSlot;
   name: string;
-  icon: CapIconName;
   // What a screen reader says (the name, and that it changed).
   label: string;
 };
@@ -26,7 +28,7 @@ export function SusleTabs({
 }: {
   tabs: readonly SusleTab[];
   open: string;
-  onPick: (id: string) => void;
+  onPick: (id: LookSlot) => void;
   accessibilityLabel: string;
 }) {
   const { c } = useKit();
@@ -72,8 +74,8 @@ export function SusleTabs({
                 paddingBottom: E.tabs.padBottom,
               }}
             >
-              <CapIcon
-                name={t.icon}
+              <SlotIcon
+                slot={t.id}
                 size={E.tabs.icon}
                 color={on ? c.ink : c.muted}
                 second={on ? KIT.pink : c.muted}

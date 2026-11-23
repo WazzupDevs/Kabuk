@@ -32,7 +32,8 @@ export function FloatStage({
   // Each new value drops it (0: none yet).
   drop: number;
   dropPx: number;
-  shadow: { width: number; height: number; color: string; gap: number };
+  // The breathing shadow under it; none when not given (Süsle, the owner's call, 22 Kasım).
+  shadow?: { width: number; height: number; color: string; gap: number };
   children: ReactNode;
 }) {
   const reduce = useReduceMotion();
@@ -74,19 +75,21 @@ export function FloatStage({
   return (
     <View style={{ alignItems: 'center' }}>
       <Reanimated.View style={holdStyle}>{children}</Reanimated.View>
-      <Reanimated.View
-        pointerEvents="none"
-        style={[
-          {
-            marginTop: shadow.gap,
-            width: shadow.width,
-            height: shadow.height,
-            borderRadius: shadow.height / 2,
-            backgroundColor: shadow.color,
-          },
-          shadowStyle,
-        ]}
-      />
+      {shadow ? (
+        <Reanimated.View
+          pointerEvents="none"
+          style={[
+            {
+              marginTop: shadow.gap,
+              width: shadow.width,
+              height: shadow.height,
+              borderRadius: shadow.height / 2,
+              backgroundColor: shadow.color,
+            },
+            shadowStyle,
+          ]}
+        />
+      ) : null}
     </View>
   );
 }

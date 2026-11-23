@@ -19,6 +19,8 @@ import { tierName } from './model';
 
 const TIER_MARKS: Record<GiftTier, number> = { siradan: 1, nadir: 2, destansi: 3, efsanevi: 4 };
 const MARK = 6;
+// TierGems' height (a row of gems under a piece).
+export const TIER_GEMS_HEIGHT = MARK * 2;
 
 // A tier's marks (hediye.css `.nd .gm`): one to four of its colour (the colour never stands alone).
 export function Marks({ tier, color }: { tier: GiftTier; color: string }) {
@@ -62,7 +64,7 @@ export function TierGems({ tier }: { tier: GiftTier }) {
     <View
       accessible
       accessibilityLabel={tierName(tier)}
-      style={{ height: MARK * 2, justifyContent: 'center' }}
+      style={{ height: TIER_GEMS_HEIGHT, justifyContent: 'center' }}
     >
       <Marks tier={tier} color={TIER_COLOR[scheme][tier]} />
     </View>

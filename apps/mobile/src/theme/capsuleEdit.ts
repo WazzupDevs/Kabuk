@@ -27,7 +27,19 @@ export const CAPSULE_EDIT = {
   // capsule's shadow's top 262 down; "Hepsini çıkar" and the die at its foot, 16 from the sides.
   // "Hepsini çıkar" 12 in at its left and 14 at its right, its arrow 16 and 6 from the words; the
   // die's icon 20.
-  scene: { height: 300, hale: Math.round(220 * CAPSULE_HALE.ratio), shadowTop: 262, side: 16 },
+  // `actionsRoom`: "Hepsini çıkar" and "Rastgele" under the hale, not over its foot (22 Kasım).
+  // `circle`: the large capsule's circle, one ring (the owner's call, 22 Kasım), with the room over
+  // it for what stands highest over the head (CapsuleStage → stageHeadroom: horns, flames) inside
+  // the scene, `headTop` down, so that it and the feeling's bubble stay on the screen.
+  scene: {
+    circle: 206,
+    headTop: 0,
+    height: 356,
+    hale: Math.round(220 * CAPSULE_HALE.ratio),
+    shadowTop: 262,
+    side: 16,
+    actionsRoom: 22,
+  },
   clear: { padLeft: 12, padRight: 14, gap: 6, icon: 16 },
   dieIcon: 20,
   // The shadow under the capsule: 120 by 16.
@@ -36,7 +48,8 @@ export const CAPSULE_EDIT = {
   // its top, 22 in, fading over 22 at its left and 40 at its right, the chips 8 apart; a chip 12 in
   // at its left and 15 at its right, its icon 17, 6 from the words. The theme packs (iskelet.md →
   // 5.10, not drawn on the board) over the chips, 8 over them, the same 22 in.
-  panel: { top: 18, radius: 34, padTop: 16, side: 22, fadeStart: 22, fadeEnd: 40, gap: 8 },
+  // No fade at the packs' start: Android draws it with the row unscrolled too, over "Tümü" (22 Kasım).
+  panel: { top: 18, radius: 34, padTop: 16, side: 22, fadeStart: 0, fadeEnd: 40, gap: 8 },
   chip: { padLeft: 12, padRight: 15, gap: 6, icon: 17 },
   packsGap: 8,
   // Under the chips: the strip 6 + 18 under them and 14 over the actions (the options' middle 60
@@ -47,7 +60,8 @@ export const CAPSULE_EDIT = {
   // An option's rarity (`.gi .r`): a rotated square 9 across, 2 round, 6 in from the option's top and
   // right, a 2 ring of the option's ground round it; only the tiers the board draws (`.r.ef`,
   // `.r.ds`: Efsanevi and Destansı), in the tier's colour (theme/gifts.ts → TIER_COLOR).
-  tierDot: { size: 9, radius: 2, inset: 6, ring: 2, tiers: ['destansi', 'efsanevi'] as const },
+  // `inset` from the option's corner, inside its round (84): at 6 the round cut the dot (22 Kasım).
+  tierDot: { size: 9, radius: 2, inset: 15, ring: 2, tiers: ['destansi', 'efsanevi'] as const },
   dots: { top: 14, gap: 6, side: 6, on: 18 },
   padBottom: 24,
   // Yeni arayüz tuvali (KapsulSusle, TumAksesuarlar; 16 Kasım), value for value: the bar's row 48
@@ -59,7 +73,8 @@ export const CAPSULE_EDIT = {
   // rows of four 14 apart, 8 between the pieces (`.gg`), the piece 72 with its name 6 under it
   // (two lines, 30), the piece's ring 3 off it and 3 wide; "Kapsülüne tak" 20 over the foot.
   bar: { row: 48, gap: 12 },
-  actions: { top: 12, gap: 8 },
+  // `each`: "Hepsini çıkar" and "Rastgele" as wide as each other (the owner's call, 22 Kasım).
+  actions: { top: 12, gap: 8, each: 144 },
   tabs: { side: 12, icon: 22, gap: 3, padTop: 8, padBottom: 9, line: 3, lineIn: 0.22 },
   filter: { top: 12, gap: 6, link: 2, chevron: 16 },
   catalog: {
@@ -93,8 +108,9 @@ export const CAPSULE_EDIT = {
         shadow: '0px 4px 10px rgba(3, 27, 11, 0.06)',
       },
     },
-    // The options' circle on the panel.
-    tile: 'rgba(3, 27, 11, 0.05)',
+    // The options' circle on the panel: a mid slate, so that a white piece and a dark one both
+    // stand out on it, the dark ones by their white contour (the owner's call, 22 Kasım).
+    tile: '#5E6878',
     dot: { on: '#0E8745', off: 'rgba(3, 27, 11, 0.15)' },
   },
   // The dark scheme is not drawn on the board: the kit's dark sheet, chips and inks.
@@ -106,7 +122,7 @@ export const CAPSULE_EDIT = {
       on: { fill: '#EEF3F0', ink: '#0B0E0D', shadow: '' },
       off: { fill: '#1B211F', ink: '#EEF3F0', inset: '', shadow: '' },
     },
-    tile: 'rgba(255, 255, 255, 0.06)',
+    tile: '#3C4452',
     dot: { on: '#3DDC84', off: 'rgba(255, 255, 255, 0.15)' },
   },
 } as const;

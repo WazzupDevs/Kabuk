@@ -40,7 +40,9 @@ import {
 } from '@/theme/auraKit';
 import type { ExploreFace } from '@/theme/explore';
 import { gradientStyle } from '@/theme/gradient';
-import { Frost, FROSTED } from '@/components/LiquidGlass';
+import { BUTTON_FROSTED, Frost, FROSTED } from '@/components/LiquidGlass';
+import { CLEAR_ON_SHEET } from '@/theme/buttonGlass';
+import { BUTTON_FROST } from '@/theme/glass';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { CapIcon, type CapIconName } from './CapIcon';
@@ -158,6 +160,16 @@ export function useFrost(): boolean {
   return FROSTED && !onCard && !flat && !labOff && !solid;
 }
 
+// Whether a clear button here is frosted (theme/glass.ts → BUTTON_FROST): as useFrost, on the
+// buttons' own switch.
+export function useButtonFrost(): boolean {
+  const onCard = useContext(OnCard);
+  const flat = useContext(FlatGlass);
+  const labOff = useLabOff('buzlu');
+  const solid = useReduceTransparency();
+  return BUTTON_FROSTED && !onCard && !flat && !labOff && !solid;
+}
+
 export function Glass({
   sm,
   pad,
@@ -259,6 +271,19 @@ function FrostOf({ height, fill }: { height: number; fill?: string }) {
   return <Frost radius={height / 2} ground={AURA[scheme].ground} fill={fill} />;
 }
 
+// A clear button's frost on the buttons' own switch (theme/glass.ts → BUTTON_FROST).
+function ButtonFrost({ height }: { height: number }) {
+  const { scheme } = useTheme();
+  return (
+    <Frost
+      button
+      radius={height / 2}
+      ground={AURA[scheme].ground}
+      fill={BUTTON_FROST.fill[scheme]}
+    />
+  );
+}
+
 // The press (iskelet.md → 2.3) is the motion kit's (src/motion/Tap.tsx): one source for Tap and
 // every button here.
 export { PRESS_DELAY, usePress };
@@ -356,6 +381,13 @@ export function Btn({
         ? g.off.ink
         : (tint ?? g.ink);
   const pressedFill = down && !off && !fill && g.pressed ? g.pressed : null;
+  const buttonFrost = useButtonFrost();
+  const frosted = buttonFrost && variant === 'glassy' && !off && !fill && !pressedFill;
+  // On a dialog, a sheet or a card the soft white would not show: the sheets' quiet tone.
+  const onCard = useContext(OnCard);
+  const inSheet = useContext(FlatGlass);
+  const onSurface = onCard || inSheet;
+  const onSheet = variant === 'glassy' && onSurface && !off && !fill && !pressedFill;
   const height = bar ? KIT.size.topBtn : sm ? KIT.size.btnSm : KIT.size.btn;
   const small = sm || !!bar;
   const padX = snug ? KIT.size.btnPadXSnug : small ? KIT.size.btnPadXSm : KIT.size.btnPadX;
@@ -410,9 +442,13 @@ export function Btn({
                 : {
                     ...(pressedFill
                       ? { backgroundColor: pressedFill }
-                      : gradientStyle(solid ? g.solid : g.fill)),
+                      : frosted
+                        ? null
+                        : onSheet
+                          ? { backgroundColor: CLEAR_ON_SHEET[scheme].fill }
+                          : gradientStyle(solid ? g.solid : g.fill)),
                     borderWidth: KIT.size.edge,
-                    borderColor: g.edge,
+                    borderColor: onSheet ? CLEAR_ON_SHEET[scheme].edge : g.edge,
                     boxShadow: shadow?.boxShadow,
                   }
             : { backgroundColor: off ? c.disabledOnCard : c.chipOn },
@@ -430,6 +466,7 @@ export function Btn({
         ]}
       >
         {shadow?.node}
+        {frosted ? <ButtonFrost height={height} /> : null}
         {loading ? (
           <Loader
             kind="meet"
@@ -540,7 +577,10 @@ export function Round({
   const s = side ?? (big ? KIT.size.roundLg : KIT.size.round);
   const shadowOff = useLabOff('golge');
   const solid = useReduceTransparency();
-  const frost = useFrost();
+  const frost = useButtonFrost();
+  const onCard = useContext(OnCard);
+  const inSheet = useContext(FlatGlass);
+  const onSurface = onCard || inSheet;
   const off = disabled && !loading;
   // DENEME (19 Kasım, temel): three looks. `primary` is the main button's ink (not the green), and
   // the `clear` glass is the raised round itself.
@@ -626,18 +666,20 @@ export function Round({
                     }
                   : glassy
                     ? {
-                        backgroundColor: frosted ? undefined : c.raisedRound,
+                        backgroundColor: frosted
+                          ? undefined
+                          : onSurface
+                            ? CLEAR_ON_SHEET[scheme].fill
+                            : c.raisedRound,
                         borderWidth: KIT.size.edge,
-                        borderColor: c.raisedRoundEdge,
+                        borderColor: onSurface ? CLEAR_ON_SHEET[scheme].edge : c.raisedRoundEdge,
                         boxShadow: shadow?.boxShadow,
                       }
                     : null,
         ]}
       >
         {shadow?.node}
-        {glassy && !primary && !off && !light && !g ? (
-          <FrostOf height={s} fill={c.raisedRound} />
-        ) : null}
+        {frosted ? <ButtonFrost height={s} /> : null}
         {loading ? (
           <Loader
             kind="meet"

@@ -113,6 +113,15 @@ export function lookCard(code: string): string {
     .replace(POP_CLIP_PATH, `<path d="M-6 ${-CARD_TOP}H54V24H48A24 24 0 0 1 0 24H-6Z"/>`);
 }
 
+// Süsle's large capsule (the owner's report, 22 Kasım: horns cut flat over the circle): the
+// editor's stage (lookPop) with the gift card's room over the circle, CARD_TOP, so that what reaches
+// highest is drawn whole. No contour.
+export function lookStage(code: string, emo = ''): string {
+  return lookPop(code, emo)
+    .replace('viewBox="-6 -8 60 57"', `viewBox="-6 ${-CARD_TOP} 60 ${49 + CARD_TOP}"`)
+    .replace(POP_CLIP_PATH, `<path d="M-6 ${-CARD_TOP}H54V24H48A24 24 0 0 1 0 24H-6Z"/>`);
+}
+
 export function lookGround(code: string): string {
   return LOOK.bg(lookParts(code));
 }

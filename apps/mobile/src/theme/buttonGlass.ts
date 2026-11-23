@@ -147,3 +147,11 @@ export const BUTTON_GLASS = {
   },
 } as const;
 export type ButtonGlassKind = keyof typeof BUTTON_GLASS.light;
+
+// A clear button (and the clear round) inside a dialog, a sheet or on a card (the owner's report,
+// 22 Kasım: the soft white button did not show on the white dialog): the sheets' quiet track, a
+// tone the surface under it is not; in the dark a white at 8 % over the #1B211F sheet.
+export const CLEAR_ON_SHEET = {
+  light: { fill: '#E0EDE2', edge: 'rgba(3, 27, 11, 0.06)' },
+  dark: { fill: 'rgba(255, 255, 255, 0.08)', edge: 'rgba(255, 255, 255, 0.10)' },
+} as const;

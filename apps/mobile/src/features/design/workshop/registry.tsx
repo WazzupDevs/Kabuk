@@ -5,6 +5,8 @@ import { Button } from '@/components/Button';
 import { tr } from '@/i18n/tr';
 
 import type { DraftStatus } from './drafts';
+import { PurpleThemeDraft } from './purpleTheme';
+import { SusleStageDraft } from './susleStage';
 
 // The workshop's draft registry: a design draft built from the real components, with the
 // alternatives to compare. A draft is added here; titles, notes and labels come from tr.ts.
@@ -54,4 +56,38 @@ const BUTTON_ORDER: WorkshopDraft = {
   ],
 };
 
-export const WORKSHOP_DRAFTS: WorkshopDraft[] = [BUTTON_ORDER];
+// Süsle in a purple night palette (the owner's ask, 22 Kasım): A today, B purple; the layout is the
+// same, only the colours change.
+const PURPLE_THEME: WorkshopDraft = {
+  key: 'purpleTheme',
+  title: t.purpleTheme.title,
+  status: 'draft',
+  note: t.purpleTheme.note,
+  variants: [
+    {
+      key: 'a',
+      label: t.variantA,
+      render: (width) => <PurpleThemeDraft purple={false} width={width} />,
+    },
+    {
+      key: 'b',
+      label: t.variantB,
+      render: (width) => <PurpleThemeDraft purple width={width} />,
+    },
+  ],
+};
+
+// The ground behind Süsle's large capsule (the owner's ask, 22 Kasım).
+const SUSLE_STAGE: WorkshopDraft = {
+  key: 'susleStage',
+  title: t.susleStage.title,
+  status: 'approved',
+  note: t.susleStage.approved,
+  variants: [
+    { key: 'a', label: t.variantA, render: (w) => <SusleStageDraft ground="today" width={w} /> },
+    { key: 'b', label: t.variantB, render: (w) => <SusleStageDraft ground="night" width={w} /> },
+    { key: 'c', label: t.variantC, render: (w) => <SusleStageDraft ground="glow" width={w} /> },
+  ],
+};
+
+export const WORKSHOP_DRAFTS: WorkshopDraft[] = [SUSLE_STAGE, PURPLE_THEME, BUTTON_ORDER];

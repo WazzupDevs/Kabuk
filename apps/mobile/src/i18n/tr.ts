@@ -2593,6 +2593,22 @@ export const tr = {
       empty: 'Atölyede taslak yok.',
       variantA: 'A',
       variantB: 'B',
+      variantC: 'C',
+      susleStage: {
+        title: 'Süsle sahnesi',
+        note: 'Büyük kapsülün arkasındaki zemin: A bugün, B gece sahnesi, C yumuşak ışık.',
+        noteA: 'A: bugünkü hâl, sayfanın açık zemini.',
+        noteB: 'B: koyu gece kartı, kapsülün arkasında mor ışık, sabit yıldızlar.',
+        noteC: 'C: yalnız dairenin çevresinde yumuşak mor ışık.',
+        approved: 'Onaylandı (22 Kasım): B, gece kartı.',
+      },
+      purpleTheme: {
+        title: 'Mor gece teması (Süsle)',
+        note: 'Düzen aynı, yalnız renkler: A bugünkü hâl, B mor gece teması.',
+        noteA: 'A: bugünkü hâl (yeşil vurgu, pembe seçim halkası).',
+        noteB:
+          'B: mor vurgu, mor degrade düğmeler, lacivert zemin ve mor bulutlar, düz yarı saydam alt panel.',
+      },
       buttonOrder: {
         title: 'Düğme sırası',
         note: 'Aracın çalıştığını gösteren örnek taslak.',

@@ -1,6 +1,8 @@
 import type { LookSlot } from '@shared/capsule.ts';
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
+import { ACCESSORY_TILE_BOX } from '../../theme/accessoryTiles';
+import { ACCESSORY_ART } from '../../theme/capsuleAccessories';
 import { describe, expect, it } from 'vitest';
 
 import { optionArt, partArt } from './tileArt';
@@ -24,10 +26,21 @@ describe("the trying strip's art", () => {
     expect(partArt('c', 'pembe', undefined)).toContain(BODY);
   });
 
-  it("draws an accessory as its figure and nothing for 'boş'", () => {
-    const a = GIFT_CATALOG.accessories[0];
-    if (!a) throw new Error('no accessory');
-    expect(optionArt('h', { accessory: a.id }, 'mor')).toContain('viewBox="0 -12 100 140"');
+  it('knows the seen box of every drawn accessory (theme/accessoryTiles.ts)', () => {
+    for (const id of Object.keys(ACCESSORY_ART)) expect(ACCESSORY_TILE_BOX[id], id).toBeDefined();
+  });
+
+  it("draws an accessory alone, still, in the middle of its square, and nothing for 'boş'", () => {
+    for (const a of GIFT_CATALOG.accessories.filter((x) => !x.retired)) {
+      const art = optionArt('h', { accessory: a.id }, 'mor') ?? '';
+      const view = /viewBox="([^"]*)"/.exec(art)?.[1]?.split(' ').map(Number) ?? [];
+      expect(view[2], a.id).toBeCloseTo(view[3] ?? 0, 6);
+      expect(art, a.id).not.toContain('data-fx');
+      // No capsule: not the body the figure lays under it.
+      expect(art, a.id).not.toContain(
+        '<rect x="24" y="22" width="52" height="104" rx="26" fill="#F5E6CC"/>',
+      );
+    }
     expect(optionArt('h', {}, 'mor')).toBeNull();
   });
 

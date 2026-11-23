@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
+import { BUTTON_FROST, TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
 
 // The native side of skall's glass (modules/skall-glass, Android; frosted since 0.9.0, the owner's
 // call, 29 Ekim): a screen a glass can see through (GlassTarget) and the glass itself
@@ -49,7 +49,7 @@ const NativeGlass: ComponentType<GlassProps> | null = android
 export function GlassTarget({
   targetId,
   backdrop,
-  enabled = TAB_BAR_GLASS,
+  enabled = TAB_BAR_GLASS || (!!backdrop && BUTTON_FROST.on),
   style,
   children,
 }: TargetProps) {
@@ -73,6 +73,9 @@ export function LiquidGlass(props: GlassProps) {
 // Elsewhere it keeps its own fill alone.
 export const FROSTED =
   NativeGlass !== null && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
+// Whether a clear button is frosted here (theme/glass.ts → BUTTON_FROST), apart from the rest.
+export const BUTTON_FROSTED =
+  NativeGlass !== null && BUTTON_FROST.on && blursBehind(Platform.OS, Platform.Version);
 
 // The screen behind a sheet or a menu, copied once as it opens and drawn blurred by `blur` (the
 // deviation in dp; modules/skall-glass → BackdropBlurView): a Modal is a window of its own and the
@@ -94,12 +97,15 @@ export function Frost({
   radius,
   ground,
   fill,
+  button,
 }: {
   radius: number;
   ground: ColorValue;
   fill?: ColorValue;
+  // A button's frost: on with the buttons' own switch.
+  button?: boolean;
 }) {
-  if (!FROSTED || !NativeGlass) return null;
+  if (!(button ? BUTTON_FROSTED : FROSTED) || !NativeGlass) return null;
   return (
     <>
       <NativeGlass

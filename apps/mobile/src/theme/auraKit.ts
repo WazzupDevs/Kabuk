@@ -1060,7 +1060,9 @@ export const KIT = {
     stripOn: 1.14,
     stripOff: 0.9,
     stripArt: 62,
-    stripFade: 86,
+    // The strip's ends fade over this much: the options either side of the chosen one stay whole
+    // (at 86 they showed half faded, like ghosts: the owner's report, 22 Kasım).
+    stripFade: 36,
     stripDots: 7,
     boxRing: 3,
     boxRingGap: 0,

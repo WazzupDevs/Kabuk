@@ -5,13 +5,23 @@
 // colour, a part): the stage and the strip come on together, the old look everywhere and then the
 // new one, not a new colour on the stage beside the old one in the strip. A few of the queue's
 // turns; tiles that take longer would hold the stage back for no better picture, so it goes on
-// without them and they change as they are made. The look's own pictures are waited for always.
-export const TILE_WAIT_MS = 250;
+// without them and they change as they are made.
+export const TILE_WAIT_MS = 120;
 
-// The stage shows the new look once its pictures are made and the tiles on the screen are too, or
-// once it has waited TILE_WAIT_MS for them.
-export function stagePasses(lookReady: boolean, tilesReady: boolean, overdue: boolean): boolean {
-  return lookReady && (tilesReady || overdue);
+// How long the stage waits for the new look's own pictures (the owner's report, 22 Kasım: the
+// chosen accessory came on slowly): past it the look comes on and its canvas draws what is not
+// made yet the picture way.
+export const LOOK_WAIT_MS = 300;
+
+// The stage shows the new look once its pictures are made (or it has waited LOOK_WAIT_MS for them)
+// and the tiles on the screen are too (or it has waited TILE_WAIT_MS for them).
+export function stagePasses(
+  lookReady: boolean,
+  tilesReady: boolean,
+  overdue: boolean,
+  lookOverdue = false,
+): boolean {
+  return (lookReady || lookOverdue) && (tilesReady || overdue);
 }
 
 // How long the stage waits, once the new look's pictures are made, for their copies on the GPU

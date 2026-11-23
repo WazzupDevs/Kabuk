@@ -14,6 +14,7 @@ import { T, useKit } from '@/aura/kit';
 import { AppIcon } from '@/components/AppIcon';
 import { CachedSvg } from '@/components/CachedSvg';
 import { LookAvatar } from '@/components/LookAvatar';
+import { ProgressPill } from '@/components/ProgressPill';
 import { Sheet } from '@/components/Sheet';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -41,12 +42,32 @@ const DISC = 84;
 const EMPTY = 62;
 const OPTION = 64;
 const RING = 3;
+
+// The worn piece's ring, RING outside its round: a border of its own, not an outset shadow (on
+// Android a shadow ring lost its round corners and showed as a square, 22 Kasım).
+function WornRing({ size, color }: { size: number; color: string }) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: -RING,
+        top: -RING,
+        width: size + 2 * RING,
+        height: size + 2 * RING,
+        borderRadius: (size + 2 * RING) / 2,
+        borderWidth: RING,
+        borderColor: color,
+      }}
+    />
+  );
+}
 const LOCK = 24;
 const CAPSULE = 'c:krem e:klasik';
 const pieceLook = (id: string) => `${CAPSULE} x:${id}`;
 
 export function SetCard() {
-  const { c, scheme } = useKit();
+  const { scheme } = useKit();
   const { colors } = useTheme();
   const narrow = useNarrow();
   const gifts = useGiftState();
@@ -64,14 +85,8 @@ export function SetCard() {
   const lead = counts.reduce((a, b) => (b.n > a.n ? b : a), counts[0] ?? { set: null, n: 0 });
   const filled = SET_REGION_ORDER.filter((r) => pieces[r]).length;
   const mixed = filled === SET_REGION_ORDER.length && !balloon;
-  const skin = balloon ? SET_BALLOONS[balloon] : null;
 
   const k = SET_CARD[scheme];
-  const chip = skin
-    ? { bg: skin.chipOn, fg: skin.name.ink }
-    : mixed
-      ? { bg: k.count, fg: c.warn }
-      : { bg: k.count, fg: c.ink };
   // yeni tuval ProfilBen (`.sh`, `.stag`, `.sd`, `.parts`): the small title and the balloon's tag on one
   // line, the note under them, the three parts' pictures under it; no card.
   return (
@@ -82,26 +97,20 @@ export function SetCard() {
             {tr.gifts.setTitle}
           </T>
         </View>
-        <View
-          style={{
-            height: SET_CARD.count.height,
-            paddingHorizontal: SET_CARD.count.padX,
-            borderRadius: SET_CARD.count.height / 2,
-            backgroundColor: chip.bg,
-            justifyContent: 'center',
-            flexShrink: 1,
-          }}
-        >
-          <T v="setCount" color={chip.fg} tabular lines={1} fit>
-            {balloon && lead.set
+        <ProgressPill
+          value={balloon ? SET_REGION_ORDER.length : mixed ? SET_REGION_ORDER.length : lead.n}
+          total={SET_REGION_ORDER.length}
+          tone={mixed ? 'warn' : undefined}
+          label={
+            balloon && lead.set
               ? tr.gifts.setChipOn(lead.set.name)
               : mixed
                 ? tr.gifts.setChipMixed
                 : lead.set && lead.n > 0
                   ? tr.gifts.setChipCount(lead.set.name, lead.n, SET_REGION_ORDER.length)
-                  : tr.gifts.setChipNone(SET_REGION_ORDER.length)}
-          </T>
-        </View>
+                  : tr.gifts.setChipNone(SET_REGION_ORDER.length)
+          }
+        />
       </View>
       <T v="setNote" color={k.note}>
         {balloon && lead.set
@@ -152,7 +161,6 @@ export function SetCard() {
                       borderRadius: (piece ? DISC : EMPTY) / 2,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      ...(active ? { boxShadow: `0 0 0 ${RING}px ${colors.accent}` } : null),
                       ...(piece
                         ? null
                         : {
@@ -163,6 +171,7 @@ export function SetCard() {
                           }),
                     }}
                   >
+                    {active ? <WornRing size={DISC} color={colors.accent} /> : null}
                     {piece ? (
                       <LookAvatar look={pieceLook(piece.id)} size={DISC} />
                     ) : (
@@ -258,9 +267,9 @@ function RegionSheet({
                         width: OPTION,
                         height: OPTION,
                         borderRadius: OPTION / 2,
-                        ...(on ? { boxShadow: `0 0 0 ${RING}px ${colors.accent}` } : null),
                       }}
                     >
+                      {on ? <WornRing size={OPTION} color={colors.accent} /> : null}
                       <View style={{ opacity: mine ? 1 : LOCKED_FADE }}>
                         <LookAvatar look={pieceLook(a.id)} size={OPTION} />
                       </View>
@@ -284,10 +293,12 @@ function RegionSheet({
                         </View>
                       ) : null}
                     </View>
+                    {/* The gems right under the capsule, the name under them: every piece's
+                        gems on one line, however many lines its name takes. */}
+                    <TierGems tier={GIFT_TIERS[3]} />
                     <T v="fine" center>
                       {a.name}
                     </T>
-                    <TierGems tier={GIFT_TIERS[3]} />
                   </Tap>
                 );
               })}
