@@ -6,6 +6,12 @@ import { DmFixture } from './dmFixture';
 import { KesfetFixture } from './kesfetFixture';
 import { ArchiveFixture, MesajlarFixture } from './mesajlarFixture';
 import { PersonFixture } from './personFixture';
+import {
+  EditProfileFixture,
+  OwnProfileFixture,
+  ProfileLoadingFixture,
+  SenderProfileFixture,
+} from './profilFixture';
 import { SemtEmptyFixture } from './semtEmptyFixture';
 import { SemtSheetFixture } from './semtFixture';
 import {
@@ -48,7 +54,13 @@ export const GATE_STATES: Record<string, GateEntry> = {
     full: true,
     render: () => <MesajlarFixture variant="archive-unread" />,
   },
-  'ekran/profil-baskasi': { full: true, render: () => <PersonFixture /> },
+  'ekran/profil/baskasi': { full: true, render: () => <PersonFixture /> },
+  // The Profil family: the routes themselves over the boards' sample (profilFixture.tsx).
+  'ekran/profil/ben': { full: true, render: () => <OwnProfileFixture /> },
+  'ekran/profil/duzenle': { full: true, render: () => <EditProfileFixture /> },
+  'ekran/profil/duzenle-bos': { full: true, render: () => <EditProfileFixture empty /> },
+  'ekran/profil/mekan': { full: true, render: () => <SenderProfileFixture /> },
+  'ekran/profil/yukleniyor': { full: true, render: () => <ProfileLoadingFixture /> },
   'ekran/arsiv': { full: true, render: () => <ArchiveFixture /> },
   'ekran/arsiv/bos': { full: true, render: () => <ArchiveFixture empty /> },
   // The Ayarlar family: the routes themselves over the boards' sample (settingsFixture.tsx).
