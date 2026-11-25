@@ -18,9 +18,10 @@ export function matchPushRecipient(
   return outcome === 'friendship_created' && otherUserId ? otherUserId : null;
 }
 
-// DMs: 1–500 characters, one message per second per account (dm_send's min interval).
+// DMs: 1–500 characters; at most `max` messages per account in any `seconds` (dm_send's window;
+// the owner's call, 25 Kasım: one after another as fast as they are typed, no per-second wait).
 export const DM_MAX_LENGTH = 500;
-export const DM_MIN_INTERVAL_MS = 1000;
+export const DM_SEND_WINDOW = { seconds: 60, max: 60 } as const;
 // dm_messages_page's size.
 export const DM_PAGE_SIZE = 50;
 

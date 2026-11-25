@@ -32,7 +32,7 @@ import {
   pinnedFirst,
 } from '../_shared/pure/dmManage.ts';
 import { AppError } from '../_shared/pure/errors.ts';
-import { DM_MIN_INTERVAL_MS, prepareDm } from '../_shared/pure/friends.ts';
+import { DM_SEND_WINDOW, prepareDm } from '../_shared/pure/friends.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
 import { dmPush, PUSH_PREFERENCE } from '../_shared/pure/push.ts';
 import { REACTION_RATE, toReaction } from '../_shared/pure/reactions.ts';
@@ -124,7 +124,8 @@ Deno.serve(
             target_user_id: user.id,
             target_thread_id: body.threadId,
             new_body: text,
-            min_interval_ms: DM_MIN_INTERVAL_MS,
+            window_seconds: DM_SEND_WINDOW.seconds,
+            window_max: DM_SEND_WINDOW.max,
             ...(body.replyTo ? { reply_to: body.replyTo } : {}),
           });
           if (error) throw dbError('dm_send_message', error);

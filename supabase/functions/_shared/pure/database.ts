@@ -3128,21 +3128,23 @@ export type Database = {
       };
       dm_send: {
         Args: {
-          min_interval_ms: number;
           new_body: string;
           reply_to?: string;
           target_thread_id: string;
           target_user_id: string;
+          window_max: number;
+          window_seconds: number;
         };
         Returns: string;
       };
       dm_send_message: {
         Args: {
-          min_interval_ms: number;
           new_body: string;
           reply_to?: string;
           target_thread_id: string;
           target_user_id: string;
+          window_max: number;
+          window_seconds: number;
         };
         Returns: {
           created_at: string;

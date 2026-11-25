@@ -21,7 +21,7 @@ import {
   inboxChannel,
   TYPING_EVENT,
 } from '../functions/_shared/pure/rooms.ts';
-import { DM_MIN_INTERVAL_MS } from '../functions/_shared/pure/friends.ts';
+import { DM_SEND_WINDOW } from '../functions/_shared/pure/friends.ts';
 import { totalUnread } from '../functions/_shared/pure/dmInbox.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
 import {
@@ -942,7 +942,14 @@ describe('DMs', () => {
 
     const sent = await dm(a, { action: 'send', threadId, body: '  Selam! ' });
     expect(sent).toEqual(SENT);
-    expect(await dm(a, { action: 'send', threadId, body: 'ikinci' })).toEqual({
+    // One after another at once (no per-second wait), up to the window's max (DM_SEND_WINDOW).
+    expect(await dm(a, { action: 'send', threadId, body: 'ikinci' })).toEqual(SENT);
+    await sql`
+      insert into public.dm_messages (thread_id, sender_user_id, body, created_at)
+      select m.thread_id, m.sender_user_id, 'dolgu', m.created_at - g * interval '1 millisecond'
+      from public.dm_messages m, generate_series(1, ${DM_SEND_WINDOW.max - 2}) g
+      where m.thread_id = ${threadId} and m.body = 'Selam!'`;
+    expect(await dm(a, { action: 'send', threadId, body: 'fazla' })).toEqual({
       status: 429,
       body: errorBody('rate_limited'),
     });
@@ -956,12 +963,16 @@ describe('DMs', () => {
     });
 
     const { data: page } = await b.rpc('dm_messages_page', { target_thread_id: threadId });
-    expect(page).toEqual([expect.objectContaining({ body: 'Selam!', from_me: false })]);
+    expect(page?.slice(0, 2)).toEqual([
+      expect.objectContaining({ body: 'ikinci', from_me: false }),
+      expect.objectContaining({ body: 'Selam!', from_me: false }),
+    ]);
     // The reply names the row the page holds, so the app can put it in at once with its tick.
     const { data: own } = await a.rpc('dm_messages_page', { target_thread_id: threadId });
     const written = sent.body as { messageId: string; createdAt: string };
-    expect(own?.[0]).toMatchObject({ id: written.messageId, from_me: true, status: 'sent' });
-    expect(Date.parse(own?.[0]?.created_at ?? '')).toBe(Date.parse(written.createdAt));
+    const first = own?.find((m) => m.id === written.messageId);
+    expect(first).toMatchObject({ id: written.messageId, from_me: true, status: 'sent' });
+    expect(Date.parse(first?.created_at ?? '')).toBe(Date.parse(written.createdAt));
     expect(Object.keys(page?.[0] ?? {}).sort()).toEqual([
       'body',
       'created_at',
@@ -1028,8 +1039,8 @@ describe('DMs', () => {
 });
 
 // v3 step 6 (docs/SPEC_V3.md §18.2): ticks, the Mesajlar list and the typing channel.
-const afterRateLimit = () =>
-  new Promise((resolve) => setTimeout(resolve, DM_MIN_INTERVAL_MS + 100));
+// Sends need no wait between them (DM_SEND_WINDOW); kept so the steps read as before.
+const afterRateLimit = () => Promise.resolve();
 
 async function page(client: Client, threadId: string) {
   const { data, error } = await client.rpc('dm_messages_page', { target_thread_id: threadId });
