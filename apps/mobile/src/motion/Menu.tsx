@@ -16,6 +16,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
@@ -272,8 +273,14 @@ export function closeMenu(): void {
 }
 
 // The menu `openMenu` opened, drawn once in the app's layer (motion/menuLayer.tsx → MenuLayer).
+// A screen change (a link, a notification, back past the screen) closes it: the menu belongs to the
+// screen that opened it and must not stay over the next one.
 export function MenuHost() {
   const menu = useOpenMenu((s) => s.menu);
+  const path = usePathname();
+  useEffect(() => {
+    closeMenu();
+  }, [path]);
   if (!menu) return null;
   return (
     <Menu
