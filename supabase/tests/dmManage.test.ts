@@ -951,7 +951,7 @@ describe('locks', () => {
         markBegan();
         await mayGo;
         return tx`
-          select message_id, created_at from public.dm_send_message(${aId}, ${threadId}, 'geç', 0)
+          select message_id, created_at from public.dm_send_message(${aId}, ${threadId}, 'geç', 60, 60)
         `;
       });
       await began;
@@ -959,7 +959,7 @@ describe('locks', () => {
       // b's send begins later, takes the thread first and holds it until a's send waits.
       const held = await holder.begin(async (tx) => {
         const rows = await tx`
-          select message_id, created_at from public.dm_send_message(${bId}, ${threadId}, 'önce', 0)
+          select message_id, created_at from public.dm_send_message(${bId}, ${threadId}, 'önce', 60, 60)
         `;
         releaseEarly();
         await waitUntilBlocked('dm_send_message');
