@@ -273,6 +273,11 @@ export function closeMenu(): void {
 }
 
 // The menu `openMenu` opened, drawn once in the app's layer (motion/menuLayer.tsx → MenuLayer).
+// Gone at once, without its closing motion (the visual gate's next shot, app/gorsel.tsx).
+export function dropMenu(): void {
+  useOpenMenu.setState({ menu: null });
+}
+
 // A screen change (a link, a notification, back past the screen) closes it: the menu belongs to the
 // screen that opened it and must not stay over the next one.
 export function MenuHost() {

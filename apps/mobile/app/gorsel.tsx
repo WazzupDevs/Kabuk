@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { OverlayHost } from '@/components/OverlayHost';
 import { GateState } from '@/features/design/gorsel/GateState';
-import { MenuHost } from '@/motion/Menu';
+import { dropMenu, MenuHost } from '@/motion/Menu';
 import { MenuLayer } from '@/motion/menuLayer';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
@@ -31,6 +31,10 @@ export default function GorselScreen() {
     genislik?: string;
     n?: string;
   }>();
+  // A menu the shot before opened (its store outlives the route) is not this shot's.
+  useEffect(() => {
+    dropMenu();
+  }, [p.n]);
   if (!designPickerEnabled) return <Redirect href="/" />;
   return (
     <>
