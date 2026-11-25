@@ -91,6 +91,7 @@
         "packageJson": {
           "dependencies": [
             "npm:@expo-google-fonts/plus-jakarta-sans@0.4.2",
+            "npm:@expo/metro-runtime@~57.0.16",
             "npm:@maplibre/maplibre-react-native@11.4.0",
             "npm:@react-native-async-storage/async-storage@2.2.0",
             "npm:@sentry/react-native@7.11",
@@ -121,6 +122,7 @@
             "npm:expo@~57.0.26",
             "npm:nativewind@^4.2.7",
             "npm:posthog-react-native@^4.77.0",
+            "npm:react-dom@19.2.3",
             "npm:react-native-gesture-handler@2.32",
             "npm:react-native-keyboard-controller@1.21.9",
             "npm:react-native-reanimated@4.5.1",
@@ -128,6 +130,7 @@
             "npm:react-native-screens@4.26",
             "npm:react-native-svg@15.15.4",
             "npm:react-native-url-polyfill@4",
+            "npm:react-native-web@~0.21.4",
             "npm:react-native-worklets@0.10.1",
             "npm:react-native@0.86.3",
             "npm:react@19.2.3",
