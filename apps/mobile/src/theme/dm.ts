@@ -7,12 +7,26 @@
 // `.day`, `.new`, `.rx`, `.typing`, `.who`, `.fld`, `.snd`, `.eb`) redraws the stream, the top bar
 // and the message bar: those values below say so; the rest stays the old board's.
 export const DM = {
+  // The DM surface (features/friends/DmSurface.tsx; Telegram's chat opening, the owner's call,
+  // 25 Kasım): it slides in over 240 ms and out over 200, decelerating; back with a swipe from the
+  // left 24, a flick past 800 px/s closes it; the inbox's first two conversations are built ahead
+  // 1.5 s after the inbox is read.
+  // The edge starts under the top bar (its back button keeps its taps).
+  slide: {
+    inMs: 240,
+    outMs: 200,
+    edge: 24,
+    edgeTop: 120,
+    flick: 800,
+    warmAhead: 2,
+    warmAfterMs: 1500,
+  },
   // The stream (`.flow`): 12 from the sides; a bubble at most 78 % of the row.
   side: 12,
   share: 0.78,
   // A bubble (`.msg`): 7 above and under its words, 12 in; 18 round, the corner at the author's
   // foot 6 on a run's last (`.msg.g`, the others, all 18); no tail.
-  bubble: { padTop: 7, padBottom: 7, padLeft: 12, padRight: 12, radius: 18, foot: 6 },
+  bubble: { padTop: 7, padBottom: 7, padLeft: 12, padRight: 12, radius: 20, foot: 6 },
   // The time (`.s`): in the words' last line at the right, 4 over it, the ticks 16, 2 from it.
   // Alone on the last line (`.msg` wraps it: 8 under the words, 4 over its 14 line), its line 5
   // taller than a line of words (21).
@@ -32,7 +46,7 @@ export const DM = {
   },
   mineRing: 2,
   // The quote in another's bubble (`.q`): 10 round, 6 / 10 inside, 8 over the words (`.msg{gap:8}`).
-  quote: { radius: 10, padY: 6, padX: 10, gap: 8 },
+  quote: { radius: 12, padY: 6, padX: 10, gap: 8 },
   // "yazıyor" (`.typing`): a bubble 34 high, 14 in, its three dots 8, 5 apart, 6 under the last;
   // standing still (reduce motion, covered, the visual gate) the board's frame: every dot whole,
   // the middle one 3 up (`.typing i:nth-child(2)`).
@@ -54,7 +68,8 @@ export const DM = {
   // 52, the face 40 (in its 2 ring) 6 in and 10 from the name; the menu's bare button (`.ib`) 40
   // wide and 44 high, 2 from the capsule's right, its dots 20.
   bar: {
-    top: 5,
+    // 2: the capsule's middle on the page bars' back button's (the owner's call, 19 Kasım; was 5).
+    top: 2,
     side: 16,
     gap: 8,
     pill: 52,

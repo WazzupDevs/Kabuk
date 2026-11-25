@@ -477,7 +477,7 @@ function CardScreen({
       <View style={{ flexDirection: 'row', gap: K.footGap }}>
         <Btn
           variant="glassy"
-          tall
+
           testID="kinshi-pass"
           label={tr.kinshi.pass}
           accessibilityLabel={tr.kinshi.passLabel(passesLeft)}
@@ -488,7 +488,6 @@ function CardScreen({
           style={{ flex: 1 }}
         />
         <Btn
-          tall
           testID="kinshi-correct"
           label={tr.kinshi.correct}
           disabled={mark.isPending && mark.variables !== 'correct'}
@@ -1160,7 +1159,7 @@ function End({
         <View style={{ flexDirection: 'row', gap: P.foot.gap }}>
           <Btn
             variant="glassy"
-            tall
+
             testID="kinshi-back"
             label={tr.kinshi.backToTable}
             onPress={onBack}
@@ -1168,7 +1167,6 @@ function End({
           />
           {owner ? (
             <Btn
-              tall
               testID="kinshi-again"
               label={tr.kinshi.again}
               loading={again.isPending}

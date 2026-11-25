@@ -9,7 +9,6 @@ import {
   Skia,
   type SkImage,
   type SkRect,
-  type SkSurface,
   type SkSVG,
 } from '@shopify/react-native-skia';
 import {
@@ -37,6 +36,8 @@ import {
 
 import {
   keptRect,
+  scaleKept,
+  TRIM_SCALE,
   pictureUsable,
   pointsOf,
   type PtRect,
@@ -425,16 +426,37 @@ function holdCanvas(): () => void {
 
 // The pixels a picture drawn on `surface` covers (artBounds.ts), a pixel round them; the whole
 // picture when they cannot be read, or none of them reads as drawn (artBounds.ts → keptRect).
-function drawnRect(surface: SkSurface, px: number, py: number): PxRect {
+function drawnRect(
+  svg: SkSVG,
+  width: number,
+  height: number,
+  ratio: number,
+  px: number,
+  py: number,
+): PxRect {
   const whole = { x: 0, y: 0, width: px, height: py };
-  const full = surface.makeImageSnapshot();
+  // Read from a copy TRIM_SCALE times smaller each way (capsule/artBounds.ts → scaleKept).
+  const sx = Math.ceil(px / TRIM_SCALE);
+  const sy = Math.ceil(py / TRIM_SCALE);
+  const small = Skia.Surface.Make(sx, sy);
+  if (!small) return whole;
   try {
-    const pixels = full.readPixels();
-    return keptRect(pixels instanceof Uint8Array ? pixels : null, px, py);
+    const canvas = small.getCanvas();
+    canvas.scale(ratio / TRIM_SCALE, ratio / TRIM_SCALE);
+    canvas.drawSvg(svg, width, height);
+    small.flush();
+    const shot = small.makeImageSnapshot();
+    try {
+      const pixels = shot.readPixels();
+      const kept = keptRect(pixels instanceof Uint8Array ? pixels : null, sx, sy);
+      return scaleKept(kept, sx, sy, px, py);
+    } finally {
+      shot.dispose();
+    }
   } catch {
     return whole;
   } finally {
-    full.dispose();
+    small.dispose();
   }
 }
 
@@ -458,7 +480,7 @@ function makeArt(xml: string, width: number, height: number, ratio: number, trim
       canvas.drawSvg(svg, width, height);
       surface.flush();
       if (trim) {
-        const kept = drawnRect(surface, px, py);
+        const kept = drawnRect(svg, width, height, ratio, px, py);
         const cut = surface.makeImageSnapshot(
           Skia.XYWHRect(kept.x, kept.y, kept.width, kept.height),
         );

@@ -626,7 +626,7 @@ function ClueScreen(shared: Shared) {
               {mine ? (
                 <Btn
                   block
-                  tall
+
                   icon="check"
                   testID="krot-said"
                   label={tr.krot.said}
@@ -1106,7 +1106,7 @@ function End({
           <View style={{ flexDirection: 'row', gap: SPACING[2] }}>
             <Btn
               variant="glassy"
-              tall
+
               testID="krot-back"
               label={tr.krot.backToTable}
               onPress={onBack}
@@ -1114,7 +1114,6 @@ function End({
             />
             {owner ? (
               <Btn
-                tall
                 testID="krot-again"
                 label={tr.krot.again}
                 loading={again.isPending}

@@ -1,7 +1,11 @@
 import type { LookSlot } from '@shared/capsule.ts';
 
 import { createLru } from '../../lib/lru';
-import { accessoryFigure } from '../../theme/capsuleAccessories';
+import { ACCESSORY_TILE_BOX } from '../../theme/accessoryTiles';
+import { ACCESSORY_ART, accessoryFigure, edgeOf } from '../../theme/capsuleAccessories';
+import { stillSvg } from '../../theme/capsuleFx';
+import { lookStage } from '../../theme/capsuleLook';
+import { defBox, IDENTITY } from '../../theme/svgBox';
 import LOOK from '../../theme/capsuleDrawing';
 
 // What a trying strip's option draws (docs/design/iskelet.md → 5.10): the option alone, never the
@@ -24,6 +28,76 @@ const FRAME: Readonly<Record<Exclude<LookSlot, 'c'>, string>> = {
   m: '10 20 28 28',
   n: '2 10.5 44 44',
 };
+// An accessory's option is the accessory alone (the owner's call, 22 Kasım): no capsule, its
+// drawing (and a Renk's skin) still, in a square round its own box with room round it, so that it
+// stands in the middle of the option's round. Its halo stays out (it is the capsule's, not the
+// piece's). One the box cannot be read of shows its collection figure.
+const ALONE_ROOM = 1.25;
+// The contour, as a share of the square's side (the owner's call, 22 Kasım: every piece clearer).
+const ALONE_EDGE = 0.022;
+// The smallest square (in the drawing's units, the capsule 52 wide): a beauty spot stays small.
+const ALONE_MIN = 14;
+// The sparks flying round a piece (its twinkles, embers, rain, flashes): left out of its option,
+// which shows the piece itself; measured, they would pull it off the round's middle.
+const SPARKS = /^(tw|ff|hr|orb|rise|rain|flash|kztw|kzpt)/;
+// A shine's band moving through a clip: drawn (the clip keeps it on the piece), not measured (its
+// band is longer than the piece).
+const BANDS = /^(glint|scan|shift|kzsh)/;
+
+// The drawing without its motion groups whose name `drop` matches (the others stay as they are).
+function withoutGroups(content: string, drop: RegExp): string {
+  let out = content;
+  let from = 0;
+  for (;;) {
+    const at = out.indexOf('<g data-fx="', from);
+    if (at < 0) return out;
+    const name = /^<g data-fx="([a-z0-9]+)"/.exec(out.slice(at))?.[1] ?? '';
+    if (!drop.test(name)) {
+      from = at + 1;
+      continue;
+    }
+    let depth = 0;
+    const tag = /<\/?g\b[^>]*>/g;
+    tag.lastIndex = at;
+    let end = out.length;
+    for (let m = tag.exec(out); m; m = tag.exec(out)) {
+      depth += m[0].startsWith('</') ? -1 : m[0].endsWith('/>') ? 0 : 1;
+      if (depth === 0) {
+        end = m.index + m[0].length;
+        break;
+      }
+    }
+    out = out.slice(0, at) + out.slice(end);
+    from = at;
+  }
+}
+
+// What is measured: the piece's shapes, not its bands, nor what only cuts or paints (definitions,
+// clips, masks, gradients).
+function measured(piece: string): string {
+  return withoutGroups(
+    piece.replace(/<(defs|clipPath|mask|linearGradient|radialGradient)\b[\s\S]*?<\/\1>/g, ''),
+    BANDS,
+  );
+}
+
+function accessoryAlone(id: string): string {
+  const a = ACCESSORY_ART[id];
+  // Every anchor: the drawing is measured in its own units, whatever the capsule it was set on.
+  if (!a) return accessoryFigure(id);
+  const piece = withoutGroups((a.skin ?? '') + a.art, SPARKS);
+  // Its seen box (measured from its pixels, theme/accessoryTiles.ts); else its shapes' box.
+  const box = ACCESSORY_TILE_BOX[id] ?? defBox(`<mask>${measured(piece)}</mask>`, IDENTITY);
+  if (!box) return accessoryFigure(id);
+  const [x, y, w, h] = box;
+  const side = Math.max(w, h, ALONE_MIN) * ALONE_ROOM;
+  const view = [x + w / 2 - side / 2, y + h / 2 - side / 2, side, side]
+    .map((v) => Math.round(v * 100) / 100)
+    .join(' ');
+  // A white contour round it, as thick on every option (a share of the square's side).
+  return stillSvg(svgOf(view, edgeOf(piece, side * ALONE_EDGE, undefined, 'alone') + piece));
+}
+
 // The body alone, a little room round it.
 const BODY_FRAME = '-1 4 50 64';
 
@@ -69,8 +143,54 @@ export function optionArt(
   const hit = made.get(key);
   if (hit !== undefined) return hit;
   const xml = option.accessory
-    ? accessoryFigure(option.accessory)
+    ? accessoryAlone(option.accessory)
     : partArt(slot, option.part ?? '', color);
   made.set(key, xml);
+  return xml;
+}
+
+// Süsle's strip (the owner's call, 23 Kasım): every option is the capsule buddy wearing it, the
+// plain capsule in the person's colour with only that option on, drawn as Süsle's large capsule
+// (lookStage: the capsule standing in its circle), no ground of its own; "Boş" is the plain buddy.
+// Each slot has its own frame (one for the slot, never one per piece), a square in the stage's
+// units (the circle 0 0 48 48, the body 10 to 38 across and from 8 down, the visor's middle about
+// 21 down): Renk the whole circle, Baş the head and over it, Göz the visor, Yüz the face round it,
+// Ağız under the visor, Gövde the neck. What leaves the frame is cut at the option's round. Still:
+// the strip's round is a picture, made once.
+const FIGURE_BOX: Readonly<Record<LookSlot, string>> = {
+  c: '0 0 48 48',
+  h: '6 -6 36 36',
+  e: '10 7 28 28',
+  f: '7 4 34 34',
+  m: '10 13 28 28',
+  n: '6 14 36 36',
+};
+// No halo behind the buddy in the strip (the owner's call, 23 Kasım): the halo layer is left out,
+// and a halo drawn in a piece's own art too.
+const HALO = /^halo/;
+const figures = createLru<string>(400);
+
+export function optionFigure(
+  slot: LookSlot,
+  option: { accessory?: string; part?: string },
+  color: string | undefined,
+): string {
+  const wear = option.accessory
+    ? `x:${option.accessory}`
+    : option.part
+      ? `${slot}:${option.part}`
+      : '';
+  const base = slot === 'c' && option.part ? '' : color ? `c:${color}` : '';
+  const look = [base, wear].filter(Boolean).join(' ');
+  const key = `${slot}|${look}`;
+  const hit = figures.get(key);
+  if (hit !== undefined) return hit;
+  const xml = stillSvg(
+    withoutGroups(lookStage(look, '', false), HALO).replace(
+      /viewBox="[^"]*"/,
+      `viewBox="${FIGURE_BOX[slot]}"`,
+    ),
+  );
+  figures.set(key, xml);
   return xml;
 }

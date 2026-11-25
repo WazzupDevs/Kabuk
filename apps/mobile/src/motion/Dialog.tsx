@@ -9,7 +9,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Btn, T, useKit } from '@/aura/kit';
+import { Btn, InSheet, T, useKit } from '@/aura/kit';
 import { CapIcon } from '@/aura/CapIcon';
 import { tr } from '@/i18n/tr';
 import type { ConfirmOptions } from '@/lib/overlayStore';
@@ -202,7 +202,7 @@ export function Dialog({
           ) : null}
           {options.children ? (
             <View style={{ alignSelf: 'stretch', marginTop: L.dialogTextBottom }}>
-              {options.children}
+              <InSheet>{options.children}</InSheet>
             </View>
           ) : null}
           <View

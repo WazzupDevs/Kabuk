@@ -172,6 +172,7 @@ export function IdentityTicket({
                 <LivingLook
                   look={look}
                   size={TICKET.capsule}
+                  figure={TICKET.figure}
                   ground={false}
                   accessibilityLabel={tr.profile.ownCapsule}
                   whole={ticket.whole}

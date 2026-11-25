@@ -1,29 +1,30 @@
-import { createContext, type ReactNode, useContext, useState } from 'react';
+import { useLayoutEffect } from 'react';
+import { create } from 'zustand';
 
-// Where a held message's layer (MessagePop) is drawn: the chat screen's root, outside the stream.
-// Drawn inside the list's cell, its Modal changed the cell as it opened and the inverted list ran
-// to its newest message (the owner's report, 4 Kasım: an old message's faces opened, the DM jumped
-// to its end). Without a host (a stream outside ChatScreen), the bubble draws it itself.
-type Render = (close: () => void) => ReactNode;
-export type PopHost = { show: (render: Render) => void };
+// Whether a held message's layer is open (MessagePop). The stream holds still under it (no
+// keyboard-driven scroll, no following the end), so closing the keyboard for it or a reaction
+// landing never moves the reader (the owner's report, 6 Kasım).
+//
+// A store of its own, read only by the stream's scroll view (ChatScreen → HeldScroll): opening the
+// layer redraws that one part, never the chat screen or its rows (CLAUDE.md → Çizim bütçesi; the
+// owner's report, 21 Kasım: the chat screen drew itself again for every held message, and the
+// layer was slow to come). The layer itself is drawn by the message in the app's layer
+// (motion/menuLayer.tsx), so its cell never changes as it opens.
+const useHeld = create<{ count: number }>(() => ({ count: 0 }));
 
-export const PopHostContext = createContext<PopHost | null>(null);
-// Whether a held message's layer is open: the stream holds still under it (no keyboard-driven
-// scroll, no following the end), so closing the keyboard for it or a reaction landing never moves
-// the reader (the owner's report, 6 Kasım).
-export const PopOpenContext = createContext(false);
 export function usePopOpen(): boolean {
-  return useContext(PopOpenContext);
+  return useHeld((s) => s.count > 0);
 }
 
-export function usePopHost(): PopHost | null {
-  return useContext(PopHostContext);
+// The same, read at the moment without subscribing (a callback's check: nothing redraws).
+export function isPopOpen(): boolean {
+  return useHeld.getState().count > 0;
 }
 
-// The host's state and what it draws; ChatScreen provides `host` and puts `layer` after the stream.
-export function usePopHostState(): { host: PopHost; layer: ReactNode; open: boolean } {
-  const [render, setRender] = useState<{ fn: Render } | null>(null);
-  const [host] = useState<PopHost>(() => ({ show: (fn) => setRender({ fn }) }));
-  const layer = render ? render.fn(() => setRender(null)) : null;
-  return { host, layer, open: render !== null };
+// Marks a held message's layer open while the calling component is mounted.
+export function useMarkPopOpen(): void {
+  useLayoutEffect(() => {
+    useHeld.setState((s) => ({ count: s.count + 1 }));
+    return () => useHeld.setState((s) => ({ count: Math.max(0, s.count - 1) }));
+  }, []);
 }

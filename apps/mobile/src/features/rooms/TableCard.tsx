@@ -2,7 +2,6 @@ import { isIntent } from '@shared/rooms.ts';
 import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Image as Picture } from 'expo-image';
 import { router } from 'expo-router';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Image, type ImageSourcePropType, View } from 'react-native';
@@ -17,9 +16,10 @@ import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { useLabOff } from '@/lib/drawLab';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { CollapsingCard, Tap } from '@/motion';
+import { CollapsingCard, Fly, Tap } from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { BUTTON_FROST } from '@/theme/glass';
 import { VENUE } from '@/theme/venue';
 
 import { roomKeys, type TableRoomRow, useTablePeople } from './queries';
@@ -40,8 +40,8 @@ type Props = {
   onOpenLobby: () => void;
   // "Açık masalar" on the card without a table: the screen goes down to its lobby.
   onShowLobby: () => void;
-  // How far under its strip the screen's band reaches once it is folded (the venue chat's strip).
-  band: number;
+  // Kept for the callers; the card no longer folds in the page.
+  band?: number;
 };
 
 const fold = AURA.venueCollapse;
@@ -98,10 +98,17 @@ export function TableCard({
           <Strip
             picture={NO_TABLE_SCENE}
             name={tr.venue.noTable}
-            status={null}
+            status={tr.venue.noTableStrip}
             dot={null}
             action={
-              <Btn sm testID="table-create-open" label={tr.venue.createTable} onPress={onCreate} />
+              <Fly id="create">
+                <Btn
+                  sm
+                  testID="table-create-open"
+                  label={tr.venue.createTable}
+                  onPress={onCreate}
+                />
+              </Fly>
             }
           />
         }
@@ -161,36 +168,40 @@ export function TableCard({
             action={
               owner ? (
                 <View style={{ flexDirection: 'row', gap: V.table.rowGap }}>
-                  {state === 'private' ? (
+                  <Fly id="lobby">
+                    {state === 'private' ? (
+                      <Round
+                        icon="list"
+                        side={strip.round}
+                        iconSize={strip.roundIcon}
+                        color={look.accent}
+                        label={tr.venue.openLobby}
+                        disabled={full}
+                        onPress={onOpenLobby}
+                      />
+                    ) : (
+                      <Round
+                        icon="close"
+                        side={strip.round}
+                        iconSize={strip.roundIcon}
+                        color={look.accent}
+                        label={tr.venue.withdraw}
+                        loading={withdraw.isPending}
+                        onPress={() => withdraw.mutate()}
+                      />
+                    )}
+                  </Fly>
+                  <Fly id="invite">
                     <Round
-                      icon="list"
+                      icon="invite"
                       side={strip.round}
                       iconSize={strip.roundIcon}
                       color={look.accent}
-                      label={tr.venue.openLobby}
+                      label={tr.venue.invite}
                       disabled={full}
-                      onPress={onOpenLobby}
+                      onPress={openInvite}
                     />
-                  ) : (
-                    <Round
-                      icon="close"
-                      side={strip.round}
-                      iconSize={strip.roundIcon}
-                      color={look.accent}
-                      label={tr.venue.withdraw}
-                      loading={withdraw.isPending}
-                      onPress={() => withdraw.mutate()}
-                    />
-                  )}
-                  <Round
-                    icon="invite"
-                    side={strip.round}
-                    iconSize={strip.roundIcon}
-                    color={look.accent}
-                    label={tr.venue.invite}
-                    disabled={full}
-                    onPress={openInvite}
-                  />
+                  </Fly>
                 </View>
               ) : null
             }
@@ -215,65 +226,80 @@ export function TableCard({
             justifyContent: 'flex-end',
           }}
         >
-          <PictureGround picture={picture} />
-          <View
+          <Fly fill style={PICTURE_FILL}>
+            <PictureGround picture={picture} />
+          </Fly>
+          <Fly
             style={{ position: 'absolute', top: V.table.status.inset, right: V.table.status.inset }}
           >
             <StatusTag label={status} dot={dot} />
-          </View>
+          </Fly>
           {/* The panel on the picture's foot (`.ip`), drawn: no live blur in a card (2.2). */}
-          <View
-            style={{
-              borderRadius: P.radius,
-              borderWidth: P.edge,
-              borderColor: look.frame,
-              backgroundColor: look.panel.fill,
-              boxShadow: look.panel.shadow || undefined,
-              paddingHorizontal: P.padX,
-              paddingVertical: P.padY,
-            }}
-          >
+          <View style={{ paddingHorizontal: P.padX, paddingVertical: P.padY }}>
+            {/* Its glass fades as the card folds (the name over it flies). */}
+            <Fly fill style={PICTURE_FILL}>
+              <View
+                style={[
+                  PICTURE_FILL,
+                  {
+                    borderRadius: P.radius,
+                    borderWidth: P.edge,
+                    borderColor: look.frame,
+                    backgroundColor: look.panel.fill,
+                    boxShadow: look.panel.shadow || undefined,
+                  },
+                ]}
+              />
+            </Fly>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: V.table.rowGap }}>
               <View style={{ flex: 1, minWidth: 0 }}>
-                <T v="venueCardTitle" ink testID="table-name" fit lines={2}>
-                  {room.name ?? ''}
-                </T>
+                <Fly mode="start">
+                  <T v="venueCardTitle" ink testID="table-name" fit lines={2}>
+                    {room.name ?? ''}
+                  </T>
+                </Fly>
               </View>
-              <T v="venueCount" color={look.sentence} tabular>
-                {count}
-              </T>
+              <Fly>
+                <T v="venueCount" color={look.sentence} tabular>
+                  {count}
+                </T>
+              </Fly>
             </View>
-            <View style={{ marginTop: P.facesTop }}>
+            <Fly style={{ marginTop: P.facesTop }}>
               <Seats roomId={room.id} phones={room.phones} me={checkIn.id} />
-            </View>
-            <View testID="table-state">
-              <View style={{ marginTop: P.meterTop }}>
-                <Meter phones={room.phones} />
+            </Fly>
+            <Fly>
+              <View testID="table-state">
+                <View style={{ marginTop: P.meterTop }}>
+                  <Meter phones={room.phones} />
+                </View>
+                <View style={{ marginTop: P.noteTop }}>
+                  <T v="fine" color={look.sentence} testID={full ? 'table-full' : undefined}>
+                    {full
+                      ? tr.venue.seatsFull
+                      : room.phones <= 1
+                        ? tr.venue.seatsAlone
+                        : tr.venue.seated(room.phones)}
+                  </T>
+                </View>
               </View>
-              <View style={{ marginTop: P.noteTop }}>
-                <T v="fine" color={look.sentence} testID={full ? 'table-full' : undefined}>
-                  {full
-                    ? tr.venue.seatsFull
-                    : room.phones <= 1
-                      ? tr.venue.seatsAlone
-                      : tr.venue.seated(room.phones)}
-                </T>
-              </View>
-            </View>
+            </Fly>
             {live && (intent || tag) ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: KIT.size.chipGap,
-                  marginTop: P.noteTop,
-                }}
-              >
-                {intent ? (
-                  <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
-                ) : null}
-                {tag ? <Tag label={tr.concepts[tag]} /> : null}
-              </View>
+              <Fly>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: KIT.size.chipGap,
+                    marginTop: P.noteTop,
+                  }}
+                >
+                  {intent ? (
+                    <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
+                  ) : null}
+                  {tag ? <Tag label={tr.concepts[tag]} /> : null}
+                </View>
+              </Fly>
             ) : null}
           </View>
         </Tap>
@@ -281,42 +307,46 @@ export function TableCard({
 
       {owner ? (
         <View style={{ padding: B.pad, flexDirection: 'row', gap: B.gap }}>
-          {state === 'private' ? (
+          <Fly id="lobby" style={EQUAL}>
+            {state === 'private' ? (
+              <Btn
+                variant="glassy"
+                sm
+                icon="list"
+                testID="lobby-open"
+                label={tr.venue.openLobby}
+                disabled={full}
+                onPress={onOpenLobby}
+                look={buttonLook}
+                block
+              />
+            ) : (
+              <Btn
+                variant="glassy"
+                sm
+                icon="close"
+                testID="withdraw-table"
+                label={tr.venue.withdraw}
+                onPress={() => withdraw.mutate()}
+                loading={withdraw.isPending}
+                look={buttonLook}
+                block
+              />
+            )}
+          </Fly>
+          <Fly id="invite" style={EQUAL}>
             <Btn
               variant="glassy"
-              bar={KIT.size.btnSm}
-              icon="list"
-              testID="lobby-open"
-              label={tr.venue.openLobby}
+              sm
+              icon="invite"
+              testID="invite-open"
+              label={tr.venue.invite}
               disabled={full}
-              onPress={onOpenLobby}
+              onPress={openInvite}
               look={buttonLook}
-              style={EQUAL}
+              block
             />
-          ) : (
-            <Btn
-              variant="glassy"
-              bar={KIT.size.btnSm}
-              icon="close"
-              testID="withdraw-table"
-              label={tr.venue.withdraw}
-              onPress={() => withdraw.mutate()}
-              loading={withdraw.isPending}
-              look={buttonLook}
-              style={EQUAL}
-            />
-          )}
-          <Btn
-            variant="glassy"
-            bar={KIT.size.btnSm}
-            icon="invite"
-            testID="invite-open"
-            label={tr.venue.invite}
-            disabled={full}
-            onPress={openInvite}
-            look={buttonLook}
-            style={EQUAL}
-          />
+          </Fly>
         </View>
       ) : null}
 
@@ -545,65 +575,153 @@ function Strip({
         paddingRight: S.padRight,
       }}
     >
-      <TableThumb picture={picture} size={fold.stripPicture} radius={S.radius} edge={S.edge} />
+      <Fly>
+        <TableThumb picture={picture} size={fold.stripPicture} radius={S.radius} edge={S.edge} />
+      </Fly>
       <View style={{ flex: 1, minWidth: 0, gap: S.lineGap }}>
-        <T v="mapName" ink lines={1} fit>
-          {name}
-        </T>
+        <Fly mode="start">
+          <T v="mapName" ink lines={1} fit>
+            {name}
+          </T>
+        </Fly>
         {status ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.faceGap }}>
-            {dot ? <Dot color={dot} size={V.table.status.dot} /> : null}
-            <T v="fine" color={V[scheme].stripSub}>
-              {status}
-            </T>
-          </View>
+          <Fly mode="start" style={{ flexDirection: 'row', alignItems: 'center', gap: S.faceGap }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.faceGap }}>
+              {dot ? <Dot color={dot} size={V.table.status.dot} /> : null}
+              <T v="fine" color={V[scheme].stripSub}>
+                {status}
+              </T>
+            </View>
+          </Fly>
         ) : null}
       </View>
-      {action}
+      {/* Centred on the strip's height (a small button kept to the row's top). */}
+      <View style={{ alignSelf: 'stretch', justifyContent: 'center' }}>{action}</View>
     </View>
   );
 }
 
-// No table yet (MekanMasaYok `.yk`): the riso picture on the card's width, under it the words,
-// "Masa kur" and "Açık masalar" (down to the lobby) side by side.
-const NO_TABLE_SCENE = require('../../../assets/riso/venue-no-table.webp');
+// No table yet (MekanMasaYok `.yk`), as a glass module (the owner's call, 24 Kasım): the scene on
+// the whole card, a café corner drawn flat (not riso), and over its foot a frosted pane with the
+// words, "Masa kur" and "Açık masalar" (down to the lobby). Nothing blurs while drawing.
+const NO_TABLE_SCENE = require('../../../assets/riso/venue-no-table-scene.webp');
+// The pane's frost: the scene's lower half (where the pane lies) blurred and cut to the pane's
+// shape, so the pane needs no clip of its own. A rounded clip inside the card escapes the card's
+// own on Android: the pane stayed drawn while the card folded under the bar (24 Kasım).
+const NO_TABLE_PANE = require('../../../assets/riso/venue-no-table-pane.webp');
 function NoTable({ onCreate, onShowLobby }: { onCreate: () => void; onShowLobby: () => void }) {
   const N = V.none;
+  const G = N.glass;
+  const { scheme } = useKit();
+  const tone = G[scheme];
   const look: BtnLook = { type: 'holdRow', padLeft: N.buttonPadX, padRight: N.buttonPadX };
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  // The scene's box: as wide as the card and tall enough to reach its foot once lifted, grown from
+  // the middle if the card is taller than the scene at its width.
+  const sceneH = Math.max(box.w * G.sceneAspect, box.h + G.sceneLift);
+  const sceneW = sceneH / G.sceneAspect;
+  const sceneLeft = (box.w - sceneW) / 2;
   return (
-    <View testID="no-table">
-      <Picture
-        source={NO_TABLE_SCENE}
-        accessible={false}
-        contentFit="cover"
-        style={{ width: '100%', height: N.picture }}
-      />
-      <View style={{ paddingTop: N.padTop, paddingHorizontal: N.padX, paddingBottom: N.padBottom }}>
-        <T v="venueCardTitle" ink>
-          {tr.venue.noTable}
-        </T>
-        <View style={{ marginTop: N.noteTop }}>
-          <T v="note">{tr.venue.noTableHint}</T>
-        </View>
-        <View style={{ flexDirection: 'row', gap: N.gap, marginTop: N.buttonsTop }}>
-          <Btn
-            icon="plus"
-            testID="table-create-open"
-            label={tr.venue.createTable}
-            onPress={onCreate}
-            look={look}
-            style={EQUAL}
+    <View
+      testID="no-table"
+      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
+    >
+      {/* The scene on the card's width from its top, lifted so the table and the kanki stand in
+          the open part over the pane; as the card folds, the card's box of it flies into the
+          strip's square. */}
+      {box.w > 0 ? (
+        <Fly fill style={PICTURE_FILL}>
+          <Image
+            source={NO_TABLE_SCENE}
+            accessible={false}
+            fadeDuration={0}
+            style={{
+              position: 'absolute',
+              left: sceneLeft,
+              top: -G.sceneLift,
+              width: sceneW,
+              height: sceneH,
+            }}
           />
-          <Btn
-            variant="glassy"
-            testID="no-table-lobby"
-            label={tr.lobby.openTitle}
-            onPress={onShowLobby}
-            look={look}
-            style={EQUAL}
+        </Fly>
+      ) : null}
+      <View style={{ height: G.sceneShow }} />
+      <View
+        style={{
+          marginHorizontal: G.inset,
+          marginBottom: G.inset,
+          borderRadius: G.radius,
+        }}
+      >
+        <Fly fill style={PICTURE_FILL}>
+          <Image
+            source={NO_TABLE_PANE}
+            accessible={false}
+            fadeDuration={0}
+            resizeMode="cover"
+            style={[PICTURE_FILL, { borderRadius: G.radius }]}
           />
+          <View
+            style={[
+              PICTURE_FILL,
+              {
+                borderRadius: G.radius,
+                backgroundColor: tone.fill,
+                borderWidth: KIT.size.edge,
+                borderColor: tone.edge,
+              },
+            ]}
+          />
+        </Fly>
+        <View style={{ padding: G.pad }}>
+          <Fly mode="start">
+            <T v="venueCardTitle" ink>
+              {tr.venue.noTable}
+            </T>
+          </Fly>
+          <Fly style={{ marginTop: N.noteTop }}>
+            <T v="note" color={tone.note}>
+              {tr.venue.noTableHint}
+            </T>
+          </Fly>
+          <View style={{ flexDirection: 'row', gap: N.gap, marginTop: N.buttonsTop }}>
+            <Fly id="create" style={EQUAL}>
+              <Btn
+                icon="plus"
+                testID="table-create-open"
+                label={tr.venue.createTable}
+                onPress={onCreate}
+                look={look}
+                block
+              />
+            </Fly>
+            <Fly style={EQUAL}>
+              {/* A flat fill, not the screen's frost: the frost drew it differently once the
+                  pinned stack took over (a jump at the fold's start, 25 Kasım). */}
+              <Btn
+                variant="glassy"
+                fill={BUTTON_FROST.fill[scheme]}
+                testID="no-table-lobby"
+                label={tr.lobby.openTitle}
+                onPress={onShowLobby}
+                look={look}
+                block
+              />
+            </Fly>
+          </View>
         </View>
       </View>
+      {/* The card's outline over the scene, thicker than the glass's hairline (the owner's ask,
+          24 Kasım; the board's table edge, `.mi.fl`). */}
+      <Fly fill style={PICTURE_FILL}>
+        <View
+          pointerEvents="none"
+          style={[
+            PICTURE_FILL,
+            { borderRadius: V.card.radius, borderWidth: G.outline, borderColor: tone.outline },
+          ]}
+        />
+      </Fly>
     </View>
   );
 }

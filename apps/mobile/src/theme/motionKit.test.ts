@@ -86,7 +86,7 @@ describe('the menu grown from its button (iskelet.md → 3.5)', () => {
   const gap = kitSize('menuGap');
 
   it('the ⋮ menu 292 wide, 28 round, flat and without a scrim; the long-press menu 268, 24', () => {
-    expect(KIT.layer.size).toMatchObject({ menuWidth: 292, menuRadius: 28, menuPadTop: 16 });
+    expect(KIT.layer.size).toMatchObject({ menuWidth: 292, menuRadius: 28, menuPadTop: 8 });
     expect(KIT.layer.size).toMatchObject({ holdWidth: 268, holdRadius: 24, holdBand: 6 });
     const menu = code('src/motion/Menu.tsx');
     expect(menu).not.toMatch(/MENU_GLASS|BackdropBlur|useSheetFrost/);
@@ -153,8 +153,19 @@ describe('one press (iskelet.md → 2.3)', () => {
     expect(tap).toMatch(/MOTION\.springs\.press/);
     expect(tap).toMatch(/unstable_pressDelay=\{press\.delay\}/);
     const kit = code('src/aura/kit.tsx');
-    expect(kit).toMatch(/import \{ PRESS_DELAY, usePress \} from '@\/motion\/Tap'/);
+    expect(kit).toMatch(/import \{ holdAfter, PRESS_DELAY, usePress \} from '@\/motion\/Tap'/);
     expect(kit).not.toMatch(/function usePress\(/);
+  });
+
+  it('a long press is held 400 ms from the touch, as Android and Telegram Android', () => {
+    const tap = code('src/motion/Tap.tsx');
+    expect(tap).toMatch(/export const HOLD_MS = 400;/);
+    // Pressability counts delayLongPress after the press delay: a press with one passes the rest.
+    expect(tap).toMatch(/return HOLD_MS - pressDelay;/);
+    expect(code('src/motion/Tap.tsx')).toMatch(/delayLongPress=\{holdAfter\(press\.delay\)\}/);
+    expect(code('src/aura/kit.tsx')).toMatch(/delayLongPress=\{holdAfter\(PRESS_DELAY\)\}/);
+    // A message's hold on its own recogniser (works with the keyboard up), the same 400 ms.
+    expect(code('src/components/ChatBubble.tsx')).toMatch(/\.minDuration\(HOLD_MS\)/);
   });
 });
 

@@ -37,12 +37,17 @@ export function IdentityToggle({
   onLocked: () => void;
   testID?: string;
   // A board's own slots and rim (Mekan's bar: 36 in a 3 rim); the chats' 30 in a 2 otherwise.
-  size?: { slot: number; pad: number };
+  // `faceIn`: the face inside its slot; `ringIn`: the chosen slot's ring drawn inside it, so both
+  // faces are one size and the toggle as tall as its rim (Mekan's bar, 40 as the round beside it,
+  // the owner's call, 25 Kasım).
+  size?: { slot: number; pad: number; faceIn?: number; ringIn?: boolean };
 }) {
   const { c, scheme } = useKit();
   const S = size ? { ...BASE, ...size } : BASE;
   // Yeni arayüz tuvali `.tog`: the face 2 inside its 36 slot (32); the chosen slot's ring outside.
   const FACE = S.slot - S.faceIn * 2;
+  // The ring's offset from the slot's edge: outside it, or on its edge inside it.
+  const ringOut = S.ringIn ? 0 : -S.ring;
   const photo = useOwnPhoto();
   const look = useOwnLook();
   const capsule = look ? (
@@ -102,22 +107,23 @@ export function IdentityToggle({
             opacity: on ? 1 : S.dim,
           }}
         >
+          {body}
+          {/* Over the face: it lies on the face's edge, no gap between them. */}
           {on ? (
             <View
               pointerEvents="none"
               style={{
                 position: 'absolute',
-                left: -S.ring,
-                top: -S.ring,
-                width: S.slot + S.ring * 2,
-                height: S.slot + S.ring * 2,
-                borderRadius: S.slot / 2 + S.ring,
+                left: ringOut,
+                top: ringOut,
+                width: S.slot - ringOut * 2,
+                height: S.slot - ringOut * 2,
+                borderRadius: S.slot / 2 - ringOut,
                 borderWidth: S.ring,
                 borderColor: S.ringColor[scheme],
               }}
             />
           ) : null}
-          {body}
         </View>
         {!on && locked ? (
           <View

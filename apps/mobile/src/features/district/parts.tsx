@@ -6,7 +6,6 @@ import {
   Easing,
   Image,
   type ImageSourcePropType,
-  Pressable,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -28,6 +27,7 @@ import { RISO_TYPE } from '@/theme/riso';
 import { SEMT, SEMT_LAYERS } from '@/theme/semt';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { Tap } from '@/motion';
 
 // Semte Git's shared parts (docs/design/aura/project/semt.css; aktarim-semte-git.md §2).
 
@@ -41,7 +41,9 @@ export const RISO = {
   door: require('../../../assets/riso/semt/kesfet-kucuk-kapi.webp'),
   doorLocked: require('../../../assets/riso/semt/kesfet-kucuk-kapi-kilitli.webp'),
   // The pictures over the pages (yeni arayüz tuvali 12, 13, 100, 101, 102).
-  heroGate: require('../../../assets/riso/semt/gecit-soru.webp'),
+  // Geçit's question in its New Year scene (the owner's ask, 24 Kasım: a new flat picture, not
+  // riso; the riso one stays beside it, gecit-soru.webp).
+  heroGate: require('../../../assets/riso/semt/gecit-soru-yilbasi.webp'),
   heroOpen: require('../../../assets/riso/semt/gecit-acik-hero.webp'),
   heroEnded: require('../../../assets/riso/semt/oturum-kapandi.webp'),
   heroOutside: require('../../../assets/riso/semt/disarida.webp'),
@@ -630,7 +632,7 @@ export function TimeChip({
     </Glass>
   );
   return onPress ? (
-    <Pressable
+    <Tap
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
@@ -638,7 +640,7 @@ export function TimeChip({
       hitSlop={SPACING[1]}
     >
       {body}
-    </Pressable>
+    </Tap>
   ) : (
     <View testID={testID} accessible accessibilityLabel={label}>
       {body}
@@ -833,7 +835,7 @@ export function HeroRound({
 }) {
   const r = SEMT.hero.round;
   return (
-    <Pressable
+    <Tap
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
@@ -850,7 +852,7 @@ export function HeroRound({
       }}
     >
       <CapIcon name={icon} color={r.ink} size={KIT.size.icon} />
-    </Pressable>
+    </Tap>
   );
 }
 

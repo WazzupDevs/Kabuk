@@ -3,10 +3,9 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { GlassSearch } from '@/aura/GlassSearch';
-import { Btn, Chip, Round, T, useKit } from '@/aura/kit';
+import { SearchField } from '@/components/Field';
+import { Btn, Chip, Round, T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { useHideTabBar } from '@/components/TabBar';
 import { useProfile } from '@/features/account/useProfile';
 import {
@@ -66,8 +65,8 @@ export default function AccessoriesScreen() {
   const ground = { flex: 1, backgroundColor: AURA[scheme].ground } as const;
   if (view.isPending || own.isPending) {
     return (
-      <View style={[ground, { alignItems: 'center', justifyContent: 'center' }]}>
-        <Loader />
+      <View style={ground}>
+        <EmptyState kind="loading" body={tr.common.loading} />
       </View>
     );
   }
@@ -90,7 +89,6 @@ function Catalog({ saved }: { saved: string }) {
   const E = CAPSULE_EDIT;
   const C = E.catalog;
   const { scheme } = useTheme();
-  const { c } = useKit();
   const insets = useSafeAreaInsets();
   const { width, fontScale } = useWindowDimensions();
   const grid = useRef<GridWindowHandle>(null);
@@ -229,26 +227,12 @@ function Catalog({ saved }: { saved: string }) {
         <BarBack side={KIT.size.round} onBack={searching ? leaveSearch : undefined} />
         {searching ? (
           <View style={{ flex: 1 }}>
-            <GlassSearch
+            <SearchField
               autoFocus
               testID="catalog-search"
               value={query}
               onChangeText={setQuery}
               placeholder={tr.capsule.catalogSearchHint}
-              height={KIT.size.field}
-              trailing={
-                query ? (
-                  <Round
-                    glassy={false}
-                    side={KIT.size.btnSm}
-                    icon="close"
-                    color={c.muted}
-                    label={tr.capsule.catalogSearchClear}
-                    testID="catalog-search-clear"
-                    onPress={() => setQuery('')}
-                  />
-                ) : undefined
-              }
             />
           </View>
         ) : (
@@ -372,7 +356,7 @@ function WearBar({ set, bottom, onPress }: { set: boolean; bottom: number; onPre
       ) : null}
       <Btn
         block
-        tall
+
         testID="catalog-wear"
         label={set ? tr.capsule.wearSet : tr.capsule.wearSelected}
         onPress={onPress}

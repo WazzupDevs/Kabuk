@@ -16,15 +16,13 @@ import {
   venueBounds,
   venueCollection,
 } from '@shared/exploreMap.ts';
-import { router } from 'expo-router';
 import { describeEventTime } from '@shared/explore.ts';
 import { type ReactNode, useMemo, useRef, useState } from 'react';
-import { Image, type ImageSourcePropType, View } from 'react-native';
+import { View } from 'react-native';
 import { useKeyboardState } from 'react-native-keyboard-controller';
-import Svg, { Line, Path } from 'react-native-svg';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Glass, Li, RowList, Round, T, Tag, useKit } from '@/aura/kit';
+import { Glass, Li, RowList, Round, T, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
 import { tr } from '@/i18n/tr';
@@ -33,13 +31,19 @@ import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
 import { KIT, VENUE_THUMB } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
+import { TICKET, TICKET_TONE } from '@/theme/profileCover';
+import { MAP_COLORS } from '@/theme/mapStyle';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
+import { openVenue } from '@/features/explore/openVenue';
 
 import { kindLabel } from './kindLabel';
+import { shortVenueName } from './shortName';
 import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
+import { ownTicketPicture } from './venuePictures';
+import { TICKET_PICTURE, VenueTicket } from './VenueTicket';
 
 // OpenFreeMap by default: no API key in the app and no per-load cost (DECISIONS: map library). The
 // dark theme draws a dark map (v46 §8, K-65), OpenFreeMap's own dark style; both repainted in
@@ -151,6 +155,8 @@ export function ExploreMap({
       },
     };
   }, [venues, now]);
+  // The shown card's height (a venue's ticket, a stack's list), 96 until it is laid out.
+  const [cardHeight, setCardHeight] = useState<number>(EXPLORE.map.cardMinHeight);
   // A tapped stack: its venues listed at the bottom.
   const [stack, setStack] = useState<string | null>(null);
   const stackVenues = stack
@@ -190,14 +196,14 @@ export function ExploreMap({
   const id = selected ?? '';
   const level = EXPLORE[scheme].level;
   // KesfetHarita `.pin .pc`: the ring in how lively the venue is (`--lv-s`, `--lv-m`, `--lv-c`).
+  // The chosen venue's ring in the ticket's edge, its print (the ticket's violet in the dark, pink
+  // in the light) 4 right and 5 down under it (the owner's ask, 24 Kasım; IdentityTicket).
+  const tone = TICKET_TONE[scheme];
   const live: NonNullable<CircleLayer['paint']>['circle-color'] = [
-    'match',
-    ['get', 'bucket'],
-    'lively',
-    level.lively,
-    'buzzing',
-    level.buzzing,
-    level.calm,
+    'case',
+    ['==', ['get', 'id'], id],
+    tone.edge,
+    ['match', ['get', 'bucket'], 'lively', level.lively, 'buzzing', level.buzzing, level.calm],
   ];
   // The ring's outer radius: 28 (56 across), the chosen one 34 (68).
   const outerRadius: NonNullable<CircleLayer['paint']>['circle-radius'] = [
@@ -228,7 +234,7 @@ export function ExploreMap({
     },
     paint: {
       'text-color': colors.text,
-      'text-halo-color': colors.surface,
+      'text-halo-color': MAP_COLORS[scheme].halo,
       'text-halo-width': MAP_PIN.labelHalo,
     },
   };
@@ -343,6 +349,21 @@ export function ExploreMap({
             }}
           />
           <Layer
+            id="venue-print"
+            type="circle"
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'stack']],
+              ['==', ['get', 'id'], id],
+            ]}
+            paint={{
+              'circle-color': tone.print,
+              'circle-radius': MAP_PIN.selectedRadius + MAP_PIN.selectedRing,
+              'circle-translate': [TICKET.printX, TICKET.printY],
+            }}
+          />
+          <Layer
             id="venue-halo"
             type="circle"
             // `.pin.c .pc`: only a crowded venue glows, 6 in its pink at 22 %.
@@ -446,31 +467,42 @@ export function ExploreMap({
               ['==', ['get', 'id'], selected ?? ''],
             ]}
             layout={{ ...label.layout, 'text-allow-overlap': true }}
-            // tuval Harita: the chosen pin's name white on the ink, the others' ink on white.
+            // The chosen pin's name in the ticket's edge colour on the map's ground (24 Kasım).
             paint={{
-              'text-color': KIT.white,
-              'text-halo-color': KIT.light.ink,
+              'text-color': tone.edge,
+              'text-halo-color': MAP_COLORS[scheme].halo,
               'text-halo-width': MAP_PIN.labelHalo,
             }}
           />
         </GeoJSONSource>
       </Map>
-      {/* KesfetHarita: no fades; the legend, the sources and the round over the card's room. */}
+      {/* KesfetHarita: no fades; the legend, the sources and the round stand over the card while
+          one is shown (its own height) and come down over the tab bar when none is (the owner's
+          report, 20 Kasım: with no card they were left in the middle). */}
       <MapControls
-        bottom={cardBottom(tabBarHeight) + EXPLORE.map.cardMinHeight + EXPLORE.map.controlOver}
+        top={headerHeight + SPACING[3]}
+        bottom={
+          cardBottom(tabBarHeight) +
+          (card || stackVenues.length > 1 ? cardHeight + EXPLORE.map.controlOver : 0)
+        }
         onRecentre={() => camera.current?.fitBounds(opening, { padding, duration: CAMERA_MS })}
         onInfo={() => void map.current?.showAttribution()}
+        onZoom={(by) => {
+          void map.current?.getZoom().then((zoom) => {
+            camera.current?.zoomTo(zoom + by, { duration: ZOOM_MS });
+          });
+        }}
       />
       {/* 5.1: the selected venue's card comes up on a spring, again for each venue. */}
       {card ? (
-        <MapCard bottom={cardBottom(tabBarHeight)}>
+        <MapCard bottom={cardBottom(tabBarHeight)} onHeight={setCardHeight}>
           <PopIn key={card.id}>
             <VenueCard venue={card} />
           </PopIn>
         </MapCard>
       ) : null}
       {stackVenues.length > 1 ? (
-        <MapCard bottom={cardBottom(tabBarHeight)}>
+        <MapCard bottom={cardBottom(tabBarHeight)} onHeight={setCardHeight}>
           <PopIn key={stack ?? ''}>
             <StackCard venues={stackVenues} />
           </PopIn>
@@ -486,6 +518,8 @@ const PIN_EDGE = MAP_PIN.selectedRadius + MAP_PIN.selectedRing + SPACING[3];
 
 // The map's camera moves (a cluster opened, the venues shown again).
 const CAMERA_MS = 400;
+// A step of the zoom buttons.
+const ZOOM_MS = 200;
 
 // Where the map's card stands: 26 over the tab bar's top (KesfetHarita `.vc`; the bar's room already
 // holds the 16 over it).
@@ -498,25 +532,28 @@ function cardBottom(tabBarHeight: number) {
 // venues', never the phone's position (rule 6; the board's own position dot is not drawn). The
 // sources open the map's attribution.
 function MapControls({
+  top,
   bottom,
   onRecentre,
   onInfo,
+  onZoom,
 }: {
+  // Under the head: the zoom rounds (the owner's ask, 24 Kasım: over the pins at the right edge
+  // they covered a venue).
+  top: number;
   bottom: number;
   onRecentre: () => void;
   onInfo: () => void;
+  // A step nearer (1) or farther (-1).
+  onZoom: (by: number) => void;
 }) {
   const { c, scheme } = useKit();
-  const { colors } = useTheme();
   const m = EXPLORE.map;
   const e = EXPLORE[scheme];
   const g = m.legend;
   return (
     <>
-      <View
-        pointerEvents="none"
-        style={{ position: 'absolute', left: m.side, bottom: bottom + m.legendOver }}
-      >
+      <View pointerEvents="none" style={{ position: 'absolute', left: m.side, bottom }}>
         <Glass
           face={e.solid}
           radius={g.radius}
@@ -546,26 +583,61 @@ function MapControls({
           ))}
         </Glass>
       </View>
-      <View style={{ position: 'absolute', left: m.attrSide, bottom }}>
-        <Tap accessibilityLabel={tr.explore.mapInfo} onPress={onInfo} hitSlop={SPACING[3]}>
-          <T v="mapAttr" color={e.mapLabel}>
-            {tr.explore.mapSources}
-          </T>
-        </Tap>
+      {/* The map's sources as a round of their own over the recentre round (the owner's ask, 20
+          Kasım; the written "© OpenStreetMap" line went): it opens the map's own sources notice. */}
+      {/* Nearer and farther by a step (the owner's ask, 20 Kasım), for a thumb that cannot pinch;
+          at the top right under the head (24 Kasım). */}
+      <View style={{ position: 'absolute', right: m.side, top, gap: m.controlGap }}>
+        <Round
+          side={m.control}
+          label={tr.explore.zoomIn}
+          testID="explore-map-zoom-in"
+          onPress={() => onZoom(1)}
+        >
+          <CapIcon name="plus" color={c.ink} />
+        </Round>
+        <Round
+          side={m.control}
+          label={tr.explore.zoomOut}
+          testID="explore-map-zoom-out"
+          onPress={() => onZoom(-1)}
+        >
+          <CapIcon name="minus" color={c.ink} />
+        </Round>
       </View>
-      <View style={{ position: 'absolute', right: m.side, bottom }}>
+      <View style={{ position: 'absolute', right: m.side, bottom, gap: m.controlGap }}>
+        <Round side={m.control} label={tr.explore.mapInfo} onPress={onInfo}>
+          <CapIcon name="info" color={c.ink} />
+        </Round>
         <Round side={m.control} label={tr.explore.recentre} onPress={onRecentre}>
-          <CapIcon name="compass" color={colors.accent} />
+          {/* In the tickets' green (the owner's ask, 24 Kasım): its disc wholly the edge's green
+              (not the icon's usual half-strength body), the needle in the ticket's paper. */}
+          <CapIcon
+            name="compass"
+            color={TICKET_TONE[scheme].paper}
+            second={TICKET_TONE[scheme].edge}
+            soft={1}
+          />
         </Round>
       </View>
     </>
   );
 }
 
-function MapCard({ bottom, children }: { bottom: number; children: ReactNode }) {
+function MapCard({
+  bottom,
+  onHeight,
+  children,
+}: {
+  bottom: number;
+  // The card's height as laid out: what stands over it keeps clear of it.
+  onHeight: (height: number) => void;
+  children: ReactNode;
+}) {
   return (
     <View
       pointerEvents="box-none"
+      onLayout={(e) => onHeight(e.nativeEvent.layout.height)}
       style={{
         position: 'absolute',
         left: 0,
@@ -610,10 +682,6 @@ function MapFace({
   );
 }
 
-function openVenue(id: string) {
-  router.push({ pathname: '/explore/[venueId]', params: { venueId: id } });
-}
-
 // The selected venue, over the floating tab bar (KesfetHarita `.vc`): its 56 picture with a buddy
 // at its corner, the name (wrapping, never cut) over the type, district and how lively, the event
 // when there is one, and the round to the venue.
@@ -628,24 +696,30 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
     : null;
   return (
     <Tap accessibilityLabel={venue.name} onPress={() => openVenue(venue.id)}>
-      <Ticket testID="explore-map-card" picture={TICKET_PICTURE[type]}>
+      <VenueTicket
+        testID="explore-map-card"
+        picture={ownTicketPicture(venue.name) ?? TICKET_PICTURE[type]}
+      >
+        {/* Every card one size (the owner's ask, 24 Kasım): the name on one line (shortVenueName,
+            "…" past its limit), under it one line: the event when there is one, else the type,
+            district and how lively. */}
         <View style={{ flex: 1, minWidth: 0, gap: EXPLORE.row.lineGap }}>
-          <T v="mapName">{venue.name}</T>
-          <T v="kesfetSub" color={c.muted}>
-            {tr.explore.mapSub(
-              kindLabel(venue.kind),
-              venue.district,
-              tr.explore.buckets[venue.bucket],
-            )}
+          <T v="mapName" lines={1}>
+            {shortVenueName(venue.name)}
           </T>
           {venue.event && when ? (
-            <View style={{ flexDirection: 'row', marginTop: SPACING[1] }}>
-              <Tag
-                tone="amber"
-                label={tr.explore.eventTag(tr.explore.eventTime(when), venue.event.title)}
-              />
-            </View>
-          ) : null}
+            <T v="kesfetSub" color={colors.event} lines={1}>
+              {tr.explore.eventTag(tr.explore.eventTime(when), venue.event.title)}
+            </T>
+          ) : (
+            <T v="kesfetSub" color={c.muted} lines={1}>
+              {tr.explore.mapSub(
+                kindLabel(venue.kind),
+                venue.district,
+                tr.explore.buckets[venue.bucket],
+              )}
+            </T>
+          )}
         </View>
         <Round
           label={tr.explore.goToVenue}
@@ -654,96 +728,8 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
         >
           <CapIcon name="forward" color={colors.accent} size={m.goIcon} />
         </Round>
-      </Ticket>
+      </VenueTicket>
     </Tap>
-  );
-}
-
-// The ticket's picture block, the venue's type picture (the list rows' own files).
-const TICKET_PICTURE: Record<ReturnType<typeof venueType>, ImageSourcePropType> = {
-  kafe: require('../../../assets/riso/venue-kafe.webp') as ImageSourcePropType,
-  cay: require('../../../assets/riso/venue-cay.webp') as ImageSourcePropType,
-  yemek: require('../../../assets/riso/venue-yemek.webp') as ImageSourcePropType,
-  kampus: require('../../../assets/riso/venue-kampus.webp') as ImageSourcePropType,
-};
-
-// The map card as the board draws it (KesfetHarita `.vc`): a ticket. The picture's block at the left
-// edge, a notch at the top and foot of the perforation 104 in with a dashed line between them, then
-// the 56 picture, the words and the round; the face white (the dark scheme's #121614) with the
-// shape cut out of it, so the map shows through the notches; no shadow (the board's mask cuts it).
-function Ticket({
-  testID,
-  picture,
-  children,
-}: {
-  testID: string;
-  picture: ImageSourcePropType;
-  children: ReactNode;
-}) {
-  const { scheme } = useKit();
-  const m = EXPLORE.map;
-  const k = m.ticket;
-  const face = EXPLORE[scheme].solid;
-  const [box, setBox] = useState({ w: 0, h: 0 });
-  const { w, h } = box;
-  const r = m.cardRadius;
-  const n = k.notch;
-  // Clockwise from the top left, the notches bitten into the top and foot edges.
-  const shape =
-    `M${r} 0H${k.cut - n}A${n} ${n} 0 0 0 ${k.cut + n} 0H${w - r}A${r} ${r} 0 0 1 ${w} ${r}` +
-    `V${h - r}A${r} ${r} 0 0 1 ${w - r} ${h}H${k.cut + n}A${n} ${n} 0 0 0 ${k.cut - n} ${h}` +
-    `H${r}A${r} ${r} 0 0 1 0 ${h - r}V${r}A${r} ${r} 0 0 1 ${r} 0Z`;
-  return (
-    <View
-      testID={testID}
-      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
-      style={{
-        minHeight: m.cardMinHeight,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: m.cardGap,
-        paddingVertical: m.cardPad,
-        paddingRight: m.cardPad,
-        paddingLeft: k.block + k.blockGap + m.cardGap,
-      }}
-    >
-      {w > 0 ? (
-        <Svg width={w} height={h} style={{ position: 'absolute', left: 0, top: 0 }}>
-          <Path d={shape} fill={face.fill} stroke={face.edge} strokeWidth={1} />
-          <Line
-            x1={k.cut}
-            x2={k.cut}
-            y1={k.lineIn}
-            y2={h - k.lineIn}
-            stroke={scheme === 'light' ? k.lineLight : k.lineDark}
-            strokeWidth={k.line}
-            strokeDasharray={k.dash.join(' ')}
-          />
-        </Svg>
-      ) : null}
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: k.block,
-          borderTopLeftRadius: r,
-          borderBottomLeftRadius: r,
-          overflow: 'hidden',
-        }}
-      >
-        <Image
-          source={picture}
-          fadeDuration={0}
-          resizeMode="cover"
-          accessible={false}
-          style={{ width: k.block, height: '100%' }}
-        />
-      </View>
-      {children}
-    </View>
   );
 }
 

@@ -50,6 +50,11 @@ type Props = {
   // Ayarlar ailesi (EngellenenlerBos, SessizAlinanlarBos `.emp`): no room over the picture (the page
   // centres it) and the sentence at most 240 wide.
   settings?: boolean;
+  // A whole screen's state: in the middle of the room it is given, one rule for every screen (the
+  // owner's call, 19 Kasım, docs/decisions/temel.md: "ortada"); the screen gives no room of its
+  // own. `testID` names that room.
+  page?: boolean;
+  testID?: string;
 };
 
 // Aura v76 BosDurumlar (640x440 exports; the DM's first message and the venue's week reuse the
@@ -57,14 +62,16 @@ type Props = {
 const EMPTY_RISO = {
   chats: require('../../assets/riso/empty-chats.webp'),
   requests: require('../../assets/riso/empty-requests.webp'),
-  notifications: require('../../assets/riso/empty-notifications.webp'),
+  // BildirimlerBos .emp img: the board's own cut-out, taken from the canvas 20 Kasım.
+  notifications: require('../../assets/riso/empty-notifications-board.webp'),
   friends: require('../../assets/riso/empty-friends.webp'),
   history: require('../../assets/riso/empty-history.webp'),
   blocked: require('../../assets/riso/empty-blocked.webp'),
   muted: require('../../assets/riso/empty-muted.webp'),
   venues: require('../../assets/riso/empty-venues.webp'),
   chat: require('../../assets/riso/history-sohbet.webp'),
-  events: require('../../assets/riso/empty-events.webp'),
+  // AktivitelerBos .emp img: the board's own cut-out (150 × 100), taken from the canvas 19 Kasım.
+  events: require('../../assets/riso/empty-events-board.webp'),
   // Yeni arayüz tuvali (ArsivBos): the buddy looking out of the archive box, 360 × 294.
   archive: require('../../assets/riso/empty-archive.webp'),
   // Yeni arayüz tuvali (MesajlarBos, MesajlarAraBos, DmBos): cut out, no frame.
@@ -95,10 +102,14 @@ const RISO_BOARD: Partial<
   messages: { width: 120, height: 98, radius: 0, shadow: 'none' },
   search: { width: 120, height: 80, radius: 0, shadow: 'none' },
   dm: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  // IsteklerBos: the board's buddy behind the empty envelope, its paper ground cut away.
+  requests: { width: 120, height: 98, radius: 0, shadow: 'none' },
   archive: { width: 120, height: 98, radius: 0, shadow: 'none' },
   // EngellenenlerBos, SessizAlinanlarBos: the boards' own 360 × 294 cut-outs.
   blocked: { width: 120, height: 98, radius: 0, shadow: 'none' },
   muted: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  events: { width: 150, height: 100, radius: 0, shadow: 'none' },
+  notifications: { width: 120, height: 98, radius: 0, shadow: 'none' },
 };
 
 // AktivitelerHata and AktivitelerBaglantiYok `.emp img` (210 × 172): the buddy at the broken cup,
@@ -148,7 +159,16 @@ function StateDisc({ icon, iconSize }: { icon: IconName; iconSize: number }) {
 // title 15/20 600 12 under the disc, the sentence 13/18 500 4 under it (at most 260 wide), the
 // soft button 16 under it. The error and offline states draw the boards' riso picture (210 × 172);
 // an icon state (no kind) keeps the soft disc.
-export function EmptyState({
+export function EmptyState({ page, testID, ...rest }: Props) {
+  if (!page) return <State {...rest} />;
+  return (
+    <View testID={testID} style={{ flex: 1, justifyContent: 'center' }}>
+      <State {...rest} />
+    </View>
+  );
+}
+
+function State({
   kind,
   icon,
   title,
@@ -162,7 +182,7 @@ export function EmptyState({
   inPage,
   inCard,
   settings,
-}: Props) {
+}: Omit<Props, 'page' | 'testID'>) {
   if (kind === 'empty')
     return (
       <Empty

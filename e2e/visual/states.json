@@ -276,6 +276,7 @@
     {
       "id": "ekran-kesfet",
       "app": "ekran/kesfet",
+      "baz": false,
       "pano": {
         "dosya": "Kesfet"
       }
@@ -283,6 +284,7 @@
     {
       "id": "ekran-kesfet-kaydir",
       "app": "ekran/kesfet/kaydir",
+      "baz": false,
       "pano": {
         "dosya": "KesfetKaydir"
       },
@@ -298,6 +300,7 @@
     {
       "id": "ekran-kesfet-semt-icerde",
       "app": "ekran/kesfet/semt-icerde",
+      "baz": false,
       "pano": {
         "dosya": "KesfetSemtIcerde"
       }
@@ -313,6 +316,7 @@
     {
       "id": "ekran-kesfet-bos",
       "app": "ekran/kesfet/bos",
+      "baz": false,
       "pano": {
         "dosya": "KesfetBos"
       }
@@ -320,6 +324,7 @@
     {
       "id": "ekran-kesfet-ara",
       "app": "ekran/kesfet/ara",
+      "baz": false,
       "pano": {
         "dosya": "KesfetAra"
       }
@@ -327,6 +332,7 @@
     {
       "id": "ekran-kesfet-ara-bos",
       "app": "ekran/kesfet/ara-bos",
+      "baz": false,
       "pano": {
         "dosya": "KesfetAraBos"
       }

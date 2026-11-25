@@ -12,6 +12,7 @@ import { handle } from '../_shared/http.ts';
 import { signPhotos } from '../_shared/photos.ts';
 import { loadProfanity } from '../_shared/profanity.ts';
 import type {
+  VenueFeedMineResponse,
   VenueFeedMuteResponse,
   VenueFeedPageResponse,
   VenueFeedPostResponse,
@@ -34,6 +35,7 @@ const Body: z.ZodType<VenueFeedRequest> = z.discriminatedUnion('action', [
     clientId: z.uuid().optional(),
   }),
   z.object({ action: z.literal('page'), venueId: z.uuid(), before }),
+  z.object({ action: z.literal('mine'), before }),
   z.object({ action: z.literal('replies'), postId: z.uuid(), before }),
   z.object({ action: z.literal('like'), postId: z.uuid() }),
   z.object({ action: z.literal('unlike'), postId: z.uuid() }),
@@ -87,7 +89,11 @@ Deno.serve(
       req,
       raw,
     ): Promise<
-      VenueFeedPostResponse | VenueFeedPageResponse | VenueFeedMuteResponse | { ok: true }
+      | VenueFeedPostResponse
+      | VenueFeedPageResponse
+      | VenueFeedMineResponse
+      | VenueFeedMuteResponse
+      | { ok: true }
     > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
@@ -101,6 +107,26 @@ Deno.serve(
         });
         if (error) throw dbError('venue_feed_page_for', error);
         return posts(data);
+      }
+      // The caller's own posts with their venues: only the author reads them (rule 4).
+      if (body.action === 'mine') {
+        const { data, error } = await db.rpc('venue_feed_mine_for', {
+          target_user_id: user.id,
+          ...(body.before ? { before: body.before } : {}),
+          page_size: VENUE_FEED.pageSize,
+        });
+        if (error) throw dbError('venue_feed_mine_for', error);
+        return {
+          posts: data.map((r) => ({
+            id: r.id,
+            venueId: r.venue_id,
+            venueName: r.venue_name,
+            body: r.body,
+            createdAt: r.created_at,
+            likes: r.likes,
+            replies: r.replies,
+          })),
+        };
       }
       if (body.action === 'replies') {
         const { data, error } = await db.rpc('venue_feed_replies_for', {

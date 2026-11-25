@@ -1,6 +1,6 @@
 import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Animated, Image, Pressable, useWindowDimensions, View } from 'react-native';
+import { Animated, Image, useWindowDimensions, View } from 'react-native';
 
 import { AuraBand, AuraPatch } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
@@ -16,6 +16,7 @@ import { KIT } from '@/theme/auraKit';
 import { ROOM } from '@/theme/room';
 import { SPACING } from '@/theme/tokens';
 import { VENUE } from '@/theme/venue';
+import { Tap } from '@/motion';
 
 import { type TablePerson } from './queries';
 import { TABLE_CARD_WIDE } from './tableIconImages';
@@ -192,7 +193,7 @@ function Faces({
   // `space-between`: the first at the start, the last at the end, the rest evenly between.
   const step = n > 1 ? Math.max(0, (width - side) / (n - 1)) : 0;
   return (
-    <Pressable
+    <Tap
       testID="table-people-open"
       accessibilityRole="button"
       accessibilityLabel={tr.table.facesLabel(n)}
@@ -233,7 +234,7 @@ function Faces({
           : null}
       </View>
       <CapIcon name="forward" color={c.muted} size={F.chevron} />
-    </Pressable>
+    </Tap>
   );
 }
 

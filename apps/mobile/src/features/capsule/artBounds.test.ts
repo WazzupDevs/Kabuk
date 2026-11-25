@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   alphaBounds,
   keptRect,
+  scaleKept,
   pictureUsable,
   pointsOf,
   trimRect,
@@ -158,5 +159,30 @@ describe('unionRect', () => {
         1,
       ),
     ).toEqual({ x: -2, y: 2, width: 9, height: 6 });
+  });
+});
+
+describe('scaleKept', () => {
+  it('reads the box from the small copy, `room` copy pixels more on every side', () => {
+    expect(scaleKept({ x: 5, y: 3, width: 4, height: 2 }, 25, 20, 100, 80, 4, 1)).toEqual({
+      x: 16,
+      y: 8,
+      width: 24,
+      height: 16,
+    });
+  });
+  it('never leaves the picture, and keeps it whole when the copy kept it all', () => {
+    expect(scaleKept({ x: 0, y: 0, width: 25, height: 20 }, 25, 20, 99, 79, 4)).toEqual({
+      x: 0,
+      y: 0,
+      width: 99,
+      height: 79,
+    });
+    expect(scaleKept({ x: 0, y: 1, width: 25, height: 19 }, 25, 20, 99, 79, 4, 1)).toEqual({
+      x: 0,
+      y: 0,
+      width: 99,
+      height: 79,
+    });
   });
 });

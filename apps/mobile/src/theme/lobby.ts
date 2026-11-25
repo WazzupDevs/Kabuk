@@ -7,7 +7,7 @@ import type { ColorScheme } from './tokens';
 export const LOBBY = {
   // The head (`.lt`): 5 under the status bar, 16 from the sides, its parts 12 apart; the poster
   // 84 × 54, 14 round.
-  head: { top: 5, side: 16, gap: 12, posterW: 84, posterH: 54, posterRadius: 14 },
+  head: { top: 5, side: 16, gap: 12, posterW: 84, posterH: 54, posterRadius: 16 },
   // The body (`.lb`): 18 under the head, 20 from the sides.
   body: { top: 18 },
   // The rules (`.tgs`): 26 high, 10 inside, 6 apart.
@@ -35,7 +35,7 @@ export const LOBBY = {
   row: { min: 64, gap: 12, hairIn: 52, first: 10, disc: 40, icon: 20 },
   // A team (`.tgr`, `.tc`): two 12 apart, 6 under the heading; 12 inside, 22 round, 6 between its
   // parts; its bar 8 × 18, 4 round, 8 from the name; its list 108 high at least, a person 36.
-  team: { gap: 12, top: 6, pad: 12, radius: 22, inner: 6, barW: 8, barH: 18, barRadius: 4 },
+  team: { gap: 12, top: 6, pad: 12, radius: 24, inner: 6, barW: 8, barH: 18, barRadius: 4 },
   teamList: { min: 108, person: 36, gap: 8 },
   // The foot (`.lf`): 12 above, 20 from the sides, its parts 10 apart; the warning's icon 16, 6
   // from its words.

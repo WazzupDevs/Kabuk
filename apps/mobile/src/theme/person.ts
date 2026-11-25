@@ -29,7 +29,7 @@ export const PERSON = {
   // 7 from the words.
   badgesTop: 30,
   eyebrow: { in: 10, bottom: 10 },
-  badgeCard: { radius: 26, pad: 14, gap: 8 },
+  badgeCard: { radius: 28, pad: 14, gap: 8 },
   // Ortak arkadaşlar: the badges' card with rows, a face and a name each.
   mutual: { rowGap: 12, faceGap: 12 },
   badge: { height: 34, padLeft: 6, padRight: 12, gap: 7, disc: 24, icon: 14 },
@@ -82,4 +82,28 @@ export const BADGE_LOOK = {
   ten_games: { tone: 'green', icon: 'sparkles' },
   voice_tabu_five_wins: { tone: 'pink', icon: 'chat' },
   five_tables: { tone: 'pink', icon: 'people' },
+} as const;
+
+// Another person's profile on the new interface's board (yeni arayüz tuvali, ProfilBaskasi; 24
+// Kasım), its cover, photo and name moving as the own profile's (PROFILE_PAGE.own): the page 20
+// from the sides; the bio 4 under the name; Mesaj and "Arkadaşsınız" side by side 20 under it, 12
+// apart; the content (the mutual friends' row first) 24 under them, room for Mesaj's shadow
+// inside the upper part. The row: up to three
+// faces over each other by 10, each in a 2 ring of the page's ground.
+export const OTHER_PROFILE = {
+  side: 20,
+  bioTop: 4,
+  actsTop: 20,
+  actsGap: 12,
+  contentGap: 24,
+  mutual: { top: 0, faces: 3, overlap: 10, ring: 2 },
+  light: {
+    // `.btn.friend`: the success's soft fill and its ink.
+    friendFill: 'rgba(14, 135, 69, 0.10)',
+    friendInk: '#0B5E30',
+  },
+  dark: {
+    friendFill: 'rgba(61, 220, 132, 0.14)',
+    friendInk: '#93EBB9',
+  },
 } as const;

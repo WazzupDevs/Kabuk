@@ -47,14 +47,14 @@ Kod: `app/(app)/(tabs)/messages/[threadId].tsx` (DmScreen, boş kart satır 509-
 Uyuyanlar (9): duvar resimleri, geri yuvarlağı 44 (soft), kapsül 52 (yüz 40, 6 iç, 10 ad aralığı), ad "Kadir" 16/20 600, "Profili gör" 12/16, Diğer 44 yuvarlak, boş kart 44 yandan/28 köşe/yüzey/gölge, resim 120×98, başlık+cümle metinleri ("Henüz mesaj yok." / "İlk mesajı sen yaz.", tr.ts:716-717), alan 52 yükseklik/12 yan/26 köşe/gönder yok iken gizli.
 
 ## 114 Mesajlar · arama, klavye açık — project/MesajlarAra.dc.html
-Kod: `app/(app)/(tabs)/messages/index.tsx`, `src/aura/GlassSearch.tsx`, `src/features/friends/InboxRows.tsx`, `src/theme/messages.ts`
+Kod: `app/(app)/(tabs)/messages/index.tsx`, `src/components/Field.tsx`, `src/features/friends/InboxRows.tsx`, `src/theme/messages.ts`
 Öğe sayısı: 21 · uyuyor: 13 · fark: 7 · fazla: 0 · doğrulanamadı: 1
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | Arama alanı yan iç boşluğu | boşluk | 20 (`.field` padding 0 var(--s5)) | sol 18 (`capsulePadX`, auraKit.ts:900; GlassSearch.tsx:49) |
-| 2 | Arama ikonu rengi | renk | `--ci-a/--ci-b: var(--muted)` (açık #4A6550, koyu #A3AEA8) | `colors.placeholder` (açık #56785E, koyu #8F9A94) (GlassSearch.tsx:59) |
+| 1 | Arama alanı yan iç boşluğu | boşluk | 20 (`.field` padding 0 var(--s5)) | sol 18 (`capsulePadX`, auraKit.ts:900; components/Field.tsx:49) |
+| 2 | Arama ikonu rengi | renk | `--ci-a/--ci-b: var(--muted)` (açık #4A6550, koyu #A3AEA8) | `colors.placeholder` (açık #56785E, koyu #8F9A94) (components/Field.tsx:59) |
 | 3 | Temizle (×) düğmesi görünümü | ikon | 36 yuvarlak, 20 ikon: %22 saydam yumuşak disk + 2.2 çizgili çarpı | `Round icon="close"` düz kalın çarpı (capIcons `close`, 3.2 kalınlık), disk yok (messages/index.tsx:107-118) |
-| 4 | Temizle düğmesinin konumu | boşluk | `margin-right:-10` (alanın sağ kenarından 10 içeride) | alanın sağ iç boşluğu 3 (`switchPad`, GlassSearch.tsx:50) → kenardan 3 |
+| 4 | Temizle düğmesinin konumu | boşluk | `margin-right:-10` (alanın sağ kenarından 10 içeride) | alanın sağ iç boşluğu 3 (`switchPad`, components/Field.tsx:50) → kenardan 3 |
 | 5 | Satır önizlemesi taşması | davranış | sağ 44 px solma maskesi (`.pv` mask), "…" yok | `T lines={1}` → "…" ile kesiliyor (InboxRows.tsx:245-256) — Fevve satırı |
 | 6 | Satır önizlemesi taşması (2. satır) | davranış | aynı | aynı — Furkan satırı |
 | 7 | "Furkan" satırında sessiz ikonu (`.mu`, çan+çizgi 16, muted) ve "Sessizde" etiketi | özellik yok | ad yanında 16 ikon | yok; DM sessize alma özelliği yok (`dm_thread_prefs` yalnız pin/arşiv/silme: migration 20261217090000_dm_manage.sql; `muted` kolonu yok) |

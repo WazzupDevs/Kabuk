@@ -8,7 +8,6 @@ import { Alert, View } from 'react-native';
 import { Btn, T } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
@@ -21,7 +20,6 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { confirm } from '@/lib/overlayStore';
-import { KIT } from '@/theme/auraKit';
 
 // The sender of a profiled message or post, opened through it (venue chat, district chat, venue
 // feed: docs/SPEC_V4.md §4.V, §4.Y), no public_id. The three routes differ only in the source's
@@ -125,8 +123,8 @@ export function SenderProfileScreen({
       }
     >
       {view.isPending ? (
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       ) : !view.data ? (
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
@@ -146,7 +144,6 @@ export function SenderProfileScreen({
                 ) : null}
                 <Btn
                   block
-                  bar={KIT.size.btnRow}
                   testID={ids.request}
                   icon="invite"
                   label={tr.venueChat.sendRequest}

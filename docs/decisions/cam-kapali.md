@@ -1,5 +1,7 @@
 # Canlı cam kapalı (6 Kasım 2026)
 
+> **Düğmelerde açıldı (22 Kasım 2026, proje sahibinin kararı: "sadece butonları cam modülüne geçir; performansı çok etkileyeceğini düşünmüyorum").** Saydam düğmeler (`Btn` glassy, saydam yuvarlak düğme) ekranın zeminini kendi altında buzlu gösterir; ayrı anahtar `theme/glass.ts` → `BUTTON_FROST`, düğmenin dolgusu camla yarı saydamdır. Sekme çubuğu, mesaj çubuğu, kartlar, çipler ve etiketler çizilmiş görünüşünde kalır (`TAB_BAR_GLASS = false`). Zemin (`GlassTarget` backdrop) yalnız düğmenin altında bir şey değişince yeniden çizilir.
+
 > **Daraltıldı (12 Kasım 2026).** Canlı bulanıklık yalnız üst bar bandında, sekme çubuğunda, alt sayfalarda, menülerde ve sabitlenen şeritlerde geri gelir; katman bir kez çizilir, kaydırmada yeniden hesaplanmaz. Düğmelerde ve kartlarda yine yok (`docs/design/iskelet.md` → 2.2, karar `docs/decisions/iskelet.md`). Koddaki anahtar, hareket kiti birleşene kadar kapalı durur.
 
 Proje sahibinin kararı: akıcılık camdan önce gelir ("uygulama akıcı olsun").

@@ -75,6 +75,35 @@ export function keptRect(
   return bounds ? trimRect(bounds, width, height, margin) : whole;
 }
 
+// How much smaller the copy a picture's box is read from (the owner's report, 22 Kasım: reading
+// every pixel of the whole picture took some 60 ms a layer and held Süsle back for a second): the
+// box is read from a copy this many times smaller each way, a sixteenth of the pixels.
+export const TRIM_SCALE = 3;
+// The copy's pixels added on every side: a soft glow fades to nothing over several of them, and the
+// smaller copy loses its faintest edge (a cut there showed as a straight line, 22 Kasım).
+export const TRIM_ROOM = 3;
+
+// The kept box read from the smaller copy (`small`, of `smallWidth` × `smallHeight`), in the
+// picture's pixels (`width` × `height`): `room` of the copy's pixels more on every side, so that
+// what the copy's rounding left out is in; the whole picture when the copy kept all of it.
+export function scaleKept(
+  small: PxRect,
+  smallWidth: number,
+  smallHeight: number,
+  width: number,
+  height: number,
+  scale = TRIM_SCALE,
+  room = TRIM_ROOM,
+): PxRect {
+  if (small.x === 0 && small.y === 0 && small.width === smallWidth && small.height === smallHeight)
+    return { x: 0, y: 0, width, height };
+  const x = Math.max(0, (small.x - room) * scale);
+  const y = Math.max(0, (small.y - room) * scale);
+  const right = Math.min(width, (small.x + small.width + room) * scale);
+  const bottom = Math.min(height, (small.y + small.height + room) * scale);
+  return { x, y, width: right - x, height: bottom - y };
+}
+
 // A picture the canvas can draw: its box and its pixels are not empty, and the picture is the
 // box's size (a cut not of the box asked for draws elsewhere). Else the drawing falls back on its
 // SVG (components/FxSkia.tsx → readWhole).

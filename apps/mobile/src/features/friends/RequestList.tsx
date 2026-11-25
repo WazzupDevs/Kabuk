@@ -123,15 +123,14 @@ export function RequestList({ now }: { now: Date }) {
   if (rows.length === 0 && mine.length === 0 && !masa.any) {
     return (
       // IsteklerBos: the riso and its two lines in the middle, no card.
-      <View className="flex-1 justify-center">
-        <EmptyState
-          kind="empty"
-          riso="requests"
-          compact
-          title={tr.messages.noRequests}
-          body={tr.messages.noRequestsHint}
-        />
-      </View>
+      <EmptyState
+        page
+        kind="empty"
+        riso="requests"
+        compact
+        title={tr.messages.noRequests}
+        body={tr.messages.noRequestsHint}
+      />
     );
   }
 

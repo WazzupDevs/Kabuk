@@ -13,7 +13,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
-import { Button } from '@/components/Button';
+import { Btn } from '@/aura/kit';
 import { CachedSvg } from '@/components/CachedSvg';
 import { Loader } from '@/components/Loader';
 import { roomKeys } from '@/features/rooms/queries';
@@ -308,9 +308,8 @@ export function VampirPlay({
             <GlassBtn testID="vampir-ready" label={readyLabel} off onPress={() => undefined} />
           ) : (
             <View style={{ flex: 1 }}>
-              <Button
+              <Btn
                 testID="vampir-ready"
-                size="lg"
                 label={readyLabel}
                 loading={ready.isPending}
                 onPress={() => ready.mutate()}
@@ -379,9 +378,8 @@ export function VampirPlay({
         });
         onChoose = choose;
         foot = (
-          <Button
+          <Btn
             testID="vampir-pick"
-            size="lg"
             label={tr.vampir.choose}
             disabled={!sel || !targets.includes(sel)}
             loading={pick.isPending}
@@ -427,9 +425,8 @@ export function VampirPlay({
       role === null || !amAlive ? (
         <GlassSign>{role === null ? tr.vampir.watchTalk : tr.vampir.deadWatch}</GlassSign>
       ) : owner ? (
-        <Button
+        <Btn
           testID="vampir-to-vote"
-          size="lg"
           label={tr.vampir.toVote}
           loading={toVote.isPending}
           onPress={() => toVote.mutate()}
@@ -478,9 +475,8 @@ export function VampirPlay({
       />
     );
     foot = canVote ? (
-      <Button
+      <Btn
         testID="vampir-vote"
-        size="lg"
         label={tr.vampir.giveVote}
         disabled={!sel || sel === me}
         loading={vote.isPending}

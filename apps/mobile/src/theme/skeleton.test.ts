@@ -85,12 +85,12 @@ describe('the top bar (3.1)', () => {
     expect(barBandCss('dark', 200)).toContain('rgba(0, 0, 0, 0.84) 83.5%');
   });
 
-  it('PageTop is the `sayfa` bar: the 44 glass back button, the large title 34/800', () => {
+  it('PageTop is the `sayfa` bar: the 40 glass back button, the large title 34/800', () => {
     const page = code('src/components/PageTop.tsx');
     expect(page).toMatch(/<TopBarRow kind="sayfa"/);
     expect(page).toMatch(/<LargeTitle kind="sayfa"/);
     expect(code('src/motion/TopBar.tsx')).toMatch(/side=\{side \?\? KIT\.size\.topBtn\}/);
-    expect(code('src/theme/auraKit.ts')).toMatch(/\n {4}topBtn: 44,/);
+    expect(code('src/theme/auraKit.ts')).toMatch(/\n {4}topBtn: 40,/);
     expect(code('src/theme/tokens.ts')).toMatch(
       /largeTitle: \{ font: 'display', size: 34, lineHeight: 42/,
     );
@@ -176,22 +176,18 @@ describe('the cover (kapak, 5.2)', () => {
 });
 
 describe("another person's profile (kapak, 5.6)", () => {
-  const O = PROFILE_PAGE.other;
   const page = code('app/(app)/people/[publicId].tsx');
-  it('the cover at 0.5, the photo to 0.75 over 60–180 and out over 120–190', () => {
-    expect(O.speed).toBe(0.5);
-    expect(O.faceShrink).toEqual([60, 180]);
-    expect(O.faceScale).toBe(0.75);
-    expect(O.faceFade).toEqual([120, 190]);
-    expect(PROFILE_PAGE.face).toBe(124);
-    expect(PROFILE_PAGE.ring).toBe(4);
-    expect(page).toMatch(/<Cover height=\{coverHeight\} speed=\{O\.speed\}>/);
-    expect(page).toMatch(/<ScrollFade\s+fade=\{O\.faceFade\}\s+shrink=\{O\.faceShrink\}/);
-    expect(page).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}[ >]/);
+  // The owner's call, 24 Kasım: the cover, the photo and the name move as on the own profile.
+  it("the cover, the photo and the name move as the own profile's", () => {
+    expect(page).toMatch(/<RiseLayer\s+speed=\{OWN\.rise\}\s+fade=\{OWN\.riseFade\}/);
+    expect(page).toMatch(/<FlyingFace\s+flight=\{faceFlight\}/);
+    expect(page).toMatch(/<FlyingName\s+flight=\{nameFlight\}/);
+    expect(page).toMatch(/const coverHeight = OWN\.cover \+ dy;/);
   });
   it('"Arkadaşlıktan çıkar" in the menu only, the DM menu grown from the three dots', () => {
     expect(page).not.toMatch(/FriendActions/);
-    expect(page).toMatch(/<Menu anchor=\{anchor\}/);
+    // Opened in the app's layer from the three dots (CLAUDE.md → Çizim bütçesi).
+    expect(page).toMatch(/openMenu\(\s*moreRef\.current/);
     expect(page).toMatch(/label=\{tr\.friends\.removeFriend\}/);
     // No capsule and no nick on another person's profile (rule 4).
     expect(page).not.toMatch(/capsuleNick|capsuleLook|LivingLook/);
@@ -217,10 +213,10 @@ describe('the own profile in two parts (5.7)', () => {
     };
   };
 
-  it('the upper part moves at -0.35, fades over 120–300 and shrinks to 0.92', () => {
+  it('the upper part moves at -0.35, fades over 120–300 and does not shrink (owner, 21 Nov)', () => {
     expect(OWN.rise).toBe(0.35);
     expect(OWN.riseFade).toEqual([120, 300]);
-    expect(OWN.riseScale).toBe(0.92);
+    expect(OWN.riseScale).toBe(1);
     // In the content: carried up by y, moved back by y less its own 0.35·y.
     expect(riseInContent(100, 0.35) - 100).toBeCloseTo(-35);
     expect(riseInContent(-30, 0.35)).toBe(-30);
@@ -232,8 +228,8 @@ describe('the own profile in two parts (5.7)', () => {
   it('the photo and the name fly into the bar by t = clamp(y / 316), linearly', () => {
     expect(OWN.arrive).toBe(316);
     const start = flyAt(0);
-    expect(start.face).toEqual({ x: 195, y: 232, side: 112 });
-    expect(start.name).toEqual({ x: 195, y: 317 });
+    expect(start.face).toEqual({ x: 195, y: 206, side: 112 });
+    expect(start.name).toEqual({ x: 195, y: 291 });
     const end = flyAt(316);
     expect(end.face.x).toBeCloseTo(152);
     expect(end.face.y).toBeCloseTo(73);
@@ -241,10 +237,10 @@ describe('the own profile in two parts (5.7)', () => {
     expect(end.name.x).toBeCloseTo(214);
     expect(end.name.y).toBeCloseTo(73);
     expect(flyAt(500)).toEqual(end);
-    // Half way: (232 − 0.35·158·0.5)·0.5 + 73·0.5.
+    // Half way: (206 − 0.35·158·0.5)·0.5 + 73·0.5.
     const mid = flyAt(158);
     expect(mid.t).toBe(0.5);
-    expect(mid.face.y).toBeCloseTo((232 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
+    expect(mid.face.y).toBeCloseTo((206 - 0.35 * 158 * 0.5) * 0.5 + 73 * 0.5);
     // The ring 4 → 1.5: the face in it is the disc less twice the ring.
     const k = flyFace(1, 112, 30, 4, 1.5);
     expect(104 * k.face).toBeCloseTo(27);
@@ -258,7 +254,8 @@ describe('the own profile in two parts (5.7)', () => {
   });
 
   it('one photo and one name: no copy in the bar', () => {
-    expect(page.match(/<ProfileFace\b/g)?.length).toBe(2);
+    // The flying photo only (the friends button carries no faces since 21 Nov).
+    expect(page.match(/<ProfileFace\b/g)?.length).toBe(1);
     expect(page.match(/<FlyingName\b/g)?.length).toBe(1);
     expect(page).not.toMatch(/react-native-reanimated/);
   });
@@ -335,7 +332,7 @@ describe('page transitions (4.4)', () => {
     expect(settings).toMatch(/testID="settings"/);
     // An inline PageTop is drawn as a still top over the content, never inside its scroll.
     expect(code('src/components/Screen.tsx')).toMatch(/top\.type === PageTop && !inlineTop\(top\)/);
-    expect(code('src/theme/auraKit.ts')).toMatch(/pageBarTitle: t\(700, 21, 26, -0\.3 \/ 21\)/);
+    expect(code('src/theme/auraKit.ts')).toMatch(/pageBarTitle: BASE\.heading,/);
   });
 });
 
@@ -344,12 +341,12 @@ describe("Mekan's folding cards (5.11)", () => {
   const at = (y: number, full = 300) =>
     collapseAt(y, 100, full, v.tableStrip, v.stripFrom, v.stripFadePx);
 
-  it('pins under the bar at 104 into a 72 strip, the chat into 54; the strip from 170 over 70', () => {
+  it("the two strips one height (60), their pictures 44 (the owner's design, 24 Kasım)", () => {
     expect(v).toEqual({
       pinTop: 104,
-      tableStrip: 72,
-      stripPicture: 52,
-      chatStrip: 54,
+      tableStrip: 60,
+      stripPicture: 44,
+      chatStrip: 60,
       stripFrom: 170,
       stripFadePx: 70,
     });
@@ -361,7 +358,7 @@ describe("Mekan's folding cards (5.11)", () => {
     // Linear: equal steps fold it equally.
     expect(at(160).height - at(170).height).toBe(at(180).height - at(190).height);
     // Folded, it stays a strip and pinned.
-    expect(at(1000)).toEqual({ lift: 900, height: 72, strip: 1 });
+    expect(at(1000)).toEqual({ lift: 900, height: 60, strip: 1 });
   });
 
   it('gives way to the strip between 170 and 100 high, linearly', () => {

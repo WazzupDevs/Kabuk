@@ -7,7 +7,7 @@ export const ROOM = {
   // pill 52 high, 18 inside, its name and line one under the other.
   bar: { top: 5, side: 16, gap: 8, pill: 52, pillPadX: 18 },
   // The table's card (`.tcd`): 28 round, 8 inside and 12 under; its picture 136 high, 22 round.
-  card: { radius: 28, pad: 8, padBottom: 12, picture: 136, pictureRadius: 22 },
+  card: { radius: 28, pad: 8, padBottom: 12, picture: 136, pictureRadius: 24 },
   // The faces' row (`.fr`): 12 under the picture, 4 in at the right and 8 at the left, 8 from the
   // chevron (18); the faces 24 in a 2 ring of the card's ground, spread across the row.
   faces: { top: 12, right: 4, left: 8, gap: 8, chevron: 18, ring: 2 },

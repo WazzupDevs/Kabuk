@@ -11,7 +11,7 @@ export const TABLE_SETUP = {
     height: 214,
     heightLobby: 150,
     top: 16,
-    radius: 22,
+    radius: 24,
     edge: 2,
     edgeColor: '#031B0B',
     // The name's pill at the bottom left (`.pnm`) and "Rastgele" at the top right (`.rnd`), 12 in.

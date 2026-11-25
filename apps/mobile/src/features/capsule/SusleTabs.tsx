@@ -1,16 +1,18 @@
+import type { LookSlot } from '@shared/capsule.ts';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { T, useKit } from '@/aura/kit';
 import { SlideLine, Tap } from '@/motion';
 import { KIT } from '@/theme/auraKit';
 import { CAPSULE_EDIT } from '@/theme/capsuleEdit';
 
+import { SlotIcon } from './SlotIcon';
+
 export type SusleTab = {
-  id: string;
+  // The slot: its icon is the capsule buddy wearing that part (SlotIcon).
+  id: LookSlot;
   name: string;
-  icon: CapIconName;
   // What a screen reader says (the name, and that it changed).
   label: string;
 };
@@ -23,11 +25,14 @@ export function SusleTabs({
   open,
   onPick,
   accessibilityLabel,
+  inPill,
 }: {
   tabs: readonly SusleTab[];
   open: string;
-  onPick: (id: string) => void;
+  onPick: (id: LookSlot) => void;
   accessibilityLabel: string;
+  // In a glass pill (Süsle's panel, 23 Kasım): the pill's edge is the bound, no line under the row.
+  inPill?: boolean;
 }) {
   const { c } = useKit();
   const E = CAPSULE_EDIT;
@@ -46,9 +51,9 @@ export function SusleTabs({
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       style={{
         flexDirection: 'row',
-        marginHorizontal: E.tabs.side,
+        marginHorizontal: inPill ? 0 : E.tabs.side,
         borderBottomWidth: KIT.size.hair,
-        borderBottomColor: c.hair,
+        borderBottomColor: inPill ? 'transparent' : c.hair,
       }}
     >
       {tabs.map((t) => {
@@ -72,8 +77,8 @@ export function SusleTabs({
                 paddingBottom: E.tabs.padBottom,
               }}
             >
-              <CapIcon
-                name={t.icon}
+              <SlotIcon
+                slot={t.id}
                 size={E.tabs.icon}
                 color={on ? c.ink : c.muted}
                 second={on ? KIT.pink : c.muted}

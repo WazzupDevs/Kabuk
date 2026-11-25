@@ -52,6 +52,9 @@ type Props = {
   edges?: readonly Edge[];
   // For a screen that moves its own scroll (the venue goes back to its table card).
   scrollRef?: RefObject<ScrollView | null>;
+  // Offsets a let-go scroll settles at, only between the first and the last (Mekan's cards: fully
+  // open or fully folded, never half, as Twitter's header; the own profile's way).
+  snapToOffsets?: number[];
   // Children that stay at the top while the rest scrolls under them (the venue's cards).
   stickyHeaderIndices?: number[];
   // Pull to refresh (the brand's pull, PullScroll): the screen's lists fetched again.
@@ -113,6 +116,7 @@ export function Screen({
   children,
   edges,
   scrollRef,
+  snapToOffsets,
   stickyHeaderIndices,
   onRefresh,
   refreshable,
@@ -245,6 +249,9 @@ export function Screen({
               <ScrollBody
                 y={y}
                 scrollRef={scrollRef}
+                snapToOffsets={snapToOffsets}
+                snapToStart={snapToOffsets ? false : undefined}
+                snapToEnd={snapToOffsets ? false : undefined}
                 contentContainerStyle={content}
                 keyboardShouldPersistTaps="handled"
                 stickyHeaderIndices={sticky}

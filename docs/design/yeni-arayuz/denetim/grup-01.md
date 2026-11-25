@@ -87,8 +87,8 @@ Kod: `app/(app)/(tabs)/profile/edit.tsx`, `src/theme/profileEdit.ts`, `src/compo
 | 6 | foto | ölçü | 104, halka 4 canvas, harf 38/700 düz `#0E8745`, kapağı 52 bindirir | 116, beyaz halka, gradyan, üst 112 (`profileEdit.ts:28-29`, `ProfileFace.tsx`) |
 | 7 | kamera düğmesi | ölçü/renk | 38, `#031B0B` zemin (koyu `.94` beyaz), kenar 3 canvas, ikon 18 beyaz; sağ -2, alt 0 | 36 (`btnSm`), zemin beyaz `.90`/`#1B211F`, kenar `KIT.size.edge`, ikon 16; sağ -4, alt 2 (`edit.tsx:152-185`, `profileEdit.ts:30-31,37`) |
 | 8 | alanların yapısı | düzen | kartsız; her alan tuvalde ayrı, üstünde etiket satırı (20 üst, 8 alt, 4 yan) | tek kart (yarıçap 26, iç 16, aralık 8) içinde ince çizgiyle ayrılmış (`edit.tsx:360-409`, `profileEdit.ts:34`) |
-| 9 | etiket | yazı | "Görünen ad" 13/18 600 text | `boxLabel` 13/17 700 (`auraKit.ts:188`, `Input.tsx:136`) |
-| 10 | sayaç | yazı | "5/24" 12/16 500 muted sağda | `boxLabel` 13/17 700 tabular (`Input.tsx:141`) |
+| 9 | etiket | yazı | "Görünen ad" 13/18 600 text | `boxLabel` 13/17 700 (`auraKit.ts:188`, `components/Field.tsx:136`) |
+| 10 | sayaç | yazı | "5/24" 12/16 500 muted sağda | `boxLabel` 13/17 700 tabular (`components/Field.tsx:141`) |
 | 11 | alan kutusu | ölçü/yazı | min 52, yarıçap 16, iç 0 16, kenar 1 px `rgba(3,27,11,.10)` (koyu `.08`), zemin `--surface` (`#FFF` / `#121614`), değer 16/22 500 | kenar 1.5 `#DCE6DF`, zemin `#FFF` / `#1B211F` (`profileEdit.ts:35-40,53-58`), `boxField` 16/21 600 (`auraKit.ts:189`), yükseklik `KIT.size.field` 48 |
 | 12 | ad ipucu | metin | "Arkadaşların ve profilinle olduğun yerdekiler görür." 13/18 500 | "2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür." (`tr.ts:823`), `boxNote` 12.5/18 |
 | 13 | Tanıtım alanı | ölçü | min 92, üst iç 14; sayaç "23/80" | 96 (`profileEdit.ts:36 tall`), `boxFieldMulti` 16/22 ✓; sayaç biçimi `n/80` ✓ (`BIO_MAX`) |
@@ -99,13 +99,13 @@ Kod: `app/(app)/(tabs)/profile/edit.tsx`, `src/theme/profileEdit.ts`, `src/compo
 | 18 | tab bar | uyuyor | panoda yok, kodda gizli | `useHideTabBar` ✓ |
 
 ## 03e Profili düzenle, değişiklik var — project/ProfilDuzenleYaz.dc.html
-Kod: 03d ile aynı + `Input.tsx` (halo)
+Kod: 03d ile aynı + `components/Field.tsx` (halo)
 Öğe sayısı: 18 · uyuyor: 3 · fark: 17 · fazla: 4 · doğrulanamadı: 1
 03d'nin bütün farkları geçerli (bkz. 03d #1–#17). Ek farklar:
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
 | 1 | Kaydet (değişiklik var) | renk | `.btn.primary` ink zemin (`#031B0B`; koyu `.94` beyaz), 40 yüksek | yeşil `KIT.primary` yazı 800, cam zemin, 44 (`edit.tsx:349-352`) |
-| 2 | odaklı alan | renk | kenar 2 px `var(--text)` (koyu `#EEF3F0`), iç 0 15; imleç 2×20 accent (`#0B783D`/`#3DDC84`) | yeşil halka (`halo`, `Input.tsx`; `edit.tsx:373`), kenar 1.5 |
+| 2 | odaklı alan | renk | kenar 2 px `var(--text)` (koyu `#EEF3F0`), iç 0 15; imleç 2×20 accent (`#0B783D`/`#3DDC84`) | yeşil halka (`halo`, `components/Field.tsx`; `edit.tsx:373`), kenar 1.5 |
 | 3 | ad sayacı | metin | "9/24" (Fırat Can) ✓ biçim | `fieldCount(n,max)` ✓ (`tr.ts:862`) |
 
 ## 03f Kapsülünü süsle — project/KapsulSusle.dc.html

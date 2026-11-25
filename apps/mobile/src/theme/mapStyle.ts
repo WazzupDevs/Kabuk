@@ -44,20 +44,23 @@ export const MAP_COLORS: Record<ColorScheme, MapColors> = {
     labelQuiet: '#5C7A64',
     halo: '#EAF3EC',
   },
+  // The dark map in the ticket's colours on OLED black (the owner's ask, 24 Kasım; IdentityTicket's
+  // TICKET_TONE.dark): the ground black, water and roads in its violet, parks and borders in its
+  // green, the names in its light green.
   dark: {
-    ground: '#101513',
-    land: '#101513',
-    green: '#14231B',
-    water: '#14231B',
-    building: '#171D1A',
-    road: '#202825',
-    roadCasing: '#2A332F',
-    minor: '#202825',
-    rail: '#2A332F',
-    border: '#2A332F',
-    label: '#8F9A94',
-    labelQuiet: '#8F9A94',
-    halo: '#101513',
+    ground: '#000000',
+    land: '#000000',
+    green: '#06190F',
+    water: '#120A2E',
+    building: '#0A0A12',
+    road: '#2A1F5C',
+    roadCasing: '#1A1340',
+    minor: '#17112F',
+    rail: '#1F6B43',
+    border: '#1F6B43',
+    label: '#93EBB9',
+    labelQuiet: '#8F7FE0',
+    halo: '#000000',
   },
 };
 

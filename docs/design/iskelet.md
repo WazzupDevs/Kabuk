@@ -4,7 +4,7 @@ Proje sahibinin onayladığı kararlar (12 Kasım 2026; `docs/decisions/iskelet.
 
 Bölüm numaraları iş paketinin numaralarıdır (2 ile 6); atıflar bu numaralarladır.
 
-Değişmeyenler: veri, sunucu, mantık ve navigasyon yapısı; renk paleti, Plus Jakarta Sans, riso çizimler, kapsül kankiler, masa kartları ve skall logosu; mesaj balonu renkleri (DM'de karşı taraf #2670E0, mekan sohbeti #17834D, masa sohbeti #C2185B, kendi balonun beyaz; okundu tiki #2C63D6); package id, slug, `masa` şeması ve repo adı.
+Değişmeyenler: veri, sunucu, mantık ve navigasyon yapısı; renk paleti, Plus Jakarta Sans (20 Kasım'ın Bricolage ve telefon yazısı denemesi 21 Kasım'da geri alındı; `docs/decisions/temel.md`), riso çizimler, kapsül kankiler, masa kartları ve skall logosu; mesaj balonu renkleri (DM'de karşı taraf #2670E0, mekan sohbeti #17834D, masa sohbeti #C2185B, kendi balonun beyaz; okundu tiki #2C63D6); package id, slug, `masa` şeması ve repo adı.
 
 ## 2. Bileşen kuralları
 
@@ -18,12 +18,13 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 | clear     | İkincil eylem (Davet et, Paketlere bak) ve üst çubuktaki her şey             | Açıkta beyaz yüzde 74 dolgu, 1 px beyaz çerçeve, gölge 0 6 16 #044923 yüzde 10, yazı #031B0B. Koyuda #121614 yüzde 62, çerçeve beyaz yüzde 10                                  |
 | danger    | Geri alınamayan işlemin onayı (Engelle, Çıkış yap)                           | Yumuşak kırmızı: açıkta #FBE1DB, yazı #A8301A; koyuda #FF977E yüzde 12, yazı #FF977E. Gölge yok                                                                                |
 | ghost     | Onayın altındaki "Vazgeç"                                                    | Dolgu yok, yazı metin rengi                                                                                                                                                   |
-| disabled  | Her tür                                                                      | Soluklaşmaz: açıkta #DCE9DE dolgu, yazı #4A6550; koyuda ana buton #1B211F ve yüzde 40 metin rengi, diğerleri #1F2623 ve #A3AEA8. İkon yok, dokunuş kapalı. Ghost dolgusuz kalır |
+| disabled  | Her tür                                                                      | Soluklaşmaz: açıkta #DCE9DE dolgu, yazı #4A6550; koyuda her türde #1B211F ve yüzde 40 metin rengi (19 Kasım, `docs/decisions/temel.md`). İkon yok, dokunuş kapalı. Ghost dolgusuz kalır |
 
 - Yazı 600 16/20, küçük buton 600 14/18. Üst çubuktaki Kaydet'in değişiklik varken yazısı 800.
 - Yeşil (`--primary`) anahtar, rozet, canlı nokta ve gönder yuvarlağı için kalır (`buttonGlass.ts` → `green`).
 - Basma: Tap davranışı (2.3).
-- Yükseklikler: ana buton ve form alanı 48 (proje sahibinin kararı, 16 Kasım), mekan sayfası ve check-in sayfasının uzun butonu 56, satır içi küçük buton 36, yuvarlak ikon 44, üst çubuk butonları 44 (yeni arayüz tuvaliyle değişti, 17 Kasım; önce 46). Alt sayfada kapat (X) düğmesi yoktur (18 Kasım; sayfa dışarı dokununca, kaydırınca ve geri tuşuyla kapanır). 18 Kasım'dan beri boylar panodaki boydur: büyük buton 56 (semt, hediye, "Kapsülüne tak", Güncelle), çip 36 (Keşfet tür çipi ve "Masanı lobiye aç" 40), Süsle süzgeç çipi 28, üst satır butonu 40, sohbet yazma alanı 52, satır butonları panonun çizdiği boyda (32, 34, 40).
+- Yükseklikler (ortak temel, proje sahibinin kararı, 19 ve 20 Kasım, `docs/decisions/temel.md`; 16 ve 18 Kasım'ın boylarının yerine): ana buton ve form alanı 44, küçük buton ve çip 32, Süsle süzgeç çipi 28, yuvarlak ikon ve üst çubuk butonları 40, üst satırdaki yazılı buton 36, satır butonları 28, 32 ya da 36, sohbet yazma alanı 52. Büyük buton (56) yoktur: uzun ve büyük buton ana butonun boyundadır. Boylar panodan okunmaz; kaynağı `KIT.size` ve temel kararıdır. Alt sayfada kapat (X) düğmesi yoktur (18 Kasım; sayfa dışarı dokununca, kaydırınca ve geri tuşuyla kapanır).
+- Yazı sekiz boydur (10, 11, 13, 15, 17, 20, 24, 30; 36 üstü ve 10 altı olduğu gibi): `src/theme/auraKit.ts` → `TYPE_SCALE`, `auraKit.test.ts` denetler. Buton dört türdür (ana, yumuşak, tehlikeli, dolgusuz), iki boyda, yazısı 600.
 - Üst çubuktaki Kaydet clear: değişiklik yokken yazı #9AAEA1, varken #0E8745 ve 800. Kaydedince yazı "Kaydedildi" olur, buton boyu sabit kalır (en az 96 genişlik).
 
 ### 2.2 Cam yüzeyler ve performans
@@ -42,7 +43,8 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 
 ### 2.4 Köşeler, kontür, ikonlar
 
-- İç içe köşe: içteki yarıçap, dıştaki eksi iç boşluk. Örnek: kart 26, boşluk 12, içteki görsel 14.
+- Köşe beş değerdir (20 Kasım, `docs/decisions/temel.md`): 12, 16, 20, 24, 28; kapsül kendi yüksekliğinin yarısı. İç içe köşe: içteki yarıçap, dıştaki eksi iç boşluk, ölçeğin en yakın değerine yuvarlanır. Örnek: kart 28, boşluk 12, içteki görsel 16.
+- Boşluk ölçeği 4, 8, 12, 16, 20, 24, 32, sayfa kenarı 20: revize edilen ekranın boşlukları buradan seçilir; var olan ekranlar revizeye kadar kendi değerlerinde kalır.
 - Fotoğraf kontürü: sadece renkli ya da görsel zemin üstünde 2 ile 4 px beyaz kontür (profil kapağı, mekan kapağı). Gölge yok, ikinci halka yok. Beyaz kart içindeki üst üste avatarlarda kontür yok; onun yerine kartın zemin renginde 2.5 px boşluk ve hafif gölge (0 2 6 yüzde 16).
 - İkonlar: hepsi aynı çizgi stilinde, 2 ile 2.2 kalınlık, yuvarlak uç. Dolu ve iki tonlu ikonlar kaldırılır. Ayar satırlarında ikon, renkli kare zemin üstünde beyaz (32 kare, 10 yarıçap).
 
@@ -58,7 +60,7 @@ Yeni arayüz tuvali (16 Kasım, `docs/decisions/yeni-tuval.md`; `skall.css` → 
 | Tür         | Ekranlar                                         | Davranış                                                                                                                                                                                        |
 | ----------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | buyukBaslik | Sekme ana ekranları                              | Büyük başlık içerikle birlikte kayar ve 5 ile 100 px arasında söner (ölçek 1'den 0.94'e, köşe sol alt). Ana arama ya da filtre alanı varsa o alan tepeye yapışır (3.2); yoksa başlık bara geçer |
-| sayfa       | Arkadaşlar, Profili düzenle, ayar sayfaları      | Üst çubukta geri (44 cam; yeni arayüz tuvaliyle değişti, önce 46). Altında büyük başlık (34, 800). Kaydırınca başlık 5 ile 50 px arasında söner, bar bandı belirir, bardaki ortalanmış küçük başlık 40 ile 70 px arasında gelir         |
+| sayfa       | Arkadaşlar, Profili düzenle, ayar sayfaları      | Üst çubukta geri (40 cam; temel, 19 Kasım). Altında büyük başlık (34, 800). Kaydırınca başlık 5 ile 50 px arasında söner, bar bandı belirir, bardaki ortalanmış küçük başlık 40 ile 70 px arasında gelir         |
 | kapak       | Kendi profilin, başkasının profili, mekan detayı | 5.7, 5.6 ve 5.2'deki gibi                                                                                                                                                                       |
 | sohbet      | DM, masa ve mekan sohbeti                        | Geri ve ayrı cam kapsülde avatar, isim, menü                                                                                                                                                    |
 
@@ -190,7 +192,7 @@ Kaydırmaya bağlı hiçbir harekette yumuşatma eğrisi yoktur; her şey parmak
 ### 5.9 Ayarlar (sayfa)
 
 - Tam sayfa (proje sahibinin kararı, 16 Kasım; yeni arayüz tuvali `Ayarlar`): Profil'den sağdan iter (yığının varsayılan geçişi, 4.4), geri tuşu ve kenardan kaydırma geri götürür. Bildirim ayarları, Gizlilik, Hesap, Engellenenler ve Sessize alınanlar aynı yığında itilir.
-- Üst: 44'lük yuvarlak geri düğmesi ve yanında 700 21/26 başlık; içerikle kaymaz, büyük başlık yok. Zemin bulutsuz düz canvas (koyuda siyah).
+- Üst: 40'lık yuvarlak geri düğmesi ve yanında 700 20/25 başlık; içerikle kaymaz, büyük başlık yok. Zemin bulutsuz düz canvas (koyuda siyah).
 - Sıra: Bildirimler, Gizlilik, Hesap (kart yok, satırlar zeminde: en az 56, ikon 24 mürekkep renginde, 600 16/20, ok; ince çizgi 38'den); "Oyunlara katılım" seçimi ve kısa açıklama; "Görünüm" seçimi; kırmızı Çıkış yap satırı (onay sheet'i; dialoga geçiş ayrı pakette); en altta "Test sürümü" satırları (sadece test sürümünde).
 - Bölüm başlıkları küçük harf, 700 13/18 muted. Bölmeli seçicinin seçili parçası açıkta mürekkep zemin ve beyaz yazı, koyuda %94 beyaz.
 

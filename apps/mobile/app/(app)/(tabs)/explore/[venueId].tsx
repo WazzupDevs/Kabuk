@@ -11,7 +11,6 @@ import { Btn, Glass, Round, T, Tag, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
 import { GlassTarget } from '@/components/LiquidGlass';
-import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { ScreenStatusBar } from '@/components/StatusScrim';
 import { useTabBarSpace } from '@/components/TabBar';
@@ -24,6 +23,7 @@ import { WeekEmpty } from '@/features/explore/WeekEmpty';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { ownScenePicture } from '@/features/explore/venuePictures';
 import { venueType } from '@/lib/venueType';
 import {
   BarArrive,
@@ -60,8 +60,8 @@ export default function VenueDetailScreen() {
   if (isPending) {
     return (
       <Screen>
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       </Screen>
     );
@@ -70,27 +70,25 @@ export default function VenueDetailScreen() {
   if (!venue && isError) {
     return (
       <Screen>
-        <View className="flex-1 justify-center">
-          <EmptyState
-            kind="error"
-            body={errorMessage(error)}
-            error={error}
-            action={{ label: tr.common.retry, onPress: () => void refetch() }}
-          />
-        </View>
+        <EmptyState
+          page
+          kind="error"
+          body={errorMessage(error)}
+          error={error}
+          action={{ label: tr.common.retry, onPress: () => void refetch() }}
+        />
       </Screen>
     );
   }
   if (!venue) {
     return (
       <Screen>
-        <View className="flex-1 justify-center">
-          <EmptyState
-            icon="cafe-outline"
-            body={tr.explore.notFound}
-            action={{ label: tr.explore.back, onPress: () => router.back() }}
-          />
-        </View>
+        <EmptyState
+          page
+          icon="cafe-outline"
+          body={tr.explore.notFound}
+          action={{ label: tr.explore.back, onPress: () => router.back() }}
+        />
       </Screen>
     );
   }
@@ -123,6 +121,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
   const onBar = useScrollPast((V.band[0] + V.band[1]) / 2);
   const here = active.data?.venue_id === venue.id;
   const type = venueType(venue);
+  const scene = ownScenePicture(venue.name) ?? SCENE;
   const place = tr.explore.venuePlace([venue.district, city].filter((p): p is string => !!p));
   const barTop = insets.top + D.barTop;
   const look = D[scheme];
@@ -137,7 +136,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
             report, 30 Ekim). Also drawn once as a plain picture under the target, as the ground
             (AuraBackground, K2): the scene showed nothing on first opening (2 Kasım, 14.1). */}
         <Image
-          source={SCENE}
+          source={scene}
           fadeDuration={0}
           accessible={false}
           resizeMode="cover"
@@ -145,7 +144,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
         />
         <GlassTarget backdrop style={StyleSheet.absoluteFill}>
           <Image
-            source={SCENE}
+            source={scene}
             fadeDuration={0}
             accessible={false}
             resizeMode="cover"

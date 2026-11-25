@@ -6,7 +6,6 @@ import { StyleSheet, View } from 'react-native';
 
 import { Av, Btn, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
 import { boxShadowParts } from '@/components/NativeShadow';
 import { Screen } from '@/components/Screen';
 import { openDm } from '@/features/friends/openDm';
@@ -75,9 +74,7 @@ export function TableEnd({
     <View testID="table-end" style={{ flex: 1 }}>
       <Screen
         padTop={E.bar}
-        footer={
-          <Btn block tall testID="table-end-close" label={tr.tableEnd.back} onPress={onClose} />
-        }
+        footer={<Btn block testID="table-end-close" label={tr.tableEnd.back} onPress={onClose} />}
       >
         <View>
           <View
@@ -111,9 +108,7 @@ export function TableEnd({
             </T>
           </View>
           {records.isPending ? (
-            <View className="items-center py-6">
-              <Loader />
-            </View>
+            <EmptyState kind="loading" body={tr.common.loading} />
           ) : records.isError ? (
             <EmptyState
               kind="error"

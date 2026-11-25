@@ -30,7 +30,7 @@ export const BUTTON_GLASS = {
       off: OFF_LIGHT,
     },
     clear: {
-      fill: 'rgba(255, 255, 255, 0.74)',
+      fill: '#FBFDFB',
       solid: '#EFF7F1',
       pressed: '',
       edge: '#FFFFFF',
@@ -101,10 +101,10 @@ export const BUTTON_GLASS = {
       inset: '',
       shadow: '',
       ink: '#EEF3F0',
-      off: { fill: '#1F2623', ink: '#A3AEA8' },
+      off: { fill: '#1B211F', ink: 'rgba(238, 243, 240, 0.4)' },
     },
     danger: {
-      fill: 'rgba(255, 151, 126, 0.12)',
+      fill: '#3A221D',
       // The 12 % red over the dialog's surface (#151A18).
       solid: '#312924',
       pressed: '',
@@ -112,7 +112,7 @@ export const BUTTON_GLASS = {
       inset: '',
       shadow: '',
       ink: '#FF977E',
-      off: { fill: '#1F2623', ink: '#A3AEA8' },
+      off: { fill: '#1B211F', ink: 'rgba(238, 243, 240, 0.4)' },
     },
     ghost: {
       fill: 'transparent',
@@ -122,7 +122,7 @@ export const BUTTON_GLASS = {
       inset: '',
       shadow: '',
       ink: '#EEF3F0',
-      off: { fill: 'transparent', ink: '#A3AEA8' },
+      off: { fill: 'transparent', ink: 'rgba(238, 243, 240, 0.4)' },
     },
     green: {
       fill: GREEN,
@@ -132,7 +132,7 @@ export const BUTTON_GLASS = {
       inset: 'inset 0px -1px 0px rgba(0, 40, 15, 0.25)',
       shadow: '0px 10px 22px rgba(0, 0, 0, 0.35)',
       ink: '#FFFFFF',
-      off: { fill: '#1F2623', ink: '#A3AEA8' },
+      off: { fill: '#1B211F', ink: 'rgba(238, 243, 240, 0.4)' },
     },
     cover: {
       fill: 'rgba(18, 22, 20, 0.72)',
@@ -142,8 +142,16 @@ export const BUTTON_GLASS = {
       inset: '',
       shadow: '',
       ink: '#EEF3F0',
-      off: { fill: '#1F2623', ink: '#A3AEA8' },
+      off: { fill: '#1B211F', ink: 'rgba(238, 243, 240, 0.4)' },
     },
   },
 } as const;
 export type ButtonGlassKind = keyof typeof BUTTON_GLASS.light;
+
+// A clear button (and the clear round) inside a dialog, a sheet or on a card (the owner's report,
+// 22 Kasım: the soft white button did not show on the white dialog): the sheets' quiet track, a
+// tone the surface under it is not; in the dark a white at 8 % over the #1B211F sheet.
+export const CLEAR_ON_SHEET = {
+  light: { fill: '#E0EDE2', edge: 'rgba(3, 27, 11, 0.06)' },
+  dark: { fill: 'rgba(255, 255, 255, 0.08)', edge: 'rgba(255, 255, 255, 0.10)' },
+} as const;

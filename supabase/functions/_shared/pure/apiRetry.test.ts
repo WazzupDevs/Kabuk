@@ -67,6 +67,7 @@ describe('IDEMPOTENT_CALLS', () => {
         'vampir/view',
         'venue-chat/page',
         'venue-feed/like',
+        'venue-feed/mine',
         'venue-feed/page',
         'venue-feed/replies',
         'venue-feed/unlike',

@@ -227,9 +227,7 @@ export function Lobby({
       />
       {note ? <T v="fine">{note}</T> : null}
       {tables.isPending ? (
-        <View className="items-center py-4" accessibilityLabel={tr.lobby.loading}>
-          <Loader />
-        </View>
+        <EmptyState kind="loading" body={tr.lobby.loading} />
       ) : !tables.data ? (
         <EmptyState
           kind="error"

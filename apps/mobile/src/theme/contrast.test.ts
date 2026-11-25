@@ -233,18 +233,18 @@ describe('buttons', () => {
     }
   });
 
-  // Disabled: the disabled fill and words (`.btn.off`), as text. The dark primary's (the board's
-  // #1B211F and the text at 40 %, `.dark .btn.primary.off`) is 3.5:1: measured so a change shows,
-  // at least the large text's 3:1.
+  // Disabled: the disabled fill and words (`.btn.off`), as text. In the dark every kind is the same
+  // (the owner's call, 19 Kasım, docs/decisions/temel.md): the board's #1B211F and the text at 40 %
+  // (`.dark .btn.primary.off`), 3.5:1: measured so a change shows, at least the large text's 3:1.
   it.each(['light', 'dark'] as const)('disabled (%s)', (s) => {
     const ground = AURA[s].ground;
     for (const kind of ['prominent', 'clear', 'danger', 'ghost'] as const) {
       const { fill, ink } = BUTTON_GLASS[s][kind].off;
       const under = seen(fill, ground);
       const ratio = contrastRatio(seen(ink, under), under);
-      if (s === 'dark' && kind === 'prominent') {
+      if (s === 'dark') {
         expect(ratio).toBeGreaterThanOrEqual(AA_LARGE);
-        expect(ratio).toBeCloseTo(3.48, 1);
+        if (kind !== 'ghost') expect(ratio).toBeCloseTo(3.48, 1);
       } else {
         expect(ratio).toBeGreaterThanOrEqual(AA_TEXT);
       }

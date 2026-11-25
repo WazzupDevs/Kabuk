@@ -1,12 +1,10 @@
-import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, Round, T } from '@/aura/kit';
+import { Btn, Glass, Round, Seg, T } from '@/aura/kit';
 import { ButtonRow } from '@/components/ButtonRow';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
@@ -17,6 +15,7 @@ import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { SetCard } from '@/features/gifts/SetCard';
 import { IdentityTicket } from '@/features/profile/IdentityTicket';
+import { OwnPosts } from '@/features/venueFeed/OwnPosts';
 import { ProfileCoverArt } from '@/features/profile/ProfileCover';
 import { ProfileFace } from '@/features/profile/ProfileFace';
 import { useProfileView } from '@/features/profile/queries';
@@ -80,6 +79,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
   const [preview, setPreview] = useState(false);
+  const [tab, setTab] = useState<'capsule' | 'posts'>('capsule');
   const coverOff = useLabOff('kapak');
   const ticketOff = useLabOff('bilet');
   // The upper part's words and buttons: their foot, once laid out (not on a frame).
@@ -195,49 +195,41 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                     {data.bio}
                   </T>
                 ) : null}
-                {/* tuval Benim: the two clear buttons as wide as their words, centred, 10 apart;
-                    narrower than both, their words shrink (never "…"). */}
+                {/* The two clear buttons the same width, centred (owner, 21 Nov); the friends
+                    button only its words and the count. */}
                 <View style={{ alignSelf: 'stretch' }}>
                   <ButtonRow hug gap={B.buttonsGap}>
-                    <Btn
-                      block={narrow}
-                      variant="glassy"
-                      bar={KIT.size.btnRow}
-                      icon="edit"
-                      label={hasName ? tr.profile.edit : tr.profile.addName}
-                      look={{
-                        type: 'giftBtn',
-                        padLeft: B.edit.padLeft,
-                        padRight: B.edit.padRight,
-                        gap: B.edit.gap,
-                        icon: B.edit.icon,
-                      }}
-                      onPress={() => router.push('/profile/edit')}
-                    />
-                    <Btn
-                      block={narrow}
-                      variant="glassy"
-                      bar={KIT.size.btnRow}
-                      testID="profile-friends"
-                      accessibilityLabel={tr.profile.friendsCount(friendList.length)}
-                      lead={friendList.length > 0 ? <FaceStack friends={friendList} /> : undefined}
-                      label={tr.profile.friendsSub(friendList.length)}
-                      look={{
-                        type: 'giftBtn',
-                        padLeft: friendList.length > 0 ? B.friends.padLeft : B.friends.padLeftBare,
-                        padRight: B.friends.padRight,
-                        gap: B.friends.gap,
-                      }}
-                      trail={
-                        <CapIcon
-                          name="chevron"
-                          color={look.chevron}
-                          soft={1}
-                          size={B.friends.chevron}
-                        />
-                      }
-                      onPress={() => router.push('/profile/friends')}
-                    />
+                    <View style={narrow ? undefined : { width: B.buttonWidth }}>
+                      <Btn
+                        block
+                        variant="glassy"
+                        icon="edit"
+                        label={hasName ? tr.profile.edit : tr.profile.addName}
+                        look={{
+                          type: 'giftBtn',
+                          padLeft: B.edit.padLeft,
+                          padRight: B.edit.padRight,
+                          gap: B.edit.gap,
+                          icon: B.edit.icon,
+                        }}
+                        onPress={() => router.push('/profile/edit')}
+                      />
+                    </View>
+                    <View style={narrow ? undefined : { width: B.buttonWidth }}>
+                      <Btn
+                        block
+                        variant="glassy"
+                        testID="profile-friends"
+                        accessibilityLabel={tr.profile.friendsCount(friendList.length)}
+                        label={tr.profile.friendsButton(friendList.length)}
+                        look={{
+                          type: 'giftBtn',
+                          padLeft: B.friends.padLeftBare,
+                          padRight: B.friends.padLeftBare,
+                        }}
+                        onPress={() => router.push('/profile/friends')}
+                      />
+                    </View>
                   </ButtonRow>
                 </View>
               </View>
@@ -304,8 +296,31 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
             </View>
           ) : (
             <>
+              {/* Kapsülün | Gönderiler (owner, 21 Kasım; §4.Y): the own feed posts on the own
+                  profile only. */}
+              <View style={{ marginTop: B.gap }}>
+                <Seg
+                  value={tab}
+                  onChange={setTab}
+                  narrow={narrow}
+                  accessibilityLabel={tr.venueFeed.profileViewLabel}
+                  options={[
+                    {
+                      value: 'capsule',
+                      label: tr.venueFeed.capsuleTab,
+                      testID: 'profile-tab-capsule',
+                    },
+                    { value: 'posts', label: tr.venueFeed.mineTab, testID: 'profile-tab-posts' },
+                  ]}
+                />
+              </View>
+              {tab === 'posts' ? (
+                <View style={{ marginTop: B.gap }}>
+                  <OwnPosts />
+                </View>
+              ) : null}
               {/* The list's head once the panel is under the bar: the ticket. */}
-              {data.capsuleNick ? (
+              {tab === 'capsule' && data.capsuleNick ? (
                 ticketOff ? (
                   <View style={{ minHeight: TICKET.height, marginTop: OWN_PROFILE.gap }} />
                 ) : (
@@ -316,14 +331,14 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                   />
                 )
               ) : null}
-              {data.photoHidden ? (
+              {tab === 'capsule' && data.photoHidden ? (
                 <Glass pad="pad" style={{ marginTop: B.gap }}>
                   <T v="fine" ink>
                     {tr.profile.photoHidden}
                   </T>
                 </Glass>
               ) : null}
-              <SetCard />
+              {tab === 'capsule' ? <SetCard /> : null}
             </>
           )}
         </View>
@@ -349,6 +364,7 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
             left={nameLeft}
             right={nameRight}
             maxWidth={nameMax}
+            face={{ flight: faceFlight, side: OWN.photo, sideTo: OWN.face }}
           >
             <T v="profileName" lines={1} fit accessibilityRole="header">
               {name}
@@ -376,57 +392,6 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
           onPress={() => router.push('/settings')}
         />
       </View>
-    </View>
-  );
-}
-
-// "N arkadaş"'s faces (iskelet.md → 2.4): 28 over each other, no ring but 2.5 of the button's
-// ground round each and a light shadow; 20 apart and, past three, the rest as "+N" in the fourth
-// place (tuval Benim).
-function FaceStack({ friends }: { friends: readonly Friend[] }) {
-  const { scheme } = useTheme();
-  const gap = KIT.button[scheme].clear.solid;
-  const side = OWN.stack + 2 * OWN.stackGap;
-  const more = friends.length - OWN.stackMax;
-  const disc = (i: number) => ({
-    width: side,
-    height: side,
-    borderRadius: side / 2,
-    padding: OWN.stackGap,
-    backgroundColor: gap,
-    boxShadow: OWN.stackShadow,
-    marginLeft: i === 0 ? -OWN.stackGap : B.stackStep - side,
-  });
-  const tone = B[scheme].more;
-  return (
-    <View style={{ flexDirection: 'row' }} importantForAccessibility="no-hide-descendants">
-      {friends.slice(0, OWN.stackMax).map((f, i) => (
-        <View key={f.publicId} style={disc(i)}>
-          <ProfileFace
-            side={OWN.stack}
-            name={f.displayName ?? tr.profile.noName}
-            photoUrl={f.photoUrl}
-          />
-        </View>
-      ))}
-      {more > 0 ? (
-        <View style={disc(OWN.stackMax)}>
-          <View
-            style={{
-              width: OWN.stack,
-              height: OWN.stack,
-              borderRadius: OWN.stack / 2,
-              backgroundColor: tone.bg,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <T v="stackMore" color={tone.fg}>
-              {tr.profile.moreFaces(more)}
-            </T>
-          </View>
-        </View>
-      ) : null}
     </View>
   );
 }

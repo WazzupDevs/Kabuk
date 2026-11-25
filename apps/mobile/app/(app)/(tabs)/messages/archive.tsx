@@ -45,7 +45,8 @@ export default function ArchiveScreen() {
         list
         refreshable
         side={M.side}
-        barSide={M.side}
+        // The back button where every page bar has it (16 in; the owner's call, 19 Kasım).
+        barSide={SPACING[4]}
         barTop={B.top}
         padTop={archived.length > 0 ? M.archiveTop.fieldTop : M.archiveTop.emptyTop}
         gap={M.gap}
@@ -82,27 +83,22 @@ export default function ArchiveScreen() {
             }}
           />
         ) : archived.length === 0 ? (
-          // ArsivBos `.emp`: in the middle of the page less 190 at its foot (the list keeps 90).
-          <View
+          // ArsivBos `.emp`: in the middle of the page (EmptyState → page).
+          <EmptyState
+            page
             testID="archive-empty"
-            style={{ flex: 1, justifyContent: 'center', paddingBottom: M.emptyLift }}
-          >
-            <EmptyState
-              kind="empty"
-              riso="archive"
-              compact
-              // `.ed`: at most 240 wide, no room over the picture.
-              settings
-              title={tr.messages.archivedEmpty}
-              body={tr.messages.archivedEmptyHint}
-            />
-          </View>
+            kind="empty"
+            riso="archive"
+            compact
+            // `.ed`: at most 240 wide, no room over the picture.
+            settings
+            title={tr.messages.archivedEmpty}
+            body={tr.messages.archivedEmptyHint}
+          />
         ) : (
           <View testID="archive-list" style={{ gap: M.gap }}>
             {/* `.ahint`: 4 in. */}
-            <T v="fine" style={{ paddingHorizontal: SPACING[1] }}>
-              {tr.messages.archivedHint}
-            </T>
+            <T v="fine">{tr.messages.archivedHint}</T>
             <ListMoveArea moves={moves}>
               <InboxList
                 threads={archived}

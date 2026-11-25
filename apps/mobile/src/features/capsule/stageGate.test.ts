@@ -5,6 +5,7 @@ import {
   lookPasses,
   stagePasses,
   TEXTURE_WAIT_MS,
+  LOOK_WAIT_MS,
   TILE_WAIT_MS,
   tileShown,
 } from '../../capsule/stageGate';
@@ -26,13 +27,17 @@ describe('stagePasses', () => {
     expect(stagePasses(true, true, false)).toBe(true);
     expect(stagePasses(true, false, true)).toBe(true);
   });
-  it('never comes without its own pictures', () => {
+  it('waits for its own pictures up to their limit, then comes without them', () => {
     expect(stagePasses(false, true, false)).toBe(false);
     expect(stagePasses(false, true, true)).toBe(false);
+    expect(stagePasses(false, true, true, true)).toBe(true);
+    expect(stagePasses(false, false, false, true)).toBe(false);
   });
   it('waits a few turns at most', () => {
     expect(TILE_WAIT_MS).toBeGreaterThan(0);
     expect(TILE_WAIT_MS).toBeLessThanOrEqual(300);
+    expect(LOOK_WAIT_MS).toBeGreaterThan(0);
+    expect(LOOK_WAIT_MS).toBeLessThanOrEqual(400);
   });
 });
 

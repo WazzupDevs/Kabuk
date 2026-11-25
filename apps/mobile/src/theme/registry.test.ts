@@ -102,6 +102,6 @@ describe('type scale', () => {
   // Tab labels and small counters stay 11 px; only a label that does not fit its tab shrinks
   // (TabBar: adjustsFontSizeToFit, one line), never the size for every screen.
   it('keeps caption at 11 px', () => {
-    expect(THEME.typography.caption).toMatchObject({ font: 'semibold', size: 11, lineHeight: 14 });
+    expect(THEME.typography.caption).toMatchObject({ font: 'semibold', size: 11, lineHeight: 15 });
   });
 });

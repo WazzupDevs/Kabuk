@@ -7,11 +7,12 @@ export const CAP_ICONS = {
     {"t":"rect","l":"w","x":9,"y":13.4,"width":6,"height":2.4,"rx":1.2},
   ],
   back: [
-    {"t":"path","l":"sa","d":"M14.5 5.5 8 12l6.5 6.5","sw":3},
+    {"t":"rect","l":"a","x":5.562,"y":7,"width":12.676,"height":3.2,"rx":1.6,"transform":"rotate(-45.855 11.9 8.6)"},
+    {"t":"rect","l":"b","x":5.562,"y":13.8,"width":12.676,"height":3.2,"rx":1.6,"transform":"rotate(-134.145 11.9 15.4)"},
   ],
   bell: [
     {"t":"path","l":"b","d":"M9.5 19.2a2.6 2.6 0 0 0 5 0z"},
-    {"t":"path","l":"sa","d":"M12 3.6c-3.4 0-5.6 2.6-5.6 5.9v3.4L4.8 15.6c-.4.7.1 1.6.9 1.6h12.6c.8 0 1.3-.9.9-1.6l-1.6-2.7V9.5c0-3.3-2.2-5.9-5.6-5.9z","sw":2.6},
+    {"t":"path","l":"sa","d":"M12 3.6c-3.4 0-5.6 2.6-5.6 5.9v3.4L4.8 15.6c-.4.7.1 1.6.9 1.6h12.6c.8 0 1.3-.9.9-1.6l-1.6-2.7V9.5c0-3.3-2.2-5.9-5.6-5.9z","sw":3},
   ],
   block: [
     {"t":"circle","l":"b","cx":12,"cy":12,"r":9.4},
@@ -60,7 +61,8 @@ export const CAP_ICONS = {
     {"t":"path","l":"sa","d":"M7.6 12.2l3 3 5.8-6.2","sw":3},
   ],
   chevron: [
-    {"t":"path","l":"sa","d":"M9 5.5l6.5 6.5L9 18.5","sw":2.6},
+    {"t":"rect","l":"a","x":5.762,"y":7,"width":12.676,"height":3.2,"rx":1.6,"transform":"rotate(45.855 12.1 8.6)"},
+    {"t":"rect","l":"b","x":5.762,"y":13.8,"width":12.676,"height":3.2,"rx":1.6,"transform":"rotate(134.145 12.1 15.4)"},
   ],
   clock: [
     {"t":"circle","l":"b","cx":12,"cy":12,"r":9},
@@ -68,7 +70,8 @@ export const CAP_ICONS = {
     {"t":"rect","l":"a","x":10.7,"y":10.7,"width":6.4,"height":2.6,"rx":1.3},
   ],
   close: [
-    {"t":"path","l":"sa","d":"M6.5 6.5l11 11m0-11-11 11","sw":2.6},
+    {"t":"rect","l":"a","x":3,"y":10.4,"width":18,"height":3.2,"rx":1.6,"transform":"rotate(45 12 12)"},
+    {"t":"rect","l":"b","x":3,"y":10.4,"width":18,"height":3.2,"rx":1.6,"transform":"rotate(-45 12 12)"},
   ],
   closeSm: [
     {"t":"rect","l":"a","x":3,"y":10.4,"width":18,"height":3.2,"rx":1.6,"transform":"rotate(45 12 12)"},
@@ -84,8 +87,8 @@ export const CAP_ICONS = {
     {"t":"circle","l":"w","cx":12,"cy":12,"r":1.3},
   ],
   compose: [
-    {"t":"rect","l":"a","x":3,"y":9.4,"width":16.4,"height":5.2,"rx":2.6,"transform":"rotate(-45 11.2 12)"},
-    {"t":"rect","l":"b","x":12.4,"y":18.4,"width":8.6,"height":2.8,"rx":1.4},
+    {"t":"rect","l":"a","x":2.8,"y":9.6,"width":16.4,"height":5,"rx":2.5,"transform":"rotate(-45 11 12.1)"},
+    {"t":"rect","l":"b","x":3,"y":19,"width":18,"height":2.6,"rx":1.3},
   ],
   copy: [
     {"t":"rect","l":"a","x":8.4,"y":8.4,"width":12,"height":12.6,"rx":3.4},
@@ -174,8 +177,13 @@ export const CAP_ICONS = {
     {"t":"rect","l":"a","x":14.637,"y":12.3,"width":7.125,"height":2.6,"rx":1.3,"transform":"rotate(135 18.2 13.6)"},
   ],
   map: [
-    {"t":"path","l":"b","d":"M3.4 6.6 9 4.4l6 2.2 5.6-2.2v13l-5.6 2.2-6-2.2-5.6 2.2Z"},
-    {"t":"path","l":"a","d":"M12 7.4c-1.7 0-3 1.3-3 3 0 2 3 4.8 3 4.8s3-2.8 3-4.8c0-1.7-1.3-3-3-3Z"},
+    {"t":"path","l":"sb","d":"M6.2 17.6h5.3c2 0 3.1-1.2 3.1-2.9s-1.1-2.9-3.1-2.9h-1","sw":3},
+    {"t":"circle","l":"b","cx":5.6,"cy":17.6,"r":2.8},
+    {"t":"path","l":"a","d":"M16.6 2.8c-2.4 0-4.2 1.8-4.2 4.1 0 2.7 2.9 5.4 3.7 6.1.3.3.7.3 1 0 .8-.7 3.7-3.4 3.7-6.1 0-2.3-1.8-4.1-4.2-4.1Z"},
+    {"t":"circle","l":"w","cx":16.6,"cy":6.9,"r":1.6},
+  ],
+  minus: [
+    {"t":"rect","l":"a","x":3,"y":10.4,"width":18,"height":3.2,"rx":1.6},
   ],
   more: [
     {"t":"circle","l":"a","cx":5.2,"cy":12,"r":2.1},
@@ -247,12 +255,12 @@ export const CAP_ICONS = {
     {"t":"rect","l":"a","x":9.1,"y":10.6,"width":13.2,"height":2.6,"rx":1.3,"transform":"rotate(-48 15.7 11.9)"},
   ],
   refresh: [
-    {"t":"path","l":"sb","d":"M19.5 12a7.5 7.5 0 1 1-2.2-5.3","sw":3.2},
-    {"t":"path","l":"sa","d":"M19.6 3.8v5.4h-5.4","sw":3.2},
+    {"t":"path","l":"sb","d":"M19.5 12a7.5 7.5 0 1 1-2.2-5.3","sw":3},
+    {"t":"path","l":"sa","d":"M19.6 3.8v5.4h-5.4","sw":3},
   ],
   reply: [
-    {"t":"path","l":"sa","d":"M10 5.4 4 11l6 5.6","sw":2.8},
-    {"t":"path","l":"sb","d":"M5 11h8.4c4 0 6.6 2.6 6.6 6.6v1","sw":2.8},
+    {"t":"path","l":"sa","d":"M10 5.4 4 11l6 5.6","sw":3},
+    {"t":"path","l":"sb","d":"M5 11h8.4c4 0 6.6 2.6 6.6 6.6v1","sw":3},
   ],
   report: [
     {"t":"rect","l":"a","x":-3.2,"y":10.6,"width":19.2,"height":3.2,"rx":1.6,"transform":"rotate(90 6.4 12.2)"},
@@ -301,7 +309,7 @@ export const CAP_ICONS = {
   unarchive: [
     {"t":"rect","l":"b","x":3,"y":4,"width":18,"height":5.4,"rx":2.7},
     {"t":"rect","l":"b","x":4.4,"y":10.6,"width":15.2,"height":9.6,"rx":3.6},
-    {"t":"path","l":"sa","d":"M12 19V12.6m-3 2.8 3-3 3 3","sw":2.6},
+    {"t":"path","l":"sa","d":"M12 19V12.6m-3 2.8 3-3 3 3","sw":3},
   ],
   unpin: [
     {"t":"rect","l":"b","x":6.5,"y":2.6,"width":11,"height":9.6,"rx":4.8},

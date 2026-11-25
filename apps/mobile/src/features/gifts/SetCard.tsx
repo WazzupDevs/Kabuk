@@ -7,13 +7,14 @@ import {
   wornSetPieces,
 } from '@shared/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
-import { upperTr } from '@shared/trText.ts';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { T, useKit } from '@/aura/kit';
+import { AppIcon } from '@/components/AppIcon';
 import { CachedSvg } from '@/components/CachedSvg';
 import { LookAvatar } from '@/components/LookAvatar';
+import { ProgressPill } from '@/components/ProgressPill';
 import { Sheet } from '@/components/Sheet';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -21,6 +22,7 @@ import { useNarrow } from '@/lib/useNarrow';
 import { Tap } from '@/motion';
 import { SET_BALLOONS } from '@/theme/setBalloons';
 import { OWN_PROFILE, SET_CARD } from '@/theme/ownProfile';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useState } from 'react';
@@ -28,24 +30,45 @@ import { useState } from 'react';
 import { TierGems } from './parts';
 import { useEquip, useGiftState } from './queries';
 
-// Set balonu (docs/SPEC_V4.md §4.U; the owner's call, 8 Kasım; the preview he approved): on the
-// profile under Arkadaşlar, three slots for the capsule's three regions (Baş; Yüz: the eyes, the
-// face, the mouth; Gövde: the neck, the colour). A piece of one skin set in each gives that set's
+// Set balonu (docs/SPEC_V4.md Â§4.U; the owner's call, 8 KasÄ±m; the preview he approved): on the
+// profile under ArkadaÅŸlar, three slots for the capsule's three regions (BaÅŸ; YÃ¼z: the eyes, the
+// face, the mouth; GÃ¶vde: the neck, the colour). A piece of one skin set in each gives that set's
 // balloon wherever the person writes anonymously. A slot shows the set piece worn there; a tap
 // opens the region's set pieces, by set, the ones not owned faded under a lock; choosing one wears
 // it (gifts/equip). A new set's pieces join the sheet by themselves (content/gift-packs.json).
-// yeni arayüz tuvali, ProfilBen `.prt`: the three parts' pictures 84, plain (no ring); in the narrow
+// yeni arayÃ¼z tuvali, ProfilBen `.prt`: the three parts' pictures 84, plain (no ring); in the narrow
 // state two to a row (DarProfilim).
 const DISC = 84;
 const EMPTY = 62;
 const OPTION = 64;
 const RING = 3;
+
+// The worn piece's ring, RING outside its round: a border of its own, not an outset shadow (on
+// Android a shadow ring lost its round corners and showed as a square, 22 Kasım).
+function WornRing({ size, color }: { size: number; color: string }) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: -RING,
+        top: -RING,
+        width: size + 2 * RING,
+        height: size + 2 * RING,
+        borderRadius: (size + 2 * RING) / 2,
+        borderWidth: RING,
+        borderColor: color,
+      }}
+    />
+  );
+}
 const LOCK = 24;
 const CAPSULE = 'c:krem e:klasik';
 const pieceLook = (id: string) => `${CAPSULE} x:${id}`;
 
 export function SetCard() {
-  const { c, scheme } = useKit();
+  const { scheme } = useKit();
+  const { colors } = useTheme();
   const narrow = useNarrow();
   const gifts = useGiftState();
   const [open, setOpen] = useState<SetRegion | null>(null);
@@ -62,44 +85,32 @@ export function SetCard() {
   const lead = counts.reduce((a, b) => (b.n > a.n ? b : a), counts[0] ?? { set: null, n: 0 });
   const filled = SET_REGION_ORDER.filter((r) => pieces[r]).length;
   const mixed = filled === SET_REGION_ORDER.length && !balloon;
-  const skin = balloon ? SET_BALLOONS[balloon] : null;
 
   const k = SET_CARD[scheme];
-  const chip = skin
-    ? { bg: skin.chipOn, fg: skin.name.ink }
-    : mixed
-      ? { bg: k.count, fg: c.warn }
-      : { bg: k.count, fg: c.ink };
   // yeni tuval ProfilBen (`.sh`, `.stag`, `.sd`, `.parts`): the small title and the balloon's tag on one
   // line, the note under them, the three parts' pictures under it; no card.
   return (
     <View style={{ marginTop: OWN_PROFILE.gap, gap: SET_CARD.gap }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <T v="eyebrow" accessibilityRole="header">
-            {upperTr(tr.gifts.setTitle)}
+          <T v="sectionHead" accessibilityRole="header">
+            {tr.gifts.setTitle}
           </T>
         </View>
-        <View
-          style={{
-            height: SET_CARD.count.height,
-            paddingHorizontal: SET_CARD.count.padX,
-            borderRadius: SET_CARD.count.height / 2,
-            backgroundColor: chip.bg,
-            justifyContent: 'center',
-            flexShrink: 1,
-          }}
-        >
-          <T v="setCount" color={chip.fg} tabular lines={1} fit>
-            {balloon && lead.set
+        <ProgressPill
+          value={balloon ? SET_REGION_ORDER.length : mixed ? SET_REGION_ORDER.length : lead.n}
+          total={SET_REGION_ORDER.length}
+          tone={mixed ? 'warn' : undefined}
+          label={
+            balloon && lead.set
               ? tr.gifts.setChipOn(lead.set.name)
               : mixed
                 ? tr.gifts.setChipMixed
                 : lead.set && lead.n > 0
                   ? tr.gifts.setChipCount(lead.set.name, lead.n, SET_REGION_ORDER.length)
-                  : tr.gifts.setChipNone(SET_REGION_ORDER.length)}
-          </T>
-        </View>
+                  : tr.gifts.setChipNone(SET_REGION_ORDER.length)
+          }
+        />
       </View>
       <T v="setNote" color={k.note}>
         {balloon && lead.set
@@ -120,9 +131,13 @@ export function SetCard() {
       >
         {SET_REGION_ORDER.map((region) => {
           const piece = pieces[region];
+          // The piece giving the balloon the person has on (owner, 21 Nov): a ring and a tick,
+          // following the worn set as it changes.
+          const active = !!balloon && piece?.set === balloon;
           return (
             <View key={region} style={{ width: narrow ? '50%' : '33.33%' }}>
               <Tap
+                accessibilityState={{ selected: active }}
                 accessibilityLabel={tr.gifts.setSlotLabel(
                   tr.gifts.setRegion[region],
                   piece?.name ?? tr.gifts.setEmpty,
@@ -130,7 +145,7 @@ export function SetCard() {
                 onPress={() => setOpen(region)}
                 style={{ alignItems: 'center', gap: SET_CARD.slotGap }}
               >
-                {/* An empty slot 62 in the worn one's place (iskelet.md → 5.7). */}
+                {/* An empty slot 62 in the worn one's place (iskelet.md â†’ 5.7). */}
                 <View
                   style={{
                     width: DISC,
@@ -156,12 +171,14 @@ export function SetCard() {
                           }),
                     }}
                   >
+                    {active ? <WornRing size={DISC} color={colors.accent} /> : null}
                     {piece ? (
                       <LookAvatar look={pieceLook(piece.id)} size={DISC} />
                     ) : (
                       <CapIcon name="plus" color={k.plus} soft={1} size={SET_CARD.plus} />
                     )}
                   </View>
+                  {active ? <ChosenTick /> : null}
                 </View>
                 <T v="setSlot" ink center>
                   {tr.gifts.setRegion[region]}
@@ -250,12 +267,13 @@ function RegionSheet({
                         width: OPTION,
                         height: OPTION,
                         borderRadius: OPTION / 2,
-                        ...(on ? { boxShadow: `0 0 0 ${RING}px ${colors.accent}` } : null),
                       }}
                     >
+                      {on ? <WornRing size={OPTION} color={colors.accent} /> : null}
                       <View style={{ opacity: mine ? 1 : LOCKED_FADE }}>
                         <LookAvatar look={pieceLook(a.id)} size={OPTION} />
                       </View>
+                      {on ? <ChosenTick /> : null}
                       {!mine ? (
                         <View
                           style={{
@@ -275,10 +293,12 @@ function RegionSheet({
                         </View>
                       ) : null}
                     </View>
+                    {/* The gems right under the capsule, the name under them: every piece's
+                        gems on one line, however many lines its name takes. */}
+                    <TierGems tier={GIFT_TIERS[3]} />
                     <T v="fine" center>
                       {a.name}
                     </T>
-                    <TierGems tier={GIFT_TIERS[3]} />
                   </Tap>
                 );
               })}
@@ -295,3 +315,29 @@ function RegionSheet({
   );
 }
 const LOCKED_FADE = 0.4;
+
+// The chosen one's small tick at the picture's top right, on the ring's colour (the checkbox's
+// tick: KIT.size.checkTick in a KIT.size.checkBox disc).
+function ChosenTick() {
+  const { c } = useKit();
+  const { colors } = useTheme();
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        width: KIT.size.checkBox,
+        height: KIT.size.checkBox,
+        borderRadius: KIT.size.checkBox / 2,
+        backgroundColor: colors.accent,
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: `0 0 0 2px ${c.sheetBase}`,
+      }}
+    >
+      <AppIcon name="checkmark" size={KIT.size.checkTick} color={c.onMarkOn} />
+    </View>
+  );
+}

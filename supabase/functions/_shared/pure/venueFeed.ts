@@ -27,6 +27,19 @@ export function prepareVenuePost(raw: string): string | null {
   return length >= 1 && length <= VENUE_FEED.maxLength ? body : null;
 }
 
+// One of the caller's own posts as venue-feed/mine returns it (the own profile's Gönderilerim,
+// §4.Y): the venue it was written at (only its author ever gets it, rule 4), its like and reply
+// counts. A reply is never one.
+export type OwnVenuePost = {
+  id: string;
+  venueId: string;
+  venueName: string;
+  body: string;
+  createdAt: string;
+  likes: number;
+  replies: number;
+};
+
 // One post as venue-feed/page returns it, and one reply as venue-feed/replies does (a reply has
 // no replies). The author's display name and photo (signed, if any); no account id, no profile id,
 // no nick. Likes are a count and whether the reader liked, never who.

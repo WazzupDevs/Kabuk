@@ -1,5 +1,46 @@
 # İlerleme
 
+## Devir notu (21 Kasım 2026, sabah): kapsül aksesuarları yenileniyor, yeni oturumda başlanacak
+
+- Proje sahibinin kararı (21 Kasım): eski 67 aksesuar **tamamen silinir** (katalog, çizimler `theme/capsuleAccessories.ts`, `gift_accessories`, `user_accessories`, kapsüllere takılı `x:` parçaları; yeni migration, üretime uygulaması proje sahibinin). Yerine aksesuar tuvalinin (https://claude.ai/artifact/4eZ83Hemwr3m9qtU2HBubw, "skall aksesuarlar"; kurallar `project/Main.dc.html`) **bütün setleri**, sohbet balonları dahil, tuvale sadık: 45 set (Sıradan, Nadir, Destansı, Efsanevi; Elf ve Ninja yeniden çizilmiş), 3 Özel beta seti (Luna, Terra, Sol; "ilk kullanıcılara özel"), Efsanevi setlerin balonları, dış giyim (7. katman, `DisGiyim`, `DisGiyimEfsanevi`). Silme ve yeni katalog aynı pakette (boş katalogda paket açılmaz).
+- Tuvalin parçaları uygulamanın kapsülüyle aynı 100 birimlik kutuda (gövde x 24–76, üst 22; vizör 35–55,4): her parçanın SVG'sinden kapsülün kendi öğeleri ayıklanıp `art` / `skin` / `back` otomatik çıkarılabilir; yuvalar Baş h, Göz e, Yüz f, Ağız m, Gövde n, Renk c. Önce `mimar` planı (beta setlerinin dağıtımı ve dış giyim katmanı ürün belgesinde yok: proje sahibine tek soru), sonra paket paket.
+- Çalışma ağacında onay bekleyen iş (commit'lenmedi): Profil → "Kapsülün | Gönderiler" sekmesi ve `venue-feed { action: 'mine' }` (migration `20261225090000_venue_feed_mine.sql`, `OwnPosts.tsx`, §4.Y "Gönderilerim"); dev projesinde yayında olmadığı için sekme hata hâli gösteriyor; entegrasyon testi Docker yokluğundan koşulmadı. Profil revizeleri `1f94b3eb0`, `cfa1b40b4` (GERİAL bunu geri alır), `c1dab9bb4`.
+- Bilgisayar ağı değişti: telefon kod sunucusuna `http://10.23.158.220:8081` ile bağlanır; emülatör `adb reverse tcp:8081 tcp:8081` ve `exp+masa://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081`.
+
+## Devir notu (21 Kasım 2026): ekran ekran revize sürüyor, sıra Profil'de
+
+- Dal `kesfet` (`temel`'in üstünde, yerel; GitHub'a gönderilmedi, giriş bu bilgisayarda yok). Kayıtlı ve onaylı: Keşfet (bilet satırları `VenueTicket`, kısa ad `shortName.ts`, rota ikonu), harita (lejant ve düğmeler kart yokken sekme çubuğunun üstünde, bilgi düğmesi, + ve −), Aktiviteler (hediye kartı Etkinlikler'in ilk kartı 148, etkinlik kartı aynı boy, geliştirme sürümünde örnek etkinlikler), sekme çubuğu (çizgi ikonlar, yazısız, yuvarlak hap). `pnpm check` temiz (4344 test).
+- Çalışma kuralı (proje sahibi, 20 Kasım; bellekte `gorsel-revizede-once-goster`): her yeni ekranda önce emülatör görüntüsü ile tuval panoları yan yana gönderilir (`node C:\dev\tools\yanyana.mjs <cikti> "Etiket=dosya" "Etiket=pano:PanoAdi"`); revize gelince değişiklik yapılır, hiçbir kontrol beklenmeden "emülatörden bakın" yazılır, emülatöre dokunulmaz; "olmuş"tan sonra tek `pnpm check` (üst üste koşturma) ve commit. Ortak bileşenlere proje sahibi istemedikçe dokunulmaz.
+- Sıradaki: Profil (kıyas resmi gönderildi, revize bekleniyor; #747 profil işi `refs/pull/747/head`'de bekliyor, alınmadı), sonra Mesajlar, Mekan ve kalan ekranlar.
+- Açık: haritada pin resimleri ve bütün harita yazıları emülatörde çizilmiyor (beş deneme tutmadı, geri alındı; telefonda bakılmadı). Oyun ve kayıt ekranları yeni yazıyla hiç görülmedi. Koyu tema ve 320 dp görülmedi.
+- Tuzaklar: Metro kapanınca uygulama açılış listesinde kalır (terminalde `metro.ps1`, sonra uygulamayı yeniden başlat; sunucu satırı y ≈ 525); `capIcons` üretimi Windows'ta betiğin kendi ana bloğuyla çalışmaz (`node --experimental-strip-types -e "import('./scripts/sistem/capIcons.ts')..."`); ikon çizimi değişince uygulama yeniden başlatılır.
+
+## Devir notu (20 Kasım 2026, gece yarısı): ekran revizesi başladı, Keşfet
+
+- Ortak temel bitti (`temel` dalı; aşağıdaki not). Ekran revizesi ekran ekran yürüyor: her ekran kendi dalında (`temel`'in üstünde), önce varsa bekleyen işi alınır, emülatörde panoyla yan yana bakılır (`node C:\dev\tools\karsilastir.mjs <Pano> acik <durum>`), boşluklar ölçeğe çekilir.
+- Keşfet (`kesfet` dalı): #745'in işi (kaydırılmış hâl, çip satırı, harita, semt kartı) temelin üstüne alındı; şerit başlığı kalın, bölüm etiketi her yerde gri (`T` → `sectionHead`), `theme/explore.ts`'te 19 boşluk ölçekte. Liste ve kaydırılmış hâl panoyla örtüşüyor.
+- Keşfet'te açık: haritada pinlerin içi (mekân resmi) ve pin altındaki adlar emülatörde çizilmiyor (harita ve pin halkaları geliyor; #745 bu katmanlara dokunmadı, telefonda bakılmadı). Koyu tema, arama, boş hâl ve mekân sayfası görülmedi.
+- Tuzaklar: görsel kapı durumları (`masa:///gorsel?...`) uygulamayı çevrimdışı moda alır, normal kullanıma dönmek için uygulamayı yeniden başlat; Metro dal değiştirirken dosya anlık kaybolunca çöküyor (yeniden başlat); geliştirici listesinde sunucu satırı artık üstte (y ≈ 525).
+
+## Devir notu (20 Kasım 2026, gece): ortak temelin kalıcılaştırması, ilk yarı
+
+- Yapıldı (`docs/decisions/temel.md` → Kalıcılaştırma): yazıda otomatik yuvarlama kalktı (`TYPE_SCALE`, `auraKit.test.ts`), sekiz ikonun kaynak çizimi eşitlendi, boy ve yazı testleri yeni değerlerde, deneme önizleme sayfaları kaldırıldı, CLAUDE.md ve `iskelet.md` güncellendi.
+- `pnpm check` Windows'ta artık geçiyor (yol ayracı ve zaman aşımı düzeldi; 4326 test). Koşu `deno.lock`'u değiştiriyor: commit'ten önce `git checkout -- deno.lock`.
+- Yazı adları 21 temel stile bağlandı (`auraKit.ts` → `BASE`; 36 kullanılmayan ad silindi). Bu görünüşü değiştirdi (800 → 700, satır yükseklikleri, harf aralığı); emülatörde yalnız dört sekmeye açık temada bakıldı, proje sahibi henüz görmedi.
+- Tek bileşene indi: `Segmented` silindi (`Seg` tek boy), `Btn` iki boy artı `bar`, `Input` tek görünüş, tam sayfa boş hâl `EmptyState` → `page` ile ortada (Mesajlar'ın boş hâli 41 dp aşağı indi). Proje sahibi yazı görünüşünü dört sekmede onayladı; bu parçaları henüz görmedi.
+- Yazı tipi kararı (proje sahibi, 20 Kasım): başlıklar Bricolage Grotesque 700, kalan metin telefonun yazısı (`temel.md` → Yazı tipi kararı). Kit, eski yazı sistemi ve sekme çubuğu çevrildi; oyunların ve kaydın kendi yazı dosyaları Plus Jakarta Sans'ta kaldı. Yeni paket eklendi: kod sunucusu yeniden başlatılmadan görmez.
+- Köşe beş değere çekildi (ortak tema dosyaları; `RADIUS_SCALE`), boşluk ölçeği kural olarak yazıldı ve ekran revizesinde uygulanacak (proje sahibi ikisini de onayladı). Renkler ortak listeye inmedi: ekran revizesinde ekran ekran.
+- Oyun ve kayıt yazı dosyaları da aynı kurala bağlandı (`theme/typeFace.ts`); Kinshi kelimesi ve skoru, Signum karosu ve Kaupholl tahmin alanı ölçü yüzünden Plus Jakarta Sans'ta. Oyun ve kayıt ekranları emülatörde görülmedi.
+- Ortak temel bitti sayılır; sıradaki ekran ekran revize (boşluklar ve renkler orada). Önce görülmeyen ekranlara bakmak (koyu tema, sohbetler, kayıt, masa ve oyunlar, 320 dp ve en büyük yazı), çipin seçenekleri, açık küçükler; sonra aileler bu temelle.
+- `temel` dalı hâlâ yerel: GitHub girişi bu bilgisayarda yok, ilk push'u proje sahibi yapacak; PR açılınca kapsam kaydı kanıtı ya da muafiyeti gerekir.
+
+## Devir notu (20 Kasım 2026): yerel düzen çalışıyor, ortak temel deneme hâlinde
+
+- Yerel düzen kuruldu (bu bilgisayar: Windows, emülatör `skall-1`, geliştirme sürümü + Metro; araçlar `C:\dev\tools\env.ps1`); emülatörde DEV test hesabıyla oturum açık. `pnpm check` Windows'ta kendiliğinden düşüyor; GitHub girişi bu bilgisayarda yok (ilk push'ta proje sahibi yapacak).
+- Proje sahibi sırayı değiştirdi: ekran aktarımından önce ortak temel (`docs/decisions/temel.md`). On bir parça emülatörde gösterilip onaylandı; hepsi yerel `temel` dalında deneme (19 commit, gönderilmedi, `ci`'dan geçmez).
+- Sıradaki: kalıcılaştırma (`temel.md` → Kalıcılaştırma, 7 madde), sonra aileler bu temelle. "Pano geçerlidir" kuralı ve 18 Kasım'ın boy kararı değişti; CLAUDE.md henüz güncellenmedi.
+- Keşfet (#745) ve profil (#747) PR'ları olduğu gibi bekliyor; temelden sonra yeniden temellenecekler. Halkasız geri düğmesi denemesi iptal.
+
 ## Devir notu (18 Kasım 2026, gece): gören oturum kararı, iki aile doğrulamada
 
 - Proje sahibi yeni çalışma düzenini onayladı (`docs/decisions/calisma-duzeni.md`): ekran işleri emülatörlü yerel oturumda (geliştirme sürümü + Metro; yönerge sohbette verildi, kurulup kurulmadığı bilinmiyor), bulut oturumu sunucu ve takip; sonra bir kerelik tuval–kit eşlemesi, pano parmak izi, durum tablosu. Tarayıcı ön izleme denemesi `claude/web-onizleme` dalında (ajan çalışıyordu; sonucu görülmedi).

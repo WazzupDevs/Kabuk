@@ -6,7 +6,10 @@ import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import type { VenueFeedPageResponse } from '../functions/_shared/pure/api/venueFeed.ts';
+import type {
+  VenueFeedMineResponse,
+  VenueFeedPageResponse,
+} from '../functions/_shared/pure/api/venueFeed.ts';
 import { venueChatChannel } from '../functions/_shared/pure/venueChat.ts';
 import { VENUE_FEED, VENUE_FEED_BROADCAST } from '../functions/_shared/pure/venueFeed.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
@@ -153,6 +156,10 @@ describe('venue feed: who reads and writes', () => {
       target_venue_id: venue[V] ?? '',
     });
     expect(called.error).not.toBeNull();
+    // The own posts with their venues: the server's only (another account's venue never reaches a
+    // client).
+    const mineFor = await a.rpc('venue_feed_mine_for', { target_user_id: await userIdOf(a) });
+    expect(mineFor.error).not.toBeNull();
     const liked = await a.rpc('venue_feed_like', {
       target_user_id: await userIdOf(a),
       target_post_id: id,
@@ -458,6 +465,57 @@ describe('venue feed: a post lives a day', () => {
     await sql`select private.delete_old_venue_posts(${VENUE_FEED.keepHours})`;
     expect(await sql`select id from public.venue_posts`).toEqual([{ id: fresh }]);
     expect(await sql`select 1 from public.venue_post_likes`).toHaveLength(0);
+  });
+});
+
+describe('venue feed: the own posts', () => {
+  async function mine(client: Client, before?: string) {
+    const res = await feed(client, { action: 'mine', ...(before ? { before } : {}) });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    return (res.body as VenueFeedMineResponse).posts;
+  }
+
+  it('gives the author their own posts with the venue, nobody else’s, the same when sent twice', async () => {
+    const { a, b } = await threeAtVenue();
+    const first = await post(a, 'ilk');
+    await post(a, 'ilke yanıt', first);
+    const second = await post(a, 'ikinci');
+    await post(b, 'Burak yazdı');
+    expect(await feed(b, { action: 'like', postId: second })).toEqual(OK);
+    await post(b, 'ikinciye yanıt', second);
+
+    const own = await mine(a);
+    // Posts only, newest first, the venue's name with each; replies are counted, never listed.
+    expect(own.map((p) => p.body)).toEqual(['ikinci', 'ilk']);
+    const [venueRow] = await sql<{ name: string }[]>`
+      select name from public.venues where id = ${venue[V] ?? ''}`;
+    expect(own[0]).toMatchObject({
+      id: second,
+      venueId: venue[V],
+      venueName: venueRow?.name,
+      likes: 1,
+      replies: 1,
+    });
+    expect(Object.keys(own[0] ?? {}).sort()).toEqual(
+      ['body', 'createdAt', 'id', 'likes', 'replies', 'venueId', 'venueName'].sort(),
+    );
+    expect(await mine(a)).toEqual(own);
+    expect((await mine(a, own[0]?.createdAt)).map((p) => p.body)).toEqual(['ilk']);
+    // Another reader gets only their own.
+    expect((await mine(b)).map((p) => p.body)).toEqual(['Burak yazdı']);
+  });
+
+  it('drops a deleted post and one past its day, and needs no check-in', async () => {
+    const { a } = await threeAtVenue();
+    const gone = await post(a, 'silinecek');
+    const old = await post(a, 'eski');
+    await post(a, 'kalan');
+    expect(await feed(a, { action: 'delete', postId: gone })).toEqual(OK);
+    await sql`update public.venue_posts
+              set created_at = now() - make_interval(hours => ${VENUE_FEED.keepHours + 1})
+              where id = ${old}`;
+    await sql`update public.table_sessions set status = 'ended', ended_at = now() where ended_at is null`;
+    expect((await mine(a)).map((p) => p.body)).toEqual(['kalan']);
   });
 });
 

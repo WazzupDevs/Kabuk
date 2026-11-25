@@ -26,32 +26,31 @@ function code(path: string): string {
 }
 
 describe('K1: the size scale', () => {
-  // The boards' sizes (the owner's call, 18 Kasım): main 48, big and long 56, small 36, a bar's 40,
-  // a row's 32 / 34 / 40, round 44, chip 36 (40 where its board draws 40), Süsle's filter chip 28.
-  it('main 48, big 56, small 36, bar 40, round 44, chip 36 / 40, filter chip 28, field 48', () => {
-    expect(KIT.size.btn).toBe(48);
-    expect(KIT.size.btnTall).toBe(56);
-    expect(KIT.size.btnBig).toBe(56);
-    expect(KIT.size.btnSm).toBe(36);
-    expect(KIT.size.btnBar).toBe(40);
-    expect([KIT.size.rowBtnSm, KIT.size.rowBtnMd, KIT.size.rowBtnLg]).toEqual([32, 34, 40]);
-    expect(KIT.size.round).toBe(44);
-    expect(KIT.size.chip).toBe(36);
-    expect(KIT.size.chipLg).toBe(40);
+  // The base's sizes (the owner's call, 19 and 20 Kasım, docs/decisions/temel.md; in place of 18
+  // Kasım's): main 44 (no big 56: two heights, the main and the small), small 32, a row's
+  // 28 / 32 / 36, round and a top bar's button 40, chip 32 (one height), Süsle's filter chip 28.
+  it('main 44, small 32, round 40, chip 32, filter chip 28, field 44', () => {
+    expect(KIT.size.btn).toBe(44);
+    expect(KIT.size.btnSm).toBe(32);
+    expect([KIT.size.rowBtnSm, KIT.size.rowBtnMd, KIT.size.rowBtnLg]).toEqual([28, 32, 36]);
+    expect(KIT.size.round).toBe(40);
+    expect(KIT.size.topBtn).toBe(40);
+    expect(KIT.size.chip).toBe(32);
+    expect(KIT.size.chipLg).toBe(32);
     expect(code('app/(app)/(tabs)/explore/index.tsx')).toMatch(/KIT\.size\.chipLg/);
     expect(code('src/features/rooms/LobbyChoices.tsx')).toMatch(/<Chip\s+key=\{v\}\s+lg/);
     expect(KIT.size.chipFilter).toBe(28);
     expect(KIT.light.field).toBeDefined();
-    // The form field's height: the many-line field's 22 round and the single-line 48 are the kit's.
-    expect(KIT.size.btnRow).toBe(48);
+    // The form field's height: the many-line field's 22 round and the single-line 44 are the kit's.
+    expect(KIT.size.btnRow).toBe(44);
   });
 });
 
 describe('K2: the chat top bar', () => {
   const bar = code('src/components/ChatTopBar.tsx');
-  it('back, name pill and menu are 44; the pill avatar is 36', () => {
+  it('the name pill is 44, back and menu 40; the pill avatar is 36', () => {
     expect(KIT.size.dmPill).toBe(44);
-    expect(KIT.size.roundLg).toBe(44);
+    expect(KIT.size.roundLg).toBe(40);
     expect(KIT.size.av.member).toBe(36);
     expect(bar).toMatch(/SPLIT_PILL\s*=\s*KIT\.size\.dmPill/);
     expect(bar).toMatch(/ROUND\s*=\s*KIT\.size\.roundLg/);
@@ -132,14 +131,18 @@ describe('K9: Profili düzenle', () => {
   it('hides the tab bar', () => {
     expect(edit).toMatch(/useHideTabBar\(\);/);
   });
-  it('Kaydet is on the bar, clear, at least 96 wide (iskelet.md → 2.1, 5.8)', () => {
+  // Yeni arayüz tuvali ProfilDuzenle, ProfilDuzenleYaz (24 Kasım): the solid Kaydet beside the
+  // title on the bar, quiet with nothing to save (as Süsle's).
+  it('Kaydet is on the bar, solid, off with nothing to save, at least 96 wide', () => {
     expect(edit).not.toMatch(/footer=\{/);
     expect(edit).toMatch(/<PageTop\b/);
-    expect(edit).toMatch(/variant="glassy"\s+bar=\{KIT\.size\.topBtn\}\s+testID="profile-save"/);
-    expect(edit).toMatch(/tint=\{changed \|\| save\.isSuccess \? KIT\.primary : KIT\.saveIdle\}/);
+    expect(edit).toMatch(/inline=\{/);
+    expect(edit).toMatch(/<Btn\s+bar\s+testID="profile-save"/);
+    // `bar`: as tall as the bar's round buttons.
+    expect(code('src/aura/kit.tsx')).toMatch(/const height = bar \? KIT\.size\.topBtn :/);
+    expect(edit).toMatch(/disabled=\{!changed && !save\.isPending && !save\.isSuccess\}/);
     expect(edit).toMatch(/style=\{\{ minWidth: KIT\.saveMinWidth \}\}/);
     const kit = code('src/theme/auraKit.ts');
-    expect(kit).toMatch(/saveIdle: '#9AAEA1',/);
     expect(kit).toMatch(/saveMinWidth: 96,/);
     expect(kit).toMatch(/primaryHalo: 'rgba\(14, 135, 69, 0\.18\)',/);
     expect(kit).toMatch(/focusHalo: 3,/);

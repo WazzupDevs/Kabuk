@@ -75,7 +75,8 @@ export const AURA = {
       pill: 'rgba(255, 255, 255, 0.94)',
       pillShadow: '',
       onInk: '#0B0E0D',
-      iconOn: '#0B783D',
+      // The chosen icon in the tickets' green (the owner's ask, 24 Kasım; TICKET_TONE.dark.edge).
+      iconOn: '#3DDC84',
       iconOnBody: '#FF4F8B',
     },
     // The dark ground (#000000) in place of the light one.
@@ -126,14 +127,13 @@ export const AURA = {
     largeBarTitlePx: 30,
     stickyScale: 0.95,
   },
-  // Mekan's scroll (docs/design/iskelet.md → 5.11): the table card pins under the bar (104 from the
-  // screen's top) and folds into a 72 strip (its picture 52), the venue chat under it into a 54
-  // one; under 170 a card's content gives way to its strip's over 70 px.
+  // Mekan's scroll (the owner's design, 24 Kasım): scrolled under the bar, the switch and the two
+  // cards' strips pin there, the strips one height (60, their pictures 44).
   venueCollapse: {
     pinTop: 104,
-    tableStrip: 72,
-    stripPicture: 52,
-    chatStrip: 54,
+    tableStrip: 60,
+    stripPicture: 44,
+    chatStrip: 60,
     stripFrom: 170,
     stripFadePx: 70,
   },
@@ -166,7 +166,7 @@ export const AURA = {
       shadow: 'rgba(0, 0, 0, 0.45)',
       edge: 'rgba(255, 255, 255, 0.12)',
     },
-    radius: 26,
+    radius: 28,
     floorHeight: 96,
   },
   // The hero card's crew (aura.css, Mekan): three buddies at the right, the far one smaller and

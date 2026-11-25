@@ -184,6 +184,8 @@ export const tr = {
     continue: 'Devam',
     cancel: 'Vazgeç',
     retry: 'Tekrar dene',
+    // The search field's clear button (components/Field.tsx → SearchField).
+    clearSearch: 'Temizle',
     loading: 'Yükleniyor…',
     genericError: 'Bir şeyler ters gitti. Tekrar dener misin?',
     close: 'Kapat',
@@ -331,18 +333,18 @@ export const tr = {
   },
   // Mesajlar (docs/SPEC_V3.md §18.3).
   messages: {
-    empty: 'Henüz mesajın yok.',
+    empty: 'Henüz mesajın yok',
     emptyHint: 'Arkadaş olduğun kişilerle burada yazışırsın.',
     // The "+" and its list of friends (the owner's call, 30 Ekim).
     newMessage: 'Yeni mesaj',
     noMessage: 'Henüz mesaj yok',
     // iskelet.md → 5.4: the search over the conversations, by name, on the phone.
     search: 'Sohbet ara',
+    searchClose: 'Aramayı kapat',
     noMatch: 'Sohbet bulunamadı',
     noMatchHint: 'Başka bir ad dene.',
     // Over the search's rows (tuval MesajlarAra: "2 SOHBET", upperTr) and its × (MesajlarAra).
     found: (n: number) => `${n} sohbet`,
-    clearSearch: 'Temizle',
     // With the dots beside it (v45).
     typing: 'yazıyor',
     stamp: (iso: string, stamp: InboxStamp) =>
@@ -394,9 +396,7 @@ export const tr = {
       `${name} ile tüm mesajlar senin listenden silinir. Bu geri alınamaz.`,
     // The notice at the foot once a conversation is cleared (tuval MesajlarSilindi `.snk`).
     cleared: 'Sohbet silindi',
-    // The pinned conversations' head (tuval Main; "· 5/5" when full, MesajlarSabitDolu).
-    pinned: 'Sabitlenenler',
-    pinnedFull: (n: number, max: number) => `Sabitlenenler · ${n}/${max}`,
+    // A pinned row's spoken mark (its pushpin at the right).
     pinnedRow: 'sabitlendi',
     // Arşivlenenler (tuval Arsiv, ArsivBos, MesajlarArsivRozet): a new message keeps them there.
     archived: 'Arşivlenenler',
@@ -462,7 +462,7 @@ export const tr = {
     next: 'Devam',
     cardAlt: (name: string, tier: string) => `${name}, ${tier} aksesuar kartı`,
     // Set balonu (Profil; §4.U, 8 Kasım).
-    setTitle: 'Set balonu',
+    setTitle: 'Anonim mesaj balonun',
     setHint: 'Aynı setten 3 Efsanevi parça tak, anonim mesajların setin balonuyla görünsün.',
     setMore: (set: string) => `Üç bölgeye de ${set} parçası tak, ${set} balonu açılsın.`,
     setOn: (set: string) => `Anonim yazınca mesajların ${set} balonuyla görünür.`,
@@ -534,7 +534,6 @@ export const tr = {
     backToVenue: 'Mekana dön',
     views: { list: 'Liste', map: 'Haritada gör' },
     // The search's clear button (KesfetAra).
-    clearSearch: 'Temizle',
     // The map's legend (KesfetHarita `.lg`): the pins' colours by how lively.
     legend: { calm: 'Sessiz', lively: 'Masa var', buzzing: 'Kalabalık' },
     // The map's sources (KesfetHarita `.attr`); a touch opens the map's own attribution.
@@ -623,6 +622,8 @@ export const tr = {
     // The map's glass column (5.1): the camera back over the venues (never the phone's position,
     // rule 6) and the map's sources.
     recentre: 'Bütün mekanları göster',
+    zoomIn: 'Yakınlaştır',
+    zoomOut: 'Uzaklaştır',
     mapInfo: 'Harita bilgisi',
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
@@ -808,7 +809,6 @@ export const tr = {
     setName: (name: string) => `${name} takımı`,
     catalogSearch: 'Ara',
     catalogSearchHint: 'Parça adı ara',
-    catalogSearchClear: 'Temizle',
     catalogResults: 'Sonuçlar',
     catalogNoResult: 'Sonuç yok',
     catalogNoResultBody: (query: string) => `“${query}” adında bir parça yok. Başka bir ad dene.`,
@@ -838,22 +838,40 @@ export const tr = {
     friendsStatus: 'Arkadaşsınız',
     mutualTitle: (count: number) => `Ortak arkadaşlar · ${count}`,
     mutualOpen: (name: string) => `${name}, profilini aç`,
+    // tuval ProfilBaskasi `.mut`: "2 ortak arkadaş" over "Fevve ve Kadir".
+    mutualCount: (n: number) => `${n} ortak arkadaş`,
+    mutualNames: (names: readonly string[]) =>
+      names.length <= 1
+        ? (names[0] ?? '')
+        : names.length <= 3
+          ? `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`
+          : `${names.slice(0, 2).join(', ')} ve ${names.length - 2} kişi daha`,
+    mutualRow: (n: number, names: string) => `${n} ortak arkadaş: ${names}, listeyi aç`,
     noName: 'Henüz bir adın yok',
     nameWithAge: (name: string, age: number) => `${name}, ${age}`,
     // After the name on a profile's head, in the quiet colour (v45: .page-age).
     ageAfterName: (age: number) => `, ${age}`,
     addName: 'Ad ekle',
     edit: 'Profili düzenle',
-    birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
+    // Profili düzenle (yeni arayüz tuvali, ProfilDuzenle): the note under the locked birth date,
+    // its last words the link to the contact address.
+    birthDateNote: 'Doğum tarihin değiştirilemez, profilinde yalnızca yaşın görünür. Yanlışsa ',
+    birthDateContact: 'bizimle iletişime geç',
+    birthDateEnd: '.',
+    // "2000-03-14" → "14 Mart 2000".
+    birthDateLong: (iso: string) => {
+      const [y, m, d] = iso.split('-').map(Number);
+      return `${d} ${MONTHS[(m ?? 1) - 1] ?? ''} ${y}`;
+    },
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
     friendsSub: (n: number) => `${n} arkadaş`,
+    friendsButton: (n: number) => `Arkadaşlar · ${n}`,
     // "N arkadaş"'s faces past three: the rest as a count in the fourth place (tuval Benim).
     moreFaces: (n: number) => `+${n}`,
     editTitle: 'Profili düzenle',
     nameLabel: 'Görünen ad',
-    nameHint:
-      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
+    nameHint: 'Arkadaşların ve profilinle olduğun yerdekiler görür.',
     bioLabel: 'Tanıtım',
     bioHint: (n: number, max: number) => `${n}/${max}`,
     bioTooLong: (max: number) =>
@@ -878,7 +896,7 @@ export const tr = {
     coverDefault: 'Kapağın yok; profilinde varsayılan sahne görünür.',
     ticketKicker: 'Anonim kimliğin',
     ticketNo: (tail: string) => `No. ${tail}`,
-    nickRenewIn: (days: number) => `Yenile · ${days} gün sonra`,
+    nickRenewIn: (days: number) => `${days} gün sonra yenileyebilirsin`,
     badges: {
       first_game: 'İlk oyun',
       ten_games: '10 oyun',
@@ -887,9 +905,8 @@ export const tr = {
     },
     // docs/design/iskelet.md → 5.6: the badges in their grouped card.
     badgesTitle: 'Rozetler',
-    // iskelet.md → 5.8: Profili düzenle's birth date row and Kaydet once saved.
+    // Profili düzenle's birth date field and Kaydet once saved.
     birthDate: 'Doğum tarihi',
-    unchangeable: 'Değiştirilemez',
     savedShort: 'Kaydedildi',
     fieldCount: (n: number, max: number) => `${n}/${max}`,
     notVisible: 'Bu profil artık görüntülenemiyor.',
@@ -1087,6 +1104,14 @@ export const tr = {
     empty: 'Akışta henüz bir şey yok.',
     emptyNote: 'İlk gönderiyi sen yaz. Mekandakiler görür; gönderiler 24 saat sonra silinir.',
     older: 'Daha eskiler',
+    // Profil → Gönderiler (yalnız kendi profilinde; §4.Y).
+    mineTab: 'Gönderiler',
+    capsuleTab: 'Kapsülün',
+    profileViewLabel: 'Profil görünümü',
+    mineEmpty: 'Son 24 saatte gönderin yok',
+    mineEmptyNote: 'Mekan akışına yazdıkların burada görünür; gönderiler 24 saat sonra silinir.',
+    mineError: 'Gönderilerin yüklenemedi.',
+    mineReplies: (n: number) => (n > 0 ? `${n} yanıt` : 'Yanıt yok'),
     // Yazma sayfası.
     composeTitle: 'Akışa yaz',
     composeReplyTitle: 'Yanıtla',
@@ -1120,6 +1145,7 @@ export const tr = {
   },
   venueChat: {
     open: 'Mekan sohbeti',
+    go: 'Sohbete git',
     empty: 'Henüz mesaj yok. İlk mesajı sen yaz.',
     placeholder: 'Mekana yaz…',
     send: 'Gönder',
@@ -1147,7 +1173,7 @@ export const tr = {
     requestConfirmBody: 'İstek gönderirsen profilin ona görünür: adın, yaşın ve fotoğrafın.',
     requestConfirm: 'İsteği gönder',
     requestSent: 'İstek gönderildi.',
-    blockConfirmTitle: 'Bu kişiyi engellemek istiyor musun?',
+    blockConfirmTitle: 'Bu kişi engellensin mi?',
     blockConfirmBody:
       'Birbirinizin mesajlarını artık görmezsiniz. Karşı tarafa bildirilmez. Engeli ayarlardan kaldırabilirsin.',
     noTable: 'Mekan sohbeti yalnızca mekanda masan varken açılır.',
@@ -1311,12 +1337,12 @@ export const tr = {
     // "Sohbetten çık" in the room's ⋮ menu (SemtSecenek; §4.V).
     end: {
       action: 'Sohbetten çık',
-      title: 'Sohbetten çıkmak istiyor musun?',
+      title: 'Sohbetten çıkılsın mı?',
       body: 'Bugün yeniden girersen soru sorulmaz, yeni 2 saat başlar.',
       yes: 'Sohbetten çık',
     },
     cont: {
-      title: 'Sohbete devam etmek istiyor musun?',
+      title: 'Sohbete devam edelim mi?',
       body: 'İki saatin doldu. Evet dersen iki saat daha bu odadasın.',
       closesIn: (clock: string) => `Cevap vermezsen ${clock} sonra oturum kapanır.`,
       yes: 'Evet, 2 saat daha',
@@ -1342,7 +1368,7 @@ export const tr = {
     },
     reportSent: 'Şikayetin alındı. Teşekkürler.',
     block: 'Engelle',
-    blockConfirmTitle: 'Bu kişiyi engellemek istiyor musun?',
+    blockConfirmTitle: 'Bu kişi engellensin mi?',
     blockConfirm: 'Engelle',
     blockedEmpty: 'Engellediğin kimse yok.',
     unblock: 'Engeli kaldır',
@@ -2367,6 +2393,8 @@ export const tr = {
     // No table yet (v46: .nomasa).
     noTable: 'Henüz masan yok',
     noTableHint: 'Masa kur, arkadaşlarını çağır. Ya da açık bir masaya katıl.',
+    // The pinned stack's table strip without a table (the owner's design, 24 Kasım).
+    noTableStrip: 'Masa kur ya da katıl',
     createTable: 'Masa kur',
     withdraw: 'Lobiden çek',
     // The top row (v45: .top): the own photo opens Profil.
@@ -2583,6 +2611,29 @@ export const tr = {
       empty: 'Atölyede taslak yok.',
       variantA: 'A',
       variantB: 'B',
+      variantC: 'C',
+      accessoryCard: {
+        title: 'Aksesuar kartları (Süsle)',
+        note: 'Şeritteki seçenekler hediye kartı olur, nadirliğe göre dört kart: A bugünkü yuvarlaklar, B kartın dairesinde yalnız aksesuar, C hediyedeki gibi kapsülle.',
+        noteA: 'A: bugünkü hâl, gri yuvarlak, ad ve yıldızlar altında.',
+        noteB: 'B: nadirliğin kartı, dairesinde aksesuar tek başına ve büyük, ad altında.',
+        noteC: 'C: hediye paketinden çıkan kartın aynısı, kapsül aksesuarı takmış, ad altında.',
+      },
+      susleStage: {
+        title: 'Süsle sahnesi',
+        note: 'Büyük kapsülün arkasındaki zemin: A bugün, B gece sahnesi, C yumuşak ışık.',
+        noteA: 'A: bugünkü hâl, sayfanın açık zemini.',
+        noteB: 'B: koyu gece kartı, kapsülün arkasında mor ışık, sabit yıldızlar.',
+        noteC: 'C: yalnız dairenin çevresinde yumuşak mor ışık.',
+        approved: 'Onaylandı (22 Kasım): B, gece kartı.',
+      },
+      purpleTheme: {
+        title: 'Mor gece teması (Süsle)',
+        note: 'Düzen aynı, yalnız renkler: A bugünkü hâl, B mor gece teması.',
+        noteA: 'A: bugünkü hâl (yeşil vurgu, pembe seçim halkası).',
+        noteB:
+          'B: mor vurgu, mor degrade düğmeler, lacivert zemin ve mor bulutlar, düz yarı saydam alt panel.',
+      },
       buttonOrder: {
         title: 'Düğme sırası',
         note: 'Aracın çalıştığını gösteren örnek taslak.',

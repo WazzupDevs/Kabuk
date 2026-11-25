@@ -81,11 +81,11 @@ Alttaki Mesajlar ekranı (başlık, 2 yuvarlak, arama, seg, Sabitlenenler, 5 sat
 | 16 | DOĞRULANAMADI | — | tek satır varsayılanı: Bak düğmesi ile uzun ad aynı satır | 320 dp'de davranış ölçülmedi |
 
 ## 05 İstekler boş — project/IsteklerBos.dc.html
-Kod: app/(app)/(tabs)/messages/index.tsx; src/features/friends/RequestList.tsx; EmptyState.tsx; aura/GlassSearch.tsx; motion/TabBar.tsx
+Kod: app/(app)/(tabs)/messages/index.tsx; src/features/friends/RequestList.tsx; EmptyState.tsx; components/Field.tsx; motion/TabBar.tsx
 Öğe sayısı: 22 · uyuyor: 12 · fark: 8 · fazla: 0 · doğrulanamadı: 2
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
-| 1 | arama alanı iç boşluğu | ölçü | `.field` padX 20 (48 yüksek) | `capsulePadX` 18 (auraKit.ts:explore.capsulePadX; GlassSearch.tsx:44) |
+| 1 | arama alanı iç boşluğu | ölçü | `.field` padX 20 (48 yüksek) | `capsulePadX` 18 (auraKit.ts:explore.capsulePadX; components/Field.tsx:44) |
 | 2 | boş hâl resmi | resim | blob 62c6f7b7… png 640×520, çizim 120×98 | `riso="requests"` RISO_FULL değil: `compact` → 120×83 (empty-requests.webp 640×440; RISO_SMALL, EmptyState.tsx:75-80) |
 | 3 | boş hâl dikey yeri | düzen | `.emp` flex:1 ortalı, alt boşluk 190 | `flex-1 justify-center`, alt boşluk yok (RequestList.tsx:~122-132) → ortası ≈95 aşağıda |
 | 4 | açıklama genişliği | ölçü | 240 | 260 |
@@ -126,14 +126,14 @@ Kod: RequestList.tsx; RequestRowView.tsx; MasaRequests.tsx; aura/kit.tsx (Seg, B
 | 24 | DOĞRULANAMADI | — | 320 dp / büyük yazı | RequestRowView `narrow` ile düğmeleri alta alıyor; panoda tanım yok |
 
 ## 06 Arkadaşlar — project/Arkadaslar.dc.html
-Kod: app/(app)/(tabs)/profile/friends.tsx; GlassSearch.tsx; ProfileFace; motion BarBack/StickyField; theme/flatLists.ts
+Kod: app/(app)/(tabs)/profile/friends.tsx; components/Field.tsx; ProfileFace; motion BarBack/StickyField; theme/flatLists.ts
 Öğe sayısı: 36 (geri, başlık, alt başlık, arama+ikon+metin, kanki resmi, 5 satır × 5, sekme çubuğu) · uyuyor: 18 · fark: 10 · fazla: 0 · doğrulanamadı: 2
 | # | öğe | tür | pano | kod (dosya:satır) |
 | --- | --- | --- | --- | --- |
 | 1 | başlık | yazı | `.title` 600 21/27 −0.3 | `pageBarTitle` 700 21/26 (friends.tsx:58; auraKit.ts:197) |
 | 2 | arama üstünde kanki | eksik | blob b0c6d647… (png 900×510) 204×116, sağ 0, arama alanının 90 üstünde | yok. `FRIENDS_PEEK` (kankiMotion.ts:66-68, 54×68) tanımlı ama hiçbir yerde kullanılmıyor (grep) |
 | 3 | arama alanı yeri | boşluk | başlıktan sonra margin-top 68 (kankiye yer) | bar altında 8 (fieldTop) + 12 gap, kanki yok |
-| 4 | arama alanı dolgusu | renk | düz #FFFFFF (koyuda #121614) | `GlassSearch` Glass frost gradyan (GlassSearch.tsx:38) |
+| 4 | arama alanı dolgusu | renk | düz #FFFFFF (koyuda #121614) | `GlassSearch` Glass frost gradyan (components/Field.tsx:38) |
 | 5 | arama alanı padX | ölçü | 20 | 18 |
 | 6 | ad–alt satır aralığı | boşluk | `.mid` gap 2 | yok (friends.tsx:~167-170) |
 | 7 | "Mesaj gönder" yüksekliği | ölçü | `.mbt` 32 yük, min-width 112 | `Btn sm` 36, min genişlik yok (friends.tsx:~173-181) |

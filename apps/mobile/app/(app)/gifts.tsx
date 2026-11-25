@@ -400,7 +400,6 @@ function Buttons({
     <View style={{ flexDirection: 'row', gap: SPACING[3] }}>
       {view.locked ? null : (
         <Btn
-          tall
           label={tr.gifts.open}
           onPress={onOpen}
           loading={pending}
@@ -409,7 +408,6 @@ function Buttons({
         />
       )}
       <Btn
-        tall
         variant="glassy"
         icon="info"
         label={tr.gifts.odds}

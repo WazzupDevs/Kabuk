@@ -18,7 +18,6 @@ import Animated, {
 
 import { TabIcon } from '@/aura/TabGlyph';
 import { shadowParts } from '@/components/NativeShadow';
-import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -166,9 +165,11 @@ export function TabBar({ items, selected, onPress, opaque = false }: Props) {
               style={[
                 {
                   position: 'absolute',
-                  left: 0,
+                  // Round, in the middle of its tab: the tabs have no words (the owner's call, 20
+                  // Kasım), so the pill is the icon's disc.
+                  left: (tabWidth - s.pillHeight) / 2,
                   top: (s.height - s.pillHeight) / 2,
-                  width: tabWidth,
+                  width: s.pillHeight,
                   height: s.pillHeight,
                   borderRadius: s.pillHeight / 2,
                   backgroundColor: a.pill,
@@ -240,17 +241,11 @@ function Tab({
             height: s.pillHeight,
             alignItems: 'center',
             justifyContent: 'center',
-            gap: s.labelGap,
             transform: [{ scale: press.scale }],
           }}
         >
           <View>
-            <TabIcon
-              tab={item.key}
-              color={active ? a.iconOn : ink}
-              second={active ? a.iconOnBody : undefined}
-              size={s.iconLabelled}
-            />
+            <TabIcon tab={item.key} color={active ? a.iconOn : ink} size={s.icon} />
             {item.unread ? (
               <View
                 style={{
@@ -267,25 +262,13 @@ function Tab({
               />
             ) : null}
           </View>
-          {/* One line: a long label shrinks to fit a narrow phone's tab, never cut. */}
-          <View style={{ alignSelf: 'stretch', paddingHorizontal: s.labelGap }}>
-            <Text
-              variant="tabLabel"
-              color={ink}
-              align="center"
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={MIN_LABEL_SCALE}
-            >
-              {item.label}
-            </Text>
-          </View>
+          {/* No words under the icon (the owner's call, 20 Kasım); the tab's name is what a
+              screen reader says. */}
         </RNAnimated.View>
       </Pressable>
     </Animated.View>
   );
 }
-const MIN_LABEL_SCALE = 0.7;
 
 // The tab bar's bottom edge (iskelet.md → 3.3): 160 high from the screen's foot, from clear to the
 // ground at 92 %, so what scrolls goes under the bar without a hard cut. Drawn, not blurred.

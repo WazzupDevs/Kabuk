@@ -18,6 +18,16 @@ export function blursBehind(os: string, version: number | string): boolean {
 // re-blurred the screen on each frame; everything takes its drawn, not live, look.
 export const TAB_BAR_GLASS = false;
 
+// The buttons' own glass (the owner's call, 22 Kasım: "sadece butonları cam modülüne geçir"): the
+// clear buttons (Btn glassy, the clear round) frost the screen's backdrop behind them, with the
+// tab bar, the message bar, the cards and the chips still drawn. The backdrop a button looks
+// through is drawn again only where what is under the button changes (GlassTargetView). `fill`
+// is the button's own colour over the frost: see-through, so the frost shows.
+export const BUTTON_FROST = {
+  on: true,
+  fill: { light: 'rgba(251, 253, 251, 0.55)', dark: 'rgba(27, 33, 31, 0.55)' },
+} as const;
+
 // skall's glass under the tab bar and the message bar: frosted (the owner's call, 29 Ekim: frosted
 // instead of the liquid lens, everywhere the glass was; the native view is modules/skall-glass).
 // The screen behind is blurred as docs/design/aura's `.glass` blurs it, backdrop-filter:

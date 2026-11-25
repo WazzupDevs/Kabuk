@@ -78,6 +78,7 @@ import type {
 } from '@shared/api/venueChat.ts';
 import type { VenueChatMode } from '@shared/venueChat.ts';
 import type {
+  VenueFeedMineResponse,
   VenueFeedMuteResponse,
   VenueFeedPageResponse,
   VenueFeedPostResponse,
@@ -504,6 +505,12 @@ export const venueFeedApi = {
     invoke<VenueFeedPageResponse>('venue-feed', {
       action: 'page',
       venueId,
+      ...(before ? { before } : {}),
+    }),
+  // The caller's own posts younger than a day, with their venues (the own profile only, §4.Y).
+  mine: (before?: string) =>
+    invoke<VenueFeedMineResponse>('venue-feed', {
+      action: 'mine',
       ...(before ? { before } : {}),
     }),
   replies: (postId: string, before?: string) =>

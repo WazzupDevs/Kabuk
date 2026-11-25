@@ -1,16 +1,14 @@
 import { groupHistory, historyDay, historyResult, historySessions } from '@shared/activities.ts';
 import { explorePlace, todayEvents } from '@shared/explore.ts';
 import { upperTr } from '@shared/trText.ts';
-import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 
-import { Btn, Li, Seg, T, useKit } from '@/aura/kit';
+import { Btn, Li, Seg, T, Tag, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
-import { Tag } from '@/components/Tag';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
 import { GiftCard } from '@/features/gifts/GiftCard';
@@ -28,11 +26,15 @@ import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, Rise, Sheet, StickyFade, StickyField } from '@/motion';
+import { LargeTitle, Rise, Sheet, StickyField } from '@/motion';
 import { ACTIVITIES as A } from '@/theme/activities';
 import { KIT } from '@/theme/auraKit';
 import { FLAT } from '@/theme/flatLists';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
+import { openVenue } from '@/features/explore/openVenue';
+
+// A game's result on its row: won green, lost amber, done the plain glass (the kit's Tag).
+const RESULT_TONE = { won: 'green', lost: 'amber', done: 'glassy' } as const;
 
 type Tab = 'events' | 'history';
 
@@ -56,26 +58,20 @@ export default function ActivitiesScreen() {
       {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; the title 32/500 (the
           new boards' `.display`). */}
       <LargeTitle kind="buyukBaslik">
-        <View style={{ gap: SPACING[1] }}>
+        <View style={{ gap: SPACING[1], marginBottom: A.tabsTop }}>
           {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}
           <T v="display" accessibilityRole="header">
             {tr.tabs.activities}
           </T>
         </View>
       </LargeTitle>
-      {/* Hediye paketleri (§4.U): the gift card over the tabs; its packs stand out over its top
-          (the room for them is the card's own). */}
-      <StickyFade>
-        <View style={{ paddingBottom: A.tabsTop }}>
-          <GiftCard />
-        </View>
-      </StickyFade>
       <StickyField band side={A.side}>
         <Seg<Tab>
           narrow={narrow}
           board={{
             item: A.tabs.item,
             radius: A.tabs.radius,
+            pad: A.tabs.pad,
             type: 'btnSm',
             face: A[scheme].tabsGlass,
             onShadow: A[scheme].tabOnShadow || undefined,
@@ -89,9 +85,47 @@ export default function ActivitiesScreen() {
           ]}
         />
       </StickyField>
-      {tab === 'events' ? <Events now={now} city={city} /> : <History now={now} />}
+      {tab === 'events' ? (
+        <>
+          {/* Hediye paketleri (§4.U): the gift card under the tabs, the first card of Etkinlikler
+              and as tall as an event's card (the owner's ask, 20 Kasım); its packs stand out over
+              its top (the room for them is the card's own). */}
+          <View style={{ marginTop: A.listTop }}>
+            <GiftCard />
+          </View>
+          <Events now={now} city={city} />
+        </>
+      ) : (
+        <History now={now} />
+      )}
     </Screen>
   );
+}
+
+// The board's three events (AktivitelerDolu), for a development build's empty day: tonight, each
+// two hours long.
+function sampleEvents(now: number) {
+  const at = (hour: number, minute: number) => {
+    const d = new Date(now);
+    d.setHours(hour, minute, 0, 0);
+    return d.toISOString();
+  };
+  const one = (
+    id: string,
+    name: string,
+    kind: 'campus' | 'cafe',
+    title: string,
+    h: number,
+    m: number,
+  ) => ({
+    venue: { id, name, kind },
+    event: { title, startsAt: at(h, m), endsAt: at(h + 2, m) },
+  });
+  return [
+    one('ornek-1', 'Kampüs bahçesi', 'campus', 'Tanışma ateşi: kamp gecesi', 20, 0),
+    one('ornek-2', 'Hush Coffee', 'cafe', 'Tüm kahveler 1+1', 10, 0),
+    one('ornek-3', 'Gölge Kafe', 'cafe', 'Vampir Köylü turnuvası', 21, 30),
+  ];
 }
 
 // Keşfet's city (K-38): the venues and the place chosen there.
@@ -106,12 +140,16 @@ function useCity() {
 
 function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }) {
   const { venues, cities, listed, place } = city;
-  const events = useMemo(
+  const real = useMemo(
     () =>
       // Every city unless one is chosen in Keşfet (5 Kasım).
       todayEvents(place ? listed.filter((v) => v.city === place.city) : listed, now),
     [listed, place, now],
   );
+  // A development build with no event today shows the board's three (AktivitelerDolu), so the list
+  // can be looked at (the owner's ask, 20 Kasım). Never in a release build.
+  const sample = __DEV__ && real.length === 0;
+  const events = sample ? sampleEvents(now) : real;
   const pending = venues.isPending || cities.isPending;
   const loading = useLoaderHold(pending);
 
@@ -147,7 +185,11 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
   if (events.length === 0) {
     // AktivitelerBos: the riso and its two lines, no card.
     return (
-      <View style={{ marginTop: A.listTop }} testID="activities-no-events">
+      <View
+        // In the middle of the room under the tabs, as every empty state (19 Kasım).
+        style={{ flexGrow: 1, justifyContent: 'center', minHeight: A.emptyMin }}
+        testID="activities-no-events"
+      >
         <EmptyState
           kind="empty"
           riso="events"
@@ -166,9 +208,10 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
             venue={venue}
             event={event}
             now={now}
-            onPress={() =>
-              router.navigate({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
-            }
+            onPress={() => {
+              if (sample) return;
+              openVenue(venue.id, 'navigate');
+            }}
           />
         </Rise>
       ))}
@@ -409,7 +452,7 @@ function HistoryRow({
           <View style={{ flex: 1, minWidth: 0 }}>
             <T v="body">{with_}</T>
           </View>
-          {result && variant ? <Tag variant={variant} label={result} /> : null}
+          {result && variant ? <Tag tone={RESULT_TONE[variant]} label={result} /> : null}
         </View>
       </View>
     </Li>

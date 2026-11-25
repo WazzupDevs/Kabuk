@@ -129,7 +129,10 @@ export function TopBarRow({
           </T>
           {sub ? <T v="fine">{sub}</T> : null}
         </View>
-        {trailing}
+        {/* In a box, centred on the row as the back button is: a Btn keeps to its column's start
+        (aura/kit → Btn) and stood at the row's top, 4 over the back button (the owner's report,
+        23 Kasım, Süsle's Kaydet). */}
+        {trailing ? <View>{trailing}</View> : null}
       </View>
     );
   }

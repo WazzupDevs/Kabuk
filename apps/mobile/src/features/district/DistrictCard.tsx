@@ -217,7 +217,8 @@ function StripFace({
             {upperTr(room ? tr.district.card.roomEyebrow : tr.district.card.sceneEyebrow)}
           </T>
         </View>
-        <T v="kesfetEmptyTitle" strong color={k.title}>
+        {/* KesfetKaydir `.ssm b`: the strip's title bold. */}
+        <T v="rowTitle" color={k.title}>
           {title}
         </T>
       </View>
@@ -237,9 +238,16 @@ function StripFace({
 }
 
 // The board's riso scenes under the card (Kesfet: the gate; KesfetSemtIcerde: the bench, in the
-// room). In both schemes alike: the board draws the same picture on the dark side.
-const SCENE = require('../../../assets/riso/semt/kesfet-semt.webp') as ImageSourcePropType;
+// room). In both schemes alike: the board draws the same picture on the dark side. Outside the room
+// the gate's New Year scene (the owner's ask, 23 Kasım: a new flat picture, not riso, the buddies
+// before the lit gate on the snow; the riso one stays beside it, kesfet-semt.webp). Each with its
+// frosted copy (blurred once, small) for the words' pane.
+const SCENE = require('../../../assets/riso/semt/kesfet-semt-yilbasi.webp') as ImageSourcePropType;
 const SCENE_ROOM = require('../../../assets/riso/semt/kesfet-semt-oda.webp') as ImageSourcePropType;
+const SCENE_FROST =
+  require('../../../assets/riso/semt/kesfet-semt-buz.webp') as ImageSourcePropType;
+const SCENE_ROOM_FROST =
+  require('../../../assets/riso/semt/kesfet-semt-oda-buz.webp') as ImageSourcePropType;
 
 // `.semt` (Kesfet, KesfetSemtIcerde): the riso scene filling the card, the words in its left 58 %
 // over it: the beating dot and the eyebrow, the title, the note or the time left, the button at the
@@ -261,10 +269,16 @@ function Scene({
   children: ReactNode;
 }) {
   const k = EXPLORE.scene;
+  const f = k.frost;
   const eyebrow = room ? k.roomEyebrow : k.eyebrow;
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  // The pane behind the words (the owner's ask, 23 Kasım): the scene's blurred copy laid exactly
+  // over the scene (the same cover), seen only through the pane; nothing blurs while drawing.
+  const words = (box.w - 2 * k.pad) * k.wordsShare;
   return (
     <View
       testID="district-card"
+      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
       style={{ minHeight: k.minHeight, borderRadius: k.radius, overflow: 'hidden' }}
     >
       <Image
@@ -274,6 +288,37 @@ function Scene({
         accessible={false}
         style={PICTURE_FILL}
       />
+      {box.w > 0 ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: f.inset,
+            top: f.inset,
+            bottom: f.inset,
+            width: k.pad - f.inset + words + f.over,
+            borderRadius: f.radius,
+            borderWidth: 1,
+            borderColor: f.edge,
+            overflow: 'hidden',
+          }}
+        >
+          <Image
+            source={room ? SCENE_ROOM_FROST : SCENE_FROST}
+            fadeDuration={0}
+            resizeMode="cover"
+            accessible={false}
+            style={{
+              position: 'absolute',
+              left: -f.inset - 1,
+              top: -f.inset - 1,
+              width: box.w,
+              height: box.h,
+            }}
+          />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: f.fill }]} />
+        </View>
+      ) : null}
       <View style={{ flex: 1, padding: k.pad }}>
         <View style={{ flex: 1, width: k.words, alignItems: 'flex-start' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: k.eyebrowGap }}>

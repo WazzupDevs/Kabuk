@@ -1,15 +1,15 @@
+import { LEGAL_ENTITY } from '@shared/legalEntity.ts';
 import { containsContact } from '@shared/profanity.ts';
 import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { BackHandler, Linking, View } from 'react-native';
+import { BackHandler, Linking, Text as RNText, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, T, useKit } from '@/aura/kit';
-import { Input } from '@/components/Input';
-import { Loader } from '@/components/Loader';
-import { measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
+import { Btn, T, useKit } from '@/aura/kit';
+import { Field } from '@/components/Field';
+import { MenuItem, openMenu } from '@/components/Menu';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { useHideTabBar } from '@/components/TabBar';
@@ -27,10 +27,12 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { confirm } from '@/lib/overlayStore';
 import { maxLengthFor } from '@/lib/textLimit';
-import { type MenuAnchor, Tap } from '@/motion';
-import { KIT } from '@/theme/auraKit';
+import { Tap } from '@/motion';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { PROFILE_EDIT } from '@/theme/profileEdit';
-import { ICON, SPACING } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING } from '@/theme/tokens';
+import { EmptyState } from '@/components/EmptyState';
 
 // The photo, the cover, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; docs/design/
 // iskelet.md → 5.8): the `sayfa` bar with the back button and Kaydet (clear, its words quiet with
@@ -45,8 +47,8 @@ export default function EditProfileScreen() {
   if (own.isPending || !own.data) {
     return (
       <Screen>
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       </Screen>
     );
@@ -70,9 +72,7 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
   const queryClient = useQueryClient();
   const view = useProfileView(publicId);
   const [photoMenu, setPhotoMenu] = useState(false);
-  const [coverMenu, setCoverMenu] = useState(false);
   const coverRef = useRef<View>(null);
-  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
   const hasPhoto = !!view.data?.photoUrl || view.data?.photoHidden === true;
   const label = hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd;
   const coverUrl = view.data?.coverUrl ?? null;
@@ -89,34 +89,50 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
   });
   const busy = setCover.isPending || removeCover.isPending;
   const failed = setCover.isError ? setCover.error : removeCover.isError ? removeCover.error : null;
+  // iskelet.md → 3.5: grown out of "Kapak", no "Vazgeç", Kaldır red at the foot apart; in the
+  // app's layer, not this screen's state (CLAUDE.md → Çizim bütçesi).
   const openCoverMenu = () =>
-    measureMenuAnchor(coverRef.current, (at) => {
-      setAnchor(at);
-      setCoverMenu(true);
-    });
-  const camera = KIT.button[scheme].clear;
+    openMenu(
+      coverRef.current,
+      <>
+        <MenuItem
+          cap="photo"
+          label={tr.profile.coverChange}
+          testID="cover-change"
+          onPress={() => {
+            if (!busy) setCover.mutate();
+          }}
+        />
+        {coverUrl ? (
+          <MenuItem
+            negative
+            cap="trash"
+            label={tr.profile.coverRemove}
+            testID="cover-remove"
+            onPress={() => {
+              if (!busy) removeCover.mutate();
+            }}
+          />
+        ) : null}
+      </>,
+    );
+  const { colors } = useTheme();
   const E = PROFILE_EDIT;
   const look = E[scheme];
+  const round = KIT.size.round;
 
-  // tuval Duzenle: the cover 172 high and 28 round on its shadow, "Kapak" at its top right; the
-  // photo 116 in its white ring 112 down, centred, the camera round at its corner.
+  // tuval ProfilDuzenle `.ecov`, `.eav`: the cover 150 high, "Kapağı değiştir" on its dark glass at
+  // its top right; the photo 104 in its ring of the page's ground, half over the cover's foot,
+  // centred, the camera round at its corner.
   return (
-    <View style={{ gap: E.gap }}>
-      <View style={{ height: E.preview }}>
-        <View
-          style={{
-            height: E.cover,
-            borderRadius: E.coverRadius,
-            boxShadow: look.coverShadow || undefined,
-          }}
-        >
-          <ProfileCover
-            url={coverUrl}
-            height={E.cover}
-            radius={E.coverRadius}
-            accessibilityLabel={tr.profile.cover}
-          />
-        </View>
+    <View style={{ gap: SPACING[3] }}>
+      <View style={{ height: E.cover + E.face / 2 }}>
+        <ProfileCover
+          url={coverUrl}
+          height={E.cover}
+          radius={E.coverRadius}
+          accessibilityLabel={tr.profile.cover}
+        />
         <View
           ref={coverRef}
           collapsable={false}
@@ -124,10 +140,11 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
         >
           <Btn
             sm
-            variant="glassy"
             icon="camera"
             testID="cover-menu"
-            label={tr.profile.cover}
+            label={tr.profile.coverChange}
+            fill={look.coverBtnFill}
+            tint={look.coverBtnInk}
             look={{
               type: 'coverBtn',
               padLeft: E.coverBtn.padLeft,
@@ -141,7 +158,13 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
           />
         </View>
         <View
-          style={{ position: 'absolute', left: 0, right: 0, top: E.faceTop, alignItems: 'center' }}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: E.cover - E.face / 2,
+            alignItems: 'center',
+          }}
         >
           <Tap
             accessibilityLabel={label}
@@ -153,24 +176,30 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
               name={view.data?.displayName ?? ''}
               photoUrl={view.data?.photoUrl ?? null}
               side={E.face}
+              ring={E.faceRing}
+              ringColor={colors.canvas}
             />
             <View
               style={{
                 position: 'absolute',
                 right: E.camera.right,
                 bottom: E.camera.bottom,
-                width: CAMERA,
-                height: CAMERA,
-                borderRadius: CAMERA / 2,
-                borderWidth: KIT.size.edge,
-                borderColor: camera.edge,
+                width: round,
+                height: round,
+                borderRadius: round / 2,
+                borderWidth: E.camera.ring,
+                borderColor: colors.canvas,
                 backgroundColor: look.cameraFill,
-                boxShadow: camera.shadow || undefined,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <CapIcon name="camera" color={camera.ink} soft={1} size={E.camera.icon} />
+              <CapIcon
+                name="camera"
+                color={look.cameraInk}
+                soft={E.camera.soft}
+                size={E.camera.icon}
+              />
             </View>
           </Tap>
         </View>
@@ -206,38 +235,14 @@ function PreviewEditor({ publicId, hasName }: { publicId: string; hasName: boole
         </View>
       ) : null}
 
-      {anchor ? (
-        // iskelet.md → 3.5: grown out of "Kapak", no "Vazgeç", Kaldır red at the foot apart.
-        <Menu anchor={anchor} visible={coverMenu} onClose={() => setCoverMenu(false)}>
-          <MenuItem
-            cap="photo"
-            label={tr.profile.coverChange}
-            testID="cover-change"
-            onPress={() => {
-              setCoverMenu(false);
-              if (!busy) setCover.mutate();
-            }}
-          />
-          {coverUrl ? (
-            <MenuItem
-              negative
-              cap="trash"
-              label={tr.profile.coverRemove}
-              testID="cover-remove"
-              onPress={() => {
-                setCoverMenu(false);
-                if (!busy) removeCover.mutate();
-              }}
-            />
-          ) : null}
-        </Menu>
-      ) : null}
       <PhotoSheet visible={photoMenu} onClose={() => setPhotoMenu(false)} canRemove={hasPhoto} />
     </View>
   );
 }
-// The camera round at the photo's corner (36, iskelet.md → 2.1: a small one in a line).
-const CAMERA = KIT.size.btnSm;
+
+// The contact address, as on Hesap (settings-account.tsx); a blank that keeps a line's height.
+const contactEmail = process.env.EXPO_PUBLIC_CONTACT_EMAIL?.trim() || LEGAL_ENTITY.contactEmail;
+const NBSP = '\u00A0';
 
 function EditForm({
   publicId,
@@ -344,26 +349,27 @@ function EditForm({
 
   const E = PROFILE_EDIT;
   const look = E[scheme];
+  const birthDate = useProfileView(publicId).data?.birthDate ?? null;
+  const birthText = birthDate ? tr.profile.birthDateLong(birthDate) : null;
   return (
     <Screen
-      gap={E.gap}
+      gap={0}
       side={E.side}
       barSide={E.side}
-      // iskelet.md → 3.1 (`sayfa`) and 2.1: the back button and Kaydet on the bar, both clear
-      // glass; the bar stays while the page scrolls (the owner's report, 2 Kasım, 12.1).
+      padTop={E.coverTop}
+      // tuval ProfilDuzenle `.ptb`: the back button, the title beside it and Kaydet on one 48 row;
+      // Kaydet solid, flat and quiet with nothing to save (ProfilDuzenleYaz: dark with something).
       top={
         <PageTop
           title={tr.profile.editTitle}
-          look={{ titleIn: E.titleIn }}
           onBack={leave}
+          inline={{ row: E.bar.row, back: KIT.size.round, gap: E.bar.gap }}
           trailing={
             <Btn
-              variant="glassy"
-              bar={KIT.size.topBtn}
+              bar
               testID="profile-save"
               label={save.isSuccess ? tr.profile.savedShort : tr.profile.save}
-              tint={changed || save.isSuccess ? KIT.primary : KIT.saveIdle}
-              strong={changed || save.isSuccess}
+              disabled={!changed && !save.isPending && !save.isSuccess}
               loading={save.isPending}
               onPress={onSave}
               style={{ minWidth: KIT.saveMinWidth }}
@@ -373,23 +379,15 @@ function EditForm({
       }
     >
       {save.isError ? (
-        <T v="fine" color={c.warn}>
+        <T v="fine" color={c.warn} style={{ marginBottom: SPACING[3] }}>
           {errorMessage(save.error)}
         </T>
       ) : null}
       <PreviewEditor publicId={publicId} hasName={initialName !== ''} />
-      {/* tuval Duzenle: the fields on one card, 26 round, 16 inside, 8 apart, a hairline between
-          them; each its label with its count over it and its note under it. Focused, the green
-          ring (iskelet.md → 5.8). */}
-      <Glass
-        face={look.card}
-        radius={E.card.radius}
-        style={{ padding: E.card.pad, gap: E.card.gap }}
-      >
-        <Input
-          large
-          boxed
-          halo
+      {/* tuval ProfilDuzenle `.fl`, `.fi`, `.fh`: the fields on the page's ground, each its label
+          with its count over it and its note under it, 20 apart. */}
+      <View style={{ marginTop: E.fieldTop }}>
+        <Field
           testID="name-input"
           label={tr.profile.nameLabel}
           hint={tr.profile.nameHint}
@@ -407,17 +405,9 @@ function EditForm({
           autoCapitalize="words"
           autoCorrect={false}
         />
-        <View
-          style={{
-            height: KIT.size.hair,
-            marginVertical: E.card.hairGap,
-            backgroundColor: look.hair,
-          }}
-        />
-        <Input
-          large
-          boxed
-          halo
+      </View>
+      <View style={{ marginTop: E.fieldTop }}>
+        <Field
           label={tr.profile.bioLabel}
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}
@@ -427,48 +417,50 @@ function EditForm({
           multiline
           tall
         />
-      </Glass>
-      {/* The birth date as a settings row (iskelet.md → 5.8, 2.4) on its own card: the calendar on
-          its square, the note under the title, the lock and "Değiştirilemez" at the right (rule
-          11: it cannot change in the app). */}
-      <Glass
-        face={look.card}
-        radius={E.row.radius}
-        style={{
-          paddingVertical: E.row.padY,
-          paddingHorizontal: E.row.padX,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: E.row.gap,
-        }}
-      >
+      </View>
+      {/* `.fi.ro`: the birth date locked, on no fill, the lock at its right (rule 11: it cannot
+          change in the app); under it the note and the contact link. */}
+      <View style={{ marginTop: E.fieldTop, gap: SPACING[2] }}>
+        <T v="sectionHead" color={c.muted} style={{ paddingHorizontal: E.field.labelIn }}>
+          {tr.profile.birthDate}
+        </T>
         <View
+          accessible
+          accessibilityLabel={
+            birthText ? `${tr.profile.birthDate}, ${birthText}` : tr.profile.birthDate
+          }
           style={{
-            width: KIT.rowIcon.side,
-            height: KIT.rowIcon.side,
-            borderRadius: KIT.rowIcon.radius,
-            backgroundColor: KIT.primary,
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
+            gap: SPACING[2.5],
+            minHeight: KIT.size.field,
+            borderRadius: E.field.radius,
+            borderWidth: E.field.edge,
+            borderColor: look.fieldEdge,
+            paddingHorizontal: E.field.padX,
           }}
         >
-          <CapIcon name="calendar" color={KIT.white} soft={1} size={ICON.sm} />
-        </View>
-        <View style={{ flex: 1, minWidth: 0, gap: E.row.lineGap }}>
-          <T v="rowTitle" ink>
-            {tr.profile.birthDate}
+          <T v="boxField" color={c.muted} style={{ flex: 1 }}>
+            {birthText ?? NBSP}
           </T>
-          <T v="rowNote" color={look.note}>
-            {tr.profile.birthDateNote}
-          </T>
+          <CapIcon name="lock" color={c.muted} soft={1} size={E.lock} />
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: E.row.lockGap }}>
-          <CapIcon name="lock" color={look.note} soft={1} size={E.row.lock} />
-          <T v="rowLock" color={look.note}>
-            {tr.profile.unchangeable}
-          </T>
-        </View>
-      </Glass>
+        <T v="boxNote" color={look.note} style={{ paddingHorizontal: E.field.labelIn }}>
+          {tr.profile.birthDateNote}
+          <RNText
+            accessibilityRole="link"
+            style={[
+              KIT_TYPE.boxNote,
+              KIT_TYPE.strong,
+              { color: c.ink, textDecorationLine: 'underline' },
+            ]}
+            onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
+          >
+            {tr.profile.birthDateContact}
+          </RNText>
+          {tr.profile.birthDateEnd}
+        </T>
+      </View>
     </Screen>
   );
 }

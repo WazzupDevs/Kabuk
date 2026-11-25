@@ -6,8 +6,8 @@
     "aile": "Mesajlar, Arşiv, DM sohbeti",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/TabBar.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/features/notifications/Bell.tsx",
@@ -18,7 +18,7 @@
     "tema": "acik",
     "durum": "ekran-mesajlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01",
@@ -27,8 +27,8 @@
     "aile": "Mesajlar, Arşiv, DM sohbeti",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/TabBar.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/features/notifications/Bell.tsx",
@@ -39,7 +39,7 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01b",
@@ -60,6 +60,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: kaydırma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -82,6 +86,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: kaydırma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -100,7 +108,7 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-uzun-bas",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01c",
@@ -117,7 +125,7 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-uzun-bas",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01d",
@@ -134,7 +142,7 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-sabit-uzun-bas",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01d",
@@ -151,7 +159,7 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-sabit-uzun-bas",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01e",
@@ -168,7 +176,7 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-sil-onay",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01e",
@@ -185,7 +193,7 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-sil-onay",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01f",
@@ -202,7 +210,7 @@
     "tema": "acik",
     "durum": "ekran-arsiv",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01f",
@@ -219,7 +227,7 @@
     "tema": "koyu",
     "durum": "ekran-arsiv",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01g",
@@ -234,7 +242,7 @@
     "tema": "acik",
     "durum": "ekran-arsiv-uzun-bas",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01g",
@@ -249,7 +257,7 @@
     "tema": "koyu",
     "durum": "ekran-arsiv-uzun-bas",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01h",
@@ -264,7 +272,7 @@
     "tema": "acik",
     "durum": "ekran-arsiv-bos",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "01h",
@@ -279,7 +287,7 @@
     "tema": "koyu",
     "durum": "ekran-arsiv-bos",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "02",
@@ -301,7 +309,7 @@
     "tema": "acik",
     "durum": "ekran-dm",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "02",
@@ -323,7 +331,7 @@
     "tema": "koyu",
     "durum": "ekran-dm",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "02b",
@@ -340,7 +348,7 @@
     "tema": "acik",
     "durum": "ekran-dm-mesaj-menu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "02b",
@@ -357,7 +365,7 @@
     "tema": "koyu",
     "durum": "ekran-dm-mesaj-menu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "02c",
@@ -378,6 +386,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: 15 dakika içindeki kendi mesajı (düzenleme penceresi)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -400,6 +412,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: 15 dakika içindeki kendi mesajı (düzenleme penceresi)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -421,6 +437,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: düzenleme 15 dakika içindeki kendi mesajını ister"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -442,6 +462,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: düzenleme 15 dakika içindeki kendi mesajını ister"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -463,6 +487,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: düzenlenmiş mesaj verisi"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -484,6 +512,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: düzenlenmiş mesaj verisi"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -502,7 +534,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03",
@@ -519,7 +557,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03b",
@@ -537,7 +581,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03b",
@@ -555,7 +605,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03c",
@@ -570,7 +626,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03c",
@@ -585,7 +647,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03d",
@@ -594,14 +662,19 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03d",
@@ -610,14 +683,19 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03e",
@@ -626,14 +704,20 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03e",
@@ -642,14 +726,20 @@
     "aile": "profil, kapsül süsleme, ayarlar",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/edit.tsx",
-      "apps/mobile/src/components/Input.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/components/PageTop.tsx",
       "apps/mobile/src/theme/profileEdit.ts"
     ],
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03f",
@@ -666,7 +756,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03f",
@@ -683,7 +779,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03g",
@@ -699,7 +801,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03g",
@@ -715,7 +823,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03h",
@@ -731,7 +845,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03h",
@@ -747,7 +867,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "03i",
@@ -764,7 +890,7 @@
     "tema": "acik",
     "durum": "ekran-ayarlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 751
   },
   {
     "pano": "03i",
@@ -781,7 +907,7 @@
     "tema": "koyu",
     "durum": "ekran-ayarlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 751
   },
   {
     "pano": "03k",
@@ -839,7 +965,7 @@
     "tema": "acik",
     "durum": "ekran-ayarlar-bildirimler",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734,
+    "kanit": 751,
     "muaf": [
       {
         "pr": 737,
@@ -861,7 +987,7 @@
     "tema": "koyu",
     "durum": "ekran-ayarlar-bildirimler",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734,
+    "kanit": 751,
     "muaf": [
       {
         "pr": 737,
@@ -882,7 +1008,7 @@
     "tema": "acik",
     "durum": "ekran-ayarlar-gizlilik",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 751
   },
   {
     "pano": "03m",
@@ -897,7 +1023,7 @@
     "tema": "koyu",
     "durum": "ekran-ayarlar-gizlilik",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 751
   },
   {
     "pano": "03n",
@@ -952,6 +1078,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -980,6 +1110,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -997,7 +1131,7 @@
     "tema": "acik",
     "durum": "ekran-ayarlar-engellenenler",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 751
   },
   {
     "pano": "03p",
@@ -1013,7 +1147,7 @@
     "tema": "koyu",
     "durum": "ekran-ayarlar-engellenenler",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 734
+    "kanit": 751
   },
   {
     "pano": "03q",
@@ -1074,6 +1208,10 @@
       {
         "pr": 734,
         "sebep": "Sessize alınanlar dolu hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1094,6 +1232,10 @@
       {
         "pr": 734,
         "sebep": "Sessize alınanlar dolu hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1186,6 +1328,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1210,6 +1356,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1220,8 +1370,8 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/RequestList.tsx",
       "apps/mobile/src/motion/TabBar.tsx"
     ],
@@ -1233,6 +1383,10 @@
       {
         "pr": 737,
         "sebep": "İstekler paketi; çekim durumu eklendi"
+      },
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1243,8 +1397,8 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
       "apps/mobile/src/components/EmptyState.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/RequestList.tsx",
       "apps/mobile/src/motion/TabBar.tsx"
     ],
@@ -1256,6 +1410,10 @@
       {
         "pr": 737,
         "sebep": "İstekler paketi; çekim durumu eklendi"
+      },
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1283,6 +1441,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: istek verisi (ad, fotoğraf) çekim örneğinde yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1310,6 +1472,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: istek verisi (ad, fotoğraf) çekim örneğinde yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1320,7 +1486,7 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/theme/flatLists.ts"
     ],
     "acilis": "",
@@ -1331,6 +1497,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1341,7 +1511,7 @@
     "aile": "Panolar 03o–07a",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/profile/friends.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/theme/flatLists.ts"
     ],
     "acilis": "",
@@ -1352,6 +1522,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1368,7 +1542,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "06b",
@@ -1383,7 +1563,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "07",
@@ -1400,7 +1586,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "07",
@@ -1417,7 +1609,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "07a",
@@ -1433,7 +1631,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "07a",
@@ -1449,7 +1653,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "08",
@@ -1466,7 +1676,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "08",
@@ -1483,7 +1699,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "08b",
@@ -1502,7 +1724,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "08b",
@@ -1521,7 +1749,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "09",
@@ -1536,7 +1770,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "09",
@@ -1551,7 +1791,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "10",
@@ -1569,7 +1815,7 @@
     "tema": "acik",
     "durum": "ekran-kesfet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "kanit": 751
   },
   {
     "pano": "10",
@@ -1587,7 +1833,7 @@
     "tema": "koyu",
     "durum": "ekran-kesfet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "kanit": 751
   },
   {
     "pano": "10b",
@@ -1600,8 +1846,13 @@
     "acilis": "Alt sekme çubuğu → Keşfet, semt sohbetindeyken",
     "tema": "acik",
     "durum": "ekran-kesfet-semt-icerde",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      }
+    ]
   },
   {
     "pano": "10b",
@@ -1614,8 +1865,13 @@
     "acilis": "Alt sekme çubuğu → Keşfet, semt sohbetindeyken",
     "tema": "koyu",
     "durum": "ekran-kesfet-semt-icerde",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      }
+    ]
   },
   {
     "pano": "10c",
@@ -1630,7 +1886,7 @@
     "tema": "acik",
     "durum": "ekran-kesfet-kaydir",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "kanit": 751
   },
   {
     "pano": "10c",
@@ -1645,7 +1901,7 @@
     "tema": "koyu",
     "durum": "ekran-kesfet-kaydir",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "kanit": 751
   },
   {
     "pano": "11",
@@ -1662,8 +1918,8 @@
     "hal": "yazildi",
     "muaf": [
       {
-        "pr": 745,
-        "sebep": "harita çekimi kararsız: çevrimdışı MapLibre zemini ve pinleri koşudan koşuya farklı çiziyor (iki koşuda açık tema bazla tutmadı); denetçi kartı, göstergeyi, çipleri ve üst bölümü panoyla karşılaştırıp temiz buldu (tur 6), baz alınmadı"
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1682,8 +1938,8 @@
     "hal": "yazildi",
     "muaf": [
       {
-        "pr": 745,
-        "sebep": "harita çekimi kararsız: çevrimdışı MapLibre zemini ve pinleri koşudan koşuya farklı çiziyor (iki koşuda açık tema bazla tutmadı); denetçi kartı, göstergeyi, çipleri ve üst bölümü panoyla karşılaştırıp temiz buldu (tur 6), baz alınmadı"
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1702,7 +1958,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "11b",
@@ -1719,7 +1981,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "11c",
@@ -1762,7 +2030,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "12",
@@ -1777,7 +2051,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "13",
@@ -1790,7 +2070,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "13",
@@ -1803,7 +2089,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "14",
@@ -1827,6 +2119,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1852,6 +2148,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1874,6 +2174,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1896,6 +2200,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
       }
     ]
   },
@@ -1919,6 +2227,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1942,6 +2254,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -1960,7 +2276,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "17",
@@ -1977,7 +2299,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "18",
@@ -2037,6 +2365,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2066,6 +2398,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2082,7 +2418,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "20",
@@ -2097,7 +2439,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "21",
@@ -2113,7 +2461,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "21",
@@ -2129,7 +2483,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "22",
@@ -2143,7 +2503,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "22",
@@ -2157,7 +2523,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "23",
@@ -2176,7 +2548,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "23",
@@ -2195,7 +2573,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "24",
@@ -2215,6 +2599,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2236,6 +2624,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2313,6 +2705,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2334,6 +2730,10 @@
       {
         "pr": 734,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2352,7 +2752,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "27",
@@ -2369,7 +2775,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "28",
@@ -2387,7 +2799,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "28",
@@ -2405,7 +2823,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "29",
@@ -2419,7 +2843,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "29",
@@ -2433,7 +2863,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "30",
@@ -2447,7 +2883,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "30",
@@ -2461,7 +2903,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "31",
@@ -2486,6 +2934,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2512,6 +2964,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2533,6 +2989,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2554,6 +3014,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -2570,7 +3034,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "32a",
@@ -2585,7 +3055,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "32b",
@@ -2599,7 +3075,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "32b",
@@ -2613,7 +3095,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "32c",
@@ -2626,7 +3114,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "32c",
@@ -2639,7 +3133,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "33",
@@ -2655,7 +3155,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "33",
@@ -2671,7 +3177,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "34",
@@ -2685,7 +3197,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "34",
@@ -2699,7 +3217,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "35",
@@ -2713,7 +3237,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "35",
@@ -2727,7 +3257,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "36",
@@ -2742,7 +3278,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "36",
@@ -2757,7 +3299,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "37",
@@ -2780,6 +3328,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar, ChatScreen); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -2804,6 +3356,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar, ChatScreen); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -2825,7 +3381,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "38",
@@ -2845,7 +3407,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "39",
@@ -2860,7 +3428,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "39",
@@ -2875,7 +3449,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "40",
@@ -2890,7 +3470,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "40",
@@ -2905,7 +3491,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "41",
@@ -2920,7 +3512,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "41",
@@ -2935,7 +3533,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "42",
@@ -2950,7 +3554,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "42",
@@ -2965,7 +3575,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "43",
@@ -2980,7 +3596,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "43",
@@ -2995,7 +3617,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "44",
@@ -3009,7 +3637,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "44",
@@ -3023,7 +3657,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "45",
@@ -3039,7 +3679,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "45",
@@ -3055,7 +3701,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "46",
@@ -3068,7 +3720,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "46",
@@ -3081,7 +3739,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "47",
@@ -3098,7 +3762,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "47",
@@ -3115,7 +3785,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "48",
@@ -3130,7 +3806,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "48",
@@ -3145,7 +3827,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "49",
@@ -3220,7 +3908,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "51",
@@ -3237,7 +3931,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "52",
@@ -3253,7 +3953,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "52",
@@ -3269,7 +3975,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "53",
@@ -3356,7 +4068,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "55",
@@ -3371,7 +4089,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "56",
@@ -3387,7 +4111,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "56",
@@ -3403,7 +4133,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "57",
@@ -3420,7 +4156,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "57",
@@ -3437,7 +4179,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "58",
@@ -3452,7 +4200,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "58",
@@ -3467,7 +4221,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "59",
@@ -3487,6 +4247,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -3508,6 +4272,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -3525,7 +4293,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "60",
@@ -3541,7 +4315,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "61",
@@ -3557,7 +4337,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "61",
@@ -3573,7 +4359,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62",
@@ -3590,7 +4382,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62",
@@ -3607,7 +4405,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62a",
@@ -3624,7 +4428,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62a",
@@ -3641,7 +4451,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62b",
@@ -3656,7 +4472,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62b",
@@ -3671,7 +4493,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62c",
@@ -3687,7 +4515,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62c",
@@ -3703,7 +4537,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62d",
@@ -3719,7 +4559,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62d",
@@ -3735,7 +4581,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62e",
@@ -3750,7 +4602,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "62e",
@@ -3765,7 +4623,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "63",
@@ -3787,6 +4651,10 @@
       {
         "pr": 734,
         "sebep": "Bildirim izni kapalı hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -3810,6 +4678,10 @@
       {
         "pr": 734,
         "sebep": "Bildirim izni kapalı hâli için çekim durumu yok; bu PR’da yalnız ortak parça değişti"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -3827,7 +4699,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "64",
@@ -3843,7 +4721,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "64a",
@@ -3858,7 +4742,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "64a",
@@ -3873,7 +4763,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "65",
@@ -3889,7 +4785,13 @@
     "acilis": "Uygulamanın açılışı, sürüm en düşük sürümün altındayken",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "65",
@@ -3905,7 +4807,13 @@
     "acilis": "Uygulamanın açılışı, sürüm en düşük sürümün altındayken",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "66",
@@ -3924,7 +4832,13 @@
     "acilis": "Aktiviteler sekmesi, internet kapalıyken",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "66",
@@ -3943,7 +4857,13 @@
     "acilis": "Aktiviteler sekmesi, internet kapalıyken",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "66a",
@@ -3962,7 +4882,13 @@
     "acilis": "Aktiviteler sekmesi, sunucu hata verince",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "66a",
@@ -3981,7 +4907,13 @@
     "acilis": "Aktiviteler sekmesi, sunucu hata verince",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "70",
@@ -4085,7 +5017,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "72",
@@ -4103,7 +5041,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "73",
@@ -4119,7 +5063,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "73",
@@ -4135,7 +5085,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "74",
@@ -4151,7 +5107,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "74",
@@ -4167,7 +5129,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "75",
@@ -4183,7 +5151,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "75",
@@ -4199,7 +5173,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "76",
@@ -4215,7 +5195,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "76",
@@ -4231,7 +5217,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "77",
@@ -4253,6 +5245,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4276,6 +5272,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4299,6 +5299,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4322,6 +5326,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4467,8 +5475,8 @@
     "dosya": "project/TumAra.dc.html",
     "aile": "Panolar 73–85",
     "kod": [
-      "apps/mobile/src/aura/GlassSearch.tsx",
-      "apps/mobile/src/aura/kit.tsx"
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx"
     ],
     "acilis": "",
     "tema": "acik",
@@ -4482,6 +5490,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4491,8 +5503,8 @@
     "dosya": "project/TumAra.dc.html",
     "aile": "Panolar 73–85",
     "kod": [
-      "apps/mobile/src/aura/GlassSearch.tsx",
-      "apps/mobile/src/aura/kit.tsx"
+      "apps/mobile/src/aura/kit.tsx",
+      "apps/mobile/src/components/Field.tsx"
     ],
     "acilis": "",
     "tema": "koyu",
@@ -4506,6 +5518,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4597,6 +5613,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: yükleniyor"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4620,6 +5640,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: yükleniyor"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4635,7 +5659,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "87",
@@ -4649,7 +5679,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "88",
@@ -4670,6 +5706,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: yükleniyor"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4692,6 +5732,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: yükleniyor"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4713,6 +5757,10 @@
       {
         "pr": 737,
         "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4734,6 +5782,10 @@
       {
         "pr": 737,
         "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4753,7 +5805,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "90",
@@ -4771,7 +5829,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "91",
@@ -4787,7 +5851,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "91",
@@ -4803,7 +5873,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "92",
@@ -4828,6 +5904,10 @@
       {
         "pr": 737,
         "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4854,6 +5934,10 @@
       {
         "pr": 737,
         "sebep": "çekim yok: 320 dp ve en büyük yazı (büyük yazı koşusu)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4871,7 +5955,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "93",
@@ -4887,7 +5977,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "94",
@@ -4912,6 +6008,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4938,6 +6038,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4964,6 +6068,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: kaydırma; ortak bileşen değişikliği (ChatTopBar)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -4990,6 +6098,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: kaydırma; ortak bileşen değişikliği (ChatTopBar)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5016,6 +6128,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5042,6 +6158,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5068,6 +6188,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5094,6 +6218,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği (ChatTopBar üst boşluğu 5); ekranın çekimi yok"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5116,6 +6244,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5138,6 +6270,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5163,6 +6299,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5188,6 +6328,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5204,7 +6348,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "100",
@@ -5219,7 +6369,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "101",
@@ -5232,7 +6388,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "101",
@@ -5245,7 +6407,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "102",
@@ -5258,7 +6426,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "102",
@@ -5271,7 +6445,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "103",
@@ -5285,7 +6465,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "103",
@@ -5299,7 +6485,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "104",
@@ -5317,7 +6509,7 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-sabit-dolu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "104",
@@ -5335,7 +6527,7 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-sabit-dolu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "105",
@@ -5351,7 +6543,7 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-arsiv-rozet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "105",
@@ -5367,7 +6559,7 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-arsiv-rozet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "106",
@@ -5387,6 +6579,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: silme sonrası bildirim (sunucu çağrısı)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5408,6 +6604,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: silme sonrası bildirim (sunucu çağrısı)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5428,7 +6628,7 @@
     "tema": "acik",
     "durum": "ekran-dm-menu-sure-doldu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "107",
@@ -5447,7 +6647,7 @@
     "tema": "koyu",
     "durum": "ekran-dm-menu-sure-doldu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "108",
@@ -5467,6 +6667,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: klavye ve yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5488,6 +6692,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: klavye ve yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5504,7 +6712,7 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-bos",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "109",
@@ -5519,7 +6727,7 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-bos",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 737
+    "kanit": 751
   },
   {
     "pano": "110",
@@ -5543,6 +6751,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5568,6 +6780,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5582,7 +6798,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "111",
@@ -5595,7 +6817,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "112",
@@ -5612,8 +6840,13 @@
     "acilis": "Alt sekme çubuğu → Keşfet, listede mekan yokken",
     "tema": "acik",
     "durum": "ekran-kesfet-bos",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      }
+    ]
   },
   {
     "pano": "112",
@@ -5630,8 +6863,13 @@
     "acilis": "Alt sekme çubuğu → Keşfet, listede mekan yokken",
     "tema": "koyu",
     "durum": "ekran-kesfet-bos",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      }
+    ]
   },
   {
     "pano": "113",
@@ -5653,6 +6891,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: mesajsız DM"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5676,6 +6918,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: mesajsız DM"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5686,7 +6932,7 @@
     "aile": "Panolar 112–124",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
@@ -5698,6 +6944,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: klavye ve yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5708,7 +6958,7 @@
     "aile": "Panolar 112–124",
     "kod": [
       "apps/mobile/app/(app)/(tabs)/messages/index.tsx",
-      "apps/mobile/src/aura/GlassSearch.tsx",
+      "apps/mobile/src/components/Field.tsx",
       "apps/mobile/src/features/friends/InboxRows.tsx",
       "apps/mobile/src/theme/messages.ts"
     ],
@@ -5720,6 +6970,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: klavye ve yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5740,6 +6994,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: aramaya yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5760,6 +7018,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: aramaya yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5776,7 +7038,7 @@
     "tema": "acik",
     "durum": "ekran-kesfet-ara",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "kanit": 751
   },
   {
     "pano": "116",
@@ -5791,7 +7053,7 @@
     "tema": "koyu",
     "durum": "ekran-kesfet-ara",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "kanit": 751
   },
   {
     "pano": "117",
@@ -5804,8 +7066,13 @@
     "acilis": "Keşfet → Mekan ara alanına yaz, sonuç çıkmayınca",
     "tema": "acik",
     "durum": "ekran-kesfet-ara-bos",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      }
+    ]
   },
   {
     "pano": "117",
@@ -5818,8 +7085,13 @@
     "acilis": "Keşfet → Mekan ara alanına yaz, sonuç çıkmayınca",
     "tema": "koyu",
     "durum": "ekran-kesfet-ara-bos",
-    "hal": "goruntuyle-dogrulandi",
-    "kanit": 745
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      }
+    ]
   },
   {
     "pano": "118",
@@ -5842,6 +7114,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: klavye ve yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5866,6 +7142,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: klavye ve yazma"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5890,6 +7170,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: kaydırarak yanıtlama ve klavye"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5914,6 +7198,10 @@
       {
         "pr": 737,
         "sebep": "çekim adımı yok: kaydırarak yanıtlama ve klavye"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5956,6 +7244,10 @@
       {
         "pr": 737,
         "sebep": "özellik yok: DM'de fotoğraf gönderme yok (ÖNERİ panosu)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5976,6 +7268,10 @@
       {
         "pr": 737,
         "sebep": "özellik yok: DM'de fotoğraf gönderme yok (ÖNERİ panosu)"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -5997,6 +7293,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: okuyanın kendi tepkisi"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6018,6 +7318,10 @@
       {
         "pr": 737,
         "sebep": "hâl çekimi yok: okuyanın kendi tepkisi"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6029,7 +7333,6 @@
     "kod": [
       "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
       "apps/mobile/app/(app)/checkin/index.tsx",
-      "apps/mobile/src/components/Choice.tsx",
       "apps/mobile/src/components/RouteSheet.tsx",
       "apps/mobile/src/components/SheetCard.tsx",
       "apps/mobile/src/features/checkin/SpotPicker.tsx",
@@ -6039,7 +7342,13 @@
     "acilis": "Keşfet → mekan → Check-in → nokta seçimi",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "123",
@@ -6049,7 +7358,6 @@
     "kod": [
       "apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx",
       "apps/mobile/app/(app)/checkin/index.tsx",
-      "apps/mobile/src/components/Choice.tsx",
       "apps/mobile/src/components/RouteSheet.tsx",
       "apps/mobile/src/components/SheetCard.tsx",
       "apps/mobile/src/features/checkin/SpotPicker.tsx",
@@ -6059,7 +7367,13 @@
     "acilis": "Keşfet → mekan → Check-in → nokta seçimi",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "124",
@@ -6105,7 +7419,13 @@
     "acilis": "Mekan → kendi masan, biri Katıl’a basınca",
     "tema": "acik",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "125",
@@ -6125,7 +7445,13 @@
     "acilis": "Mekan → kendi masan, biri Katıl’a basınca",
     "tema": "koyu",
     "durum": null,
-    "hal": "yazildi"
+    "hal": "yazildi",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "126",
@@ -6145,6 +7471,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -6166,6 +7496,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -6186,6 +7520,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -6206,6 +7544,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
       }
     ]
   },
@@ -6222,7 +7564,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "128",
@@ -6237,7 +7585,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      }
+    ]
   },
   {
     "pano": "129",
@@ -6287,6 +7641,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6312,6 +7670,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6337,6 +7699,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6362,6 +7728,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6379,7 +7749,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "132",
@@ -6395,7 +7771,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "133",
@@ -6413,7 +7795,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "133",
@@ -6431,7 +7819,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "134",
@@ -6449,7 +7843,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "134",
@@ -6467,7 +7867,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "135",
@@ -6485,7 +7891,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "135",
@@ -6503,7 +7915,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "136",
@@ -6519,7 +7937,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "136",
@@ -6535,7 +7959,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "137",
@@ -6561,6 +7991,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6588,6 +8022,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
       }
     ]
   },
@@ -6605,7 +8043,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "138",
@@ -6621,7 +8065,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "139",
@@ -6636,7 +8086,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "139",
@@ -6651,7 +8107,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "140",
@@ -6665,7 +8127,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "140",
@@ -6679,7 +8147,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "141",
@@ -6755,7 +8229,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "143",
@@ -6771,7 +8251,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "144",
@@ -6786,7 +8272,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "144",
@@ -6801,7 +8293,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "145",
@@ -6816,7 +8314,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "145",
@@ -6831,7 +8335,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "146",
@@ -6846,7 +8356,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "146",
@@ -6861,7 +8377,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "147",
@@ -6876,7 +8398,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "147",
@@ -6891,7 +8419,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "148",
@@ -6905,7 +8439,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "148",
@@ -6919,7 +8459,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "149",
@@ -6995,7 +8541,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "151",
@@ -7011,7 +8563,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "152",
@@ -7025,7 +8583,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "152",
@@ -7039,7 +8603,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 751,
+        "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      }
+    ]
   },
   {
     "pano": "153",

@@ -8,8 +8,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/Loader';
-import { type MenuAnchor, measureMenuAnchor, Menu, MenuItem } from '@/components/Menu';
+import { MenuItem, openMenu } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
@@ -115,8 +114,6 @@ function TableScreenBody() {
   ).data;
   const [sheet, setSheet] = useState<'people' | 'lobby' | 'icon' | null>(null);
   // The ⋮ menu (MasaSecenek), grown out of its button (iskelet.md → 3.5).
-  const [menu, setMenu] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null);
   const moreRef = useRef<View>(null);
   useMarkTableScreen();
   const hiddenGame = useVampirHidden((s) => s.hidden[id]);
@@ -251,8 +248,8 @@ function TableScreenBody() {
   if (view === 'loading' || (view === 'end' && !!seen && !seen.left && removed.isPending)) {
     return (
       <Screen>
-        <View className="mt-16 items-center">
-          <Loader />
+        <View className="flex-1">
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       </Screen>
     );
@@ -382,11 +379,34 @@ function TableScreenBody() {
   const unread = unreadCount(messages, seenAt, sessionId);
   const full = r.phones >= MAX_TABLE_PHONES;
   const seats = tr.table.seats(r.phones, MAX_TABLE_PHONES);
-  const openMenu = () =>
-    measureMenuAnchor(moreRef.current, (at) => {
-      setMenuAnchor(at);
-      setMenu(true);
-    });
+  // In the app's layer, not this screen's state (CLAUDE.md → Çizim bütçesi).
+  const openOptions = () =>
+    openMenu(
+      moreRef.current,
+      <>
+        <MenuItem
+          cap="people"
+          testID="table-menu-people"
+          label={tr.table.peopleTitle}
+          onPress={() => setSheet('people')}
+        />
+        {owner ? (
+          <MenuItem
+            cap="edit"
+            testID="table-menu-rename"
+            label={tr.table.rename}
+            onPress={() => setSheet('icon')}
+          />
+        ) : null}
+        <MenuItem
+          cap={owner ? 'close' : 'logout'}
+          negative
+          testID={owner ? 'table-end-open' : 'table-leave-open'}
+          label={owner ? tr.table.endConfirm : tr.table.leave}
+          onPress={owner ? openEnd : openLeave}
+        />
+      </>,
+    );
 
   // The bar (yeni arayüz tuvali, Masa `.mtop`): back at the left, the table's pill (its name and
   // "7/12 · Lobide açık"; the owner changes the table's card and name from it, the owner's call, 29
@@ -441,7 +461,7 @@ function TableScreenBody() {
         onPress={() => router.push({ pathname: '/room-chat/[id]', params: { id } })}
       />
       <View ref={moreRef} collapsable={false}>
-        <Round icon="moreV" label={tr.table.menu} testID="table-menu" onPress={openMenu} />
+        <Round icon="moreV" label={tr.table.menu} testID="table-menu" onPress={openOptions} />
       </View>
     </View>
   );
@@ -543,31 +563,6 @@ function TableScreenBody() {
         me={sessionId}
         profiles={profiles}
       />
-      {menuAnchor ? (
-        <Menu anchor={menuAnchor} visible={menu} onClose={() => setMenu(false)}>
-          <MenuItem
-            cap="people"
-            testID="table-menu-people"
-            label={tr.table.peopleTitle}
-            onPress={() => setSheet('people')}
-          />
-          {owner ? (
-            <MenuItem
-              cap="edit"
-              testID="table-menu-rename"
-              label={tr.table.rename}
-              onPress={() => setSheet('icon')}
-            />
-          ) : null}
-          <MenuItem
-            cap={owner ? 'close' : 'logout'}
-            negative
-            testID={owner ? 'table-end-open' : 'table-leave-open'}
-            label={owner ? tr.table.endConfirm : tr.table.leave}
-            onPress={owner ? openEnd : openLeave}
-          />
-        </Menu>
-      ) : null}
       {sheet === 'lobby' ? (
         <OpenLobbySheet
           onClose={() => setSheet(null)}

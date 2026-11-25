@@ -15,7 +15,7 @@ export const PROFILE_COVER = {
   // The bar's ground shows over the glide's last 30%.
   barFadeFrom: 0.7,
   // Another person's profile: the band 22 round within the page's sides.
-  bandRadius: 22,
+  bandRadius: 24,
   // The face 112 overlapping the cover's foot by half; the name 12 under it.
   faceOverlap: 56,
   nameTop: 12,
@@ -24,7 +24,7 @@ export const PROFILE_COVER = {
   barGap: 10,
   // Profili düzenle's preview: 1.9:1 at 120 across, 14 round.
   previewWidth: 120,
-  previewRadius: 14,
+  previewRadius: 16,
   // The scene's own units (it is drawn on a 390 × 190 box and cut to the cover's width).
   scene: { width: 390, height: 190 },
   // The pink print's offset from the sun.
@@ -67,32 +67,25 @@ export const PROFILE_PAGE = {
   cover: 230,
   shade: 110,
   shadeCss: 'linear-gradient(180deg, rgba(3, 27, 11, 0.42) 0%, rgba(3, 27, 11, 0) 100%)',
-  footFrom: 0.5,
+  // The blurred foot fades into the page's ground over the cover's last 28 %, quickly at first
+  // (owner, 21 Nov: a slow start left a dark grey band of the picture over the light ground; then
+  // the blur started too high, so it starts lower).
+  footFrom: 0.72,
   footCss: {
-    light: 'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, #EFF7F1 100%)',
-    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 100%)',
+    light:
+      'linear-gradient(180deg, rgba(239, 247, 241, 0) 0%, rgba(239, 247, 241, 0.45) 25%, rgba(239, 247, 241, 0.8) 50%, rgba(239, 247, 241, 0.95) 70%, #EFF7F1 85%, #EFF7F1 100%)',
+    dark: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.45) 25%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0.95) 70%, #000000 85%, #000000 100%)',
   },
   // The blurred copy shows over the foot in these steps, each more opaque (no mask: a seam at its
-  // top would show), under the fade.
+  // top would show), under the fade; eight small steps so no step's edge shows (21 Nov).
   blur: 14,
-  blurSteps: [0.35, 0.7, 1] as const,
+  blurSteps: [0.08, 0.16, 0.28, 0.42, 0.58, 0.74, 0.88, 1] as const,
   face: 124,
   ring: 4,
   ringColor: '#FFFFFF',
   faceAt: { x: 195, y: 196 },
   nameAt: { x: 195, y: 291 },
   barAt: 73,
-  // Another person's (5.6): the cover at half the scroll; the photo shrinks to 0.75 over 60–180 and
-  // fades over 120–190; the band comes in over 190–230 and the name into the bar over 230–260
-  // (tuval Profil).
-  other: {
-    speed: 0.5,
-    faceShrink: [60, 180] as const,
-    faceScale: 0.75,
-    faceFade: [120, 190] as const,
-    band: [190, 230] as const,
-    bar: [230, 260] as const,
-  },
   // The own (5.7): the upper part moves at -0.35 of the scroll, fades over 120–300 and shrinks to
   // 0.92; the panel (34 round, a handle) reaches the bar's foot at 316, where the photo (124 → 30,
   // its ring 4 → 1.5) and the name (1 → 0.516) arrive in the bar at (152, 73) and (214, 73). The
@@ -101,14 +94,17 @@ export const PROFILE_PAGE = {
   // screen's top, the photo 112 (its 4 ring inside) overlapping it by 60: centred at (195, 232), the
   // name 12 under it, centred at (195, 317).
   own: {
-    cover: 236,
+    // Shorter than the board's 236 (owner, 21 Nov).
+    cover: 206,
     photo: 112,
-    photoAt: { x: 195, y: 232 },
-    nameAt: { x: 195, y: 317 },
+    // The photo's centre on the cover's foot (owner, 21 Nov); the name still 12 under it.
+    photoAt: { x: 195, y: 206 },
+    nameAt: { x: 195, y: 291 },
     arrive: 316,
     rise: 0.35,
     riseFade: [120, 300] as const,
-    riseScale: 0.92,
+    // No shrink (owner, 21 Nov): the shrinking cover left its sides open.
+    riseScale: 1,
     face: 30,
     ring: 1.5,
     faceTo: { x: 152, y: 73 },
@@ -150,6 +146,8 @@ export const TICKET = {
   stubGap: 8,
   stubDots: { cell: 6, dot: 1.2 },
   capsule: 80,
+  // The capsule standing over its halo, no ring, its body 84 high (tuval ProfilBen `.hw img`).
+  figure: 84,
   dash: [4, 4] as const,
   dashWidth: 2,
   padX: 16,

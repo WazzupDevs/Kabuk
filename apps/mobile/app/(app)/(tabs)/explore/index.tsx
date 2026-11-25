@@ -23,12 +23,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
@@ -38,6 +36,7 @@ import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
+import { SearchField } from '@/components/Field';
 import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
@@ -45,6 +44,9 @@ import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DistrictCard, DistrictStrip } from '@/features/district/DistrictCard';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
+import { shortVenueName } from '@/features/explore/shortName';
+import { TICKET_PICTURE, VenueTicket } from '@/features/explore/VenueTicket';
+import { ownTicketPicture } from '@/features/explore/venuePictures';
 import { Bucket } from '@/features/explore/Bucket';
 import { kindLabel } from '@/features/explore/kindLabel';
 import { EventTag } from '@/features/explore/EventTag';
@@ -57,7 +59,7 @@ import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
+import { LargeTitle, ScrollFade, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
 import { StickyGroupStatusBand } from '@/motion/StickyGroup';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
@@ -65,6 +67,7 @@ import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { openVenue } from '@/features/explore/openVenue';
 
 type View_ = 'list' | 'map';
 
@@ -352,20 +355,29 @@ function ListBody({
               </Reveal>
               {/* Kesfet `.sr .kk`: the buddies look over the search's top edge, under the field,
                   64 from the right, their foot 22 over the field's; they scroll with the content. */}
+              {/* They fade and shrink toward their foot over EXPLORE.peek.fade as the page goes up,
+                  not left half-cut at its top. */}
               {ready ? (
-                <Image
-                  source={PEEK}
-                  fadeDuration={0}
-                  resizeMode="contain"
-                  accessible={false}
-                  style={{
-                    position: 'absolute',
-                    right: EXPLORE.peek.right,
-                    bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
-                    width: EXPLORE.peek.width,
-                    height: EXPLORE.peek.height,
-                  }}
-                />
+                <ScrollFade
+                  fade={EXPLORE.peek.fade}
+                  shrink={EXPLORE.peek.fade}
+                  scaleTo={AURA.topBar.stickyScale}
+                  origin="center bottom"
+                >
+                  <Image
+                    source={PEEK}
+                    fadeDuration={0}
+                    resizeMode="contain"
+                    accessible={false}
+                    style={{
+                      position: 'absolute',
+                      right: EXPLORE.peek.right,
+                      bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
+                      width: EXPLORE.peek.width,
+                      height: EXPLORE.peek.height,
+                    }}
+                  />
+                </ScrollFade>
               ) : null}
             </View>
           )}
@@ -759,15 +771,7 @@ function VenueList({
               openings={openings}
             >
               {row.type === 'venue' ? (
-                <VenueRow
-                  venue={row.venue}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/explore/[venueId]',
-                      params: { venueId: row.venue.id },
-                    })
-                  }
-                />
+                <VenueRow venue={row.venue} onPress={() => openVenue(row.venue.id)} />
               ) : (
                 <UniversityRow
                   university={row.university}
@@ -784,13 +788,14 @@ function VenueList({
         )}
       </View>
       <CampusSheet
-        key={uniKey}
+        // The two sheets are siblings: their counters both start at 0, so each key names its sheet.
+        key={`campus-${uniKey}`}
         university={uni}
         campuses={uni ? venues.filter((v) => v.university?.id === uni.id) : []}
         onClose={() => setUni(null)}
       />
       <PlaceSheet
-        key={sheetKey}
+        key={`place-${sheetKey}`}
         visible={placeSheet}
         onClose={() => setPlaceSheet(false)}
         cities={cityList}
@@ -888,14 +893,16 @@ function Liveliness({ bucket }: { bucket: CityVenue['bucket'] }) {
         />
       ) : null}
       <T v="kesfetStatus" color={on ? colors.accent : c.muted}>
-        {tr.explore.buckets[bucket]}
+        {tr.explore.legend[bucket]}
       </T>
     </View>
   );
 }
 
-// A venue's row (Kesfet `.rw.vr`): its 56 picture, the name (wrapping, never cut) over the type and
-// district, how lively and the arrow; on the ground, no card and no hairline.
+// A venue's row as a cinema ticket (the owner's ask, 20 Kasım: the map card's shape, VenueTicket):
+// the type's picture on the stub, the perforation, then the name (wrapping, never cut) over the
+// type and district and how lively, and the arrow. The tickets lie on the ground `ticketGap` apart,
+// the page's side from the edges.
 function PlaceRow({
   testID,
   accessibilityLabel,
@@ -920,26 +927,28 @@ function PlaceRow({
       testID={testID}
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: r.gap,
-        minHeight: r.minHeight,
-        paddingVertical: r.padY,
-        paddingHorizontal: r.padX,
-      }}
+      style={{ marginHorizontal: r.padX, marginVertical: r.ticketGap / 2 }}
     >
-      <VenueThumb kind={kind} size={r.picture} radius={r.pictureRadius} shadow="" />
-      <View style={{ flex: 1, minWidth: 0, gap: r.lineGap }}>
-        <T v="kesfetName">{name}</T>
-        <T v="kesfetSub" color={c.muted}>
-          {sub}
-        </T>
-      </View>
-      <Liveliness bucket={bucket} />
-      <View style={{ marginLeft: r.chevronIn }}>
-        <CapIcon name="chevron" color={c.muted} size={r.chevron} />
-      </View>
+      <VenueTicket compact picture={ownTicketPicture(name) ?? TICKET_PICTURE[kind]}>
+        {/* Every ticket alike: the name on one line (shortVenueName, shrinking as a last resort),
+            under it the type and district on one line at the left and how lively at the right. */}
+        <View style={{ flex: 1, minWidth: 0, gap: r.lineGap }}>
+          <T v="kesfetName" lines={1} fit>
+            {shortVenueName(name)}
+          </T>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: r.ticket.gap }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <T v="kesfetSub" color={c.muted} lines={1} fit>
+                {sub}
+              </T>
+            </View>
+            <Liveliness bucket={bucket} />
+          </View>
+        </View>
+        <View style={{ marginLeft: r.chevronIn }}>
+          <CapIcon name="chevron" color={c.muted} size={r.chevron} />
+        </View>
+      </VenueTicket>
     </Tap>
   );
 }
@@ -1018,7 +1027,7 @@ function CampusSheet({
       visible={university !== null}
       onClose={onClose}
       title={university?.name ?? ''}
-      footer={<Btn block tall variant="glassy" label={tr.common.cancel} onPress={onClose} />}
+      footer={<Btn block variant="glassy" label={tr.common.cancel} onPress={onClose} />}
     >
       <T v="note">{tr.explore.campusNote}</T>
       <View accessibilityRole="list" testID="explore-campus-sheet">
@@ -1031,7 +1040,7 @@ function CampusSheet({
               accessibilityLabel={`${v.name}, ${v.district}, ${tr.explore.buckets[v.bucket]}`}
               onPress={() => {
                 onClose();
-                router.push({ pathname: '/explore/[venueId]', params: { venueId: v.id } });
+                openVenue(v.id);
               }}
             >
               <VenueThumb kind="kampus" size={VENUE_THUMB_SIZE} />
@@ -1080,7 +1089,7 @@ function PlaceSheet({
         <View style={{ gap: KIT.size.chipGap + 2 }}>
           <Btn
             block
-            tall
+
             label={tr.explore.showPlace}
             testID="place-show"
             onPress={() => {
@@ -1088,13 +1097,13 @@ function PlaceSheet({
               onClose();
             }}
           />
-          <Btn block tall variant="glassy" label={tr.common.cancel} onPress={onClose} />
+          <Btn block variant="ghost" label={tr.common.cancel} onPress={onClose} />
         </View>
       }
     >
       <T v="note">{tr.explore.placeNote}</T>
       <View style={{ gap: KIT.size.chipsGap }}>
-        <T v="eyebrow">{tr.explore.city}</T>
+        <T v="sectionHead">{tr.explore.city}</T>
         <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.city} style={CHIPS}>
           <Chip
             testID="place-city-all"
@@ -1116,7 +1125,7 @@ function PlaceSheet({
       {/* Districts once a city is chosen. */}
       {pick ? (
         <View style={{ gap: KIT.size.chipsGap }}>
-          <T v="eyebrow">{tr.explore.district}</T>
+          <T v="sectionHead">{tr.explore.district}</T>
           <View
             accessibilityRole="radiogroup"
             accessibilityLabel={tr.explore.district}
@@ -1169,8 +1178,7 @@ function SearchRow({
   map: boolean;
   onChange: (v: View_) => void;
 }) {
-  const { c, scheme } = useKit();
-  const { colors } = useTheme();
+  const { scheme } = useKit();
   const f = EXPLORE.field;
   const to: View_ = map ? 'list' : 'map';
   return (
@@ -1178,50 +1186,15 @@ function SearchRow({
       accessibilityLabel={tr.explore.viewSwitch}
       style={{ flexDirection: 'row', alignItems: 'center', gap: f.rowGap }}
     >
-      <Glass
-        face={EXPLORE[scheme].solid}
-        radius={FIELD / 2}
-        style={{
-          flex: 1,
-          height: FIELD,
-          borderRadius: FIELD / 2,
-          paddingHorizontal: f.padX,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: f.gap,
-        }}
-      >
-        <CapIcon name="search" color={c.muted} size={f.icon} />
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <TextInput
-            testID="explore-search"
-            value={value}
-            onChangeText={onChangeText}
-            accessibilityLabel={tr.explore.search}
-            returnKeyType="search"
-            selectionColor={colors.accent}
-            cursorColor={colors.accent}
-            style={[
-              KIT_TYPE.kesfetField,
-              { color: c.ink, paddingVertical: 0, paddingHorizontal: 0, includeFontPadding: false },
-            ]}
-          />
-          {/* The hint is drawn by the app, in the app's type: Android draws a field's own hint in
-              the phone's system face (the owner's report, 27 and 28 Ekim). */}
-          {value.length === 0 ? (
-            <View
-              pointerEvents="none"
-              style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}
-            >
-              {/* No `fit`: in the absolute layer it shrank the hint to nothing (ui 3.1). */}
-              <T v="kesfetField" lines={1} color={colors.placeholder}>
-                {tr.explore.search}
-              </T>
-            </View>
-          ) : null}
-        </View>
-        {value.length > 0 ? <ClearButton onPress={() => onChangeText('')} /> : null}
-      </Glass>
+      <View style={{ flex: 1 }}>
+        <SearchField
+          testID="explore-search"
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={tr.explore.search}
+          face={EXPLORE[scheme].solid}
+        />
+      </View>
       <Round
         side={FIELD}
         icon={to}
@@ -1230,31 +1203,5 @@ function SearchRow({
         onPress={() => onChange(to)}
       />
     </View>
-  );
-}
-
-// KesfetAra `.clr`: a 36 round at the field's right, its 20 icon a soft disc with a cross.
-function ClearButton({ onPress }: { onPress: () => void }) {
-  const { c } = useKit();
-  const f = EXPLORE.field;
-  return (
-    <Tap
-      testID="explore-search-clear"
-      accessibilityLabel={tr.explore.clearSearch}
-      onPress={onPress}
-      style={{
-        width: f.clear,
-        height: f.clear,
-        borderRadius: f.clear / 2,
-        marginRight: f.clearOut,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Svg width={f.clearIcon} height={f.clearIcon} viewBox="0 0 24 24">
-        <Circle cx={12} cy={12} r={9.4} fill={c.muted} opacity={0.22} />
-        <Path d="M9 9l6 6M15 9l-6 6" stroke={c.muted} strokeWidth={2.2} strokeLinecap="round" />
-      </Svg>
-    </Tap>
   );
 }

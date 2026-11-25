@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { Av, T, useKit } from '@/aura/kit';
 import { Avatar } from '@/components/Avatar';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader, useLoaderHold } from '@/components/Loader';
+import { useLoaderHold } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
 import { useOwnLook } from '@/features/profile/useOwnLook';
@@ -71,7 +71,7 @@ function PeopleBody({ district, onOpen }: { district: string; onOpen: (ref: stri
         }}
       />
     );
-  if (!data || holding) return <Loader />;
+  if (!data || holding) return <EmptyState kind="loading" body={tr.common.loading} />;
   const alone = data.profiled.length === 0 && data.anonymous.length === 0;
   return (
     <View testID="district-people" accessibilityLabel={tr.district.people.list}>

@@ -3,22 +3,34 @@
 // bar 47 high) where docs/design/iskelet.md → 5.3 gives no value of its own. The gift card's own
 // values: theme/gifts.ts → GIFT_CARD; the list's (theme/flatLists.ts) are shared with Mesajlar's.
 export const ACTIVITIES = {
-  // The page: 13 under the status bar (60 on the board), 20 from the sides; the tabs 12 under the
-  // gift card, the list 12 under the tabs.
+  // The page: 13 under the status bar (60 on the board), 20 from the sides; the tabs 14 under the
+  // title, where Mesajlar's stand under its title, as thick as them (the owner's call, 24 Kasım:
+  // the two screens' tabs at one height and size); the list 12 under the tabs.
   top: 13,
   side: 20,
-  tabsTop: 12,
+  tabsTop: 14,
   listTop: 12,
-  // The tabs (`.sg`): a glass capsule 44 high, 4 inside, its two parts 36 and 22 round, the chosen
-  // one white (the ink in the dark), the words 14/600.
-  tabs: { item: 36, radius: 22 },
+  // The empty state keeps this much under the gift card on a short screen.
+  emptyMin: 240,
+  // An event's card: the gift card's height and corner (theme/gifts.ts → GIFT_CARD), 16 inside,
+  // its two lines 4 apart on a dark fade over the scene's lower half, in both schemes.
+  eventCard: {
+    pad: 16,
+    lineGap: 4,
+    shade: 'linear-gradient(180deg, rgba(3, 27, 11, 0) 30%, rgba(3, 27, 11, 0.78) 100%)',
+    title: '#FFFFFF',
+    venue: 'rgba(255, 255, 255, 0.86)',
+  },
+  // The tabs (`.sg`): a glass capsule 42 high, 3 inside (Mesajlar's), its two parts 36 and 22
+  // round, the chosen one white (the ink in the dark), the words 14/600.
+  tabs: { item: 36, radius: 24, pad: 3 },
   // The game's sheet (`.msh`): the picture 56, 14 round, 14 from the title, its lines 3 apart; a
   // person's row 12 between its parts, the face 44 with its buddy 31 × 41 at 6, 4 in it; the name
   // and its line 2 apart; the small action 14 in at either side, its icon 16 and 4 from the
   // words; once pressed the soft pill 12 in, its check 15.
   sheet: {
     art: 56,
-    artRadius: 14,
+    artRadius: 16,
     artGap: 14,
     titleGap: 3,
     row: { gap: 12, nameGap: 2 },

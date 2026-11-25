@@ -23,7 +23,7 @@ export const SEMT = {
   card: {
     pad: 16,
     gap: 14,
-    radius: 22,
+    radius: 24,
     lineGap: 4,
     buttonTop: 8,
     door: { width: 72, height: 86, radius: 16, shadow: '0px 6px 14px rgba(4, 73, 35, 0.16)' },
@@ -62,7 +62,7 @@ export const SEMT = {
     noteTop: 226,
     // The bar (`.hdr`, 56) and the scallop along the picture's foot (cells of 20, notches of 8).
     bar: 56,
-    scallop: { cell: 20, radius: 8 },
+    scallop: { cell: 20, radius: 12 },
     // The short pictures' paper ground (`.hero` of 101, 102).
     paper: '#EDE7D7',
     // The round buttons over the picture (`.round.gl`) and the words on it (`.ey2`).
@@ -79,7 +79,7 @@ export const SEMT = {
     paper: '#FBF5E4',
     ink: '#16141C',
     label: '#C2185B',
-    radius: 8,
+    radius: 12,
     padTop: 22,
     padX: 20,
     padBottom: 20,
@@ -127,7 +127,7 @@ export const SEMT = {
   entryTicket: {
     top: 24,
     minHeight: 88,
-    radius: 18,
+    radius: 20,
     stub: 84,
     notch: 9,
     stubGap: 4,
@@ -147,7 +147,7 @@ export const SEMT = {
   // The time chip (`.tchip`): 36 high, 10 before the clock icon, 14 after the words.
   timeChip: { height: 36, padLeft: 10, padRight: 14, gap: 6, icon: 16, top: 8 },
   // The countdown (`.cd`).
-  countdown: { pad: 16, gap: 4, radius: 22 },
+  countdown: { pad: 16, gap: 4, radius: 24 },
   // The warning row (`.wrow`): in the flow over the buttons, never over one.
   warn: { radius: 16, padX: 14, padY: 10, gap: 10, icon: 16 },
   // The "Devam?" bar (`.prog`).

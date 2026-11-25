@@ -91,7 +91,7 @@ export function throttleCalls(
 
 // The next page asks for the posts before the oldest one it has; none when the page was short (the
 // feed's first post is in).
-export function nextBefore(posts: readonly VenuePost[]): string | undefined {
+export function nextBefore(posts: readonly { createdAt: string }[]): string | undefined {
   if (posts.length < VENUE_FEED.pageSize) return undefined;
   return posts.at(-1)?.createdAt;
 }

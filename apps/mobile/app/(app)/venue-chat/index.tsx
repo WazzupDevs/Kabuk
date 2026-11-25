@@ -34,7 +34,6 @@ import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { IdentityToggle } from '@/components/IdentityToggle';
-import { Loader } from '@/components/Loader';
 import { ChatLookAvatar, LookAvatar } from '@/components/LookAvatar';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
@@ -380,18 +379,17 @@ function VenueChatScreenBody() {
           />
         ),
         empty: page.isPending ? (
-          <View className="flex-1 items-center justify-center">
-            <Loader />
+          <View className="flex-1">
+            <EmptyState kind="loading" body={tr.common.loading} />
           </View>
         ) : page.isError ? (
-          <View className="flex-1 justify-center">
-            <EmptyState
-              kind="error"
-              body={errorMessage(page.error)}
-              error={page.error}
-              action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
-            />
-          </View>
+          <EmptyState
+            page
+            kind="error"
+            body={errorMessage(page.error)}
+            error={page.error}
+            action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
+          />
         ) : (
           <View className="flex-1 justify-end gap-2">
             {/* U26 (MekanSohbetiBos): a glass card, the chat's disc, h3 and fine. */}

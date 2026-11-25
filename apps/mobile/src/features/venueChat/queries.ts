@@ -156,7 +156,13 @@ export function markVenueChatSeen(sessionId: string) {
   }));
 }
 
-export function useVenueChatCard(venueId: string | undefined, sessionId: string | undefined) {
+// `listen`: the open card listens for the venue chat's broadcasts; its strip in the pinned stack
+// (a second copy) only reads the same page, so the channel is joined once.
+export function useVenueChatCard(
+  venueId: string | undefined,
+  sessionId: string | undefined,
+  listen = true,
+) {
   const queryClient = useQueryClient();
   const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: CARD_STALE_MS });
   const focused = useIsFocused();
@@ -198,7 +204,7 @@ export function useVenueChatCard(venueId: string | undefined, sessionId: string 
     },
     [focused, read],
   );
-  const channel = venueId ? venueChatChannel(venueId) : null;
+  const channel = venueId && listen ? venueChatChannel(venueId) : null;
   useBroadcast(channel, VENUE_CHAT_BROADCAST, () => heard('new'));
   useBroadcast(channel, VENUE_CHAT_REMOVED_BROADCAST, () => heard('all'));
   useEffect(() => {

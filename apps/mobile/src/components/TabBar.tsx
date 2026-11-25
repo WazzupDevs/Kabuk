@@ -15,12 +15,12 @@ import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
-import { ARRIVE_RN, TabOpeningsContext } from '@/aura/motion';
+import { TabOpeningsContext } from '@/aura/motion';
 import { TabBar as FloatingTabBar, TabBarEdge, TabBarMotion, type TabItem } from '@/motion/TabBar';
-import { labOff, markTabSwitch } from '@/lib/drawLab';
+import { markTabSwitch } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
 import { createTabActivity, TabActivityContext } from '@/lib/tabActivity';
-import { createTabOpenings, LEAVE_PREPARE_MS } from '@/lib/tabOpenings';
+import { createTabOpenings } from '@/lib/tabOpenings';
 import { useLeaveGuard } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
@@ -64,8 +64,9 @@ function useBarModeWhileFocused(key: 'hidden' | 'overMap', on: boolean) {
   );
 }
 
-export function useHideTabBar(): void {
-  useBarModeWhileFocused('hidden', true);
+// `on` false: a screen that covers the bar itself (the DM surface's conversations).
+export function useHideTabBar(on = true): void {
+  useBarModeWhileFocused('hidden', on);
 }
 
 export function useTabBarOverMap(on: boolean): void {
@@ -125,9 +126,8 @@ export function TabScene({
   const [openings] = useState(createTabOpenings);
   // Whether the tab is on screen, for its clocks and polls (lib/tabActivity.ts, B6): no render.
   const [activity] = useState(() => createTabActivity(navigation.isFocused()));
-  // The tab's screen arrives each time it is opened (the film's tab switch): from a little below,
-  // faded in on the native driver, without the film's blur (the owner's call, 6 Kasım). The first
-  // opening is the screen's own arrival (Screen's cascade).
+  // The tab's screen stays still on a return (21 Kasım: no arrival on a tab switch); the first
+  // opening is the screen's own arrival (Screen's cascade). Kept at 1.
   const [p] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const own = () => useBarMode.setState({ target: id });
@@ -136,44 +136,24 @@ export function TabScene({
     // or a screen over the tabs (Bildirimler, Ayarlar: closing it showed the tab arrive again, the
     // owner's report, 28 Ekim).
     let leftTab = false;
-    // Leaving to another tab, the arrival's first values are set while the tab is hidden (B5): the
-    // first frame it is shown again is the arrival's first, never the last arrival's end.
-    let prepare: ReturnType<typeof setTimeout> | undefined;
     const offFocus = navigation.addListener('focus', () => {
-      clearTimeout(prepare);
       own();
       activity.set(true);
       if (!leftTab) return;
       leftTab = false;
       markTabSwitch();
-      // Çizim ölçümü's `kademe`: the cascade measured off (its parts in place).
-      openings.emit(labOff('kademe') ? 'settle' : 'open');
-      if (reduce) return;
-      // Çizim ölçümü's `gelis`: the fade and rise off on its own (the screen in place at once).
-      if (labOff('gelis')) p.setValue(1);
-      else {
-        p.setValue(0);
-        Animated.timing(p, {
-          toValue: 1,
-          duration: MOTION.dissolve.inMs,
-          easing: ARRIVE_RN,
-          useNativeDriver: true,
-        }).start();
-      }
+      // Back to a tab it stands as it was, at once, its data already there: no fade, no rise, no
+      // cascade (the owner's call, 21 Kasım: every return looked like a load; Telegram's tab
+      // switch is instant). Only the tab's first opening arrives (Screen's cascade).
+      openings.emit('settle');
+      p.setValue(1);
     });
     const offBlur = navigation.addListener('blur', () => {
       const state = navigation.getState();
       leftTab = state.routes[state.index]?.key !== routeKey;
       activity.set(false);
-      if (!leftTab || reduce) return;
-      clearTimeout(prepare);
-      prepare = setTimeout(() => {
-        p.setValue(0);
-        openings.emit('leave');
-      }, LEAVE_PREPARE_MS);
     });
     return () => {
-      clearTimeout(prepare);
       offFocus();
       offBlur();
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));

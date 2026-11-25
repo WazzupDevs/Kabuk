@@ -40,13 +40,16 @@ import {
 } from '@/theme/auraKit';
 import type { ExploreFace } from '@/theme/explore';
 import { gradientStyle } from '@/theme/gradient';
-import { Frost, FROSTED } from '@/components/LiquidGlass';
+import { BUTTON_FROSTED, Frost, FROSTED } from '@/components/LiquidGlass';
+import { CLEAR_ON_SHEET } from '@/theme/buttonGlass';
+import { BUTTON_FROST } from '@/theme/glass';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { CapIcon, type CapIconName } from './CapIcon';
 import { springConfig, SWAP_RN } from './motion';
 import { photoCacheKey } from '@/lib/usePhoto';
-import { PRESS_DELAY, usePress } from '@/motion/Tap';
+import { BtnInk } from '@/motion/BtnInk';
+import { holdAfter, PRESS_DELAY, usePress } from '@/motion/Tap';
 
 // The canvas's component kit (docs/design/aura/project/aura.css), class for class. Values from
 // theme/auraKit.ts; nothing is measured here.
@@ -59,7 +62,16 @@ export function useKit() {
 // Text: .display, .title, .h3, .body, .fine, .eyebrow, .stamp; `strong` is .strong (ink, 600).
 // .body, .fine, .eyebrow and .stamp are muted unless `ink` or `strong`; `color` wins over both.
 // `note` too: a description under a title is quieter than it (the owner's report, 2 Kasım, 3.4).
-const MUTED: readonly KitTextVariant[] = ['body', 'fine', 'eyebrow', 'stamp', 'member', 'note'];
+// A section's label is muted everywhere (the owner's call, 19 Kasım: one section head, grey).
+const MUTED: readonly KitTextVariant[] = [
+  'body',
+  'fine',
+  'eyebrow',
+  'stamp',
+  'member',
+  'note',
+  'sectionHead',
+];
 export function T({
   v = 'body',
   ink,
@@ -147,6 +159,16 @@ export function useFrost(): boolean {
   const labOff = useLabOff('buzlu');
   const solid = useReduceTransparency();
   return FROSTED && !onCard && !flat && !labOff && !solid;
+}
+
+// Whether a clear button here is frosted (theme/glass.ts → BUTTON_FROST): as useFrost, on the
+// buttons' own switch.
+export function useButtonFrost(): boolean {
+  const onCard = useContext(OnCard);
+  const flat = useContext(FlatGlass);
+  const labOff = useLabOff('buzlu');
+  const solid = useReduceTransparency();
+  return BUTTON_FROSTED && !onCard && !flat && !labOff && !solid;
 }
 
 export function Glass({
@@ -250,6 +272,19 @@ function FrostOf({ height, fill }: { height: number; fill?: string }) {
   return <Frost radius={height / 2} ground={AURA[scheme].ground} fill={fill} />;
 }
 
+// A clear button's frost on the buttons' own switch (theme/glass.ts → BUTTON_FROST).
+function ButtonFrost({ height }: { height: number }) {
+  const { scheme } = useTheme();
+  return (
+    <Frost
+      button
+      radius={height / 2}
+      ground={AURA[scheme].ground}
+      fill={BUTTON_FROST.fill[scheme]}
+    />
+  );
+}
+
 // The press (iskelet.md → 2.3) is the motion kit's (src/motion/Tap.tsx): one source for Tap and
 // every button here.
 export { PRESS_DELAY, usePress };
@@ -265,9 +300,6 @@ export function Btn({
   onPress,
   variant = 'primary',
   sm,
-  mid,
-  tall,
-  big,
   bar,
   block,
   snug,
@@ -289,17 +321,11 @@ export function Btn({
   onPress?: () => void;
   // `ghost`: no fill, the text's colour ("Vazgeç" under a dialog's action).
   variant?: 'primary' | 'glassy' | 'dark' | 'danger' | 'ghost';
+  // Two heights (the owner's call, 19 Kasım, docs/decisions/temel.md): the main 44 and `sm` 32.
   sm?: boolean;
-  // Mekan's "Masa kur": 44 high, 15.
-  mid?: boolean;
-  // The venue page's and the check-in sheet's button: 56 high.
-  tall?: boolean;
-  // `.btn.big` (the semt pages): 56 high, 700 17/22.
-  big?: boolean;
-  // In a bar of round buttons: a button as tall as they are, `bar` high (the owner's report, 29
-  // Ekim: Masa's "Bitir" stood shorter than the rounds beside it). Beside 48 rounds 18 inside and
-  // 16 (Masa); beside 44 the small one's.
-  bar?: number;
+  // In a top bar of round buttons: as tall as they are (the owner's report, 29 Ekim: Masa's
+  // "Bitir" stood shorter than the rounds beside it), the small one's words and room.
+  bar?: boolean;
   block?: boolean;
   // As wide as its words beside a wider button: 16 inside, its icon 20 (Aura v76 ProfilBaskasi,
   // "Arkadaşlıktan çıkar"; F1).
@@ -356,35 +382,17 @@ export function Btn({
         ? g.off.ink
         : (tint ?? g.ink);
   const pressedFill = down && !off && !fill && g.pressed ? g.pressed : null;
-  const height = bar
-    ? bar
-    : sm
-      ? KIT.size.btnSm
-      : mid
-        ? KIT.size.btnMid
-        : big
-          ? KIT.size.btnBig
-          : tall
-            ? KIT.size.btnTall
-            : KIT.size.btn;
-  const wide = bar ? bar >= KIT.size.roundLg : false;
-  const small = sm || (!!bar && !wide);
-  const padX = snug
-    ? KIT.size.btnPadXSnug
-    : wide || mid
-      ? KIT.size.btnPadXMid
-      : small
-        ? KIT.size.btnPadXSm
-        : KIT.size.btnPadX;
-  const labelType = look?.type
-    ? KIT_TYPE[look.type]
-    : mid
-      ? KIT_TYPE.btnMid
-      : small
-        ? KIT_TYPE.btnSm
-        : big
-          ? KIT_TYPE.btnBig
-          : KIT_TYPE.btn;
+  const buttonFrost = useButtonFrost();
+  const frosted = buttonFrost && variant === 'glassy' && !off && !fill && !pressedFill;
+  // On a dialog, a sheet or a card the soft white would not show: the sheets' quiet tone.
+  const onCard = useContext(OnCard);
+  const inSheet = useContext(FlatGlass);
+  const onSurface = onCard || inSheet;
+  const onSheet = variant === 'glassy' && onSurface && !off && !fill && !pressedFill;
+  const height = bar ? KIT.size.topBtn : sm ? KIT.size.btnSm : KIT.size.btn;
+  const small = sm || !!bar;
+  const padX = snug ? KIT.size.btnPadXSnug : small ? KIT.size.btnPadXSm : KIT.size.btnPadX;
+  const labelType = look?.type ? KIT_TYPE[look.type] : small ? KIT_TYPE.btnSm : KIT_TYPE.btn;
   // The soft outer shadow drawn natively (NativeShadow.tsx); the top light, the bottom line and the
   // white edge inside are inset shadows. A flat `fill` has none.
   const shadow =
@@ -435,9 +443,13 @@ export function Btn({
                 : {
                     ...(pressedFill
                       ? { backgroundColor: pressedFill }
-                      : gradientStyle(solid ? g.solid : g.fill)),
+                      : frosted
+                        ? null
+                        : onSheet
+                          ? { backgroundColor: CLEAR_ON_SHEET[scheme].fill }
+                          : gradientStyle(solid ? g.solid : g.fill)),
                     borderWidth: KIT.size.edge,
-                    borderColor: g.edge,
+                    borderColor: onSheet ? CLEAR_ON_SHEET[scheme].edge : g.edge,
                     boxShadow: shadow?.boxShadow,
                   }
             : { backgroundColor: off ? c.disabledOnCard : c.chipOn },
@@ -455,33 +467,44 @@ export function Btn({
         ]}
       >
         {shadow?.node}
-        {loading ? (
-          <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
-        ) : lead ? (
-          lead
-        ) : icon && !off ? (
-          // Disabled, no icon (Aura v65 `.btn.off`; the owner's report, 2 Kasım, 10.1).
-          <CapIcon
-            name={icon}
-            color={fg}
-            soft={kind === 'prominent' ? PRIMARY_SOFT : CLEAR_SOFT}
-            size={look?.icon ?? (sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon)}
-          />
-        ) : null}
-        <Text
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={MIN_LABEL_SCALE}
-          maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[
-            labelType,
-            look?.type ? null : strong ? BTN_STRONG : null,
-            { color: fg, flexShrink: 1 },
-          ]}
-        >
-          {label}
-        </Text>
-        {trail && !loading ? trail : null}
+        {frosted ? <ButtonFrost height={height} /> : null}
+        <BtnInk gap={look?.gap ?? KIT.size.btnGap}>
+          {loading ? (
+            <Loader
+              kind="meet"
+              size={sm ? KIT.size.iconSm : KIT.size.icon}
+              // One colour, the words' own (the owner's call, 19 Kasım); the chip-like `dark` keeps its
+              // colours.
+              mono={glass ? { color: fg, ground: fill ?? g.fill } : undefined}
+              delay={0}
+              label={null}
+            />
+          ) : lead ? (
+            lead
+          ) : icon && !off ? (
+            // Disabled, no icon (Aura v65 `.btn.off`; the owner's report, 2 Kasım, 10.1).
+            <CapIcon
+              name={icon}
+              color={fg}
+              soft={kind === 'prominent' ? PRIMARY_SOFT : CLEAR_SOFT}
+              size={look?.icon ?? (sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon)}
+            />
+          ) : null}
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={MIN_LABEL_SCALE}
+            maxFontSizeMultiplier={MAX_FONT_SCALE}
+            style={[
+              labelType,
+              look?.type ? null : strong ? BTN_STRONG : null,
+              { color: fg, flexShrink: 1 },
+            ]}
+          >
+            {label}
+          </Text>
+          {trail && !loading ? trail : null}
+        </BtnInk>
       </Animated.View>
     </Pressable>
   );
@@ -557,10 +580,15 @@ export function Round({
   const s = side ?? (big ? KIT.size.roundLg : KIT.size.round);
   const shadowOff = useLabOff('golge');
   const solid = useReduceTransparency();
-  const frost = useFrost();
+  const frost = useButtonFrost();
+  const onCard = useContext(OnCard);
+  const inSheet = useContext(FlatGlass);
+  const onSurface = onCard || inSheet;
   const off = disabled && !loading;
-  const g = glass ? KIT.button[scheme][glass] : null;
-  const frosted = frost && glassy && !primary && !off && !light && !g;
+  // DENEME (19 Kasım, temel): three looks. `primary` is the main button's ink (not the green), and
+  // the `clear` glass is the raised round itself.
+  const g = primary || glass === 'prominent' ? KIT.button[scheme].prominent : null;
+  const frosted = frost && glassy && !off && !light && !g;
   const fg = off
     ? c.onDisabled
     : g
@@ -641,20 +669,38 @@ export function Round({
                     }
                   : glassy
                     ? {
-                        backgroundColor: frosted ? undefined : c.raisedRound,
+                        backgroundColor: frosted
+                          ? undefined
+                          : onSurface
+                            ? CLEAR_ON_SHEET[scheme].fill
+                            : c.raisedRound,
                         borderWidth: KIT.size.edge,
-                        borderColor: c.raisedRoundEdge,
+                        borderColor: onSurface ? CLEAR_ON_SHEET[scheme].edge : c.raisedRoundEdge,
                         boxShadow: shadow?.boxShadow,
                       }
                     : null,
         ]}
       >
         {shadow?.node}
-        {glassy && !primary && !off && !light && !g ? (
-          <FrostOf height={s} fill={c.raisedRound} />
-        ) : null}
+        {frosted ? <ButtonFrost height={s} /> : null}
         {loading ? (
-          <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
+          <Loader
+            kind="meet"
+            size={KIT.size.iconSm}
+            // One colour, the icon's own (as Btn's).
+            mono={{
+              color: fg,
+              ground: g
+                ? g.fill
+                : primary
+                  ? KIT.primary
+                  : light
+                    ? KIT.sceneRound.bg
+                    : c.raisedRound,
+            }}
+            delay={0}
+            label={null}
+          />
         ) : (
           (children ??
           (icon ? (
@@ -810,7 +856,9 @@ export function Chip({
 }) {
   const { c } = useKit();
   const press = usePress();
-  const frosted = useFrost() && !on;
+  // A clear chip frosts on the buttons' own switch (theme/glass.ts → BUTTON_FROST; the owner's
+  // call, 23 Kasım: every pressable clear control).
+  const frosted = useButtonFrost() && !on && !filter;
   const h = filter
     ? KIT.size.chipFilter
     : narrow
@@ -869,8 +917,16 @@ export function Chip({
         }}
       >
         {shadow.node}
-        {on || filter ? null : <FrostOf height={h} fill={c.raisedChip} />}
-        {icon ? <CapIcon name={icon} color={c.muted} size={KIT.size.iconSm} /> : null}
+        {frosted ? <ButtonFrost height={h} /> : null}
+        {icon ? (
+          // A chosen chip's icon as clear as its words (the owner's call, 19 Kasım).
+          <CapIcon
+            name={icon}
+            color={on ? c.onChipOn : c.muted}
+            soft={on ? 1 : undefined}
+            size={KIT.size.iconSm}
+          />
+        ) : null}
         <Text
           numberOfLines={1}
           maxFontSizeMultiplier={fixed ? 1 : MAX_FONT_SCALE}
@@ -1214,6 +1270,7 @@ export function Li({
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       onLongPress={onLongPress}
+      delayLongPress={holdAfter(PRESS_DELAY)}
       accessibilityActions={onLongPress ? LONG_PRESS_ACTION : undefined}
       onAccessibilityAction={
         onLongPress
@@ -1494,7 +1551,6 @@ export function Seg<V extends string>({
   onChange,
   options,
   accessibilityLabel,
-  large,
   narrow,
   board,
 }: {
@@ -1502,8 +1558,7 @@ export function Seg<V extends string>({
   onChange: (v: V) => void;
   options: readonly { value: V; label: string; badge?: number; testID?: string }[];
   accessibilityLabel?: string;
-  // Mesajlar's (U27): 48 in all, 40 tabs in a pill.
-  large?: boolean;
+  // One height (the owner's call, 19 Kasım, docs/decisions/temel.md): 32 parts in a 40 pill.
   // Aura v75 AktivitelerDar: 320 dp or the largest text (src/lib/narrow.ts), tabs 52 high.
   narrow?: boolean;
   // A board's own tabs (tuval Aktivite: 40 parts in a 24 round, 15/700 words, its glass and the
@@ -1513,14 +1568,8 @@ export function Seg<V extends string>({
   const { c } = useKit();
   const flat = useContext(FlatGlass);
   const reduce = useReduceMotion();
-  const item = narrow
-    ? KIT.size.segItemNarrow
-    : board
-      ? board.item
-      : large
-        ? KIT.size.segLg
-        : KIT.size.segItem;
-  const radius = board ? board.radius : large ? KIT.size.segLgRadius : KIT.size.seg;
+  const item = narrow ? KIT.size.segItemNarrow : board ? board.item : KIT.size.segItem;
+  const radius = board ? board.radius : KIT.size.seg;
   // The chosen tab's soft shadow natively (NativeShadow.tsx).
   const onShadow = boxShadowParts(
     useLabOff('golge'),

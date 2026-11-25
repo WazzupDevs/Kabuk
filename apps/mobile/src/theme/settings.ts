@@ -18,8 +18,9 @@ export const SETTINGS = {
   note: { top: 8, gap: 4 },
   // Çıkış yap's row (`.sl` at margin-top 18) under the last note.
   signOut: { top: 18 },
-  // The seg (`.seg`): a sunk track 4 inside, its parts 36 high and 4 apart, a pill.
-  seg: { item: 36, gap: 4 },
+  // The seg (`.seg`): a sunk track 4 inside, its parts the kit's one height (32; the board's 36
+  // before the base, docs/decisions/temel.md) and 4 apart, a pill.
+  seg: { item: 32, gap: 4 },
   // A group of rows after a note or another group (`.sl` at margin-top 14).
   groupTop: 14,
   // Hesap's locked rows (`.sr.inf`): the lock 16 at the right, the muted ink at 70 %.

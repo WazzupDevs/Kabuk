@@ -50,8 +50,9 @@ describe("the app's Keşfet", () => {
   it("is built from the canvas's kit", () => {
     expect(screen).toMatch(/from '@\/aura\/kit'/);
     // Yeni arayüz tuvali Kesfet: the white search field with the round to the map, pinned; each
-    // venue a row on the ground; the riso empty state; the motion from the kit.
-    for (const part of ['<SearchRow', '<ClearButton', '<Chip', '<PlaceRow', '<ListEmpty']) {
+    // venue a row on the ground; the riso empty state; the motion from the kit. The field is the
+    // one search field (components/Field.tsx), its clear button with it.
+    for (const part of ['<SearchRow', '<SearchField', '<Chip', '<PlaceRow', '<ListEmpty']) {
       expect(screen, part).toContain(part);
     }
     expect(screen).toMatch(/<StickyGroup\s+side=\{L\.side\}/);
@@ -85,12 +86,14 @@ describe("the app's Keşfet", () => {
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
     // The list row and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
+    // The list's row is the ticket, its stub the venue's own picture where one is drawn
+    // (features/explore/venuePictures.ts), else the type's.
     expect(screen).toMatch(
-      /<VenueThumb kind=\{kind\} size=\{r\.picture\} radius=\{r\.pictureRadius\}/,
+      /<VenueTicket compact picture=\{ownTicketPicture\(name\) \?\? TICKET_PICTURE\[kind\]\}>/,
     );
     expect(screen).toMatch(/kind=\{type\}/);
     expect(app('src/theme/explore.ts')).toMatch(/picture: 56,\n\s+pictureRadius: 16,/);
-    expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
+    expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 20,/);
     expect(screen).toMatch(/kindLabel\(v\.kind\)/);
     const page = app('app/(app)/(tabs)/explore/[venueId].tsx');
     expect(page).toMatch(/const type = venueType\(venue\);/);

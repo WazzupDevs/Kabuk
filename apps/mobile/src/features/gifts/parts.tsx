@@ -19,6 +19,8 @@ import { tierName } from './model';
 
 const TIER_MARKS: Record<GiftTier, number> = { siradan: 1, nadir: 2, destansi: 3, efsanevi: 4 };
 const MARK = 6;
+// TierGems' height (a row of gems under a piece).
+export const TIER_GEMS_HEIGHT = MARK * 2;
 
 // A tier's marks (hediye.css `.nd .gm`): one to four of its colour (the colour never stands alone).
 export function Marks({ tier, color }: { tier: GiftTier; color: string }) {
@@ -62,7 +64,7 @@ export function TierGems({ tier }: { tier: GiftTier }) {
     <View
       accessible
       accessibilityLabel={tierName(tier)}
-      style={{ height: MARK * 2, justifyContent: 'center' }}
+      style={{ height: TIER_GEMS_HEIGHT, justifyContent: 'center' }}
     >
       <Marks tier={tier} color={TIER_COLOR[scheme][tier]} />
     </View>
@@ -202,7 +204,8 @@ const TOP_BAR = 56;
 // for every accessory from its drawing, so a new pack's accessories have their cards. Its motions
 // play (FxSvg); still with reduce motion.
 // The round on the 600 × 840 card: its middle and its radius (measured on the canvas's frames).
-const ROUND = { x: 299.5 / 600, y: 418 / 840, r: 225 / 600 } as const;
+export const CARD_ROUND = { x: 299.5 / 600, y: 418 / 840, r: 225 / 600 } as const;
+const ROUND = CARD_ROUND;
 // The capsule on the card (the preview the owner approved, 7 Kasım).
 const CARD_LOOK = 'c:krem e:klasik';
 

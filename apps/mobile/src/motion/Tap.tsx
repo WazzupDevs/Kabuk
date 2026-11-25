@@ -21,6 +21,14 @@ import { MOTION } from '@/theme/aura';
 // under a scrolling finger never look pressed. A quick tap still sinks and springs back as it lifts.
 // The one source of the press: Tap and every kit button (aura/kit → Btn, Round, Chip) use it.
 export const PRESS_DELAY = MOTION.press.delayMs;
+// A long press: held this long from the touch (Android's long-press timeout, 400 ms since Android
+// 12; Telegram Android takes the system's, ViewConfiguration.getLongPressTimeout). React Native's
+// default is 500. Pressability counts `delayLongPress` after the press delay, so a press with one
+// passes `HOLD_MS - PRESS_DELAY` (holdAfter).
+export const HOLD_MS = 400;
+export function holdAfter(pressDelay: number): number {
+  return HOLD_MS - pressDelay;
+}
 export function usePress() {
   const [scale] = useState(() => new Animated.Value(1));
   return {
@@ -102,6 +110,7 @@ export function Tap({
           : undefined
       }
       onLongPress={onLongPress}
+      delayLongPress={holdAfter(press.delay)}
       onPress={
         onPress
           ? () => {

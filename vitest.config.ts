@@ -10,6 +10,9 @@ export default defineConfig({
     },
   },
   test: {
+    // Windows reads and starts processes slowly: the tests that walk the repository or run git ran
+    // past the default 5 s there (the local setup, docs/decisions/calisma-duzeni.md).
+    testTimeout: process.platform === 'win32' ? 30_000 : 5_000,
     include: [
       'scripts/**/*.test.ts',
       'supabase/functions/_shared/pure/**/*.test.ts',
