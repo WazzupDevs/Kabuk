@@ -336,6 +336,213 @@
       "pano": {
         "dosya": "KesfetAraBos"
       }
+    },
+    {
+      "id": "ekran-profil-baskasi",
+      "app": "ekran/profil/baskasi",
+      "baz": false,
+      "pano": {
+        "dosya": "ProfilBaskasi"
+      }
+    },
+    {
+      "id": "ekran-profil-ben",
+      "app": "ekran/profil/ben",
+      "baz": false,
+      "pano": {
+        "dosya": "ProfilBen"
+      }
+    },
+    {
+      "id": "ekran-profil-ben-kaydir",
+      "app": "ekran/profil/ben",
+      "baz": false,
+      "pano": {
+        "dosya": "ProfilBenKaydir"
+      },
+      "uygulamaAdimlar": [
+        {
+          "kaydir": 316
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-baskasi-menu",
+      "app": "ekran/profil/baskasi",
+      "baz": false,
+      "uygulamaAdimlar": [
+        {
+          "bas": "profile-more"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-baskasi-sikayet",
+      "app": "ekran/profil/baskasi",
+      "baz": false,
+      "uygulamaAdimlar": [
+        {
+          "bas": "profile-more"
+        },
+        {
+          "bekle": 1500
+        },
+        {
+          "bas": "profile-report"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-baskasi-engelle",
+      "app": "ekran/profil/baskasi",
+      "baz": false,
+      "uygulamaAdimlar": [
+        {
+          "bas": "profile-more"
+        },
+        {
+          "bekle": 1500
+        },
+        {
+          "bas": "profile-block"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-duzenle",
+      "app": "ekran/profil/duzenle-bos",
+      "baz": false,
+      "pano": {
+        "dosya": "ProfilDuzenle"
+      }
+    },
+    {
+      "id": "ekran-profil-duzenle-dolu",
+      "app": "ekran/profil/duzenle",
+      "baz": false,
+      "pano": {
+        "dosya": "ProfilDuzenleYaz"
+      }
+    },
+    {
+      "id": "ekran-profil-mekan",
+      "app": "ekran/profil/mekan",
+      "baz": false,
+      "pano": {
+        "dosya": "MekanProfil"
+      }
+    },
+    {
+      "id": "ekran-profil-mekan-istek",
+      "app": "ekran/profil/mekan",
+      "baz": false,
+      "pano": {
+        "dosya": "MekanProfilIstek"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "venue-chat-request"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-mekan-menu",
+      "app": "ekran/profil/mekan",
+      "baz": false,
+      "pano": {
+        "dosya": "MekanProfilMenu"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "profile-more"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-mekan-sikayet",
+      "app": "ekran/profil/mekan",
+      "baz": false,
+      "pano": {
+        "dosya": "SikayetEt"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "profile-more"
+        },
+        {
+          "bekle": 1500
+        },
+        {
+          "bas": "profile-report"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-mekan-engelle",
+      "app": "ekran/profil/mekan",
+      "baz": false,
+      "pano": {
+        "dosya": "EngelleOnay"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "profile-more"
+        },
+        {
+          "bekle": 1500
+        },
+        {
+          "bas": "profile-block"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
+    },
+    {
+      "id": "ekran-profil-yukleniyor",
+      "app": "ekran/profil/yukleniyor",
+      "baz": false,
+      "pano": {
+        "dosya": "YukleniyorProfil"
+      }
+    },
+    {
+      "id": "ekran-profil-ortak",
+      "app": "ekran/profil/baskasi",
+      "baz": false,
+      "pano": {
+        "dosya": "OrtakArkadaslar"
+      },
+      "uygulamaAdimlar": [
+        {
+          "bas": "profile-mutual"
+        },
+        {
+          "bekle": 1500
+        }
+      ]
     }
   ]
 }

@@ -8,7 +8,7 @@ import { goOffline } from '@/lib/offline';
 
 import { PersonPage } from '../../../../app/(app)/people/[publicId]';
 
-// Another person's profile for the visual gate's `ekran/profil-baskasi`: the page (PersonPage, the
+// Another person's profile for the visual gate's `ekran/profil/baskasi`: the page (PersonPage, the
 // route's body) over an own query client filled with the board's sample (docs/design/yeni-arayuz/
 // project/ProfilBaskasi.dc.html: Adem, 26, a friend, two mutual friends), off the network
 // (lib/offline.ts). No cover and no photo: the riso scene and the initial, as the board's.
