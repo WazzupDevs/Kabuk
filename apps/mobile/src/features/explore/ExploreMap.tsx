@@ -22,7 +22,7 @@ import { View } from 'react-native';
 import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Glass, Li, RowList, Round, T, Tag, useKit } from '@/aura/kit';
+import { Glass, Li, RowList, Round, T, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
 import { tr } from '@/i18n/tr';
@@ -31,14 +31,18 @@ import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
 import { KIT, VENUE_THUMB } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
+import { TICKET, TICKET_TONE } from '@/theme/profileCover';
+import { MAP_COLORS } from '@/theme/mapStyle';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
 import { openVenue } from '@/features/explore/openVenue';
 
 import { kindLabel } from './kindLabel';
+import { shortVenueName } from './shortName';
 import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
+import { ownTicketPicture } from './venuePictures';
 import { TICKET_PICTURE, VenueTicket } from './VenueTicket';
 
 // OpenFreeMap by default: no API key in the app and no per-load cost (DECISIONS: map library). The
@@ -192,14 +196,14 @@ export function ExploreMap({
   const id = selected ?? '';
   const level = EXPLORE[scheme].level;
   // KesfetHarita `.pin .pc`: the ring in how lively the venue is (`--lv-s`, `--lv-m`, `--lv-c`).
+  // The chosen venue's ring in the ticket's edge, its print (the ticket's violet in the dark, pink
+  // in the light) 4 right and 5 down under it (the owner's ask, 24 Kasım; IdentityTicket).
+  const tone = TICKET_TONE[scheme];
   const live: NonNullable<CircleLayer['paint']>['circle-color'] = [
-    'match',
-    ['get', 'bucket'],
-    'lively',
-    level.lively,
-    'buzzing',
-    level.buzzing,
-    level.calm,
+    'case',
+    ['==', ['get', 'id'], id],
+    tone.edge,
+    ['match', ['get', 'bucket'], 'lively', level.lively, 'buzzing', level.buzzing, level.calm],
   ];
   // The ring's outer radius: 28 (56 across), the chosen one 34 (68).
   const outerRadius: NonNullable<CircleLayer['paint']>['circle-radius'] = [
@@ -230,7 +234,7 @@ export function ExploreMap({
     },
     paint: {
       'text-color': colors.text,
-      'text-halo-color': colors.surface,
+      'text-halo-color': MAP_COLORS[scheme].halo,
       'text-halo-width': MAP_PIN.labelHalo,
     },
   };
@@ -345,6 +349,21 @@ export function ExploreMap({
             }}
           />
           <Layer
+            id="venue-print"
+            type="circle"
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'stack']],
+              ['==', ['get', 'id'], id],
+            ]}
+            paint={{
+              'circle-color': tone.print,
+              'circle-radius': MAP_PIN.selectedRadius + MAP_PIN.selectedRing,
+              'circle-translate': [TICKET.printX, TICKET.printY],
+            }}
+          />
+          <Layer
             id="venue-halo"
             type="circle"
             // `.pin.c .pc`: only a crowded venue glows, 6 in its pink at 22 %.
@@ -448,10 +467,10 @@ export function ExploreMap({
               ['==', ['get', 'id'], selected ?? ''],
             ]}
             layout={{ ...label.layout, 'text-allow-overlap': true }}
-            // tuval Harita: the chosen pin's name white on the ink, the others' ink on white.
+            // The chosen pin's name in the ticket's edge colour on the map's ground (24 Kasım).
             paint={{
-              'text-color': KIT.white,
-              'text-halo-color': KIT.light.ink,
+              'text-color': tone.edge,
+              'text-halo-color': MAP_COLORS[scheme].halo,
               'text-halo-width': MAP_PIN.labelHalo,
             }}
           />
@@ -461,6 +480,7 @@ export function ExploreMap({
           one is shown (its own height) and come down over the tab bar when none is (the owner's
           report, 20 Kasım: with no card they were left in the middle). */}
       <MapControls
+        top={headerHeight + SPACING[3]}
         bottom={
           cardBottom(tabBarHeight) +
           (card || stackVenues.length > 1 ? cardHeight + EXPLORE.map.controlOver : 0)
@@ -512,11 +532,15 @@ function cardBottom(tabBarHeight: number) {
 // venues', never the phone's position (rule 6; the board's own position dot is not drawn). The
 // sources open the map's attribution.
 function MapControls({
+  top,
   bottom,
   onRecentre,
   onInfo,
   onZoom,
 }: {
+  // Under the head: the zoom rounds (the owner's ask, 24 Kasım: over the pins at the right edge
+  // they covered a venue).
+  top: number;
   bottom: number;
   onRecentre: () => void;
   onInfo: () => void;
@@ -524,7 +548,6 @@ function MapControls({
   onZoom: (by: number) => void;
 }) {
   const { c, scheme } = useKit();
-  const { colors } = useTheme();
   const m = EXPLORE.map;
   const e = EXPLORE[scheme];
   const g = m.legend;
@@ -562,8 +585,9 @@ function MapControls({
       </View>
       {/* The map's sources as a round of their own over the recentre round (the owner's ask, 20
           Kasım; the written "© OpenStreetMap" line went): it opens the map's own sources notice. */}
-      <View style={{ position: 'absolute', right: m.side, bottom, gap: m.controlGap }}>
-        {/* Nearer and farther by a step (the owner's ask, 20 Kasım), for a thumb that cannot pinch. */}
+      {/* Nearer and farther by a step (the owner's ask, 20 Kasım), for a thumb that cannot pinch;
+          at the top right under the head (24 Kasım). */}
+      <View style={{ position: 'absolute', right: m.side, top, gap: m.controlGap }}>
         <Round
           side={m.control}
           label={tr.explore.zoomIn}
@@ -580,11 +604,20 @@ function MapControls({
         >
           <CapIcon name="minus" color={c.ink} />
         </Round>
+      </View>
+      <View style={{ position: 'absolute', right: m.side, bottom, gap: m.controlGap }}>
         <Round side={m.control} label={tr.explore.mapInfo} onPress={onInfo}>
-          <CapIcon name="info" color={c.muted} />
+          <CapIcon name="info" color={c.ink} />
         </Round>
         <Round side={m.control} label={tr.explore.recentre} onPress={onRecentre}>
-          <CapIcon name="compass" color={colors.accent} />
+          {/* In the tickets' green (the owner's ask, 24 Kasım): its disc wholly the edge's green
+              (not the icon's usual half-strength body), the needle in the ticket's paper. */}
+          <CapIcon
+            name="compass"
+            color={TICKET_TONE[scheme].paper}
+            second={TICKET_TONE[scheme].edge}
+            soft={1}
+          />
         </Round>
       </View>
     </>
@@ -663,24 +696,30 @@ function VenueCard({ venue }: { venue: ExploreVenue }) {
     : null;
   return (
     <Tap accessibilityLabel={venue.name} onPress={() => openVenue(venue.id)}>
-      <VenueTicket testID="explore-map-card" picture={TICKET_PICTURE[type]}>
+      <VenueTicket
+        testID="explore-map-card"
+        picture={ownTicketPicture(venue.name) ?? TICKET_PICTURE[type]}
+      >
+        {/* Every card one size (the owner's ask, 24 Kasım): the name on one line (shortVenueName,
+            "…" past its limit), under it one line: the event when there is one, else the type,
+            district and how lively. */}
         <View style={{ flex: 1, minWidth: 0, gap: EXPLORE.row.lineGap }}>
-          <T v="mapName">{venue.name}</T>
-          <T v="kesfetSub" color={c.muted}>
-            {tr.explore.mapSub(
-              kindLabel(venue.kind),
-              venue.district,
-              tr.explore.buckets[venue.bucket],
-            )}
+          <T v="mapName" lines={1}>
+            {shortVenueName(venue.name)}
           </T>
           {venue.event && when ? (
-            <View style={{ flexDirection: 'row', marginTop: SPACING[1] }}>
-              <Tag
-                tone="amber"
-                label={tr.explore.eventTag(tr.explore.eventTime(when), venue.event.title)}
-              />
-            </View>
-          ) : null}
+            <T v="kesfetSub" color={colors.event} lines={1}>
+              {tr.explore.eventTag(tr.explore.eventTime(when), venue.event.title)}
+            </T>
+          ) : (
+            <T v="kesfetSub" color={c.muted} lines={1}>
+              {tr.explore.mapSub(
+                kindLabel(venue.kind),
+                venue.district,
+                tr.explore.buckets[venue.bucket],
+              )}
+            </T>
+          )}
         </View>
         <Round
           label={tr.explore.goToVenue}

@@ -48,6 +48,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { CapIcon, type CapIconName } from './CapIcon';
 import { springConfig, SWAP_RN } from './motion';
 import { photoCacheKey } from '@/lib/usePhoto';
+import { BtnInk } from '@/motion/BtnInk';
 import { holdAfter, PRESS_DELAY, usePress } from '@/motion/Tap';
 
 // The canvas's component kit (docs/design/aura/project/aura.css), class for class. Values from
@@ -467,41 +468,43 @@ export function Btn({
       >
         {shadow?.node}
         {frosted ? <ButtonFrost height={height} /> : null}
-        {loading ? (
-          <Loader
-            kind="meet"
-            size={sm ? KIT.size.iconSm : KIT.size.icon}
-            // One colour, the words' own (the owner's call, 19 Kasım); the chip-like `dark` keeps its
-            // colours.
-            mono={glass ? { color: fg, ground: fill ?? g.fill } : undefined}
-            delay={0}
-            label={null}
-          />
-        ) : lead ? (
-          lead
-        ) : icon && !off ? (
-          // Disabled, no icon (Aura v65 `.btn.off`; the owner's report, 2 Kasım, 10.1).
-          <CapIcon
-            name={icon}
-            color={fg}
-            soft={kind === 'prominent' ? PRIMARY_SOFT : CLEAR_SOFT}
-            size={look?.icon ?? (sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon)}
-          />
-        ) : null}
-        <Text
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={MIN_LABEL_SCALE}
-          maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[
-            labelType,
-            look?.type ? null : strong ? BTN_STRONG : null,
-            { color: fg, flexShrink: 1 },
-          ]}
-        >
-          {label}
-        </Text>
-        {trail && !loading ? trail : null}
+        <BtnInk gap={look?.gap ?? KIT.size.btnGap}>
+          {loading ? (
+            <Loader
+              kind="meet"
+              size={sm ? KIT.size.iconSm : KIT.size.icon}
+              // One colour, the words' own (the owner's call, 19 Kasım); the chip-like `dark` keeps its
+              // colours.
+              mono={glass ? { color: fg, ground: fill ?? g.fill } : undefined}
+              delay={0}
+              label={null}
+            />
+          ) : lead ? (
+            lead
+          ) : icon && !off ? (
+            // Disabled, no icon (Aura v65 `.btn.off`; the owner's report, 2 Kasım, 10.1).
+            <CapIcon
+              name={icon}
+              color={fg}
+              soft={kind === 'prominent' ? PRIMARY_SOFT : CLEAR_SOFT}
+              size={look?.icon ?? (sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon)}
+            />
+          ) : null}
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={MIN_LABEL_SCALE}
+            maxFontSizeMultiplier={MAX_FONT_SCALE}
+            style={[
+              labelType,
+              look?.type ? null : strong ? BTN_STRONG : null,
+              { color: fg, flexShrink: 1 },
+            ]}
+          >
+            {label}
+          </Text>
+          {trail && !loading ? trail : null}
+        </BtnInk>
       </Animated.View>
     </Pressable>
   );
@@ -853,7 +856,9 @@ export function Chip({
 }) {
   const { c } = useKit();
   const press = usePress();
-  const frosted = useFrost() && !on;
+  // A clear chip frosts on the buttons' own switch (theme/glass.ts → BUTTON_FROST; the owner's
+  // call, 23 Kasım: every pressable clear control).
+  const frosted = useButtonFrost() && !on && !filter;
   const h = filter
     ? KIT.size.chipFilter
     : narrow
@@ -912,7 +917,7 @@ export function Chip({
         }}
       >
         {shadow.node}
-        {on || filter ? null : <FrostOf height={h} fill={c.raisedChip} />}
+        {frosted ? <ButtonFrost height={h} /> : null}
         {icon ? (
           // A chosen chip's icon as clear as its words (the owner's call, 19 Kasım).
           <CapIcon

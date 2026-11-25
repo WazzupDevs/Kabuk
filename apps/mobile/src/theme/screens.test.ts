@@ -86,8 +86,11 @@ describe("the app's Keşfet", () => {
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
     // The list row and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
-    // The list's row is the ticket, its stub the type's picture.
-    expect(screen).toMatch(/<VenueTicket compact picture=\{TICKET_PICTURE\[kind\]\}>/);
+    // The list's row is the ticket, its stub the venue's own picture where one is drawn
+    // (features/explore/venuePictures.ts), else the type's.
+    expect(screen).toMatch(
+      /<VenueTicket compact picture=\{ownTicketPicture\(name\) \?\? TICKET_PICTURE\[kind\]\}>/,
+    );
     expect(screen).toMatch(/kind=\{type\}/);
     expect(app('src/theme/explore.ts')).toMatch(/picture: 56,\n\s+pictureRadius: 16,/);
     expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 20,/);

@@ -5,6 +5,7 @@ import { PREVIEW_SETS } from '../previews';
 import { DmFixture } from './dmFixture';
 import { KesfetFixture } from './kesfetFixture';
 import { ArchiveFixture, MesajlarFixture } from './mesajlarFixture';
+import { PersonFixture } from './personFixture';
 import { SemtEmptyFixture } from './semtEmptyFixture';
 import { SemtSheetFixture } from './semtFixture';
 import {
@@ -47,6 +48,7 @@ export const GATE_STATES: Record<string, GateEntry> = {
     full: true,
     render: () => <MesajlarFixture variant="archive-unread" />,
   },
+  'ekran/profil-baskasi': { full: true, render: () => <PersonFixture /> },
   'ekran/arsiv': { full: true, render: () => <ArchiveFixture /> },
   'ekran/arsiv/bos': { full: true, render: () => <ArchiveFixture empty /> },
   // The Ayarlar family: the routes themselves over the boards' sample (settingsFixture.tsx).

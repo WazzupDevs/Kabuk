@@ -19,6 +19,14 @@ export function editedAt(m: DmPageRow): string | null {
 // decides with its own clock (edit_expired).
 export function useCanEdit(createdAt: string, mine: boolean): boolean {
   const [open, setOpen] = useState(() => mine && canEditDm(createdAt, Date.now()));
+  // A message on its way becomes the server's copy in the same bubble (DmBubble): asked again
+  // when what it is asked about changes.
+  const [askedFor, setAskedFor] = useState(`${createdAt}|${mine}`);
+  if (askedFor !== `${createdAt}|${mine}`) {
+    setAskedFor(`${createdAt}|${mine}`);
+    // Open if it is one's own; the timer below closes it at once if its window has passed.
+    setOpen(mine);
+  }
   useEffect(() => {
     if (!open) return;
     const left = Date.parse(createdAt) + DM_EDIT_WINDOW_MS - Date.now();

@@ -10,7 +10,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Platform, ScrollView, Text, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Badge, Btn, Live, T, useKit } from '@/aura/kit';
@@ -25,10 +24,9 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { requestKey } from '@/lib/requestKey';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { Arrive, ArriveLater, CollapsingCard, Tap } from '@/motion';
+import { Arrive, ArriveLater, CollapsingCard, Fly, Tap, useInStrip } from '@/motion';
 import { AURA, MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 import { LOADER_SHOW_AFTER_MS } from '@/theme/markMotion';
 import { VENUE } from '@/theme/venue';
 
@@ -55,7 +53,7 @@ export function VenueChatCard({
   at: number;
 }) {
   const queryClient = useQueryClient();
-  const card = useVenueChatCard(venueId, sessionId);
+  const card = useVenueChatCard(venueId, sessionId, !useInStrip());
   const now = useNow(30_000);
   const reduce = useReduceMotion();
   const loading = useLoaderHold(card.pending);
@@ -94,7 +92,6 @@ export function VenueChatCard({
   const { scheme, c } = useKit();
   const look = VENUE[scheme];
   const C = VENUE.chat;
-  const latest = card.recent.length > 0 ? card.recent[card.recent.length - 1] : null;
   const empty = !loading && !card.failed && card.recent.length === 0;
   const head = (
     <View
@@ -117,21 +114,29 @@ export function VenueChatCard({
           flexGrow: 1,
         }}
       >
-        <T v="setTitle" ink>
-          {tr.venueChat.open}
-        </T>
+        <Fly mode="start">
+          <T v="setTitle" ink>
+            {tr.venueChat.open}
+          </T>
+        </Fly>
         {active ? (
-          <Arrive testID="venue-chat-live">
-            <Live soft label={tr.venue.chatActive} />
-          </Arrive>
+          <Fly>
+            <Arrive testID="venue-chat-live">
+              <Live soft label={tr.venue.chatActive} />
+            </Arrive>
+          </Fly>
         ) : null}
       </View>
       {unread > 0 ? (
-        <Arrive kind="badge" accessible accessibilityLabel={tr.messages.unread(unread)}>
-          <Badge large swap={!reduce} count={unread} />
-        </Arrive>
+        <Fly>
+          <Arrive kind="badge" accessible accessibilityLabel={tr.messages.unread(unread)}>
+            <Badge large swap={!reduce} count={unread} />
+          </Arrive>
+        </Fly>
       ) : null}
-      <CapIcon name="forward" color={look.chevron} size={C.chevron} />
+      <Fly>
+        <CapIcon name="forward" color={look.chevron} size={C.chevron} />
+      </Fly>
     </View>
   );
 
@@ -140,10 +145,11 @@ export function VenueChatCard({
       at={at}
       strip={AURA.venueCollapse.chatStrip}
       radius={C.radius}
+      stripRadius={VENUE.card.stripRadius}
       face={look.chatCard}
       folded={
         <Tap sink={false} accessibilityLabel={label} onPress={openChat}>
-          {/* Folded (tuval Mekan): the name, the last line on one line and the send round. */}
+          {/* Folded: only the name and "Sohbete git" (the owner's call, 24 Kasım). */}
           <View
             style={{
               height: AURA.venueCollapse.chatStrip,
@@ -154,18 +160,35 @@ export function VenueChatCard({
               paddingRight: C.strip.padRight,
             }}
           >
-            <T v="giftBtn" ink>
-              {tr.venueChat.open}
-            </T>
+            <Fly>
+              <View
+                style={{
+                  width: C.strip.tile,
+                  height: C.strip.tile,
+                  borderRadius: C.strip.tileRadius,
+                  backgroundColor: look.chatTile,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <CapIcon name="chat" color={look.chevron} size={C.strip.icon} />
+              </View>
+            </Fly>
             <View style={{ flex: 1, minWidth: 0 }}>
-              {loading || card.failed ? null : (
-                <OneLine color={look.hint}>
-                  {latest ? `${senderLabel(latest)}: ${oneLine(latest.body)}` : tr.venue.chatEmpty}
-                </OneLine>
-              )}
+              <Fly mode="start">
+                <T v="mapName" ink lines={1} fit>
+                  {tr.venueChat.open}
+                </T>
+              </Fly>
             </View>
-            {unread > 0 ? <Badge large swap={!reduce} count={unread} /> : null}
-            <SendRound side={C.strip.send} />
+            {unread > 0 ? (
+              <Fly>
+                <Badge large swap={!reduce} count={unread} />
+              </Fly>
+            ) : null}
+            <Fly>
+              <Btn sm label={tr.venueChat.go} onPress={openChat} />
+            </Fly>
           </View>
         </Tap>
       }
@@ -185,9 +208,11 @@ export function VenueChatCard({
               <Placeholder key="loading" />
             ) : card.failed ? null : card.recent.length > 0 ? (
               card.recent.map((m, i) => (
-                <Arrive key={m.id} delay={i === 0 ? 0 : MOTION.stagger.part} swap>
-                  <Line message={m} />
-                </Arrive>
+                <Fly key={m.id}>
+                  <Arrive delay={i === 0 ? 0 : MOTION.stagger.part} swap>
+                    <Line message={m} />
+                  </Arrive>
+                </Fly>
               ))
             ) : null}
           </ArriveLater>
@@ -205,18 +230,20 @@ export function VenueChatCard({
           </Arrive>
         ) : null}
         {/* With no message yet the field itself says so (tuval Mekan). */}
-        <DraftComposer
-          capsule
-          flush
-          inputTestID="venue-card-input"
-          sendTestID="venue-card-send"
-          sendLabel={tr.venueChat.send}
-          placeholder={empty ? tr.venue.chatEmpty : tr.venueChat.placeholder}
-          prepare={prepareVenueMessage}
-          maxLength={VENUE_CHAT.maxLength}
-          sending={send.isPending}
-          onSend={(body, clear) => deliver(body, requestKey(), clear)}
-        />
+        <Fly>
+          <DraftComposer
+            capsule
+            flush
+            inputTestID="venue-card-input"
+            sendTestID="venue-card-send"
+            sendLabel={tr.venueChat.send}
+            placeholder={empty ? tr.venue.chatEmpty : tr.venueChat.placeholder}
+            prepare={prepareVenueMessage}
+            maxLength={VENUE_CHAT.maxLength}
+            sending={send.isPending}
+            onSend={(body, clear) => deliver(body, requestKey(), clear)}
+          />
+        </Fly>
         {send.isError && !send.isPending ? (
           <T v="fine" color={c.warn}>
             {errorMessage(send.error)}
@@ -224,72 +251,6 @@ export function VenueChatCard({
         ) : null}
       </View>
     </CollapsingCard>
-  );
-}
-
-// The folded strip's send round (38): the card's own green, its arrow; the strip's press opens the
-// chat.
-function SendRound({ side }: { side: number }) {
-  const { scheme } = useKit();
-  const g = KIT.button[scheme].green;
-  return (
-    <View
-      accessible={false}
-      style={{
-        width: side,
-        height: side,
-        borderRadius: side / 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...gradientStyle(g.fill),
-        boxShadow: g.inset,
-      }}
-    >
-      <Svg width={VENUE.chat.field.arrow} height={VENUE.chat.field.arrow} viewBox="0 0 24 24">
-        <Path
-          d={ARROW_UP}
-          fill="none"
-          stroke={KIT.onPrimary}
-          strokeWidth={ARROW_STROKE}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </Svg>
-    </View>
-  );
-}
-
-// tuval Mekan: the arrow up, its shaft 19 to 5, its head 6 to either side, 2.8 wide.
-const ARROW_UP = 'M12 19V5M6 11l6-6 6 6';
-const ARROW_STROKE = 2.8;
-
-// One line that never ends in "…": on Android it fades out over its last 44 (as Line); on iOS
-// "…" for now.
-function OneLine({ children, color }: { children: string; color: string }) {
-  const text = (
-    <Text
-      numberOfLines={Platform.OS === 'android' ? undefined : 1}
-      maxFontSizeMultiplier={MAX_FONT_SCALE}
-      style={[KIT_TYPE.friendSince, { color }]}
-    >
-      {children}
-    </Text>
-  );
-  if (Platform.OS !== 'android') return text;
-  return (
-    <View pointerEvents="none" style={{ justifyContent: 'center' }}>
-      <ScrollView
-        horizontal
-        style={{ flexGrow: 0 }}
-        contentContainerStyle={{ alignItems: 'center' }}
-        scrollEnabled={false}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        fadingEdgeLength={{ start: 0, end: FADE }}
-      >
-        {text}
-      </ScrollView>
-    </View>
   );
 }
 

@@ -4,20 +4,23 @@
 // buttons' heights (2.1), the top round (46), the bar band, the fold's 104, 72, 52, 54, 170 and 70
 // (AURA.venueCollapse) and MOTION stay iskelet's. The venue chat's card keeps the earlier board's
 // values (chat, chatCard); Masana davet et is theme/room.ts's.
-import { EXPLORE, type ExploreFace } from './explore';
+import { type ExploreFace } from './explore';
 
 export const VENUE = {
-  // The page 20 from the sides (`.mt`). The bar's row 5 under the status bar (the screen's top
-  // stands 8 under it: 3 up), the wordmark at the side. The venue's name 14 under the bar's row (4
-  // of the screen's top under it, then 10).
+  // The page 20 from the sides (`.mt`). The bar's rounds 13 under the status bar, as Mesajlar's and
+  // Aktiviteler's (the owner's call, 24 Kasım): the screen's top stands 8 under it, 4 more, and the
+  // row (the identity toggle 40, as the rounds) stands 1 lower. The wordmark at the side. The
+  // venue's name 14 under the bar's row (4 of the screen's top under it, then 10).
   side: 20,
-  headTop: -3,
+  headTop: 5,
   wordmarkIn: 0,
   padTop: 10,
   titleIn: 0,
-  // The row's parts 8 apart (`.hr`); the identity toggle's slots 36 in a 3 rim (`.tog`).
+  // The row's parts 8 apart (`.hr`). The identity toggle as tall as the round beside it (40: its
+  // slots 36 in a 2 rim), both faces 32, the chosen one's ring right round its face, inside the
+  // slot (the owner's call, 25 Kasım: nothing grows with the choice, no gap in the ring).
   headGap: 8,
-  toggle: { slot: 36, pad: 3 },
+  toggle: { slot: 36, pad: 2, faceIn: 2, ringIn: true },
   // The name and "Mekandasın" 8 apart; the tag 28 high, 12 in, its dot 7 and 6 from the words; the
   // spot's chip 8 after it.
   titleGap: 8,
@@ -26,11 +29,12 @@ export const VENUE = {
   // Scrolled (`.sbar .sv`): the name small on one line and "Mekandasın" 2 under it, its dot 7 and 6
   // from the words; it takes the wordmark's place once the name has gone under the bar.
   bar: { lineGap: 2, dot: 7, dotGap: 6 },
-  // Between the parts: the name's block and the table card 24, the table card and the chat 12, the
+  // Between the parts: the name's block and the table card 24, the table card and the chat 16 (12 on
+  // the board; the owner's ask, 24 Kasım: the two cards read as one), the
   // chat and "Açık masalar" 20.
-  gaps: { card: 24, chat: 12, lobby: 20 },
+  gaps: { card: 24, chat: 16, lobby: 20 },
   // The table card: 24 round (22 once folded), the glass.
-  card: { radius: 24, stripRadius: 24 },
+  card: { radius: 24, stripRadius: 20 },
   // No table (`.yk`): the picture on the whole width, 152 high, the words under it 14 / 16 / 16
   // inside, the note 4 under the title; the two buttons 14 under them, 8 apart, 10 in.
   none: {
@@ -42,6 +46,33 @@ export const VENUE = {
     buttonsTop: 14,
     gap: 8,
     buttonPadX: 10,
+    // As a glass module (the owner's call, 24 Kasım; shorter, the same night): the scene on the
+    // card's width (drawn 900 × 825), lifted 28 so its lamp and table stand in the 112 open over the
+    // pane;
+    // the pane 8 in from the card's sides and foot, 20 round, 14 inside, its edge the kit's
+    // hairline, the scene's frost under a tint of the scheme.
+    glass: {
+      sceneShow: 112,
+      sceneLift: 28,
+      sceneAspect: 825 / 900,
+      inset: 8,
+      radius: 20,
+      pad: 14,
+      // The card's outline over the scene (`.mi.fl`'s edge).
+      outline: 2,
+      light: {
+        outline: 'rgba(3, 27, 11, 0.22)',
+        fill: 'rgba(255, 255, 255, 0.58)',
+        edge: 'rgba(255, 255, 255, 0.75)',
+        note: '#3E5446',
+      },
+      dark: {
+        outline: 'rgba(255, 255, 255, 0.18)',
+        fill: 'rgba(10, 14, 12, 0.6)',
+        edge: 'rgba(255, 255, 255, 0.14)',
+        note: '#B9C4BD',
+      },
+    },
   },
   // A table (`.ms`): the picture 6 inside the card, 20 round in a 2 edge, at least 250 high; the
   // panel on its foot 8 inside it (56 at its top), 16 round in a 2 edge, 10 / 12 inside; the faces
@@ -93,7 +124,9 @@ export const VENUE = {
     chevron: 18,
     headGap: 8,
     field: { height: 44, padLeft: 16, padRight: 6, send: 36, arrow: 16 },
-    strip: { padLeft: 18, padRight: 7, gap: 10, send: 38 },
+    // Its strip in the pinned stack (the owner's design, 24 Kasım): the chat's tile 44, 12 round,
+    // its icon 20; the name over the last line; the send round 32.
+    strip: { padLeft: 8, padRight: 10, gap: 12, send: 32, tile: 44, tileRadius: 12, icon: 20 },
   },
   // "Açık masalar" (`.oh`): its count 10 after it. A row (`.orw`): 8 above and under, 12 between
   // its parts; the picture 60, 16 round in a 2 edge; the name and its line 2 apart, the line's
@@ -108,11 +141,22 @@ export const VENUE = {
     runningTop: 10,
     noteTop: 4,
   },
+  // The pinned stack (the owner's design, 24 Kasım): the switch 8 under the bar (the switch stands
+  // where Mesajlar's does, 61 under the status bar), its
+  // parts 8 apart, 8 under the last strip and a 24 fade to the page under it.
+  pinned: { padTop: 8, padBottom: 8, gap: 8, fadeUnder: 24 },
   // The request's notice over the tab bar (`.snk`): 16 above it, its loader 22.
   notice: { above: 16, lead: 22 },
   // The menu's first row: 14 / 16 / 12 inside, 8 between its line and its bar; the bar 5 high.
   stay: { padTop: 14, padX: 16, padBottom: 12, gap: 8, bar: 5 },
   light: {
+    segFace: {
+      fill: '#FFFFFF',
+      edge: 'rgba(255, 255, 255, 0.90)',
+      inset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.95)',
+      shadow: '0px 10px 30px rgba(3, 27, 11, 0.08)',
+    },
+    segOnShadow: '0px 3px 10px rgba(3, 27, 11, 0.10)',
     // The table card's face: the board's `.glass` (skall.css --glass-bg, --glass-line,
     // --glass-shadow).
     card: {
@@ -121,8 +165,11 @@ export const VENUE = {
       inset: 'inset 0px 1px 0px #FFFFFF',
       shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
     } satisfies ExploreFace,
+    // Milk glass (the owner's call, 24 Kasım): a see-through white of one tone (no gradient, the
+    // owner's call the same night), the page's ground faintly through it; a bright edge and a top
+    // light. Nothing blurs live (glass.ts).
     chatCard: {
-      fill: 'rgba(255, 255, 255, 0.86)',
+      fill: 'rgba(255, 255, 255, 0.6)',
       edge: 'rgba(255, 255, 255, 0.95)',
       inset: 'inset 0px 1px 0px #FFFFFF',
       shadow: '0px 10px 26px rgba(3, 27, 11, 0.08)',
@@ -147,6 +194,8 @@ export const VENUE = {
     // The lobby's intent tag (--surface2, --text).
     tag: { bg: '#E6F0E8', fg: '#031B0B' },
     chevron: '#9AAEA1',
+    // The chat strip's tile (the pinned stack).
+    chatTile: '#EEF3F0',
     field: 'rgba(23, 131, 77, 0.08)',
     hint: '#6B7E71',
     count: '#4A6550',
@@ -157,6 +206,8 @@ export const VENUE = {
   },
   // The dark scheme is not drawn on the board: the kit's dark card and inks.
   dark: {
+    segFace: { fill: '#151A18', edge: 'rgba(255, 255, 255, 0.09)', inset: '', shadow: '' },
+    segOnShadow: '',
     // `.dark .st`: #121614 in a 1 white 8 % edge, no shadow.
     card: {
       fill: '#121614',
@@ -164,7 +215,13 @@ export const VENUE = {
       inset: '',
       shadow: '',
     } satisfies ExploreFace,
-    chatCard: EXPLORE.dark.card,
+    // Milk glass in the dark: a faint white of one tone over the black, a soft edge and a top light.
+    chatCard: {
+      fill: 'rgba(255, 255, 255, 0.08)',
+      edge: 'rgba(255, 255, 255, 0.16)',
+      inset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.12)',
+      shadow: '',
+    } satisfies ExploreFace,
     here: { fill: 'rgba(61, 220, 132, 0.14)', ink: '#93EBB9', dot: '#93EBB9' },
     frame: 'rgba(255, 255, 255, 0.18)',
     panel: { fill: 'rgba(18, 22, 20, 0.95)', shadow: '' },
@@ -181,6 +238,7 @@ export const VENUE = {
     stripSub: '#A6BFAB',
     tag: { bg: '#1B211F', fg: '#EEF3F0' },
     chevron: '#A3AEA8',
+    chatTile: '#1B211F',
     field: 'rgba(61, 220, 132, 0.10)',
     hint: '#A3AEA8',
     count: '#A3AEA8',

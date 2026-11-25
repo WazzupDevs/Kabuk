@@ -102,6 +102,8 @@ const RISO_BOARD: Partial<
   messages: { width: 120, height: 98, radius: 0, shadow: 'none' },
   search: { width: 120, height: 80, radius: 0, shadow: 'none' },
   dm: { width: 120, height: 98, radius: 0, shadow: 'none' },
+  // IsteklerBos: the board's buddy behind the empty envelope, its paper ground cut away.
+  requests: { width: 120, height: 98, radius: 0, shadow: 'none' },
   archive: { width: 120, height: 98, radius: 0, shadow: 'none' },
   // EngellenenlerBos, SessizAlinanlarBos: the boards' own 360 × 294 cut-outs.
   blocked: { width: 120, height: 98, radius: 0, shadow: 'none' },

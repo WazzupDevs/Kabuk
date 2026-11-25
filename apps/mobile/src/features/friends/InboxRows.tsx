@@ -13,7 +13,7 @@ import { DeliveryTicks } from '@/components/ChatBubble';
 import { type MenuAnchor, measureMenuAnchor, MenuItem, openMenuAt } from '@/components/Menu';
 import { TypingDots } from '@/components/TypingDots';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { openDm } from '@/features/friends/openDm';
+import { openDmFromInbox } from '@/features/friends/openDm';
 import { refreshFriends } from '@/features/friends/queries';
 import { useDmManage } from '@/features/friends/useDmManage';
 import { useDmTyping } from '@/features/friends/useDmTyping';
@@ -246,28 +246,6 @@ export function InboxList({
   );
 }
 
-// tuval Main: over the pinned card, the pushpin (16, its body at half) and "Sabitlenenler" (12/600,
-// muted), 6 apart and 4 in; "· 5/5" when full (MesajlarSabitDolu).
-export function PinnedHead({ count }: { count: number }) {
-  const { c } = useKit();
-  return (
-    <View
-      testID="inbox-pinned-head"
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: SPACING[1.5],
-      }}
-    >
-      <CapIcon name="pushpin" size={ICON.sm} color={c.muted} />
-      {/* The one section head (13/700, from the rows' own line; the owner's call, 19 Kasım). */}
-      <T v="sectionHead" color={c.muted}>
-        {count >= DM_PIN_MAX ? tr.messages.pinnedFull(count, DM_PIN_MAX) : tr.messages.pinned}
-      </T>
-    </View>
-  );
-}
-
 // tuval Main and MesajlarArsivRozet: under the list, 48 high and 16 in, 12 between its parts: the
 // archive box (20, muted, its body at half), "Arşivlenenler" (600 15/22, 700 with unread: `.arl`),
 // the unread on the pink badge, the number of conversations (600 13/18, muted) and the chevron (18).
@@ -347,7 +325,7 @@ function InboxRow({
         minHeight={M.row.minHeight}
         onPress={
           threadId
-            ? () => openDm({ threadId, publicId: t.publicId, name: t.displayName })
+            ? () => openDmFromInbox({ threadId, publicId: t.publicId, name: t.displayName })
             : undefined
         }
         onLongPress={
@@ -456,6 +434,9 @@ function RowBody({
               <Badge count={t.unreadCount} />
             </View>
           ) : null}
+          {/* Pinned: the pushpin at the row's right, the pinned staying in the one list (the
+              owner's call, 24 Kasım). */}
+          {t.pinned ? <CapIcon name="pushpin" size={ICON.sm} color={c.muted} /> : null}
         </View>
       </View>
     </>

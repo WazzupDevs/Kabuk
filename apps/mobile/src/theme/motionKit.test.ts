@@ -164,7 +164,8 @@ describe('one press (iskelet.md → 2.3)', () => {
     expect(tap).toMatch(/return HOLD_MS - pressDelay;/);
     expect(code('src/motion/Tap.tsx')).toMatch(/delayLongPress=\{holdAfter\(press\.delay\)\}/);
     expect(code('src/aura/kit.tsx')).toMatch(/delayLongPress=\{holdAfter\(PRESS_DELAY\)\}/);
-    expect(code('src/components/ChatBubble.tsx')).toMatch(/delayLongPress=\{HOLD_MS\}/);
+    // A message's hold on its own recogniser (works with the keyboard up), the same 400 ms.
+    expect(code('src/components/ChatBubble.tsx')).toMatch(/\.minDuration\(HOLD_MS\)/);
   });
 });
 

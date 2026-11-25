@@ -12,7 +12,8 @@ import { AppIcon } from './AppIcon';
 import { useLabOff } from '@/lib/drawLab';
 import { shadowParts } from './NativeShadow';
 import { Frost } from '@/components/LiquidGlass';
-import { useFrost } from '@/aura/kit';
+import { useButtonFrost } from '@/aura/kit';
+import { BUTTON_FROST } from '@/theme/glass';
 
 type Props = {
   icon: IconName;
@@ -42,7 +43,7 @@ export function IconButton({
   const { colors, shape, scheme } = useTheme();
   const pressScale = usePressScale();
   const shadowOff = useLabOff('golge');
-  const frosted = useFrost() && !!round && !danger;
+  const frosted = useButtonFrost() && !!round && !danger && !disabled;
   const shadow =
     round && !danger
       ? shadowParts(
@@ -91,12 +92,13 @@ export function IconButton({
           ]}
         >
           {shadow?.node}
-          {/* Frosted (the owner's call, 30 Ekim: every clear button). */}
+          {/* Frosted on the buttons' own switch (theme/glass.ts → BUTTON_FROST; 23 Kasım). */}
           {frosted ? (
             <Frost
+              button
               radius={TOUCH.min / 2}
               ground={AURA[scheme].ground}
-              fill={KIT[scheme].raisedRound}
+              fill={BUTTON_FROST.fill[scheme]}
             />
           ) : null}
           {glyph ?? <AppIcon name={icon} size={ICON.lg} color={colors.text} />}

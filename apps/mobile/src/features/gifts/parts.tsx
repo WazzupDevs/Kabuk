@@ -204,7 +204,8 @@ const TOP_BAR = 56;
 // for every accessory from its drawing, so a new pack's accessories have their cards. Its motions
 // play (FxSvg); still with reduce motion.
 // The round on the 600 × 840 card: its middle and its radius (measured on the canvas's frames).
-const ROUND = { x: 299.5 / 600, y: 418 / 840, r: 225 / 600 } as const;
+export const CARD_ROUND = { x: 299.5 / 600, y: 418 / 840, r: 225 / 600 } as const;
+const ROUND = CARD_ROUND;
 // The capsule on the card (the preview the owner approved, 7 Kasım).
 const CARD_LOOK = 'c:krem e:klasik';
 

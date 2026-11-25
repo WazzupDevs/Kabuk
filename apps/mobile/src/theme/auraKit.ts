@@ -852,16 +852,19 @@ export const KIT = {
     bodySoft: 0.55,
   },
   // Who the viewer writes as, in the chat's top bar (the owner's call, 8 Kasım: the strip over the
-  // message bar went): two 30 slots 2 apart in a sunk track 2 in; a spent change locks it (a 14
+  // message bar went): two 32 slots 2 apart in a sunk track 2 in; a spent change locks it (a 14
   // badge, its icon 10). While the change is on its way the whole toggle at `busy`. Yeni arayüz
-  // tuvali `.tog`: the chosen one in a 2.5 ring outside it, no fill; the face 2 inside its slot; the
-  // other at 55 %; the track --surface2 with a 1 px line inside (in the dark #1B211F without it).
+  // tuvali `.tog`: the chosen one in a 2.5 ring, no fill; the other at 55 %; the track --surface2
+  // with a 1 px line inside (in the dark #1B211F without it). Both faces one size (28, 2 inside their
+  // slots, under the ring's inner half pixel) and the chosen one's ring right round its face, inside the
+  // slot: nothing grows with the choice and no gap shows in the ring (the owner's call, 25 Kasım).
   identityToggle: {
-    slot: 30,
+    slot: 32,
     pad: 2,
     gap: 2,
     ring: 2.5,
     faceIn: 2,
+    ringIn: true,
     dim: 0.55,
     ringColor: { light: '#0E8745', dark: '#3DDC84' },
     track: { light: '#E6F0E8', dark: '#1B211F' },

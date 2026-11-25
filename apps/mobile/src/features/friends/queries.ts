@@ -365,6 +365,32 @@ export async function restoreDm(
   queryClient.setQueryData<DmPages>(key, { pages: [rows], pageParams: [null] });
 }
 
+// A conversation got ready before it is opened (Telegram's chats come up with their messages; the
+// owner's report, 25 Kasım: a DM took long to open): the phone's copy into memory, then its newest
+// page read if the inbox says something came after what memory has (`lastAt`: the inbox row's last
+// message), or read at once when there is no copy. Only the newest page, the same read as opening.
+export async function preloadDm(
+  queryClient: QueryClient,
+  userId: string,
+  threadId: string,
+  lastAt: string | null,
+): Promise<void> {
+  const key = friendKeys.dm(threadId);
+  await restoreDm(queryClient, userId, threadId);
+  const newest = queryClient.getQueryData<DmPages>(key)?.pages[0]?.[0];
+  if (newest) {
+    if (lastAt && Date.parse(lastAt) > Date.parse(newest.created_at)) {
+      await refreshDm(queryClient, threadId);
+    }
+    return;
+  }
+  if (!lastAt) return;
+  const rows = await readDmPage(threadId, null).catch(() => null);
+  if (!rows || queryClient.getQueryData(key)) return;
+  queryClient.setQueryData<DmPages>(key, { pages: [rows], pageParams: [null] });
+  await writeDmCache(userId, threadId, rows);
+}
+
 // Newest first, DM_PAGE_SIZE at a time (dm_messages_page), with the status of the caller's own
 // messages; the page before the oldest one is read as the reader nears it (fetchNextPage). Shown at
 // once from memory or the phone's copy and brought up to date behind it, the newest page only

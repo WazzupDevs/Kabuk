@@ -78,8 +78,11 @@ const POP_CLIP_PATH = '<path d="M-6 -8H54V24H48A24 24 0 0 1 0 24H-6Z"/>';
 // the circle, and nothing below the middle ever leaves it.
 const IN_RING = 'in-ring';
 
-export function lookPop(code: string, emo = '', edge = 0): string {
-  const { parts, layers, eyes } = dressed(code, edge);
+// `halo`: false leaves the accessories' halos out (the layer behind the body: Süsle's strip, the
+// owner's call, 23 Kasım).
+export function lookPop(code: string, emo = '', edge = 0, halo = true): string {
+  const { parts, layers: all, eyes } = dressed(code, edge);
+  const layers = halo ? all : { ...all, back: '' };
   let svg = LOOK.pop(parts, emo).replace(POP_CLIP, POP_CLIP_PATH);
   if (eyes) svg = svg.replace(EYE_SHAPE, '');
   const ring = `<clipPath id="${IN_RING}"><circle cx="24" cy="24" r="24"/></clipPath>`;
@@ -116,8 +119,8 @@ export function lookCard(code: string): string {
 // Süsle's large capsule (the owner's report, 22 Kasım: horns cut flat over the circle): the
 // editor's stage (lookPop) with the gift card's room over the circle, CARD_TOP, so that what reaches
 // highest is drawn whole. No contour.
-export function lookStage(code: string, emo = ''): string {
-  return lookPop(code, emo)
+export function lookStage(code: string, emo = '', halo = true): string {
+  return lookPop(code, emo, 0, halo)
     .replace('viewBox="-6 -8 60 57"', `viewBox="-6 ${-CARD_TOP} 60 ${49 + CARD_TOP}"`)
     .replace(POP_CLIP_PATH, `<path d="M-6 ${-CARD_TOP}H54V24H48A24 24 0 0 1 0 24H-6Z"/>`);
 }

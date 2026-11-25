@@ -69,24 +69,30 @@ export function RingedFace({
   name,
   photoUrl,
   side = PROFILE_PAGE.face,
+  ring,
+  ringColor,
 }: {
   name: string;
   photoUrl: string | null;
   side?: number;
+  // Another ring where a board draws one (Profili düzenle: 4 of the page's ground).
+  ring?: number;
+  ringColor?: string;
 }) {
   const P = PROFILE_PAGE;
+  const width = ring ?? P.ring;
   return (
     <View
       style={{
         width: side,
         height: side,
         borderRadius: side / 2,
-        backgroundColor: P.ringColor,
+        backgroundColor: ringColor ?? P.ringColor,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <ProfileFace side={side - 2 * P.ring} name={name} photoUrl={photoUrl} />
+      <ProfileFace side={side - 2 * width} name={name} photoUrl={photoUrl} />
     </View>
   );
 }

@@ -1,10 +1,11 @@
 import { type ReactNode, useState } from 'react';
 import { Image, type ImageSourcePropType, View } from 'react-native';
-import Svg, { Line, Path } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, Path, Pattern } from 'react-native-svg';
 
 import { useKit } from '@/aura/kit';
 import type { venueType } from '@/lib/venueType';
 import { EXPLORE } from '@/theme/explore';
+import { RISO_PAPER, TICKET, TICKET_TONE } from '@/theme/profileCover';
 
 // The ticket's picture block, the venue's type picture (the list rows' own files).
 export const TICKET_PICTURE: Record<ReturnType<typeof venueType>, ImageSourcePropType> = {
@@ -18,7 +19,9 @@ export const TICKET_PICTURE: Record<ReturnType<typeof venueType>, ImageSourcePro
 // 20 Kasım (the owner's ask), each venue of Keşfet's list. The picture's block at the left
 // edge, a notch at the top and foot of the perforation 104 in with a dashed line between them, then
 // the 56 picture, the words and the round; the face white (the dark scheme's #121614) with the
-// shape cut out of it, so the map shows through the notches; no shadow (the board's mask cuts it).
+// shape cut out of it, so the map shows through the notches. Since 23 Kasım (the owner's ask) it
+// stands as the profile's capsule ticket does (IdentityTicket): the riso paper, the 2 edge and the
+// scheme's print 4 right and 5 down under it, the dashed perforation in the edge's ink.
 export function VenueTicket({
   testID,
   picture,
@@ -38,24 +41,40 @@ export function VenueTicket({
   const minHeight = compact ? small.minHeight : m.cardMinHeight;
   const pad = compact ? small.pad : m.cardPad;
   const gap = compact ? small.gap : m.cardGap;
-  const face = EXPLORE[scheme].solid;
+  const tone = TICKET_TONE[scheme];
   const [box, setBox] = useState({ w: 0, h: 0 });
   const { w, h } = box;
   const r = compact ? small.radius : m.cardRadius;
   const n = k.notch;
-  // Clockwise from the top left, the notches bitten into the top and foot edges.
-  const shape =
-    `M${r} 0H${k.cut - n}A${n} ${n} 0 0 0 ${k.cut + n} 0H${w - r}A${r} ${r} 0 0 1 ${w} ${r}` +
-    `V${h - r}A${r} ${r} 0 0 1 ${w - r} ${h}H${k.cut + n}A${n} ${n} 0 0 0 ${k.cut - n} ${h}` +
-    `H${r}A${r} ${r} 0 0 1 0 ${h - r}V${r}A${r} ${r} 0 0 1 ${r} 0Z`;
+  const e = TICKET.edgeWidth / 2;
+  const ox = TICKET.printX;
+  const oy = TICKET.printY;
+  const cell = RISO_PAPER.cell;
+  // Clockwise from the top left, the notches bitten into the top and foot edges; inset by the
+  // edge's half so its stroke stays inside, moved by (x, y) for the print.
+  const shape = (x: number, y: number) => {
+    const L = x + e;
+    const Tp = y + e;
+    const R = x + w - e;
+    const B = y + h - e;
+    const c = x + k.cut;
+    return (
+      `M${L + r} ${Tp}H${c - n}A${n} ${n} 0 0 0 ${c + n} ${Tp}H${R - r}A${r} ${r} 0 0 1 ${R} ${Tp + r}` +
+      `V${B - r}A${r} ${r} 0 0 1 ${R - r} ${B}H${c + n}A${n} ${n} 0 0 0 ${c - n} ${B}` +
+      `H${L + r}A${r} ${r} 0 0 1 ${L} ${B - r}V${Tp + r}A${r} ${r} 0 0 1 ${L + r} ${Tp}Z`
+    );
+  };
   return (
     <View
       testID={testID}
-      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
+      onLayout={(ev) => setBox({ w: ev.nativeEvent.layout.width, h: ev.nativeEvent.layout.height })}
       style={{
         minHeight,
-        // The list's tickets are all one height.
-        height: compact ? small.minHeight : undefined,
+        // Every ticket of a kind is one height: the list's and the map's (the owner's ask, 24
+        // Kasım: the map's cards were each their own size).
+        height: minHeight,
+        // Room for the print at the right (as the profile's ticket).
+        marginRight: ox,
         flexDirection: 'row',
         alignItems: 'center',
         gap,
@@ -65,17 +84,22 @@ export function VenueTicket({
       }}
     >
       {w > 0 ? (
-        <Svg width={w} height={h} style={{ position: 'absolute', left: 0, top: 0 }}>
-          <Path d={shape} fill={face.fill} stroke={face.edge} strokeWidth={1} />
-          <Line
-            x1={k.cut}
-            x2={k.cut}
-            y1={k.lineIn}
-            y2={h - k.lineIn}
-            stroke={scheme === 'light' ? k.lineLight : k.lineDark}
-            strokeWidth={k.line}
-            strokeDasharray={k.dash.join(' ')}
-          />
+        <Svg
+          width={w + ox}
+          height={h + oy}
+          style={{ position: 'absolute', left: 0, top: 0 }}
+          importantForAccessibility="no-hide-descendants"
+        >
+          <Defs>
+            {/* The riso halftone on the paper (iskelet.md → 2.5). */}
+            <Pattern id="venue-tram" width={cell} height={cell} patternUnits="userSpaceOnUse">
+              <Circle cx={cell / 4} cy={cell / 4} r={RISO_PAPER.dot} fill={tone.dots} />
+              <Circle cx={(3 * cell) / 4} cy={(3 * cell) / 4} r={RISO_PAPER.dot} fill={tone.dots} />
+            </Pattern>
+          </Defs>
+          <Path d={shape(ox, oy)} fill={tone.print} />
+          <Path d={shape(0, 0)} fill={tone.paper} />
+          <Path d={shape(0, 0)} fill="url(#venue-tram)" />
         </Svg>
       ) : null}
       <View
@@ -99,6 +123,27 @@ export function VenueTicket({
           style={{ width: k.block, height: '100%' }}
         />
       </View>
+      {/* The edge and the perforation over the picture's block, as the profile ticket's. */}
+      {w > 0 ? (
+        <Svg
+          width={w}
+          height={h}
+          pointerEvents="none"
+          style={{ position: 'absolute', left: 0, top: 0 }}
+          importantForAccessibility="no-hide-descendants"
+        >
+          <Path d={shape(0, 0)} fill="none" stroke={tone.edge} strokeWidth={TICKET.edgeWidth} />
+          <Line
+            x1={k.cut}
+            x2={k.cut}
+            y1={k.lineIn}
+            y2={h - k.lineIn}
+            stroke={tone.dash}
+            strokeWidth={TICKET.dashWidth}
+            strokeDasharray={k.dash.join(' ')}
+          />
+        </Svg>
+      ) : null}
       {children}
     </View>
   );

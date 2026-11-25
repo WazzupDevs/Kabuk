@@ -11,7 +11,7 @@ import { Tap } from '@/motion';
 import { upperTr } from '@shared/trText.ts';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { GIFT_CARD, GIFT_STAGE } from '@/theme/gifts';
+import { GIFT_CARD, GIFT_CARD_TONE } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -34,6 +34,7 @@ export function GiftCard() {
   const { colors, scheme } = useTheme();
   // The board's deep green words on the light clear glass; the dark glass keeps its own ink.
   const buttonInk = scheme === 'light' ? C.buttonInk : KIT.button.dark.clear.ink;
+  const tone = GIFT_CARD_TONE[scheme];
   const shadowOff = useLabOff('golge');
   const open = () => router.push('/gifts');
 
@@ -105,7 +106,7 @@ export function GiftCard() {
       <View
         style={[
           { minHeight: C.height, borderRadius: C.radius, boxShadow: shadow.boxShadow },
-          gradientStyle(C.ground),
+          gradientStyle(tone.ground),
         ]}
       >
         {shadow.node}
@@ -116,24 +117,24 @@ export function GiftCard() {
               key={`${s.left}-${s.top}`}
               style={{ position: 'absolute', left: s.left, top: s.top, opacity: s.opacity }}
             >
-              <CapIcon name="sparkles" color={s.green ? C.eyebrow : GIFT_STAGE.ink} size={s.size} />
+              <CapIcon name="sparkles" color={s.green ? tone.eyebrow : tone.star} size={s.size} />
             </View>
           ))}
         </View>
         {/* The words at its left, the button at its foot (tuval Aktivite). */}
         <View style={{ flexGrow: 1, padding: C.pad }}>
-          <T v="giftEyebrow" color={C.eyebrow}>
+          <T v="giftEyebrow" color={tone.eyebrow}>
             {upperTr(tr.gifts.eyebrow)}
           </T>
           {state.kind === 'ready' ? (
             <View style={{ width: C.textWidth, marginTop: C.titleTop }}>
-              <T v="giftTitle" color={GIFT_STAGE.ink}>
+              <T v="giftTitle" color={tone.ink}>
                 {tr.gifts.ready(packName(state.pack))}
               </T>
             </View>
           ) : state.kind === 'progress' ? (
             <View style={{ width: C.textWidth, marginTop: C.titleTop }}>
-              <T v="giftTitle" color={GIFT_STAGE.ink}>
+              <T v="giftTitle" color={tone.ink}>
                 {tr.gifts.loginsLeft(packName(state.pack), state.left)}
               </T>
               <View
@@ -148,17 +149,17 @@ export function GiftCard() {
                   logins={state.logins}
                   per={state.per}
                   width={74}
-                  on={GIFT_STAGE.ink}
-                  off={GIFT_STAGE.barOff}
+                  on={tone.ink}
+                  off={tone.barOff}
                 />
-                <T v="fine" strong color={GIFT_STAGE.ink}>
+                <T v="fine" strong color={tone.ink}>
                   {tr.gifts.progress(state.logins, state.per)}
                 </T>
               </View>
             </View>
           ) : (
             <View style={{ width: C.textWidth, marginTop: C.titleTop }}>
-              <T v="giftTitle" color={GIFT_STAGE.ink}>
+              <T v="giftTitle" color={tone.ink}>
                 {tr.gifts.allOwned}
               </T>
             </View>

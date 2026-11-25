@@ -340,6 +340,7 @@ export const tr = {
     noMessage: 'Henüz mesaj yok',
     // iskelet.md → 5.4: the search over the conversations, by name, on the phone.
     search: 'Sohbet ara',
+    searchClose: 'Aramayı kapat',
     noMatch: 'Sohbet bulunamadı',
     noMatchHint: 'Başka bir ad dene.',
     // Over the search's rows (tuval MesajlarAra: "2 SOHBET", upperTr) and its × (MesajlarAra).
@@ -395,9 +396,7 @@ export const tr = {
       `${name} ile tüm mesajlar senin listenden silinir. Bu geri alınamaz.`,
     // The notice at the foot once a conversation is cleared (tuval MesajlarSilindi `.snk`).
     cleared: 'Sohbet silindi',
-    // The pinned conversations' head (tuval Main; "· 5/5" when full, MesajlarSabitDolu).
-    pinned: 'Sabitlenenler',
-    pinnedFull: (n: number, max: number) => `Sabitlenenler · ${n}/${max}`,
+    // A pinned row's spoken mark (its pushpin at the right).
     pinnedRow: 'sabitlendi',
     // Arşivlenenler (tuval Arsiv, ArsivBos, MesajlarArsivRozet): a new message keeps them there.
     archived: 'Arşivlenenler',
@@ -839,13 +838,31 @@ export const tr = {
     friendsStatus: 'Arkadaşsınız',
     mutualTitle: (count: number) => `Ortak arkadaşlar · ${count}`,
     mutualOpen: (name: string) => `${name}, profilini aç`,
+    // tuval ProfilBaskasi `.mut`: "2 ortak arkadaş" over "Fevve ve Kadir".
+    mutualCount: (n: number) => `${n} ortak arkadaş`,
+    mutualNames: (names: readonly string[]) =>
+      names.length <= 1
+        ? (names[0] ?? '')
+        : names.length <= 3
+          ? `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`
+          : `${names.slice(0, 2).join(', ')} ve ${names.length - 2} kişi daha`,
+    mutualRow: (n: number, names: string) => `${n} ortak arkadaş: ${names}, listeyi aç`,
     noName: 'Henüz bir adın yok',
     nameWithAge: (name: string, age: number) => `${name}, ${age}`,
     // After the name on a profile's head, in the quiet colour (v45: .page-age).
     ageAfterName: (age: number) => `, ${age}`,
     addName: 'Ad ekle',
     edit: 'Profili düzenle',
-    birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
+    // Profili düzenle (yeni arayüz tuvali, ProfilDuzenle): the note under the locked birth date,
+    // its last words the link to the contact address.
+    birthDateNote: 'Doğum tarihin değiştirilemez, profilinde yalnızca yaşın görünür. Yanlışsa ',
+    birthDateContact: 'bizimle iletişime geç',
+    birthDateEnd: '.',
+    // "2000-03-14" → "14 Mart 2000".
+    birthDateLong: (iso: string) => {
+      const [y, m, d] = iso.split('-').map(Number);
+      return `${d} ${MONTHS[(m ?? 1) - 1] ?? ''} ${y}`;
+    },
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
     friendsSub: (n: number) => `${n} arkadaş`,
@@ -854,8 +871,7 @@ export const tr = {
     moreFaces: (n: number) => `+${n}`,
     editTitle: 'Profili düzenle',
     nameLabel: 'Görünen ad',
-    nameHint:
-      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
+    nameHint: 'Arkadaşların ve profilinle olduğun yerdekiler görür.',
     bioLabel: 'Tanıtım',
     bioHint: (n: number, max: number) => `${n}/${max}`,
     bioTooLong: (max: number) =>
@@ -889,9 +905,8 @@ export const tr = {
     },
     // docs/design/iskelet.md → 5.6: the badges in their grouped card.
     badgesTitle: 'Rozetler',
-    // iskelet.md → 5.8: Profili düzenle's birth date row and Kaydet once saved.
+    // Profili düzenle's birth date field and Kaydet once saved.
     birthDate: 'Doğum tarihi',
-    unchangeable: 'Değiştirilemez',
     savedShort: 'Kaydedildi',
     fieldCount: (n: number, max: number) => `${n}/${max}`,
     notVisible: 'Bu profil artık görüntülenemiyor.',
@@ -1130,6 +1145,7 @@ export const tr = {
   },
   venueChat: {
     open: 'Mekan sohbeti',
+    go: 'Sohbete git',
     empty: 'Henüz mesaj yok. İlk mesajı sen yaz.',
     placeholder: 'Mekana yaz…',
     send: 'Gönder',
@@ -2377,6 +2393,8 @@ export const tr = {
     // No table yet (v46: .nomasa).
     noTable: 'Henüz masan yok',
     noTableHint: 'Masa kur, arkadaşlarını çağır. Ya da açık bir masaya katıl.',
+    // The pinned stack's table strip without a table (the owner's design, 24 Kasım).
+    noTableStrip: 'Masa kur ya da katıl',
     createTable: 'Masa kur',
     withdraw: 'Lobiden çek',
     // The top row (v45: .top): the own photo opens Profil.
@@ -2594,6 +2612,13 @@ export const tr = {
       variantA: 'A',
       variantB: 'B',
       variantC: 'C',
+      accessoryCard: {
+        title: 'Aksesuar kartları (Süsle)',
+        note: 'Şeritteki seçenekler hediye kartı olur, nadirliğe göre dört kart: A bugünkü yuvarlaklar, B kartın dairesinde yalnız aksesuar, C hediyedeki gibi kapsülle.',
+        noteA: 'A: bugünkü hâl, gri yuvarlak, ad ve yıldızlar altında.',
+        noteB: 'B: nadirliğin kartı, dairesinde aksesuar tek başına ve büyük, ad altında.',
+        noteC: 'C: hediye paketinden çıkan kartın aynısı, kapsül aksesuarı takmış, ad altında.',
+      },
       susleStage: {
         title: 'Süsle sahnesi',
         note: 'Büyük kapsülün arkasındaki zemin: A bugün, B gece sahnesi, C yumuşak ışık.',

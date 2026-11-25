@@ -1,9 +1,9 @@
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { normalize, upperTr } from '@shared/trText.ts';
 import { useQueryClient } from '@tanstack/react-query';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useDeferredValue, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useDeferredValue, useEffect, useState } from 'react';
+import { BackHandler, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SearchField } from '@/components/Field';
@@ -14,10 +14,16 @@ import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { Toast, type ToastMessage } from '@/components/Toast';
 import { pruneDmCache } from '@/features/friends/dmCache';
-import { ArchivedRow, InboxList, PinnedHead, useThreadMenu } from '@/features/friends/InboxRows';
-import { openDm } from '@/features/friends/openDm';
+import { ArchivedRow, InboxList, useThreadMenu } from '@/features/friends/InboxRows';
+import { openDmFromInbox } from '@/features/friends/openDm';
 import { useSessionStore } from '@/features/auth/session';
-import { restoreDm, useDmInbox, useFriends, useRequestCount } from '@/features/friends/queries';
+import {
+  preloadDm,
+  restoreDm,
+  useDmInbox,
+  useFriends,
+  useRequestCount,
+} from '@/features/friends/queries';
 import { useMasaRequestCount } from '@/features/friends/MasaRequests';
 import { RequestList } from '@/features/friends/RequestList';
 import { NotificationsBell } from '@/features/notifications/Bell';
@@ -33,9 +39,9 @@ import { MESSAGES as M } from '@/theme/messages';
 type Tab = 'chats' | 'requests';
 
 // Mesajlar (docs/design/iskelet.md → 5.4; docs/SPEC_V3.md §18.3; docs/SPEC_V4.md §4.C): the title
-// and the bell stay on top (CLAUDE.md → Ekran davranışı: the top buttons never scroll); under them
-// the glass search capsule (Keşfet's) with "Sohbetler" and "İstekler" under it, pinning under the
-// top as the list scrolls (3.2). "Sohbetler" lists every friend, newest conversation first, from
+// and the round search, the pencil and the bell stay on top (CLAUDE.md → Ekran davranışı: the top
+// buttons never scroll); under them "Sohbetler" and "İstekler", or the search field while it is
+// open, pinning under the top as the list scrolls (3.2). "Sohbetler" lists every friend, newest conversation first, from
 // dm/inbox (the function signs the photos); the search narrows them by name on the phone, no call;
 // a friend without messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the
 // open friend requests waiting for the caller (RequestList); their count is on its tab.
@@ -61,8 +67,25 @@ export default function MessagesScreen() {
   const [notice, setNotice] = useState<ToastMessage | null>(null);
   const onCleared = () => setNotice({ id: Date.now(), title: tr.messages.cleared });
 
-  // Searching (tuval MesajlarAra, MesajlarAraBos): the tabs step aside and the conversations found
-  // stand under the field.
+  // The search behind a round button beside the pencil (the owner's call, 24 Kasım): pressed, the
+  // field opens in the tabs' place with the keyboard; the button (now a cross) or the back key
+  // closes it and clears it (CLAUDE.md → Ekran davranışı).
+  const [finding, setFinding] = useState(false);
+  const closeFind = useCallback(() => {
+    setFinding(false);
+    setQuery('');
+  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (!finding) return undefined;
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        closeFind();
+        return true;
+      });
+      return () => sub.remove();
+    }, [finding, closeFind]),
+  );
+  // Searching (tuval MesajlarAra, MesajlarAraBos): the conversations found stand under the field.
   const searching = normalize(query).trim() !== '';
   return (
     <View style={{ flex: 1 }}>
@@ -87,6 +110,13 @@ export default function MessagesScreen() {
             <View style={{ flexDirection: 'row', gap: M.actsGap }}>
               <Round
                 side={KIT.size.round}
+                icon={finding ? 'close' : 'search'}
+                testID="messages-search-open"
+                label={finding ? tr.messages.searchClose : tr.messages.search}
+                onPress={() => (finding ? closeFind() : setFinding(true))}
+              />
+              <Round
+                side={KIT.size.round}
                 icon="compose"
                 testID="messages-new"
                 label={tr.messages.newMessage}
@@ -99,13 +129,15 @@ export default function MessagesScreen() {
       >
         <StickyField band side={M.side}>
           <View style={{ gap: M.gap }}>
-            <SearchField
-              testID="messages-search"
-              value={query}
-              onChangeText={setQuery}
-              placeholder={tr.messages.search}
-            />
-            {searching ? null : (
+            {finding ? (
+              <SearchField
+                testID="messages-search"
+                value={query}
+                onChangeText={setQuery}
+                placeholder={tr.messages.search}
+                autoFocus
+              />
+            ) : (
               // `.sg`: Aktiviteler's tabs, a glass capsule 44, the chosen part white, 14/600.
               <Seg<Tab>
                 board={{
@@ -187,7 +219,7 @@ function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => v
                   threadId
                     ? () => {
                         onClose();
-                        openDm({ threadId, publicId: f.publicId, name: f.displayName });
+                        openDmFromInbox({ threadId, publicId: f.publicId, name: f.displayName });
                       }
                     : undefined
                 }
@@ -216,13 +248,19 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
   // shows its messages as it slides in, as Telegram Android opens a chat.
   const queryClient = useQueryClient();
   const userId = useSessionStore((s) => s.session?.user.id);
+  // The first few are also brought up to date (preloadDm): their newest page read before they are
+  // opened when the inbox says something came after the copy.
   const threadIds = (inbox.data ?? [])
     .slice(0, WARM_ROWS)
-    .flatMap((t) => (t.threadId ? [t.threadId] : []))
+    .flatMap((t) => (t.threadId ? [`${t.threadId}|${t.lastMessageAt ?? ''}`] : []))
     .join(' ');
   useEffect(() => {
     if (!userId || !threadIds) return;
-    for (const id of threadIds.split(' ')) void restoreDm(queryClient, userId, id);
+    threadIds.split(' ').forEach((entry, i) => {
+      const [id = '', at = ''] = entry.split('|');
+      if (i < PRELOAD_ROWS) void preloadDm(queryClient, userId, id, at || null);
+      else void restoreDm(queryClient, userId, id);
+    });
   }, [queryClient, userId, threadIds]);
   // A conversation that left the inbox (the friendship ended) leaves the phone too (dmCache.ts).
   const allThreads = inbox.data
@@ -269,14 +307,15 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
       />
     );
   }
-  // Searching: every conversation by name, the archived too. Otherwise the pinned on their own card
-  // under "Sabitlenenler" (the server's order: the last pinned on top), the rest, and Arşivlenenler
-  // under them (tuval Main, MesajlarArsivRozet; docs/SPEC_V4.md §4.X).
+  // Searching: every conversation by name, the archived too. Otherwise Arşivlenenler first, under
+  // the bars, then one list: the pinned on top (the server's order: the last pinned first), each
+  // with its pushpin at the right, and the rest (the owner's call, 24 Kasım; docs/SPEC_V4.md §4.X).
   const searching = normalize(query).trim() !== '';
   const { chats, archived, archivedUnread } = splitInbox(inbox.data);
-  const pinned = searching ? [] : chats.filter((t) => t.pinned);
-  const rest = searching ? byName(inbox.data, query) : chats.filter((t) => !t.pinned);
-  if (searching && rest.length === 0) {
+  const rows = searching
+    ? byName(inbox.data, query)
+    : [...chats.filter((t) => t.pinned), ...chats.filter((t) => !t.pinned)];
+  if (searching && rows.length === 0) {
     // Yeni arayüz tuvali, MesajlarAraBos: nothing found, the riso and its two lines in the middle.
     return (
       <EmptyState
@@ -297,33 +336,8 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
       {searching ? (
         // `.rlbl`: how many were found, 4 under the field.
         <T v="eyebrow" style={{ marginTop: M.resultTop }} testID="messages-found">
-          {upperTr(tr.messages.found(rest.length))}
+          {upperTr(tr.messages.found(rows.length))}
         </T>
-      ) : null}
-      {pinned.length > 0 ? (
-        <>
-          <ListMove id="pinned-head" version={version} rise={false}>
-            <PinnedHead count={pinned.length} />
-          </ListMove>
-          <InboxList
-            threads={pinned}
-            now={now}
-            onHold={menu.open}
-            version={version}
-            raised={menu.lastKind !== 'unpin'}
-          />
-        </>
-      ) : null}
-      {rest.length > 0 ? (
-        <InboxList
-          threads={rest}
-          now={now}
-          onHold={menu.open}
-          from={pinned.length}
-          version={version}
-          raised={menu.lastKind === 'unpin'}
-          above={pinned.length > 0 ? M.listGap : 0}
-        />
       ) : null}
       {!searching && archived.length > 0 ? (
         <ListMove id="archived-row" version={version} rise={false}>
@@ -334,6 +348,9 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
           />
         </ListMove>
       ) : null}
+      {rows.length > 0 ? (
+        <InboxList threads={rows} now={now} onHold={menu.open} version={version} />
+      ) : null}
       {menu.menu}
     </ListMoveArea>
   );
@@ -341,3 +358,5 @@ function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared:
 
 // The conversations brought into memory from the phone: the first screenfuls.
 const WARM_ROWS = 20;
+// How many of them are read ahead from the server too.
+const PRELOAD_ROWS = 5;

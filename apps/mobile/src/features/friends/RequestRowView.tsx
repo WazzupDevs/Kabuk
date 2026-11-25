@@ -54,8 +54,11 @@ export function RequestRowView({
     decline || accept || soft ? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
         {decline ? (
+          // As tall as "Kabul et" beside it (the owner's report, 25 Kasım: the 40 round stood over
+          // the 32 button), and "Kabul et" without its tick, so the request's line keeps to one line.
           <Round
             icon="close"
+            side={KIT.size.btnSm}
             label={decline.label}
             testID={decline.testID}
             disabled={decline.disabled}
@@ -66,7 +69,6 @@ export function RequestRowView({
         {accept ? (
           <Btn
             sm
-            icon="check"
             label={accept.text ?? ''}
             accessibilityLabel={accept.label}
             testID={accept.testID}

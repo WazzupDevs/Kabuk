@@ -176,18 +176,13 @@ describe('the cover (kapak, 5.2)', () => {
 });
 
 describe("another person's profile (kapak, 5.6)", () => {
-  const O = PROFILE_PAGE.other;
   const page = code('app/(app)/people/[publicId].tsx');
-  it('the cover at 0.5, the photo to 0.75 over 60–180 and out over 120–190', () => {
-    expect(O.speed).toBe(0.5);
-    expect(O.faceShrink).toEqual([60, 180]);
-    expect(O.faceScale).toBe(0.75);
-    expect(O.faceFade).toEqual([120, 190]);
-    expect(PROFILE_PAGE.face).toBe(124);
-    expect(PROFILE_PAGE.ring).toBe(4);
-    expect(page).toMatch(/<Cover height=\{coverHeight\} speed=\{O\.speed\}>/);
-    expect(page).toMatch(/<ScrollFade\s+fade=\{O\.faceFade\}\s+shrink=\{O\.faceShrink\}/);
-    expect(page).toMatch(/<BarArrive from=\{O\.bar\[0\]\} to=\{O\.bar\[1\]\}[ >]/);
+  // The owner's call, 24 Kasım: the cover, the photo and the name move as on the own profile.
+  it("the cover, the photo and the name move as the own profile's", () => {
+    expect(page).toMatch(/<RiseLayer\s+speed=\{OWN\.rise\}\s+fade=\{OWN\.riseFade\}/);
+    expect(page).toMatch(/<FlyingFace\s+flight=\{faceFlight\}/);
+    expect(page).toMatch(/<FlyingName\s+flight=\{nameFlight\}/);
+    expect(page).toMatch(/const coverHeight = OWN\.cover \+ dy;/);
   });
   it('"Arkadaşlıktan çıkar" in the menu only, the DM menu grown from the three dots', () => {
     expect(page).not.toMatch(/FriendActions/);
@@ -346,12 +341,12 @@ describe("Mekan's folding cards (5.11)", () => {
   const at = (y: number, full = 300) =>
     collapseAt(y, 100, full, v.tableStrip, v.stripFrom, v.stripFadePx);
 
-  it('pins under the bar at 104 into a 72 strip, the chat into 54; the strip from 170 over 70', () => {
+  it("the two strips one height (60), their pictures 44 (the owner's design, 24 Kasım)", () => {
     expect(v).toEqual({
       pinTop: 104,
-      tableStrip: 72,
-      stripPicture: 52,
-      chatStrip: 54,
+      tableStrip: 60,
+      stripPicture: 44,
+      chatStrip: 60,
       stripFrom: 170,
       stripFadePx: 70,
     });
@@ -363,7 +358,7 @@ describe("Mekan's folding cards (5.11)", () => {
     // Linear: equal steps fold it equally.
     expect(at(160).height - at(170).height).toBe(at(180).height - at(190).height);
     // Folded, it stays a strip and pinned.
-    expect(at(1000)).toEqual({ lift: 900, height: 72, strip: 1 });
+    expect(at(1000)).toEqual({ lift: 900, height: 60, strip: 1 });
   });
 
   it('gives way to the strip between 170 and 100 high, linearly', () => {

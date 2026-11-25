@@ -23,6 +23,7 @@ import { WeekEmpty } from '@/features/explore/WeekEmpty';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { ownScenePicture } from '@/features/explore/venuePictures';
 import { venueType } from '@/lib/venueType';
 import {
   BarArrive,
@@ -120,6 +121,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
   const onBar = useScrollPast((V.band[0] + V.band[1]) / 2);
   const here = active.data?.venue_id === venue.id;
   const type = venueType(venue);
+  const scene = ownScenePicture(venue.name) ?? SCENE;
   const place = tr.explore.venuePlace([venue.district, city].filter((p): p is string => !!p));
   const barTop = insets.top + D.barTop;
   const look = D[scheme];
@@ -134,7 +136,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
             report, 30 Ekim). Also drawn once as a plain picture under the target, as the ground
             (AuraBackground, K2): the scene showed nothing on first opening (2 Kasım, 14.1). */}
         <Image
-          source={SCENE}
+          source={scene}
           fadeDuration={0}
           accessible={false}
           resizeMode="cover"
@@ -142,7 +144,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
         />
         <GlassTarget backdrop style={StyleSheet.absoluteFill}>
           <Image
-            source={SCENE}
+            source={scene}
             fadeDuration={0}
             accessible={false}
             resizeMode="cover"

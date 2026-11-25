@@ -49,6 +49,7 @@ import { useChatScrolling } from './chatScrolling';
 import { CachedSvg } from './CachedSvg';
 import { FxSvg } from './FxSvg';
 import { HOLD_MS } from '@/motion/Tap';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { gradientStyle } from '@/theme/gradient';
 import { CHAT_LOOK } from '@/theme/chatLook';
 import { DM } from '@/theme/dm';
@@ -212,7 +213,7 @@ export function ChatBubble({
   // (BubbleShape); until it is measured, its box and the tail laid beside it.
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const holdable = !gone && (!!onReact || actions.length > 0 || text.length > 0);
-  const lift = () => {
+  const lift = (pressedAt?: { x: number; y: number }) => {
     // Measured where the bubble stands once the keyboard is away (the layer puts it away, and the
     // stream moves as it goes: measured before, the faces opened far from the message, at the
     // screen's top; the owner's report, 6 Kasım). An unmeasured cell is tried again a frame later.
@@ -227,6 +228,18 @@ export function ChatBubble({
     haptic('grabbed');
     if (!Keyboard.isVisible()) {
       measure(true);
+      return;
+    }
+    // With the keyboard up, the stream is moved on the UI thread (its keyboard inset), which the
+    // window measure does not see: a bubble higher up opened far below where it was (the owner's
+    // report, 25 Kasım). It opens where the finger holds it (the hold's own place on the screen),
+    // its size measured, and the layer puts the keyboard away under its scrim.
+    if (pressedAt) {
+      const at = pressedAt;
+      faceRef.current?.measureInWindow((_x, _y, width, height) => {
+        if (height <= 0 || width <= 0) return;
+        open({ x: at.x, y: at.y, width, height });
+      });
       return;
     }
     let done = false;
@@ -417,13 +430,23 @@ export function ChatBubble({
         if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
       onPress={onTap}
-      onLongPress={holdable ? lift : undefined}
-      delayLongPress={HOLD_MS}
       style={{ maxWidth: '100%', opacity: held ? 0 : 1 }}
     >
       {face(false)}
     </Pressable>
   );
+  // The hold on its own native recogniser, not the press's (the owner's report, 25 Kasım): with
+  // the keyboard up the stream's scroll view took the touch from the press about 0.2 s in, and a
+  // held message never opened its faces. Telegram Android opens them over the keyboard too.
+  const hold = Gesture.LongPress()
+    .enabled(holdable)
+    .minDuration(HOLD_MS)
+    .runOnJS(true)
+    // Called by the recogniser when the hold is reached, never while drawing. The bubble's top
+    // left on the screen: where the finger is less where it is in the bubble.
+    // eslint-disable-next-line react-hooks/refs
+    .onStart((e) => lift({ x: e.absoluteX - e.x, y: e.absoluteY - e.y }));
+  const holding = <GestureDetector gesture={hold}>{bubble}</GestureDetector>;
   function face(lifted: boolean) {
     const sh = lifted ? heldShadow : bubbleShadow;
     const skinned = skin !== null && !big && !plain;
@@ -531,6 +554,10 @@ export function ChatBubble({
             <QuoteBlock quote={quote} onColor={onColour} dm={dm} onPress={onPressQuote} />
           ) : null}
           {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
+            In a DM the own bubble keeps the ticks' room whether they show or not (the clock on its
+            way, the ticks on a run's last, none before it): the bubble keeps its size as they
+            change (the owner's report, 25 Kasım). */}
+          {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
             React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
             into each other): the text ends with an invisible copy of the time, which makes the
             room, and the time is laid over that room. */}
@@ -597,7 +624,7 @@ export function ChatBubble({
                 {text}
                 {time && !state ? (
                   <Stamp dm={dm} color={withAlpha(fg, HIDDEN_ALPHA)} hidden>
-                    {`${dm ? DM_TIME_GAP : TIME_GAP}${stampRoom(time, edited)}${mine && delivery ? (dm ? DM_TICKS_ROOM : TICKS_ROOM) : ''}`}
+                    {`${dm ? DM_TIME_GAP : TIME_GAP}${stampRoom(time, edited)}${mine && (delivery || kind === 'dm') ? (dm ? DM_TICKS_ROOM : TICKS_ROOM) : ''}`}
                   </Stamp>
                 ) : null}
               </RNText>
@@ -704,7 +731,7 @@ export function ChatBubble({
         }}
       >
         {bar}
-        <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
+        <SwipeToReply onReply={onReply}>{holding}</SwipeToReply>
         {chips}
         {state ? (
           // Grup 3, P1b: at 320 dp / 1.3x the actions go to a second line, none cut. On the own
@@ -826,7 +853,7 @@ export function ChatBubble({
                 </RNText>
               </Pressable>
             ) : null}
-            <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
+            <SwipeToReply onReply={onReply}>{holding}</SwipeToReply>
             {chips}
           </View>
         </View>
@@ -881,7 +908,7 @@ export function ChatBubble({
           paddingLeft: avatar ? INDENT : 0,
         }}
       >
-        <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
+        <SwipeToReply onReply={onReply}>{holding}</SwipeToReply>
         {chips}
       </View>
     </View>

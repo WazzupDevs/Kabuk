@@ -615,18 +615,25 @@ function SendIn({
 }) {
   const reduce = useReduceMotion();
   const from = MOTION.messageIn.sendFromScale;
-  // The DM's send is laid out only while shown: it grows in as it comes.
-  const scale = useSharedValue(shown && (!dm || steady) ? 1 : from);
+  // Shown from the first frame, it is drawn at its size: a first value under its rest is written
+  // back by React on every redraw (ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS), and a DM built ahead on
+  // the DM surface kept its send small (the owner's report, 25 Kasım). It grows in only when it
+  // comes later.
+  const scale = useSharedValue(shown ? 1 : from);
   const seen = useSharedValue(shown ? 1 : 0);
+  const wasShown = useRef(shown);
   useEffect(() => {
+    const before = wasShown.current;
+    wasShown.current = shown;
     if (!shown) {
       seen.set(0);
       scale.set(from);
       return;
     }
     seen.set(1);
-    scale.set(reduce ? 1 : withSpring(1, MOTION.springs.pop));
-  }, [shown, reduce, from, scale, seen]);
+    if (before) return;
+    scale.set(reduce || steady || !dm ? 1 : withSpring(1, MOTION.springs.pop));
+  }, [shown, reduce, from, scale, seen, steady, dm]);
   const style = useAnimatedStyle(() => ({
     opacity: seen.get(),
     transform: [{ scale: scale.get() }],

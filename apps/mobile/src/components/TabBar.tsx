@@ -64,8 +64,9 @@ function useBarModeWhileFocused(key: 'hidden' | 'overMap', on: boolean) {
   );
 }
 
-export function useHideTabBar(): void {
-  useBarModeWhileFocused('hidden', true);
+// `on` false: a screen that covers the bar itself (the DM surface's conversations).
+export function useHideTabBar(on = true): void {
+  useBarModeWhileFocused('hidden', on);
 }
 
 export function useTabBarOverMap(on: boolean): void {

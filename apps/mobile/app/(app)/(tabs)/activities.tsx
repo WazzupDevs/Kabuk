@@ -58,7 +58,7 @@ export default function ActivitiesScreen() {
       {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; the title 32/500 (the
           new boards' `.display`). */}
       <LargeTitle kind="buyukBaslik">
-        <View style={{ gap: SPACING[1] }}>
+        <View style={{ gap: SPACING[1], marginBottom: A.tabsTop }}>
           {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}
           <T v="display" accessibilityRole="header">
             {tr.tabs.activities}
@@ -71,6 +71,7 @@ export default function ActivitiesScreen() {
           board={{
             item: A.tabs.item,
             radius: A.tabs.radius,
+            pad: A.tabs.pad,
             type: 'btnSm',
             face: A[scheme].tabsGlass,
             onShadow: A[scheme].tabOnShadow || undefined,

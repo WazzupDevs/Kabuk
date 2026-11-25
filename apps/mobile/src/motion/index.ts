@@ -35,7 +35,8 @@ export {
 export { StickyFade, StickyField } from './StickyField';
 export { StickyGroup } from './StickyGroup';
 export { Cover } from './Cover';
-export { CollapsingCard, PinLayer } from './CollapsingCard';
+export { CollapsingCard, PinLayer, useInStrip } from './CollapsingCard';
 export { type Flight, FlyingFace, FlyingName, RiseLayer, ScrollFade } from './ProfileMotion';
 export { BarArrive, BarBack, BarBand, LargeTitle, TopBarRow, type TopBarKind } from './TopBar';
 export { TabBar, TabBarEdge, TabBarMotion, type TabItem, useTabShrink } from './TabBar';
+export { Fly, PinHide, PinMorph } from './PinReveal';

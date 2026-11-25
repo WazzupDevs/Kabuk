@@ -7,6 +7,20 @@
 // `.day`, `.new`, `.rx`, `.typing`, `.who`, `.fld`, `.snd`, `.eb`) redraws the stream, the top bar
 // and the message bar: those values below say so; the rest stays the old board's.
 export const DM = {
+  // The DM surface (features/friends/DmSurface.tsx; Telegram's chat opening, the owner's call,
+  // 25 Kasım): it slides in over 240 ms and out over 200, decelerating; back with a swipe from the
+  // left 24, a flick past 800 px/s closes it; the inbox's first two conversations are built ahead
+  // 1.5 s after the inbox is read.
+  // The edge starts under the top bar (its back button keeps its taps).
+  slide: {
+    inMs: 240,
+    outMs: 200,
+    edge: 24,
+    edgeTop: 120,
+    flick: 800,
+    warmAhead: 2,
+    warmAfterMs: 1500,
+  },
   // The stream (`.flow`): 12 from the sides; a bubble at most 78 % of the row.
   side: 12,
   share: 0.78,

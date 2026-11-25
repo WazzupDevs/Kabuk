@@ -9,7 +9,7 @@ import { BROADCAST, dmChannel } from '@shared/rooms.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Alert, BackHandler, View } from 'react-native';
+import { Alert, AppState, BackHandler, View } from 'react-native';
 
 import { Av, Btn, Round } from '@/aura/kit';
 import { ChatBubble, type ChatQuote, type Delivery, TypingBubble } from '@/components/ChatBubble';
@@ -102,14 +102,29 @@ export default function DmScreen() {
 // The conversation itself, for the route and for the visual gate's `ekran/dm` (gorsel/dmFixture.tsx:
 // this component over a query cache filled with the board's sample, off the network). `gateTyping`:
 // the gate draws the friend typing (no Realtime there); never set by the app.
+// On the DM surface (features/friends/DmSurface.tsx: built ahead, over the tabs) a conversation is
+// told whether it is the one on screen and whether it has slid in; it closes through the surface.
+export type DmSurfaceSlot = {
+  visible: boolean;
+  settled: boolean;
+  onClose: (ended?: boolean) => void;
+};
+
 export function DmThread({
   threadId,
   publicId,
   name,
   gateTyping = false,
-}: Params & { gateTyping?: boolean }) {
+  surface,
+}: Params & { gateTyping?: boolean; surface?: DmSurfaceSlot }) {
   const { scheme } = useTheme();
-  useHideTabBar();
+  // The surface covers the tab bar itself; a pushed DM hides it.
+  useHideTabBar(!surface);
+  const visible = surface ? surface.visible : true;
+  const visibleNow = useRef(visible);
+  useEffect(() => {
+    visibleNow.current = visible;
+  });
   const queryClient = useQueryClient();
   const friend = useFriends().data?.find((f) => f.publicId === publicId);
   const photoUrl = friend?.photoUrl ?? null;
@@ -145,19 +160,21 @@ export function DmThread({
 
   // How many of the friend's messages were unread when the DM opened (the inbox's count, read
   // before opening marks them read): the DM opens at the first of them, under its line.
-  const [unreadAtOpen] = useState(
-    () =>
-      queryClient
-        .getQueryData<DmInboxThread[]>(friendKeys.inbox)
-        ?.find((t) => t.threadId === threadId)?.unreadCount ?? 0,
-  );
+  const unreadNow = () =>
+    queryClient
+      .getQueryData<DmInboxThread[]>(friendKeys.inbox)
+      ?.find((t) => t.threadId === threadId)?.unreadCount ?? 0;
+  const [unreadAtOpen, setUnreadAtOpen] = useState(unreadNow);
   const markRead = useMarkThreadRead(threadId);
   // Opening the DM marks it read once it has slid in (the owner's report, 29 Ekim: marking it on
   // the tap changed the Mesajlar list and its count under the slide); the row is under the DM by
   // then. Later, while it is seen, at once.
-  const settled = useAfterTransition();
+  const routeSettled = useAfterTransition();
+  const settled = surface ? surface.settled : routeSettled;
   const readWhenSettled = useRef(false);
   const markSeen = useCallback(() => {
+    // Built ahead and out of sight, it reads nothing.
+    if (!visibleNow.current) return;
     if (settled) markRead();
     else readWhenSettled.current = true;
   }, [settled, markRead]);
@@ -166,6 +183,9 @@ export function DmThread({
     readWhenSettled.current = false;
     markRead();
   }, [settled, markRead]);
+  useEffect(() => {
+    if (surface && visible && settled && AppState.currentState === 'active') markRead();
+  }, [surface, visible, settled, markRead]);
   // Read only while seen: what arrives behind the home screen stays unread until the DM is seen
   // again (audit CHAT-2). Being seen, the first time and every time after, marks it read.
   const seen = useSeen(markSeen);
@@ -177,7 +197,7 @@ export function DmThread({
   // may be on an older message, the pages loaded.
   const onMessage = useCallback(() => {
     void refreshDm(queryClient, threadId);
-    if (seen()) markRead();
+    if (seen() && visibleNow.current) markRead();
   }, [queryClient, threadId, markRead, seen]);
   useBroadcast(dmChannel(threadId), BROADCAST.dmMessage, onMessage);
   // A tick moved (delivered or read).
@@ -203,10 +223,13 @@ export function DmThread({
 
   // While the DM slides in it shows what it opened with; what changed meanwhile comes once it is
   // in (Telegram Android holds a chat's updates during its opening animation).
+  // On the surface it was built ahead with its pages: nothing to hold.
   const livePages = messages.data?.pages;
   const [heldPages, setHeldPages] = useState<Pages | undefined>(livePages);
-  if (!settled && heldPages === undefined && livePages !== undefined) setHeldPages(livePages);
-  const pages: Pages | undefined = settled ? livePages : (heldPages ?? livePages);
+  if (!surface && !settled && heldPages === undefined && livePages !== undefined) {
+    setHeldPages(livePages);
+  }
+  const pages: Pages | undefined = settled || surface ? livePages : (heldPages ?? livePages);
   const server = useMemo(() => (pages ?? []).flat(), [pages]);
 
   // The first unread message, worked out once from the first page shown.
@@ -216,6 +239,17 @@ export function DmThread({
     setFreshId(
       unreadAtOpen > 0 ? (theirs[unreadAtOpen - 1]?.id ?? theirs.at(-1)?.id ?? null) : null,
     );
+  }
+
+  // On the surface each opening counts as the first: its unread count and its line are read again,
+  // and once it has slid in (with the app in the foreground) it is read.
+  const [openedAs, setOpenedAs] = useState(visible);
+  if (surface && visible !== openedAs) {
+    setOpenedAs(visible);
+    if (visible) {
+      setUnreadAtOpen(unreadNow());
+      setFreshId(undefined);
+    }
   }
 
   // The reader's messages sent from here: the server's id to the waiting bubble's key.
@@ -306,21 +340,27 @@ export function DmThread({
     if (text.trim()) notifyTyping();
   };
 
+  const back = () => (surface ? surface.onClose() : backToInbox());
   const leave = () => {
     void refreshFriends(queryClient, 'friendship');
-    backToInbox();
+    if (surface) surface.onClose(true);
+    else backToInbox();
   };
-  // Android's back key too (a sheet or the reaction bar, when open, takes it first).
+  // Android's back key too (a sheet or the reaction bar, when open, takes it first); on the surface
+  // only the conversation on screen takes it.
+  const takesBack = visible;
   useFocusEffect(
     useCallback(() => {
+      if (!takesBack) return undefined;
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {
         // An edit in the bar goes first, then the conversation.
         if (editing) setEditing(null);
+        else if (surface) surface.onClose();
         else backToInbox();
         return true;
       });
       return () => sub.remove();
-    }, [editing]),
+    }, [editing, takesBack, surface]),
   );
   const end = useMutation({
     meta: FEEL_ERROR,
@@ -495,6 +535,7 @@ export function DmThread({
     <ChatScreen
       startAtEnd
       hidesTabBar
+      awake={visible}
       newestKey={newest?.key}
       newestMine={newestMine}
       list={{
@@ -565,7 +606,7 @@ export function DmThread({
       top={
         <ChatTopBar
           dm
-          onBack={backToInbox}
+          onBack={back}
           title={name}
           // iskelet.md → 5.5: "yazıyor…" under the name while the friend types; otherwise "Profili
           // gör" (yeni arayüz tuvali, DmSohbet `.who span`), the capsule opening the profile.
@@ -720,9 +761,14 @@ const DmRow = memo(function DmRow({
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
           {fresh ? <DayLine fresh label={fresh} /> : null}
-          {m ? (
-            <ServerBubble
+          {/* One bubble element for the message on its way and for the server's copy that takes
+              its place (the same key): the bubble is not built again and keeps its size (the
+              owner's report, 25 Kasım: it grew and shrank as the tick came). */}
+          {m || out ? (
+            <DmBubble
               m={m}
+              out={out}
+              outQuote={outQuote}
               name={name}
               first={first}
               last={last}
@@ -735,26 +781,8 @@ const DmRow = memo(function DmRow({
               onReply={onReply}
               onEdit={onEdit}
               onDelete={onDelete}
-            />
-          ) : out ? (
-            <ChatBubble
-              text={out.body}
-              mine
-              first={first}
-              last={last}
-              quote={outQuote}
-              // On its way: its time and a clock where the ticks go (Telegram Android).
-              {...(out.status === 'sending'
-                ? {
-                    time: tr.chat.time(out.at ?? new Date().toISOString()),
-                    delivery: 'sending' as const,
-                  }
-                : {
-                    state: 'failed' as const,
-                    failedText: out.errorCode ? tr.errors[out.errorCode] : undefined,
-                    onRetry: canRetry(out) ? () => onRetry(out) : undefined,
-                    onDiscard: () => onDiscard(out),
-                  })}
+              onRetry={onRetry}
+              onDiscard={onDiscard}
             />
           ) : null}
         </>
@@ -763,8 +791,12 @@ const DmRow = memo(function DmRow({
   );
 });
 
-function ServerBubble({
+function DmBubble({
   m,
+  out,
+  outQuote,
+  onRetry,
+  onDiscard,
   name,
   first,
   last,
@@ -778,7 +810,11 @@ function ServerBubble({
   onEdit,
   onDelete,
 }: {
-  m: DmPageRow;
+  m: DmPageRow | undefined;
+  out: OutboxMessage | undefined;
+  outQuote: ChatQuote | undefined;
+  onRetry: (m: OutboxMessage) => void;
+  onDiscard: (m: OutboxMessage) => void;
   name: string;
   first: boolean;
   last: boolean;
@@ -793,7 +829,31 @@ function ServerBubble({
   onDelete: (m: DmPageRow) => void;
 }) {
   // "Düzenle" only on one's own message, in the 15 minutes after it was sent (docs/SPEC_V4.md §4.X).
-  const canEdit = useCanEdit(m.created_at, m.from_me);
+  const canEdit = useCanEdit(m?.created_at ?? out?.at ?? '', !!m?.from_me);
+  if (!m) {
+    if (!out) return null;
+    return (
+      <ChatBubble
+        text={out.body}
+        mine
+        first={first}
+        last={last}
+        quote={outQuote}
+        // On its way: its time and a clock where the ticks go (Telegram Android).
+        {...(out.status === 'sending'
+          ? {
+              time: tr.chat.time(out.at ?? new Date().toISOString()),
+              delivery: 'sending' as const,
+            }
+          : {
+              state: 'failed' as const,
+              failedText: out.errorCode ? tr.errors[out.errorCode] : undefined,
+              onRetry: canRetry(out) ? () => onRetry(out) : undefined,
+              onDiscard: () => onDiscard(out),
+            })}
+      />
+    );
+  }
   const gone = isDeleted(m);
   const edited = !gone && editedAt(m) !== null;
   const clock = tr.chat.time(m.created_at);

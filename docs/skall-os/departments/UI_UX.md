@@ -18,11 +18,12 @@ Bütünsel UI denetimi yapıldı: `docs/denetim/uctan-uca-2026-11.md` → "M15" 
 
 Atölye'deki her taslak bir satır. Durum Atölye kaydındakiyle aynıdır (`workshop/registry.tsx`).
 
-| Taslak (anahtar) | Tarih   | Durum     | Karar ve neden                                                         | Teslim             |
-| ---------------- | ------- | --------- | ---------------------------------------------------------------------- | ------------------ |
-| `buttonOrder`    | 11 Kas. | Taslak    | Aracın örneği; ürün önerisi değil, uygulanmaz                          | —                  |
-| `purpleTheme`    | 22 Kas. | Taslak    | Süsle mor gece teması (A bugün, B mor); karar bekliyor                 | —                  |
-| `susleStage`     | 22 Kas. | Onaylandı | Süsle kapsül zemini: B, gece kartı (proje sahibi: "b yi beğendim yap") | Doğrudan uygulandı |
+| Taslak (anahtar) | Tarih   | Durum     | Karar ve neden                                                                           | Teslim             |
+| ---------------- | ------- | --------- | ---------------------------------------------------------------------------------------- | ------------------ |
+| `accessoryCard`  | 23 Kas. | Taslak    | Süsle şeridi: yuvarlak yerine nadirlik kartı (A bugün, B yalnız aksesuar, C hediye yüzü) | —                  |
+| `buttonOrder`    | 11 Kas. | Taslak    | Aracın örneği; ürün önerisi değil, uygulanmaz                                            | —                  |
+| `purpleTheme`    | 22 Kas. | Taslak    | Süsle mor gece teması (A bugün, B mor); karar bekliyor                                   | —                  |
+| `susleStage`     | 22 Kas. | Onaylandı | Süsle kapsül zemini: B, gece kartı (proje sahibi: "b yi beğendim yap")                   | Doğrudan uygulandı |
 
 ## Tekrar eden kalıplar
 

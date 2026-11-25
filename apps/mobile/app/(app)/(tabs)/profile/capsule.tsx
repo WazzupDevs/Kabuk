@@ -7,7 +7,7 @@ import { BackHandler, Image, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, useKit } from '@/aura/kit';
+import { Btn, Glass, useKit } from '@/aura/kit';
 import { CachedSvg, readAhead } from '@/components/CachedSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { FxMoves } from '@/components/FxSvg';
@@ -36,6 +36,7 @@ import {
   type Play,
   readStageAhead,
   neededBy,
+  stageHeadroom,
   stageNeed,
 } from '@/features/capsule/CapsuleStage';
 import { useLookDraft } from '@/features/capsule/draft';
@@ -57,7 +58,7 @@ import { SceneNight } from '@/features/capsule/SceneNight';
 import { SusleFilter } from '@/features/capsule/SusleFilter';
 import { SusleTabs } from '@/features/capsule/SusleTabs';
 import { packNames, packOptions } from '@/features/capsule/strip';
-import { optionArt } from '@/features/capsule/tileArt';
+import { optionFigure } from '@/features/capsule/tileArt';
 import { TIER_GEMS_HEIGHT, TierGems } from '@/features/gifts/parts';
 import { giftKeys, useGiftState } from '@/features/gifts/queries';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
@@ -83,6 +84,9 @@ import { SPACING } from '@/theme/tokens';
 const FEELING_MS = 1850;
 // The gems' row between an option's round and its name, with its gap over it.
 const STRIP_MARK = TIER_GEMS_HEIGHT + CAPSULE_EDIT.strip.nameGap;
+// The strip's rounds have no ground of their own (the owner's call, 23 Kasım): the buddy stands
+// on the panel.
+const NO_GROUND = 'transparent';
 // The least of the scene's height a short screen leaves it (300 on the board).
 const SCENE_MIN = 0.7;
 // The tabs' names are the board's (the catalog calls Gövde "Boyun").
@@ -352,9 +356,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       capsulePrep.ahead(
         `tile|${t.slot}|${t.o.key}|${color ?? ''}|${tileNeed ? 'png' : 'svg'}`,
         () => {
-          const xml = optionArt(t.slot, t.o, color);
+          const xml = optionFigure(t.slot, t.o, color);
           if (!xml) return;
-          if (tileNeed) makeArt(tileNeed(xml, KIT.size.stripArt));
+          if (tileNeed) makeArt(tileNeed(xml, KIT.size.stripItem));
           else readAhead(xml);
         },
         REST,
@@ -412,17 +416,15 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     const out: ArtNeed[] = [];
     for (let i = w.from; i <= w.to; i++) {
       const o = shown[i];
-      const xml = o ? optionArt(slot, o, color) : null;
-      if (xml) out.push(tileNeed(xml, KIT.size.stripArt));
+      const xml = o ? optionFigure(slot, o, color) : null;
+      if (xml) out.push(tileNeed(xml, KIT.size.stripItem));
     }
     return out;
   }, [tileNeed, w.from, w.to, shown, slot, color]);
 
   const E = CAPSULE_EDIT;
   const k = E[scheme];
-  // The stage at the scene's top, `headTop` in: its room over the circle (the hats', the feeling's
-  // bubble) inside the scene.
-  const stageTop = E.scene.headTop;
+
   // A screen shorter than the board's (844): the scene gives its height to the tray, so that the
   // tray's last button stands over the screen's foot; never under SCENE_MIN of its height.
   const frame = useSafeAreaFrame();
@@ -441,6 +443,13 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         E.padBottom -
         insets.bottom;
   const sceneScale = Math.min(1, Math.max(SCENE_MIN, room / sceneHeight));
+  // The night card's height, and the stage set so that the capsule's circle stands in the card's
+  // middle (the owner's report, 23 Kasım); the room over the circle reaches up over the card's top.
+  const cardHeight = sceneHeight * sceneScale - KIT.size.btnSm - SPACING[3];
+  const stageTop =
+    cardHeight / 2 / sceneScale -
+    stageHeadroom(CAPSULE_EDIT.scene.circle) -
+    CAPSULE_EDIT.scene.circle / 2;
   const panelShadow = shadowParts(
     useLabOff('golge'),
     k.panel.shadow || undefined,
@@ -510,7 +519,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               left: E.scene.side,
               right: E.scene.side,
               top: 0,
-              height: sceneHeight * sceneScale - KIT.size.btnSm - SPACING[3],
+              height: cardHeight,
             }}
           />
           <View
@@ -610,12 +619,19 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         >
           {panelShadow.node}
           <View onLayout={(e) => setTrayHeight(Math.round(e.nativeEvent.layout.height))}>
-            <SusleTabs
-              tabs={tabs}
-              open={slot}
-              onPick={setSlot}
-              accessibilityLabel={tr.capsule.slots}
-            />
+            {/* The six tabs in a glass pill on the panel, as Profil's Kapsülün | Gönderiler (the
+            owner's call, 23 Kasım). */}
+            <View style={{ marginHorizontal: E.split.side }}>
+              <Glass radius={E.split.radius} style={{ paddingVertical: E.split.tabsPad }}>
+                <SusleTabs
+                  tabs={tabs}
+                  open={slot}
+                  onPick={setSlot}
+                  accessibilityLabel={tr.capsule.slots}
+                  inPill
+                />
+              </Glass>
+            </View>
             <SusleFilter
               packs={packs}
               open={openPack}
@@ -644,7 +660,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                       option={shown[i]}
                       color={color}
                       tileNeed={tileNeed}
-                      ground={k.tile}
+                      ground={NO_GROUND}
                       visible={i >= w.from && i <= w.to}
                     />
                   )}
@@ -654,7 +670,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                   }}
                   label={current?.name ?? ''}
                   reduce={reduce}
-                  ground={k.tile}
+                  ground={NO_GROUND}
                   ringColor={KIT.pink}
                   markHeight={STRIP_MARK}
                   stampOf={(i) =>
@@ -730,10 +746,10 @@ function OptionPicture({
   visible: boolean;
 }) {
   const { c } = useKit();
-  const xml = option ? optionArt(slot, option, color) : null;
+  const xml = option ? optionFigure(slot, option, color) : null;
   // The tile's picture once it is made (asked for first while it is on the screen); the SVG only
   // when no picture can be made, and off the screen before it ever had one.
-  const side = KIT.size.stripArt;
+  const side = KIT.size.stripItem;
   const need = useMemo(() => (xml && tileNeed ? tileNeed(xml, side) : null), [xml, tileNeed, side]);
   const art = useArt(need);
   // Until the new picture is made (another colour) the last one this option showed stays, also in

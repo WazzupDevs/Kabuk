@@ -41,7 +41,9 @@ export const RISO = {
   door: require('../../../assets/riso/semt/kesfet-kucuk-kapi.webp'),
   doorLocked: require('../../../assets/riso/semt/kesfet-kucuk-kapi-kilitli.webp'),
   // The pictures over the pages (yeni arayüz tuvali 12, 13, 100, 101, 102).
-  heroGate: require('../../../assets/riso/semt/gecit-soru.webp'),
+  // Geçit's question in its New Year scene (the owner's ask, 24 Kasım: a new flat picture, not
+  // riso; the riso one stays beside it, gecit-soru.webp).
+  heroGate: require('../../../assets/riso/semt/gecit-soru-yilbasi.webp'),
   heroOpen: require('../../../assets/riso/semt/gecit-acik-hero.webp'),
   heroEnded: require('../../../assets/riso/semt/oturum-kapandi.webp'),
   heroOutside: require('../../../assets/riso/semt/disarida.webp'),

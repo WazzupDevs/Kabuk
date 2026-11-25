@@ -50,6 +50,9 @@ export const CAPSULE_EDIT = {
   // 5.10, not drawn on the board) over the chips, 8 over them, the same 22 in.
   // No fade at the packs' start: Android draws it with the row unscrolled too, over "Tümü" (22 Kasım).
   panel: { top: 18, radius: 34, padTop: 16, side: 22, fadeStart: 0, fadeEnd: 40, gap: 8 },
+  // The six tabs in a glass pill on the panel (the owner's call, 23 Kasım, as Profil's Kapsülün |
+  // Gönderiler): 12 in from the panel's sides, 28 round, 8 over and under the tabs' row.
+  split: { side: 12, radius: 28, tabsPad: 8 },
   chip: { padLeft: 12, padRight: 15, gap: 6, icon: 17 },
   packsGap: 8,
   // Under the chips: the strip 6 + 18 under them and 14 over the actions (the options' middle 60

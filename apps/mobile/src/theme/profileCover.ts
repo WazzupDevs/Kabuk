@@ -86,17 +86,6 @@ export const PROFILE_PAGE = {
   faceAt: { x: 195, y: 196 },
   nameAt: { x: 195, y: 291 },
   barAt: 73,
-  // Another person's (5.6): the cover at half the scroll; the photo shrinks to 0.75 over 60–180 and
-  // fades over 120–190; the band comes in over 190–230 and the name into the bar over 230–260
-  // (tuval Profil).
-  other: {
-    speed: 0.5,
-    faceShrink: [60, 180] as const,
-    faceScale: 0.75,
-    faceFade: [120, 190] as const,
-    band: [190, 230] as const,
-    bar: [230, 260] as const,
-  },
   // The own (5.7): the upper part moves at -0.35 of the scroll, fades over 120–300 and shrinks to
   // 0.92; the panel (34 round, a handle) reaches the bar's foot at 316, where the photo (124 → 30,
   // its ring 4 → 1.5) and the name (1 → 0.516) arrive in the bar at (152, 73) and (214, 73). The

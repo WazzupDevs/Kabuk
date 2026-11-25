@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { tr } from '@/i18n/tr';
 
+import { AccessoryCardDraft } from './accessoryCard';
 import type { DraftStatus } from './drafts';
 import { PurpleThemeDraft } from './purpleTheme';
 import { SusleStageDraft } from './susleStage';
@@ -90,4 +91,22 @@ const SUSLE_STAGE: WorkshopDraft = {
   ],
 };
 
-export const WORKSHOP_DRAFTS: WorkshopDraft[] = [SUSLE_STAGE, PURPLE_THEME, BUTTON_ORDER];
+// Süsle's options as upright cards in place of the rounds (the owner's ask, 23 Kasım).
+const ACCESSORY_CARD: WorkshopDraft = {
+  key: 'accessoryCard',
+  title: t.accessoryCard.title,
+  status: 'draft',
+  note: t.accessoryCard.note,
+  variants: [
+    { key: 'a', label: t.variantA, render: (w) => <AccessoryCardDraft look="round" width={w} /> },
+    { key: 'b', label: t.variantB, render: (w) => <AccessoryCardDraft look="alone" width={w} /> },
+    { key: 'c', label: t.variantC, render: (w) => <AccessoryCardDraft look="gift" width={w} /> },
+  ],
+};
+
+export const WORKSHOP_DRAFTS: WorkshopDraft[] = [
+  ACCESSORY_CARD,
+  SUSLE_STAGE,
+  PURPLE_THEME,
+  BUTTON_ORDER,
+];

@@ -4,6 +4,7 @@ import { createLru } from '../../lib/lru';
 import { ACCESSORY_TILE_BOX } from '../../theme/accessoryTiles';
 import { ACCESSORY_ART, accessoryFigure, edgeOf } from '../../theme/capsuleAccessories';
 import { stillSvg } from '../../theme/capsuleFx';
+import { lookStage } from '../../theme/capsuleLook';
 import { defBox, IDENTITY } from '../../theme/svgBox';
 import LOOK from '../../theme/capsuleDrawing';
 
@@ -145,5 +146,51 @@ export function optionArt(
     ? accessoryAlone(option.accessory)
     : partArt(slot, option.part ?? '', color);
   made.set(key, xml);
+  return xml;
+}
+
+// Süsle's strip (the owner's call, 23 Kasım): every option is the capsule buddy wearing it, the
+// plain capsule in the person's colour with only that option on, drawn as Süsle's large capsule
+// (lookStage: the capsule standing in its circle), no ground of its own; "Boş" is the plain buddy.
+// Each slot has its own frame (one for the slot, never one per piece), a square in the stage's
+// units (the circle 0 0 48 48, the body 10 to 38 across and from 8 down, the visor's middle about
+// 21 down): Renk the whole circle, Baş the head and over it, Göz the visor, Yüz the face round it,
+// Ağız under the visor, Gövde the neck. What leaves the frame is cut at the option's round. Still:
+// the strip's round is a picture, made once.
+const FIGURE_BOX: Readonly<Record<LookSlot, string>> = {
+  c: '0 0 48 48',
+  h: '6 -6 36 36',
+  e: '10 7 28 28',
+  f: '7 4 34 34',
+  m: '10 13 28 28',
+  n: '6 14 36 36',
+};
+// No halo behind the buddy in the strip (the owner's call, 23 Kasım): the halo layer is left out,
+// and a halo drawn in a piece's own art too.
+const HALO = /^halo/;
+const figures = createLru<string>(400);
+
+export function optionFigure(
+  slot: LookSlot,
+  option: { accessory?: string; part?: string },
+  color: string | undefined,
+): string {
+  const wear = option.accessory
+    ? `x:${option.accessory}`
+    : option.part
+      ? `${slot}:${option.part}`
+      : '';
+  const base = slot === 'c' && option.part ? '' : color ? `c:${color}` : '';
+  const look = [base, wear].filter(Boolean).join(' ');
+  const key = `${slot}|${look}`;
+  const hit = figures.get(key);
+  if (hit !== undefined) return hit;
+  const xml = stillSvg(
+    withoutGroups(lookStage(look, '', false), HALO).replace(
+      /viewBox="[^"]*"/,
+      `viewBox="${FIGURE_BOX[slot]}"`,
+    ),
+  );
+  figures.set(key, xml);
   return xml;
 }

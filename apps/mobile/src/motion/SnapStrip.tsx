@@ -85,6 +85,7 @@ export function SnapStrip({
   testID?: string;
 }) {
   const { width, fontScale } = useWindowDimensions();
+  const { colors } = useTheme();
   const nameHeight = snapStripNameHeight(fontScale) + markHeight;
   const pad = (width - STEP) / 2;
   const ref = useAnimatedRef<Reanimated.ScrollView>();
@@ -143,50 +144,69 @@ export function SnapStrip({
     send({ kind: 'follow', at: chosen, animated: !reduce });
   }, [chosen, reduce, send]);
 
+  // One ring, still in the strip's middle (the owner's report, 23 Kasım: a ring on each option
+  // faded from the old choice to the new one, two rings while the strip moved): the options pass
+  // under it, the one in the middle at its full size inside it.
+  const ringSide = BOX * ON;
   return (
-    <Reanimated.ScrollView
-      ref={ref}
-      testID={testID}
-      horizontal
-      accessibilityRole="radiogroup"
-      accessibilityLabel={label}
-      showsHorizontalScrollIndicator={false}
-      showsVerticalScrollIndicator={false}
-      snapToInterval={STEP}
-      decelerationRate="fast"
-      disableIntervalMomentum
-      contentOffset={{ x: start * STEP, y: 0 }}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-      fadingEdgeLength={{ start: KIT.size.stripFade, end: KIT.size.stripFade }}
-      style={{ flexGrow: 0, width, height: SNAP_STRIP_HEIGHT + nameHeight }}
-      contentContainerStyle={{ paddingHorizontal: pad, alignItems: 'center' }}
-    >
-      <View style={{ width: Math.max(0, win.from) * STEP }} />
-      {Array.from({ length: Math.max(0, win.to - win.from + 1) }, (_, i) => {
-        const index = win.from + i;
-        return (
-          <Item
-            key={keyOf(index)}
-            index={index}
-            label={labelOf(index)}
-            on={index === chosen}
-            x={x}
-            reduce={reduce}
-            ground={ground}
-            nameHeight={nameHeight}
-            ringColor={ringColor}
-            mark={markOf ? markOf(index) : null}
-            markHeight={markHeight}
-            stamp={stampOf ? stampOf(index) : ''}
-            onPress={tap}
-          >
-            {renderItem(index)}
-          </Item>
-        );
-      })}
-      <View style={{ width: Math.max(0, last - win.to) * STEP }} />
-    </Reanimated.ScrollView>
+    <View style={{ width, height: SNAP_STRIP_HEIGHT + nameHeight }}>
+      <Reanimated.ScrollView
+        ref={ref}
+        testID={testID}
+        horizontal
+        accessibilityRole="radiogroup"
+        accessibilityLabel={label}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={STEP}
+        decelerationRate="fast"
+        disableIntervalMomentum
+        contentOffset={{ x: start * STEP, y: 0 }}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        fadingEdgeLength={{ start: KIT.size.stripFade, end: KIT.size.stripFade }}
+        style={{ flexGrow: 0, width, height: SNAP_STRIP_HEIGHT + nameHeight }}
+        contentContainerStyle={{ paddingHorizontal: pad, alignItems: 'center' }}
+      >
+        <View style={{ width: Math.max(0, win.from) * STEP }} />
+        {Array.from({ length: Math.max(0, win.to - win.from + 1) }, (_, i) => {
+          const index = win.from + i;
+          return (
+            <Item
+              key={keyOf(index)}
+              index={index}
+              label={labelOf(index)}
+              on={index === chosen}
+              x={x}
+              reduce={reduce}
+              ground={ground}
+              nameHeight={nameHeight}
+              ringColor={ringColor}
+              mark={markOf ? markOf(index) : null}
+              markHeight={markHeight}
+              stamp={stampOf ? stampOf(index) : ''}
+              onPress={tap}
+            >
+              {renderItem(index)}
+            </Item>
+          );
+        })}
+        <View style={{ width: Math.max(0, last - win.to) * STEP }} />
+      </Reanimated.ScrollView>
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: (width - ringSide) / 2,
+          top: (SNAP_STRIP_HEIGHT - ringSide) / 2,
+          width: ringSide,
+          height: ringSide,
+          borderRadius: ringSide / 2,
+          borderWidth: KIT.size.boxRing * ON,
+          borderColor: ringColor ?? colors.accent,
+        }}
+      />
+    </View>
   );
 }
 
@@ -219,16 +239,10 @@ const Item = memo(
     onPress: (index: number) => void;
     children: ReactNode;
   }) {
-    const { colors } = useTheme();
     const scale = useAnimatedStyle(() => {
       if (reduce) return { transform: [{ scale: on ? ON : OFF }] };
       const d = Math.abs(x.get() / STEP - index);
       return { transform: [{ scale: interpolate(d, [0, 1], [ON, OFF], Extrapolation.CLAMP) }] };
-    });
-    const ring = useAnimatedStyle(() => {
-      if (reduce) return { opacity: on ? 1 : 0 };
-      const d = Math.abs(x.get() / STEP - index);
-      return { opacity: interpolate(d, [0, 1], [1, 0], Extrapolation.CLAMP) };
     });
     return (
       <Tap
@@ -251,7 +265,18 @@ const Item = memo(
             justifyContent: 'center',
           }}
         >
-          <Reanimated.View style={[{ width: BOX, height: BOX, padding: RING_OUT }, scale]}>
+          {/* The animated styles go to the view on the UI thread (ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS)
+          and React keeps the first render's copy, written back when the item renders again (a tap:
+          the old and the new choice). That copy is the item's rest as it is now, after the animated
+          one, so a ring and a size from when it stood in the middle never come back (the owner's
+          report, 23 Kasım: a ring on the tapped side option; docs/decisions/m15-22-acilis-olcegi.md). */}
+          <Reanimated.View
+            style={[
+              { width: BOX, height: BOX, padding: RING_OUT },
+              scale,
+              { transform: [{ scale: on ? ON : OFF }] },
+            ]}
+          >
             <View
               style={{
                 width: ITEM,
@@ -265,22 +290,6 @@ const Item = memo(
             >
               {children}
             </View>
-            <Reanimated.View
-              pointerEvents="none"
-              style={[
-                {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  borderRadius: BOX / 2,
-                  borderWidth: KIT.size.boxRing,
-                  borderColor: ringColor ?? colors.accent,
-                },
-                ring,
-              ]}
-            />
           </Reanimated.View>
         </View>
         {/* The name under the option, one line that shrinks; the centred one in bold. */}

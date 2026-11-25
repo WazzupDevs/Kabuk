@@ -81,6 +81,30 @@ export const GIFT_STAGE = {
 // Altın 12°, Bronz in the middle in front and bigger. `overhang`: the room over the card for them,
 // 44 under the page's title. Its ground a deep green with a lighter light at its top right, its
 // shadow and a faint top light.
+// The card's ground and inks by scheme (the owner's ask, 24 Kasım: one dark green in both was
+// out of place), in the tickets' colours (theme/profileCover.ts → TICKET_TONE): the dark scheme's
+// OLED black with the tickets' violet glowing at the top right behind the packs, white words and
+// the green eyebrow; the light scheme's ticket paper with its pink glowing there, the ticket's ink
+// and a deep green eyebrow.
+export const GIFT_CARD_TONE = {
+  light: {
+    ground:
+      'radial-gradient(80% 110% at 100% 0%, rgba(255, 79, 139, 0.26) 0%, rgba(255, 79, 139, 0) 65%), linear-gradient(160deg, #FFFDF6 0%, #FBF3E2 100%)',
+    ink: '#031B0B',
+    eyebrow: '#0B783D',
+    star: '#C2185B',
+    barOff: 'rgba(3, 27, 11, 0.16)',
+  },
+  dark: {
+    ground:
+      'radial-gradient(80% 110% at 100% 0%, rgba(123, 92, 255, 0.5) 0%, rgba(123, 92, 255, 0) 65%), linear-gradient(160deg, #0E0A24 0%, #000000 100%)',
+    ink: '#FFFFFF',
+    eyebrow: '#3DDC84',
+    star: '#FFFFFF',
+    barOff: 'rgba(255, 255, 255, 0.28)',
+  },
+} as const;
+
 export const GIFT_CARD = {
   // As tall as an event's card on the board (AktivitelerDolu `.ev`: 148; the owner's ask, 20
   // Kasım; it was 170 over the tabs).
@@ -97,10 +121,7 @@ export const GIFT_CARD = {
   button: { padLeft: 16, padRight: 14 },
   chevron: 15,
   ring: 2,
-  ground:
-    'radial-gradient(80% 110% at 100% 0%, #3F5A4B 0%, rgba(63, 90, 75, 0) 65%), linear-gradient(160deg, #1A2A21 0%, #06180D 100%)',
   shadow: '0px 18px 40px rgba(3, 27, 11, 0.28), inset 0px 1px 0px rgba(255, 255, 255, 0.12)',
-  eyebrow: '#3DDC84',
   buttonInk: '#0B5A2D',
   // Small stars on the ground, so it is not bare (the owner's ask, 20 Kasım): where each stands
   // from the card's left and top, how large and how clear; the last two in the eyebrow's green.

@@ -6,18 +6,17 @@ import { ACTIVITIES } from './activities';
 
 export const MESSAGES = {
   // The page (`.content`): 13 under the status bar (60 on the board), 20 from the sides, 12 between
-  // its parts; two lists 8 more apart (`.lst+.lst`).
+  // its parts.
   top: 13,
   side: 20,
   gap: 12,
-  listGap: 8,
   // The field 12 under the title's row: the screen's fixed top keeps 4 under it (Screen → `top`).
   fieldTop: 8,
   // The title's row (`.hd .acts`): the new message's round and the bell, 44 each, 8 apart.
   actsGap: 8,
   // The tabs (`.sg`): a glass capsule 44 high in all (its 1 edge and 3 inside, 4 from its outside),
   // its two parts 36 and 22 round; a tab's words and its badge 6 apart (`.sg span{gap:6}`).
-  tabs: { ...ACTIVITIES.tabs, pad: 3, badgeGap: 6 },
+  tabs: { ...ACTIVITIES.tabs, badgeGap: 6 },
   // The bell (`.round .nd`): its dot 9, 9 from its top and 10 from its right, in a 2 ring of the
   // ground.
   bell: { dot: 9, dotTop: 9, dotRight: 10, dotRing: 2 },

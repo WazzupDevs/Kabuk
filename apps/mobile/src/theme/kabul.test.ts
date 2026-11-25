@@ -131,16 +131,18 @@ describe('K9: Profili düzenle', () => {
   it('hides the tab bar', () => {
     expect(edit).toMatch(/useHideTabBar\(\);/);
   });
-  it('Kaydet is on the bar, clear, at least 96 wide (iskelet.md → 2.1, 5.8)', () => {
+  // Yeni arayüz tuvali ProfilDuzenle, ProfilDuzenleYaz (24 Kasım): the solid Kaydet beside the
+  // title on the bar, quiet with nothing to save (as Süsle's).
+  it('Kaydet is on the bar, solid, off with nothing to save, at least 96 wide', () => {
     expect(edit).not.toMatch(/footer=\{/);
     expect(edit).toMatch(/<PageTop\b/);
-    expect(edit).toMatch(/variant="glassy"\s+bar\s+testID="profile-save"/);
+    expect(edit).toMatch(/inline=\{/);
+    expect(edit).toMatch(/<Btn\s+bar\s+testID="profile-save"/);
     // `bar`: as tall as the bar's round buttons.
     expect(code('src/aura/kit.tsx')).toMatch(/const height = bar \? KIT\.size\.topBtn :/);
-    expect(edit).toMatch(/tint=\{changed \|\| save\.isSuccess \? KIT\.primary : KIT\.saveIdle\}/);
+    expect(edit).toMatch(/disabled=\{!changed && !save\.isPending && !save\.isSuccess\}/);
     expect(edit).toMatch(/style=\{\{ minWidth: KIT\.saveMinWidth \}\}/);
     const kit = code('src/theme/auraKit.ts');
-    expect(kit).toMatch(/saveIdle: '#9AAEA1',/);
     expect(kit).toMatch(/saveMinWidth: 96,/);
     expect(kit).toMatch(/primaryHalo: 'rgba\(14, 135, 69, 0\.18\)',/);
     expect(kit).toMatch(/focusHalo: 3,/);

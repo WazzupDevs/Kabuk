@@ -25,11 +25,14 @@ export function SusleTabs({
   open,
   onPick,
   accessibilityLabel,
+  inPill,
 }: {
   tabs: readonly SusleTab[];
   open: string;
   onPick: (id: LookSlot) => void;
   accessibilityLabel: string;
+  // In a glass pill (Süsle's panel, 23 Kasım): the pill's edge is the bound, no line under the row.
+  inPill?: boolean;
 }) {
   const { c } = useKit();
   const E = CAPSULE_EDIT;
@@ -48,9 +51,9 @@ export function SusleTabs({
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       style={{
         flexDirection: 'row',
-        marginHorizontal: E.tabs.side,
+        marginHorizontal: inPill ? 0 : E.tabs.side,
         borderBottomWidth: KIT.size.hair,
-        borderBottomColor: c.hair,
+        borderBottomColor: inPill ? 'transparent' : c.hair,
       }}
     >
       {tabs.map((t) => {

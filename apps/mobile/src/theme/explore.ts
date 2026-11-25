@@ -43,7 +43,10 @@ export const EXPLORE = {
   field: { rowGap: 8 },
   // The buddies over the search (`.sr .kk`): 178 wide (the picture's 600 × 340), 64 from the right,
   // their foot 22 over the field's foot, under the field.
-  peek: { width: 178, height: 101, right: 64, bottom: 22 },
+  // `fade`: the scroll over which they fade and shrink toward their foot (the owner's ask, 24 Kasım:
+  // a smoother way up): from just before the large title is gone to where their top would reach
+  // the top of the page, so they are never left cut there; reached even by a short list.
+  peek: { width: 178, height: 101, right: 64, bottom: 22, fade: [60, 130] as const },
   // The empty list and the search that finds nothing (KesfetBos, KesfetAraBos `.emp`): 10 under the
   // place line, 24 from the sides; the riso 100 × 82 and 120 × 98; the title 12 under it, the
   // sentence 4 under that and 240 wide at most.
@@ -70,6 +73,18 @@ export const EXPLORE = {
     pad: 20,
     radius: 24,
     words: '58%',
+    // The same share as a number (the frosted pane's width is reckoned from it).
+    wordsShare: 0.58,
+    // The frosted pane behind the words (the owner's ask, 23 Kasım): 10 in from the card's edges, 12
+    // past the words at their right, 16 round (the card's 24 less its 10, near enough), a thin
+    // white edge and a faint ink over the blurred scene.
+    frost: {
+      inset: 10,
+      over: 12,
+      radius: 16,
+      edge: 'rgba(255, 255, 255, 0.22)',
+      fill: 'rgba(24, 20, 72, 0.22)',
+    },
     dot: 8,
     dotRing: 4,
     eyebrowGap: 6,

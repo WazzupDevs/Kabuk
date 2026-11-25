@@ -46,6 +46,7 @@ import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { shortVenueName } from '@/features/explore/shortName';
 import { TICKET_PICTURE, VenueTicket } from '@/features/explore/VenueTicket';
+import { ownTicketPicture } from '@/features/explore/venuePictures';
 import { Bucket } from '@/features/explore/Bucket';
 import { kindLabel } from '@/features/explore/kindLabel';
 import { EventTag } from '@/features/explore/EventTag';
@@ -58,7 +59,7 @@ import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
-import { LargeTitle, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
+import { LargeTitle, ScrollFade, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
 import { StickyGroupStatusBand } from '@/motion/StickyGroup';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
 import { AURA } from '@/theme/aura';
@@ -354,20 +355,29 @@ function ListBody({
               </Reveal>
               {/* Kesfet `.sr .kk`: the buddies look over the search's top edge, under the field,
                   64 from the right, their foot 22 over the field's; they scroll with the content. */}
+              {/* They fade and shrink toward their foot over EXPLORE.peek.fade as the page goes up,
+                  not left half-cut at its top. */}
               {ready ? (
-                <Image
-                  source={PEEK}
-                  fadeDuration={0}
-                  resizeMode="contain"
-                  accessible={false}
-                  style={{
-                    position: 'absolute',
-                    right: EXPLORE.peek.right,
-                    bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
-                    width: EXPLORE.peek.width,
-                    height: EXPLORE.peek.height,
-                  }}
-                />
+                <ScrollFade
+                  fade={EXPLORE.peek.fade}
+                  shrink={EXPLORE.peek.fade}
+                  scaleTo={AURA.topBar.stickyScale}
+                  origin="center bottom"
+                >
+                  <Image
+                    source={PEEK}
+                    fadeDuration={0}
+                    resizeMode="contain"
+                    accessible={false}
+                    style={{
+                      position: 'absolute',
+                      right: EXPLORE.peek.right,
+                      bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
+                      width: EXPLORE.peek.width,
+                      height: EXPLORE.peek.height,
+                    }}
+                  />
+                </ScrollFade>
               ) : null}
             </View>
           )}
@@ -919,7 +929,7 @@ function PlaceRow({
       onPress={onPress}
       style={{ marginHorizontal: r.padX, marginVertical: r.ticketGap / 2 }}
     >
-      <VenueTicket compact picture={TICKET_PICTURE[kind]}>
+      <VenueTicket compact picture={ownTicketPicture(name) ?? TICKET_PICTURE[kind]}>
         {/* Every ticket alike: the name on one line (shortVenueName, shrinking as a last resort),
             under it the type and district on one line at the left and how lively at the right. */}
         <View style={{ flex: 1, minWidth: 0, gap: r.lineGap }}>

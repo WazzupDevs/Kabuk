@@ -124,6 +124,7 @@ type BodyProps = Pick<
   | 'stickyHeaderIndices'
   | 'snapToOffsets'
   | 'snapToEnd'
+  | 'snapToStart'
 > & {
   y: SharedValue<number>;
   scrollRef?: RefObject<ScrollView | null>;
@@ -140,6 +141,7 @@ export function ScrollBody({
   stickyHeaderIndices,
   snapToOffsets,
   snapToEnd,
+  snapToStart,
   children,
 }: BodyProps) {
   const onScroll = useAnimatedScrollHandler((e) => {
@@ -160,6 +162,7 @@ export function ScrollBody({
       // Let go between two offsets, it settles at the nearer (the own profile, 5.7): natively.
       snapToOffsets={snapToOffsets}
       snapToEnd={snapToEnd}
+      snapToStart={snapToStart}
     >
       {children}
     </Animated.ScrollView>

@@ -36,6 +36,7 @@ export function VenueHead({
   onLeave,
   leaving,
   feed,
+  nameBy,
 }: {
   venueName: string;
   identity: { mode: 'anonymous' | 'profiled'; switchUsed: boolean };
@@ -48,7 +49,14 @@ export function VenueHead({
   // The feed view (docs/SPEC_V4.md §4.Y): everyone writes with the profile, so the identity toggle
   // (the table's and the venue chat's choice) is not shown.
   feed?: boolean;
+  // The scroll by which the bar's small name has fully come (Mekan: where its switch pins, so the
+  // page never rests with the wordmark half under the name; the owner's report, 24 Kasım).
+  nameBy?: number;
 }) {
+  const barName: readonly [number, number] =
+    nameBy !== undefined && nameBy < BAR_NAME[1]
+      ? [Math.max(0, nameBy - (BAR_NAME[1] - BAR_NAME[0])), nameBy]
+      : BAR_NAME;
   const [menu, setMenu] = useState(false);
   const moreRef = useRef<View>(null);
   const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
@@ -80,7 +88,7 @@ export function VenueHead({
             marginLeft: VENUE.wordmarkIn,
           }}
         >
-          <ScrollFade fade={BAR_NAME} shrink={BAR_NAME} scaleTo={1}>
+          <ScrollFade fade={barName} shrink={barName} scaleTo={1}>
             <WordmarkRow />
           </ScrollFade>
           <View
@@ -88,14 +96,21 @@ export function VenueHead({
             style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
           >
             <View style={{ flex: 1, justifyContent: 'center' }}>
-              <BarArrive from={BAR_NAME[0]} to={BAR_NAME[1]}>
+              <BarArrive from={barName[0]} to={barName[1]}>
                 <BarName name={venueName} />
               </BarArrive>
             </View>
           </View>
         </View>
         <View className="flex-row items-center" style={{ gap: VENUE.headGap }}>
-          {feed ? null : (
+          {/* Hidden in the feed but kept in its place: the bar, the logo and the switch under it
+              stand where they do in Masalar (the owner's report, 25 Kasım). */}
+          <View
+            style={feed ? { opacity: 0 } : null}
+            pointerEvents={feed ? 'none' : 'auto'}
+            accessibilityElementsHidden={feed}
+            importantForAccessibility={feed ? 'no-hide-descendants' : 'auto'}
+          >
             <IdentityToggle
               testID="venue-identity"
               size={VENUE.toggle}
@@ -104,7 +119,7 @@ export function VenueHead({
               onPick={() => setAsking(true)}
               onLocked={() => setUsedNote(true)}
             />
-          )}
+          </View>
           <View ref={moreRef} collapsable={false}>
             <Round
               glass="clear"
