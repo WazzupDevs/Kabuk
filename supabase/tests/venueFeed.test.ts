@@ -156,6 +156,10 @@ describe('venue feed: who reads and writes', () => {
       target_venue_id: venue[V] ?? '',
     });
     expect(called.error).not.toBeNull();
+    // The own posts with their venues: the server's only (another account's venue never reaches a
+    // client).
+    const mineFor = await a.rpc('venue_feed_mine_for', { target_user_id: await userIdOf(a) });
+    expect(mineFor.error).not.toBeNull();
     const liked = await a.rpc('venue_feed_like', {
       target_user_id: await userIdOf(a),
       target_post_id: id,
