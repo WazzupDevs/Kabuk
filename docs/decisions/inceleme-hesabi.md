@@ -6,4 +6,4 @@
 
 **Seçilmeyenler:** dev'deki `CHECKIN_SKIP_LOCATION`'ı üretimde açmak (herkes için kuralı kaldırırdı); hesap kimliğiyle tanımlamak (ilk girişten önce bilinmez, test edilemezdi); üretimde test botları (oyunlar 3 telefon ister; incelemeye gerekmedi, açılmadı).
 
-**Kabul edilen risk:** kodu bilen biri uzaktan bir kampüsün lobisini, mekan sohbetini ve akışını görebilir; konum ya da kişisel veri açılmaz. Kod sızarsa panel ve Play Console'da birlikte değiştirilir.
+**Kabul edilen risk:** kodu bilen biri uzaktan bir kampüse check-in yapıp mekanda check-in'i olana açılan her şeyi görebilir (kural 4): lobi, mekan sohbeti ve akış, profilli mesajların ve gönderilerin profili (ad, yaş, fotoğraf, kapak, biyografi, rozetler), katıldığı masadaki profiller. Kimsenin konumu açılmaz. Kod sızarsa panel ve Play Console'da birlikte değiştirilir.
