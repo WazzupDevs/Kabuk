@@ -44,7 +44,8 @@ const FRONT_W = 236;
 const FRONT_H = FRONT_W / PACK_RATIO;
 const SIDE_W = 168;
 const SWAY = 150;
-const MID_Y = 337;
+// The front pack's middle on the board (its backdrop's rays start there: PackBackdrop).
+export const MID_Y = 337;
 const TURN = 7;
 const DOT = 6;
 const DOT_ON = 20;

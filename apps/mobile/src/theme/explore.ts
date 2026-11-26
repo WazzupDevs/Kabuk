@@ -19,23 +19,31 @@ const DARK_GLASS = {
 
 export const EXPLORE = {
   // The list (`.content`: 60 from the board's top, 13 under the status bar; 20 from the sides): the
-  // line of the day 4 over the question (`.kh`), the search row 66 under it (the buddy looks over
-  // it), the kind chips 10 under it, Semte Git 20 under them, the place line 24 under it and the
-  // rows 4 under that.
+  // line of the day 4 over the question (`.kh`), the search row under it (the buddy looks over it),
+  // the kind chips 12 under it, the place line 20 under them (`districtTop`, Semte Git's place
+  // before its own tab, 26 Kasım) and the rows 4 under that.
   list: {
     top: 13,
     side: 20,
     titleTop: 4,
-    fieldTop: 66,
+    // 66 for the board's buddies (79 of them over the field); halved (40 over it), 32 (26 Kasım).
+    fieldTop: 32,
     // KesfetAra, KesfetAraBos `.sr{margin-top:56}`: with something typed the line, the question and
     // the buddies are gone and the search stands 56 under the content's top.
     searchTop: 56,
     chipsTop: 12,
     districtTop: 20,
-    sectionTop: 24,
     rowsTop: 4,
-    // "Şu an buradasın" under Semte Git (the board does not draw it; the rows' own 12).
-    hereTop: 12,
+    // With a check-in "Şu an buradasın" takes the question's place at the top, the search 16 under
+    // it (the owner's call, 26 Kasım); Semte Git 16 under the Semt tab's heading.
+    hereBelow: 16,
+    // The page's title "Keşfet" in a 40 row, the Mekan | Semt tabs 12 under it (Mesajlar: its row's
+    // 4 and its page's 8), the tab's own heading 20 under them (the owner's call, 26 Kasım).
+    tabsTop: 12,
+    // The live dot before "Semt" (the owner's ask, 26 Kasım): 7 across, growing to 1.4 and back
+    // over 900 ms each way, still with reduce motion.
+    liveDot: { size: 7, scale: 1.4, ms: 900 },
+    headTop: 20,
   },
   // The search (`.sr .field`): 20 in, 8 between the icon and the words, the icon 20; the clear
   // button (`.clr`) 36 round, its icon 20, 10 into the field's right padding; the map button 8 to
@@ -46,7 +54,9 @@ export const EXPLORE = {
   // `fade`: the scroll over which they fade and shrink toward their foot (the owner's ask, 24 Kasım:
   // a smoother way up): from just before the large title is gone to where their top would reach
   // the top of the page, so they are never left cut there; reached even by a short list.
-  peek: { width: 178, height: 101, right: 64, bottom: 22, fade: [60, 130] as const },
+  // Half the board's size (the owner's ask, 26 Kasım: 89 × 51), over the same spot (their middle
+  // 153 from the right), hiding half as much under the field (11 of the field's 44).
+  peek: { width: 89, height: 51, right: 108, bottom: 33, fade: [60, 130] as const },
   // The empty list and the search that finds nothing (KesfetBos, KesfetAraBos `.emp`): 10 under the
   // place line, 24 from the sides; the riso 100 × 82 and 120 × 98; the title 12 under it, the
   // sentence 4 under that and 240 wide at most.
@@ -63,28 +73,28 @@ export const EXPLORE = {
     noteTop: 4,
     noteWidth: 240,
   },
-  // Semte Git as the board draws it (Kesfet, KesfetSemtIcerde `.semt`): the riso scene under it,
-  // 200 high at least, 18 inside, 22 round; the words in its left 58 %; the dot 8, 6 from the
-  // eyebrow; the title 6 under it, the note 4 under that, the time 8 under the title with its 18
-  // clock 6 from the words; the button at the foot on its 0 4 10 shadow. In the room the eyebrow
-  // and its dot are pink, the dot in a 4 ring.
+  // Semte Git (the owner's call, 26 Kasım, the Keşfet artifact): the words on the night ground at
+  // the left, 16 inside, the scene a 140 strip at the right, 148 high at least, 24 round; the dot 8,
+  // 6 from the eyebrow; the title 6 under it, the time 8 under the title with its 18 clock 6 from
+  // the words; the button at the foot. In the room the eyebrow and its dot are pink, the dot in a 4
+  // ring; the line under the title 4 under it.
   scene: {
-    minHeight: 200,
-    pad: 20,
+    minHeight: 148,
+    pad: 16,
     radius: 24,
-    words: '58%',
-    // The same share as a number (the frosted pane's width is reckoned from it).
-    wordsShare: 0.58,
-    // The frosted pane behind the words (the owner's ask, 23 Kasım): 10 in from the card's edges, 12
-    // past the words at their right, 16 round (the card's 24 less its 10, near enough), a thin
-    // white edge and a faint ink over the blurred scene.
-    frost: {
-      inset: 10,
-      over: 12,
-      radius: 16,
-      edge: 'rgba(255, 255, 255, 0.22)',
-      fill: 'rgba(24, 20, 72, 0.22)',
-    },
+    ground: '#1C1A4A',
+    edge: 'rgba(255, 255, 255, 0.09)',
+    // The scene fills the card's right half; the gate's middle sits in the middle of that half
+    // (the owner's ask, 26 Kasım): its share of the picture's width (kesfet-semt-yilbasi: the
+    // gate's sign and arch centre at 0.745). The room's bench scene, centred.
+    gateX: 0.745,
+    roomX: 0.5,
+    // The scene goes on, blurred, under the words' whole half to the card's left edge (the owner's
+    // ask, 26 Kasım), under the ground's ink: deep at the left for the words, gone at the middle;
+    // the sharp picture melts into the blur over its first 32, in 16 steps.
+    blurShade:
+      'linear-gradient(90deg, rgba(28, 26, 74, 0.9) 0%, rgba(28, 26, 74, 0.72) 55%, rgba(28, 26, 74, 0) 100%)',
+    melt: { width: 32, steps: 16 },
     dot: 8,
     dotRing: 4,
     eyebrowGap: 6,
@@ -102,25 +112,6 @@ export const EXPLORE = {
     title: '#FFFFFF',
     note: 'rgba(255, 255, 255, 0.8)',
     meta: 'rgba(255, 255, 255, 0.86)',
-  },
-  // The head pinned once scrolled (KesfetKaydir `.sbar2`): the search, the chips and, once Semte Git's
-  // card has gone under it, its small strip (`.ssm`: 60 high, 18 round, 0 10 0 16 in, 10 between its
-  // parts; its eyebrow's dot 7; the button's 14 in), 10 under the chips. The strip comes in over
-  // `from` to `to` px past the pin: the card (20 under the chips, 200 high) is under the band by
-  // `to`.
-  sticky: {
-    stripGap: 12,
-    stripHeight: 60,
-    stripRadius: 20,
-    stripPadLeft: 16,
-    stripPadRight: 12,
-    stripGapIn: 12,
-    stripDot: 7,
-    stripButtonPadX: 16,
-    // `.ssm img{object-position:0% 12%}`.
-    stripPicturePos: 0.12,
-    from: 140,
-    to: 200,
   },
   // The kind chips (`.ch .chip`): 14 in, 8 apart, each growing to share the row.
   chip: { padX: 16, gap: 8 },

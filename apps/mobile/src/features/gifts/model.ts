@@ -60,11 +60,14 @@ export function packsInOrder<P extends GiftPack>(
   });
 }
 
+// The pack the logins earn (api/gifts.ts → logins: "toward the next Bronz pack").
+export const LOGIN_PACK = 'bronz' as const;
+
 // The Aktiviteler card (AktivitelerHediye): a Bronz pack to open, the logins to the next, or every
 // accessory owned.
 export type GiftCardState<P extends GiftPack = GiftPack> =
   | { kind: 'ready'; pack: P; count: number }
-  | { kind: 'progress'; pack: 'bronz'; logins: number; per: number; left: number }
+  | { kind: 'progress'; pack: typeof LOGIN_PACK; logins: number; per: number; left: number }
   | { kind: 'allOwned' };
 
 export function cardState<P extends GiftPack>(
@@ -76,5 +79,5 @@ export function cardState<P extends GiftPack>(
   if (open) return { kind: 'ready', pack: open.id, count: open.unopened };
   const per = state.loginsPerPack;
   const logins = Math.min(state.logins, per);
-  return { kind: 'progress', pack: 'bronz', logins, per, left: Math.max(per - logins, 0) };
+  return { kind: 'progress', pack: LOGIN_PACK, logins, per, left: Math.max(per - logins, 0) };
 }

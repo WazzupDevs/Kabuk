@@ -6,6 +6,7 @@ import { tr } from '@/i18n/tr';
 
 import { AccessoryCardDraft } from './accessoryCard';
 import type { DraftStatus } from './drafts';
+import { NewMessageSheetDraft } from './newMessageSheet';
 import { PurpleThemeDraft } from './purpleTheme';
 import { SusleStageDraft } from './susleStage';
 
@@ -104,7 +105,20 @@ const ACCESSORY_CARD: WorkshopDraft = {
   ],
 };
 
+// Mesajlar's "Yeni mesaj" sheet without the card inside it (the owner's ask, 26 Kasım).
+const NEW_MESSAGE_SHEET: WorkshopDraft = {
+  key: 'newMessageSheet',
+  title: t.newMessageSheet.title,
+  status: 'approved',
+  note: t.newMessageSheet.approved,
+  variants: [
+    { key: 'a', label: t.variantA, render: (w) => <NewMessageSheetDraft look="today" width={w} /> },
+    { key: 'b', label: t.variantB, render: (w) => <NewMessageSheetDraft look="flat" width={w} /> },
+  ],
+};
+
 export const WORKSHOP_DRAFTS: WorkshopDraft[] = [
+  NEW_MESSAGE_SHEET,
   ACCESSORY_CARD,
   SUSLE_STAGE,
   PURPLE_THEME,

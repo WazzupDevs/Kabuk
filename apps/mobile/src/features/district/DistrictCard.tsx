@@ -1,11 +1,16 @@
 import { secondsUntil } from '@shared/district.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { type ReactNode, useState } from 'react';
-import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
+import type { ReactNode } from 'react';
+import {
+  Image,
+  type ImageSourcePropType,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { PICTURE_FILL } from '@/aura/RisoPicture';
 import { Btn, PulseDot, T, useKit } from '@/aura/kit';
 import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { errorMessage } from '@/i18n/errors';
@@ -29,7 +34,8 @@ const BUDDY = require('../../../assets/riso/buddies/riso_1a80a9.webp') as ImageS
 // waiting ([Semte Git]), Geçit closed for today (the locked door, the time to 00:00), in the room
 // (the time left, [Odaya dön]), outside the districts (no button), loading and error. The screen's
 // one featured card (docs/design/iskelet.md → 5.1; tuval Kesfet): the ink ground, the beating green
-// dot, the gate a sticker turned a little with a buddy beside it, the prominent button.
+// dot, the gate a sticker turned a little with a buddy beside it, the prominent button. It stands in
+// Keşfet's Semt tab, under the tab's heading (the owner's call, 26 Kasım).
 export function DistrictCard() {
   const state = useDistrictState();
   const enter = useEnterDistrict({ replace: false });
@@ -93,20 +99,21 @@ export function DistrictCard() {
       </Frame>
     );
   }
+  const go = () => {
+    const to = districtScreen(s);
+    if (to) router.push(to);
+    else enter.mutate();
+  };
   return (
     <Scene
-      title={tr.district.card.title(s.district?.name ?? null).replace("'", '’')}
-      note={tr.district.card.note}
+      title={tr.district.card.openTitle(s.district?.name ?? null)}
+      note={tr.district.card.openNote}
     >
       <CardButton
         label={tr.district.card.go}
         testID="district-card-go"
         loading={enter.isPending}
-        onPress={() => {
-          const to = districtScreen(s);
-          if (to) router.push(to);
-          else enter.mutate();
-        }}
+        onPress={go}
       />
       {enter.isError ? (
         <T v="fine" color={warn}>
@@ -117,141 +124,20 @@ export function DistrictCard() {
   );
 }
 
-// The card's small strip once it has scrolled under the pinned head (KesfetKaydir `.ssm`): the
-// same scene, its eyebrow and the district's name over the button. Only where the card has the
-// button to give (Semte git, Odaya dön); shut, outside and unread draw none.
-export function DistrictStrip() {
-  const state = useDistrictState();
-  const enter = useEnterDistrict({ replace: false });
-  if (!DISTRICT_VISIBLE || !state.data) return null;
-  const s = state.data;
-  if (s.session && s.district) {
-    return (
-      <StripFace
-        room
-        title={tr.district.card.inRoom(s.district.name)}
-        label={tr.district.card.backToRoom}
-        testID="district-strip-room"
-        onPress={() => router.push('/district/room')}
-      />
-    );
-  }
-  if (s.located === 'outside' || s.gate === 'failed') return null;
-  return (
-    <StripFace
-      title={
-        s.district ? tr.district.card.stripTitle(s.district.name) : tr.district.card.stripTitleNone
-      }
-      label={tr.district.card.go}
-      testID="district-strip-go"
-      loading={enter.isPending}
-      onPress={() => {
-        const to = districtScreen(s);
-        if (to) router.push(to);
-        else enter.mutate();
-      }}
-    />
-  );
-}
-
-function StripFace({
-  room,
-  title,
-  label,
-  testID,
-  loading,
-  onPress,
-}: {
-  room?: boolean;
-  title: string;
-  label: string;
-  testID: string;
-  loading?: boolean;
-  onPress: () => void;
-}) {
-  const k = EXPLORE.scene;
-  const g = EXPLORE.sticky;
-  const [width, setWidth] = useState(0);
-  // The scene covers the strip with its top 12 % kept (`object-position: 0% 12%`).
-  const pictureHeight = (width * 600) / 1050;
-  const eyebrow = room ? k.roomEyebrow : k.eyebrow;
-  return (
-    <View
-      testID="district-strip"
-      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      style={{
-        height: g.stripHeight,
-        borderRadius: g.stripRadius,
-        overflow: 'hidden',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: g.stripGapIn,
-        paddingLeft: g.stripPadLeft,
-        paddingRight: g.stripPadRight,
-      }}
-    >
-      <Image
-        source={room ? SCENE_ROOM : SCENE}
-        fadeDuration={0}
-        resizeMode="cover"
-        accessible={false}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: Math.min(0, (g.stripHeight - pictureHeight) * g.stripPicturePos),
-          width,
-          height: Math.max(pictureHeight, g.stripHeight),
-        }}
-      />
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: k.eyebrowGap }}>
-          <View
-            style={{
-              width: g.stripDot,
-              height: g.stripDot,
-              borderRadius: g.stripDot / 2,
-              backgroundColor: room ? k.roomDot : k.eyebrow,
-            }}
-          />
-          <T v="mapLegend" color={eyebrow} style={{ letterSpacing: 0.24 }}>
-            {upperTr(room ? tr.district.card.roomEyebrow : tr.district.card.sceneEyebrow)}
-          </T>
-        </View>
-        {/* KesfetKaydir `.ssm b`: the strip's title bold. */}
-        <T v="rowTitle" color={k.title}>
-          {title}
-        </T>
-      </View>
-      <View style={{ alignSelf: 'center' }}>
-        <Btn
-          sm
-          variant="primary"
-          label={label}
-          testID={testID}
-          loading={loading}
-          onPress={onPress}
-          look={{ padLeft: g.stripButtonPadX, padRight: g.stripButtonPadX }}
-        />
-      </View>
-    </View>
-  );
-}
-
-// The board's riso scenes under the card (Kesfet: the gate; KesfetSemtIcerde: the bench, in the
-// room). In both schemes alike: the board draws the same picture on the dark side. Outside the room
-// the gate's New Year scene (the owner's ask, 23 Kasım: a new flat picture, not riso, the buddies
-// before the lit gate on the snow; the riso one stays beside it, kesfet-semt.webp). Each with its
-// frosted copy (blurred once, small) for the words' pane.
+// The scenes beside the words (Kesfet: the gate; KesfetSemtIcerde: the bench, in the room). In both
+// schemes alike. Outside the room the gate's New Year scene (the owner's ask, 23 Kasım: a flat
+// picture, not riso).
 const SCENE = require('../../../assets/riso/semt/kesfet-semt-yilbasi.webp') as ImageSourcePropType;
 const SCENE_ROOM = require('../../../assets/riso/semt/kesfet-semt-oda.webp') as ImageSourcePropType;
+// Their blurred copies (blurred once, small): the scene going on into the words' half.
 const SCENE_FROST =
   require('../../../assets/riso/semt/kesfet-semt-buz.webp') as ImageSourcePropType;
 const SCENE_ROOM_FROST =
   require('../../../assets/riso/semt/kesfet-semt-oda-buz.webp') as ImageSourcePropType;
 
-// `.semt` (Kesfet, KesfetSemtIcerde): the riso scene filling the card, the words in its left 58 %
-// over it: the beating dot and the eyebrow, the title, the note or the time left, the button at the
-// foot. In the room the eyebrow and its dot are pink.
+// The card (the owner's call, 26 Kasım, the Keşfet artifact): the words on the night ground at the
+// left (the beating dot and the eyebrow, the title, its line or the time left in the room, the
+// button at the foot), the scene in the right half. In the room the eyebrow and its dot are pink.
 function Scene({
   room,
   title,
@@ -269,58 +155,25 @@ function Scene({
   children: ReactNode;
 }) {
   const k = EXPLORE.scene;
-  const f = k.frost;
   const eyebrow = room ? k.roomEyebrow : k.eyebrow;
-  const [box, setBox] = useState({ w: 0, h: 0 });
-  // The pane behind the words (the owner's ask, 23 Kasım): the scene's blurred copy laid exactly
-  // over the scene (the same cover), seen only through the pane; nothing blurs while drawing.
-  const words = (box.w - 2 * k.pad) * k.wordsShare;
   return (
     <View
       testID="district-card"
-      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
-      style={{ minHeight: k.minHeight, borderRadius: k.radius, overflow: 'hidden' }}
+      style={{
+        minHeight: k.minHeight,
+        borderRadius: k.radius,
+        overflow: 'hidden',
+        flexDirection: 'row',
+        backgroundColor: k.ground,
+        borderWidth: 1,
+        borderColor: k.edge,
+      }}
     >
-      <Image
-        source={room ? SCENE_ROOM : SCENE}
-        fadeDuration={0}
-        resizeMode="cover"
-        accessible={false}
-        style={PICTURE_FILL}
-      />
-      {box.w > 0 ? (
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: f.inset,
-            top: f.inset,
-            bottom: f.inset,
-            width: k.pad - f.inset + words + f.over,
-            borderRadius: f.radius,
-            borderWidth: 1,
-            borderColor: f.edge,
-            overflow: 'hidden',
-          }}
-        >
-          <Image
-            source={room ? SCENE_ROOM_FROST : SCENE_FROST}
-            fadeDuration={0}
-            resizeMode="cover"
-            accessible={false}
-            style={{
-              position: 'absolute',
-              left: -f.inset - 1,
-              top: -f.inset - 1,
-              width: box.w,
-              height: box.h,
-            }}
-          />
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: f.fill }]} />
-        </View>
-      ) : null}
-      <View style={{ flex: 1, padding: k.pad }}>
-        <View style={{ flex: 1, width: k.words, alignItems: 'flex-start' }}>
+      <HalfScene room={room} under />
+      {/* The padding inside, not on the half: Yoga gives a padded flex child its padding on top of
+          its share, and the halves came out 32 apart (the owner's report, 26 Kasım). */}
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <View style={{ flex: 1, padding: k.pad, alignItems: 'flex-start' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: k.eyebrowGap }}>
             <PulseDot
               color={room ? k.roomDot : k.eyebrow}
@@ -368,10 +221,92 @@ function Scene({
           {children}
         </View>
       </View>
+      <HalfScene room={room} />
     </View>
   );
 }
 
+// The card's right half: the scene covering it, its gate (or the room's bench) in the half's
+// middle, its foot on the card's foot. Laid inside the half, never sizing the card: a local
+// picture's own size (1050 × 600) would make the card that tall. Its size comes from the window
+// (the card spans Keşfet's page less its sides), never from a measure: the card is drawn once
+// (the owner's report, 26 Kasım: measuring drew it a second time, as long again).
+// `under`: the card's left half under the words, the blurred scene going on to the card's left
+// edge under the ground's ink; else the right half, the sharp scene melting into that blur.
+function HalfScene({ room, under }: { room?: boolean; under?: boolean }) {
+  const k = EXPLORE.scene;
+  const source = room ? SCENE_ROOM : SCENE;
+  const blurred = room ? SCENE_ROOM_FROST : SCENE_FROST;
+  const { width: windowWidth } = useWindowDimensions();
+  // A half: the card's inside (its 1 edge at either side) halved.
+  const half = (windowWidth - 2 * EXPLORE.list.side - 2) / 2;
+  const asset = Image.resolveAssetSource(source);
+  const aspect = asset.width > 0 && asset.height > 0 ? asset.width / asset.height : 1;
+  const x = room ? k.roomX : k.gateX;
+  // As wide as covers the right half with the point at its middle, the left half too (its left
+  // edge at the card's), and the card's least height.
+  const width = Math.max(
+    k.minHeight * aspect,
+    half / (2 * Math.min(x, 1 - x)),
+    (1.5 * half) / Math.max(x, 0.01),
+  );
+  const height = width / aspect;
+  // In the right half's own room, its foot on the card's; the left half reads it `half` further
+  // right.
+  const left = half / 2 - x * width;
+  // The picture as laid in the right half, seen through a window starting `from` px into it.
+  const scene = (src: ImageSourcePropType, from: number) => (
+    <Image
+      source={src}
+      fadeDuration={0}
+      accessible={false}
+      style={{ position: 'absolute', left: left - from, bottom: 0, width, height }}
+    />
+  );
+  const m = k.melt;
+  const step = m.width / m.steps;
+  if (under) {
+    return (
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: '50%',
+          overflow: 'hidden',
+        }}
+      >
+        {scene(blurred, -half)}
+        <View style={[StyleSheet.absoluteFill, gradientStyle(k.blurShade)]} />
+      </View>
+    );
+  }
+  return (
+    <View style={{ flex: 1, overflow: 'hidden' }}>
+      {scene(source, 0)}
+      {/* The sharp picture melting into the blur at its left edge, step by step. */}
+      {Array.from({ length: m.steps }, (_, i) => (
+        <View
+          key={i}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: i * step,
+            top: 0,
+            bottom: 0,
+            width: step,
+            overflow: 'hidden',
+            opacity: 1 - (i + 0.5) / m.steps,
+          }}
+        >
+          {scene(blurred, i * step)}
+        </View>
+      ))}
+    </View>
+  );
+}
 // The card's inks: the board's on the ink ground (tuval Kesfet), the theme's feature card in the
 // dark scheme (not drawn on the board).
 function useCardInk(): { eyebrow: string; title: string; note: string } {

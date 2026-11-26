@@ -19,6 +19,7 @@ export function AppearanceSetting() {
     <View>
       <Eyebrow label={tr.settings.appearance.title} />
       <Seg
+        settle
         accessibilityLabel={tr.settings.appearance.title}
         value={scheme}
         onChange={(value) => setSchemePreference(value)}

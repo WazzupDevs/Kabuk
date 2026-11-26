@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
+import { TabPane, useBuiltTabs } from '@/components/TabPane';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
 import { GiftCard } from '@/features/gifts/GiftCard';
@@ -37,6 +38,7 @@ import { openVenue } from '@/features/explore/openVenue';
 const RESULT_TONE = { won: 'green', lost: 'amber', done: 'glassy' } as const;
 
 type Tab = 'events' | 'history';
+const TABS: readonly Tab[] = ['events', 'history'];
 
 // Aktiviteler (docs/SPEC_V4.md §4.C, K-15; v44: .acts): "Aktiviteler" lists today's events at the
 // venues of Keşfet's city (K-38; the district is Keşfet's alone), earliest first, each opening the
@@ -49,6 +51,7 @@ type Tab = 'events' | 'history';
 // they pin. The scroll is the screen's (Screen → ScrollScreen), on the UI thread.
 export default function ActivitiesScreen() {
   const [tab, setTab] = useState<Tab>('events');
+  const built = useBuiltTabs(tab, TABS);
   const now = useNow(60_000);
   const city = useCity();
   const narrow = useNarrow();
@@ -85,19 +88,19 @@ export default function ActivitiesScreen() {
           ]}
         />
       </StickyField>
-      {tab === 'events' ? (
-        <>
-          {/* Hediye paketleri (§4.U): the gift card under the tabs, the first card of Etkinlikler
-              and as tall as an event's card (the owner's ask, 20 Kasım); its packs stand out over
-              its top (the room for them is the card's own). */}
-          <View style={{ marginTop: A.listTop }}>
-            <GiftCard />
-          </View>
-          <Events now={now} city={city} />
-        </>
-      ) : (
+      {/* Both tabs stay built once built (TabPane): a switch only shows one. */}
+      <TabPane built={built.has('events')} shown={tab === 'events'}>
+        {/* Hediye paketleri (§4.U): the gift card under the tabs, the first card of Etkinlikler
+            and as tall as an event's card (the owner's ask, 20 Kasım); its packs stand out over
+            its top (the room for them is the card's own). */}
+        <View style={{ marginTop: A.listTop }}>
+          <GiftCard />
+        </View>
+        <Events now={now} city={city} />
+      </TabPane>
+      <TabPane built={built.has('history')} shown={tab === 'history'}>
         <History now={now} />
-      )}
+      </TabPane>
     </Screen>
   );
 }

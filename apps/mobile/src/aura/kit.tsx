@@ -8,6 +8,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -1553,10 +1554,21 @@ export function Seg<V extends string>({
   accessibilityLabel,
   narrow,
   board,
+  settle,
 }: {
   value: V;
   onChange: (v: V) => void;
-  options: readonly { value: V; label: string; badge?: number; testID?: string }[];
+  // Tell the screen only once the slide has ended: a choice that remakes the whole app (the
+  // theme) would share the slide's frames.
+  settle?: boolean;
+  // `lead`: something before the words (Keşfet's Semt: the beating live dot, 26 Kasım).
+  options: readonly {
+    value: V;
+    label: string;
+    badge?: number;
+    testID?: string;
+    lead?: ReactNode;
+  }[];
   accessibilityLabel?: string;
   // One height (the owner's call, 19 Kasım, docs/decisions/temel.md): 32 parts in a 40 pill.
   // Aura v75 AktivitelerDar: 320 dp or the largest text (src/lib/narrow.ts), tabs 52 high.
@@ -1576,27 +1588,72 @@ export function Seg<V extends string>({
     board ? board.onShadow : c.segShadow || undefined,
     item / 2,
   );
-  const index = Math.max(
-    0,
-    options.findIndex((o) => o.value === value),
-  );
+  const indexOf = (v: V) =>
+    Math.max(
+      0,
+      options.findIndex((o) => o.value === v),
+    );
   // The white disk slides to the chosen tab on the swap curve (aktarim-31: Sohbetler / İstekler).
+  // It starts on the press itself (the owner's report, 26 Kasım: started after the screen had
+  // drawn the new tab, the slide shared its frames with the new content's and stuttered on every
+  // tab). The chosen words follow the press at once (`pick`); a value set from outside slides the
+  // disk too.
   const [width, setWidth] = useState(0);
-  const [at] = useState(() => new Animated.Value(index));
+  const [pick, setPick] = useState(value);
+  const [at] = useState(() => new Animated.Value(indexOf(value)));
+  const slide = useRef<Animated.CompositeAnimation | null>(null);
+  const [seen, setSeen] = useState(value);
+  if (value !== seen) {
+    setSeen(value);
+    setPick(value);
+  }
   useEffect(() => {
+    const to = indexOf(value);
     if (reduce) {
-      at.setValue(index);
+      at.setValue(to);
       return undefined;
     }
+    slide.current?.stop();
     const anim = Animated.timing(at, {
-      toValue: index,
+      toValue: to,
       duration: SEG_SLIDE_MS,
       easing: SWAP_RN,
       useNativeDriver: true,
     });
+    slide.current = anim;
     anim.start();
-    return () => anim.stop();
-  }, [index, reduce, at]);
+    return undefined;
+    // Only a value from outside: a press has already slid the disk there.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, reduce, at]);
+  useEffect(() => () => slide.current?.stop(), []);
+  const choose = (v: V) => {
+    if (v === pick) return;
+    setPick(v);
+    slide.current?.stop();
+    if (reduce) {
+      at.setValue(indexOf(v));
+      onChange(v);
+      return;
+    }
+    const anim = Animated.timing(at, {
+      toValue: indexOf(v),
+      duration: SEG_SLIDE_MS,
+      easing: SWAP_RN,
+      useNativeDriver: true,
+    });
+    slide.current = anim;
+    // A tab's pages stay built (TabPane): the screen hears of the choice on the slide's first
+    // frame. A choice that remakes the whole app (the theme) waits for the slide to end (`settle`).
+    if (settle) {
+      anim.start(({ finished }) => {
+        if (finished) onChange(v);
+      });
+      return;
+    }
+    anim.start();
+    requestAnimationFrame(() => onChange(v));
+  };
   const n = options.length;
   const gap = board?.gap ?? KIT.size.segGap;
   const cell = n > 0 ? (width - gap * (n - 1)) / n : 0;
@@ -1641,14 +1698,14 @@ export function Seg<V extends string>({
         </Animated.View>
       ) : null}
       {options.map((o) => {
-        const on = o.value === value;
+        const on = o.value === pick;
         return (
           <Pressable
             key={o.value}
             testID={o.testID}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
-            onPress={() => onChange(o.value)}
+            onPress={() => choose(o.value)}
             style={{
               flex: 1,
               height: item,
@@ -1659,6 +1716,7 @@ export function Seg<V extends string>({
               gap: board?.badgeGap ?? KIT.size.tagGap,
             }}
           >
+            {o.lead ?? null}
             <Text
               numberOfLines={1}
               adjustsFontSizeToFit

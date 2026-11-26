@@ -11,6 +11,7 @@ import { useLoaderHold } from '@/components/Loader';
 import { PhotoPreview } from '@/components/PhotoPreview';
 import { ScreenStatusBar } from '@/components/StatusScrim';
 import { useTabBarSpace } from '@/components/TabBar';
+import { TabPane, useBuiltTabs } from '@/components/TabPane';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { SetCard } from '@/features/gifts/SetCard';
@@ -46,6 +47,8 @@ import { SPACING } from '@/theme/tokens';
 
 const P = PROFILE_PAGE;
 const OWN = P.own;
+type ProfileTab = 'capsule' | 'posts';
+const PROFILE_TABS: readonly ProfileTab[] = ['capsule', 'posts'];
 const B = OWN_PROFILE;
 
 // The own profile in two parts (docs/design/iskelet.md → 5.7; docs/SPEC_V4.md §4.W). The upper part:
@@ -79,7 +82,8 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
   const [preview, setPreview] = useState(false);
-  const [tab, setTab] = useState<'capsule' | 'posts'>('capsule');
+  const [tab, setTab] = useState<ProfileTab>('capsule');
+  const built = useBuiltTabs(tab, PROFILE_TABS);
   const coverOff = useLabOff('kapak');
   const ticketOff = useLabOff('bilet');
   // The upper part's words and buttons: their foot, once laid out (not on a frame).
@@ -314,31 +318,34 @@ function ProfilePage({ y }: { y: ReturnType<typeof useScrollOffset> }) {
                   ]}
                 />
               </View>
-              {tab === 'posts' ? (
+              {/* Both tabs stay built once built (TabPane): a switch only shows one. */}
+              <TabPane built={built.has('posts')} shown={tab === 'posts'}>
                 <View style={{ marginTop: B.gap }}>
                   <OwnPosts />
                 </View>
-              ) : null}
-              {/* The list's head once the panel is under the bar: the ticket. */}
-              {tab === 'capsule' && data.capsuleNick ? (
-                ticketOff ? (
-                  <View style={{ minHeight: TICKET.height, marginTop: OWN_PROFILE.gap }} />
-                ) : (
-                  <IdentityTicket
-                    nick={data.capsuleNick}
-                    look={data.capsuleLook ?? null}
-                    refreshAt={data.nickRefreshAt ?? null}
-                  />
-                )
-              ) : null}
-              {tab === 'capsule' && data.photoHidden ? (
-                <Glass pad="pad" style={{ marginTop: B.gap }}>
-                  <T v="fine" ink>
-                    {tr.profile.photoHidden}
-                  </T>
-                </Glass>
-              ) : null}
-              {tab === 'capsule' ? <SetCard /> : null}
+              </TabPane>
+              <TabPane built={built.has('capsule')} shown={tab === 'capsule'}>
+                {/* The list's head once the panel is under the bar: the ticket. */}
+                {data.capsuleNick ? (
+                  ticketOff ? (
+                    <View style={{ minHeight: TICKET.height, marginTop: OWN_PROFILE.gap }} />
+                  ) : (
+                    <IdentityTicket
+                      nick={data.capsuleNick}
+                      look={data.capsuleLook ?? null}
+                      refreshAt={data.nickRefreshAt ?? null}
+                    />
+                  )
+                ) : null}
+                {data.photoHidden ? (
+                  <Glass pad="pad" style={{ marginTop: B.gap }}>
+                    <T v="fine" ink>
+                      {tr.profile.photoHidden}
+                    </T>
+                  </Glass>
+                ) : null}
+                <SetCard />
+              </TabPane>
             </>
           )}
         </View>

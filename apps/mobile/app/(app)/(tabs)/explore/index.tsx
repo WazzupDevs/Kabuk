@@ -30,18 +30,20 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, Li, Live, Round, T, useKit } from '@/aura/kit';
+import { Btn, Chip, Glass, Li, Live, Round, Seg, T, useKit } from '@/aura/kit';
 import { useTabOpenings } from '@/aura/motion';
 import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
+import { TabPane, useBuiltTabs } from '@/components/TabPane';
 import { SearchField } from '@/components/Field';
 import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { DistrictCard, DistrictStrip } from '@/features/district/DistrictCard';
+import { DistrictCard } from '@/features/district/DistrictCard';
+import { DISTRICT_VISIBLE, useDistrictState } from '@/features/district/queries';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { shortVenueName } from '@/features/explore/shortName';
@@ -60,8 +62,10 @@ import { useNow } from '@/lib/useNow';
 import { type VenueType, venueType } from '@/lib/venueType';
 import { useNarrow } from '@/lib/useNarrow';
 import { LargeTitle, ScrollFade, ScrollScreen, SlideFrom, StickyGroup, Tap } from '@/motion';
+import { LiveDot } from '@/motion/LiveDot';
 import { StickyGroupStatusBand } from '@/motion/StickyGroup';
 import { ScrollViewport, useContentHeightFeed, useScrollOffset } from '@/motion/ScrollScreen';
+import { ACTIVITIES } from '@/theme/activities';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
 import { EXPLORE } from '@/theme/explore';
@@ -70,10 +74,15 @@ import { SPACING } from '@/theme/tokens';
 import { openVenue } from '@/features/explore/openVenue';
 
 type View_ = 'list' | 'map';
+// The tabs under the title (the owner's call, 26 Kasım): the venues, or the district chat.
+type Tab = 'venues' | 'district';
+const TABS: readonly Tab[] = ['venues', 'district'];
+const VENUES_ONLY: readonly Tab[] = ['venues'];
 
 type Here = { name: string; spot: string | null };
 
 const L = EXPLORE.list;
+const HIDDEN = { display: 'none' } as const;
 // The search and its round are a form field's height (`.sr .field`, `.mp`: 48).
 const FIELD = KIT.size.field;
 
@@ -110,6 +119,11 @@ export function ExploreView({ start }: { start?: ExploreStart }) {
   const [query, setQuery] = useState(start?.query ?? '');
   // Something typed: the line, the question, the buddies and Semte Git give way (KesfetAra).
   const searching = query.length > 0;
+  // Mekan or Semt; Semt only where Semte Git is open (DISTRICT_VISIBLE).
+  const [tab, setTab] = useState<Tab>('venues');
+  const shownTab: Tab = DISTRICT_VISIBLE ? tab : 'venues';
+  // Both tabs stay built once built (TabPane): a switch only shows one.
+  const built = useBuiltTabs(shownTab, DISTRICT_VISIBLE ? TABS : VENUES_ONLY);
   const [kind, setKind] = useState<ExploreKind>('all');
   // A kind chosen plays the list's arrival again (hareket.json → dissolve).
   const [kindRuns, setKindRuns] = useState(0);
@@ -253,6 +267,11 @@ export function ExploreView({ start }: { start?: ExploreStart }) {
               openings={openings}
               search={search}
               chips={chips}
+              here={hereCard}
+              tab={shownTab}
+              built={built}
+              onTab={setTab}
+              district={<DistrictCard />}
               searching={searching}
               bottomSpace={barSpace}
               onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
@@ -281,7 +300,6 @@ export function ExploreView({ start }: { start?: ExploreStart }) {
                   empty={empty}
                   kind={kind}
                   place={place}
-                  here={hereCard}
                   searching={searching}
                   replay={kindRuns}
                   openings={openings}
@@ -303,8 +321,9 @@ export function ExploreView({ start }: { start?: ExploreStart }) {
 }
 
 // The list's scroll: the head (the line of the day and the question, fading as a tab's large
-// title), the search pinned under the top, the chips, then the body. Pulled down at its top it
-// fetches the list again (v46's `.ptr-ind`); its offset is the screen's.
+// title; with a check-in "Şu an buradasın" in its place), the search pinned under the top, the
+// chips, then the body. Pulled down at its top it fetches the list again (v46's `.ptr-ind`); its
+// offset is the screen's.
 function ListBody({
   y,
   ready,
@@ -313,6 +332,11 @@ function ListBody({
   openings,
   search,
   chips,
+  here,
+  tab,
+  built,
+  onTab,
+  district,
   searching,
   bottomSpace,
   onRefresh,
@@ -325,6 +349,12 @@ function ListBody({
   openings: TabOpenings | null;
   search: ReactNode;
   chips: ReactNode;
+  here: Here | null;
+  tab: Tab;
+  built: ReadonlySet<Tab>;
+  onTab: (tab: Tab) => void;
+  // The Semt tab's body (Semte Git); `children` is the Mekan tab's.
+  district: ReactNode;
   searching: boolean;
   bottomSpace: number;
   onRefresh: () => Promise<unknown>;
@@ -351,50 +381,78 @@ function ListBody({
           {searching ? null : (
             <View testID="explore-head">
               <Reveal index={0} openings={openings}>
-                <Question now={now} />
+                {/* The page's title, as Mesajlar's and Aktiviteler's; it fades as a tab's large
+                    title. Under it the Mekan | Semt tabs and the tab's own heading (26 Kasım). */}
+                <LargeTitle kind="buyukBaslik">
+                  {/* In a row as tall as Mesajlar's (its rounds, 40), the words in its middle: the
+                      title and the tabs stand where Mesajlar's do. */}
+                  <View style={{ minHeight: KIT.size.round, justifyContent: 'center' }}>
+                    <T v="display" accessibilityRole="header">
+                      {tr.tabs.explore}
+                    </T>
+                  </View>
+                </LargeTitle>
+                {DISTRICT_VISIBLE ? (
+                  <View style={{ marginTop: L.tabsTop }}>
+                    <ExploreTabs tab={tab} onTab={onTab} />
+                  </View>
+                ) : null}
+                <View style={{ marginTop: L.headTop }}>
+                  <TabPane built={built.has('district')} shown={tab === 'district'}>
+                    <DistrictHead />
+                  </TabPane>
+                  <TabPane built={built.has('venues')} shown={tab === 'venues'}>
+                    {here ? (
+                      // Checked in: the question is answered; the way back to Mekan comes first.
+                      <HereNow here={here} />
+                    ) : (
+                      <View>
+                        <Question now={now} />
+                        {/* Kesfet `.sr .kk`: the buddies look over the search's top edge, under the
+                          field; they scroll with the content and fade and shrink toward their foot
+                          over EXPLORE.peek.fade as the page goes up, not left half-cut at its top. */}
+                        {ready ? (
+                          <ScrollFade
+                            fade={EXPLORE.peek.fade}
+                            shrink={EXPLORE.peek.fade}
+                            scaleTo={AURA.topBar.stickyScale}
+                            origin="center bottom"
+                          >
+                            <Image
+                              source={PEEK}
+                              fadeDuration={0}
+                              resizeMode="contain"
+                              accessible={false}
+                              style={{
+                                position: 'absolute',
+                                right: EXPLORE.peek.right,
+                                bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
+                                width: EXPLORE.peek.width,
+                                height: EXPLORE.peek.height,
+                              }}
+                            />
+                          </ScrollFade>
+                        ) : null}
+                      </View>
+                    )}
+                  </TabPane>
+                </View>
               </Reveal>
-              {/* Kesfet `.sr .kk`: the buddies look over the search's top edge, under the field,
-                  64 from the right, their foot 22 over the field's; they scroll with the content. */}
-              {/* They fade and shrink toward their foot over EXPLORE.peek.fade as the page goes up,
-                  not left half-cut at its top. */}
-              {ready ? (
-                <ScrollFade
-                  fade={EXPLORE.peek.fade}
-                  shrink={EXPLORE.peek.fade}
-                  scaleTo={AURA.topBar.stickyScale}
-                  origin="center bottom"
-                >
-                  <Image
-                    source={PEEK}
-                    fadeDuration={0}
-                    resizeMode="contain"
-                    accessible={false}
-                    style={{
-                      position: 'absolute',
-                      right: EXPLORE.peek.right,
-                      bottom: -(L.fieldTop + FIELD - EXPLORE.peek.bottom),
-                      width: EXPLORE.peek.width,
-                      height: EXPLORE.peek.height,
-                    }}
-                  />
-                </ScrollFade>
-              ) : null}
             </View>
           )}
-          {ready ? (
-            // Over what scrolls under it once pinned: the search and the chips pin together, and
-            // Semte Git's strip comes in under them (KesfetKaydir).
-            <View style={{ zIndex: 1, marginTop: searching ? L.searchTop : L.fieldTop }}>
-              <StickyGroup
-                side={L.side}
-                hang={{
-                  node: <DistrictStrip />,
-                  height: EXPLORE.sticky.stripHeight,
-                  gap: EXPLORE.sticky.stripGap,
-                  from: EXPLORE.sticky.from,
-                  to: EXPLORE.sticky.to,
-                }}
-              >
+          {ready && built.has('venues') ? (
+            // Over what scrolls under it once pinned: the search and the chips pin together. Kept
+            // built while the Semt tab shows (TabPane's way).
+            <View
+              style={[
+                {
+                  zIndex: 1,
+                  marginTop: searching ? L.searchTop : here ? L.hereBelow : L.fieldTop,
+                },
+                tab === 'venues' ? null : HIDDEN,
+              ]}
+            >
+              <StickyGroup side={L.side}>
                 <Reveal index={1} openings={openings}>
                   {search}
                 </Reveal>
@@ -409,34 +467,102 @@ function ListBody({
         </>
       }
     >
-      {/* Semte Git 20 under the chips; the body's own spacing in VenueList (Kesfet). */}
-      <View style={{ marginTop: searching ? 0 : L.districtTop }}>{children}</View>
+      {/* The place line 20 under the chips, or Semte Git 16 under the Semt tab's heading; the
+          body's own spacing in VenueList (Kesfet). */}
+      <View style={{ marginTop: tab === 'district' ? L.hereBelow : searching ? 0 : L.districtTop }}>
+        <TabPane built={built.has('venues')} shown={tab === 'venues'}>
+          {children}
+        </TabPane>
+        <TabPane built={built.has('district')} shown={tab === 'district'}>
+          {district}
+        </TabPane>
+      </View>
     </PullScroll>
   );
 }
 
+// The Mekan | Semt tabs (the owner's call, 26 Kasım): Aktiviteler's and Mesajlar's tabs, their
+// glass and the chosen part's shadow (ACTIVITIES), one look for the app's tabs.
+function ExploreTabs({ tab, onTab }: { tab: Tab; onTab: (tab: Tab) => void }) {
+  const { scheme } = useKit();
+  const a = ACTIVITIES;
+  return (
+    <Seg<Tab>
+      board={{
+        item: a.tabs.item,
+        radius: a.tabs.radius,
+        pad: a.tabs.pad,
+        type: 'btnSm',
+        face: a[scheme].tabsGlass,
+        onShadow: a[scheme].tabOnShadow || undefined,
+      }}
+      value={tab}
+      onChange={onTab}
+      accessibilityLabel={tr.explore.tabs}
+      options={[
+        { value: 'venues', label: tr.explore.tabVenues, testID: 'explore-tab-venues' },
+        {
+          value: 'district',
+          label: tr.explore.tabDistrict,
+          testID: 'explore-tab-district',
+          lead: <SemtDot />,
+        },
+      ]}
+    />
+  );
+}
+
+// The beating green dot before "Semt": the district chat is live (motion/LiveDot).
+function SemtDot() {
+  const { colors } = useTheme();
+  const d = L.liveDot;
+  return <LiveDot color={colors.accent} size={d.size} scale={d.scale} ms={d.ms} />;
+}
+
 // The line of the day from the phone's clock ("CUMARTESİ AKŞAMI", `.eyebrow`) 4 over the question
-// (`.kh`), its last words in green; a tab's large title, fading and shrinking from its lower left.
+// (`.kh`), its last words in green; the Mekan tab's heading under the page's title (24, the owner's
+// call, 26 Kasım: two 30s under each other read as two titles).
 function Question({ now }: { now: number }) {
   const { c } = useKit();
   const { colors } = useTheme();
   const line = dayLine(new Date(now));
   return (
-    <LargeTitle kind="buyukBaslik">
-      <View style={{ gap: L.titleTop }}>
-        <T v="kesfetEyebrow" color={c.muted}>
-          {upperTr(tr.explore.dayLine(line.weekday, line.part))}
-        </T>
-        <Text
-          accessibilityRole="header"
-          maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[KIT_TYPE.kesfetTitle, { color: c.ink }]}
-        >
-          {tr.explore.question[dayPart(now)]}
-          <Text style={{ color: colors.accent }}>{tr.explore.questionEnd}</Text>
-        </Text>
-      </View>
-    </LargeTitle>
+    <View style={{ gap: L.titleTop }}>
+      <T v="kesfetEyebrow" color={c.muted}>
+        {upperTr(tr.explore.dayLine(line.weekday, line.part))}
+      </T>
+      <Text
+        accessibilityRole="header"
+        maxFontSizeMultiplier={MAX_FONT_SCALE}
+        style={[KIT_TYPE.title, { color: c.ink }]}
+      >
+        {tr.explore.question[dayPart(now)]}
+        <Text style={{ color: colors.accent }}>{tr.explore.questionEnd}</Text>
+      </Text>
+    </View>
+  );
+}
+
+// The Semt tab's heading: the district's name (else "Semt sohbeti") over "Evde misin? Semtin
+// sohbette.", its last words green, as the Mekan tab's question.
+function DistrictHead() {
+  const { c } = useKit();
+  const { colors } = useTheme();
+  const name = useDistrictState().data?.district?.name ?? null;
+  return (
+    <View style={{ gap: L.titleTop }}>
+      <T v="kesfetEyebrow" color={c.muted}>
+        {upperTr(name ?? tr.district.card.sceneEyebrow)}
+      </T>
+      <Text
+        accessibilityRole="header"
+        maxFontSizeMultiplier={MAX_FONT_SCALE}
+        style={[KIT_TYPE.title, { color: c.ink }]}
+      >
+        {tr.district.card.headTitle}
+        <Text style={{ color: colors.accent }}>{tr.district.card.headTitleEnd}</Text>
+      </Text>
+    </View>
   );
 }
 // As the kit's text (aura/kit → T).
@@ -596,8 +722,8 @@ function HereNow({ here }: { here: Here }) {
   );
 }
 
-// The list's body: Semte Git, "Şu an buradasın", the city and district with the count and the
-// order, then each venue as a row on the ground. The rows arrive 60 ms apart after the head's
+// The list's body: the city and district with the count and the order, each venue as a row on the
+// ground (Semte Git has its own tab, 26 Kasım). The rows arrive 60 ms apart after the head's
 // parts.
 function VenueList({
   venues,
@@ -605,7 +731,6 @@ function VenueList({
   empty,
   kind,
   place,
-  here,
   searching,
   replay,
   openings,
@@ -618,8 +743,6 @@ function VenueList({
   empty: ExploreEmpty;
   kind: ExploreKind;
   place: ExplorePlace | null;
-  here: Here | null;
-  // Something typed in the search: Semte Git and "Şu an buradasın" are not drawn (KesfetAra).
   searching: boolean;
   replay: number;
   openings: TabOpenings | null;
@@ -641,15 +764,8 @@ function VenueList({
   const choosable = cityList.length > 1;
   return (
     <>
-      {/* Semte Git (docs/SPEC_V4.md §4.V): the screen's one featured card, under the chips. */}
-      {searching ? null : <DistrictCard />}
-      {here && !searching ? (
-        <View style={{ marginTop: L.hereTop }}>
-          <HereNow here={here} />
-        </View>
-      ) : null}
       {/* The city and district on its glass pill and how many venues (K-38), the order at the
-          right (Kesfet `.lh`); 24 under Semte Git. */}
+          right (Kesfet `.lh`); 20 under the chips. */}
       <Reveal index={SECTION_AT} replay={replay} openings={openings}>
         <View
           style={{
@@ -657,16 +773,15 @@ function VenueList({
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            // Side by side while both fit; the order goes under the place on a narrow screen (the
-            // owner's report, 30 Ekim: the two ran into each other).
+            // The place, the count and the order on one line, the order at its right end (the
+            // owner's call, 26 Kasım); only where they cannot fit (320 dp, the largest text) the
+            // order goes under the place (the owner's report, 30 Ekim: they ran into each other).
             columnGap: KIT.size.rowGap,
             rowGap: SPACING[2],
-            marginTop: L.sectionTop,
           }}
         >
           <View
             style={{
-              flexShrink: 1,
               flexDirection: 'row',
               flexWrap: 'wrap',
               alignItems: 'center',
@@ -692,30 +807,33 @@ function VenueList({
               }}
               hitSlop={KIT.size.chipsGap}
             >
-              <Glass
-                radius={KIT.size.btnSm / 2}
+              {/* Plain words on the ground, no pill (the owner's call, 26 Kasım). */}
+              <View
                 style={{
                   minHeight: KIT.size.btnSm,
-                  borderRadius: KIT.size.btnSm / 2,
-                  paddingLeft: p.padLeft,
-                  paddingRight: p.padRight,
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: p.gap,
                 }}
               >
                 <CapIcon name="pin" color={colors.accent} size={p.icon} />
-                <View style={{ flexShrink: 1 }}>
-                  <T v="kesfetPlace">
-                    {place ? tr.explore.place(place.city, place.district) : tr.explore.allCities}
-                  </T>
-                </View>
+                {/* One line, broken the simple way: Android's default ("highQuality") measured the
+                    words a hair narrower than it drew them on the owner's phone, put "şehirler" on
+                    an unseen second line and left its room empty before the arrow (26 Kasım). */}
+                <Text
+                  numberOfLines={1}
+                  textBreakStrategy="simple"
+                  maxFontSizeMultiplier={MAX_FONT_SCALE}
+                  style={[KIT_TYPE.kesfetPlace, { color: c.ink }]}
+                >
+                  {place ? tr.explore.place(place.city, place.district) : tr.explore.allCities}
+                </Text>
                 {choosable ? (
                   <View style={{ marginLeft: p.chevronIn }}>
                     <CapIcon name="down" color={c.muted} size={p.chevron} />
                   </View>
                 ) : null}
-              </Glass>
+              </View>
             </Tap>
             {/* KesfetBos, KesfetAraBos: nothing to count, no count. */}
             {venues.length > 0 ? (

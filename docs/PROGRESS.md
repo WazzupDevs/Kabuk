@@ -1,5 +1,19 @@
 # İlerleme
 
+## Devir notu (26 Kasım 2026, sabah): ekran revizeleri tek PR'da
+
+- Bu PR: Yeni mesaj sayfası (Atölye `newMessageSheet` B), Mekana dön oku, Keşfet'in "Keşfet" başlığı ve Mekan | Semt sekmeleri (`docs/decisions/kesfet-sekmeler.md`, SPEC_V4 §4.V Giriş), şehir satırı tek satır, anahtarların kayması basınca başlar ve sekme sayfaları bir kez kurulup hazır bekler (`components/TabPane.tsx`), hediye paketlerinde ProgressPill (yalnız Bronz) ve ışın patlaması zemini (`features/gifts/PackBackdrop.tsx`).
+- Koyu tema hediye zemininde ve sekmelerin akıcılığı telefonda bakılmadı; Aktiviteler ve Profil'in sekme geçişi açılıp görülmedi. Aktiviteler'in hediye kartında eski üç parçalı çubuk duruyor (sorulacak).
+- Ekran açılışlarının gerçek (release) sürümde telefonda ölçülmesi önerildi, ayrı iş; dev'de paketlerin hepsi açık (7 Kasım kararı), üretimde yalnız Bronz.
+- Çalışma kuralı aynı; PR'lar topluca açılır (her "olmuş" commit, PR proje sahibi isteyince).
+
+## Devir notu (25 Kasım 2026, akşam): ekran revizesi sürüyor
+
+- Keşfet, Mekan, Mesajlar ve DM revizeleri main'de (#751; DM'de dakikada 60 mesaj sınırı #752); Profil ailesinin görsel kapı durumları #753'te. Dev'e sunucu ve OTA `da53e77b` (runtime 0.12.0) gitti; otomatik OTA `app.config.ts` yüzünden bekletiliyor, gerekirse deploy-dev elle `force_ota` ile.
+- Sıradaki ekranı proje sahibi seçer (eski notlardaki "sıra Profil'de" geçersiz).
+- Açık: haritada pinler boş beyaz daire; boş Keşfet görüntülerinde sekme çubuğu yok (proje sahibine soruldu, cevap yok). Koyu tema ve gerçek telefon bakılmadı.
+- Çalışma kuralı aynı: önce emülatör görüntüsü panoyla yan yana, revize, "emülatörden bakın", "olmuş"tan sonra `pnpm check` ve commit; başka ekrana sormadan dokunulmaz.
+
 ## Devir notu (21 Kasım 2026, sabah): kapsül aksesuarları yenileniyor, yeni oturumda başlanacak
 
 - Proje sahibinin kararı (21 Kasım): eski 67 aksesuar **tamamen silinir** (katalog, çizimler `theme/capsuleAccessories.ts`, `gift_accessories`, `user_accessories`, kapsüllere takılı `x:` parçaları; yeni migration, üretime uygulaması proje sahibinin). Yerine aksesuar tuvalinin (https://claude.ai/artifact/4eZ83Hemwr3m9qtU2HBubw, "skall aksesuarlar"; kurallar `project/Main.dc.html`) **bütün setleri**, sohbet balonları dahil, tuvale sadık: 45 set (Sıradan, Nadir, Destansı, Efsanevi; Elf ve Ninja yeniden çizilmiş), 3 Özel beta seti (Luna, Terra, Sol; "ilk kullanıcılara özel"), Efsanevi setlerin balonları, dış giyim (7. katman, `DisGiyim`, `DisGiyimEfsanevi`). Silme ve yeni katalog aynı pakette (boş katalogda paket açılmaz).
