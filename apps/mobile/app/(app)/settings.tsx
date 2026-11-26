@@ -106,6 +106,7 @@ function Body() {
       </Group>
       <Eyebrow label={tr.settings.participation.title} />
       <Seg<Participation>
+        settle
         accessibilityLabel={tr.settings.participation.title}
         value={value}
         onChange={(next) => next !== value && participation.mutate(next)}

@@ -337,6 +337,7 @@ export const tr = {
     emptyHint: 'Arkadaş olduğun kişilerle burada yazışırsın.',
     // The "+" and its list of friends (the owner's call, 30 Ekim).
     newMessage: 'Yeni mesaj',
+    newMessageSub: (n: number) => `${n} arkadaş`,
     noMessage: 'Henüz mesaj yok',
     // iskelet.md → 5.4: the search over the conversations, by name, on the phone.
     search: 'Sohbet ara',
@@ -606,6 +607,10 @@ export const tr = {
       evening: 'Bu akşam nerede\n',
     },
     questionEnd: 'oturuyorsun?',
+    // The tabs under the title (the owner's call, 26 Kasım): the venues and the district chat.
+    tabs: 'Mekan ve semt',
+    tabVenues: 'Mekan',
+    tabDistrict: 'Semt',
     // The line of the day over it, from the phone's clock (lib/dayPart.ts → dayLine; 5.1:
     // "PERŞEMBE AKŞAMI", written in capitals by upperTr).
     dayLine: (weekday: number, part: 'morning' | 'day' | 'evening') =>
@@ -1186,13 +1191,13 @@ export const tr = {
   district: {
     eyebrow: 'Semte Git',
     card: {
-      title: (name: string | null) =>
-        name ? `Evdesin ama sohbet ${inflectTr(name, 'locative')}` : 'Evdesin ama sohbet semtinde',
-      note: 'Günün sorusunu bil, semtinin sohbetine gir.',
+      // Keşfet's Semt tab (the owner's call, 26 Kasım): its heading over the card, the last words
+      // green; the card under it says which chat is open.
+      headTitle: 'Evde misin? ',
+      headTitleEnd: 'Semtin sohbette.',
+      openTitle: (name: string | null) => (name ? `${name} sohbeti açık` : 'Semtinin sohbeti açık'),
+      openNote: 'Günün sorusunu bil, içeri gir.',
       go: 'Semte git',
-      // The small strip over the scrolled list (KesfetKaydir `.ssm`).
-      stripTitle: (name: string) => `${name} sohbeti`,
-      stripTitleNone: 'Semtinin sohbeti',
       closedTitle: 'Geçit bugün kapalı',
       closedNote: 'Yarın yeni soru gelir.',
       opensIn: (h: number, m: number) => `Açılmasına ${h} sa ${m} dk`,
@@ -2633,6 +2638,15 @@ export const tr = {
         noteA: 'A: bugünkü hâl (yeşil vurgu, pembe seçim halkası).',
         noteB:
           'B: mor vurgu, mor degrade düğmeler, lacivert zemin ve mor bulutlar, düz yarı saydam alt panel.',
+      },
+      newMessageSheet: {
+        title: 'Yeni mesaj sayfası (Mesajlar)',
+        note: 'Arkadaş seçme sayfası: A bugünkü hâl, B satırlar doğrudan sayfada, Masana davet et listesi gibi.',
+        noteA: 'A: bugünkü hâl, satırlar sayfanın içinde ayrı bir kartta, avatar 48 ve halkalı.',
+        noteB:
+          'B: kart yok, satırlar doğrudan sayfada; avatar 44, halkasız; başlığın altında arkadaş sayısı.',
+        sub: (n: number) => `${n} arkadaş`,
+        approved: 'Onaylandı (26 Kasım): B, satırlar doğrudan sayfada.',
       },
       buttonOrder: {
         title: 'Düğme sırası',

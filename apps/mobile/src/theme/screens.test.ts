@@ -104,8 +104,11 @@ describe("the app's Keşfet", () => {
   });
 
   it("keeps the board's spacing (tuval Kesfet, theme/explore.ts), and is always the list (no single venue)", () => {
-    expect(screen).toMatch(/marginTop: searching \? 0 : L\.districtTop/);
-    expect(screen).toMatch(/marginTop: L\.sectionTop/);
+    // The place line 20 under the chips (none with something typed); Semte Git has its own tab
+    // (26 Kasım), 16 under its heading.
+    expect(screen).toMatch(
+      /marginTop: tab === 'district' \? L\.hereBelow : searching \? 0 : L\.districtTop/,
+    );
     expect(screen).toMatch(/marginTop: L\.rowsTop, marginHorizontal: -L\.side/);
     expect(screen).not.toMatch(/SingleVenue|exploreLayout/);
   });

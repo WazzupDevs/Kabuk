@@ -229,7 +229,13 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
             style={{ marginTop: D.buttonTop }}
             icon={here ? undefined : 'pin'}
             trail={
-              here ? <CapIcon name="chevron" color={KIT.onPrimary} size={D.buttonIcon} /> : null
+              here ? (
+                <CapIcon
+                  name="chevron"
+                  color={KIT.button[scheme].prominent.ink}
+                  size={D.buttonIcon}
+                />
+              ) : null
             }
             label={here ? tr.explore.backToVenue : tr.explore.checkInHere}
             onPress={() => {

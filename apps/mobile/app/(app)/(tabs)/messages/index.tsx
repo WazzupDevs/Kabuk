@@ -7,11 +7,12 @@ import { BackHandler, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SearchField } from '@/components/Field';
-import { Av, Li, Round, RowList, Seg, T, useKit } from '@/aura/kit';
+import { Av, type AvBoard, Li, Round, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
+import { TabPane, useBuiltTabs } from '@/components/TabPane';
 import { Toast, type ToastMessage } from '@/components/Toast';
 import { pruneDmCache } from '@/features/friends/dmCache';
 import { ArchivedRow, InboxList, useThreadMenu } from '@/features/friends/InboxRows';
@@ -35,8 +36,10 @@ import { ListMove, ListMoveArea, StickyField, useListMoves } from '@/motion';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { MESSAGES as M } from '@/theme/messages';
+import { ROOM } from '@/theme/room';
 
 type Tab = 'chats' | 'requests';
+const TABS: readonly Tab[] = ['chats', 'requests'];
 
 // Mesajlar (docs/design/iskelet.md → 5.4; docs/SPEC_V3.md §18.3; docs/SPEC_V4.md §4.C): the title
 // and the round search, the pencil and the bell stay on top (CLAUDE.md → Ekran davranışı: the top
@@ -56,6 +59,7 @@ export default function MessagesScreen() {
     if (wantedTab === 'requests') setTab('requests');
   }
   const [picking, setPicking] = useState(false);
+  const built = useBuiltTabs(tab, TABS);
   const [query, setQuery] = useState('');
   // The field shows each letter at once; the rows follow it a moment later (A-28).
   const asked = useDeferredValue(query);
@@ -166,12 +170,14 @@ export default function MessagesScreen() {
           </View>
         </StickyField>
         {/* The room under the tabs: the empty and loading states centre in it (Screen → fills). */}
+        {/* Both tabs stay built once built (TabPane): a switch only shows one. */}
         <View style={{ flexGrow: 1 }}>
-          {tab === 'chats' || searching ? (
+          <TabPane grow built={built.has('chats')} shown={tab === 'chats' || searching}>
             <Chats now={new Date(now)} query={asked} onCleared={onCleared} />
-          ) : (
+          </TabPane>
+          <TabPane grow built={built.has('requests')} shown={tab === 'requests' && !searching}>
             <RequestList now={new Date(now)} />
-          )}
+          </TabPane>
         </View>
       </Screen>
       <FriendPicker visible={picking} onClose={() => setPicking(false)} />
@@ -197,45 +203,89 @@ function byName(threads: readonly DmInboxThread[], query: string): readonly DmIn
   );
 }
 
-// "Yeni mesaj": the friends to write to, as a list; a row opens the conversation.
+// "Yeni mesaj": the friends to write to; a row opens the conversation. The rows lie on the sheet
+// itself as Masana davet et's do (theme/room.ts → invite), the 44 face without its ring, the count
+// under the title (Atölye `newMessageSheet` B, the owner's call, 26 Kasım).
 function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const { scheme } = useKit();
   const friends = useFriends();
+  const holding = useLoaderHold(friends.isPending);
   const list = friends.data ?? [];
+  const I = ROOM.invite;
   return (
-    <Sheet visible={visible} onClose={onClose} title={tr.messages.newMessage}>
-      {list.length === 0 ? (
-        <T v="fine">{friends.isPending ? tr.common.loading : tr.messages.emptyHint}</T>
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      title={tr.messages.newMessage}
+      subtitle={
+        friends.data && list.length > 0 ? tr.messages.newMessageSub(list.length) : undefined
+      }
+    >
+      {friends.isError && !friends.data ? (
+        <EmptyState
+          kind="error"
+          compact
+          body={errorMessage(friends.error)}
+          error={friends.error}
+          action={{
+            label: tr.common.retry,
+            onPress: () => void friends.refetch(),
+            loading: friends.isFetching,
+          }}
+        />
+      ) : !friends.data || holding ? (
+        <EmptyState kind="loading" body={tr.common.loading} />
+      ) : list.length === 0 ? (
+        <EmptyState kind="empty" compact body={tr.messages.emptyHint} />
       ) : (
-        <RowList>
-          {list.map((f) => {
+        <View>
+          {list.map((f, i) => {
             const name = f.displayName ?? tr.profile.noName;
             const threadId = f.threadId;
             return (
-              <Li
-                key={f.publicId}
-                testID={`new-message-${name}`}
-                accessibilityLabel={name}
-                onPress={
-                  threadId
-                    ? () => {
-                        onClose();
-                        openDmFromInbox({ threadId, publicId: f.publicId, name: f.displayName });
-                      }
-                    : undefined
-                }
-              >
-                <Av size="row" name={name} photoUrl={f.photoUrl} />
-                <T v="h3" style={{ flex: 1 }}>
-                  {name}
-                </T>
-              </Li>
+              <View key={f.publicId}>
+                {i > 0 ? (
+                  <View
+                    style={{
+                      height: KIT.size.hair,
+                      marginLeft: I.hairIn,
+                      marginRight: I.hairOut,
+                      backgroundColor: KIT.layer[scheme].menuHair,
+                    }}
+                  />
+                ) : null}
+                <Li
+                  testID={`new-message-${name}`}
+                  accessibilityLabel={name}
+                  padY={I.padY}
+                  padX={0}
+                  gap={I.gap}
+                  minHeight={I.min}
+                  onPress={
+                    threadId
+                      ? () => {
+                          onClose();
+                          openDmFromInbox({ threadId, publicId: f.publicId, name: f.displayName });
+                        }
+                      : undefined
+                  }
+                >
+                  <Av size="md" name={name} photoUrl={f.photoUrl} board={NO_RING} />
+                  <View style={{ flex: 1 }}>
+                    <T v="settingsRow" ink>
+                      {name}
+                    </T>
+                  </View>
+                </Li>
+              </View>
             );
           })}
-        </RowList>
+        </View>
       )}
     </Sheet>
   );
 }
+const NO_RING: AvBoard = { ring: 0, ringColor: 'transparent', shadow: '' };
 
 function Chats({ now, query, onCleared }: { now: Date; query: string; onCleared: () => void }) {
   const inbox = useDmInbox();

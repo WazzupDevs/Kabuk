@@ -14,10 +14,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Round, T } from '@/aura/kit';
 import { useLoaderHold } from '@/components/Loader';
+import { ProgressPill } from '@/components/ProgressPill';
 import { Screen } from '@/components/Screen';
 import { isShownPack, PACK_RATIO, type ShownPack } from '@/features/gifts/art';
-import { packName, packsInOrder } from '@/features/gifts/model';
+import { LOGIN_PACK, packName, packsInOrder } from '@/features/gifts/model';
 import { OddsSheet } from '@/features/gifts/OddsSheet';
+import { PackBackdrop } from '@/features/gifts/PackBackdrop';
 import { openedCardWidth, OpenedCard } from '@/features/gifts/OpenedCard';
 import {
   DOTS_END,
@@ -28,7 +30,7 @@ import {
   RingDots,
   useRing,
 } from '@/features/gifts/PackRing';
-import { CardFace, GiftTopBar, LoginBar } from '@/features/gifts/parts';
+import { CardFace, GiftTopBar } from '@/features/gifts/parts';
 import { CARD_RATIO } from '@/features/gifts/art';
 import { FxMoves } from '@/components/FxSvg';
 import { useGiftState, useOpenPack } from '@/features/gifts/queries';
@@ -216,6 +218,9 @@ function Packs({
       />
       <Screen
         top={top}
+        // The rays' ground in the front pack's colour, in place of the colour clouds (26 Kasım).
+        plain
+        backdrop={view ? <PackBackdrop pack={view.id} stage={stage} /> : undefined}
         footer={
           view ? (
             <Reanimated.View style={awayStyle} pointerEvents={opening ? 'none' : 'auto'}>
@@ -357,31 +362,28 @@ function Info({ view, state }: { view: GiftPackView; state: GiftState }) {
           <T v="fine" strong center color={view.unopened > 0 ? colors.success : undefined}>
             {view.unopened > 0 ? tr.gifts.canOpen(view.unopened) : tr.gifts.nothingToOpen}
           </T>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: SPACING[2],
-              marginTop: SPACING[1],
-            }}
-          >
-            <LoginBar logins={logins} per={per} width={BAR_W} on={colors.success} />
-            <T v="fine" strong>
-              {tr.gifts.loginsOf(logins, per)}
-            </T>
-          </View>
-          <View style={{ maxWidth: NOTE_W }}>
-            <T v="fine" center>
-              {tr.gifts.howToEarn(per)}
-            </T>
-          </View>
+          {/* The logins earn Bronz alone: their pill and note only under it (the owner's call,
+              26 Kasım; on the dev project the other packs open too, with no progress of theirs).
+              The profile's set balloon pill (ProgressPill): the logins filling it, their count on
+              it. */}
+          {view.id === LOGIN_PACK ? (
+            <>
+              <View style={{ marginTop: SPACING[1] }}>
+                <ProgressPill value={logins} total={per} label={tr.gifts.loginsOf(logins, per)} />
+              </View>
+              <View style={{ maxWidth: NOTE_W }}>
+                <T v="fine" center>
+                  {tr.gifts.howToEarn(per)}
+                </T>
+              </View>
+            </>
+          ) : null}
         </>
       )}
     </>
   );
 }
-// The progress's three parts (28 each, 4 apart) and the note's width (HediyePaket `.pr`, `.nt`).
-const BAR_W = 92;
+// The note's width (HediyePaket `.nt`).
 const NOTE_W = 280;
 
 // Aç and Oranlar side by side at the foot (HediyePaket `.fx`): a locked pack has Oranlar alone.

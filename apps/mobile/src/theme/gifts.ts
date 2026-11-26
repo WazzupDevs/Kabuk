@@ -202,6 +202,42 @@ export const PACK_DROP: Record<
   },
 };
 
+// Hediye paketleri's ground (the owner's call, 26 Kasım, the artifact's "B · Işın patlaması"): the
+// scheme's ground, thin rays from the front pack's middle (`count` of them, each `width` degrees)
+// fading out at `fade` of the reach, a glow behind the pack and a few sparks; the rays and the glow
+// in the front pack's colour (`tint`). `reach` is the rays' length in the screen's widths.
+export const GIFT_BACKDROP = {
+  rays: { count: 20, width: 6, reach: 1.03, solid: 0.28, fade: 0.78 },
+  glow: { size: 0.95, mid: 0.55, end: 0.75 },
+  tint: { bronz: '#D9843F', gumus: '#A9BAC4', altin: '#E3B341', elmas: '#4FC3D8' },
+  // The sparks on the board (x, y, size; 390 × 844) and how strong each is.
+  sparks: [
+    [52, 150, 4, 0.8],
+    [330, 132, 3, 0.6],
+    [300, 214, 5, 0.7],
+    [70, 470, 3, 0.5],
+    [338, 500, 4, 0.6],
+    [40, 330, 2, 0.5],
+    [352, 380, 2, 0.5],
+    [120, 120, 2, 0.4],
+  ],
+  light: {
+    ground: 'linear-gradient(180deg, #FFF8F0 0%, #F6EEE4 100%)',
+    ray: 0.13,
+    glow: 0.3,
+    glowMid: 0.08,
+    // The sparks in the pack's colour.
+    spark: null,
+  },
+  dark: {
+    ground: 'linear-gradient(180deg, #0E0B14 0%, #09080D 70%)',
+    ray: 0.16,
+    glow: 0.42,
+    glowMid: 0.1,
+    spark: 'rgba(255, 236, 214, 0.9)',
+  },
+} as const;
+
 // The Efsanevi card's star bursts at the foot (the owner's call, 7 Kasım, in place of the two
 // capsules): gold, pink and pale stars, white sparks, a gold glow.
 export const STAR_BURST = {
