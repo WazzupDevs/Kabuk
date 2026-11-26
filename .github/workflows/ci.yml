@@ -166,12 +166,17 @@ jobs:
           git diff --exit-code supabase/functions/_shared/pure/database.ts
       # The serve is started again when it exits on its own, at most twice in the job; a third exit
       # fails the job (scripts/ci/functions-serve.sh, "Functions serve exits" below).
+      # REVIEW_PHONE: the store review account (supabase/tests/reviewAccount.test.ts); one of the
+      # local test numbers no location test uses.
       - name: Edge Functions
         run: |
-          nohup bash scripts/ci/functions-serve.sh main functions.log > /dev/null 2>&1 &
+          echo REVIEW_PHONE=+905550000012 > "$RUNNER_TEMP/main.env"
+          nohup bash scripts/ci/functions-serve.sh main functions.log --env-file "$RUNNER_TEMP/main.env" > /dev/null 2>&1 &
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
           bash scripts/ci/wait-for-serve.sh main functions.log "$key"
       - run: pnpm test:integration
+        env:
+          REVIEW_ACCOUNT_TEST: '1'
       # CHECKIN_SKIP_LOCATION (dev project only) needs a function server started with the secret:
       # restart serve with it and run only its test (supabase/tests/checkinSkipLocation.test.ts).
       # main.stop first: this stop is deliberate, the first serve is not started again.
