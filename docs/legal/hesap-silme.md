@@ -2,7 +2,7 @@
 
 Yürürlük tarihi: {{EFFECTIVE_DATE}}
 
-{{APP_NAME}} ({{DEVELOPER_NAME}}) hesabınızı ve hesabınıza bağlı verileri iki yoldan sildirebilirsiniz.
+{{APP_NAME}} ({{DEVELOPER_NAME}}) hesabınızı ve hesabınıza bağlı verileri iki yoldan sildirebilirsiniz; hesabınızı silmeden verilerinizin bir kısmını da silebilirsiniz (3. bölüm).
 
 ## 1. Uygulama içinden (hemen)
 
@@ -20,6 +20,19 @@ Hesabınız ve aşağıdaki veriler aynı anda, geri alınamaz biçimde silinir.
 - Hesabınıza kayıtlı telefon numarası
 
 Talebin hesabın sahibinden geldiğini doğrulamak için kayıtlı numaranıza kod gönderebiliriz. Talebiniz en geç **30 gün** içinde sonuçlandırılır ve size bildirilir.
+
+## 3. Hesabınızı silmeden verilerinizi silmek
+
+Hesabınızı korurken verilerinizin bir kısmını uygulamadan istediğiniz an silebilirsiniz:
+
+- **Profil fotoğrafı ve kapak:** Profil → **Profili düzenle** → **Fotoğrafı kaldır** ya da **Kapağı kaldır**.
+- **Tanıtım yazısı:** Profil → **Profili düzenle** → yazıyı silip kaydedin.
+- **Mekan akışındaki gönderileriniz:** gönderinin **⋯** menüsü → **Sil**. Gönderi, yanıtları ve beğenileriyle herkesten silinir.
+- **Masa ve mekan sohbetindeki mesajlarınız:** mesaja basılı tutun → **Sil**.
+- **Arkadaşınıza gönderdiğiniz mesajlar:** mesaja basılı tutun → **Sil**. Silinen metin, konuşma şikayet edilirse incelenebilsin diye 7 gün saklanır, sonra silinir.
+- **Bir arkadaşla bütün yazışma:** kişinin profilinde **Arkadaşlıktan çıkar**. Arkadaşlık bitince aranızdaki mesajlar iki taraftan da silinir. ("Sohbeti sil" mesajları silmez, yalnızca sizin görünümünüzden gizler.)
+
+Görünen ad, doğum tarihi ve cinsiyet beyanı hesabın parçasıdır; uygulamadan silinemez. Bunlar hesap silindiğinde silinir. Birinin şikayet ettiği içeriğin kopyası, silseniz de şikayet kaydında 30 gün kalır. Başka bir verinizin silinmesini {{CONTACT_EMAIL}} adresine yazarak isteyebilirsiniz; talebiniz en geç 30 gün içinde sonuçlandırılır.
 
 ## Silinen veriler
 
