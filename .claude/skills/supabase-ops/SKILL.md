@@ -36,7 +36,10 @@ Hangi sır hangi projede: `.claude/skills/yayin` → "main'den dev projesine yay
 3. Hemen ardından Play Console → Politika → Uygulama içeriği → **Uygulama erişimi** → talimattaki parolayı yeni kodla güncelle ve kaydet. İki yer arasında kalan sürede inceleme başlarsa giriş başarısız olur; ikisini arka arkaya yap.
 4. Kodu değiştirmek için: sızdığından şüphelenince, ekipten biri ayrılınca ya da Valid Until uzatılırken. Hesabı sıfırlamak gerekirse önce `pnpm admin:delete <userId>` (inceleme hesabının kullanıcı kimliği panelde numarayla bulunur).
 
-- İnceleme numarası gerçek bir hat olmak zorunda değil; SMS gönderilmez. Ban ve 18+/onay akışından muaf değildir.
+5. **Konum istisnası** (`docs/SPEC_V4.md` §4.Z): üretimde `pnpm supabase secrets set REVIEW_PHONE=+90<numara>` (bağlı projenin üretim olduğunu önce `pnpm supabase migration list` ile gör). Bu numaranın check-in'i kampüs sınırını atlar; numara değişince sır da değişir. Kontrol: inceleme numarasıyla giriş yapıp kampüs dışından check-in.
+6. **Valid Until tüm test numaralarına ortaktır:** geçici ekip numaraları olsa da tarih inceleme hesabının ömrüne göre (ileri) seçilir; ekip numaraları işi bitince satır satır silinir.
+
+- İnceleme numarası gerçek bir hat olmak zorunda değil; SMS gönderilmez. Gerçek birine ait olmasın diye hiçbir işletmeciye tahsis edilmemiş bir 5xx bloğundan seçilir (BTK numaralandırma planı). Ban ve 18+/onay akışından muaf değildir; konumdan muaftır (5. adım).
 
 ## Windows'ta satır sonları
 

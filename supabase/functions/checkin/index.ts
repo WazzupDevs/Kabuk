@@ -6,7 +6,7 @@
 import { type Db, requireUser, serviceClient } from '../_shared/auth.ts';
 import { assignCapsuleIdentity } from '../_shared/capsule.ts';
 import { dbError as domainError } from '../_shared/db.ts';
-import { z } from '../_shared/deps.ts';
+import { type User, z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
 import { lobbyChanged } from '../_shared/lobby.ts';
 import type {
@@ -20,8 +20,13 @@ import type {
 } from '../_shared/pure/api/checkin.ts';
 import { BOUNDARY_TOLERANCE_M, CHECKIN_RADIUS_M } from '../_shared/pure/checkin.ts';
 import { acceptsLocationConsent, needsConsent, needsProfile } from '../_shared/pure/consent.ts';
-import { locationCheck, refusesMockedPosition } from '../_shared/pure/devProject.ts';
+import {
+  type LocationCheck,
+  locationCheck,
+  refusesMockedPosition,
+} from '../_shared/pure/devProject.ts';
 import { AppError } from '../_shared/pure/errors.ts';
+import { isReviewPhone } from '../_shared/pure/reviewAccount.ts';
 import { checkinIdentity } from '../_shared/pure/venueChat.ts';
 
 const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
@@ -53,6 +58,16 @@ const db = serviceClient();
 // CHECKIN_SKIP_LOCATION=1 on the dev project only (pure/devProject.ts): no boundary or 300 m check.
 function currentLocationCheck() {
   return locationCheck(Deno.env.get('CHECKIN_SKIP_LOCATION'), Deno.env.get('SUPABASE_URL'));
+}
+
+// The store review account (REVIEW_PHONE, pure/reviewAccount.ts; docs/SPEC_V4.md §4.Z): its
+// check-in skips the boundary check on any project. Everyone else: the project's check.
+function reviewAccount(user: User): boolean {
+  return isReviewPhone(Deno.env.get('REVIEW_PHONE'), user.phone);
+}
+
+function locationCheckFor(user: User): LocationCheck {
+  return reviewAccount(user) ? 'skipped' : currentLocationCheck();
 }
 
 function dbError(step: string, error: { code: string }): Error {
@@ -87,7 +102,8 @@ async function activeVenues(userId: string): Promise<string[]> {
   return [...new Set(data.map((s) => s.venue_id))];
 }
 
-async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInResponse> {
+async function checkIn(user: User, body: CheckInRequest): Promise<CheckInResponse> {
+  const userId = user.id;
   await requireOnboarded(db, userId);
   // An anonymous message and seat need the nick (docs/SPEC_V4.md §4.D); venue_chat_send never falls
   // back to anything else.
@@ -95,7 +111,8 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
   if (!acceptsLocationConsent(body.locationConsentVersion)) {
     throw new AppError('consent_outdated', 'Location consent is not the current version.');
   }
-  if (refusesMockedPosition(body.mocked, currentLocationCheck(), Deno.env.get('SUPABASE_URL'))) {
+  const check = locationCheckFor(user);
+  if (refusesMockedPosition(body.mocked, check, Deno.env.get('SUPABASE_URL'))) {
     throw new AppError('location_mocked', 'The position comes from a mock location app.');
   }
 
@@ -109,9 +126,10 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
   });
   if (inside.error) throw dbError('venue_contains', inside.error);
   if (inside.data === null) throw new AppError('venue_not_found', 'Venue not found.');
-  // The log line never carries the position or the venue.
-  const check = currentLocationCheck();
-  if (check === 'skipped') {
+  // The log line never carries the position, the venue or the number.
+  if (reviewAccount(user)) {
+    console.warn('checkin: review account, location check skipped');
+  } else if (check === 'skipped') {
     console.warn('checkin: CHECKIN_SKIP_LOCATION=1, location check skipped (dev only)');
   } else if (check === 'ignored') {
     console.error('checkin: CHECKIN_SKIP_LOCATION is set outside the dev project; ignored');
@@ -164,7 +182,7 @@ Deno.serve(
 
       switch (body.action) {
         case 'check-in':
-          return await checkIn(user.id, body);
+          return await checkIn(user, body);
 
         case 'change-spot': {
           const { error } = await db.rpc('change_table_spot', {
@@ -179,10 +197,11 @@ Deno.serve(
         case 'reroll-alias':
           throw new AppError('update_required', 'This version of the app is too old. Update it.');
 
-        // The check-in screen asks before locating: on the dev project with the switch on, a
-        // position outside the venue or no position at all does not stop the flow.
+        // The check-in screen asks before locating: on the dev project with the switch on, and for
+        // the store review account anywhere, a position outside the venue or no position at all
+        // does not stop the flow.
         case 'location-mode':
-          return { skipLocation: currentLocationCheck() === 'skipped' };
+          return { skipLocation: locationCheckFor(user) === 'skipped' };
 
         // The venue's lobby hears of it: the table the person sat at lost a phone or closed
         // (audit VEN-4). The venue is read before, without a lock (rule 10).

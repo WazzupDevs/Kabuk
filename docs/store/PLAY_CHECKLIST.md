@@ -46,7 +46,7 @@ Kullanıcı hesabı olan her uygulama için iki şey gerekir: uygulama içinden 
 
 **İnceleme hesabı:** üretim projesinde tek, kalıcı bir test numarası ve tahmin edilemez 6 haneli kod. Kod yalnızca Play Console → Uygulama erişimi alanına yazılır; repoda, CLAUDE.md'de ya da bir sohbette durmaz. Değiştirme adımları CLAUDE.md → "Üretim Supabase projesi" → "İnceleme hesabı".
 
-**Konum:** check-in kampüsün sınırı içinde olmayı ister (50 m tolerans; sınırı olmayan mekanda 300 m); inceleme ekibi kampüste değildir. Bugün açık yerler: Sakarya Üniversitesi Esentepe Kampüsü ve İstanbul Gelişim Üniversitesi (Tower); pilot kafeler kapalı (`content/venues-*.json`). Şimdilik giriş bilgisi, açıklama ve check-in'den sonraki akışı gösteren bir video verilir. Ret gelirse incelemeye özel istisna ayrı bir PR'da ele alınır.
+**Konum:** check-in kampüsün sınırı içinde olmayı ister (50 m tolerans; sınırı olmayan mekanda 300 m); inceleme ekibi kampüste değildir. Bugün açık yerler: Sakarya Üniversitesi Esentepe Kampüsü ve İstanbul Gelişim Üniversitesi (Tower); pilot kafeler kapalı (`content/venues-*.json`). Play konuma bağlı erişimde konumdan bağımsız çalışan giriş bilgisi ister: inceleme numarası üretimde `REVIEW_PHONE` sırrına yazılır, o hesabın check-in'i sınır kontrolünü atlar (`docs/SPEC_V4.md` §4.Z; kurulum `.claude/skills/supabase-ops` → "İnceleme hesabı"). İnceleyen kişi kampüse check-in yapıp masa açabilir, lobiyi, mekan sohbetini ve akışı görebilir; oyunlar en az 3 telefon istediği için oyun akışı talimatta anlatılır, istenirse video eklenir.
 
 - [ ] "Tüm işlevler ya da bazıları özel erişim gerektiriyor" seçilir, bir talimat eklenir:
   - Ad: `İnceleme hesabı / Review account`
