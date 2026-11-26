@@ -18,7 +18,13 @@
     "tema": "acik",
     "durum": "ekran-mesajlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "01",
@@ -39,7 +45,13 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "01b",
@@ -64,6 +76,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -90,6 +106,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -586,6 +606,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Profilim: Kapsülün | Gönderiler sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -610,6 +634,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Profilim: Kapsülün | Gönderiler sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -631,6 +659,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Profilim: Kapsülün | Gönderiler sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -652,6 +684,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Profilim: Kapsülün | Gönderiler sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -890,7 +926,13 @@
     "tema": "acik",
     "durum": "ekran-ayarlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Ayarlar: katılım anahtarı seçimi kayma bitince bildirir (settle); görünüş değişmedi"
+      }
+    ]
   },
   {
     "pano": "03i",
@@ -907,7 +949,13 @@
     "tema": "koyu",
     "durum": "ekran-ayarlar",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Ayarlar: katılım anahtarı seçimi kayma bitince bildirir (settle); görünüş değişmedi"
+      }
+    ]
   },
   {
     "pano": "03k",
@@ -970,6 +1018,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -992,6 +1044,10 @@
       {
         "pr": 737,
         "sebep": "ortak bileşen değişikliği; ekran kendi paketinde doğrulanacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -1082,6 +1138,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -1114,6 +1174,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -1387,6 +1451,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -1414,6 +1482,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -1445,6 +1517,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -1476,6 +1552,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -1591,6 +1671,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1614,6 +1698,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1636,6 +1724,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1658,6 +1750,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1681,6 +1777,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1704,6 +1804,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1729,6 +1833,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1754,6 +1862,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1775,6 +1887,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1796,6 +1912,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -1815,7 +1935,13 @@
     "tema": "acik",
     "durum": "ekran-kesfet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
+      }
+    ]
   },
   {
     "pano": "10",
@@ -1833,7 +1959,13 @@
     "tema": "koyu",
     "durum": "ekran-kesfet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
+      }
+    ]
   },
   {
     "pano": "10b",
@@ -1851,6 +1983,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Semte Git kartı Semt sekmesine taşındı, proje sahibiyle telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -1870,6 +2006,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Semte Git kartı Semt sekmesine taşındı, proje sahibiyle telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -1886,7 +2026,13 @@
     "tema": "acik",
     "durum": "ekran-kesfet-kaydir",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
+      }
+    ]
   },
   {
     "pano": "10c",
@@ -1901,7 +2047,13 @@
     "tema": "koyu",
     "durum": "ekran-kesfet-kaydir",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
+      }
+    ]
   },
   {
     "pano": "11",
@@ -1963,6 +2115,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mekan detayı: yalnız \"Mekana dön\" okunun rengi (koyu temada görünmüyordu); düzen değişmedi"
       }
     ]
   },
@@ -1986,6 +2142,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mekan detayı: yalnız \"Mekana dön\" okunun rengi (koyu temada görünmüyordu); düzen değişmedi"
       }
     ]
   },
@@ -2281,6 +2441,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mekan detayı: yalnız \"Mekana dön\" okunun rengi (koyu temada görünmüyordu); düzen değişmedi"
       }
     ]
   },
@@ -2304,6 +2468,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mekan detayı: yalnız \"Mekana dön\" okunun rengi (koyu temada görünmüyordu); düzen değişmedi"
       }
     ]
   },
@@ -2369,6 +2537,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -2402,6 +2574,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; Mekan katlanması, başlığı ve kimlik düğmesi emülatörde proje sahibiyle bakıldı"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -3913,6 +4089,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -3936,6 +4116,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4116,6 +4300,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4138,6 +4326,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4205,6 +4397,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4226,6 +4422,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4298,6 +4498,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4320,6 +4524,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4342,6 +4550,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4364,6 +4576,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4387,6 +4603,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4410,6 +4630,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4433,6 +4657,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4456,6 +4684,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4477,6 +4709,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4498,6 +4734,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4520,6 +4760,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4542,6 +4786,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4564,6 +4812,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4586,6 +4838,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "hediye: ışın patlaması zemini ve yalnız Bronz giriş çubuğu proje sahibiyle yapıtta ve telefonda onaylandı (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -4607,6 +4863,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni GIFT_BACKDROP token’ı eklendi; bu ekranın değerleri değişmedi"
       }
     ]
   },
@@ -4628,6 +4888,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni GIFT_BACKDROP token’ı eklendi; bu ekranın değerleri değişmedi"
       }
     ]
   },
@@ -4655,6 +4919,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4682,6 +4950,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4704,6 +4976,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4726,6 +5002,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4747,6 +5027,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4768,6 +5052,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4790,6 +5078,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4812,6 +5104,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -4837,6 +5133,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -4862,6 +5162,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -4887,6 +5191,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -4912,6 +5220,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Aktiviteler: sekme sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -5249,6 +5561,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -5276,6 +5592,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -5303,6 +5623,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -5330,6 +5654,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -5424,7 +5752,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
+      }
+    ]
   },
   {
     "pano": "81",
@@ -5439,7 +5773,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
+      }
+    ]
   },
   {
     "pano": "82",
@@ -5453,7 +5793,13 @@
     "acilis": "",
     "tema": "acik",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
+      }
+    ]
   },
   {
     "pano": "82",
@@ -5467,7 +5813,13 @@
     "acilis": "",
     "tema": "koyu",
     "durum": null,
-    "hal": "eski"
+    "hal": "eski",
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
+      }
+    ]
   },
   {
     "pano": "83",
@@ -5494,6 +5846,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -5522,6 +5878,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -5617,6 +5977,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -5644,6 +6008,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -5761,6 +6129,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -5786,6 +6158,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -5810,6 +6186,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Profilim: Kapsülün | Gönderiler sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -5834,6 +6214,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Profilim: Kapsülün | Gönderiler sayfaları hazır tutulur (TabPane); görünüş değişmedi"
       }
     ]
   },
@@ -5960,6 +6344,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -5982,6 +6370,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -6509,7 +6901,13 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-sabit-dolu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "104",
@@ -6527,7 +6925,13 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-sabit-dolu",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "105",
@@ -6543,7 +6947,13 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-arsiv-rozet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "105",
@@ -6559,7 +6969,13 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-arsiv-rozet",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "106",
@@ -6583,6 +6999,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -6608,6 +7028,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -6712,7 +7136,13 @@
     "tema": "acik",
     "durum": "ekran-mesajlar-bos",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "109",
@@ -6727,7 +7157,13 @@
     "tema": "koyu",
     "durum": "ekran-mesajlar-bos",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
+      }
+    ]
   },
   {
     "pano": "110",
@@ -6845,6 +7281,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -6868,6 +7308,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -6948,6 +7392,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -6974,6 +7422,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -6998,6 +7450,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -7022,6 +7478,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mesajlar: Yeni mesaj sayfası (Atölye newMessageSheet B, onaylı) ve sekme sayfalarının hazır tutulması; liste görünüşü değişmedi"
       }
     ]
   },
@@ -7038,7 +7498,13 @@
     "tema": "acik",
     "durum": "ekran-kesfet-ara",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
+      }
+    ]
   },
   {
     "pano": "116",
@@ -7053,7 +7519,13 @@
     "tema": "koyu",
     "durum": "ekran-kesfet-ara",
     "hal": "goruntuyle-dogrulandi",
-    "kanit": 751
+    "kanit": 751,
+    "muaf": [
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
+      }
+    ]
   },
   {
     "pano": "117",
@@ -7071,6 +7543,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -7090,6 +7566,10 @@
       {
         "pr": 751,
         "sebep": "görsel kapıda bu PR’da uymadı ya da bazı yok; ayrı bakılacak"
+      },
+      {
+        "pr": 754,
+        "sebep": "Keşfet: Mekan | Semt sekmeleri proje sahibiyle yapıtta ve telefonda revize edildi (26 Kasım); görsel kapı görüntüsü sonraki PR"
       }
     ]
   },
@@ -7297,6 +7777,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -7322,6 +7806,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -7347,6 +7835,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mekan detayı: yalnız \"Mekana dön\" okunun rengi (koyu temada görünmüyordu); düzen değişmedi"
       }
     ]
   },
@@ -7372,6 +7864,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "Mekan detayı: yalnız \"Mekana dön\" okunun rengi (koyu temada görünmüyordu); düzen değişmedi"
       }
     ]
   },
@@ -7754,6 +8250,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -7776,6 +8276,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -7942,6 +8446,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -7964,6 +8472,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "yalnız yeni ve kaldırılan Keşfet/hediye metinleri; bu ekranın metni değişmedi"
       }
     ]
   },
@@ -7995,6 +8507,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
@@ -8026,6 +8542,10 @@
       {
         "pr": 751,
         "sebep": "çekim durumu yok; bu PR ekranda yalnız ortak parçaya (kit, menü, üst bar, sohbet parçaları) dokundu"
+      },
+      {
+        "pr": 754,
+        "sebep": "ortak anahtar (Seg): kayma basınca başlar, isteğe bağlı yazı önü alanı; görünüş değişmedi"
       }
     ]
   },
