@@ -7,8 +7,9 @@
 // community rules; the KVKK notice with every legal ground named and none of them consent.
 // KVKK 2026-11-16: the earlier texts of an edited DM, kept for reports (docs/decisions/dm-ilk-hal.md);
 // the terms did not change.
+// KVKK 2026-11-26: the data controller named (Gökay Aksu) and the venue feed (docs/SPEC_V4.md §4.Y).
 export const CURRENT_TERMS_VERSION = '2026-11';
-export const CURRENT_KVKK_VERSION = '2026-11-16';
+export const CURRENT_KVKK_VERSION = '2026-11-26';
 // The location notice at check-in (which text the person was shown; stored on the first check-in).
 // draft-0: the "açık rıza veriyorum" box of the check-in sheet.
 // draft-1: no box; the text over "Konumumu kullan" (aura 31, docs/decisions/aura-31.md). An app

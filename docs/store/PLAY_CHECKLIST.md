@@ -19,7 +19,7 @@ skall'ı Google Play'de **kapalı test** kanalına çıkarmak için Play Console
 ## 2. Uygulamayı oluştur
 
 - [ ] Console → **Uygulama oluştur**:
-  - Ad: "skall: Masadan Masaya Oyun" (Play başlığı, en fazla 30 karakter; `docs/store/listing-tr.md`). Uygulamanın kendi adı `APP_NAME` = "skall".
+  - Ad: "skall: Mekanın Oyun Masası" (Play başlığı, en fazla 30 karakter; `docs/store/listing-tr.md`). Uygulamanın kendi adı `APP_NAME` = "skall".
   - Varsayılan dil: Türkçe.
   - Tür: Uygulama. Ücretsiz.
 - [ ] Beyanlar: geliştirici program politikaları ve ABD ihracat yasaları.
@@ -162,7 +162,7 @@ Tanım: cihazdan çıkan her veri "toplanan" sayılır; hizmet sağlayıcıya (S
 | Fotoğraflar ve videolar → Fotoğraflar                             | Profil fotoğrafı ve kapağı (metadata silinir)              | Hayır                  | Hayır                     | Uygulama işlevi                                              |
 | Mesajlar → Diğer uygulama içi mesajlar                            | Masa sohbeti, mekan sohbeti (24 saat), arkadaşlar arası DM | Hayır                  | Hayır                     | Uygulama işlevi, güvenlik (şikayet kopyası)                  |
 | Uygulama etkinliği → Uygulama etkileşimleri                       | Analitik olayları (PostHog)                                | Evet                   | Hayır                     | Analitik                                                     |
-| Uygulama etkinliği → Diğer kullanıcı içeriği                      | Biyografi                                                  | Hayır                  | Hayır                     | Uygulama işlevi                                              |
+| Uygulama etkinliği → Diğer kullanıcı içeriği                      | Biyografi, mekan akışı gönderileri (24 saat)               | Hayır                  | Hayır                     | Uygulama işlevi                                              |
 | Uygulama etkinliği → Diğer işlemler                               | Oyun geçmişi, arkadaşlık, tanışma cevabı, masa daveti      | Evet                   | Hayır                     | Uygulama işlevi                                              |
 | Uygulama bilgileri ve performansı → Kilitlenme günlükleri, Teşhis | Sentry hata raporları (telefon, konum, metin silinir)      | Evet                   | Hayır                     | Analitik (hata giderme)                                      |
 | Cihaz ya da diğer kimlikler                                       | Push token                                                 | Hayır (bildirim izni)  | Hayır                     | Uygulama işlevi                                              |

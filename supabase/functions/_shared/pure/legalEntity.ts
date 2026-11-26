@@ -18,12 +18,12 @@ export type LegalEntity = {
 };
 
 export const LEGAL_ENTITY: LegalEntity = {
-  controllerName: '',
+  controllerName: 'Gökay Aksu',
   kep: '',
   postalAddress: '',
   contactEmail: 'support@skall.world',
   developerName: 'Skall Labs',
-  effectiveDate: '16 Kasım 2026',
+  effectiveDate: '26 Kasım 2026',
 };
 
 // The texts are final once they name the data controller; until then every page says "taslak".

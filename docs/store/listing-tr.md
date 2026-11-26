@@ -4,7 +4,7 @@ Uygulama adı: **skall** (`APP_NAME`, `supabase/functions/_shared/pure/brand.ts`
 
 ## Başlık (Play, en fazla 30 karakter)
 
-skall: Masadan Masaya Oyun
+skall: Mekanın Oyun Masası
 
 ## Kısa açıklama (Play, en fazla 80 karakter)
 
@@ -63,7 +63,7 @@ Birincil: Sosyal ağ (iOS) / Sosyal (Android). İkincil: Oyunlar → Kelime.
 | Kişisel bilgiler → Diğer (doğum tarihi; zorunlu, kimseye gösterilmez)               | Evet                           | Hayır        | Uygulama işlevi, güvenlik (18 yaş sınırı)          | Evet                     |
 | Kişisel bilgiler → Diğer (cinsiyet; zorunlu, kimseye gösterilmez, analitiğe gitmez) | Evet                           | Hayır        | Uygulama işlevi (oyun akışındaki anonimlik kuralı) | Evet                     |
 | Fotoğraflar (profil fotoğrafı; isteğe bağlı, konum ve EXIF silinir)                 | Evet                           | Hayır        | Uygulama işlevi                                    | Evet                     |
-| Diğer kullanıcı içeriği (biyografi)                                                 | Evet                           | Hayır        | Uygulama işlevi                                    | Evet                     |
+| Diğer kullanıcı içeriği (biyografi, mekan akışı gönderileri)                        | Evet                           | Hayır        | Uygulama işlevi                                    | Evet                     |
 | Uygulama içi mesajlar (arkadaşlar arası DM)                                         | Evet                           | Hayır        | Uygulama işlevi, güvenlik                          | Evet                     |
 | Diğer uygulama etkinlikleri (oyun geçmişi, arkadaşlık, masa daveti)                 | Evet                           | Hayır        | Uygulama işlevi                                    | Evet                     |
 | Kilitlenme günlükleri ve teşhis (Sentry)                                            | Evet                           | Hayır        | Analitik (hata giderme)                            | Evet (kullanıcı kimliği) |
