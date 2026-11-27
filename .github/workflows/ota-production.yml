@@ -1,0 +1,80 @@
+# Sends an OTA update of main to the production channel (the pilot and the stores). Started only by
+# hand (Actions → ota-production → Run workflow), never by a merge: a production release is the
+# owner's (CLAUDE.md → "Ortamlar ve asla"). The bundle is always main's latest commit, so an update
+# can no longer go out from an out-of-date checkout.
+#
+# Only the JS reaches phones: a native change needs a new build and a new `version`
+# (.claude/skills/yayin). The server side (db push, functions) is not done here; it goes out first,
+# by hand, when an update needs it.
+#
+# The EAS token is the account's one, kept in the "dev" GitHub environment (main only, as
+# deploy-dev). The bundle reads EXPO_PUBLIC_* from the EAS production environment; before sending,
+# the step checks that it points at a Supabase project and not at the dev project.
+name: ota-production
+
+run-name: ota-production ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: Güncellemenin kısa açıklaması
+        type: string
+        required: true
+
+concurrency:
+  group: ota-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  ota:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: dev
+    env:
+      NODE_OPTIONS: --disable-warning=MODULE_TYPELESS_PACKAGE_JSON
+      FORCE_COLOR: '0'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # A local .env would override the EAS environment's values in the bundle.
+      - name: No .env in the app
+        run: test ! -e apps/mobile/.env
+
+      - name: OTA update (production)
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          MESSAGE: ${{ inputs.message }}
+          # The production build profile's (eas.json), which an update does not read.
+          EXPO_PUBLIC_APP_ENV: production
+          SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+        run: |
+          url=$(npx --yes eas-cli@24.13.0 env:get production --variable-name EXPO_PUBLIC_SUPABASE_URL --format short --non-interactive |
+            sed 's/\x1b\[[0-9;]*m//g' | sed -n 's/^EXPO_PUBLIC_SUPABASE_URL=//p')
+          dev=$(node --experimental-strip-types -e "import('../../supabase/functions/_shared/pure/devProject.ts').then((m) => console.log(m.DEV_PROJECT_HOST))")
+          case "$url" in
+            https://*.supabase.co) ;;
+            *) echo "::error::EAS production ortamının EXPO_PUBLIC_SUPABASE_URL'i bir Supabase adresi değil."; exit 1 ;;
+          esac
+          if [ "$url" = "https://$dev" ]; then
+            echo "::error::EAS production ortamı dev projesini gösteriyor; güncelleme gönderilmedi."
+            exit 1
+          fi
+          msg="main ${GITHUB_SHA::7}: $MESSAGE"
+          npx --yes eas-cli@24.13.0 update --channel production --environment production --message "$msg" --non-interactive
+          echo "- OTA güncellemesi production kanalına gönderildi: main ${GITHUB_SHA::7}." | tee -a "$GITHUB_STEP_SUMMARY"
