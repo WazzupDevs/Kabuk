@@ -1,0 +1,14 @@
+{
+  "_comment": "Konum istemeden check-in yapılan mekanlar (docs/SPEC_V4.md §4.AA, proje sahibinin kararı, 27 Kasım). Nokta yalnız haritadaki yeridir: check-in konum almaz, doğrulamaz. Skall Üniversitesi bilerek Erbil'dedir.",
+  "venues": [
+    {
+      "ref": "skall-universitesi",
+      "name": "Skall Üniversitesi",
+      "city": "Erbil",
+      "district": "Skall",
+      "lat": 36.1912,
+      "lng": 44.0094,
+      "isActive": true
+    }
+  ]
+}

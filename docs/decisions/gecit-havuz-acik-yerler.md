@@ -1,6 +1,6 @@
 # Geçit soru havuzu, Skall Semti ve Skall Üniversitesi (27 Kasım 2026)
 
-Proje sahibinin kararları (sohbette, 27 Kasım). Henüz uygulanmadı; plan aşağıda. Değişmez kural 6'ya (ve 4, 10'a) dokunduğu için sunucu PR'ı proje sahibinin sohbetteki "onaylandı"sıyla ve `guvenlik` denetiminden sonra birleşir.
+Proje sahibinin kararları (sohbette, 27 Kasım). PR A (sunucu) uygulandı: migration `20261227090000_gecit_pool_open_places.sql`, testler `supabase/tests/gecitPoolOpenPlaces.test.ts`; PR B (uygulama) sırada. Değişmez kural 6'ya (ve 4, 10'a) dokunduğu için sunucu PR'ı proje sahibinin sohbetteki "onaylandı"sıyla ve `guvenlik` denetiminden sonra birleşir.
 
 ## Kararlar
 
@@ -8,7 +8,7 @@ Proje sahibinin kararları (sohbette, 27 Kasım). Henüz uygulanmadı; plan aşa
 2. **Havuz bitince** en uzun süre önce sorulan soru yeniden sorulur; yükleme betiğinin `--status`'u kalan sorulmamış soru sayısını yalnız yöneticiye yazar ve 14 günden az kalınca uyarır.
 3. **Yanlış cevap:** o gün kapanmaz. Yanlış cevaplayan 1 saat sonra yeni soru alır; hak sınırsız. Günün 1., 2., 3., … soruları herkese ortak sıralı sorulardır (kişiye özel değil: havuzu çok hesapla toplamayı zorlaştırır, havuz yavaş tükenir). Doğru cevap hiçbir telefona gitmez.
 4. **Skall Semti:** konum istemeyen, herkese açık tek semt. Geçit sorusu yine sorulur (bir kez geçen hem kendi semtine hem Skall Semti'ne girer). Herkese, gerçek semtinin yanında seçenek olarak görünür; semt dışındaki ve konum izni vermeyen de girer. `locate` onu hiçbir zaman bulmaz; Skall Semti'ndeki oturum konumla kapanmaz.
-5. **Skall Üniversitesi:** konum doğrulaması olmayan, herkesin check-in yapabildiği tek mekan; masa, oyunlar, mekan sohbeti ve akış normal mekan gibi (kural 4 değişmez). Keşfet listesinde şehir ve tür süzgecinden bağımsız en üstte. Haritada görünür: noktası gerçekten Irak'ta (proje sahibinin kararı, 27 Kasım, "keyfi öyle"; Bağdat, 33.3152 K, 44.3661 D). Haritada iğnesi skall işareti (iki kapsül, `src/components/Mark.tsx`). Haritanın açılış çerçevesi (`ExploreMap.tsx` → `venueBounds`) bu noktayı saymaz; yoksa harita Türkiye ile Irak'ı birlikte gösterecek kadar uzaklaşır.
+5. **Skall Üniversitesi:** konum doğrulaması olmayan, herkesin check-in yapabildiği tek mekan; masa, oyunlar, mekan sohbeti ve akış normal mekan gibi (kural 4 değişmez). Keşfet listesinde şehir ve tür süzgecinden bağımsız en üstte. Haritada görünür: noktası gerçekten Irak'ta (proje sahibinin kararı, 27 Kasım, "keyfi öyle"; Erbil, 36.1912 K, 44.0094 D). Haritada iğnesi skall işareti (iki kapsül, `src/components/Mark.tsx`). Haritanın açılış çerçevesi (`ExploreMap.tsx` → `venueBounds`) bu noktayı saymaz; yoksa harita Türkiye ile Irak'ı birlikte gösterecek kadar uzaklaşır.
 6. **Semte Git üretimde açılır** (`DISTRICT_VISIBLE` kalkar), havuz üretime yüklendikten sonra.
 7. Görünüş: var olan parçalarla (Atölye taslağı yok). Kaupholl'a bu işte dokunulmaz.
 

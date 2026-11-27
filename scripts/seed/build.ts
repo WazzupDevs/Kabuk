@@ -20,6 +20,7 @@ import {
   parseSohbetCards,
   parseSprengjaLetterGroups,
   parseTabuCards,
+  parseOpenVenues,
   parseTestVenues,
   parseVenuesFile,
 } from './content.ts';
@@ -30,6 +31,7 @@ import {
   cardsSql,
   profanitySql,
   testSpotsSql,
+  openVenuesSql,
   venuesSql,
 } from './sections.ts';
 import { districtsSql, parseDistricts } from './districts.ts';
@@ -84,6 +86,9 @@ export function buildSeed(root: string): SeedBuild {
     : { universities: [], venues: [] };
   const campus = campusFile.venues;
 
+  const openPath = 'content/venues-open.json';
+  const openVenues = existsSync(resolve(root, openPath)) ? parseOpenVenues(readJson(openPath)) : [];
+
   const profanity = parseProfanity(readJson('content/profanity-tr.json'));
 
   const sections = [
@@ -91,6 +96,7 @@ export function buildSeed(root: string): SeedBuild {
     venuesSql(venues),
     ...(testVenues.length > 0 ? [venuesSql(testVenues, testVenuesPath, null)] : []),
     ...testSpotsSql(testVenues),
+    openVenuesSql(openVenues),
     universitiesSql(campusFile.universities),
     campusSql(campus),
     profanitySql(profanity),

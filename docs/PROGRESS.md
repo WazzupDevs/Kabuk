@@ -3,7 +3,7 @@
 ## Devir notu (27 Kasım 2026): Geçit havuzu, Skall Semti, Skall Üniversitesi
 
 - Kararlar ve plan: `docs/decisions/gecit-havuz-acik-yerler.md` (PR A sunucu, PR B uygulama). Kural 4, 6 ve 10'a dokunur: A, `guvenlik` denetimi ve proje sahibinin "onaylandı"sıyla birleşir.
-- Skall Üniversitesi haritada Irak'ta (Bağdat), iğnesi skall işareti; harita açılış çerçevesi onu saymaz. Kaupholl'a dokunulmaz (sorular dev'de başka biri tarafından hazırlanıyor; üretimde soru yok).
+- Skall Üniversitesi haritada Irak'ta (Erbil), iğnesi skall işareti; harita açılış çerçevesi onu saymaz. Kaupholl'a dokunulmaz (sorular dev'de başka biri tarafından hazırlanıyor; üretimde soru yok).
 - Üretim durumu: Play kapalı test sürüyor (build 12, 0.12.0); yeni build logoyla gelecek. App Store: üretim iOS build'i henüz alınmadı (`eas build --platform ios --profile production`).
 
 ## Devir notu (26 Kasım 2026, sabah): ekran revizeleri tek PR'da

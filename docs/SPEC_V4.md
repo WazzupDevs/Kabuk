@@ -1699,11 +1699,12 @@ Panolar: SemteGitKesfet, SemteGitKonum, SemteGitKonumHal, Gecit, GecitHal, Gecit
 
 **Geçit (günün sorusu).**
 
-- Günde (İstanbul saatiyle) herkese aynı tek mantık sorusu, 4 seçenek, **tek hak**. Yeni soru 00:00'da.
+- Günün soruları (İstanbul saatiyle) herkese aynı, sıralı mantık sorularıdır (1., 2., 3. …), 4 seçenekli. Kişi günün 1. sorusuyla başlar; **yanlış cevaptan 1 saat sonra** günün bir sonraki sorusunu alır, hak sınırsızdır (proje sahibinin kararı, 27 Kasım; önceki "tek hak"ın yerine; `docs/decisions/gecit-havuz-acik-yerler.md`). Doğru cevap girişi gün sonuna kadar açar (bütün semtlere, Skall Semti dahil). Yeni gün 00:00'da.
 - Seçmek göndermez; [Geçide söyle] gönderir. Gönderilirken biletler kilitli, hata satırı düğmenin üstünde akışta durur, seçim korunur.
 - **Doğru cevap hiçbir telefona gitmez,** cevap verdikten sonra da: sunucu kontrol eder, yanıt yalnızca doğru ya da yanlış der. Geçit kapalı ekranı doğru cevabın yerine "Kankin seninle gurur duyuyor." der.
-- Doğruysa Geçit açılır (GecitAcik) ve [İçeri gir] oturumu başlatır. Yanlışsa o gün giriş yoktur (GecitKapali): geri sayım "GEÇİDİN AÇILMASINA" sa:dk:sn, saniyede bir, İstanbul saatiyle 00:00'a.
-- **Gerçek sorular repoya girmez** (Kaupholl gibi, K-87): özel depoda durur, `pnpm admin:gecit-import` ile yüklenir (üretime yalnızca proje sahibi). Repoda yalnız testlerin örnek soruları vardır. O gün için yüklenmiş soru yoksa Geçit sorusuz açılır.
+- Doğruysa Geçit açılır (GecitAcik) ve [İçeri gir] oturumu başlatır. Yanlışsa sonraki soruya kadar giriş yoktur (GecitKapali): geri sayım "GEÇİDİN AÇILMASINA" sa:dk:sn, saniyede bir, sonraki sorunun zamanına (`state.retryAt`; gece yarısını geçmez).
+- **Soru havuzu (27 Kasım):** sorular bir kez havuza yüklenir (`pnpm admin:gecit-import --file`, gün yok; aynı soru ikinci kez eklenmez). Sunucu günün n. sorusunu biri ona ilk kez ihtiyaç duyduğunda havuzdan kendisi çeker: önce hiç sorulmamışlardan rastgele, hepsi sorulduysa en uzun süre önce sorulan. `--status` toplam ve hiç sorulmamış soru sayısını yalnız yöneticiye yazar, 14'ten az kalınca uyarır. Havuz boşsa ve o gün soru çekilmemişse Geçit sorusuz açılır. Dev projesinde boş havuz örnek sorularla dolar (`pure/gecitSamples.ts`).
+- **Gerçek sorular repoya girmez** (Kaupholl gibi, K-87): özel depoda durur, üretime yalnızca proje sahibi yükler. Havuz, kalan soru sayısı ve hangi sorunun hangi gün sorulduğu hiçbir istemciye gitmez.
 - Soru ve cevap istatistiği hiçbir istemciye açılmaz. Cevaplar o günden sonra tutulmaz (kişinin o günkü hakkı için gün sonuna kadar kalır).
 
 **Odalar.**
@@ -1738,7 +1739,8 @@ Panolar: SemteGitKesfet, SemteGitKonum, SemteGitKonumHal, Gecit, GecitHal, Gecit
 - Tablolar (hepsi istemciye kapalı, RLS açık, politikası yok; okumalar security definer, `set search_path = ''`):
   - `districts` (içerikten: `ref`, ad, sınır, `is_active`);
   - `user_districts` (kişinin son bulunan semti ve zamanı; koordinat yok);
-  - `gecit_questions` (gün, soru, 4 seçenek, doğru seçenek; yalnız service role), `gecit_answers` (kişi, gün, doğru mu);
+  - `gecit_pool` (soru, 4 seçenek, doğru seçenek, son sorulduğu gün; yalnız service role), `gecit_questions` (gün, sıra `slot`, soru, seçenekler, doğru seçenek, havuz satırı; yalnız service role), `gecit_answers` (kişi, gün, sıra, doğru mu, zaman);
+  - `districts.open`: halkasız, herkese açık semt (Skall Semti);
   - `district_rooms` (semt, gün, kapanış), `district_sessions` (kişi, semt, oda, gün, kimlik, kimlik değişikliği kullanıldı mı, `ends_at`, `grace_ends_at`, durum);
   - `district_chat_messages`, `district_chat_reactions`, `district_chat_rate`, `district_chat_reaction_rate`; şikayet `reports`'a (`target_type = 'district_chat'`, mesaj kopyası); sessize alma `venue_chat_mutes`; arkadaşlık basışı `venue_chat_friend_presses` (iki sohbetin ortak sınırı).
 - Edge Function `district`: `state` (semt, Geçit durumu, oturum; doğru cevap ve kişi sayısı yok), `locate { lat, lng, choice? }` (koordinatı saklamaz; sınıra yakınsa adayları döner), `pick { ref }` (yalnız konum doğrulaması kapalı dev projesinde elle seçim), `answer { day, choice }` (tek hak; aynı günün ikinci cevabı yok sayılır ve ilk sonucu döner), `enter`, `extend`, `leave`, `set-identity`. Edge Function `district-chat`: `page`, `people` (Odadakiler), `send`, `react`, `delete`, `report`, `mute`. Arkadaşlık isteği `friends/request { districtChatMessageId }`, profil `profile/get { districtChatMessageId }` ve Odadakiler satırından `profile/get { districtPersonRef }`; sessize alınanlar listesi `venue-chat/mutes` (ortak). Dev projesinde soru yüklenmemiş güne örnek soru konur (`pure/gecitSamples.ts`, `devProject.ts` → `testQuestionsAllowed`); pilotta asla.
@@ -1788,6 +1790,19 @@ Mekan sekmesinde Masalar'ın yanında ikinci görünüm: mekandakilerin kısa g�
 - **Kilit sırası (kural 10):** `table_sessions` → `venue_post_rate` → `venue_post_like_rate` → `venue_posts` → `venue_post_likes` → `venue_post_reports` → `reports`; sessize alma `venue_chat_mutes`'u tek başına yazar (`venueFeed.test.ts` → `locks`).
 - **Gönderiden profil ve arkadaşlık isteği (17 Kasım):** mekan sohbetindeki yolun karşılığı. `profile/get { venuePostId }` gönderinin ya da yanıtın yazarının profilini mekan sohbetindeki görünümle (`ChatProfileView`: ad, yaş, fotoğraf, kapak, biyografi, rozetler; profil kimliği yalnız arkadaşa) döner; okuyanın o an göremediği her gönderide (check-in yok, silinmiş, gizlenmiş, 24 saati dolmuş, engel, bilinmeyen kimlik) aynı `not_found`. `friends/request { venuePostId }` mekan sohbeti isteği gibidir (`friends_request_venue_post`): istek akışın mekan adıyla (üniversitede üniversitenin adıyla) gider, günlük sınır iki sohbet ve akışın toplamıdır, basış çiftin tek sohbet basışıdır ("Gönderdiğin"de görünür); kendi gönderisi, görülemeyen gönderi, engel, kalıcı red ve sınır aşımı `{ ok: true }` döner, zaten arkadaşsa `already_friends`. Kilit: çift kilidi → `friend_presses` → `friend_requests`; check-in ve gönderi kilitlenmez.
 - **Henüz yok:** gönderiden engelleme, analitik olayları, Masalar/Akış seçicisi ve akışın ekranları (istemci paketi).
+
+## 4.V.1 Skall Semti (proje sahibinin kararı, 27 Kasım; `docs/decisions/gecit-havuz-acik-yerler.md`)
+
+- Konum istemeyen, herkese açık tek semt (`content/districts.json` → `open: true`, halkasız). Geçit sorusu diğer semtlerdeki gibidir; bir kez geçen hem kendi semtine hem Skall Semti'ne girer.
+- Herkese, gerçek semtinin yanında seçenek olarak görünür (`state.openDistricts`); semt dışındaki ve konum izni vermeyen de girer: `enter { ref: 'skall-semti' }`. `enter`'in `ref`'i yalnız açık semti ya da kişinin bulunduğu semti kabul eder (`district_required`).
+- Konum onu hiçbir zaman bulmaz (`locate` yalnız halkalı semtlere bakar); kişinin kayıtlı semti değişmez. Skall Semti'ndeki oturum konumla (başka semt ya da semt dışı) kapanmaz; süre, ek süre, gece yarısı ve "Oturumu kapat" aynıdır. Oturum hangi semtte olduğunu taşır (`session.district`).
+- Kimlik, sohbet, Odadakiler ve kural 4 diğer semtlerdeki gibidir; Skall Semti'nde bulunmak kişinin gerçek semti hakkında bilgi vermez.
+
+## 4.AA Skall Üniversitesi (proje sahibinin kararı, 27 Kasım; `docs/decisions/gecit-havuz-acik-yerler.md`)
+
+- Konum istemeden herkesin check-in yapabildiği tek mekan (`venues.open_checkin`, `content/venues-open.json`, kaynak `skall`). Masa, oyunlar, mekan sohbeti, akış, davet ve bütün mekan kuralları normal mekandaki gibidir (kural 4 değişmez).
+- Check-in konum almaz, izin sormaz, sınır ve sahte konum kontrolü yapmaz: `checkin { action: 'check-in', venueId }` koordinatsız ve konum onayı sürümsüz geçer (gelirse yok sayılır, saklanmaz); konum onayı kaydı değişmez. Başka her mekanda koordinat ve onay zorunludur (`bad_request`, `consent_outdated`).
+- Keşfet'te (`explore_venues` → `open_checkin`) şehir ve tür süzgecinden bağımsız en üstte; haritada noktası bilerek Irak'ta (Erbil), iğnesi skall işareti; haritanın açılış çerçevesi onu saymaz.
 
 ## 4.Z Mağaza inceleme hesabı (proje sahibinin kararı, 26 Kasım; `docs/decisions/inceleme-hesabi.md`)
 

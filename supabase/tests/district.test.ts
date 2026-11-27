@@ -37,6 +37,7 @@ afterEach(async () => {
   for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
   await sql`delete from public.district_rooms`;
   await sql`delete from public.gecit_questions`;
+  await sql`delete from public.gecit_pool`;
 });
 
 afterAll(async () => {
@@ -147,13 +148,13 @@ describe('finding the district (rule 6)', () => {
 });
 
 describe('Geçit (rule 4)', () => {
-  it('sends the question without its answer, takes one try, and closes the day on a wrong one', async () => {
+  it('sends the question without its answer, and a wrong one closes the gate for an hour', async () => {
     const day = await todaysQuestion(1);
     const a = await onboarded(TABLE_PHONES[0]);
     await at(a, AVCILAR);
     const s = await stateOf(a);
     expect(s.gate).toBe('question');
-    expect(s.question).toEqual({ day, prompt: 'Soru?', options: ['A', 'B', 'C', 'D'] });
+    expect(s.question).toEqual({ day, slot: 1, prompt: 'Soru?', options: ['A', 'B', 'C', 'D'] });
     expect(JSON.stringify(s)).not.toContain('answer');
     expect(await district(a, { action: 'enter' })).toEqual({
       status: 403,
@@ -166,7 +167,8 @@ describe('Geçit (rule 4)', () => {
       correct: false,
       state: { gate: 'failed', question: null },
     });
-    // The second try changes nothing.
+    // The same answer again within the hour changes nothing (the next question is
+    // gecitPoolOpenPlaces.test.ts's).
     const again = await district(a, { action: 'answer', day, choice: 1 });
     expect((again.body as DistrictAnswerResponse).correct).toBe(false);
     expect(await district(a, { action: 'enter' })).toEqual({

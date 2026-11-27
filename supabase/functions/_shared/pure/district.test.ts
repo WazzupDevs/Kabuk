@@ -13,7 +13,7 @@ import {
   pickRoom,
   secondsUntil,
 } from './district.ts';
-import { GECIT_SAMPLES, sampleFor } from './gecitSamples.ts';
+import { GECIT_SAMPLES } from './gecitSamples.ts';
 
 // Two squares sharing the edge lng = 28.70.
 const WEST: DistrictShape = {
@@ -132,13 +132,12 @@ describe('placing in a room', () => {
 });
 
 describe('dev sample questions', () => {
-  it('have four options and a valid answer, one per day in turn', () => {
+  it('have four options, a valid answer and distinct prompts (the pool refuses a repeat)', () => {
     for (const s of GECIT_SAMPLES) {
       expect(s.options).toHaveLength(4);
       expect(s.answer).toBeGreaterThanOrEqual(0);
       expect(s.answer).toBeLessThan(4);
     }
-    expect(sampleFor('2026-11-08')).toEqual(sampleFor('2026-11-08'));
-    expect(sampleFor('2026-11-09')).not.toEqual(sampleFor('2026-11-08'));
+    expect(new Set(GECIT_SAMPLES.map((s) => s.prompt)).size).toBe(GECIT_SAMPLES.length);
   });
 });

@@ -94,6 +94,7 @@ describe('explore_venues', () => {
         'lat',
         'lng',
         'name',
+        'open_checkin',
         'university_id',
         'university_name',
         'university_ref',

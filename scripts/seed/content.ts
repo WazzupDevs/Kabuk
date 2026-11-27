@@ -182,6 +182,42 @@ export function parseTestVenues(json: unknown): TestVenue[] {
   return venues;
 }
 
+// content/venues-open.json: venues checked in to without a location (Skall Üniversitesi,
+// docs/SPEC_V4.md §4.AA; source 'skall'). The point is only where the map shows it.
+export function parseOpenVenues(json: unknown): VenueRecord[] {
+  if (!isRecord(json) || !Array.isArray(json.venues)) {
+    throw new Error('venues-open.json must have a venues list');
+  }
+  const venues = json.venues.map((value: unknown, i: number) => {
+    const where = `venues-open.json venues[${i}]`;
+    if (!isRecord(value)) throw new Error(`${where} must be an object`);
+    const { ref, name, city, district, isActive = true } = value;
+    if (typeof ref !== 'string' || !/^[a-z0-9-]{1,40}$/.test(ref)) {
+      throw new Error(`${where}.ref must be a lower-case id`);
+    }
+    return parseVenue(
+      {
+        name,
+        city,
+        district,
+        lat: value.lat,
+        lng: value.lng,
+        source: 'skall',
+        sourceRef: ref,
+        kind: 'cafe',
+        category: 'kafe',
+        amenity: 'open',
+        isActive,
+      },
+      i,
+    );
+  });
+  if (new Set(venues.map((v) => v.sourceRef)).size !== venues.length) {
+    throw new Error('venues-open.json has duplicate refs');
+  }
+  return venues;
+}
+
 export type TabuCard = { word: string; forbidden: string[] };
 export type SohbetCard = { theme: SohbetTheme; prompt: string };
 

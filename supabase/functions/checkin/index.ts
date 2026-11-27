@@ -33,11 +33,11 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('check-in'),
     venueId: z.uuid(),
-    lat: z.number().min(-90).max(90),
-    lng: z.number().min(-180).max(180),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
     accuracyM: z.number().nonnegative().max(100_000).nullable(),
     mocked: z.boolean().optional(),
-    locationConsentVersion: z.string(),
+    locationConsentVersion: z.string().max(40).optional(),
     spotId: z.uuid().optional(),
     requestId: z.uuid().optional(),
   }),
@@ -68,6 +68,30 @@ function reviewAccount(user: User): boolean {
 
 function locationCheckFor(user: User): LocationCheck {
   return reviewAccount(user) ? 'skipped' : currentLocationCheck();
+}
+
+// Skall Üniversitesi (docs/SPEC_V4.md §4.AA): an active venue checked in to without a location.
+// null: no such active venue.
+async function venueOpenCheckin(venueId: string): Promise<boolean | null> {
+  const { data, error } = await db
+    .from('venues')
+    .select('open_checkin')
+    .eq('id', venueId)
+    .eq('is_active', true)
+    .maybeSingle();
+  if (error) throw dbError('venues', error);
+  return data ? data.open_checkin : null;
+}
+
+// The location consent the person gave last: at an open venue no new one is asked or written.
+async function storedLocationConsent(userId: string): Promise<string | null> {
+  const { data, error } = await db
+    .from('profiles')
+    .select('location_consent_version')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw dbError('profiles', error);
+  return data?.location_consent_version ?? null;
 }
 
 function dbError(step: string, error: { code: string }): Error {
@@ -108,34 +132,48 @@ async function checkIn(user: User, body: CheckInRequest): Promise<CheckInRespons
   // An anonymous message and seat need the nick (docs/SPEC_V4.md §4.D); venue_chat_send never falls
   // back to anything else.
   await assignCapsuleIdentity(db, userId);
-  if (!acceptsLocationConsent(body.locationConsentVersion)) {
-    throw new AppError('consent_outdated', 'Location consent is not the current version.');
-  }
-  const check = locationCheckFor(user);
-  if (refusesMockedPosition(body.mocked, check, Deno.env.get('SUPABASE_URL'))) {
-    throw new AppError('location_mocked', 'The position comes from a mock location app.');
-  }
 
-  // Inside the boundary (with its tolerance), or near the point of a venue without one.
-  const inside = await db.rpc('venue_contains', {
-    target_venue_id: body.venueId,
-    lat: body.lat,
-    lng: body.lng,
-    tolerance_m: BOUNDARY_TOLERANCE_M,
-    radius_m: CHECKIN_RADIUS_M,
-  });
-  if (inside.error) throw dbError('venue_contains', inside.error);
-  if (inside.data === null) throw new AppError('venue_not_found', 'Venue not found.');
-  // The log line never carries the position, the venue or the number.
-  if (reviewAccount(user)) {
-    console.warn('checkin: review account, location check skipped');
-  } else if (check === 'skipped') {
-    console.warn('checkin: CHECKIN_SKIP_LOCATION=1, location check skipped (dev only)');
-  } else if (check === 'ignored') {
-    console.error('checkin: CHECKIN_SKIP_LOCATION is set outside the dev project; ignored');
-  }
-  if (!inside.data && check !== 'skipped') {
-    throw new AppError('too_far', 'You are too far from this venue.');
+  // Skall Üniversitesi (§4.AA): no position is asked, checked or kept; nothing else changes.
+  const open = await venueOpenCheckin(body.venueId);
+  if (open === null) throw new AppError('venue_not_found', 'Venue not found.');
+  let consentVersion: string | null;
+  if (open) {
+    // Whatever the body says, no consent is given here: the stored one is kept as it is.
+    consentVersion = await storedLocationConsent(userId);
+  } else {
+    if (body.lat === undefined || body.lng === undefined) {
+      throw new AppError('bad_request', 'A position is required at this venue.');
+    }
+    if (!acceptsLocationConsent(body.locationConsentVersion ?? '')) {
+      throw new AppError('consent_outdated', 'Location consent is not the current version.');
+    }
+    consentVersion = body.locationConsentVersion ?? null;
+    const check = locationCheckFor(user);
+    if (refusesMockedPosition(body.mocked, check, Deno.env.get('SUPABASE_URL'))) {
+      throw new AppError('location_mocked', 'The position comes from a mock location app.');
+    }
+
+    // Inside the boundary (with its tolerance), or near the point of a venue without one.
+    const inside = await db.rpc('venue_contains', {
+      target_venue_id: body.venueId,
+      lat: body.lat,
+      lng: body.lng,
+      tolerance_m: BOUNDARY_TOLERANCE_M,
+      radius_m: CHECKIN_RADIUS_M,
+    });
+    if (inside.error) throw dbError('venue_contains', inside.error);
+    if (inside.data === null) throw new AppError('venue_not_found', 'Venue not found.');
+    // The log line never carries the position, the venue or the number.
+    if (reviewAccount(user)) {
+      console.warn('checkin: review account, location check skipped');
+    } else if (check === 'skipped') {
+      console.warn('checkin: CHECKIN_SKIP_LOCATION=1, location check skipped (dev only)');
+    } else if (check === 'ignored') {
+      console.error('checkin: CHECKIN_SKIP_LOCATION is set outside the dev project; ignored');
+    }
+    if (!inside.data && check !== 'skipped') {
+      throw new AppError('too_far', 'You are too far from this venue.');
+    }
   }
 
   const before = await activeVenues(userId);
@@ -143,7 +181,9 @@ async function checkIn(user: User, body: CheckInRequest): Promise<CheckInRespons
     const { data, error } = await db.rpc('start_table_session', {
       target_user_id: userId,
       target_venue_id: body.venueId,
-      consent_version: body.locationConsentVersion,
+      // null at an open venue for someone who never gave one: nothing is written (the update
+      // only runs when the version differs).
+      consent_version: consentVersion as string,
       accuracy_m: body.accuracyM ?? undefined,
       new_spot_id: body.spotId,
       // The same check-in sent again returns the check-in it made (20261102090000).

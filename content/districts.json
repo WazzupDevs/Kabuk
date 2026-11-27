@@ -1,5 +1,5 @@
 {
-  "_comment": "Semte Git semtleri (docs/SPEC_V4.md §4.V). Sınırlar hazır veriden kopyalanmadan kendi çizimimizdir, kabadır; ortak sınıra 500 m yakın olana iki semt sunulur. ring: [boylam, enlem] noktaları, sırayla.",
+  "_comment": "Semte Git semtleri (docs/SPEC_V4.md §4.V). Sınırlar hazır veriden kopyalanmadan kendi çizimimizdir, kabadır; ortak sınıra 500 m yakın olana iki semt sunulur. ring: [boylam, enlem] noktaları, sırayla. open: true olan semt (Skall Semti) halkasızdır: konum istemez, herkes girer, konum onu bulmaz.",
   "districts": [
     {
       "ref": "beylikduzu",
@@ -71,6 +71,11 @@
         [30.27, 40.79],
         [30.13, 40.76]
       ]
+    },
+    {
+      "ref": "skall-semti",
+      "name": "Skall Semti",
+      "open": true
     }
   ]
 }

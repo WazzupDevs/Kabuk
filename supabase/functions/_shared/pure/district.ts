@@ -12,8 +12,9 @@ export const DISTRICT = {
   graceMinutes: 10,
   // A person this close to a district's edge may be in it (shared and outer borders alike).
   borderToleranceM: 500,
-  // Four options, one try a day.
+  // Four options. A wrong answer waits this long for the day's next question (no limit).
   options: 4,
+  retryMinutes: 60,
 } as const;
 
 // The room chat's limits are the venue chat's (§4.V: "mekan sohbetindeki gibi").

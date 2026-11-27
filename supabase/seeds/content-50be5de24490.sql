@@ -196,6 +196,17 @@ where v.source = 'test' and v.source_ref = 'test/hush-coffee'
 on conflict (venue_id, ref) do update set
   name = excluded.name, sort = excluded.sort, is_active = excluded.is_active;
 
+-- content/venues-open.json
+insert into public.venues (name, city, district, location, source, source_ref, kind, category, is_active) values
+  ('Skall Üniversitesi', 'Erbil', 'Skall', extensions.st_setsrid(extensions.st_makepoint(44.0094, 36.1912), 4326)::extensions.geography, 'skall', 'skall-universitesi', 'cafe', 'kafe', true)
+on conflict (source, source_ref) do update set
+  name = excluded.name, city = excluded.city, district = excluded.district,
+  location = excluded.location, kind = excluded.kind, category = excluded.category,
+  is_active = excluded.is_active;
+
+update public.venues set open_checkin = false where open_checkin and not (source = 'skall' and source_ref in ('skall-universitesi'));
+update public.venues set open_checkin = true where source = 'skall' and source_ref in ('skall-universitesi') and not open_checkin;
+
 -- content/venues-campus.json: universities
 insert into public.universities (ref, name, city, is_active) values
   ('sakarya-universitesi', 'Sakarya Üniversitesi', 'Sakarya', true),
@@ -461,15 +472,16 @@ on conflict (id) do update set
 update public.gift_accessories set in_packs = false where in_packs and id <> all (array['filiz', 'percem', 'altigengozluk', 'baklagoz', 'artigoz', 'yarabandi', 'kurdan', 'guzellikbeni', 'anahtarkolye', 'ipkravat', 'pervanelisapka', 'balikcisapkasi', 'cilekgozluk', 'panjurgozluk', 'sarmalgoz', 'kedibiyiklari', 'distegul', 'yildizcikartma', 'pusulakolye', 'kopekbaligidisi', 'kistakimi', 'buyucutakimi', 'yildiztakimi', 'korsantakimi', 'dalgictakimi', 'seftakimi', 'doktortakimi', 'rocktakimi', 'astronottakimi', 'hawaiitakimi', 'kuzeyisigi', 'ejderboynuzu', 'ejdernefesi', 'alevsac', 'simsekbulutu', 'kelebekgozluk', 'gokkusagiatki', 'yildiztozu', 'neongozluk', 'kalpbaloncuk', 'yapraktaci', 'aydiademi', 'elfkulaklari', 'ormanrunleri', 'yaprakmaske', 'ayisigigozleri', 'sihirliflut', 'yaprakyakasi', 'hayatagaci', 'ormanteni', 'golgebasligi', 'shurikentokasi', 'tilkimaskesi', 'simsekgozler', 'dumanpecesi', 'klanisareti', 'gecepelerini', 'sirtkatanasi', 'kunaikolyesi', 'geceteni', 'bere', 'yuvarlakgozluk', 'kasket', 'kulaklik', 'buyucusapkasi', 'yildizgozluk', 'tac']::text[]);
 
 -- content/districts.json: districts
-insert into public.districts (ref, name, ring, sort) values
-  ('beylikduzu', 'Beylikdüzü', '[[28.585,40.955],[28.675,40.955],[28.675,41.005],[28.585,41.01]]'::jsonb, 0),
-  ('esenyurt', 'Esenyurt', '[[28.585,41.01],[28.675,41.005],[28.69,41.005],[28.705,41.035],[28.7,41.085],[28.6,41.085]]'::jsonb, 1),
-  ('avcilar', 'Avcılar', '[[28.675,40.955],[28.775,40.955],[28.775,41.035],[28.705,41.035],[28.69,41.005],[28.675,41.005]]'::jsonb, 2),
-  ('serdivan', 'Serdivan', '[[30.27,40.725],[30.39,40.725],[30.39,40.745],[30.385,40.8],[30.33,40.82],[30.27,40.79]]'::jsonb, 3),
-  ('adapazari', 'Adapazarı', '[[30.385,40.8],[30.39,40.745],[30.43,40.765],[30.45,40.8],[30.47,40.88],[30.38,40.88],[30.33,40.82]]'::jsonb, 4),
-  ('sapanca', 'Sapanca', '[[30.13,40.65],[30.31,40.65],[30.31,40.725],[30.27,40.725],[30.27,40.79],[30.13,40.76]]'::jsonb, 5)
+insert into public.districts (ref, name, ring, sort, open) values
+  ('beylikduzu', 'Beylikdüzü', '[[28.585,40.955],[28.675,40.955],[28.675,41.005],[28.585,41.01]]'::jsonb, 0, false),
+  ('esenyurt', 'Esenyurt', '[[28.585,41.01],[28.675,41.005],[28.69,41.005],[28.705,41.035],[28.7,41.085],[28.6,41.085]]'::jsonb, 1, false),
+  ('avcilar', 'Avcılar', '[[28.675,40.955],[28.775,40.955],[28.775,41.035],[28.705,41.035],[28.69,41.005],[28.675,41.005]]'::jsonb, 2, false),
+  ('serdivan', 'Serdivan', '[[30.27,40.725],[30.39,40.725],[30.39,40.745],[30.385,40.8],[30.33,40.82],[30.27,40.79]]'::jsonb, 3, false),
+  ('adapazari', 'Adapazarı', '[[30.385,40.8],[30.39,40.745],[30.43,40.765],[30.45,40.8],[30.47,40.88],[30.38,40.88],[30.33,40.82]]'::jsonb, 4, false),
+  ('sapanca', 'Sapanca', '[[30.13,40.65],[30.31,40.65],[30.31,40.725],[30.27,40.725],[30.27,40.79],[30.13,40.76]]'::jsonb, 5, false),
+  ('skall-semti', 'Skall Semti', '[]'::jsonb, 6, true)
 on conflict (ref) do update set
-  name = excluded.name, ring = excluded.ring, sort = excluded.sort;
+  name = excluded.name, ring = excluded.ring, sort = excluded.sort, open = excluded.open;
 
 -- content/tabu-cards.json, content/sohbet-cards.json, content/sahtekar-words.json, content/harf-categories.json, content/sarki-words.json, content/ibre-scales.json, content/sprengja-letter-groups.json, content/signum-words.json
 insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values
