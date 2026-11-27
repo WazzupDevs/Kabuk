@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (27 Kasım 2026): Geçit havuzu, Skall Semti, Skall Üniversitesi
+
+- Kararlar ve plan: `docs/decisions/gecit-havuz-acik-yerler.md` (PR A sunucu, PR B uygulama). Kural 4, 6 ve 10'a dokunur: A, `guvenlik` denetimi ve proje sahibinin "onaylandı"sıyla birleşir.
+- Skall Üniversitesi'nin harita noktası proje sahibine teyit ettirilecek ("ırakta"). Kaupholl'a dokunulmaz (sorular dev'de başka biri tarafından hazırlanıyor; üretimde soru yok).
+- Üretim durumu: Play kapalı test sürüyor (build 12, 0.12.0); yeni build logoyla gelecek. App Store: üretim iOS build'i henüz alınmadı (`eas build --platform ios --profile production`).
+
 ## Devir notu (26 Kasım 2026, sabah): ekran revizeleri tek PR'da
 
 - Bu PR: Yeni mesaj sayfası (Atölye `newMessageSheet` B), Mekana dön oku, Keşfet'in "Keşfet" başlığı ve Mekan | Semt sekmeleri (`docs/decisions/kesfet-sekmeler.md`, SPEC_V4 §4.V Giriş), şehir satırı tek satır, anahtarların kayması basınca başlar ve sekme sayfaları bir kez kurulup hazır bekler (`components/TabPane.tsx`), hediye paketlerinde ProgressPill (yalnız Bronz) ve ışın patlaması zemini (`features/gifts/PackBackdrop.tsx`).
