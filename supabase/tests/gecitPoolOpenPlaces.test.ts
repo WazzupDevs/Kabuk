@@ -137,6 +137,21 @@ describe('Geçit pool (rule 4)', () => {
     expect(p?.d).toBe(s.question?.day);
   });
 
+  it('never asks a question twice in a day: with nothing left, the gate stays shut till midnight', async () => {
+    await pool(1);
+    const a = await onboarded(TABLE_PHONES[0] as string);
+    const first = await stateOf(a);
+    const day = first.question?.day as string;
+    await district(a, { action: 'answer', day, choice: 0, slot: 1 });
+    await hourLater(await userIdOf(a));
+    const s = await stateOf(a);
+    expect(s).toMatchObject({ gate: 'failed', question: null, retryAt: s.opensAt });
+    expect(await district(a, { action: 'enter', ref: 'skall-semti' })).toEqual({
+      status: 403,
+      body: errorBody('gate_closed'),
+    });
+  });
+
   it('closes the gate to a crafted entry while the pool has questions and none was drawn', async () => {
     await pool(1);
     const a = await onboarded(TABLE_PHONES[0] as string);
@@ -248,9 +263,14 @@ describe('Skall Üniversitesi (rule 6)', () => {
       ...KADIKOY,
       accuracyM: 20,
       mocked: true,
-      locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+      locationConsentVersion: 'uydurma',
     });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
+    // No consent was asked here: the one sent is not written.
+    const [p] = await sql`
+      select location_consent_version from public.profiles where id = ${await userIdOf(a)}
+    `;
+    expect(p?.location_consent_version).toBeNull();
     const { data, error } = await a.rpc('explore_venues');
     expect(error).toBeNull();
     const rows = data as { venue_id: string; open_checkin: boolean }[];

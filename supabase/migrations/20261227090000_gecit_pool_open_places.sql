@@ -54,7 +54,9 @@ as $$
 $$;
 
 -- The day's question with this number: drawn from the pool the first time anyone needs it (the
--- never asked first, at random; then the longest ago). A row of nulls when the pool is empty.
+-- never asked first, at random; then the longest ago). Never one already asked today: a wrong
+-- answerer would get it again and find the right option by elimination. A row of nulls when the
+-- pool has nothing left for today.
 create function private.gecit_question(target_day date, target_slot smallint)
 returns public.gecit_questions
 language plpgsql
@@ -76,6 +78,7 @@ begin
     return q;
   end if;
   select * into p from public.gecit_pool
+  where last_asked_on is distinct from target_day
   order by last_asked_on nulls first, random()
   limit 1
   for update;
@@ -147,9 +150,16 @@ begin
     return;
   end if;
   q := private.gecit_question(today, next_slot);
-  if q.day is null then
+  if q.day is null and next_slot = 1 then
+    -- Nothing to ask today (an empty pool): the gate is open, as district_enter sees it.
     return query select 'passed'::text, today, null::smallint, null::text, null::text[],
       null::timestamptz;
+    return;
+  end if;
+  if q.day is null then
+    -- The pool has no question left for today after a wrong answer: closed until midnight.
+    return query select 'failed'::text, today, last_a.slot, null::text, null::text[],
+      private.istanbul_midnight();
     return;
   end if;
   return query select 'question'::text, today, q.slot, q.prompt, q.options, null::timestamptz;

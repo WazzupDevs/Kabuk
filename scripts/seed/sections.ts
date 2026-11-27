@@ -64,13 +64,18 @@ export function venuesSql(
   ].join('\n');
 }
 
-// The open venues (Skall Üniversitesi): written like the others, then marked open_checkin.
+// The open venues (Skall Üniversitesi): written like the others, then marked open_checkin; any
+// other venue loses the mark (one taken out of the file is checked in to with a location again).
 export function openVenuesSql(venues: readonly VenueRecord[]): string {
-  if (venues.length === 0) return '-- content/venues-open.json: no venues\n';
-  const refs = venues.map((v) => sqlLiteral(v.sourceRef)).join(', ');
+  const refs = venues.map((v) => sqlLiteral(v.sourceRef));
+  const open =
+    refs.length > 0 ? `source = 'skall' and source_ref in (${refs.join(', ')})` : 'false';
   return [
-    venuesSql(venues, 'content/venues-open.json', null),
-    `update public.venues set open_checkin = true where source = 'skall' and source_ref in (${refs});`,
+    venues.length > 0
+      ? venuesSql(venues, 'content/venues-open.json', null)
+      : '-- content/venues-open.json: no venues\n',
+    `update public.venues set open_checkin = false where open_checkin and not (${open});`,
+    `update public.venues set open_checkin = true where ${open} and not open_checkin;`,
     '',
   ].join('\n');
 }

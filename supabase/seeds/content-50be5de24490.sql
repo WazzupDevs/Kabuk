@@ -204,7 +204,8 @@ on conflict (source, source_ref) do update set
   location = excluded.location, kind = excluded.kind, category = excluded.category,
   is_active = excluded.is_active;
 
-update public.venues set open_checkin = true where source = 'skall' and source_ref in ('skall-universitesi');
+update public.venues set open_checkin = false where open_checkin and not (source = 'skall' and source_ref in ('skall-universitesi'));
+update public.venues set open_checkin = true where source = 'skall' and source_ref in ('skall-universitesi') and not open_checkin;
 
 -- content/venues-campus.json: universities
 insert into public.universities (ref, name, city, is_active) values

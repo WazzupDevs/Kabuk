@@ -37,7 +37,7 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
     lng: z.number().min(-180).max(180).optional(),
     accuracyM: z.number().nonnegative().max(100_000).nullable(),
     mocked: z.boolean().optional(),
-    locationConsentVersion: z.string().optional(),
+    locationConsentVersion: z.string().max(40).optional(),
     spotId: z.uuid().optional(),
     requestId: z.uuid().optional(),
   }),
@@ -138,7 +138,8 @@ async function checkIn(user: User, body: CheckInRequest): Promise<CheckInRespons
   if (open === null) throw new AppError('venue_not_found', 'Venue not found.');
   let consentVersion: string | null;
   if (open) {
-    consentVersion = body.locationConsentVersion ?? (await storedLocationConsent(userId));
+    // Whatever the body says, no consent is given here: the stored one is kept as it is.
+    consentVersion = await storedLocationConsent(userId);
   } else {
     if (body.lat === undefined || body.lng === undefined) {
       throw new AppError('bad_request', 'A position is required at this venue.');
