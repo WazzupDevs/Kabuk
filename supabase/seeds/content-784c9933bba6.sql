@@ -198,7 +198,7 @@ on conflict (venue_id, ref) do update set
 
 -- content/venues-open.json
 insert into public.venues (name, city, district, location, source, source_ref, kind, category, is_active) values
-  ('Skall Üniversitesi', 'Bağdat', 'Skall', extensions.st_setsrid(extensions.st_makepoint(44.3661, 33.3152), 4326)::extensions.geography, 'skall', 'skall-universitesi', 'cafe', 'kafe', true)
+  ('Skall Üniversitesi', 'Erbil', 'Skall', extensions.st_setsrid(extensions.st_makepoint(44.0094, 36.1912), 4326)::extensions.geography, 'skall', 'skall-universitesi', 'cafe', 'kafe', true)
 on conflict (source, source_ref) do update set
   name = excluded.name, city = excluded.city, district = excluded.district,
   location = excluded.location, kind = excluded.kind, category = excluded.category,

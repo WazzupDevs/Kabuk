@@ -1802,7 +1802,7 @@ Mekan sekmesinde Masalar'ın yanında ikinci görünüm: mekandakilerin kısa g�
 
 - Konum istemeden herkesin check-in yapabildiği tek mekan (`venues.open_checkin`, `content/venues-open.json`, kaynak `skall`). Masa, oyunlar, mekan sohbeti, akış, davet ve bütün mekan kuralları normal mekandaki gibidir (kural 4 değişmez).
 - Check-in konum almaz, izin sormaz, sınır ve sahte konum kontrolü yapmaz: `checkin { action: 'check-in', venueId }` koordinatsız ve konum onayı sürümsüz geçer (gelirse yok sayılır, saklanmaz); konum onayı kaydı değişmez. Başka her mekanda koordinat ve onay zorunludur (`bad_request`, `consent_outdated`).
-- Keşfet'te (`explore_venues` → `open_checkin`) şehir ve tür süzgecinden bağımsız en üstte; haritada noktası bilerek Irak'ta (Bağdat), iğnesi skall işareti; haritanın açılış çerçevesi onu saymaz.
+- Keşfet'te (`explore_venues` → `open_checkin`) şehir ve tür süzgecinden bağımsız en üstte; haritada noktası bilerek Irak'ta (Erbil), iğnesi skall işareti; haritanın açılış çerçevesi onu saymaz.
 
 ## 4.Z Mağaza inceleme hesabı (proje sahibinin kararı, 26 Kasım; `docs/decisions/inceleme-hesabi.md`)
 
