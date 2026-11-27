@@ -145,7 +145,8 @@ describe('Geçit pool (rule 4)', () => {
     await district(a, { action: 'answer', day, choice: 0, slot: 1 });
     await hourLater(await userIdOf(a));
     const s = await stateOf(a);
-    expect(s).toMatchObject({ gate: 'failed', question: null, retryAt: s.opensAt });
+    expect(s).toMatchObject({ gate: 'failed', question: null });
+    expect(Date.parse(s.retryAt as string)).toBe(Date.parse(s.opensAt));
     expect(await district(a, { action: 'enter', ref: 'skall-semti' })).toEqual({
       status: 403,
       body: errorBody('gate_closed'),

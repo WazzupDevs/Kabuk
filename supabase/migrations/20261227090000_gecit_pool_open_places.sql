@@ -36,6 +36,7 @@ alter table public.gecit_questions
   add column pool_id uuid references public.gecit_pool (id) on delete set null;
 alter table public.gecit_questions drop constraint gecit_questions_pkey;
 alter table public.gecit_questions add primary key (day, slot);
+create index gecit_questions_pool_id_idx on public.gecit_questions (pool_id);
 
 -- One answer per question; a wrong one waits an hour for the next question.
 alter table public.gecit_answers
