@@ -1207,7 +1207,7 @@ export const tr = {
       roomEyebrow: 'Sohbettesin',
       backToRoom: 'Odaya dön',
       outsideTitle: 'Geçit henüz senin semtinde yok',
-      outsideNote: "Şimdilik Beylikdüzü, Esenyurt ve Avcılar'da açık.",
+      outsideNote: "Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan ve Adapazarı'nda açık.",
       errorTitle: 'Geçit şu an yüklenemedi',
       errorNote: 'Bağlantını kontrol et.',
       loading: 'Semte Git yükleniyor',
@@ -1237,7 +1237,13 @@ export const tr = {
       sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     // Hand-picked districts on the dev project; their names as the content file writes them.
-    names: { beylikduzu: 'Beylikdüzü', esenyurt: 'Esenyurt', avcilar: 'Avcılar' },
+    names: {
+      beylikduzu: 'Beylikdüzü',
+      esenyurt: 'Esenyurt',
+      avcilar: 'Avcılar',
+      serdivan: 'Serdivan',
+      adapazari: 'Adapazarı',
+    },
     gate: {
       title: 'Günün sorusu',
       paper: 'Geçidin sorusu · tek hak',
@@ -1276,7 +1282,7 @@ export const tr = {
     outside: {
       title: 'Geçit henüz senin semtinde yok',
       // SemtDisarida: the typographic apostrophe.
-      body: 'Şimdilik Beylikdüzü, Esenyurt ve Avcılar’da açık.',
+      body: 'Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan ve Adapazarı’nda açık.',
       sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     ended: {

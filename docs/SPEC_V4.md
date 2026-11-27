@@ -1682,7 +1682,7 @@ Panolar: SemteGitKesfet, SemteGitKonum, SemteGitKonumHal, Gecit, GecitHal, Gecit
 
 **Amaç.** Evdeki kişi check-in yapmadan semtinin sohbetine girer. Mekan sohbeti ve masa sistemi aynen kalır; semt sohbeti onlardan ayrı çalışır. Check-in'liyken semt oturumu açık kalabilir; iki sohbet ayrıdır ve birbirine hiçbir şey taşımaz.
 
-- **Semtler:** Beylikdüzü, Esenyurt, Avcılar. Bunların dışındaki kişi "Geçit henüz senin semtinde yok" ekranını görür (SemtDisari).
+- **Semtler:** Beylikdüzü, Esenyurt, Avcılar; Sakarya'da Serdivan ve Adapazarı (proje sahibinin kararı, 27 Kasım). Bunların dışındaki kişi "Geçit henüz senin semtinde yok" ekranını görür (SemtDisari).
 - **Giriş:** Keşfet'in Semt sekmesinde (proje sahibinin kararı, 26 Kasım; önceki "tür çiplerinin altında" yerinin yerine). Keşfet'in en üstünde sayfa başlığı "Keşfet", altında Mesajlar ve Aktiviteler'deki gibi "Mekan | Semt" anahtarı, altında seçili sekmenin başlığı. Keşfet her açılışta Mekan sekmesindedir. Mekan sekmesi: günün satırı ve "Bu akşam nerede oturuyorsun?" (check-in varken yerine "Şu an buradasın"), arama, tür çipleri, şehir satırı ve mekanlar; semt kartı ve kaydırınca çıkan semt şeridi yoktur. Semt sekmesi: semtin adı (yoksa "Semt sohbeti") ve "Evde misin? Semtin sohbette.", altında Semte Git kartı ("Beylikdüzü sohbeti açık", "Günün sorusunu bil, içeri gir.", [Semte git]); arama ve çipler yoktur. Semte Git kapalı olan derlemede (üretim, `DISTRICT_VISIBLE`) anahtar yoktur, Keşfet yalnız Mekan'dır. Kart hâlleri: soru bekliyor ([Semte Git]), bugün kapalı (kilitli kapı, "Açılmasına n sa n dk"), odadasın (kalan süre, [Odaya dön]), semt dışı (düğme yok), yükleniyor, hata ([Tekrar dene]).
 
 **Semtin bulunması (kural 6).**
