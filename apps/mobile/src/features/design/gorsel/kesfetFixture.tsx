@@ -115,6 +115,7 @@ function venue(n: number, r: Row): ExploreVenue {
     events: [],
     event: null,
     boundary: null,
+    openCheckin: false,
     university: r.university ? { id: `u${n}`, ref: `u${n}`, name: r.university } : null,
   };
 }

@@ -97,7 +97,7 @@ function DistrictRoomBody() {
   const state = useDistrictState();
   const session = state.data?.session ?? null;
   const roomId = session?.roomId;
-  const name = state.data?.district?.name ?? '';
+  const name = session?.district.name ?? '';
   const page = useDistrictChat(roomId);
   const [note, flash] = useFlash();
   const reply = useReplyTarget();

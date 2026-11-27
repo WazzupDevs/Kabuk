@@ -45,7 +45,10 @@ export default function LocationScreen() {
   const spot = useCheckinDraft((s) => s.spot);
   const active = useActiveTable();
   const spots = useVenueSpots((draftVenue ?? openedVenue)?.id);
-  const skipLocation = useSkipLocation();
+  // A venue checked in to without a position (Skall Üniversitesi): no permission, no position, no
+  // location-mode question; the press goes straight to the server.
+  const open = (draftVenue ?? openedVenue)?.openCheckin === true;
+  const skipLocation = useSkipLocation(!open);
   const [locating, setLocating] = useState(false);
   const [problem, setProblem] = useState<Problem>(null);
   const checkIn = useCheckIn();
@@ -55,8 +58,8 @@ export default function LocationScreen() {
 
   // `locating` stays set from the position to the server's answer: no frame between the two shows
   // the button idle. An error ends it; a success leaves it to the way out.
-  function proceed(position: Position) {
-    setPosition(position);
+  function proceed(position: Position | null) {
+    if (position) setPosition(position);
     setLocating(true);
     checkIn.mutate(
       { position, spot: hasSpots ? spot : null },
@@ -75,6 +78,10 @@ export default function LocationScreen() {
     setProblem(null);
     // The last try's server error goes with the new try (its request id stays: useCheckIn).
     checkIn.reset();
+    if (open) {
+      proceed(null);
+      return;
+    }
     const permission = await Location.requestForegroundPermissionsAsync();
     if (!permission.granted) {
       if (!proceedWithoutPosition()) setProblem('denied');
@@ -138,7 +145,7 @@ export default function LocationScreen() {
       peek={denied ? 'locateDenied' : away ? 'locateAway' : 'locate'}
       // tuval MekanKonum: "Konumunu doğrula" with the venue's name under it, no close button; the
       // scrim, back and a pull down close it, and there is no "Vazgeç".
-      title={tr.checkin.sheetTitle}
+      title={open ? tr.checkin.openSheetTitle : tr.checkin.sheetTitle}
       titleType="locateTitle"
       subtitle={venue.name}
       footer={
@@ -153,9 +160,17 @@ export default function LocationScreen() {
           ) : null}
           <Btn
             block
-            icon="pin"
+            icon={open ? undefined : 'pin'}
             variant={denied ? 'glassy' : 'primary'}
-            label={button.busy ? tr.checkin.locating : tr.checkin.shareLocation}
+            label={
+              open
+                ? button.busy
+                  ? tr.checkin.openEntering
+                  : tr.checkin.openEnter
+                : button.busy
+                  ? tr.checkin.locating
+                  : tr.checkin.shareLocation
+            }
             onPress={() => void locate()}
             disabled={button.off}
             loading={button.busy}
@@ -166,7 +181,9 @@ export default function LocationScreen() {
       {/* docs/design/aura → CheckIn: the venue's name and why the position is asked, "Konumumu
           kullan"; the page it opened from stays behind the sheet. The spot was chosen before, in
           checkin/spot (the table invite depends on it, CLAUDE.md → Değişmez kurallar 4). */}
-      {denied || away ? null : <T v="body">{tr.checkin.locationBody}</T>}
+      {denied || away ? null : (
+        <T v="body">{open ? tr.checkin.openBody : tr.checkin.locationBody}</T>
+      )}
       {elsewhere ? <Banner tone="warn" body={tr.checkin.replaces(elsewhere)} /> : null}
       {/* Above "Neredesin?": on a short screen a warning under the spots fell below the sheet's
           view (the owner's call, 3 Kasım, docs/decisions/checkin-uyari.md). A try's warning

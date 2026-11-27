@@ -16,6 +16,8 @@ export type DraftVenue = {
   boundary: readonly LngLat[] | null;
   // Cafe or campus: which "not inside" message the check-in shows.
   kind: VenueKind;
+  // Checked in to without a position (Skall Üniversitesi, docs/SPEC_V4.md §4.AA).
+  openCheckin: boolean;
 };
 // "Neredesin?" at a venue with spots (docs/SPEC_V3.md §4.3).
 export type DraftSpot = { id: string; name: string };

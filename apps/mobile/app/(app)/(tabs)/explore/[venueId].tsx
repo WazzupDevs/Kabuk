@@ -250,6 +250,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
                 lng: venue.lng,
                 boundary: venue.boundary,
                 kind: venue.kind,
+                openCheckin: venue.openCheckin,
               });
               // A venue with spots asks "Neredesin?" first (checkin/spot).
               router.push((venueSpots.data ?? []).length > 0 ? '/checkin/spot' : '/checkin');
@@ -257,7 +258,7 @@ function CoverPage({ venue, y }: { venue: Venue; y: ReturnType<typeof useScrollO
           />
           {/* Why the position is asked, under the button, before a check-in only: once here, the
               location was already checked (the owner's report, 30 Ekim). */}
-          {here ? null : (
+          {here || venue.openCheckin ? null : (
             <View
               style={{
                 marginTop: D.hintTop,

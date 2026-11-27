@@ -43,7 +43,7 @@ import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DistrictCard } from '@/features/district/DistrictCard';
-import { DISTRICT_VISIBLE, useDistrictState } from '@/features/district/queries';
+import { useDistrictState } from '@/features/district/queries';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { shortVenueName } from '@/features/explore/shortName';
@@ -77,7 +77,6 @@ type View_ = 'list' | 'map';
 // The tabs under the title (the owner's call, 26 Kasım): the venues, or the district chat.
 type Tab = 'venues' | 'district';
 const TABS: readonly Tab[] = ['venues', 'district'];
-const VENUES_ONLY: readonly Tab[] = ['venues'];
 
 type Here = { name: string; spot: string | null };
 
@@ -119,11 +118,11 @@ export function ExploreView({ start }: { start?: ExploreStart }) {
   const [query, setQuery] = useState(start?.query ?? '');
   // Something typed: the line, the question, the buddies and Semte Git give way (KesfetAra).
   const searching = query.length > 0;
-  // Mekan or Semt; Semt only where Semte Git is open (DISTRICT_VISIBLE).
+  // Mekan or Semt.
   const [tab, setTab] = useState<Tab>('venues');
-  const shownTab: Tab = DISTRICT_VISIBLE ? tab : 'venues';
+  const shownTab: Tab = tab;
   // Both tabs stay built once built (TabPane): a switch only shows one.
-  const built = useBuiltTabs(shownTab, DISTRICT_VISIBLE ? TABS : VENUES_ONLY);
+  const built = useBuiltTabs(shownTab, TABS);
   const [kind, setKind] = useState<ExploreKind>('all');
   // A kind chosen plays the list's arrival again (hareket.json → dissolve).
   const [kindRuns, setKindRuns] = useState(0);
@@ -155,16 +154,35 @@ export function ExploreView({ start }: { start?: ExploreStart }) {
   // The field shows each letter at once; the list follows it a moment later, so a letter does not
   // wait for some fifty rows to be drawn again (docs/perf/akicilik-denetimi.md → A-28).
   const asked = useDeferredValue(query);
-  const shown = useMemo(
-    () => sortVenues(filterVenues(listed, { place, kind, query: asked }), now),
-    [listed, place, kind, asked, now],
-  );
+  // A venue checked in to without a position (Skall Üniversitesi) stands first, whatever the place
+  // and kind chosen; only the search narrows it.
+  const shown = useMemo(() => {
+    const rest = sortVenues(
+      filterVenues(
+        listed.filter((v) => !v.openCheckin),
+        { place, kind, query: asked },
+      ),
+      now,
+    );
+    const open = filterVenues(
+      listed.filter((v) => v.openCheckin),
+      { place: null, kind: 'all', query: asked },
+    );
+    return { venues: [...open, ...rest.venues], sort: rest.sort };
+  }, [listed, place, kind, asked, now]);
   // Without an event today both orders are the name's: the button stays, its touch off.
   const canSort = shown.sort === 'eventsFirst';
   const nameOrder = byName || !canSort;
   const ordered = useMemo(
     () =>
-      byName ? [...shown.venues].sort((a, b) => a.name.localeCompare(b.name, 'tr')) : shown.venues,
+      byName
+        ? [
+            ...shown.venues.filter((v) => v.openCheckin),
+            ...shown.venues
+              .filter((v) => !v.openCheckin)
+              .sort((a, b) => a.name.localeCompare(b.name, 'tr')),
+          ]
+        : shown.venues,
     [shown.venues, byName],
   );
   // Why nothing shows, for the list's empty state and the map (kabul raporu §9.1).
@@ -392,11 +410,9 @@ function ListBody({
                     </T>
                   </View>
                 </LargeTitle>
-                {DISTRICT_VISIBLE ? (
-                  <View style={{ marginTop: L.tabsTop }}>
-                    <ExploreTabs tab={tab} onTab={onTab} />
-                  </View>
-                ) : null}
+                <View style={{ marginTop: L.tabsTop }}>
+                  <ExploreTabs tab={tab} onTab={onTab} />
+                </View>
                 <View style={{ marginTop: L.headTop }}>
                   <TabPane built={built.has('district')} shown={tab === 'district'}>
                     <DistrictHead />
@@ -548,7 +564,8 @@ function Question({ now }: { now: number }) {
 function DistrictHead() {
   const { c } = useKit();
   const { colors } = useTheme();
-  const name = useDistrictState().data?.district?.name ?? null;
+  const data = useDistrictState().data;
+  const name = data?.session?.district.name ?? data?.district?.name ?? null;
   return (
     <View style={{ gap: L.titleTop }}>
       <T v="kesfetEyebrow" color={c.muted}>

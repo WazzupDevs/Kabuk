@@ -36,6 +36,9 @@ export type ExploreVenue = {
   // A campus's university (docs/SPEC_V4.md §4.Q): the list groups its campuses under it. Never a
   // place: check-in is always to the campus (this venue).
   university: ExploreUniversity | null;
+  // Checked in to without a position (Skall Üniversitesi, docs/SPEC_V4.md §4.AA): listed first,
+  // whatever the city or kind chosen.
+  openCheckin: boolean;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -132,6 +135,7 @@ function useExploreVenues() {
             kind === 'campus' && v.university_id && v.university_ref && v.university_name
               ? { id: v.university_id, ref: v.university_ref, name: v.university_name }
               : null,
+          openCheckin: v.open_checkin === true,
         };
       });
     },

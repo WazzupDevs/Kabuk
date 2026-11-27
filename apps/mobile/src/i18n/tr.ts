@@ -928,6 +928,11 @@ export const tr = {
     // A notice, not a consent: the location is needed for the check-in itself (KVKK m. 5/2-c,
     // docs/decisions/yasal-metinler.md). The version shown is recorded (_shared/pure/consent.ts).
     locationBody: 'Mekanda olduğunu doğrulamak için konumun yalnızca bir kez alınır ve saklanmaz.',
+    // A venue checked in to without a position (Skall Üniversitesi, docs/SPEC_V4.md §4.AA).
+    openSheetTitle: 'Giriş yap',
+    openBody: 'Burası herkese açık. Konum istenmez, konumun alınmaz.',
+    openEnter: 'Giriş yap',
+    openEntering: 'Giriş yapılıyor…',
     // The sheet's title; the venue's name stands under it (tuval MekanKonum).
     sheetTitle: 'Konumunu doğrula',
     // Not `use…`: the compiler takes such a name for a hook passed as a value (A-21).
@@ -1198,9 +1203,11 @@ export const tr = {
       openTitle: (name: string | null) => (name ? `${name} sohbeti açık` : 'Semtinin sohbeti açık'),
       openNote: 'Günün sorusunu bil, içeri gir.',
       go: 'Semte git',
-      closedTitle: 'Geçit bugün kapalı',
-      closedNote: 'Yarın yeni soru gelir.',
-      opensIn: (h: number, m: number) => `Açılmasına ${h} sa ${m} dk`,
+      // An open district (Skall Semti): anyone, anywhere; no position asked.
+      goOpen: (name: string) => `${inflectTr(name, 'dative')} git`,
+      closedTitle: 'Geçit şimdilik kapalı',
+      closedNote: 'Biraz sonra yeni bir soru gelir.',
+      opensIn: (h: number, m: number) => `Sonraki soruya ${h} sa ${m} dk`,
       inRoom: (name: string) => `${name} sohbetindesin`,
       // The eyebrows on the card's riso scene (Kesfet, KesfetSemtIcerde).
       sceneEyebrow: 'Semt sohbeti',
@@ -1208,7 +1215,7 @@ export const tr = {
       backToRoom: 'Odaya dön',
       outsideTitle: 'Geçit henüz senin semtinde yok',
       outsideNote:
-        "Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan, Adapazarı ve Sapanca'da açık.",
+        "Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan, Adapazarı ve Sapanca'da açık. Skall Semti herkese açık.",
       errorTitle: 'Geçit şu an yüklenemedi',
       errorNote: 'Bağlantını kontrol et.',
       loading: 'Semte Git yükleniyor',
@@ -1275,16 +1282,16 @@ export const tr = {
       sceneLabel: 'Gece, tuğla duvarda açık kemerli kapı, içeriden sarı ışık, kapıda üç kanki',
     },
     closed: {
-      title: 'Geçit bugün kapalı',
+      title: 'Geçit şimdilik kapalı',
       body: 'Kankin seninle gurur duyuyor.',
-      until: 'Geçidin açılmasına',
+      until: 'Sonraki soruya',
       timerLabel: (h: number, m: number, s: number) => `${h} saat ${m} dakika ${s} saniye`,
       sceneLabel: 'Kapıda asma kilit, basamakta oturan üzgün kanki, tepesinde yağmur bulutu',
     },
     outside: {
       title: 'Geçit henüz senin semtinde yok',
       // SemtDisarida: the typographic apostrophe.
-      body: 'Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan, Adapazarı ve Sapanca’da açık.',
+      body: 'Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan, Adapazarı ve Sapanca’da açık. Skall Semti herkese açık.',
       sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     ended: {
@@ -3073,7 +3080,7 @@ export const tr = {
     identity_switch_used:
       'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
     district_required: 'Önce semtini bulalım.',
-    gate_closed: "Geçit bugün kapalı. Yeni soru 00:00'da.",
+    gate_closed: 'Geçit şimdilik kapalı. Sonraki soru için bekle.',
     question_expired: 'Günün sorusu değişti. Yeniden dene.',
     no_question: 'Bugün soru yok, Geçit açık.',
     no_session: 'Semt oturumun kapandı.',

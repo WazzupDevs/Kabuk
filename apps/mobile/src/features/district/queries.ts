@@ -8,7 +8,6 @@ import {
   DISTRICT_CHAT_REACTION_BROADCAST,
   districtChatChannel,
 } from '@shared/district.ts';
-import { isDevProjectUrl, isLocalUrl } from '@shared/devProject.ts';
 import { type VenueChatMessage, withVenueChatExtras } from '@shared/venueChat.ts';
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
@@ -16,15 +15,9 @@ import { useCallback } from 'react';
 import { useReactions } from '@/features/chat/messageExtras';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { districtApi, districtChatApi, profileApi } from '@/lib/api';
-import { env } from '@/lib/env';
 import { stablePhoto } from '@/lib/photoUrls';
 
 import { syncContinueNotice } from './continueNotice';
-
-// Semte Git (docs/SPEC_V4.md §4.V). Until the real questions are loaded on the pilot, the card and
-// the launch's position read only where the functions may give the dev project's sample questions
-// (the local stack and the dev project): without a question the server opens Geçit for everyone.
-export const DISTRICT_VISIBLE = isLocalUrl(env.supabaseUrl) || isDevProjectUrl(env.supabaseUrl);
 
 export const districtKeys = {
   state: ['district', 'state'] as const,
@@ -35,10 +28,24 @@ export const districtKeys = {
   person: (ref: string) => ['district', 'person', ref] as const,
 };
 
+// The open district (Skall Semti) the session last seen was in, for "Yeniden gir" on the closed
+// session's screen: the state no longer says it once the session is gone. Undefined: the person's
+// own district.
+let sessionOpenRef: string | undefined;
+function noteSession(state: DistrictState): void {
+  if (!state.session) return;
+  const ref = state.session.district.ref;
+  sessionOpenRef = state.openDistricts.some((d) => d.ref === ref) ? ref : undefined;
+}
+export function lastSessionOpenRef(): string | undefined {
+  return sessionOpenRef;
+}
+
 // The person's own district, Geçit and session: never the right option, never a head count. Each
 // read keeps the "Devam?" notice in step with the session.
 export async function readDistrictState(): Promise<DistrictState> {
   const state = await districtApi.state();
+  noteSession(state);
   void syncContinueNotice(state);
   return state;
 }
@@ -47,7 +54,7 @@ export function useDistrictState(enabled = true) {
   return useQuery({
     queryKey: districtKeys.state,
     queryFn: readDistrictState,
-    enabled: enabled && DISTRICT_VISIBLE,
+    enabled,
   });
 }
 
@@ -55,6 +62,7 @@ export function useDistrictState(enabled = true) {
 // follows the session.
 export function putDistrictState(queryClient: QueryClient, state: DistrictState): void {
   queryClient.setQueryData(districtKeys.state, state);
+  noteSession(state);
   void syncContinueNotice(state);
 }
 

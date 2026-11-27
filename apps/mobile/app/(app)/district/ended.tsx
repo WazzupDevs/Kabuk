@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Btn } from '@/aura/kit';
 import { useEnterDistrict } from '@/features/district/flow';
 import { Foot, HeroPage, RISO, WarnRow } from '@/features/district/parts';
+import { lastSessionOpenRef } from '@/features/district/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { SEMT } from '@/theme/semt';
@@ -29,7 +30,7 @@ export default function DistrictEndedScreen() {
             label={tr.district.ended.again}
             testID="district-again"
             loading={enter.isPending}
-            onPress={() => enter.mutate()}
+            onPress={() => enter.mutate(lastSessionOpenRef())}
           />
           <Btn block variant="ghost" label={tr.district.backToExplore} onPress={back} />
         </Foot>

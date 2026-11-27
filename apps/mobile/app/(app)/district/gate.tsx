@@ -1,6 +1,6 @@
 import { upperTr } from '@shared/trText.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Redirect, router } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -35,14 +35,20 @@ import { SEMT } from '@/theme/semt';
 export default function DistrictGateScreen() {
   const queryClient = useQueryClient();
   const state = useDistrictState();
+  // An open district (Skall Semti) being entered through the gate: carried on to the door.
+  const { ref } = useLocalSearchParams<{ ref?: string }>();
   const [choice, setChoice] = useState<number | null>(null);
   const answer = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ day, pick }: { day: string; pick: number }) => districtApi.answer(day, pick),
+    mutationFn: ({ day, pick, slot }: { day: string; pick: number; slot: number }) =>
+      districtApi.answer(day, pick, slot),
     onSuccess: (res) => {
       putDistrictState(queryClient, res.state);
       track('gecit_answered', { correct: res.correct });
-      router.replace(res.correct ? '/district/open' : '/district/closed');
+      router.replace({
+        pathname: res.correct ? '/district/open' : '/district/closed',
+        ...(ref ? { params: { ref } } : {}),
+      });
     },
     onError: (err) => {
       // The day changed under the question: the new one, chosen afresh.
@@ -56,10 +62,18 @@ export default function DistrictGateScreen() {
   const s = state.data;
   // Answered elsewhere, or the gate open without a question: where the state goes now.
   if (s && !s.question && !answer.isPending && !answer.isSuccess) {
-    const to = districtScreen(s);
-    return <Redirect href={to && to !== '/district/gate' ? to : '/district/open'} />;
+    const to = districtScreen(s, ref);
+    return (
+      <Redirect
+        href={{
+          pathname: to && to !== '/district/gate' ? to : '/district/open',
+          ...(ref ? { params: { ref } } : {}),
+        }}
+      />
+    );
   }
   const q = s?.question ?? null;
+  const district = (ref ? s?.openDistricts.find((d) => d.ref === ref) : s?.district) ?? null;
   const sending = answer.isPending;
 
   return (
@@ -71,9 +85,9 @@ export default function DistrictGateScreen() {
         <HeroBar>
           <HeroRound icon="back" label={tr.common.back} onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
-            {s?.district ? (
+            {district ? (
               <T v="fine" strong color={SEMT.hero.onPicture.soft}>
-                {s.district.name}
+                {district.name}
               </T>
             ) : null}
             <T v="h3" color={SEMT.hero.onPicture.ink} accessibilityRole="header">
@@ -107,7 +121,8 @@ export default function DistrictGateScreen() {
               disabled={choice === null || !q}
               loading={sending}
               onPress={() => {
-                if (q && choice !== null && !sending) answer.mutate({ day: q.day, pick: choice });
+                if (q && choice !== null && !sending)
+                  answer.mutate({ day: q.day, pick: choice, slot: q.slot });
               }}
             />
           ) : (
