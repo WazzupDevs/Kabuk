@@ -1,6 +1,6 @@
 # Geçit soru havuzu, Skall Semti ve Skall Üniversitesi (27 Kasım 2026)
 
-Proje sahibinin kararları (sohbette, 27 Kasım). Henüz uygulanmadı; plan aşağıda. Değişmez kural 6'ya (ve 4, 10'a) dokunduğu için sunucu PR'ı proje sahibinin sohbetteki "onaylandı"sıyla ve `guvenlik` denetiminden sonra birleşir.
+Proje sahibinin kararları (sohbette, 27 Kasım). PR A (sunucu) uygulandı: migration `20261227090000_gecit_pool_open_places.sql`, testler `supabase/tests/gecitPoolOpenPlaces.test.ts`; PR B (uygulama) sırada. Değişmez kural 6'ya (ve 4, 10'a) dokunduğu için sunucu PR'ı proje sahibinin sohbetteki "onaylandı"sıyla ve `guvenlik` denetiminden sonra birleşir.
 
 ## Kararlar
 

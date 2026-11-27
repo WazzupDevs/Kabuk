@@ -123,8 +123,10 @@ const IN_DISTRICT: DistrictState = {
   district: { ref: 'beylikduzu', name: 'Beylikdüzü' },
   located: 'inside',
   gate: 'question',
-  question: { day: '2026-01-17', prompt: '', options: [] },
+  question: { day: '2026-01-17', slot: 1, prompt: '', options: [] },
   opensAt: '2026-01-18T00:00:00+03:00',
+  retryAt: null,
+  openDistricts: [{ ref: 'skall-semti', name: 'Skall Semti' }],
   session: null,
   pickByHand: false,
 };
@@ -136,6 +138,7 @@ const IN_ROOM: DistrictState = {
   question: null,
   session: {
     id: 's1',
+    district: { ref: 'beylikduzu', name: 'Beylikdüzü' },
     roomId: 'r1',
     phase: 'active',
     endsAt: new Date(SATURDAY_EVENING + 84 * MINUTE).toISOString(),

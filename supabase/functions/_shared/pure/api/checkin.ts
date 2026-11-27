@@ -4,14 +4,17 @@ import type { CheckinIdentity } from '../venueChat.ts';
 export type CheckInRequest = {
   action: 'check-in';
   venueId: string;
-  lat: number;
-  lng: number;
+  // Required, except at a venue checked in to without a location (Skall Üniversitesi,
+  // docs/SPEC_V4.md §4.AA; `openCheckin` in explore), where the app sends none.
+  lat?: number;
+  lng?: number;
   // Accuracy radius reported by the device, in metres. Stored; the coordinates are not.
   accuracyM: number | null;
   // The phone reports the position as coming from a mock location app (Android); refused outside
   // the local stack unless the location check is skipped (pure/devProject.ts). Older apps leave it out.
   mocked?: boolean;
-  locationConsentVersion: string;
+  // Required with a position; at an open venue the app may leave it out.
+  locationConsentVersion?: string;
   // Where the person is at a venue with spots (docs/SPEC_V3.md §4.3); required there, absent
   // elsewhere.
   spotId?: string;

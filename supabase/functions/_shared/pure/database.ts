@@ -397,6 +397,7 @@ export type Database = {
           id: string;
           is_active: boolean;
           name: string;
+          open: boolean;
           ref: string;
           ring: Json;
           sort: number;
@@ -405,6 +406,7 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           name: string;
+          open?: boolean;
           ref: string;
           ring: Json;
           sort?: number;
@@ -413,6 +415,7 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           name?: string;
+          open?: boolean;
           ref?: string;
           ring?: Json;
           sort?: number;
@@ -931,19 +934,49 @@ export type Database = {
           correct: boolean;
           created_at: string;
           day: string;
+          slot: number;
           user_id: string;
         };
         Insert: {
           correct: boolean;
           created_at?: string;
           day: string;
+          slot?: number;
           user_id: string;
         };
         Update: {
           correct?: boolean;
           created_at?: string;
           day?: string;
+          slot?: number;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      gecit_pool: {
+        Row: {
+          answer: number;
+          created_at: string;
+          id: string;
+          last_asked_on: string | null;
+          options: string[];
+          prompt: string;
+        };
+        Insert: {
+          answer: number;
+          created_at?: string;
+          id?: string;
+          last_asked_on?: string | null;
+          options: string[];
+          prompt: string;
+        };
+        Update: {
+          answer?: number;
+          created_at?: string;
+          id?: string;
+          last_asked_on?: string | null;
+          options?: string[];
+          prompt?: string;
         };
         Relationships: [];
       };
@@ -953,23 +986,37 @@ export type Database = {
           created_at: string;
           day: string;
           options: string[];
+          pool_id: string | null;
           prompt: string;
+          slot: number;
         };
         Insert: {
           answer: number;
           created_at?: string;
           day: string;
           options: string[];
+          pool_id?: string | null;
           prompt: string;
+          slot?: number;
         };
         Update: {
           answer?: number;
           created_at?: string;
           day?: string;
           options?: string[];
+          pool_id?: string | null;
           prompt?: string;
+          slot?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'gecit_questions_pool_id_fkey';
+            columns: ['pool_id'];
+            isOneToOne: false;
+            referencedRelation: 'gecit_pool';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       gift_accessories: {
         Row: {
@@ -2739,6 +2786,7 @@ export type Database = {
           kind: string;
           location: unknown;
           name: string;
+          open_checkin: boolean;
           source: string;
           source_ref: string;
           university_id: string | null;
@@ -2753,6 +2801,7 @@ export type Database = {
           kind?: string;
           location: unknown;
           name: string;
+          open_checkin?: boolean;
           source: string;
           source_ref: string;
           university_id?: string | null;
@@ -2767,6 +2816,7 @@ export type Database = {
           kind?: string;
           location?: unknown;
           name?: string;
+          open_checkin?: boolean;
           source?: string;
           source_ref?: string;
           university_id?: string | null;
@@ -2938,6 +2988,7 @@ export type Database = {
           capacity: number;
           grace_minutes: number;
           session_minutes: number;
+          target_district_id?: string;
           target_user_id: string;
         };
         Returns: {
@@ -3175,6 +3226,7 @@ export type Database = {
           lat: number;
           lng: number;
           name: string;
+          open_checkin: boolean;
           university_id: string;
           university_name: string;
           university_ref: string;
@@ -3295,9 +3347,26 @@ export type Database = {
         Returns: string;
       };
       gecit_answer: {
-        Args: { choice: number; target_day: string; target_user_id: string };
+        Args: {
+          choice: number;
+          retry_minutes?: number;
+          target_day: string;
+          target_slot?: number;
+          target_user_id: string;
+        };
         Returns: {
           correct: boolean;
+        }[];
+      };
+      gecit_state: {
+        Args: { retry_minutes: number; target_user_id: string };
+        Returns: {
+          day: string;
+          gate: string;
+          options: string[];
+          prompt: string;
+          retry_at: string;
+          slot: number;
         }[];
       };
       gifts_equip: {

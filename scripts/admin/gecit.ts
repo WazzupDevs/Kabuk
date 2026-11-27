@@ -1,12 +1,14 @@
-// Geçit questions (docs/SPEC_V4.md §4.V): the file the owner keeps outside this repo, checked before
-// anything is written. Real questions never enter the repo; the tests use made-up ones.
-export type GecitRow = { day: string; prompt: string; options: string[]; answer: number };
+// Geçit's question pool (docs/SPEC_V4.md §4.V): the file the owner keeps outside this repo, checked
+// before anything is written. Real questions never enter the repo; the tests use made-up ones. The
+// server draws the day's questions from the pool itself: the file has no days.
+export type GecitRow = { prompt: string; options: string[]; answer: number };
 
 export type GecitParse = { ok: true; rows: GecitRow[] } | { ok: false; problems: string[] };
 
-const DAY = /^\d{4}-\d{2}-\d{2}$/;
+// Below this many never asked questions the status warns (about two weeks of first questions).
+export const GECIT_LOW_POOL = 14;
 
-// [{ "day": "2026-11-09", "prompt": "…", "options": ["…", "…", "…", "…"], "answer": 0..3 }, …]
+// [{ "prompt": "…", "options": ["…", "…", "…", "…"], "answer": 0..3 }, …]
 export function parseGecitFile(text: string): GecitParse {
   let json: unknown;
   try {
@@ -19,19 +21,17 @@ export function parseGecitFile(text: string): GecitParse {
   }
   const problems: string[] = [];
   const rows: GecitRow[] = [];
-  const days = new Set<string>();
+  const prompts = new Set<string>();
   json.forEach((item: unknown, i) => {
     const r = item as Partial<GecitRow> | null;
     const at = `#${i + 1}`;
     if (typeof r !== 'object' || r === null) return void problems.push(`${at}: not an object`);
-    if (typeof r.day !== 'string' || !DAY.test(r.day) || Number.isNaN(Date.parse(r.day))) {
-      return void problems.push(`${at}: day must be YYYY-MM-DD`);
-    }
-    if (days.has(r.day)) return void problems.push(`${at}: day ${r.day} twice`);
-    days.add(r.day);
     if (typeof r.prompt !== 'string' || r.prompt.trim().length < 1 || r.prompt.length > 300) {
       return void problems.push(`${at}: prompt must be 1 to 300 characters`);
     }
+    const prompt = r.prompt.trim();
+    if (prompts.has(prompt)) return void problems.push(`${at}: the same question twice`);
+    prompts.add(prompt);
     if (
       !Array.isArray(r.options) ||
       r.options.length !== 4 ||
@@ -47,12 +47,15 @@ export function parseGecitFile(text: string): GecitParse {
     ) {
       return void problems.push(`${at}: answer must be 0, 1, 2 or 3`);
     }
-    rows.push({
-      day: r.day,
-      prompt: r.prompt.trim(),
-      options: r.options.map((o) => o.trim()),
-      answer: r.answer,
-    });
+    rows.push({ prompt, options: r.options.map((o) => o.trim()), answer: r.answer });
   });
   return problems.length ? { ok: false, problems } : { ok: true, rows };
+}
+
+// The status line: counts only, never a question.
+export function poolStatus(total: number, neverAsked: number): string {
+  const line = `Pool: ${total} questions, ${neverAsked} never asked.`;
+  return neverAsked < GECIT_LOW_POOL
+    ? `${line} Fewer than ${GECIT_LOW_POOL} new questions left: the oldest will be asked again.`
+    : line;
 }

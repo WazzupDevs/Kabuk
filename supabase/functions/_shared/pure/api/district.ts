@@ -4,15 +4,18 @@ import type { VenueChatMessage, VenueChatMode } from '../venueChat.ts';
 
 export type DistrictRef = { ref: string; name: string };
 
-// The day's question: never the right option (rule 4, §4.V).
-export type GecitQuestion = { day: string; prompt: string; options: string[] };
+// The person's current question: never the right option (rule 4, §4.V). A day's questions are
+// numbered (slot) and the same for everyone; a wrong answer gives the next one an hour later.
+export type GecitQuestion = { day: string; slot: number; prompt: string; options: string[] };
 
-// question: today's question waits; passed: answered right (or no question today);
-// failed: answered wrong, no entry until 00:00.
+// question: a question waits; passed: answered right (or nothing to ask); failed: answered wrong,
+// the next question at retryAt.
 export type GecitStatus = 'question' | 'passed' | 'failed';
 
 export type DistrictSession = {
   id: string;
+  // The session's district: the person's own or an open one (Skall Semti).
+  district: DistrictRef;
   roomId: string;
   // active until endsAt; then grace until graceEndsAt ("Devam?").
   phase: 'active' | 'grace';
@@ -35,6 +38,10 @@ export type DistrictState = {
   question: GecitQuestion | null;
   // The next 00:00 in Istanbul (the countdown, the rooms' close).
   opensAt: string;
+  // While gate is 'failed': when the next question comes (never past opensAt).
+  retryAt: string | null;
+  // The districts anyone may enter wherever they are (Skall Semti): no location needed.
+  openDistricts: DistrictRef[];
   session: DistrictSession | null;
   // Dev project with CHECKIN_SKIP_LOCATION: the app lets the person pick the district by hand.
   pickByHand: boolean;
@@ -46,8 +53,10 @@ export type DistrictRequest =
   // call returned for the same place. ref: the dev project's hand pick (pickByHand only).
   | { action: 'locate'; lat: number; lng: number; choice?: string; mocked?: boolean }
   | { action: 'pick'; ref: string }
-  | { action: 'answer'; day: string; choice: number }
-  | { action: 'enter' }
+  // slot: the question answered (state.question.slot); an app from before the pool leaves it out.
+  | { action: 'answer'; day: string; choice: number; slot?: number }
+  // ref: an open district (Skall Semti) or the person's own; left out, the person's own.
+  | { action: 'enter'; ref?: string }
   | { action: 'extend' }
   | { action: 'leave' }
   | { action: 'set-identity'; anonymous: boolean };

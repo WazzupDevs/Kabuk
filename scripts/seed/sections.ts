@@ -64,6 +64,17 @@ export function venuesSql(
   ].join('\n');
 }
 
+// The open venues (Skall Üniversitesi): written like the others, then marked open_checkin.
+export function openVenuesSql(venues: readonly VenueRecord[]): string {
+  if (venues.length === 0) return '-- content/venues-open.json: no venues\n';
+  const refs = venues.map((v) => sqlLiteral(v.sourceRef)).join(', ');
+  return [
+    venuesSql(venues, 'content/venues-open.json', null),
+    `update public.venues set open_checkin = true where source = 'skall' and source_ref in (${refs});`,
+    '',
+  ].join('\n');
+}
+
 // Replaces the list; only server code reads it (chat and clue filtering).
 export function profanitySql({ terms, wholeWords }: ProfanityList): string {
   const rows = [
