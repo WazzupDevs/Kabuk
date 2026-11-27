@@ -4,7 +4,7 @@ Proje sahibinin kararları, 8 Kasım 2026. Ürün metni `docs/SPEC_V4.md` §4.V,
 
 ## Proje sahibinin kararları
 
-- Semtler Beylikdüzü, Esenyurt, Avcılar. Kalan herkes semt dışı ekranını görür.
+- Semtler Beylikdüzü, Esenyurt, Avcılar; 27 Kasım'da Sakarya'dan Serdivan, Adapazarı ve Sapanca eklendi (proje sahibinin kararı; kampüs kullanıcıları için). Üç Sakarya semtinin sınırı da kendi kaba çizimimizdir; Serdivan ile Adapazarı Çark Deresi hattında, Sapanca ile Serdivan gölün doğusunda birbirine değer; Erenler ve Arifiye dışarıda kalır. Kalan herkes semt dışı ekranını görür.
 - Konum uygulamanın her açılışında bir kez alınır, çünkü kişi başka bir semte gidebilir. "İlk girişte bir kez, 30 günde bir yeniden" önerisi reddedildi.
 - Açılışta yalnız daha önce izin vermiş kişinin konumu alınır. Semt değişirse eski oturum kapanır, semt dışındaysa da kapanır. Konum alınamazsa son semt geçerli kalır.
 - İlçe sınırlarını kendimiz kaba çizeriz. Hazır veride sorun var: OSM ODbL ile paylaşım şartı taşıyor, resmî verinin lisansı belirsiz. İkisi de "lisansa takılacak hiçbir şey yapılmaz" kuralına takılır. Ortak sınıra 500 m'den yakın olana iki semt sunulur, dış sınırda da 500 m tolerans vardır.
