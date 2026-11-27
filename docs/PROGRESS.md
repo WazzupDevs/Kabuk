@@ -1,10 +1,11 @@
 # İlerleme
 
-## Devir notu (27 Kasım 2026): Geçit havuzu, Skall Semti, Skall Üniversitesi
+## Devir notu (27 Kasım 2026, akşam): Semte Git üretimde, sıradaki App Store
 
-- Kararlar ve plan: `docs/decisions/gecit-havuz-acik-yerler.md` (PR A sunucu, PR B uygulama). Kural 4, 6 ve 10'a dokunur: A, `guvenlik` denetimi ve proje sahibinin "onaylandı"sıyla birleşir.
-- Skall Üniversitesi haritada Irak'ta (Erbil), iğnesi skall işareti; harita açılış çerçevesi onu saymaz. Kaupholl'a dokunulmaz (sorular dev'de başka biri tarafından hazırlanıyor; üretimde soru yok).
-- Üretim durumu: Play kapalı test sürüyor (build 12, 0.12.0); yeni build logoyla gelecek. App Store: üretim iOS build'i henüz alınmadı (`eas build --platform ios --profile production`).
+- Geçit havuzu, Skall Semti ve Skall Üniversitesi main'de (#761 sunucu, #762 uygulama) ve üretimde (migration, fonksiyonlar, 131 soruluk havuz, OTA). Açık: haritada Skall Üniversitesi'nin iğnesi skall işareti değil (GL katmanına ayrı resim), ekranlar cihazda denetlenmedi.
+- Sentry MASA-G (ANR, 1 kez, OPPO CPH2727 Android 16): SVG yerleşim olayı çizim sırasında Reanimated'ın `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` yolunda hata atıp günlüğe yazarken ana iş parçacığı takıldı. Tekrarlarsa: bayrak ya da Reanimated sürümü, yeni build'de.
+- Kaupholl üretimde 0 soruyla açık (proje sahibine soruldu: kapatılsın mı). Yeni build (logo) ilk açılıştaki eski kod sorununu da çözer. CLI üretime bağlı; dev'e dönerken `supabase link --project-ref kphwbpqxhugrpoicmski`.
+- Sıradaki: App Store (`eas build --platform ios --profile production`, `docs/store/IOS_TESTFLIGHT.md`), kapalı testte 12 testçi / 14 gün, `pnpm ota:production`'ın Windows yol hatası.
 
 ## Devir notu (26 Kasım 2026, sabah): ekran revizeleri tek PR'da
 
