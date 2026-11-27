@@ -1,5 +1,5 @@
 // The drawn rings of content/districts.json (docs/SPEC_V4.md §4.V): known places land in the right
-// district, a shared border offers both, a neighbouring district stays outside.
+// district, a shared border offers both, a district not drawn stays outside.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -18,6 +18,7 @@ describe('content/districts.json', () => {
     ['Sakarya Üniversitesi Esentepe Kampüsü', [30.3315, 40.7413], 'serdivan'],
     ['Serdivan merkezi', [30.36, 40.762], 'serdivan'],
     ['Adapazarı merkezi', [30.403, 40.781], 'adapazari'],
+    ['Sapanca merkezi', [30.267, 40.691], 'sapanca'],
   ])('%s is in its district', (_place, point, ref) => {
     expect(locate(point, shapes)).toEqual({ kind: 'found', ref });
   });
@@ -29,7 +30,7 @@ describe('content/districts.json', () => {
     });
   });
 
-  it('leaves Sapanca outside', () => {
-    expect(locate([30.267, 40.691], shapes)).toEqual({ kind: 'outside' });
+  it('leaves Arifiye outside', () => {
+    expect(locate([30.363, 40.713], shapes)).toEqual({ kind: 'outside' });
   });
 });

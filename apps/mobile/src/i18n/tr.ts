@@ -1207,7 +1207,8 @@ export const tr = {
       roomEyebrow: 'Sohbettesin',
       backToRoom: 'Odaya dön',
       outsideTitle: 'Geçit henüz senin semtinde yok',
-      outsideNote: "Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan ve Adapazarı'nda açık.",
+      outsideNote:
+        "Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan, Adapazarı ve Sapanca'da açık.",
       errorTitle: 'Geçit şu an yüklenemedi',
       errorNote: 'Bağlantını kontrol et.',
       loading: 'Semte Git yükleniyor',
@@ -1243,6 +1244,7 @@ export const tr = {
       avcilar: 'Avcılar',
       serdivan: 'Serdivan',
       adapazari: 'Adapazarı',
+      sapanca: 'Sapanca',
     },
     gate: {
       title: 'Günün sorusu',
@@ -1282,7 +1284,7 @@ export const tr = {
     outside: {
       title: 'Geçit henüz senin semtinde yok',
       // SemtDisarida: the typographic apostrophe.
-      body: 'Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan ve Adapazarı’nda açık.',
+      body: 'Şimdilik Beylikdüzü, Esenyurt, Avcılar, Serdivan, Adapazarı ve Sapanca’da açık.',
       sceneLabel: 'Üç kanki: biri haritayı açmış, biri konum iğnesi tutuyor, biri onay işareti',
     },
     ended: {
