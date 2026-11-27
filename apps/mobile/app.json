@@ -79,7 +79,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Yakınındaki mekanları bulmak için konumun yalnızca check-in anında bir kez kullanılır.",
+          "locationWhenInUsePermission": "Konumun yalnızca check-in anında mekanda olduğunu doğrulamak ve Semte Git'te hangi semtte olduğunu bulmak için kullanılır; saklanmaz.",
           "isIosBackgroundLocationEnabled": false,
           "isAndroidBackgroundLocationEnabled": false,
           "isAndroidForegroundServiceEnabled": false
