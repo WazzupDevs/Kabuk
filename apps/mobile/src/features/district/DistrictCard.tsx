@@ -25,7 +25,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 import { districtScreen, useEnterDistrict } from './flow';
 import { RISO } from './parts';
-import { DISTRICT_VISIBLE, useDistrictState } from './queries';
+import { useDistrictState } from './queries';
 
 // The buddy standing beside the gate (assets/riso/buddies).
 const BUDDY = require('../../../assets/riso/buddies/riso_1a80a9.webp') as ImageSourcePropType;
@@ -39,9 +39,8 @@ const BUDDY = require('../../../assets/riso/buddies/riso_1a80a9.webp') as ImageS
 export function DistrictCard() {
   const state = useDistrictState();
   const enter = useEnterDistrict({ replace: false });
-  const now = useNow(30_000, DISTRICT_VISIBLE);
+  const now = useNow(30_000);
   const warn = useKit().c.warn;
-  if (!DISTRICT_VISIBLE) return null;
   if (state.isPending) return <CardSkeleton />;
   if (!state.data) {
     return (
@@ -58,18 +57,34 @@ export function DistrictCard() {
     );
   }
   const s = state.data;
+  const goOpen = (ref: string) => {
+    const to = districtScreen(s, ref);
+    if (to) router.push({ pathname: to, params: { ref } });
+    else enter.mutate(ref);
+  };
+  // The districts anyone may enter wherever they are (Skall Semti): no position, a button each.
+  const openButtons = s.openDistricts.map((d) => (
+    <CardButton
+      key={d.ref}
+      label={tr.district.card.goOpen(d.name)}
+      soft
+      testID={`district-card-open-${d.ref}`}
+      loading={enter.isPending && enter.variables === d.ref}
+      onPress={() => goOpen(d.ref)}
+    />
+  ));
   const hm = (iso: string) => {
     const left = secondsUntil(iso, new Date(now));
     const minutes = Math.ceil(left / 60);
     return [Math.floor(minutes / 60), minutes % 60] as const;
   };
-  if (s.session && s.district) {
+  if (s.session) {
     const grace = Date.parse(s.session.endsAt) <= now;
     const [h, m] = hm(s.session.endsAt);
     return (
       <Scene
         room
-        title={tr.district.card.inRoom(s.district.name)}
+        title={tr.district.card.inRoom(s.session.district.name)}
         meta={grace ? tr.district.continueChip : tr.district.leftAmount(h, m)}
         metaWord={grace ? undefined : tr.district.leftWord}
       >
@@ -86,11 +101,12 @@ export function DistrictCard() {
       <Frame door={RISO.doorLocked} still>
         <Title>{tr.district.card.outsideTitle}</Title>
         <Note>{tr.district.card.outsideNote}</Note>
+        {openButtons}
       </Frame>
     );
   }
   if (s.gate === 'failed') {
-    const [h, m] = hm(s.opensAt);
+    const [h, m] = hm(s.retryAt ?? s.opensAt);
     return (
       <Frame door={RISO.doorLocked} still>
         <Title>{tr.district.card.closedTitle}</Title>
@@ -112,9 +128,10 @@ export function DistrictCard() {
       <CardButton
         label={tr.district.card.go}
         testID="district-card-go"
-        loading={enter.isPending}
+        loading={enter.isPending && enter.variables === undefined}
         onPress={go}
       />
+      {openButtons}
       {enter.isError ? (
         <T v="fine" color={warn}>
           {errorMessage(enter.error)}

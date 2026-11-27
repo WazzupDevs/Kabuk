@@ -165,9 +165,13 @@ export function ExploreMap({
   // The opening view only: later data refreshes do not move the map under the user's finger. It
   // is the first set with a venue in it: a search that matched nothing kept the map blank for
   // good (audit VEN-8).
-  const [opening, setOpening] = useState<Bounds | null>(() => venueBounds(venues));
+  // A venue checked in to without a position (Skall Üniversitesi, Erbil) is far from the rest: the
+  // opening view does not count it, unless it is all there is.
+  const openingBounds = (all: readonly ExploreVenue[]) =>
+    venueBounds(all.some((v) => !v.openCheckin) ? all.filter((v) => !v.openCheckin) : all);
+  const [opening, setOpening] = useState<Bounds | null>(() => openingBounds(venues));
   if (!opening && venues.length > 0) {
-    const first = venueBounds(venues);
+    const first = openingBounds(venues);
     if (first) setOpening(first);
   }
   const padding = mapPadding(headerHeight, tabBarHeight, PIN_EDGE);

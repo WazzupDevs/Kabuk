@@ -41,7 +41,7 @@ export async function askNoticePermission(): Promise<void> {
 export async function syncContinueNotice(state: DistrictState): Promise<void> {
   try {
     const s = state.session;
-    const name = state.district?.name;
+    const name = s?.district.name;
     // A session ending at 00:00 is not asked "Devam?" (§4.V): no notice for it.
     if (!s || !name || Date.parse(s.endsAt) <= Date.now() || !asksToContinue(state)) {
       if (planned !== null) await cancel();

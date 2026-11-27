@@ -1,7 +1,7 @@
 import { clockText, nextIstanbulMidnight, secondsUntil } from '@shared/district.ts';
 import { upperTr } from '@shared/trText.ts';
 import { useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
@@ -13,17 +13,32 @@ import { useNow } from '@/lib/useNow';
 import { SEMT } from '@/theme/semt';
 
 // GecitKapali (docs/SPEC_V4.md §4.V; the owner's calls, 8 Kasım): no right answer (it goes to no
-// phone), "Kankin seninle gurur duyuyor." instead; the time to 00:00 Istanbul, sa:dk:sn each second.
+// phone), "Kankin seninle gurur duyuyor." instead; the time to the next question (state.retryAt, an
+// hour after the wrong answer, never past 00:00 Istanbul), sa:dk:sn each second.
 export default function DistrictClosedScreen() {
   const queryClient = useQueryClient();
   const state = useDistrictState();
+  // An open district (Skall Semti) being entered: carried back to the gate.
+  const { ref } = useLocalSearchParams<{ ref?: string }>();
   const now = useNow(1000);
-  const opensAt = state.data?.opensAt ?? nextIstanbulMidnight(new Date(now)).toISOString();
-  const left = secondsUntil(opensAt, new Date(now));
-  // At 00:00 the new day's question: the state again.
+  const next =
+    state.data?.retryAt ?? state.data?.opensAt ?? nextIstanbulMidnight(new Date(now)).toISOString();
+  const left = secondsUntil(next, new Date(now));
+  // When the next question is due: the state again, and the question comes.
   useEffect(() => {
     if (left === 0) void queryClient.invalidateQueries({ queryKey: districtKeys.state });
   }, [left, queryClient]);
+  const gate = state.data?.gate;
+  if (gate === 'question' || gate === 'passed') {
+    return (
+      <Redirect
+        href={{
+          pathname: gate === 'question' ? '/district/gate' : '/district/open',
+          ...(ref ? { params: { ref } } : {}),
+        }}
+      />
+    );
+  }
   const h = Math.floor(left / 3600);
   const m = Math.floor((left % 3600) / 60);
   const s = left % 60;

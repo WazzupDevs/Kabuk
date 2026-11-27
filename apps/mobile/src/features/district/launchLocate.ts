@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 import { districtApi } from '@/lib/api';
 
-import { DISTRICT_VISIBLE, districtKeys, putDistrictState, readDistrictState } from './queries';
+import { districtKeys, putDistrictState, readDistrictState } from './queries';
 
 // Once per launch of the app (docs/SPEC_V4.md §4.V, rule 6): coming back from the background is no
 // launch. Only for a person who used Semte Git before and already gave the position: nobody is asked
@@ -38,7 +38,7 @@ async function locateOnLaunch(queryClient: ReturnType<typeof useQueryClient>): P
 export function useDistrictLaunchLocate(): void {
   const queryClient = useQueryClient();
   useEffect(() => {
-    if (launched || !DISTRICT_VISIBLE) return;
+    if (launched) return;
     launched = true;
     // No position (taken away, no signal): the district found last stays, the session goes on.
     void locateOnLaunch(queryClient).catch(() => undefined);

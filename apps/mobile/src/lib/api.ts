@@ -543,9 +543,12 @@ export const districtApi = {
     }),
   // The dev project's hand pick (state.pickByHand only).
   pick: (ref: string) => invoke<DistrictState>('district', { action: 'pick', ref }),
-  answer: (day: string, choice: number) =>
-    invoke<DistrictAnswerResponse>('district', { action: 'answer', day, choice }),
-  enter: () => invoke<DistrictState>('district', { action: 'enter' }),
+  // `slot`: the question answered (state.question.slot).
+  answer: (day: string, choice: number, slot: number) =>
+    invoke<DistrictAnswerResponse>('district', { action: 'answer', day, choice, slot }),
+  // `ref`: an open district (Skall Semti, state.openDistricts); left out, the person's own.
+  enter: (ref?: string) =>
+    invoke<DistrictState>('district', { action: 'enter', ...(ref ? { ref } : {}) }),
   extend: () => invoke<DistrictState>('district', { action: 'extend' }),
   leave: () => invoke<DistrictState>('district', { action: 'leave' }),
   // Once per session (identity_switch_used after); profiled needs the photo.

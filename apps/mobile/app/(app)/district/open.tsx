@@ -1,5 +1,5 @@
 import { upperTr } from '@shared/trText.ts';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
@@ -16,8 +16,11 @@ import { SEMT } from '@/theme/semt';
 export default function DistrictOpenScreen() {
   const { scheme } = useKit();
   const state = useDistrictState();
-  const enter = useEnterDistrict();
-  const name = state.data?.district?.name ?? '';
+  // An open district (Skall Semti) comes with its ref; else the person's own.
+  const { ref } = useLocalSearchParams<{ ref?: string }>();
+  const enter = useEnterDistrict({ ref });
+  const name =
+    (ref ? state.data?.openDistricts.find((d) => d.ref === ref) : state.data?.district)?.name ?? '';
   const t = SEMT.entryTicket;
   const k = t[scheme];
   return (

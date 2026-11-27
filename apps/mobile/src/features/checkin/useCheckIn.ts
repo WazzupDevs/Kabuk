@@ -21,16 +21,23 @@ export function useCheckIn() {
 
   return useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ position, spot }: { position: Position; spot: DraftSpot | null }) => {
+    mutationFn: ({ position, spot }: { position: Position | null; spot: DraftSpot | null }) => {
       if (!venue) throw new Error('No check-in draft');
+      // An open venue (no position taken): no coordinate and no location consent go.
+      const located =
+        position && !venue.openCheckin
+          ? {
+              lat: position.lat,
+              lng: position.lng,
+              accuracyM: position.accuracyM,
+              ...(position.mocked ? { mocked: true } : {}),
+              locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+            }
+          : { accuracyM: null };
       return callCheckIn({
         action: 'check-in',
         venueId: venue.id,
-        lat: position.lat,
-        lng: position.lng,
-        accuracyM: position.accuracyM,
-        ...(position.mocked ? { mocked: true } : {}),
-        locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+        ...located,
         ...(spot ? { spotId: spot.id } : {}),
         requestId: key,
       });

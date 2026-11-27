@@ -18,10 +18,14 @@ export type DistrictScreen =
 
 // Where Semte Git goes from the person's state (docs/SPEC_V4.md §4.V); null: Geçit is open (the day's
 // question answered right, or no question today) and the press goes straight in.
-export function districtScreen(state: DistrictState): DistrictScreen | null {
+// `open`: an open district (Skall Semti) is the target: no location, no district of the person's own
+// needed.
+export function districtScreen(state: DistrictState, open?: string): DistrictScreen | null {
   if (state.session) return '/district/room';
-  if (!state.district)
-    return state.located === 'outside' ? '/district/outside' : '/district/locate';
+  if (!open) {
+    if (!state.district)
+      return state.located === 'outside' ? '/district/outside' : '/district/locate';
+  }
   if (state.gate === 'question') return '/district/gate';
   if (state.gate === 'failed') return '/district/closed';
   return null;
@@ -29,13 +33,18 @@ export function districtScreen(state: DistrictState): DistrictScreen | null {
 
 // "İçeri gir", "Yeniden gir" and the card's press with Geçit open: a new 2 hours (the same day without
 // the question), the room. A refusal (the day changed, the district went) reads the state again.
-export function useEnterDistrict({ replace = true }: { replace?: boolean } = {}) {
+// `ref`: an open district (Skall Semti) to enter; left out, the person's own. A ref given when
+// pressing wins over the hook's.
+export function useEnterDistrict({
+  replace = true,
+  ref,
+}: { replace?: boolean; ref?: string } = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     meta: FEEL_ERROR,
-    mutationFn: async () => {
+    mutationFn: async (pressed?: string) => {
       await askNoticePermission();
-      return districtApi.enter();
+      return districtApi.enter(pressed ?? ref);
     },
     onSuccess: (state) => {
       putDistrictState(queryClient, state);
