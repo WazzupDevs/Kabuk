@@ -83,7 +83,8 @@
     ['#tasarla', 'Beni burada süsleyebilirsin. Kaydedersen hep öyle gezerim.', 'kirp'],
     ['#rahat', 'Rahat ol. Katılma isteğin reddedilirse kimse bilmez, ben de söylemem.', 'normal'],
     ['#kampus', 'İlk durak bu iki kampüs. Bir arkadaş daha katıldı!', 'mutlu', 9],
-    ['#kampusunu-cagir', 'Okulun listede yoksa çağır, biz de geliriz.', 'saskin'],
+    ['#kampusunu-cagir', 'Okulun listede yoksa başvur, ilk oy senden.', 'saskin'],
+    ['#mekan-sahibi', 'Mekanın mı var? Bir bak.', 'mutlu'],
     ['.alt', 'Masa tamam! Hepimiz buradayız. Görüşürüz.', 'mutlu']
   ];
   var gorulen = {}, bekleyen = null, siraCalisiyor = false;
@@ -152,18 +153,12 @@
   });
   document.addEventListener('input', function (v) { if (v.target.matches && v.target.matches('input[type=search],input[type=text]')) bakOge(v.target); });
 
-  // oy ve başvuru sonucu
-  function sonuc() {
-    setTimeout(function () {
-      var d = document.querySelector('.durum');
-      if (!d || d.hidden) return;
-      if (d.classList.contains('tamam')) { ruh('mutlu', 3000); hop('takla'); konfeti(); soyle('Oyun sayıldı! Arkadaşlarına da haber ver.', 4200, 3); }
-      else if (d.classList.contains('hata')) { ruh('saskin', 2200); hop('salla'); soyle('Bir okula zaten oy verdin.', 3200, 3); }
-    }, 120);
-  }
-  document.addEventListener('click', function (v) { if (v.target.closest && v.target.closest('button[data-okul]')) sonuc(); });
-  var form = document.getElementById('basvur');
-  if (form) form.addEventListener('submit', function () { setTimeout(sonuc, 1000); });
+  // oy ve başvuru sonucu (site.js sunucunun yanıtını 'skall-oy' olayıyla duyurur)
+  document.addEventListener('skall-oy', function (v) {
+    var d = v.detail || {};
+    if (d.tur === 'tamam') { ruh('mutlu', 3000); hop('takla'); konfeti(); soyle(d.soz, 4200, 3); }
+    else { ruh('saskin', 2200); hop('salla'); soyle(d.soz, 3200, 3); }
+  });
   function konfeti() {
     if (AZ) return;
     var renk = ['#FF4F8B', '#FFB547', '#20CDA5', '#3DDC84', '#B9A6FF'];

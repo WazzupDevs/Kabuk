@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -10,7 +10,8 @@ import {
 } from '../../supabase/functions/_shared/pure/legalEntity.ts';
 import { DRAFT_NOTICE, LEGAL_PAGES, renderIndex, renderLegalPage } from './render.ts';
 
-const legalDir = resolve(import.meta.dirname, '../../docs/legal');
+const root = resolve(import.meta.dirname, '../..');
+const legalDir = resolve(root, 'docs/legal');
 const privacy = { slug: 'gizlilik-politikasi', title: 'Gizlilik Politikası' };
 const named: LegalEntity = { ...LEGAL_ENTITY, controllerName: 'Deniz Örnek' };
 const unnamed: LegalEntity = { ...LEGAL_ENTITY, controllerName: '' };
@@ -51,7 +52,9 @@ describe('legal site', () => {
     const slugs = new Set(LEGAL_PAGES.map((page) => page.slug));
     for (const page of LEGAL_PAGES) {
       for (const [, href] of source(page.slug).matchAll(/\]\(([^)]+)\)/g)) {
-        expect(slugs.has((href ?? '').replace(/\.html$/, ''))).toBe(true);
+        const slug = (href ?? '').replace(/\.html$/, '');
+        // Another legal page, or a page of the website itself (web/, e.g. mekanlar.html).
+        expect(slugs.has(slug) || existsSync(resolve(root, 'web', `${slug}.html`))).toBe(true);
       }
     }
   });

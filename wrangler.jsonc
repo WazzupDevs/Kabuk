@@ -1,13 +1,36 @@
-// skall.world on Cloudflare (docs/OPS.md → "Yasal sayfalar (skall.world)"): the static output of
-// `pnpm site:build`, no server code. `name` is the Cloudflare project's name.
+// skall.world on Cloudflare (docs/OPS.md → "Yasal sayfalar (skall.world)" and "skall.world
+// formları"): the static output of `pnpm site:build`, and a Worker only for /api/* (the campus
+// vote and the venue application, docs/decisions/skall-world-formlar.md). `name` is the
+// Cloudflare project's name.
 {
   "name": "skall",
+  "main": "scripts/site/worker.ts",
   "compatibility_date": "2026-11-01",
   // Only skall.world: no second copy of the site on *.workers.dev or on preview URLs.
   "workers_dev": false,
   "preview_urls": false,
   "assets": {
     "directory": "./site",
+    "binding": "ASSETS",
     "not_found_handling": "404-page",
+    // Every other path is a static file and never wakes the Worker.
+    "run_worker_first": ["/api/*"],
   },
+  // The forms' database. The id is not a secret; it comes from `wrangler d1 create skall-site`.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "skall-site",
+      "database_id": "5d38e94a-37f0-4878-8a66-6bf749a750d5",
+      "migrations_dir": "scripts/site/d1",
+    },
+  ],
+  // The daily cleanup (worker.ts → cleanup): old venue applications and IP counters.
+  "triggers": { "crons": ["17 3 * * *"] },
+  // TURNSTILE_SITE_KEY is a plain variable set in the dashboard; a deploy keeps it. The secrets
+  // (TURNSTILE_SECRET_KEY, IP_SALT, RESEND_API_KEY) are Worker secrets, never in this file.
+  "keep_vars": true,
+  // Only the console lines (no person in them): the invocation logs would keep each caller's IP and
+  // place, which the privacy texts say are not stored.
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } },
 }

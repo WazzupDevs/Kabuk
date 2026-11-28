@@ -2,7 +2,7 @@
 
 Yürürlük tarihi: {{EFFECTIVE_DATE}}
 
-Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun ("KVKK") 10. maddesi uyarınca, {{APP_NAME}} uygulamasını kullanırken kişisel verilerinizin nasıl işlendiği hakkında sizi bilgilendirmek için hazırlanmıştır. Bu metin bir sözleşme değildir ve onayınızı gerektirmez.
+Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun ("KVKK") 10. maddesi uyarınca, {{APP_NAME}} uygulamasını kullanırken ve skall.world sitesindeki formları doldururken kişisel verilerinizin nasıl işlendiği hakkında sizi bilgilendirmek için hazırlanmıştır. Sitedeki formlar için 8. bölüm geçerlidir. Bu metin bir sözleşme değildir ve onayınızı gerektirmez.
 
 ## 1. Veri sorumlusu
 
@@ -85,3 +85,15 @@ Başvurunuzda adınız, soyadınız, hesabınıza kayıtlı telefon numarası ve
 Başvurunuz reddedilirse, cevabı yetersiz bulursanız ya da süresinde cevap verilmezse; cevabı öğrendiğiniz tarihten itibaren 30 gün ve her hâlde başvuru tarihinden itibaren 60 gün içinde Kişisel Verileri Koruma Kurulu'na şikayette bulunabilirsiniz.
 
 Hesabınızı ve verilerinizi başvuruya gerek olmadan, uygulamada Profil sekmesinde Ayarlar, Hesap, Hesabımı sil yoluyla dilediğiniz an silebilirsiniz.
+
+## 8. skall.world sitesindeki formlar
+
+Bu bölüm 28 Kasım 2026'dan itibaren geçerlidir. Veri sorumlusu ve başvuru yolu yukarıdakiyle aynıdır.
+
+| Form                                                      | İşlenen veriler                                                                                          | Amaç                                                       | Hukuki sebep                                                                                                                                         | Saklama süresi                                        |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Pilot mekan başvurusu (skall.world/mekanlar)              | Mekan adı, ilçe, yetkili adı soyadı, telefon, e-posta, başvuru zamanı ve gösterilen metnin sürümü        | Başvurunun değerlendirilmesi ve başvuranla iletişim        | Sözleşmenin kurulmasıyla doğrudan ilgili olması (m. 5/2-c); başvuru bir işletme adına yapılıyorsa yetkilinin bilgileri için meşru menfaat (m. 5/2-f) | En geç 1 yıl                                          |
+| Kampüs oylaması ve okul başvurusu (skall.world ana sayfa) | Tarayıcının ürettiği rastgele anahtarın geri döndürülemez özeti, oy verilen ya da başvurulan okul, zaman | Her cihazın tek oy vermesi, sıradaki kampüslerin seçilmesi | Meşru menfaat (m. 5/2-f)                                                                                                                             | Oylama sürdükçe                                       |
+| İki form                                                  | IP adresinin geri döndürülemez özeti; Cloudflare Turnstile doğrulamasında tarayıcının teknik bilgileri   | Kötüye kullanımın ve otomatik gönderimlerin önlenmesi      | Meşru menfaat (m. 5/2-f)                                                                                                                             | IP özeti en geç 3 gün; IP adresinin kendisi saklanmaz |
+
+Bu veriler sitenin kendisinde, elektronik ortamda, formu gönderdiğinizde toplanır. Cloudflare'e (site, veritabanı ve Turnstile; yurt dışı) aktarılır; mekan başvurusunun bize e-postayla bildirimi için Resend'e (gönderim İrlanda'dan, şirket ABD'de) yalnızca mekanın adı ve ilçesi gider; aktarım 4. bölümdeki gibi standart sözleşmeye dayanır. Kampüs oylaması ad, e-posta ya da telefon istemez. Bu formlarla ilgili 6. bölümdeki haklarınızı 7. bölümdeki yollarla kullanabilirsiniz; mekan başvurusunda kimlik doğrulaması için başvuruda yazdığınız e-posta ya da telefon kullanılır.

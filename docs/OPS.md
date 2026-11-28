@@ -41,13 +41,37 @@ Node 22, pnpm 10, Docker (yerel Supabase için). Supabase CLI ve Deno root devDe
    - Build command: `pnpm install --frozen-lockfile && pnpm site:build`
    - Deploy command: `npx wrangler deploy` (ayarlar `wrangler.jsonc`'te: `site/` statik, bulunmayan adres `404.html`)
    - Ortam değişkeni: `NODE_VERSION` = `22`
-   - Yalnızca site değişince derlesin: **Build watch paths** → Include: `web/*`, `docs/legal/*`, `scripts/build-site.ts`, `scripts/site/*`, `supabase/functions/_shared/pure/brand.ts`, `supabase/functions/_shared/pure/legalEntity.ts`, `wrangler.jsonc`.
+   - Yalnızca site değişince derlesin: **Build watch paths** → Include: `web/*`, `docs/legal/*`, `scripts/build-site.ts`, `scripts/site/*`, `scripts/site/d1/*`, `supabase/functions/_shared/pure/brand.ts`, `supabase/functions/_shared/pure/legalEntity.ts`, `wrangler.jsonc`.
 2. Bağlayınca ilk derleme main'den yayınlar; alan adı aynı Worker'da kaldığı için taşıma yoktur. Elle yükleme (zip) bundan sonra yapılmaz: bir sonraki birleşme onu ezer.
-3. Adresler: `https://skall.world/` (web sitesi), `/yasal.html` (yasal sayfalar), `/gizlilik-politikasi.html`, `/kvkk-aydinlatma-metni.html`, `/kullanim-kosullari.html`, `/topluluk-kurallari.html`, `/cocuk-guvenligi.html`, `/hesap-silme.html`.
+3. Adresler: `https://skall.world/` (web sitesi), `/mekanlar` (mekan sahipleri), `/yasal.html` (yasal sayfalar), `/gizlilik-politikasi.html`, `/kvkk-aydinlatma-metni.html`, `/kullanim-kosullari.html`, `/topluluk-kurallari.html`, `/cocuk-guvenligi.html`, `/hesap-silme.html`.
 4. Uygulama metinleri kendi içinde gösterir; `EXPO_PUBLIC_PRIVACY_URL` kullanılmaz (12 Kasım).
 5. Yerelde bakmak için `pnpm site:build` ve `site/index.html`'i tarayıcıda aç. Site değişikliği: dosyalar `web/`'e, PR, birleşince Cloudflare kendisi yayınlar.
 
 - Eski GitHub Pages yayını (`wazzupdevs.github.io/Kabuk`) kaldırıldı (9 Kasım); repo Settings → Pages kapalı tutulur.
+
+## skall.world formları (kampüs oylaması, mekan başvurusu)
+
+Aynı Worker `/api/*`'de çalışır (`scripts/site/worker.ts`, kurallar `forms.ts`, şema `scripts/site/d1/`); veriler Cloudflare D1'de (`docs/decisions/skall-world-formlar.md`). Sırlar repoya girmez. Eksikken site açılır, formlar "şu an alamıyoruz" der.
+
+Tek seferlik (proje sahibi):
+
+1. **D1:** Cloudflare paneli → Storage & Databases → D1 → Create → ad `skall-site`. Database ID'yi `wrangler.jsonc` → `database_id`'ye yaz (gizli değil; PR'la).
+2. **Şema:** bilgisayarda repo kökünde `npx wrangler login`, sonra `npx wrangler d1 migrations apply skall-site --remote`. Yeni migration geldiğinde aynı komut.
+3. **Turnstile:** panel → Turnstile → Add widget: ad `skall.world`, hostname `skall.world`, mod Managed. Site Key ve Secret Key'i al.
+4. **Resend:** resend.com'da hesap (ücretsiz plan) → Domains → `skall.world` ekle (bölge Ireland `eu-west-1`; yasal metinler bunu yazar), verdiği DNS kayıtlarını Cloudflare DNS'e gir (Zoho'nun MX'ine dokunmaz; Resend `send.skall.world` alt alanını kullanır), doğrulanınca API Keys → Create (yalnızca Sending access).
+5. **Worker ayarları:** Workers & Pages → skall → Settings → Variables and Secrets:
+   - Text: `TURNSTILE_SITE_KEY` = Site Key
+   - Secret: `TURNSTILE_SECRET_KEY` = Secret Key, `IP_SALT` = rastgele uzun dize (`openssl rand -hex 32`; değişirse yalnız günlük sayaçlar sıfırlanır), `RESEND_API_KEY` = Resend anahtarı
+   - İsteğe bağlı Text: `MAIL_FROM` (varsayılan `skall <bildirim@skall.world>`)
+6. Sonraki main yayını (ya da Deployments → Retry) Worker'ı ayarlarla açar. Deneme: ana sayfada bir okula oy, `/mekanlar`'da başvuru; `support@skall.world`'e e-posta gelmeli.
+
+Yönetim (D1 konsolu: panel → D1 → skall-site → Console):
+
+- Bekleyen okullar: `select s.id, s.name, s.created_at, count(v.device_hash) as oy from schools s left join votes v on v.school_id = s.id where s.status = 'pending' group by s.id order by oy desc;`
+- Onay: `update schools set status = 'approved' where id = <id>;` · Red: `... set status = 'rejected' ...` (başvurana fark görünmez, oyu listede sayılmaz).
+- Ad düzeltme: `update schools set name = '<ad>' where id = <id>;` (`name_key` aynı kalır). Aynı okulun iki satırı: oyları birine taşı (`update votes set school_id = <asıl> where school_id = <kopya>;`) ve kopyayı reddet.
+- Listeye okul ekleme: `insert into schools (name, name_key, status, created_at) values ('<ad>', '<anahtar>', 'approved', datetime('now'));` (anahtar `forms.ts` → `schoolKey`: küçük harf, ı→i, harf ve rakam dışı boşluk).
+- Mekan başvuruları: `select * from venue_applications order by created_at desc;` (`emailed_at` boşsa e-posta gitmemiştir). Bir yıldan eskiler her gece kendiliğinden silinir; silme talebinde `delete from venue_applications where id = <id>;`.
 
 ## Üretim Supabase projesi (tek seferlik)
 
