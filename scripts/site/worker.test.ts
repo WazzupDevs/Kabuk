@@ -193,7 +193,7 @@ describe('worker', () => {
     const before = (await schools()).length;
     const applied = await call(
       post('/api/okul-basvuru', {
-        name: 'Isparta  Uygulamalı Bilimler Üniversitesi',
+        name: 'Ilgaz  Dağı Bilim Üniversitesi',
         adult: true,
         device: DEVICE_A,
         token: 'school',
@@ -201,12 +201,12 @@ describe('worker', () => {
     );
     expect(applied.body).toEqual({
       ok: true,
-      school: 'Isparta Uygulamalı Bilimler Üniversitesi',
+      school: 'Ilgaz Dağı Bilim Üniversitesi',
       status: 'pending',
     });
     const second = await call(
       post('/api/okul-basvuru', {
-        name: 'isparta uygulamalı bilimler üniversitesi',
+        name: 'ilgaz dağı bilim üniversitesi',
         adult: true,
         device: DEVICE_B,
         token: 'school',
@@ -219,7 +219,7 @@ describe('worker', () => {
     expect((await schools()).length).toBe(before);
     db.exec("update schools set status = 'approved' where status = 'pending'");
     expect((await schools())[0]).toMatchObject({
-      name: 'Isparta Uygulamalı Bilimler Üniversitesi',
+      name: 'Ilgaz Dağı Bilim Üniversitesi',
       votes: 2,
     });
   });
