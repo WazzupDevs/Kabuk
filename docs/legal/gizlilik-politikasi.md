@@ -96,16 +96,17 @@ Oturumunuz ve arkadaşlarınızla mesajlaşmalarınızda her konuşmanın son 50
 
 Verileriniz yalnızca hizmeti sunabilmek için, bizim adımıza çalışan şu hizmet sağlayıcılara aktarılır. Hiçbiri verilerinizi kendi amacı için kullanamaz.
 
-| Sağlayıcı                                                              | Ne için                                                          | Hangi veri                                      | Yer                 |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------- | ------------------- |
-| Supabase (Amazon Web Services altyapısı)                               | Veritabanı, giriş, sunucu, dosya saklama                         | Yukarıdaki hesap ve kullanım verilerinin tamamı | Almanya (Frankfurt) |
-| Netgsm                                                                 | Giriş kodunun SMS ile gönderilmesi                               | Telefon numarası, giriş kodu                    | Türkiye             |
-| Expo, Google Firebase Cloud Messaging, Apple Push Notification service | Bildirimlerin iletilmesi, uygulama güncellemelerinin dağıtılması | Bildirim anahtarı, bildirim metni, IP adresi    | ABD                 |
-| PostHog                                                                | Kullanım istatistikleri                                          | Hesap kimliği, olay adı                         | Almanya (Frankfurt) |
-| Sentry                                                                 | Hata raporları                                                   | Hesap kimliği, teknik hata kaydı                | Almanya (Frankfurt) |
-| OpenFreeMap                                                            | Keşfet haritasının görüntüleri                                   | IP adresi, bakılan harita bölgesi               | Yurt dışı           |
-| Cloudflare                                                             | skall.world sitesinin sunulması                                  | Siteyi ziyaret edenin IP adresi                 | Yurt dışı           |
-| Zoho                                                                   | Bize yazdığınız e-postaların alınması                            | E-posta adresiniz ve yazdıklarınız              | Yurt dışı           |
+| Sağlayıcı                                                              | Ne için                                                                                                             | Hangi veri                                                             | Yer                 |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------- |
+| Supabase (Amazon Web Services altyapısı)                               | Veritabanı, giriş, sunucu, dosya saklama                                                                            | Yukarıdaki hesap ve kullanım verilerinin tamamı                        | Almanya (Frankfurt) |
+| Netgsm                                                                 | Giriş kodunun SMS ile gönderilmesi                                                                                  | Telefon numarası, giriş kodu                                           | Türkiye             |
+| Expo, Google Firebase Cloud Messaging, Apple Push Notification service | Bildirimlerin iletilmesi, uygulama güncellemelerinin dağıtılması                                                    | Bildirim anahtarı, bildirim metni, IP adresi                           | ABD                 |
+| PostHog                                                                | Kullanım istatistikleri                                                                                             | Hesap kimliği, olay adı                                                | Almanya (Frankfurt) |
+| Sentry                                                                 | Hata raporları                                                                                                      | Hesap kimliği, teknik hata kaydı                                       | Almanya (Frankfurt) |
+| OpenFreeMap                                                            | Keşfet haritasının görüntüleri                                                                                      | IP adresi, bakılan harita bölgesi                                      | Yurt dışı           |
+| Cloudflare                                                             | skall.world sitesinin sunulması, sitedeki formların saklanması ve otomatik gönderimlere karşı doğrulama (Turnstile) | Siteyi ziyaret edenin IP adresi, tarayıcı bilgisi; formlara yazılanlar | Yurt dışı           |
+| Zoho                                                                   | Bize yazdığınız e-postaların alınması                                                                               | E-posta adresiniz ve yazdıklarınız                                     | Yurt dışı           |
+| Resend                                                                 | Mekan başvurusunun bize e-postayla bildirilmesi                                                                     | Mekan başvurusundaki bilgiler                                          | ABD                 |
 
 Bu sağlayıcıların çoğu Türkiye dışındadır. Yurt dışına aktarım, KVKK'nın 9. maddesi uyarınca Kişisel Verileri Koruma Kurulu'nun ilan ettiği standart sözleşmeyle sağlanan uygun güvencelere dayanır.
 
@@ -140,6 +141,13 @@ Verilerinizi etkileyen bir güvenlik ihlali olursa Kişisel Verileri Koruma Kuru
 ## 11. skall.world sitesi
 
 Site çerezle izleme yapmaz, reklam ya da analiz çerezi kullanmaz. Yalnızca görünüm seçiminiz gibi tercihler tarayıcınızın kendi belleğinde tutulur ve bize gönderilmez. Sayfalar Cloudflare üzerinden sunulur; yazı tipleri sitenin kendisinden yüklenir, bu sırada IP adresiniz yalnızca Cloudflare'e ulaşır.
+
+Sitedeki iki form (28 Kasım 2026'dan itibaren):
+
+- **Kampüs oylaması ve okul başvurusu** (ana sayfa, "Kampüsünü çağır"): ad, e-posta ya da telefon istemeyiz. Her cihazın tek oyu olsun diye tarayıcınız kendine rastgele bir anahtar üretir ve kendi belleğinde tutar; biz yalnızca bu anahtarın geri döndürülemez özetini, oy verdiğiniz okulu ve zamanı saklarız. Başvurduğunuz okulun adı, incelenip listeye eklenmek üzere saklanır. Aynı bağlantıdan gelen gönderimleri sınırlamak için IP adresinizin geri döndürülemez özeti 2 gün tutulur; IP adresinin kendisi saklanmaz. Oylar kampanya süresince saklanır ve kimseyle kişi bazında paylaşılmaz; sitede yalnızca okulların toplam oy sayısı görünür.
+- **Pilot mekan başvurusu** ([skall.world/mekanlar](mekanlar.html)): mekan adı, ilçe, yetkili adı, telefon ve e-posta. Başvurunuzu değerlendirmek ve sizinle iletişim kurmak için kullanılır; başvuru bize e-postayla bildirilir (Resend). Başvuru en geç 1 yıl sonra silinir; pilot mekan olursanız sonrası ayrıca konuşulur. IP adresinizin özeti yukarıdaki gibi 2 gün tutulur.
+
+Formlar otomatik gönderimlere karşı Cloudflare Turnstile ile korunur; Turnstile bu sırada tarayıcınızdan teknik bilgi (IP adresi, tarayıcı ve cihaz özellikleri) alır ve bunu reklam ya da izleme için kullanmaz. Form verileri Cloudflare'in veritabanında saklanır. Bu formlarla ilgili haklarınız için de [KVKK Aydınlatma Metni](kvkk-aydinlatma-metni.html)'ndeki başvuru yolları geçerlidir.
 
 ## 12. Değişiklikler
 

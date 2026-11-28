@@ -31,6 +31,7 @@
 <div class="kap">
 <div class="ust-sira">
 <span class="hap"><span class="nok"></span>Mekan içi sosyal oyun</span>
+<nav class="ust-nav" aria-label="Site"><a class="btn btn-cizgi btn-kucuk" href="mekanlar.html">Mekan sahibi misin?</a></nav>
 <a class="btn btn-cizgi btn-kucuk p-oncesi sosyal-yok" href="#instagram" aria-label="skall Instagram hesabı" style="width: 40px; padding: 0"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.6" class="b"/><circle cx="12" cy="12" r="4.2" class="a"/><circle cx="17.2" cy="6.8" r="1.5" class="a"/></svg></a>
 </div>
 <div class="izgara">
@@ -247,7 +248,7 @@
 </div>
 </section>
 
-<section class="bol" id="kampusunu-cagir" hidden>
+<section class="bol" id="kampusunu-cagir">
 <div class="kap oy-ic">
 <div class="oy-bas">
 <div class="yigin" style="gap: 16px; max-width: 640px">
@@ -263,21 +264,29 @@
 </div>
 <div class="oy-kart" id="oy-kart">
 <div class="alan"><label for="uni-ara">Üniversiteni ara</label><div class="girdi"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.4" cy="10.4" r="5.6" class="b"></circle><circle cx="10.4" cy="10.4" r="5.6" class="o"></circle><rect x="12.73" y="15.7" width="9.14" height="3.2" rx="1.6" transform="rotate(45 17.3 17.3)" class="a"></rect></svg><input id="uni-ara" type="search" placeholder="Üniversite adı"></div></div>
-<div>
-<div class="oy-sira"><span class="ad">Sakarya Uygulamalı Bilimler Üniversitesi</span><button class="btn btn-cizgi btn-kucuk" type="button">Oy ver</button><div class="cubuk"><div class="yol-c"><div class="dolu" style="width: 0%"></div></div><span class="sayi">0 oy</span></div></div>
-<div class="oy-sira"><span class="ad">Boğaziçi Üniversitesi</span><button class="btn btn-cizgi btn-kucuk" type="button">Oy ver</button><div class="cubuk"><div class="yol-c"><div class="dolu" style="width: 0%"></div></div><span class="sayi">0 oy</span></div></div>
-<div class="oy-sira"><span class="ad">İstanbul Teknik Üniversitesi</span><button class="btn btn-cizgi btn-kucuk" type="button">Oy ver</button><div class="cubuk"><div class="yol-c"><div class="dolu" style="width: 0%"></div></div><span class="sayi">0 oy</span></div></div>
-<div class="oy-sira"><span class="ad">Orta Doğu Teknik Üniversitesi</span><button class="btn btn-cizgi btn-kucuk" type="button">Oy ver</button><div class="cubuk"><div class="yol-c"><div class="dolu" style="width: 0%"></div></div><span class="sayi">0 oy</span></div></div>
-</div>
-<p class="yardim">Yalnızca bir okula oy verebilirsin. Oy sırasına göre; çubuk, 300 oya göre doluluğu gösterir.</p>
+<div id="oy-liste" aria-live="polite"></div>
+<div class="dogrula" id="oy-dogrula"></div>
+<p class="yardim">Yalnızca bir okula oy verebilirsin. Oy sırasına göre; çubuk, 300 oya göre doluluğu gösterir. Oy, o okula gelme sözü değildir.</p>
 </div>
 <form class="oy-kart" id="basvur" aria-labelledby="basvur-baslik" novalidate>
 <div class="yigin" style="gap: 6px"><h3 class="h3" id="basvur-baslik">Okulun listede yok mu?</h3><p class="g2 ikincil">Başvur, ilk oy senden gelsin.</p></div>
 <div class="alan"><label for="uni-ad">Üniversite</label><div class="girdi"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.4 9.2 12 4.4l9.6 4.8L12 14z" class="a"/><path d="M6.4 12.4v3.8c0 1.8 2.5 3.4 5.6 3.4s5.6-1.6 5.6-3.4v-3.8L12 15.2z" class="b"/></svg><input id="uni-ad" type="text" placeholder="Üniversitenin tam adı"></div></div>
 <label class="onay"><input type="checkbox" id="uni-18">18 yaşından büyüğüm.</label>
+<div class="dogrula" id="basvur-dogrula"></div>
 <button class="btn btn-ana" type="submit" id="basvur-btn" style="align-self: flex-start">Başvur ve oy ver</button>
-<p class="yardim">E-posta ya da telefon istemiyoruz. Her cihaz yalnızca bir okula oy verebilir; başvurun da oyun sayılır.</p>
+<p class="yardim">E-posta ya da telefon istemiyoruz. Her cihaz yalnızca bir okula oy verebilir; başvurun da oyun sayılır. Başvurulan okul incelendikten sonra listeye eklenir. Ayrıntılar <a href="gizlilik-politikasi.html">Gizlilik Politikası</a>'nda.</p>
 </form>
+</div>
+</section>
+
+<section class="bol bol-gece grain" id="mekan-sahibi">
+<div class="kap mekan-cagri">
+<div class="yigin" style="gap: 16px; max-width: 640px">
+<span class="etiket">Mekanlar için</span>
+<h2 class="d2">Mekan sahibi misin?</h2>
+<p class="g1 ikincil">skall'ın mekanına ne katacağını gör, pilot mekanlardan biri olmak için başvur.</p>
+</div>
+<a class="btn btn-ana" href="mekanlar.html" style="align-self: flex-start">Mekanlar için skall<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></a>
 </div>
 </section>
 
@@ -289,6 +298,7 @@
 <div class="sosyal">
 <a class="sosyal-yok" href="#instagram"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.6" class="b"/><circle cx="12" cy="12" r="4.2" class="a"/><circle cx="17.2" cy="6.8" r="1.5" class="a"/></svg>Instagram</a>
 <a class="sosyal-yok" href="#tiktok"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.4 3.6v10.8a3.6 3.6 0 1 1-3.6-3.6" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.4 3.6c.5 2.7 2.4 4.6 5.2 5.1" fill="none" stroke="var(--ci-b,currentColor)" stroke-width="3.2" stroke-linecap="round" opacity="var(--ci-bo,.5)"/></svg>TikTok</a>
+<a href="mekanlar.html"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="18" height="11" rx="3.4" class="b"/><path d="M2.6 9.6 5 4.6h14l2.4 5c.3.6-.1 1.4-.8 1.4H3.4c-.7 0-1.1-.8-.8-1.4Z" class="a"/><rect x="10" y="13.4" width="4" height="6.6" rx="1.4" class="a"/></svg>Mekan sahibi misin?</a>
 <a href="mailto:hello@skall.world"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="4.6" width="18.8" height="14.8" rx="4" class="b"/><path d="M6.8 9.4l5.2 3.8 5.2-3.8" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>hello@skall.world</a>
 </div>
 </div>
@@ -307,6 +317,7 @@
 </div>
 <script src="kanki.js"></script>
 <script src="atolye.js"></script>
+<script src="dogrula.js"></script>
 <script src="site.js"></script>
 <script src="eslik.js"></script>
 

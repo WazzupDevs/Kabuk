@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Mekanlar için skall · Mekan sahibi misin?</title>
+<meta name="description" content="skall mekanına ne katar, nasıl çalışır ve pilot mekan olmak için nasıl başvurulur.">
+<link rel="canonical" href="https://skall.world/mekanlar">
+<link rel="icon" href="assets/simge-b.webp" type="image/webp">
+<meta name="theme-color" content="#EFF7F1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="skall">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://skall.world/mekanlar">
+<meta property="og:title" content="Mekanlar için skall · Mekan sahibi misin?">
+<meta property="og:description" content="Müşterileriniz mekanınızda check-in yapar, masa kurar ve aynı masada herkes kendi telefonundan oynar. Pilot mekan olmak için başvurun.">
+<meta property="og:image" content="https://skall.world/assets/paylasim.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://skall.world/assets/paylasim.png">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<!-- Mekan sahipleri için sayfa (docs/decisions/skall-world-formlar.md). Uygulamada olmayan özellik vaat edilmez; "yakında" bölümü söz değildir. -->
+<div class="s-kok oto">
+
+<header class="acilis grain">
+<div class="kap">
+<div class="ust-sira">
+<a href="index.html" aria-label="skall ana sayfa"><img class="wm-k logo-acik" src="assets/wm-w1-kucuk.webp" alt="skall"><img class="wm-k logo-koyu" src="assets/wm-w2-kucuk.webp" alt="skall"></a>
+<nav class="ust-nav" aria-label="Site"><a class="btn btn-cizgi btn-kucuk" href="#pilot">Pilot mekan ol</a></nav>
+</div>
+<div class="izgara">
+<div class="metin" style="margin-top: 40px">
+<span class="hap"><span class="nok"></span>Mekan sahipleri için</span>
+<h1 class="d1">Masalarınızda <span class="vurgu">oyun başlasın.</span></h1>
+<p class="g1 ikincil">skall, aynı mekandaki insanları aynı masada buluşturan bir oyun uygulaması. Müşterileriniz mekanınızda check-in yapar, masa kurar ya da bir masaya katılır; aynı masada herkes kendi telefonundan oynar.</p>
+<div class="btn-sira">
+<a class="btn btn-ana" href="#pilot">Pilot mekan olmak istiyorum</a>
+<a class="btn btn-cizgi" href="#nasil">Nasıl çalışır?</a>
+</div>
+</div>
+<div class="sahne">
+<div class="afis">
+<div class="baski" style="--renk: var(--kehribar)"><div class="resim"><img src="assets/sahne-icsalon.webp" alt="Riso baskı bir mekanın iç salonu"></div></div>
+</div>
+</div>
+</div>
+</div>
+</header>
+
+<section class="bol bol-2" id="katki">
+<div class="kap katki-ic">
+<div class="yigin" style="gap: 16px; max-width: 640px">
+<span class="etiket">Mekanınıza ne katar</span>
+<h2 class="d2">Masada yapacak bir şey.</h2>
+<p class="g1 ikincil">Kart, kutu ya da donanım gerekmez. Oyun ve sohbet herkesin kendi telefonunda.</p>
+</div>
+<ul class="liste katki-liste">
+<li><span class="ik"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="4.4" class="b"/><circle cx="8.6" cy="12" r="2" class="a"/><circle cx="15.4" cy="12" r="2" class="a"/></svg></span><div class="yigin" style="gap: 4px"><h3 class="h3" style="font-size: 18px">Yedi oyun</h3><p class="g2 ikincil">Vampir Köylü, Signum, Kinshi, Krot, Sprengja, Kaupholl ve Kibrit. Anlatıcı da kart da telefonda.</p></div></li>
+<li><span class="ik"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7.8" r="3.5" class="a"></circle><rect x="2.8" y="13.6" width="12.4" height="7" rx="3.5" class="b"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" transform="rotate(90 18.6 10)" class="a"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" class="a"></rect></svg></span><div class="yigin" style="gap: 4px"><h3 class="h3" style="font-size: 18px">Yalnız gelen de masaya oturur</h3><p class="g2 ikincil">Mekandaki açık masalara katılma isteği gönderilir; masa sahibi kabul ederse masaya oturulur.</p></div></li>
+<li><span class="ik"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8c-4 0-7 3-7 6.9 0 4.6 5 9.5 6.3 10.7.4.4 1 .4 1.4 0C14 19.2 19 14.3 19 9.7c0-3.9-3-6.9-7-6.9Z" class="b"></path><circle cx="12" cy="9.8" r="2.9" class="a"></circle></svg></span><div class="yigin" style="gap: 4px"><h3 class="h3" style="font-size: 18px">Mekanınız uygulamada görünür</h3><p class="g2 ikincil">Keşfet'te listelenir. Mekan sohbeti ve akışı yalnızca o an mekanınızda check-in yapmış olanlara açıktır.</p></div></li>
+<li><span class="ik"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10.6V8.2a4 4 0 0 1 8 0v2.4" class="o"></path><rect x="4.4" y="10" width="15.2" height="11" rx="4" class="b"></rect><rect x="10.7" y="13.4" width="2.6" height="4.4" rx="1.3" class="a"></rect></svg></span><div class="yigin" style="gap: 4px"><h3 class="h3" style="font-size: 18px">Güvenli ve 18+</h3><p class="g2 ikincil">Konum yalnızca check-in anında doğrulanır, saklanmaz. Uygunsuz davranışı şikayet etmek ve birini engellemek uygulamanın içinde.</p></div></li>
+</ul>
+</div>
+</section>
+
+<section class="bol" id="nasil">
+<div class="kap">
+<span class="etiket">Nasıl çalışır</span>
+<div class="bas-sira"><h2 class="d2" style="margin-top: 16px">Dört adımda masada.</h2><div class="ok-sira"><button class="btn btn-cizgi btn-kucuk ok" type="button" aria-label="Önceki" aria-controls="ogretici" data-yon="-1"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button><button class="btn btn-cizgi btn-kucuk ok" type="button" aria-label="Sonraki" aria-controls="ogretici" data-yon="1"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></button></div></div>
+<p class="g1 ikincil" style="margin-top: 16px; max-width: 640px">Ekranlar uygulamanın kendisinden.</p>
+<ol class="adimlar ogretici kaydir" id="ogretici" tabindex="0" aria-label="Dört adım: check-in, masa, oyun, arkadaşlık">
+<li class="adim">
+<span class="no" aria-hidden="true">1</span>
+<div class="baski telefon" style="--renk: var(--ana)"><div class="resim"><img class="logo-acik" src="assets/mekan/checkin-acik.webp" alt="Uygulamada mekan ekranı: check-in yapılmış, mekandaki masalar ve mekan sohbeti" loading="lazy" width="540" height="960"><img class="logo-koyu" src="assets/mekan/checkin-koyu.webp" alt="Uygulamada mekan ekranı: check-in yapılmış, mekandaki masalar ve mekan sohbeti" loading="lazy" width="540" height="960"></div></div>
+<h3 class="h3">Check-in</h3>
+<p class="g2 ikincil">Müşteriniz mekanınızda uygulamayı açar, mekanınızı seçip check-in yapar. Konum yalnızca o an mekanda olduğunu doğrulamak için alınır ve saklanmaz. Check-in yapınca mekandaki masaları ve mekan sohbetini görür.</p>
+</li>
+<li class="adim">
+<span class="no" aria-hidden="true">2</span>
+<div class="baski telefon" style="--renk: var(--kehribar)"><div class="resim"><img class="logo-acik" src="assets/mekan/masa-acik.webp" alt="Uygulamada masa ekranı: masadakiler ve oyunlar" loading="lazy" width="540" height="960"><img class="logo-koyu" src="assets/mekan/masa-koyu.webp" alt="Uygulamada masa ekranı: masadakiler ve oyunlar" loading="lazy" width="540" height="960"></div></div>
+<h3 class="h3">Masa</h3>
+<p class="g2 ikincil">Kendi masasını kurar ya da bir masaya katılma isteği gönderir. Mekandaki arkadaşını masasına davet edebilir.</p>
+</li>
+<li class="adim">
+<span class="no" aria-hidden="true">3</span>
+<div class="baski telefon" style="--renk: var(--pembe)"><div class="resim"><img class="logo-acik" src="assets/mekan/oyun-acik.webp" alt="Uygulamada Vampir Köylü oylaması: masadakiler oyun tahtasının çevresinde" loading="lazy" width="540" height="960"><img class="logo-koyu" src="assets/mekan/oyun-koyu.webp" alt="Uygulamada Vampir Köylü oylaması: masadakiler oyun tahtasının çevresinde" loading="lazy" width="540" height="960"></div></div>
+<h3 class="h3">Oyun</h3>
+<p class="g2 ikincil">Masa sahibi oyunu başlatır. Aynı masada herkes kendi telefonundan oynar; roller, kartlar ve süre telefonda.</p>
+</li>
+<li class="adim">
+<span class="no" aria-hidden="true">4</span>
+<div class="baski telefon" style="--renk: var(--teal)"><div class="resim"><img class="logo-acik" src="assets/mekan/arkadas-acik.webp" alt="Uygulamada iki arkadaşın mesajlaşması" loading="lazy" width="540" height="960"><img class="logo-koyu" src="assets/mekan/arkadas-koyu.webp" alt="Uygulamada iki arkadaşın mesajlaşması" loading="lazy" width="540" height="960"></div></div>
+<h3 class="h3">Arkadaşlık</h3>
+<p class="g2 ikincil">Masa bitince iki kişi de "Arkadaş ekle"ye basarsa arkadaş olurlar ve mesajlaşabilirler. Tek kişi basarsa hiçbir şey olmaz, kimse bilmez.</p>
+</li>
+</ol>
+</div>
+</section>
+
+<section class="bol bol-2 grain" id="bugun">
+<div class="kap bugun-ic">
+<div class="yigin" style="gap: 20px">
+<span class="etiket">Bugün</span>
+<h2 class="d2">skall şu an nerede?</h2>
+<p class="g1 ikincil">skall pilot aşamasında. Şu an kampüslerde ve semt sohbetinde aktif.</p>
+<ul class="kampus-liste" style="list-style: none; margin: 0; padding: 0">
+<li><span class="nok" aria-hidden="true"></span><span>Sakarya Üniversitesi<small>Esentepe Kampüsü</small></span></li>
+<li><span class="nok" aria-hidden="true"></span><span>İstanbul Gelişim Üniversitesi</span></li>
+<li><span class="nok" aria-hidden="true"></span><span>Skall Üniversitesi<small>Konum istemeden herkesin check-in yapabildiği yer</small></span></li>
+<li><span class="nok" aria-hidden="true"></span><span>Semt sohbeti<small>Bulunduğun semtin sohbet odası</small></span></li>
+</ul>
+<p class="g2 ikincil">Kafe ve mekanlar henüz listede yok. İlk mekanları şimdi seçiyoruz.</p>
+</div>
+<div class="baski telefon bugun-tel" style="--renk: var(--kehribar)"><div class="resim"><img class="logo-acik" src="assets/mekan/kesfet-acik.webp" alt="Uygulamada Keşfet ekranı: listede iki kampüs" loading="lazy" width="540" height="960"><img class="logo-koyu" src="assets/mekan/kesfet-koyu.webp" alt="Uygulamada Keşfet ekranı: listede iki kampüs" loading="lazy" width="540" height="960"></div></div>
+</div>
+</section>
+
+<section class="bol" id="yakinda">
+<div class="kap">
+<div class="yigin" style="gap: 16px; max-width: 640px">
+<span class="etiket">Belki ileride</span>
+<h2 class="d2">Düşündüklerimiz.</h2>
+<p class="g1 ikincil">Bunlar uygulamada yok ve söz değil. Gelirse burada duyururuz.</p>
+</div>
+<ul class="liste yakinda-liste">
+<li><span class="yakinda">Yakında</span><div class="yigin" style="gap: 4px"><h3 class="h3" style="font-size: 18px">Etkinlik geceleri</h3><p class="g2 ikincil">Mekanınızda belirli bir akşamı oyun gecesi olarak duyurmak.</p></div></li>
+<li><span class="yakinda">Yakında</span><div class="yigin" style="gap: 4px"><h3 class="h3" style="font-size: 18px">Öne çıkma</h3><p class="g2 ikincil">Mekanınızın Keşfet'te öne çıkması.</p></div></li>
+</ul>
+</div>
+</section>
+
+<section class="bol bol-2" id="pilot">
+<div class="kap pilot-ic">
+<div class="yigin" style="gap: 20px">
+<span class="etiket">Pilot mekan</span>
+<h2 class="d2">skall pilot kafe olmak ister misiniz?</h2>
+<p class="g1 ikincil">Pilot mekan olmak şu demek:</p>
+<ul class="liste pilot-liste">
+<li><span class="ik"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.647" y="13.3" width="9.705" height="3.2" rx="1.6" transform="rotate(45 7.5 14.9)" class="b"></rect><rect x="5.973" y="10.6" width="16.654" height="3.2" rx="1.6" transform="rotate(-48.013 14.3 12.2)" class="a"></rect></svg></span><p class="g2">Mekanınız uygulamada listelenir; müşterileriniz onu Keşfet'te bulur.</p></li>
+<li><span class="ik"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.647" y="13.3" width="9.705" height="3.2" rx="1.6" transform="rotate(45 7.5 14.9)" class="b"></rect><rect x="5.973" y="10.6" width="16.654" height="3.2" rx="1.6" transform="rotate(-48.013 14.3 12.2)" class="a"></rect></svg></span><p class="g2">Müşterileriniz mekanınızda check-in yapar, masa kurar ve masada oynar.</p></li>
+<li><span class="ik"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.647" y="13.3" width="9.705" height="3.2" rx="1.6" transform="rotate(45 7.5 14.9)" class="b"></rect><rect x="5.973" y="10.6" width="16.654" height="3.2" rx="1.6" transform="rotate(-48.013 14.3 12.2)" class="a"></rect></svg></span><p class="g2">skall'daki ilk mekanlardan biri olursunuz.</p></li>
+</ul>
+<p class="g2 ikincil">Başvurunuzu aldıktan sonra sizinle iletişime geçeriz.</p>
+</div>
+<form class="oy-kart" id="mekan-form" aria-labelledby="mekan-baslik" novalidate>
+<div class="yigin" style="gap: 6px"><h3 class="h3" id="mekan-baslik">Pilot mekan başvurusu</h3><p class="g2 ikincil">Bütün alanlar zorunlu.</p></div>
+<div class="alan"><label for="m-mekan">Mekan adı</label><div class="girdi"><input id="m-mekan" name="venueName" type="text" autocomplete="organization" maxlength="120" required></div></div>
+<div class="alan"><label for="m-ilce">İlçe</label><div class="girdi"><input id="m-ilce" name="district" type="text" autocomplete="address-level2" placeholder="ör. Kadıköy, İstanbul" maxlength="80" required></div></div>
+<div class="alan"><label for="m-yetkili">Yetkili adı</label><div class="girdi"><input id="m-yetkili" name="contactName" type="text" autocomplete="name" maxlength="80" required></div></div>
+<div class="alan"><label for="m-tel">Telefon</label><div class="girdi"><input id="m-tel" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" maxlength="32" required></div></div>
+<div class="alan"><label for="m-eposta">E-posta</label><div class="girdi"><input id="m-eposta" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required></div></div>
+<label class="onay"><input type="checkbox" id="m-kvkk" name="noticeRead"><span>Kişisel verilerimin başvuru için işlenmesine ilişkin <a href="kvkk-aydinlatma-metni.html" target="_blank" rel="noopener">KVKK Aydınlatma Metni</a>'ni okudum.</span></label>
+<div class="dogrula" id="mekan-dogrula"></div>
+<button class="btn btn-ana" type="submit" id="mekan-btn" style="align-self: flex-start">Başvuruyu gönder</button>
+<p class="yardim">Bilgileriniz yalnızca başvurunuzu değerlendirmek ve sizinle iletişim kurmak için kullanılır, en geç bir yıl içinde silinir. Ayrıntılar <a href="gizlilik-politikasi.html">Gizlilik Politikası</a>'nda.</p>
+</form>
+</div>
+</section>
+
+<footer class="alt">
+<div class="kap">
+<div class="ust-a yigin" style="gap: 28px">
+<img class="wm-k" src="assets/wm-w2-kucuk.webp" alt="skall">
+<div class="sosyal">
+<a href="index.html"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg>Ana sayfa</a>
+<a href="mailto:support@skall.world"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="4.6" width="18.8" height="14.8" rx="4" class="b"/><path d="M6.8 9.4l5.2 3.8 5.2-3.8" fill="none" stroke="var(--ci-a,currentColor)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>support@skall.world</a>
+</div>
+</div>
+<div class="ayir"></div>
+<nav class="yasal" aria-label="Yasal">
+<a href="gizlilik-politikasi.html">Gizlilik politikası</a>
+<a href="kvkk-aydinlatma-metni.html">KVKK aydınlatma metni</a>
+<a href="yasal.html">Yasal metinler</a>
+</nav>
+<p class="kucuk" style="margin: 16px 0 0">© 2026 skall · 18 yaş ve üzeri içindir.</p>
+</div>
+</footer>
+
+</div>
+<script src="dogrula.js"></script>
+<script src="site.js"></script>
+<script src="mekanlar.js"></script>
+</body>
+</html>
