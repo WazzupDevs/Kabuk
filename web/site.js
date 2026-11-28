@@ -76,7 +76,7 @@
   }
 
   function oyumuGoster() {
-    if (oyum.durum === 'pending') durumGoster('tamam', CHECK, 'Başvurun alındı.', esc(oyum.okul) + ' onaylanınca listede görünür; oyun ona sayıldı.', '', true);
+    if (oyum.durum === 'pending') durumGoster('tamam', CHECK, 'Başvurun alındı.', (oyum.okul ? esc(oyum.okul) : 'Okulun') + ' onaylanınca listede görünür; oyun ona sayıldı.', '', true);
     else durumGoster('tamam', CHECK, 'Oyun sayıldı.', 'Oyun: ' + esc(oyum.okul) + '.', '', true);
   }
 
@@ -84,8 +84,11 @@
   function hataGoster(s) {
     var kod = s.govde && s.govde.error ? s.govde.error.code : '';
     if (kod === 'already_voted') {
-      if (s.govde.error.school) oyumuYaz({ okul: s.govde.error.school, durum: 'approved' });
-      durumGoster('hata', UYARI, 'Bu cihazdan zaten oy verildi.', 'Her cihaz yalnızca bir okula oy verebilir.' + (oyum ? ' Oyun: ' + esc(oyum.okul) + '.' : ''), '', true);
+      // Sunucu okulun adını yalnız onaylıysa verir.
+      var verilen = s.govde.error.school;
+      if (verilen) oyumuYaz({ okul: verilen, durum: 'approved' });
+      else if (!oyum && s.govde.error.school === null) oyumuYaz({ okul: null, durum: 'pending' });
+      durumGoster('hata', UYARI, 'Bu cihazdan zaten oy verildi.', 'Her cihaz yalnızca bir okula oy verebilir.' + (oyum && oyum.okul ? ' Oyun: ' + esc(oyum.okul) + '.' : ''), '', true);
       duyur('hata', 'Bir okula zaten oy verdin.');
     } else if (kod === 'rate_limited') {
       durumGoster('hata', UYARI, 'Bugünlük sınıra ulaşıldı.', 'Bu bağlantıdan bugün çok oy verildi. Yarın tekrar dene.', '', true);

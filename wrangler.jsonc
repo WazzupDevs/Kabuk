@@ -30,5 +30,7 @@
   // TURNSTILE_SITE_KEY is a plain variable set in the dashboard; a deploy keeps it. The secrets
   // (TURNSTILE_SECRET_KEY, IP_SALT, RESEND_API_KEY) are Worker secrets, never in this file.
   "keep_vars": true,
-  "observability": { "enabled": true },
+  // Only the console lines (no person in them): the invocation logs would keep each caller's IP and
+  // place, which the privacy texts say are not stored.
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } },
 }

@@ -6,6 +6,7 @@ import {
   cutoff,
   DAILY_LIMITS,
   dayKey,
+  ipBucket,
   type LimitKind,
   parseSchoolApplication,
   parseVenueApplication,
@@ -41,7 +42,8 @@ export interface Env {
 }
 
 const MAX_BODY = 4096;
-const ALLOWED_ORIGINS = new Set(['https://skall.world', 'https://www.skall.world']);
+const HOSTNAMES = new Set(['skall.world', 'www.skall.world']);
+const ALLOWED_ORIGINS = new Set([...HOSTNAMES].map((h) => `https://${h}`));
 
 function json(body: unknown, status = 200, cache = 'no-store'): Response {
   return new Response(JSON.stringify(body), {
@@ -62,8 +64,11 @@ async function sha256(text: string): Promise<string> {
 async function readJson(request: Request): Promise<unknown> {
   const type = request.headers.get('content-type') ?? '';
   if (!type.startsWith('application/json')) return undefined;
-  const text = await request.text();
-  if (text.length > MAX_BODY) return undefined;
+  const declared = Number(request.headers.get('content-length') ?? 0);
+  if (!(declared <= MAX_BODY)) return undefined;
+  const bytes = new Uint8Array(await request.arrayBuffer());
+  if (bytes.byteLength > MAX_BODY) return undefined;
+  const text = new TextDecoder().decode(bytes);
   try {
     return JSON.parse(text) as unknown;
   } catch {
@@ -86,8 +91,14 @@ async function verifyTurnstile(
       method: 'POST',
       body: form,
     });
-    const result = (await response.json()) as { success?: boolean; action?: string };
-    return result.success === true && result.action === action;
+    const result = (await response.json()) as {
+      success?: boolean;
+      action?: string;
+      hostname?: string;
+    };
+    return (
+      result.success === true && result.action === action && HOSTNAMES.has(result.hostname ?? '')
+    );
   } catch {
     return false;
   }
@@ -125,7 +136,7 @@ async function guard(
       response: error('verification_failed', 'Doğrulama tamamlanmadı, tekrar dene.', 403),
     };
   }
-  const ipHash = await sha256(`${env.IP_SALT}|${ip}`);
+  const ipHash = await sha256(`${env.IP_SALT}|${ipBucket(ip)}`);
   if (!(await takeLimit(env, kind, ipHash, now))) {
     return {
       ok: false,
@@ -135,13 +146,16 @@ async function guard(
   return { ok: true, ipHash };
 }
 
-async function votedSchool(env: Env, deviceHash: string): Promise<string | null> {
+// The device's earlier vote, if any. The school's name only when it is approved: a pending or
+// rejected school's name is someone else's spelling and is not given back.
+async function priorVote(env: Env, deviceHash: string): Promise<{ school: string | null } | null> {
   const row = await env.DB.prepare(
-    'select s.name from votes v join schools s on s.id = v.school_id where v.device_hash = ?1',
+    `select case when s.status = 'approved' then s.name end as name
+     from votes v join schools s on s.id = v.school_id where v.device_hash = ?1`,
   )
     .bind(deviceHash)
-    .first<{ name: string }>();
-  return row?.name ?? null;
+    .first<{ name: string | null }>();
+  return row ? { school: row.name } : null;
 }
 
 async function castVote(
@@ -156,8 +170,10 @@ async function castVote(
     .bind(deviceHash, schoolId, now.toISOString())
     .run();
   if (result.meta.changes === 1) return null;
-  const school = await votedSchool(env, deviceHash);
-  return error('already_voted', 'Bu cihazdan zaten bir okula oy verildi.', 409, { school });
+  const prior = await priorVote(env, deviceHash);
+  return error('already_voted', 'Bu cihazdan zaten bir okula oy verildi.', 409, {
+    school: prior?.school ?? null,
+  });
 }
 
 async function listSchools(env: Env): Promise<Response> {
@@ -194,11 +210,9 @@ async function applySchool(request: Request, env: Env, now: Date): Promise<Respo
   if (!checked.ok) return checked.response;
   const deviceHash = await sha256(device);
   // A device that voted creates no pending school.
-  const earlier = await votedSchool(env, deviceHash);
+  const earlier = await priorVote(env, deviceHash);
   if (earlier)
-    return error('already_voted', 'Bu cihazdan zaten bir okula oy verildi.', 409, {
-      school: earlier,
-    });
+    return error('already_voted', 'Bu cihazdan zaten bir okula oy verildi.', 409, earlier);
   await env.DB.prepare(
     "insert into schools (name, name_key, status, created_at) values (?1, ?2, 'pending', ?3) on conflict (name_key) do nothing",
   )
@@ -217,18 +231,17 @@ async function applySchool(request: Request, env: Env, now: Date): Promise<Respo
 async function sendVenueMail(
   env: Env,
   id: number,
-  app: Parameters<typeof venueMail>[0],
+  app: { venueName: string; district: string },
   now: Date,
 ): Promise<void> {
   if (!env.RESEND_API_KEY) return;
-  const mail = venueMail(app, now);
+  const mail = venueMail({ id, ...app }, now);
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
     body: JSON.stringify({
       from: env.MAIL_FROM ?? 'skall <bildirim@skall.world>',
       to: [VENUE_MAIL_TO],
-      reply_to: app.email,
       subject: mail.subject,
       text: mail.text,
     }),

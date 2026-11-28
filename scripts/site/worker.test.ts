@@ -41,7 +41,8 @@ const DEVICE_B = '9a0b3f2b-8c1e-4e6f-8b2a-1c3d5e7f9a0b';
 let db: DatabaseSync;
 let env: Env;
 let waits: Promise<unknown>[];
-let mails: { to: string[]; subject: string; reply_to: string }[];
+let mails: { to: string[]; subject: string; text: string; reply_to?: string }[];
+let turnstileHost: string;
 let turnstileOk: boolean;
 const ctx = { waitUntil: (p: Promise<unknown>) => waits.push(p) };
 
@@ -60,11 +61,12 @@ beforeEach(() => {
   waits = [];
   mails = [];
   turnstileOk = true;
+  turnstileHost = 'skall.world';
   vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
     if (url.includes('turnstile')) {
       const form = init.body as FormData;
       const action = String(form.get('response'));
-      return Response.json({ success: turnstileOk, action });
+      return Response.json({ success: turnstileOk, action, hostname: turnstileHost });
     }
     mails.push(JSON.parse(String(init.body)));
     return Response.json({ id: 'm1' });
@@ -139,6 +141,11 @@ describe('worker', () => {
       (await call(post('/api/oy', { schoolId: first.id, device: DEVICE_A, token: 'vote' }))).status,
     ).toBe(403);
     turnstileOk = true;
+    turnstileHost = 'example.com';
+    expect(
+      (await call(post('/api/oy', { schoolId: first.id, device: DEVICE_A, token: 'vote' }))).status,
+    ).toBe(403);
+    turnstileHost = 'skall.world';
     expect(
       (await call(post('/api/oy', { schoolId: first.id, device: DEVICE_A, token: 'venue' })))
         .status,
@@ -263,10 +270,12 @@ describe('worker', () => {
     expect(mails).toEqual([
       expect.objectContaining({
         to: ['support@skall.world'],
-        reply_to: 'ayse@ornek.com',
         subject: 'Pilot mekan başvurusu: Kafe Lale',
       }),
     ]);
+    // The person stays in D1: the mail service and the inbox get no name, phone or e-mail.
+    const sent = JSON.stringify(mails);
+    for (const personal of ['Ayşe', '532', 'ayse@ornek.com']) expect(sent).not.toContain(personal);
     expect(
       db
         .prepare(
@@ -291,17 +300,69 @@ describe('worker', () => {
     });
   });
 
+  it('counts an IPv6 /64 as one address', async () => {
+    const first = await firstSchool();
+    for (let i = 0; i < DAILY_LIMITS.vote; i++) {
+      const device = `${String(i).padStart(8, '0')}-9a4d-4e6f-8b2a-1c3d5e7f9a0b`;
+      await call(
+        post('/api/oy', { schoolId: first.id, device, token: 'vote' }, `2001:db8:1:2::${i + 1}`),
+      );
+    }
+    const next = await call(
+      post(
+        '/api/oy',
+        { schoolId: first.id, device: DEVICE_B, token: 'vote' },
+        '2001:db8:1:2:ffff::9',
+      ),
+    );
+    expect(next.status).toBe(429);
+  });
+
+  it('does not give back the name of a school that is not approved', async () => {
+    await call(
+      post('/api/okul-basvuru', {
+        name: 'Bekleyen Üniversite',
+        adult: true,
+        device: DEVICE_A,
+        token: 'school',
+      }),
+    );
+    const again = await call(
+      post('/api/okul-basvuru', {
+        name: 'Başka Üniversite',
+        adult: true,
+        device: DEVICE_A,
+        token: 'school',
+      }),
+    );
+    expect(again.status).toBe(409);
+    expect(again.body.error).toMatchObject({ code: 'already_voted', school: null });
+    expect(db.prepare("select count(*) as n from schools where status = 'pending'").get()).toEqual({
+      n: 1,
+    });
+  });
+
+  it('refuses a body over the limit', async () => {
+    const result = await call(
+      post('/api/oy', { schoolId: 1, device: DEVICE_A, token: 'x'.repeat(5000) }),
+    );
+    expect(result.status).toBe(400);
+  });
+
   it('deletes old applications and counters', async () => {
     db.exec(`insert into venue_applications (venue_name, district, contact_name, phone, email, notice_version, created_at)
       values ('Eski', 'X', 'Y', '+905321234567', 'a@b.co', 'v', '2025-01-01T00:00:00.000Z'),
              ('Yeni', 'X', 'Y', '+905321234567', 'a@b.co', 'v', '2026-11-27T00:00:00.000Z')`);
     db.exec(
-      "insert into rate_limits values ('vote', 'h', '2026-11-20', 3), ('vote', 'h', '2026-11-28', 3)",
+      "insert into rate_limits values ('vote', 'h', '2026-11-26', 3), ('vote', 'h', '2026-11-27', 3), ('vote', 'h', '2026-11-28', 3)",
     );
     await cleanup(env, new Date('2026-11-28T03:00:00Z'));
     expect(db.prepare('select venue_name from venue_applications').all()).toEqual([
       { venue_name: 'Yeni' },
     ]);
-    expect(db.prepare('select day from rate_limits').all()).toEqual([{ day: '2026-11-28' }]);
+    expect(db.prepare('select day from rate_limits').all()).toEqual([
+      { day: '2026-11-27' },
+      { day: '2026-11-28' },
+    ]);
   });
 });

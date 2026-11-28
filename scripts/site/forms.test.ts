@@ -7,6 +7,7 @@ import {
   cleanText,
   cutoff,
   dayKey,
+  ipBucket,
   isDeviceId,
   normalizeEmail,
   normalizeTrPhone,
@@ -174,20 +175,26 @@ describe('parseVenueApplication', () => {
 });
 
 describe('venueMail', () => {
-  it('lists the fields', () => {
+  it('names the venue and the row, no person', () => {
     const mail = venueMail(
-      {
-        venueName: 'Kafe Lale',
-        district: 'Kadıköy',
-        contactName: 'Ayşe',
-        phone: '+905321234567',
-        email: 'a@b.co',
-      },
+      { id: 7, venueName: 'Kafe Lale', district: 'Kadıköy' },
       new Date('2026-11-28T10:00:00Z'),
     );
     expect(mail.subject).toBe('Pilot mekan başvurusu: Kafe Lale');
-    expect(mail.text).toContain('Telefon: +905321234567');
+    expect(mail.text).toContain('İlçe: Kadıköy');
+    expect(mail.text).toContain('where id = 7;');
     expect(mail.text).toContain('Zaman: 2026-11-28T10:00:00.000Z');
+    expect(mail.text).not.toMatch(/Telefon|E-posta|Yetkili:/);
+  });
+});
+
+describe('ipBucket', () => {
+  it('keeps IPv4 and takes the /64 of IPv6', () => {
+    expect(ipBucket('203.0.113.7')).toBe('203.0.113.7');
+    expect(ipBucket('2001:db8:1:2:aaaa:bbbb:cccc:dddd')).toBe('2001:db8:1:2::/64');
+    expect(ipBucket('2001:0DB8:0001:0002::1')).toBe('2001:db8:1:2::/64');
+    expect(ipBucket('2001:db8::1')).toBe('2001:db8:0:0::/64');
+    expect(ipBucket('::1')).toBe('0:0:0:0::/64');
   });
 });
 

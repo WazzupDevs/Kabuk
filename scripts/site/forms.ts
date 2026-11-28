@@ -16,7 +16,8 @@ export const VENUE_MAIL_TO = 'support@skall.world';
 
 // How long a venue application and an IP counter are kept (the worker's daily job deletes older).
 export const VENUE_KEEP_DAYS = 365;
-export const RATE_KEEP_DAYS = 2;
+// A counter of day D goes in the cleanup of day D+2 (at most three calendar days, as the texts say).
+export const RATE_KEEP_DAYS = 1;
 
 export const LIMITS = {
   schoolName: 120,
@@ -166,9 +167,11 @@ export function parseVenueApplication(
   return { ok: true, value: { venueName, district, contactName, phone, email, token } };
 }
 
-// The notification to support@skall.world: plain text, one line per field.
+// The notification to support@skall.world: only the venue and where it is, no person. The
+// contact's name, phone and e-mail stay in D1 (deleted after VENUE_KEEP_DAYS), so neither the
+// mail service nor the inbox holds them (docs/legal/kvkk-aydinlatma-metni.md → 8).
 export function venueMail(
-  app: Omit<VenueInput, 'token'>,
+  app: { id: number; venueName: string; district: string },
   receivedAt: Date,
 ): { subject: string; text: string } {
   return {
@@ -178,14 +181,30 @@ export function venueMail(
       '',
       `Mekan: ${app.venueName}`,
       `İlçe: ${app.district}`,
-      `Yetkili: ${app.contactName}`,
-      `Telefon: ${app.phone}`,
-      `E-posta: ${app.email}`,
       `Zaman: ${receivedAt.toISOString()}`,
+      '',
+      'Yetkilinin bilgileri D1 konsolunda (docs/OPS.md → "skall.world formları"):',
+      `select * from venue_applications where id = ${app.id};`,
       '',
       `Başvuru ${VENUE_KEEP_DAYS} gün sonra kendiliğinden silinir.`,
     ].join('\n'),
   };
+}
+
+// The part of the address one person controls: an IPv6 address as its /64 prefix (a home or
+// phone gets a whole /64 and can change the rest freely), an IPv4 address as it is.
+export function ipBucket(ip: string): string {
+  if (!ip.includes(':')) return ip;
+  const [head = '', tail = ''] = ip.toLowerCase().split('::');
+  const left = head ? head.split(':') : [];
+  const right = tail ? tail.split(':') : [];
+  const groups = ip.includes('::')
+    ? [...left, ...Array(8 - left.length - right.length).fill('0'), ...right]
+    : left;
+  return `${groups
+    .slice(0, 4)
+    .map((g) => g.replace(/^0+(?=.)/, ''))
+    .join(':')}::/64`;
 }
 
 // The UTC day an IP counter belongs to.
