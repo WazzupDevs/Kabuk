@@ -1,0 +1,247 @@
+[
+  {
+    "id": "g1-masa",
+    "anim": "masa",
+    "dur": 7,
+    "tag": "skall",
+    "title": "Masaya otur.|*Herkes kendi*|*telefonuyla.*",
+    "sub": "Kafede, barda, kampüste: aynı masada parti oyunları.",
+    "kankiler": [
+      {
+        "c": "mor",
+        "e": "klasik",
+        "h": "kulaklik"
+      },
+      {
+        "c": "pembe",
+        "e": "kirpik",
+        "h": "bere"
+      },
+      {
+        "c": "hardal",
+        "e": "mutlu",
+        "h": "kep"
+      },
+      {
+        "c": "nane",
+        "e": "klasik",
+        "h": "kedi",
+        "n": "papyon"
+      }
+    ]
+  },
+  {
+    "id": "g2-krot",
+    "anim": "krot",
+    "dur": 7,
+    "tag": "Krot",
+    "title": "Biri hariç herkes|*aynı kelimeyi*|biliyor.",
+    "word": "Simit",
+    "odd": 2,
+    "reveal": "Sahtekar kim? _Masada bul._",
+    "kankiler": [
+      {
+        "c": "gok",
+        "e": "klasik",
+        "h": "terssapka"
+      },
+      {
+        "c": "mercan",
+        "e": "kirpik"
+      },
+      {
+        "c": "lavanta",
+        "e": "klasik",
+        "f": "gunes"
+      },
+      {
+        "c": "turkuaz",
+        "e": "mutlu",
+        "h": "bere"
+      }
+    ]
+  },
+  {
+    "id": "g3-kartlar",
+    "layout": "kart",
+    "tag": "Nasıl çalışır",
+    "title": "3 adımda|*masadasın.*",
+    "steps": [
+      ["Mekana gel, check-in yap.", "Konumun yalnızca o an doğrulanır, saklanmaz."],
+      ["Masanı kur ya da bir masaya katıl.", "Lobide masa adı ve telefon sayısı görünür."],
+      ["Herkes kendi telefonuyla oynar.", "Krot, Kinshi, Vampir Köylü, Signum, Kibrit, Sprengja"],
+      ["İstersen arkadaş ol.", "İkiniz de basarsanız. Tek taraflıysa kimse görmez."]
+    ],
+    "kanki": {
+      "c": "mor",
+      "e": "mutlu",
+      "h": "parti"
+    }
+  },
+  {
+    "id": "g4-kanki",
+    "layout": "kapak",
+    "tag": "Kanki",
+    "title": "Hangi kanki|*sensin?*",
+    "sub": "Kapsülünü süsle, masaya onunla otur. Yorumlara numaranı yaz.",
+    "kankiW": 200,
+    "tableY": 1500,
+    "kankiler": [
+      {
+        "c": "mor",
+        "e": "klasik",
+        "h": "kulaklik"
+      },
+      {
+        "c": "pembe",
+        "e": "kirpik",
+        "h": "tac"
+      },
+      {
+        "c": "komur",
+        "e": "koyu",
+        "h": "kasket",
+        "n": "zincir"
+      },
+      {
+        "c": "hardal",
+        "e": "mutlu",
+        "h": "barista",
+        "n": "latte"
+      },
+      {
+        "c": "nane",
+        "e": "klasik",
+        "h": "astronot"
+      }
+    ]
+  },
+  {
+    "id": "g5-gece",
+    "anim": "gece",
+    "dur": 8,
+    "tag": "Vampir Köylü",
+    "title": "Masada|anlatıcıya|*gerek yok.*",
+    "title2": "Telefon|anlatıcıdır.|_Gece oldu._",
+    "bubble": "Kimi seçsem?",
+    "vampir": 1,
+    "kankiler": [
+      {
+        "c": "gok",
+        "e": "klasik",
+        "h": "bere"
+      },
+      {
+        "c": "komur",
+        "e": "koyu",
+        "m": "vampir",
+        "n": "pelerin"
+      },
+      {
+        "c": "seftali",
+        "e": "klasik",
+        "h": "kedi"
+      },
+      {
+        "c": "yesil",
+        "e": "mutlu",
+        "h": "kep"
+      }
+    ]
+  },
+  {
+    "id": "g6-kibrit",
+    "layout": "kapak",
+    "tag": "Kibrit",
+    "title": "Bu soru|*kime*|*uyuyor?*",
+    "sub": "Herkes adsız bir soru yazar. Kâğıt çekilir, herkes gizli oy verir. Puan yok, kazanan yok: sadece sohbet.",
+    "kankiler": [
+      {
+        "c": "lavanta",
+        "e": "saskin"
+      },
+      {
+        "c": "mercan",
+        "e": "kirpik",
+        "h": "bere"
+      },
+      {
+        "c": "turkuaz",
+        "e": "mutlu",
+        "h": "terssapka"
+      }
+    ],
+    "bubble": {
+      "text": "Kesin sensin.",
+      "x": 110,
+      "y": 1010,
+      "dark": true
+    }
+  },
+  {
+    "id": "g7-semt",
+    "layout": "kapak",
+    "tag": "Semt sohbeti",
+    "title": "Evde misin?|*Semtin*|*sohbette.*",
+    "sub": "Günün sorusunu bil, semt sohbetine gir. Mekanda değilsen Skall Üniversitesi'nde masaya otur.",
+    "kankiler": [
+      {
+        "c": "lacivert",
+        "e": "uykulu",
+        "h": "bere",
+        "n": "atki"
+      },
+      {
+        "c": "pembe",
+        "e": "mutlu",
+        "n": "cay"
+      }
+    ],
+    "bubble": {
+      "text": "Bugünkü soruyu bildin mi?",
+      "x": 300,
+      "y": 1010
+    }
+  },
+  {
+    "id": "g8-soru",
+    "layout": "soru",
+    "tag": "Masa sorusu",
+    "question": "Krot'ta ilk kim *açık verir?*",
+    "options": ["Gülmeye başlayan", "Fazla konuşan"],
+    "sub": "Yorumlara yaz, masanı etiketle.",
+    "kankiler": [
+      {
+        "c": "hardal",
+        "e": "kirp"
+      },
+      {
+        "c": "gok",
+        "e": "saskin"
+      },
+      {
+        "c": "pembe",
+        "e": "mutlu"
+      }
+    ]
+  },
+  {
+    "id": "g9-test",
+    "layout": "kapak",
+    "tag": "Android kapalı test",
+    "title": "skall'ı|*ilk sen*|*dene.*",
+    "sub": "Pilot: Beylikdüzü, Esenyurt, Avcılar ve Sakarya. Katılmak için bio'daki link.",
+    "kankiler": [
+      {
+        "c": "mor",
+        "e": "mutlu",
+        "h": "parti"
+      },
+      {
+        "c": "pembe",
+        "e": "kirpik",
+        "h": "tac"
+      }
+    ]
+  }
+]

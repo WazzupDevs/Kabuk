@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>skall sosyal şablon</title>
+    <style>
+      @font-face {
+        font-family: 'PJS';
+        font-weight: 500;
+        src: url(fonts/plus-jakarta-sans-latin-500-normal.woff2) format('woff2');
+        unicode-range:
+          U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F,
+          U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'PJS';
+        font-weight: 500;
+        src: url(fonts/plus-jakarta-sans-latin-ext-500-normal.woff2) format('woff2');
+        unicode-range:
+          U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+          U+1E00-1E9F, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+      }
+      @font-face {
+        font-family: 'PJS';
+        font-weight: 700;
+        src: url(fonts/plus-jakarta-sans-latin-700-normal.woff2) format('woff2');
+        unicode-range:
+          U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F,
+          U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'PJS';
+        font-weight: 700;
+        src: url(fonts/plus-jakarta-sans-latin-ext-700-normal.woff2) format('woff2');
+        unicode-range:
+          U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+          U+1E00-1E9F, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+      }
+      @font-face {
+        font-family: 'PJS';
+        font-weight: 800;
+        src: url(fonts/plus-jakarta-sans-latin-800-normal.woff2) format('woff2');
+        unicode-range:
+          U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F,
+          U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'PJS';
+        font-weight: 800;
+        src: url(fonts/plus-jakarta-sans-latin-ext-800-normal.woff2) format('woff2');
+        unicode-range:
+          U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+          U+1E00-1E9F, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+      }
+      :root {
+        --ink: #14112b;
+        --purple: #7b5cff;
+        --pink: #ff4f8b;
+        --orange: #ffb547;
+        --white: #ffffff;
+        --soft: rgba(255, 255, 255, 0.76);
+        --glass: rgba(255, 255, 255, 0.08);
+        --glass-line: rgba(255, 255, 255, 0.16);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--ink);
+      }
+      #stage {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        font-family: 'PJS', sans-serif;
+        color: var(--white);
+        background: var(--ink);
+      }
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(140px);
+        opacity: 0.7;
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.12;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+      }
+      .tag {
+        position: absolute;
+        left: 80px;
+        top: 250px;
+        padding: 18px 30px;
+        border-radius: 999px;
+        background: var(--orange);
+        color: var(--ink);
+        font-weight: 800;
+        font-size: 34px;
+        letter-spacing: 0.06em;
+      }
+      .title {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        top: 360px;
+        font-weight: 800;
+        font-size: 128px;
+        line-height: 1.02;
+        letter-spacing: -0.035em;
+      }
+      .title em {
+        font-style: normal;
+        color: var(--orange);
+      }
+      .title b {
+        font-weight: 800;
+        color: var(--pink);
+      }
+      .title i {
+        font-style: normal;
+        color: #b9a6ff;
+      }
+      .sub {
+        position: absolute;
+        left: 80px;
+        right: 120px;
+        font-weight: 500;
+        font-size: 46px;
+        line-height: 1.3;
+        color: var(--soft);
+      }
+      .table {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        height: 150px;
+        border-radius: 48px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1));
+        backdrop-filter: blur(22px) saturate(160%);
+        border: 2px solid rgba(255, 255, 255, 0.28);
+      }
+      .kanki {
+        position: absolute;
+        width: 250px;
+        height: 344px;
+        transform-origin: 50% 100%;
+      }
+      .kanki svg {
+        overflow: visible;
+      }
+      .kanki .eye {
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+      .shadow {
+        position: absolute;
+        height: 26px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.35);
+        filter: blur(6px);
+      }
+      .bubble {
+        position: absolute;
+        padding: 20px 30px;
+        border-radius: 32px;
+        background: var(--white);
+        color: var(--ink);
+        font-weight: 800;
+        font-size: 40px;
+        white-space: nowrap;
+        transform-origin: 50% 100%;
+      }
+      .bubble::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -16px;
+        margin-left: -16px;
+        border: 16px solid transparent;
+        border-bottom: 0;
+        border-top-color: var(--white);
+      }
+      .bubble.dark {
+        background: var(--pink);
+        color: var(--white);
+      }
+      .bubble.dark::after {
+        border-top-color: var(--pink);
+      }
+      .foot {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        bottom: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .foot .url {
+        font-weight: 700;
+        font-size: 34px;
+        color: var(--soft);
+        letter-spacing: 0.02em;
+      }
+      .steps {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .step {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+        padding: 34px 38px;
+        border-radius: 40px;
+        background: var(--glass);
+        border: 2px solid var(--glass-line);
+      }
+      .step .n {
+        flex: none;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 48px;
+        color: var(--white);
+      }
+      .step .t {
+        font-weight: 700;
+        font-size: 44px;
+        line-height: 1.25;
+      }
+      .step .t small {
+        display: block;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 34px;
+        color: var(--soft);
+      }
+      .qcard {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        padding: 64px 60px;
+        border-radius: 56px;
+        background: var(--white);
+        color: var(--ink);
+        font-weight: 800;
+        font-size: 84px;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+      }
+      .qcard em {
+        font-style: normal;
+        color: var(--pink);
+      }
+      .opts {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        display: flex;
+        gap: 28px;
+      }
+      .opt {
+        flex: 1;
+        padding: 40px 28px;
+        border-radius: 40px;
+        font-weight: 800;
+        font-size: 48px;
+        text-align: center;
+        line-height: 1.15;
+      }
+      .card {
+        position: absolute;
+        width: 200px;
+        height: 132px;
+        border-radius: 28px;
+        background: var(--white);
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 40px;
+        transform-origin: 50% 100%;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      }
+      .card.odd {
+        background: var(--pink);
+        color: var(--white);
+        font-size: 76px;
+      }
+      .moon {
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        box-shadow: inset -64px 26px 0 0 #fff1c2;
+        filter: drop-shadow(0 0 50px rgba(255, 241, 194, 0.55));
+      }
+      .star {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <svg width="0" height="0" style="position: absolute">
+      <filter id="noise">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
+    </svg>
+    <script>
+      /* global LOOK, SPEC */
+      // The skall wordmark (apps/mobile/src/theme/wordmark.ts, colours brand.ts): "ska" and two l capsules.
+      function wordmark(h) {
+        const w = (h * 2254) / 757;
+        return (
+          '<svg width="' +
+          w +
+          '" height="' +
+          h +
+          '" viewBox="27 250 2254 757">' +
+          '<defs><clipPath id="wl1"><rect x="1951" y="250" width="200" height="757" rx="100"/></clipPath></defs>' +
+          '<path d="' +
+          window.SKA_D +
+          '" fill="#fff"/>' +
+          '<rect x="1951" y="250" width="200" height="757" rx="100" fill="#7B5CFF"/>' +
+          '<rect x="2081" y="250" width="200" height="757" rx="100" fill="#FF4F8B"/>' +
+          '<rect x="2081" y="250" width="200" height="757" rx="100" fill="#fff" clip-path="url(#wl1)"/></svg>'
+        );
+      }
+      const upper = (s) => s.toLocaleUpperCase('tr-TR');
+      // *x* orange, _x_ pink, ~x~ lavender; | is a line break.
+      const rich = (s) =>
+        s
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/_(.+?)_/g, '<b>$1</b>')
+          .replace(/~(.+?)~/g, '<i>$1</i>')
+          .replace(/\|/g, '<br>');
+      const el = (cls, html, style) => {
+        const d = document.createElement('div');
+        d.className = cls;
+        if (html != null) d.innerHTML = html;
+        if (style) Object.assign(d.style, style);
+        return d;
+      };
+      const clamp = (x) => Math.max(0, Math.min(1, x));
+      const easeOut = (x) => 1 - Math.pow(1 - clamp(x), 3);
+      // A spring-ish overshoot for arrivals (0 → 1, peaks a little over 1).
+      const back = (x) => {
+        x = clamp(x);
+        const c = 1.9;
+        return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2);
+      };
+      const prog = (t, start, dur) => clamp((t - start) / dur);
+
+      function background(stage, night) {
+        const blobs = night
+          ? [
+              ['#2A1C66', -200, -200, 900],
+              ['#4152D8', 600, 1300, 700],
+            ]
+          : [
+              ['#7B5CFF', -260, -180, 900],
+              ['#FF4F8B', 520, 1280, 820],
+              ['#FFB547', 700, 300, 360],
+            ];
+        blobs.forEach(([c, x, y, s]) =>
+          stage.appendChild(
+            el('blob', null, {
+              background: c,
+              left: x + 'px',
+              top: y + 'px',
+              width: s + 'px',
+              height: s + 'px',
+            }),
+          ),
+        );
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        g.setAttribute('class', 'grain');
+        g.setAttribute('width', '1080');
+        g.setAttribute('height', '1920');
+        g.innerHTML = '<rect width="1080" height="1920" filter="url(#noise)"/>';
+        stage.appendChild(g);
+      }
+
+      function kanki(look, x, y, w) {
+        w = w || 250;
+        const d = el('kanki', LOOK.svg(look, 'fig'), {
+          left: x + 'px',
+          top: y + 'px',
+          width: w + 'px',
+          height: (w * 66) / 48 + 'px',
+        });
+        return d;
+      }
+
+      function footer(stage, opts) {
+        const f = el('foot');
+        f.innerHTML =
+          wordmark(76) +
+          (opts.url === false
+            ? ''
+            : '<span class="url">' + (opts.url || 'skall.world') + '</span>');
+        stage.appendChild(f);
+        return f;
+      }
+
+      function kankiRow(stage, looks, baseY, w) {
+        w = w || 230;
+        const n = looks.length;
+        const gap = Math.min(40, (920 - n * w) / Math.max(1, n - 1));
+        const total = n * w + (n - 1) * gap;
+        const x0 = (1080 - total) / 2;
+        const tbl = el('table', null, { top: baseY - 40 + 'px' });
+        const out = looks.map((L, i) => {
+          const k = kanki(L, x0 + i * (w + gap), baseY - (w * 66) / 48 + 20, w);
+          stage.appendChild(k);
+          return k;
+        });
+        stage.appendChild(tbl);
+        return { kankis: out, table: tbl, x0, w, gap };
+      }
+
+      // ---------- still layouts ----------
+      const LAYOUTS = {
+        kapak(stage, s) {
+          background(stage);
+          if (s.tag) stage.appendChild(el('tag', upper(s.tag)));
+          const t = el('title', rich(s.title), { fontSize: (s.size || 128) + 'px' });
+          stage.appendChild(t);
+          const sub = el('sub', rich(s.sub || ''), { top: 360 + t.offsetHeight + 40 + 'px' });
+          if (s.sub) stage.appendChild(sub);
+          if (s.kankiler) kankiRow(stage, s.kankiler, s.tableY || 1500, s.kankiW || 260);
+          if (s.bubble) {
+            const b = el('bubble' + (s.bubble.dark ? ' dark' : ''), s.bubble.text, {
+              left: s.bubble.x + 'px',
+              top: s.bubble.y + 'px',
+            });
+            stage.appendChild(b);
+          }
+          footer(stage, s);
+        },
+        kart(stage, s) {
+          background(stage);
+          if (s.tag) stage.appendChild(el('tag', upper(s.tag)));
+          const t = el('title', rich(s.title), { fontSize: (s.size || 96) + 'px' });
+          stage.appendChild(t);
+          const list = el('steps', null, { top: 360 + t.offsetHeight + 56 + 'px' });
+          const colors = ['#7B5CFF', '#FF4F8B', '#FFB547', '#4FD1A5'];
+          s.steps.forEach((st, i) => {
+            const row = el('step');
+            row.innerHTML =
+              '<div class="n" style="background:' +
+              colors[i % 4] +
+              (i % 4 === 2 ? ';color:#14112B' : '') +
+              '">' +
+              (i + 1) +
+              '</div>' +
+              '<div class="t">' +
+              st[0] +
+              (st[1] ? '<small>' + st[1] + '</small>' : '') +
+              '</div>';
+            list.appendChild(row);
+          });
+          stage.appendChild(list);
+          if (s.kanki) stage.appendChild(kanki(s.kanki, 800, 250, 170));
+          footer(stage, s);
+        },
+        soru(stage, s) {
+          background(stage);
+          stage.appendChild(el('tag', upper(s.tag || 'Masa sorusu')));
+          const q = el('qcard', rich(s.question), { top: '380px' });
+          stage.appendChild(q);
+          const o = el('opts', null, { top: 380 + q.offsetHeight + 40 + 'px' });
+          const fills = [
+            ['#7B5CFF', '#fff'],
+            ['#FF4F8B', '#fff'],
+          ];
+          s.options.forEach((txt, i) =>
+            o.appendChild(el('opt', txt, { background: fills[i % 2][0], color: fills[i % 2][1] })),
+          );
+          stage.appendChild(o);
+          if (s.sub)
+            stage.appendChild(
+              el('sub', rich(s.sub), { top: 380 + q.offsetHeight + 40 + 220 + 'px' }),
+            );
+          if (s.kankiler) kankiRow(stage, s.kankiler, 1480, 220);
+          footer(stage, s);
+        },
+      };
+
+      // ---------- animations: each returns frame(t) ----------
+      function blinkEyes(k, t, period, offset) {
+        const ph = (t + offset) % period;
+        const sc = ph < 0.12 ? 1 - Math.sin((ph / 0.12) * Math.PI) * 0.9 : 1;
+        k.querySelectorAll('.eye').forEach((e) => (e.style.transform = 'scaleY(' + sc + ')'));
+      }
+      function arrive(node, p, fromY) {
+        const v = back(p);
+        node.style.opacity = clamp(p * 3);
+        node.style.transform = 'translateY(' + (1 - v) * (fromY || 60) + 'px)';
+      }
+      const ANIMS = {
+        // Kankiler masaya: one by one they hop onto the table, the title arrives, then the wordmark.
+        masa(stage, s) {
+          background(stage);
+          const tag = s.tag ? el('tag', upper(s.tag)) : null;
+          if (tag) stage.appendChild(tag);
+          const title = el('title', rich(s.title), { fontSize: (s.size || 128) + 'px' });
+          stage.appendChild(title);
+          const sub = s.sub
+            ? el('sub', rich(s.sub), { top: 360 + title.offsetHeight + 40 + 'px' })
+            : null;
+          if (sub) stage.appendChild(sub);
+          const row = kankiRow(stage, s.kankiler, 1520, 210);
+          const foot = footer(stage, s);
+          return (t) => {
+            if (tag) arrive(tag, prog(t, 0.1, 0.5));
+            arrive(title, prog(t, 0.3, 0.7), 80);
+            if (sub) arrive(sub, prog(t, 0.8, 0.6));
+            row.table.style.opacity = easeOut(prog(t, 0.2, 0.6));
+            row.kankis.forEach((k, i) => {
+              const p = prog(t, 1.2 + i * 0.35, 0.7);
+              const y = (1 - back(p)) * -700;
+              const squash = p > 0.6 && p < 1 ? 1 - Math.sin(((p - 0.6) / 0.4) * Math.PI) * 0.1 : 1;
+              const bob = t > 3 ? Math.sin((t - 3) * 2.4 + i * 1.3) * 8 : 0;
+              k.style.opacity = p > 0 ? 1 : 0;
+              k.style.transform =
+                'translateY(' + (y + bob) + 'px) scale(' + (2 - squash) + ',' + squash + ')';
+              blinkEyes(k, t, 2.6, i * 0.7);
+            });
+            arrive(foot, prog(t, 3.0, 0.6), 40);
+          };
+        },
+        // Krot: everyone gets the same word, one gets "?". Cards rise, then the odd one glows.
+        krot(stage, s) {
+          background(stage);
+          const tag = el('tag', upper(s.tag || 'Krot'));
+          stage.appendChild(tag);
+          const title = el('title', rich(s.title), { fontSize: (s.size || 116) + 'px' });
+          stage.appendChild(title);
+          const row = kankiRow(stage, s.kankiler, 1480, 200);
+          const cards = row.kankis.map((k, i) => {
+            const c = el('card' + (i === s.odd ? ' odd' : ''), i === s.odd ? '?' : s.word, {
+              left: row.x0 + i * (row.w + row.gap) + row.w / 2 - 100 + 'px',
+              top: '1010px',
+            });
+            stage.appendChild(c);
+            return c;
+          });
+          const reveal = el('sub', rich(s.reveal), {
+            top: '1630px',
+            textAlign: 'center',
+            left: '80px',
+            right: '80px',
+            fontWeight: 800,
+            color: '#fff',
+          });
+          stage.appendChild(reveal);
+          const foot = footer(stage, { url: false });
+          foot.style.justifyContent = 'center';
+          foot.style.bottom = '90px';
+          return (t) => {
+            arrive(tag, prog(t, 0.1, 0.5));
+            arrive(title, prog(t, 0.3, 0.7), 80);
+            row.table.style.opacity = easeOut(prog(t, 0.2, 0.6));
+            row.kankis.forEach((k, i) => {
+              const p = prog(t, 0.5 + i * 0.15, 0.6);
+              k.style.opacity = clamp(p * 3);
+              k.style.transform = 'translateY(' + (1 - back(p)) * 120 + 'px)';
+              blinkEyes(k, t, 2.4, i * 0.5);
+            });
+            cards.forEach((c, i) => {
+              const p = prog(t, 1.6 + i * 0.25, 0.6);
+              const wob =
+                i === s.odd && t > 3.6
+                  ? Math.sin((t - 3.6) * 14) * Math.max(0, 1 - (t - 3.6) / 1.2) * 8
+                  : 0;
+              const lift = i === s.odd && t > 3.6 ? -easeOut(prog(t, 3.6, 0.5)) * 40 : 0;
+              c.style.opacity = clamp(p * 3);
+              c.style.transform =
+                'translateY(' +
+                ((1 - back(p)) * 80 + lift) +
+                'px) rotate(' +
+                wob +
+                'deg) scale(' +
+                back(p) +
+                ')';
+              if (i !== s.odd)
+                c.style.filter =
+                  t > 3.6 ? 'brightness(' + (1 - 0.35 * easeOut(prog(t, 3.6, 0.5))) + ')' : '';
+            });
+            arrive(reveal, prog(t, 4.4, 0.6), 40);
+            arrive(foot, prog(t, 5.0, 0.6), 30);
+          };
+        },
+        // Vampir Köylü: day → night, everyone sleeps except the vampire; morning text.
+        gece(stage, s) {
+          const day = el('layer');
+          stage.appendChild(day);
+          background(day);
+          const night = el('layer', null, { background: '#0B0920', opacity: 0 });
+          stage.appendChild(night);
+          background(night, true);
+          const stars = [];
+          for (let i = 0; i < 26; i++) {
+            const st = el('star', null, {
+              left: ((i * 397) % 1040) + 20 + 'px',
+              top: ((i * 211) % 900) + 120 + 'px',
+              opacity: 0,
+            });
+            night.appendChild(st);
+            stars.push(st);
+          }
+          const moon = el('moon', null, { left: '760px', top: '200px' });
+          night.appendChild(moon);
+          const tag = el('tag', upper(s.tag || 'Vampir Köylü'));
+          stage.appendChild(tag);
+          const t1 = el('title', rich(s.title), { fontSize: (s.size || 116) + 'px' });
+          stage.appendChild(t1);
+          const t2 = el('title', rich(s.title2), { fontSize: (s.size || 116) + 'px', opacity: 0 });
+          stage.appendChild(t2);
+          const looksAwake = s.kankiler;
+          const looksSleep = s.kankiler.map((L, i) =>
+            i === s.vampir ? L : Object.assign({}, L, { e: 'uykulu' }),
+          );
+          const row = kankiRow(stage, looksAwake, 1480, 200);
+          const sleepers = row.kankis.map((k, i) => {
+            const z = kanki(
+              looksSleep[i],
+              parseFloat(k.style.left),
+              parseFloat(k.style.top),
+              row.w,
+            );
+            z.style.opacity = 0;
+            stage.insertBefore(z, row.table);
+            return z;
+          });
+          const bub = el('bubble dark', s.bubble || 'Gece oldu', {
+            left: row.x0 + s.vampir * (row.w + row.gap) + row.w / 2 - 150 + 'px',
+            top: '1070px',
+            opacity: 0,
+          });
+          stage.appendChild(bub);
+          const foot = footer(stage, { url: false });
+          foot.style.justifyContent = 'center';
+          foot.style.bottom = '90px';
+          return (t) => {
+            const n = easeOut(prog(t, 1.8, 0.9)) * (1 - easeOut(prog(t, 5.6, 0.8)));
+            night.style.opacity = n;
+            stars.forEach(
+              (st, i) => (st.style.opacity = n * (0.4 + 0.6 * Math.abs(Math.sin(t * 2 + i)))),
+            );
+            arrive(tag, prog(t, 0.1, 0.5));
+            t1.style.opacity = clamp(prog(t, 0.3, 0.4)) * (1 - clamp(prog(t, 1.7, 0.3)));
+            t1.style.transform = 'translateY(' + (1 - back(prog(t, 0.3, 0.7))) * 80 + 'px)';
+            t2.style.opacity = clamp(prog(t, 2.2, 0.4));
+            t2.style.transform = 'translateY(' + (1 - back(prog(t, 2.2, 0.7))) * 80 + 'px)';
+            row.table.style.opacity = easeOut(prog(t, 0.2, 0.6));
+            row.kankis.forEach((k, i) => {
+              const p = prog(t, 0.4 + i * 0.12, 0.6);
+              const asleep = i !== s.vampir && n > 0.5;
+              k.style.opacity = asleep ? 0 : clamp(p * 3);
+              sleepers[i].style.opacity = asleep ? 1 : 0;
+              const breathe = asleep ? Math.sin(t * 2.2 + i) * 0.02 : 0;
+              const tr = 'translateY(' + (1 - back(p)) * 120 + 'px) scale(1,' + (1 + breathe) + ')';
+              k.style.transform = tr;
+              sleepers[i].style.transform = tr;
+              if (i === s.vampir && t > 2.6 && t < 5.6) {
+                const sway = Math.sin((t - 2.6) * 3) * 4;
+                k.style.transform = tr + ' rotate(' + sway + 'deg)';
+              }
+              blinkEyes(k, t, 2.4, i * 0.5);
+            });
+            const bp = prog(t, 2.9, 0.5);
+            bub.style.opacity = clamp(bp * 3) * (1 - clamp(prog(t, 5.4, 0.3)));
+            bub.style.transform = 'scale(' + back(bp) + ')';
+            arrive(foot, prog(t, 6.2, 0.6), 30);
+          };
+        },
+      };
+
+      window.render = function () {
+        const stage = document.getElementById('stage');
+        stage.innerHTML = '';
+        if (SPEC.anim) {
+          window.frame = ANIMS[SPEC.anim](stage, SPEC);
+          window.frame(0);
+        } else {
+          LAYOUTS[SPEC.layout](stage, SPEC);
+        }
+      };
+    </script>
+  </body>
+</html>
