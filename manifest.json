@@ -1,0 +1,223 @@
+{
+ "sha": "c07601789d27b1d7f17306068c53a26c049f835a",
+ "run": "https://github.com/WazzupDevs/Kabuk/actions/runs/46128222217",
+ "date": "2026-11-28T09:39:20.136Z",
+ "images": [
+  {
+   "name": "01-welcome",
+   "theme": "dark",
+   "file": "dark/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "dark",
+   "file": "dark/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "dark",
+   "file": "dark/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "dark",
+   "file": "dark/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a-under-age",
+   "theme": "dark",
+   "file": "dark/03a-under-age.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a2-birth-confirm",
+   "theme": "dark",
+   "file": "dark/03a2-birth-confirm.png",
+   "flow": "e2e/maestro/flows/about-you.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03b-name",
+   "theme": "dark",
+   "file": "dark/03b-name.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03c-photo",
+   "theme": "dark",
+   "file": "dark/03c-photo.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03d-photo-sheet",
+   "theme": "dark",
+   "file": "dark/03d-photo-sheet.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01-welcome",
+   "theme": "large",
+   "file": "large/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "large",
+   "file": "large/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "large",
+   "file": "large/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "large",
+   "file": "large/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a-under-age",
+   "theme": "large",
+   "file": "large/03a-under-age.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a2-birth-confirm",
+   "theme": "large",
+   "file": "large/03a2-birth-confirm.png",
+   "flow": "e2e/maestro/flows/about-you.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03b-name",
+   "theme": "large",
+   "file": "large/03b-name.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03c-photo",
+   "theme": "large",
+   "file": "large/03c-photo.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03d-photo-sheet",
+   "theme": "large",
+   "file": "large/03d-photo-sheet.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01-welcome",
+   "theme": "light",
+   "file": "light/01-welcome.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01a-consents",
+   "theme": "light",
+   "file": "light/01a-consents.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "01b-phone",
+   "theme": "light",
+   "file": "light/01b-phone.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "02-otp",
+   "theme": "light",
+   "file": "light/02-otp.png",
+   "flow": "e2e/maestro/flows/login-code.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a-under-age",
+   "theme": "light",
+   "file": "light/03a-under-age.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03a2-birth-confirm",
+   "theme": "light",
+   "file": "light/03a2-birth-confirm.png",
+   "flow": "e2e/maestro/flows/about-you.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03b-name",
+   "theme": "light",
+   "file": "light/03b-name.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03c-photo",
+   "theme": "light",
+   "file": "light/03c-photo.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  },
+  {
+   "name": "03d-photo-sheet",
+   "theme": "light",
+   "file": "light/03d-photo-sheet.png",
+   "flow": "e2e/maestro/flows/01-login.yaml",
+   "shard": 1,
+   "passed": false
+  }
+ ]
+}
