@@ -58,7 +58,7 @@ Tek seferlik (proje sahibi):
 1. **D1:** Cloudflare paneli → Storage & Databases → D1 → Create → ad `skall-site`. Database ID'yi `wrangler.jsonc` → `database_id`'ye yaz (gizli değil; PR'la).
 2. **Şema:** bilgisayarda repo kökünde `npx wrangler login`, sonra `npx wrangler d1 migrations apply skall-site --remote`. Yeni migration geldiğinde aynı komut.
 3. **Turnstile:** panel → Turnstile → Add widget: ad `skall.world`, hostname `skall.world`, mod Managed. Site Key ve Secret Key'i al.
-4. **Resend:** resend.com'da hesap (ücretsiz plan) → Domains → `skall.world` ekle, verdiği DNS kayıtlarını Cloudflare DNS'e gir (Zoho'nun MX'ine dokunmaz; Resend `send.skall.world` alt alanını kullanır), doğrulanınca API Keys → Create (yalnızca Sending access).
+4. **Resend:** resend.com'da hesap (ücretsiz plan) → Domains → `skall.world` ekle (bölge Ireland `eu-west-1`; yasal metinler bunu yazar), verdiği DNS kayıtlarını Cloudflare DNS'e gir (Zoho'nun MX'ine dokunmaz; Resend `send.skall.world` alt alanını kullanır), doğrulanınca API Keys → Create (yalnızca Sending access).
 5. **Worker ayarları:** Workers & Pages → skall → Settings → Variables and Secrets:
    - Text: `TURNSTILE_SITE_KEY` = Site Key
    - Secret: `TURNSTILE_SECRET_KEY` = Secret Key, `IP_SALT` = rastgele uzun dize (`openssl rand -hex 32`; değişirse yalnız günlük sayaçlar sıfırlanır), `RESEND_API_KEY` = Resend anahtarı
