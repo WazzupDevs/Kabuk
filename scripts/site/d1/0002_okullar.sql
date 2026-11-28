@@ -1,6 +1,7 @@
 -- The first list of the campus vote (the one web/site.js showed before the vote was real).
--- name_key must equal forms.ts → schoolKey(name) (forms.test.ts checks). Later schools are added
--- or approved by an admin (docs/OPS.md → "skall.world formları"), not by a new file here.
+-- name_key must equal forms.ts → schoolKey(name) (forms.test.ts checks). The rest of YÖK's list is
+-- 0003_tum_universiteler.sql; a school that applies later is approved by an admin (docs/OPS.md →
+-- "skall.world formları").
 insert into schools (name, name_key, status, created_at) values
   ('Sakarya Uygulamalı Bilimler Üniversitesi', 'sakarya uygulamali bilimler üniversitesi', 'approved', '2026-11-28T00:00:00.000Z'),
   ('Boğaziçi Üniversitesi', 'boğaziçi üniversitesi', 'approved', '2026-11-28T00:00:00.000Z'),

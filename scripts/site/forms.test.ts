@@ -32,16 +32,23 @@ describe('schoolKey', () => {
     );
   });
 
-  it('matches the seeded list (d1/0002_okullar.sql)', () => {
-    const sql = readFileSync(resolve(import.meta.dirname, 'd1/0002_okullar.sql'), 'utf8');
-    const rows = [...sql.matchAll(/\('((?:[^']|'')+)', '((?:[^']|'')+)', 'approved'/g)];
-    expect(rows.length).toBeGreaterThan(40);
+  it('matches the seeded lists (d1/0002_okullar.sql, 0003_tum_universiteler.sql)', () => {
     const keys = new Set<string>();
-    for (const [, name, key] of rows) {
-      expect(key).toBe(schoolKey(String(name).replaceAll("''", "'")));
-      expect(keys.has(String(key))).toBe(false);
-      keys.add(String(key));
+    for (const file of ['0002_okullar.sql', '0003_tum_universiteler.sql']) {
+      const sql = readFileSync(resolve(import.meta.dirname, 'd1', file), 'utf8');
+      const rows = [...sql.matchAll(/\('((?:[^']|'')+)', '((?:[^']|'')+)', 'approved'/g)];
+      expect(rows.length).toBeGreaterThan(40);
+      for (const [, name, key] of rows) {
+        expect(key).toBe(schoolKey(String(name).replaceAll("''", "'")));
+        // One school, one row, across the files.
+        expect(keys.has(String(key))).toBe(false);
+        keys.add(String(key));
+      }
     }
+    // Every state and foundation university on YÖK's list but the two where skall already is.
+    expect(keys.size).toBe(200);
+    expect(keys.has(schoolKey('Sakarya Üniversitesi'))).toBe(false);
+    expect(keys.has(schoolKey('İstanbul Gelişim Üniversitesi'))).toBe(false);
   });
 });
 
