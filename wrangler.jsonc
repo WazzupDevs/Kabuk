@@ -21,7 +21,7 @@
     {
       "binding": "DB",
       "database_name": "skall-site",
-      "database_id": "D1_DATABASE_ID",
+      "database_id": "5d38e94a-37f0-4878-8a66-6bf749a750d5",
       "migrations_dir": "scripts/site/d1",
     },
   ],
